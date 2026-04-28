@@ -23,6 +23,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("metadata-table-report",),
     ),
     CommandSpec(
+        name="traits",
+        domain="comparative-inputs",
+        summary="Validate and link trait tables keyed by taxon.",
+        inputs=("traits-table",),
+        outputs=("traits-report",),
+    ),
+    CommandSpec(
         name="inspect",
         domain="tree-io",
         summary="Inspect a tree and report high-level summary metrics.",

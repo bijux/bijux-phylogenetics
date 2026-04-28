@@ -7,6 +7,7 @@ import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
+from bijux_phylogenetics.core.traits import validate_traits_table
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import (
@@ -71,6 +72,16 @@ def test_metadata_inspect_rejects_missing_requested_taxon_column() -> None:
         assert error.message == "missing taxon column 'taxon'"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected MetadataJoinError")
+
+
+def test_traits_validate_infers_numeric_and_categorical_schema() -> None:
+    report = validate_traits_table(FIXTURES / "example_traits_validate.tsv")
+    assert report.taxon_column == "taxon"
+    assert [(column.name, column.kind, column.missing_count) for column in report.trait_columns] == [
+        ("height_cm", "numeric", 0),
+        ("habitat", "categorical", 0),
+        ("status", "categorical", 1),
+    ]
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
@@ -310,6 +321,17 @@ def test_cli_metadata_inspect_json_output(capsys) -> None:
     assert payload["metrics"]["taxon_count"] == 4
 
 
+def test_cli_traits_validate_json_output(capsys) -> None:
+    exit_code = main(["traits", "validate", str(FIXTURES / "example_traits_validate.tsv"), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["command"] == "traits"
+    assert payload["metrics"]["trait_column_count"] == 3
+    assert payload["data"]["trait_columns"][0]["kind"] == "numeric"
+
+
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:
     output = tmp_path / "report.html"
     result = render_phylogenetics_report(
@@ -354,6 +376,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     assert payload["status"] == "ok"
     assert command_names == [
         "metadata",
+        "traits",
         "inspect",
         "validate",
         "normalize",

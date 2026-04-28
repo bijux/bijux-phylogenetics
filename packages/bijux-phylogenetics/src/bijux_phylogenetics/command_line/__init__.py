@@ -10,6 +10,7 @@ from typing import Any
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
+from bijux_phylogenetics.core.traits import validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
@@ -67,6 +68,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         return []
     if args.command == "metadata":
         return [args.table]
+    if args.command == "traits":
+        return [args.table]
     if args.command in {"validate", "inspect", "diagnose"}:
         return [args.tree]
     if args.command == "normalize":
@@ -117,6 +120,13 @@ def build_parser() -> argparse.ArgumentParser:
     metadata_inspect.add_argument("table", type=Path)
     metadata_inspect.add_argument("--taxon-column")
     metadata_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+
+    traits = subparsers.add_parser(get_command_spec("traits").name, help=get_command_spec("traits").summary)
+    traits_subparsers = traits.add_subparsers(dest="traits_command", required=True)
+    traits_validate = traits_subparsers.add_parser("validate", help="Validate a traits table keyed by taxon.")
+    traits_validate.add_argument("table", type=Path)
+    traits_validate.add_argument("--taxon-column")
+    traits_validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -204,6 +214,21 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "row_count": report.row_count,
                         "column_count": report.column_count,
                         "taxon_count": len(report.taxa),
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "traits":
+            report = validate_traits_table(args.table, taxon_column=args.taxon_column)
+            _print_result(
+                build_command_result(
+                    command="traits",
+                    inputs=[args.table],
+                    metrics={
+                        "row_count": report.row_count,
+                        "trait_column_count": len(report.trait_columns),
                     },
                     data=report,
                 ),
