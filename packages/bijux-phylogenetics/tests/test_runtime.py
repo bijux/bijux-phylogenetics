@@ -31,6 +31,7 @@ from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
+from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
 
@@ -458,6 +459,16 @@ def test_build_tree_comparison_report_writes_html_with_checksums(tmp_path: Path)
     assert "support-comparison" in html
 
 
+def test_render_tree_svg_writes_static_tree_image(tmp_path: Path) -> None:
+    output = tmp_path / "tree.svg"
+    result = render_tree_svg(FIXTURES / "example_tree.nwk", out_path=output)
+    svg = output.read_text(encoding="utf-8")
+    assert result.output_path == output
+    assert result.format == "svg"
+    assert "<svg" in svg
+    assert "A" in svg and "D" in svg
+
+
 def test_diagnose_tree_path_combines_inspection_and_validation() -> None:
     report = diagnose_tree_path(FIXTURES / "example_tree.nwk")
     assert report.inspection.tip_count == 4
@@ -684,6 +695,17 @@ def test_cli_compare_report_json_output(tmp_path: Path, capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["outputs"] == [str(output)]
     assert "Bijux Tree Comparison Report" in output.read_text(encoding="utf-8")
+
+
+def test_cli_render_writes_svg_output(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "tree.svg"
+    exit_code = main(["render", str(FIXTURES / "example_tree.nwk"), "--out", str(output), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["outputs"] == [str(output)]
+    assert "<svg" in output.read_text(encoding="utf-8")
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:

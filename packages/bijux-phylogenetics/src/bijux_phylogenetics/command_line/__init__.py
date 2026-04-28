@@ -27,6 +27,7 @@ from bijux_phylogenetics.errors import EvidenceContractError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report, write_annotation_report
 from bijux_phylogenetics.results import build_command_result, build_error_result
 
@@ -686,7 +687,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "render":
-            result = render_phylogenetics_report(tree_path=args.tree, metadata_path=args.metadata, out_path=args.out)
+            result = render_tree_svg(args.tree, out_path=args.out)
             inputs = [args.tree]
             if args.metadata is not None:
                 inputs.append(args.metadata)
@@ -697,8 +698,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="render",
                         inputs=inputs,
                         outputs=outputs,
-                        warnings=result.validation.warnings,
-                        metrics={"tip_count": result.inspection.tip_count},
+                        warnings=result.missing_metadata_labels,
+                        metrics={"tip_count": result.tip_count, "label_count": result.label_count},
                         data=result,
                     ),
                     json_output=True,
