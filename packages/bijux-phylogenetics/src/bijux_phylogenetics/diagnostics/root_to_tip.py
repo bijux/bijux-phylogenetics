@@ -19,6 +19,16 @@ class RootToTipDistanceReport:
     distances: list[RootToTipDistance]
 
 
+@dataclass(slots=True)
+class UltrametricReport:
+    path: Path
+    source_format: str
+    tolerance: float
+    ultrametric: bool | None
+    max_deviation: float | None
+    tip_count: int
+
+
 def compute_root_to_tip_distances(path: Path, *, source_format: str | None = None) -> RootToTipDistanceReport:
     """Compute one root-to-tip distance per leaf."""
     tree = _load_tree(path, source_format=source_format)
@@ -42,3 +52,35 @@ def write_root_to_tip_tsv(path: Path, report: RootToTipDistanceReport) -> Path:
     )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
+
+
+def diagnose_ultrametricity(
+    path: Path,
+    *,
+    source_format: str | None = None,
+    tolerance: float = 1e-6,
+) -> UltrametricReport:
+    """Assess whether a tree is ultrametric within the given tolerance."""
+    report = compute_root_to_tip_distances(path, source_format=source_format)
+    numeric_distances = [row.distance for row in report.distances if row.distance is not None]
+    if not numeric_distances or len(numeric_distances) != len(report.distances):
+        return UltrametricReport(
+            path=path,
+            source_format=report.source_format,
+            tolerance=tolerance,
+            ultrametric=None,
+            max_deviation=None,
+            tip_count=len(report.distances),
+        )
+
+    max_distance = max(float(distance) for distance in numeric_distances)
+    min_distance = min(float(distance) for distance in numeric_distances)
+    max_deviation = round(max_distance - min_distance, 15)
+    return UltrametricReport(
+        path=path,
+        source_format=report.source_format,
+        tolerance=tolerance,
+        ultrametric=max_deviation <= tolerance,
+        max_deviation=max_deviation,
+        tip_count=len(report.distances),
+    )

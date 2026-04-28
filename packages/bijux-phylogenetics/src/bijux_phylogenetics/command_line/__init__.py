@@ -10,7 +10,11 @@ from typing import Any
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances, write_root_to_tip_tsv
+from bijux_phylogenetics.diagnostics.root_to_tip import (
+    compute_root_to_tip_distances,
+    diagnose_ultrametricity,
+    write_root_to_tip_tsv,
+)
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
@@ -256,6 +260,7 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose.add_argument("target")
     diagnose.add_argument("tree", nargs="?", type=Path)
     diagnose.add_argument("--out", type=Path)
+    diagnose.add_argument("--tolerance", type=float, default=1e-6)
     diagnose.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(diagnose)
 
@@ -530,6 +535,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.tree],
                         outputs=outputs,
                         metrics={"tip_count": len(report.distances)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.target == "ultrametric":
+                if args.tree is None:
+                    parser.exit(status=2, message="diagnose ultrametric requires a tree path\n")
+                report = diagnose_ultrametricity(args.tree, tolerance=args.tolerance)
+                outputs = _finalize_outputs(args, command="diagnose", inputs=[args.tree])
+                _print_result(
+                    build_command_result(
+                        command="diagnose",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "tolerance": report.tolerance,
+                            "max_deviation": report.max_deviation,
+                        },
                         data=report,
                     ),
                     json_output=args.json,

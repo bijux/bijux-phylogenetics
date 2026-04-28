@@ -12,6 +12,7 @@ from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
+from bijux_phylogenetics.diagnostics.root_to_tip import diagnose_ultrametricity
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import (
@@ -436,6 +437,15 @@ def test_compute_root_to_tip_distances_reports_one_row_per_tip() -> None:
     ]
 
 
+def test_diagnose_ultrametricity_reports_max_deviation() -> None:
+    ultrametric = diagnose_ultrametricity(FIXTURES / "example_tree.nwk", tolerance=1e-6)
+    non_ultrametric = diagnose_ultrametricity(FIXTURES / "example_tree_ladderized.nwk", tolerance=1e-6)
+    assert ultrametric.ultrametric is True
+    assert ultrametric.max_deviation == 0.0
+    assert non_ultrametric.ultrametric is False
+    assert non_ultrametric.max_deviation == 0.2
+
+
 def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
     report = annotate_tree_against_table(FIXTURES / "example_tree.nwk", FIXTURES / "example_traits.tsv")
     assert report.linked_taxa == 3
@@ -650,6 +660,16 @@ def test_cli_diagnose_distances_writes_tsv(tmp_path: Path, capsys) -> None:
         "C\t0.3\n"
         "D\t0.3\n"
     )
+
+
+def test_cli_diagnose_ultrametric_reports_tolerance_and_deviation(capsys) -> None:
+    exit_code = main(["diagnose", "ultrametric", str(FIXTURES / "example_tree_ladderized.nwk"), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["data"]["ultrametric"] is False
+    assert payload["metrics"]["max_deviation"] == 0.2
 
 
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
