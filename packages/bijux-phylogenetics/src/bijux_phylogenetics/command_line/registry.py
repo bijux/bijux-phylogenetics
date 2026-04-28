@@ -16,6 +16,13 @@ class CommandSpec:
 
 COMMAND_SPECS: tuple[CommandSpec, ...] = (
     CommandSpec(
+        name="env",
+        domain="runtime",
+        summary="Inspect runtime dependency availability.",
+        inputs=(),
+        outputs=("environment-report",),
+    ),
+    CommandSpec(
         name="metadata",
         domain="metadata-linkage",
         summary="Inspect metadata tables keyed by taxon.",

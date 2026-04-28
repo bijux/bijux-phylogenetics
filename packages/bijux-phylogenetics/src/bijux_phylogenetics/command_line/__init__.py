@@ -9,6 +9,7 @@ from typing import Any
 
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
+from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.diagnostics.root_to_tip import (
@@ -103,6 +104,8 @@ def _finalize_outputs(
 def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "commands":
         return []
+    if args.command == "env":
+        return []
     if args.command == "metadata":
         return [args.table]
     if args.command == "traits":
@@ -172,6 +175,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     commands = subparsers.add_parser("commands", help="List the registered command taxonomy.")
     commands.add_argument("--format", choices=("text", "json"), default="text")
+
+    env = subparsers.add_parser(get_command_spec("env").name, help=get_command_spec("env").summary)
+    env_subparsers = env.add_subparsers(dest="env_command", required=True)
+    env_inspect = env_subparsers.add_parser("inspect", help="Inspect runtime dependency availability.")
+    env_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(env_inspect)
 
     metadata = subparsers.add_parser(get_command_spec("metadata").name, help=get_command_spec("metadata").summary)
     metadata_subparsers = metadata.add_subparsers(dest="metadata_command", required=True)
@@ -318,6 +327,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     try:
         if args.command == "commands":
             _print_commands(output_format=args.format)
+            return 0
+        if args.command == "env":
+            report = inspect_environment()
+            outputs = _finalize_outputs(args, command="env", inputs=[])
+            _print_result(
+                build_command_result(
+                    command="env",
+                    inputs=[],
+                    outputs=outputs,
+                    metrics={"dependency_count": len(report.dependencies)},
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "metadata":
             report = inspect_metadata_table(args.table, taxon_column=args.taxon_column)

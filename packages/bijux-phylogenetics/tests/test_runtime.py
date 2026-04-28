@@ -8,6 +8,7 @@ from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
@@ -63,6 +64,15 @@ def test_metadata_inspect_reports_taxon_contract() -> None:
     assert report.column_count == 3
     assert report.taxon_column == "taxon"
     assert report.taxa == ["A", "B", "C", "D"]
+
+
+def test_inspect_environment_reports_available_and_optional_dependencies() -> None:
+    report = inspect_environment()
+    status_by_name = {item.name: item for item in report.dependencies}
+    assert report.python_version
+    assert report.host_platform
+    assert status_by_name["biopython"].available is True
+    assert "dendropy" in status_by_name
 
 
 def test_metadata_inspect_rejects_duplicate_taxa() -> None:
@@ -526,6 +536,16 @@ def test_cli_metadata_inspect_json_output(capsys) -> None:
     assert payload["metrics"]["taxon_count"] == 4
 
 
+def test_cli_env_inspect_json_output(capsys) -> None:
+    exit_code = main(["env", "inspect", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["command"] == "env"
+    assert payload["metrics"]["dependency_count"] >= 1
+
+
 def test_cli_annotate_writes_annotation_json(tmp_path: Path, capsys) -> None:
     output = tmp_path / "tree.annotated.json"
     exit_code = main(
@@ -918,6 +938,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert command_names == [
+        "env",
         "metadata",
         "traits",
         "prune",
