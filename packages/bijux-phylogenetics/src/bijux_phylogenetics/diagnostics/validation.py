@@ -72,6 +72,7 @@ class TreeInspectionReport:
     max_depth: int
     mean_depth: float
     colless_imbalance_index: float | None
+    sackin_imbalance_index: int
     imbalance_summary: str
     cherry_count: int
     taxa: list[str]
@@ -410,6 +411,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         max_depth=_max_depth(tree),
         mean_depth=sum(depths) / len(depths),
         colless_imbalance_index=_colless_imbalance_index(tree),
+        sackin_imbalance_index=sum(depths),
         imbalance_summary=_imbalance_summary(tree),
         cherry_count=_cherry_count(tree),
         taxa=sorted(tree.tip_names),

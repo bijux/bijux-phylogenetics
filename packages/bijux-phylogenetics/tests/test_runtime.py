@@ -470,6 +470,7 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.max_depth == 2
     assert report.mean_depth == 2.0
     assert report.colless_imbalance_index == 0.0
+    assert report.sackin_imbalance_index == 8
     assert report.imbalance_summary == "balanced"
     assert report.cherry_count == 2
     assert report.warnings == []
@@ -482,6 +483,7 @@ def test_inspect_tree_path_distinguishes_ladderized_shape() -> None:
     assert report.max_depth == 3
     assert report.mean_depth == 2.25
     assert report.colless_imbalance_index == 3.0
+    assert report.sackin_imbalance_index == 9
     assert report.imbalance_summary == "ladderized"
     assert report.cherry_count == 1
 
