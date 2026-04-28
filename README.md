@@ -47,8 +47,9 @@ maintainer package.
 
 
 This repository publishes `2` public packages. The current runtime focuses on
-reproducible tree hygiene, metadata linkage, evidence manifests, and HTML
-report generation rather than tree inference.
+reproducible tree hygiene, taxon normalization, tree and trait pruning,
+metadata linkage, evidence manifests, and HTML report generation rather than
+tree inference.
 
 ## Start Here
 

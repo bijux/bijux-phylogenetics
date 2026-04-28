@@ -38,6 +38,8 @@ bijux-phylogenetics --help
 
 - parse Newick trees and FASTA alignments
 - inspect tree shape and branch-length health
+- normalize unsafe taxon labels and audit normalization collisions
+- prune trees from explicit taxa, exclusions, traits, or metadata tables
 - compare shared clade structure between trees
 - validate trait and metadata linkage against tree tips
 - produce HTML reports and file-level evidence manifests
@@ -48,4 +50,3 @@ bijux-phylogenetics --help
 - source directory: [Runtime source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
 - changelog: [Runtime package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md)
 - security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)
-
