@@ -3,14 +3,24 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
+from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def test_package_identity_matches_canonical_names() -> None:
+    assert bijux_phylogenetics.__name__ == "bijux_phylogenetics"
+    assert IDENTITY.package_name == "bijux-phylogenetics"
+    assert IDENTITY.import_name == "bijux_phylogenetics"
+    assert IDENTITY.cli_name == "bijux-phylogenetics"
+    assert "bijux phylogenetics" == IDENTITY.umbrella_command
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:

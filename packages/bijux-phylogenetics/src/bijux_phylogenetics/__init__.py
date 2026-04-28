@@ -5,6 +5,7 @@ from importlib import metadata
 from .compare.topology import TreeComparisonReport, compare_tree_paths
 from .diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from .evidence.bundles import EvidenceBundleReport, bundle_directory
+from .identity import CLI_NAME, IDENTITY, IMPORT_NAME, PACKAGE_NAME, PRODUCT_NAME, UMBRELLA_COMMAND
 from .reports.service import ReportBuildResult, render_phylogenetics_report
 
 try:
@@ -14,10 +15,16 @@ except metadata.PackageNotFoundError:
 
 __all__ = [
     "EvidenceBundleReport",
+    "CLI_NAME",
+    "IDENTITY",
+    "IMPORT_NAME",
+    "PACKAGE_NAME",
+    "PRODUCT_NAME",
     "ReportBuildResult",
     "TreeComparisonReport",
     "TreeInspectionReport",
     "TreeValidationReport",
+    "UMBRELLA_COMMAND",
     "__version__",
     "bundle_directory",
     "compare_tree_paths",
@@ -25,4 +32,3 @@ __all__ = [
     "render_phylogenetics_report",
     "validate_tree_path",
 ]
-
