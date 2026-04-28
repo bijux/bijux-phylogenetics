@@ -53,6 +53,10 @@ alignment trimming, coding-sequence translation, identity-matrix export,
 explicit rooting transforms, evidence manifests, and HTML report generation
 rather than tree inference.
 
+Recent tree diagnostics now also classify internal-node child counts, missing
+internal versus terminal branch lengths, singleton internal nodes, branch-length
+outlier nodes, and support-like versus name-like internal labels.
+
 ## Start Here
 
 - read the docs home: [Documentation home](https://bijux.io/bijux-phylogenetics/)
@@ -85,6 +89,7 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `uv run bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `uv run bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
+- `uv run bijux-phylogenetics inspect tree-with-support.nwk --json`
 
 ## Working Rules
 
