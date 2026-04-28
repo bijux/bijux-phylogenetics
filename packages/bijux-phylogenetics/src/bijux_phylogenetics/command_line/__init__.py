@@ -455,6 +455,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "is_binary": report.is_binary,
                         "polytomy_count": report.polytomy_count,
                         "branch_length_status": report.branch_length_status,
+                        "zero_length_branch_count": report.zero_length_branch_count,
                         "cherry_count": report.cherry_count,
                     },
                     data=report,

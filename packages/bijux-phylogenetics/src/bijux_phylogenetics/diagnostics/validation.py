@@ -45,6 +45,7 @@ class TreeInspectionReport:
     has_branch_lengths: bool
     branch_length_status: str
     total_branch_length: float
+    zero_length_branch_count: int
     min_root_to_tip: float | None
     max_root_to_tip: float | None
     max_depth: int
@@ -210,6 +211,8 @@ def validate_tree_path(
         warnings.append("tree contains unnamed tips")
     if negative_count:
         warnings.append("tree contains negative branch lengths")
+    if zero_count:
+        warnings.append("tree contains zero-length branches")
     if polytomy_nodes:
         warnings.append("tree contains one or more polytomies")
     return TreeValidationReport(
@@ -255,6 +258,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         has_branch_lengths=all(length is not None for length in branch_lengths) if branch_lengths else False,
         branch_length_status=branch_length_status,
         total_branch_length=tree.total_branch_length(),
+        zero_length_branch_count=sum(1 for length in branch_lengths if length == 0),
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,
         max_depth=_max_depth(tree),

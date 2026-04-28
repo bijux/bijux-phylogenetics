@@ -221,6 +221,12 @@ def test_validate_tree_path_rejects_negative_branch_lengths_by_default() -> None
         raise AssertionError("expected InvalidBranchLengthError")
 
 
+def test_validate_tree_path_warns_for_zero_length_branches() -> None:
+    report = validate_tree_path(FIXTURES / "example_tree_zero_lengths.nwk")
+    assert report.zero_length_branches == 3
+    assert "tree contains zero-length branches" in report.warnings
+
+
 def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     report = inspect_tree_path(FIXTURES / "example_tree.nwk")
     assert report.tip_count == 4
@@ -230,6 +236,7 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.clade_count == 3
     assert report.has_branch_lengths is True
     assert report.is_binary is True
+    assert report.zero_length_branch_count == 0
     assert report.max_depth == 2
     assert report.mean_depth == 2.0
     assert report.imbalance_summary == "balanced"
@@ -595,6 +602,15 @@ def test_cli_validate_json_output(capsys) -> None:
     assert payload["command"] == "validate"
     assert payload["metrics"]["tip_count"] == 4
     assert payload["data"]["tip_count"] == 4
+
+
+def test_cli_inspect_reports_zero_length_branch_count(capsys) -> None:
+    exit_code = main(["inspect", str(FIXTURES / "example_tree_zero_lengths.nwk"), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["zero_length_branch_count"] == 3
+    assert payload["data"]["zero_length_branch_count"] == 3
 
 
 def test_cli_diagnose_json_output(capsys) -> None:
