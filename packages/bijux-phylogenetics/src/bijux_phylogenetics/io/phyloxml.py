@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.io.biopython import load_biophylo
 
-def load_phyloxml(path: Path) -> None:
-    """Reserved phyloXML loader entrypoint."""
-    raise NotImplementedError(f"phyloXML parsing is not implemented yet for {path}")
 
+def load_phyloxml(path: Path):
+    """Load a phyloXML tree from disk."""
+    return load_biophylo(path, source_format="phyloxml")

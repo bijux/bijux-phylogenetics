@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+  <phylogeny rooted="true">
+    <name>example-tree</name>
+    <clade>
+      <clade>
+        <name>A</name>
+        <branch_length>0.1</branch_length>
+      </clade>
+      <clade>
+        <name>B</name>
+        <branch_length>0.2</branch_length>
+      </clade>
+      <clade>
+        <name>C</name>
+        <branch_length>0.3</branch_length>
+      </clade>
+    </clade>
+  </phylogeny>
+</phyloxml>

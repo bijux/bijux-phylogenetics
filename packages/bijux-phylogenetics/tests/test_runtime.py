@@ -12,6 +12,7 @@ from bijux_phylogenetics.errors import InvalidBranchLengthError, UnsupportedTree
 from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.newick import loads_newick
+from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
 
@@ -49,6 +50,13 @@ def test_nexus_loader_reads_translation_block_fixture() -> None:
     assert tree.source_format == "nexus"
     assert tree.tip_names == ["A", "B", "C", "D"]
     assert tree.tip_count == 4
+
+
+def test_phyloxml_loader_reads_annotated_tree_fixture() -> None:
+    tree = load_phyloxml(FIXTURES / "example_tree.phyloxml")
+    assert tree.source_format == "phyloxml"
+    assert tree.tip_names == ["A", "B", "C"]
+    assert tree.tip_count == 3
 
 
 def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -> None:
