@@ -20,6 +20,7 @@ from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
+from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EvidenceContractError, PhylogeneticsError
@@ -253,6 +254,7 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("left")
     compare.add_argument("right")
     compare.add_argument("third", nargs="?")
+    compare.add_argument("--out", type=Path)
     compare.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(compare)
 
@@ -588,6 +590,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "compare":
+            if args.left == "report":
+                if args.third is None:
+                    parser.exit(status=2, message="compare report requires two tree paths\n")
+                if args.out is None:
+                    parser.exit(status=2, message="compare report requires --out\n")
+                left_path = Path(args.right)
+                right_path = Path(args.third)
+                report = build_tree_comparison_report(left_path, right_path, out_path=args.out)
+                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path], outputs=[args.out])
+                _print_result(
+                    build_command_result(
+                        command="compare",
+                        inputs=[left_path, right_path],
+                        outputs=outputs,
+                        metrics={"shared_taxa": len(report.topology.shared_taxa)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.left == "support":
                 if args.third is None:
                     parser.exit(status=2, message="compare support requires two tree paths\n")

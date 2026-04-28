@@ -6,6 +6,7 @@ from pathlib import Path
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
+from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
@@ -443,6 +444,20 @@ def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> Non
     ]
 
 
+def test_build_tree_comparison_report_writes_html_with_checksums(tmp_path: Path) -> None:
+    output = tmp_path / "compare.html"
+    result = build_tree_comparison_report(
+        FIXTURES / "example_tree_support_left.nwk",
+        FIXTURES / "example_tree_support_right.nwk",
+        out_path=output,
+    )
+    html = output.read_text(encoding="utf-8")
+    assert result.output_path == output
+    assert "Bijux Tree Comparison Report" in html
+    assert "input-checksums" in html
+    assert "support-comparison" in html
+
+
 def test_diagnose_tree_path_combines_inspection_and_validation() -> None:
     report = diagnose_tree_path(FIXTURES / "example_tree.nwk")
     assert report.inspection.tip_count == 4
@@ -648,6 +663,27 @@ def test_cli_compare_branch_lengths_json_output(capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["metrics"]["shared_splits"] == 2
     assert payload["data"]["shared_splits"][0]["ratio"] == 2.0
+
+
+def test_cli_compare_report_json_output(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "compare.html"
+    exit_code = main(
+        [
+            "compare",
+            "report",
+            str(FIXTURES / "example_tree_support_left.nwk"),
+            str(FIXTURES / "example_tree_support_right.nwk"),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["outputs"] == [str(output)]
+    assert "Bijux Tree Comparison Report" in output.read_text(encoding="utf-8")
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:
