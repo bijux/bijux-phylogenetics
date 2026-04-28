@@ -275,11 +275,13 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.clade_count == 3
     assert report.has_branch_lengths is True
     assert report.is_binary is True
+    assert report.is_ultrametric is True
     assert report.zero_length_branch_count == 0
     assert report.max_depth == 2
     assert report.mean_depth == 2.0
     assert report.imbalance_summary == "balanced"
     assert report.cherry_count == 2
+    assert report.warnings == []
     assert report.taxa == ["A", "B", "C", "D"]
 
 
@@ -312,6 +314,10 @@ def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
     assert complete.branch_length_status == "complete"
     assert partial.branch_length_status == "partial"
     assert absent.branch_length_status == "absent"
+    assert partial.has_branch_lengths is True
+    assert partial.warnings == ["tree contains partial branch lengths"]
+    assert absent.has_branch_lengths is False
+    assert absent.warnings == ["tree contains no branch lengths"]
 
 
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
@@ -888,6 +894,7 @@ def test_cli_inspect_reports_zero_length_branch_count(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["zero_length_branch_count"] == 3
     assert payload["data"]["zero_length_branch_count"] == 3
+    assert payload["warnings"] == ["tree contains zero-length branches"]
 
 
 def test_cli_diagnose_json_output(capsys) -> None:

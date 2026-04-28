@@ -499,6 +499,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     command="inspect",
                     inputs=[args.tree],
                     outputs=outputs,
+                    warnings=report.warnings,
                     metrics={
                         "tip_count": report.tip_count,
                         "node_count": report.node_count,
@@ -508,6 +509,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "is_binary": report.is_binary,
                         "polytomy_count": report.polytomy_count,
                         "branch_length_status": report.branch_length_status,
+                        "is_ultrametric": report.is_ultrametric,
                         "zero_length_branch_count": report.zero_length_branch_count,
                         "cherry_count": report.cherry_count,
                     },

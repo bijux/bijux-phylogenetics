@@ -50,6 +50,7 @@ class TreeInspectionReport:
     polytomy_nodes: list[str]
     has_branch_lengths: bool
     branch_length_status: str
+    is_ultrametric: bool | None
     total_branch_length: float
     zero_length_branch_count: int
     min_root_to_tip: float | None
@@ -59,6 +60,7 @@ class TreeInspectionReport:
     imbalance_summary: str
     cherry_count: int
     taxa: list[str]
+    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -255,6 +257,17 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     polytomy_nodes = _polytomy_nodes(tree)
     branch_length_status = _branch_length_status(tree)
     depths = _leaf_depths(tree)
+    zero_length_branch_count = sum(1 for length in branch_lengths if length == 0)
+    ultrametric = _ultrametric(tree)
+    warnings: list[str] = []
+    if zero_length_branch_count:
+        warnings.append("tree contains zero-length branches")
+    if polytomy_nodes:
+        warnings.append("tree contains one or more polytomies")
+    if branch_length_status == "partial":
+        warnings.append("tree contains partial branch lengths")
+    if branch_length_status == "absent":
+        warnings.append("tree contains no branch lengths")
     return TreeInspectionReport(
         path=path,
         source_format=tree.source_format,
@@ -267,10 +280,11 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         is_binary=all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()),
         polytomy_count=len(polytomy_nodes),
         polytomy_nodes=polytomy_nodes,
-        has_branch_lengths=all(length is not None for length in branch_lengths) if branch_lengths else False,
+        has_branch_lengths=any(length is not None for length in branch_lengths),
         branch_length_status=branch_length_status,
+        is_ultrametric=ultrametric,
         total_branch_length=tree.total_branch_length(),
-        zero_length_branch_count=sum(1 for length in branch_lengths if length == 0),
+        zero_length_branch_count=zero_length_branch_count,
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,
         max_depth=_max_depth(tree),
@@ -278,6 +292,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         imbalance_summary=_imbalance_summary(tree),
         cherry_count=_cherry_count(tree),
         taxa=sorted(tree.tip_names),
+        warnings=warnings,
     )
 
 
