@@ -1634,11 +1634,13 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     text = output.read_text(encoding="utf-8")
     assert result.report_kind == "phylo-inputs"
     assert result.alignment is not None
+    assert result.alignment_quality is not None
     assert result.alignment_linkage is not None
     assert result.machine_manifest["sections"] == [
         "tree-validation",
         "tree-inspection",
         "alignment-summary",
+        "alignment-quality",
         "alignment-linkage",
     ]
     assert "Bijux Phylo Inputs Report" in text
