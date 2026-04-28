@@ -1424,6 +1424,15 @@ def test_cli_alignment_composition_json_output(capsys) -> None:
     }
 
 
+def test_cli_alignment_alphabet_json_output(capsys) -> None:
+    exit_code = main(["alignment", "alphabet", str(fixture("example_alignment_protein.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["alphabet"] == "protein"
+    assert payload["data"]["inferred_alphabet"] == "protein"
+
+
 def test_cli_alignment_invalid_json_output(capsys) -> None:
     exit_code = main(
         [

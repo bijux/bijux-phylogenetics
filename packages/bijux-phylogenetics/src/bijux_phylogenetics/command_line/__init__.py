@@ -17,7 +17,7 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
     diagnose_ultrametricity,
     write_root_to_tip_tsv,
 )
-from bijux_phylogenetics.io.fasta import build_alignment_quality_report, link_alignment_to_tree, summarise_fasta
+from bijux_phylogenetics.io.fasta import build_alignment_quality_report, infer_alignment_alphabet, link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
@@ -151,6 +151,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
             inputs.append(args.pruned_taxa_out)
         return inputs
     if args.command == "alignment":
+        if args.alignment_command == "alphabet":
+            return [args.alignment]
         if args.alignment_command == "inspect":
             return [args.alignment]
         if args.alignment_command == "composition":
@@ -287,6 +289,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     alignment = subparsers.add_parser(get_command_spec("alignment").name, help=get_command_spec("alignment").summary)
     alignment_subparsers = alignment.add_subparsers(dest="alignment_command", required=True)
+    alignment_alphabet = alignment_subparsers.add_parser("alphabet", help="Infer the alignment sequence alphabet.")
+    alignment_alphabet.add_argument("alignment", type=Path)
+    alignment_alphabet.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_alphabet)
     alignment_inspect = alignment_subparsers.add_parser("inspect", help="Inspect an aligned FASTA file.")
     alignment_inspect.add_argument("alignment", type=Path)
     alignment_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
@@ -639,6 +645,21 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "alignment":
+            if args.alignment_command == "alphabet":
+                records = load_fasta_alignment(args.alignment)
+                alphabet = infer_alignment_alphabet(records)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={"alphabet": alphabet, "sequence_count": len(records)},
+                        data={"alignment_path": args.alignment, "inferred_alphabet": alphabet},
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "inspect":
                 report = summarise_fasta(args.alignment)
                 outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
