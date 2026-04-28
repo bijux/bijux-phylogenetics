@@ -1621,6 +1621,21 @@ def test_render_tree_svg_can_render_circular_layout(tmp_path: Path) -> None:
     assert "text-anchor=" in svg
 
 
+def test_render_tree_svg_can_render_internal_support_values(tmp_path: Path) -> None:
+    output = tmp_path / "support.svg"
+    result = render_tree_svg(
+        fixture("example_tree_support_left.nwk"),
+        out_path=output,
+        layout="phylogram",
+        show_support_values=True,
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_support_count == 2
+    assert 'class="support-label"' in svg
+    assert ">95<" in svg
+    assert ">88<" in svg
+
+
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
     output = tmp_path / "annotated.svg"
     result = render_tree_svg(

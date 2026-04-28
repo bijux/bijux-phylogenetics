@@ -67,6 +67,15 @@ def _format_branch_value(value: float) -> str:
     return format(round(value, 15), ".15g")
 
 
+def _coerce_support_label(raw: str | None) -> str | None:
+    if raw is None or not raw.strip():
+        return None
+    try:
+        return _format_branch_value(float(raw))
+    except ValueError:
+        return None
+
+
 def _polar_point(center_x: float, center_y: float, radius: float, angle_radians: float) -> _Point:
     return _Point(
         x=center_x + radius * math.cos(angle_radians),
@@ -80,6 +89,7 @@ def render_tree_svg(
     out_path: Path,
     labels: dict[str, str] | None = None,
     layout: str = "cladogram",
+    show_support_values: bool = False,
 ) -> TreeRenderResult:
     """Render a deterministic SVG tree as a cladogram, phylogram, or circular tree."""
     if layout not in {"cladogram", "phylogram", "circular"}:
@@ -116,6 +126,7 @@ def render_tree_svg(
     texts: list[str] = []
     missing_labels: list[str] = []
     next_leaf_index = 0
+    rendered_support_count = 0
 
     def node_x(depth: int, distance: float) -> float:
         if layout == "phylogram" and max_distance > 0:
@@ -124,6 +135,7 @@ def render_tree_svg(
 
     def visit_rectangular(node: TreeNode, depth: int, distance: float) -> _Point:
         nonlocal next_leaf_index
+        nonlocal rendered_support_count
         branch_distance = distance + float(node.branch_length or 0.0)
         x = node_x(depth, branch_distance if node is not tree.root else distance)
         if node.is_leaf():
@@ -148,10 +160,17 @@ def render_tree_svg(
             lines.append(
                 f'<line x1="{x:.1f}" y1="{child_point.y:.1f}" x2="{child_point.x:.1f}" y2="{child_point.y:.1f}" class="branch"/>'
             )
+        support_label = _coerce_support_label(node.name) if show_support_values else None
+        if support_label is not None and node is not tree.root:
+            texts.append(
+                f'<text x="{x + 8:.1f}" y="{y - 8:.1f}" class="support-label">{escape(support_label)}</text>'
+            )
+            rendered_support_count += 1
         return _Point(x=x, y=y)
 
     def visit_circular() -> None:
         nonlocal next_leaf_index
+        nonlocal rendered_support_count
         center_x = width / 2
         center_y = height / 2
         radius = min(width, height) / 2 - 80
@@ -176,6 +195,7 @@ def render_tree_svg(
             return start_angle, end_angle
 
         def draw(node: TreeNode, depth: int, distance: float) -> tuple[float, float]:
+            nonlocal rendered_support_count
             branch_distance = distance + float(node.branch_length or 0.0)
             radial = radial_distance(depth, branch_distance if node is not tree.root else distance)
             if node.is_leaf():
@@ -209,6 +229,14 @@ def render_tree_svg(
                 lines.append(
                     f'<line x1="{radial_start.x:.1f}" y1="{radial_start.y:.1f}" x2="{radial_end.x:.1f}" y2="{radial_end.y:.1f}" class="branch"/>'
                 )
+            support_label = _coerce_support_label(node.name) if show_support_values else None
+            if support_label is not None and node is not tree.root:
+                node_angle = angle_cache[id(node)]
+                support_point = _polar_point(center_x, center_y, radial + 14, node_angle)
+                texts.append(
+                    f'<text x="{support_point.x:.1f}" y="{support_point.y + 4:.1f}" class="support-label">{escape(support_label)}</text>'
+                )
+                rendered_support_count += 1
             return angle_cache[id(node)], radial
 
         next_leaf_index = 0
@@ -240,6 +268,7 @@ def render_tree_svg(
     .branch {{ stroke: #0f172a; stroke-width: 2.2; stroke-linecap: round; fill: none; }}
     .scale-bar {{ stroke: #0f172a; stroke-width: 2; stroke-linecap: round; }}
     .tip-label {{ fill: #0f172a; font: 16px "Avenir Next", "Segoe UI", sans-serif; }}
+    .support-label {{ fill: #0f766e; font: 12px "Avenir Next", "Segoe UI", sans-serif; }}
     .scale-label {{ fill: #334155; text-anchor: middle; font: 13px "Avenir Next", "Segoe UI", sans-serif; }}
   </style>
   <rect x="1" y="1" width="{width - 2}" height="{height - 2}" class="panel" />
@@ -257,7 +286,7 @@ def render_tree_svg(
         tip_count=tree.tip_count,
         label_count=len(texts),
         has_scale_bar=has_scale_bar,
-        rendered_support_count=0,
+        rendered_support_count=rendered_support_count,
         rendered_categorical_trait_count=0,
         rendered_continuous_trait_count=0,
         rendered_metadata_strip_count=0,
