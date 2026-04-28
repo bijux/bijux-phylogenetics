@@ -21,7 +21,9 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-dependencies = []
+dependencies = [
+    "biopython>=1.87,<2.0",
+]
 
 [project.urls]
 Documentation = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"

@@ -31,6 +31,7 @@ def test_validate_tree_path_reports_expected_counts() -> None:
     assert report.internal_node_count == 3
     assert report.rooted is True
     assert report.ultrametric is True
+    assert report.source_format == "newick"
 
 
 def test_newick_loader_raises_invalid_branch_length_error() -> None:

@@ -1,95 +1,40 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError
+from bijux_phylogenetics.errors import InvalidBranchLengthError
+from bijux_phylogenetics.io.biopython import load_biophylo, loads_biophylo
+
+_BRANCH_LENGTH_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")
 
 
-class _NewickParser:
-    def __init__(self, text: str) -> None:
-        self.text = text.strip()
-        self.length = len(self.text)
-        self.index = 0
-
-    def parse(self) -> PhyloTree:
-        try:
-            node = self._parse_subtree()
-        except ValueError as error:
-            raise TreeParseError(str(error)) from error
-        self._skip_whitespace()
-        if self._peek() == ";":
-            self.index += 1
-        self._skip_whitespace()
-        if self.index != self.length:
-            raise TreeParseError(f"unexpected trailing content in Newick string at position {self.index}")
-        return PhyloTree(root=node, source_format="newick")
-
-    def _parse_subtree(self) -> TreeNode:
-        self._skip_whitespace()
-        if self._peek() == "(":
-            self.index += 1
-            children: list[TreeNode] = []
-            while True:
-                children.append(self._parse_subtree())
-                self._skip_whitespace()
-                token = self._peek()
-                if token == ",":
-                    self.index += 1
-                    continue
-                if token == ")":
-                    self.index += 1
-                    break
-                raise TreeParseError(f"expected ',' or ')' in Newick string at position {self.index}")
-            name = self._parse_label()
-            branch_length = self._parse_branch_length()
-            return TreeNode(name=name or None, branch_length=branch_length, children=children)
-
-        name = self._parse_label()
-        branch_length = self._parse_branch_length()
-        return TreeNode(name=name or None, branch_length=branch_length)
-
-    def _parse_label(self) -> str:
-        self._skip_whitespace()
-        start = self.index
-        while self.index < self.length and self.text[self.index] not in ",:();":
-            self.index += 1
-        return self.text[start:self.index].strip()
-
-    def _parse_branch_length(self) -> float | None:
-        self._skip_whitespace()
-        if self._peek() != ":":
-            return None
-        self.index += 1
-        self._skip_whitespace()
-        start = self.index
-        while self.index < self.length and self.text[self.index] not in ",();":
-            self.index += 1
-        raw_value = self.text[start:self.index].strip()
+def _validate_branch_lengths(text: str) -> None:
+    index = 0
+    while True:
+        index = text.find(":", index)
+        if index == -1:
+            return
+        cursor = index + 1
+        while cursor < len(text) and text[cursor].isspace():
+            cursor += 1
+        start = cursor
+        while cursor < len(text) and text[cursor] not in ",();":
+            cursor += 1
+        raw_value = text[start:cursor].strip()
         if not raw_value:
             raise InvalidBranchLengthError(f"missing branch length in Newick string at position {start}")
-        try:
-            return float(raw_value)
-        except ValueError as error:
-            raise InvalidBranchLengthError(f"invalid branch length '{raw_value}' in Newick string") from error
-
-    def _skip_whitespace(self) -> None:
-        while self.index < self.length and self.text[self.index].isspace():
-            self.index += 1
-
-    def _peek(self) -> str | None:
-        if self.index >= self.length:
-            return None
-        return self.text[self.index]
+        if not _BRANCH_LENGTH_PATTERN.fullmatch(raw_value):
+            raise InvalidBranchLengthError(f"invalid branch length '{raw_value}' in Newick string")
+        index = cursor
 
 
-def loads_newick(text: str) -> PhyloTree:
+def loads_newick(text: str):
     """Parse a Newick string into a minimal tree object."""
-    return _NewickParser(text).parse()
+    _validate_branch_lengths(text)
+    return loads_biophylo(text, source_format="newick")
 
 
-def load_newick(path: Path) -> PhyloTree:
+def load_newick(path: Path):
     """Load a Newick tree from disk."""
-    if not path.exists():
-        raise FileNotFoundError(f"tree file not found: {path}")
-    return loads_newick(path.read_text(encoding="utf-8"))
+    return load_biophylo(path, source_format="newick")
