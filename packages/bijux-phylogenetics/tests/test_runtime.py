@@ -10,6 +10,7 @@ from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import InvalidBranchLengthError, UnsupportedTreeFormatError
 from bijux_phylogenetics.identity import IDENTITY
+from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
@@ -41,6 +42,13 @@ def test_newick_loader_raises_invalid_branch_length_error() -> None:
         assert error.code == "invalid_branch_length_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected InvalidBranchLengthError")
+
+
+def test_nexus_loader_reads_translation_block_fixture() -> None:
+    tree = load_nexus(FIXTURES / "example_tree.nex")
+    assert tree.source_format == "nexus"
+    assert tree.tip_names == ["A", "B", "C", "D"]
+    assert tree.tip_count == 4
 
 
 def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -> None:
