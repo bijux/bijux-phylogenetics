@@ -82,6 +82,12 @@ def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:
         ("NCBI|123/45", "NCBI_123_45"),
         ("A.B-1", "A.B-1"),
     ]
+    assert tree.branch_lengths() == [0.1, 0.2, 0.3]
+    assert tree.terminal_branch_lengths() == [
+        ("Homo sapiens", 0.1),
+        ("NCBI|123/45", 0.2),
+        ("A.B-1", 0.3),
+    ]
     assert dumps_newick(tree) == "(A.B-1:0.3,'Homo sapiens':0.1,'NCBI|123/45':0.2);"
 
 

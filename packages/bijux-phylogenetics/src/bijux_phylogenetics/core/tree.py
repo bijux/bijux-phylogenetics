@@ -86,6 +86,16 @@ class PhyloTree:
     def total_branch_length(self) -> float:
         return sum(node.branch_length or 0.0 for node in self.iter_nodes() if node is not self.root)
 
+    def branch_lengths(self) -> list[float | None]:
+        return [node.branch_length for node in self.iter_nodes() if node is not self.root]
+
+    def terminal_branch_lengths(self) -> list[tuple[str, float | None]]:
+        return [
+            (node.name, node.branch_length)
+            for node in self.iter_leaves()
+            if node.name is not None
+        ]
+
     def root_to_tip_pairs(self) -> list[tuple[str | None, float | None]]:
         pairs: list[tuple[str | None, float | None]] = []
 
