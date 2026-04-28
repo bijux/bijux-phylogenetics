@@ -1,15 +1,28 @@
 from __future__ import annotations
 
+import json
 from html import escape
 from pathlib import Path
 
 
-def write_html_report(*, title: str, sections: list[tuple[str, str]], out_path: Path) -> Path:
+def _json_script(payload: dict[str, object]) -> str:
+    serialized = json.dumps(payload, indent=2, sort_keys=True).replace("</", "<\\/")
+    return f'<script id="bijux-report-manifest" type="application/json">{serialized}</script>'
+
+
+def write_html_report(
+    *,
+    title: str,
+    sections: list[tuple[str, str]],
+    out_path: Path,
+    embedded_json: dict[str, object] | None = None,
+) -> Path:
     """Write a simple standalone HTML report."""
     body = "\n".join(
         f"<section><h2>{escape(name)}</h2><pre>{escape(content)}</pre></section>"
         for name, content in sections
     )
+    manifest = _json_script(embedded_json) if embedded_json is not None else ""
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -69,6 +82,7 @@ def write_html_report(*, title: str, sections: list[tuple[str, str]], out_path: 
 <body>
   <main>
     <h1>{escape(title)}</h1>
+    {manifest}
     {body}
   </main>
 </body>
@@ -77,4 +91,3 @@ def write_html_report(*, title: str, sections: list[tuple[str, str]], out_path: 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     return out_path
-

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -28,11 +29,22 @@ class TableLinkageReport:
 @dataclass(slots=True)
 class ReportBuildResult:
     output_path: Path
+    report_kind: str
+    title: str
     validation: TreeValidationReport
     inspection: TreeInspectionReport
     metadata_linkage: TableLinkageReport | None
     traits_linkage: TableLinkageReport | None
     alignment: AlignmentSummary | None
+    machine_manifest: dict[str, object]
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def summarise_alignment_path(path: Path) -> AlignmentSummary:
@@ -77,6 +89,58 @@ def _section(name: str, payload: object) -> tuple[str, str]:
     return name, json.dumps(payload, default=str, indent=2, sort_keys=True)
 
 
+def _build_machine_manifest(
+    *,
+    report_kind: str,
+    title: str,
+    input_paths: list[Path],
+    sections: list[tuple[str, str]],
+    inspection: TreeInspectionReport,
+) -> dict[str, object]:
+    return {
+        "report_kind": report_kind,
+        "title": title,
+        "input_paths": [str(path) for path in input_paths],
+        "input_checksums": {str(path): _sha256(path) for path in input_paths},
+        "sections": [name for name, _ in sections],
+        "metrics": {
+            "tip_count": inspection.tip_count,
+            "node_count": inspection.node_count,
+            "clade_count": inspection.clade_count,
+        },
+    }
+
+
+def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
+    """Build the explicit single-tree report contract."""
+    validation = validate_tree_path(tree_path)
+    inspection = inspect_tree_path(tree_path)
+    title = "Bijux Tree Report"
+    sections = [
+        _section("tree-validation", asdict(validation)),
+        _section("tree-inspection", asdict(inspection)),
+    ]
+    machine_manifest = _build_machine_manifest(
+        report_kind="tree",
+        title=title,
+        input_paths=[tree_path],
+        sections=sections,
+        inspection=inspection,
+    )
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return ReportBuildResult(
+        output_path=out_path,
+        report_kind="tree",
+        title=title,
+        validation=validation,
+        inspection=inspection,
+        metadata_linkage=None,
+        traits_linkage=None,
+        alignment=None,
+        machine_manifest=machine_manifest,
+    )
+
+
 def render_phylogenetics_report(
     *,
     tree_path: Path,
@@ -103,12 +167,30 @@ def render_phylogenetics_report(
     if metadata_linkage is not None:
         sections.append(_section("metadata-linkage", asdict(metadata_linkage)))
 
-    write_html_report(title="Bijux Phylogenetics Report", sections=sections, out_path=out_path)
+    title = "Bijux Phylogenetics Report"
+    input_paths = [tree_path]
+    if alignment_path is not None:
+        input_paths.append(alignment_path)
+    if traits_path is not None:
+        input_paths.append(traits_path)
+    if metadata_path is not None:
+        input_paths.append(metadata_path)
+    machine_manifest = _build_machine_manifest(
+        report_kind="phylogenetics",
+        title=title,
+        input_paths=input_paths,
+        sections=sections,
+        inspection=inspection,
+    )
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
         output_path=out_path,
+        report_kind="phylogenetics",
+        title=title,
         validation=validation,
         inspection=inspection,
         metadata_linkage=metadata_linkage,
         traits_linkage=traits_linkage,
         alignment=alignment,
+        machine_manifest=machine_manifest,
     )

@@ -30,7 +30,12 @@ from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_m
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.svg import render_tree_svg
-from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report, write_annotation_report
+from bijux_phylogenetics.reports.service import (
+    annotate_tree_against_table,
+    render_phylogenetics_report,
+    render_tree_report,
+    write_annotation_report,
+)
 from bijux_phylogenetics.results import build_command_result, build_error_result
 
 
@@ -153,12 +158,14 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.run_root, args.out]
         return [args.bundle_root]
     if args.command == "report":
+        if args.report_command == "tree":
+            return [args.tree, args.out]
         inputs = [args.tree, args.out]
-        if args.alignment is not None:
+        if getattr(args, "alignment", None) is not None:
             inputs.append(args.alignment)
-        if args.traits is not None:
+        if getattr(args, "traits", None) is not None:
             inputs.append(args.traits)
-        if args.metadata is not None:
+        if getattr(args, "metadata", None) is not None:
             inputs.append(args.metadata)
         return inputs
     if args.command == "adapter":
@@ -309,13 +316,12 @@ def build_parser() -> argparse.ArgumentParser:
     _add_manifest_argument(evidence_validate)
 
     report = subparsers.add_parser(get_command_spec("report").name, help=get_command_spec("report").summary)
-    report.add_argument("--tree", required=True, type=Path)
-    report.add_argument("--alignment", type=Path)
-    report.add_argument("--traits", type=Path)
-    report.add_argument("--metadata", type=Path)
-    report.add_argument("--out", required=True, type=Path)
-    report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
-    _add_manifest_argument(report)
+    report_subparsers = report.add_subparsers(dest="report_command", required=True)
+    report_tree = report_subparsers.add_parser("tree", help="Render a deterministic single-tree HTML report.")
+    report_tree.add_argument("tree", type=Path)
+    report_tree.add_argument("--out", required=True, type=Path)
+    report_tree.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report_tree)
 
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
     adapter.add_argument("adapter_name")
@@ -776,36 +782,25 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "report":
-            result = render_phylogenetics_report(
-                tree_path=args.tree,
-                alignment_path=args.alignment,
-                traits_path=args.traits,
-                metadata_path=args.metadata,
-                out_path=args.out,
-            )
-            inputs = [args.tree]
-            if args.alignment is not None:
-                inputs.append(args.alignment)
-            if args.traits is not None:
-                inputs.append(args.traits)
-            if args.metadata is not None:
-                inputs.append(args.metadata)
-            outputs = _finalize_outputs(args, command="report", inputs=inputs, outputs=[result.output_path])
-            if args.json:
-                _print_result(
-                    build_command_result(
-                        command="report",
-                        inputs=inputs,
-                        outputs=outputs,
-                        warnings=result.validation.warnings,
-                        metrics={"tip_count": result.inspection.tip_count},
-                        data=result,
-                    ),
-                    json_output=True,
-                )
+            if args.report_command == "tree":
+                result = render_tree_report(tree_path=args.tree, out_path=args.out)
+                outputs = _finalize_outputs(args, command="report", inputs=[args.tree], outputs=[result.output_path])
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=[args.tree],
+                            outputs=outputs,
+                            warnings=result.validation.warnings + result.inspection.warnings,
+                            metrics={"tip_count": result.inspection.tip_count},
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
                 return 0
-            print(result.output_path)
-            return 0
+            raise NotImplementedError(f"unsupported report command: {args.report_command}")
         if args.command == "adapter":
             raise EngineUnavailableError(f"adapter is not available in this runtime: {args.adapter_name}")
     except PhylogeneticsError as error:

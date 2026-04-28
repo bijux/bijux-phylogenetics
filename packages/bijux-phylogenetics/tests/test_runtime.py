@@ -36,7 +36,7 @@ from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.render.svg import render_tree_svg
-from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
+from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report, render_tree_report
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -843,6 +843,17 @@ def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:
     assert "Bijux Phylogenetics Report" in output.read_text(encoding="utf-8")
 
 
+def test_render_tree_report_writes_embedded_manifest(tmp_path: Path) -> None:
+    output = tmp_path / "tree-report.html"
+    result = render_tree_report(tree_path=FIXTURES / "example_tree.nwk", out_path=output)
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "tree"
+    assert result.machine_manifest["report_kind"] == "tree"
+    assert result.machine_manifest["input_paths"] == [str(FIXTURES / "example_tree.nwk")]
+    assert 'id="bijux-report-manifest"' in text
+    assert "Bijux Tree Report" in text
+
+
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
     run_root = tmp_path / "run"
     run_root.mkdir()
@@ -1028,14 +1039,8 @@ def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> 
     exit_code = main(
         [
             "report",
-            "--tree",
+            "tree",
             str(FIXTURES / "example_tree.nwk"),
-            "--alignment",
-            str(FIXTURES / "example_alignment.fasta"),
-            "--traits",
-            str(FIXTURES / "example_traits.tsv"),
-            "--metadata",
-            str(FIXTURES / "example_traits.tsv"),
             "--out",
             str(output),
             "--json",
@@ -1047,6 +1052,7 @@ def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> 
     assert payload["status"] == "ok"
     assert payload["command"] == "report"
     assert payload["outputs"] == [str(output)]
+    assert payload["data"]["report_kind"] == "tree"
 
 
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
