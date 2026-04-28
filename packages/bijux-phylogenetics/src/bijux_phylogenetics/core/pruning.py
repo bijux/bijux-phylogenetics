@@ -24,6 +24,18 @@ class TreePruningReport:
 
 
 @dataclass(slots=True)
+class RequestedTaxaPruningReport:
+    """Explicit record of tree pruning against a caller-provided taxon list."""
+
+    tree_path: Path
+    original_tip_count: int
+    requested_taxa: list[str]
+    kept_taxa: list[str]
+    removed_taxa: list[str]
+    absent_requested_taxa: list[str]
+
+
+@dataclass(slots=True)
 class AlignmentPruningReport:
     """Explicit record of alignment pruning against a tree tip set."""
 
@@ -98,6 +110,43 @@ def prune_tree_to_taxa(
         original_tip_count=tree.tip_count,
         kept_taxa=retained_tips,
         removed_taxa=removed_tips,
+    )
+
+
+def prune_tree_to_requested_taxa(
+    tree_path: Path,
+    requested_taxa: list[str],
+) -> tuple[PhyloTree, RequestedTaxaPruningReport]:
+    """Prune a tree to an explicit requested taxon list."""
+    tree = load_tree(tree_path)
+    requested_set = set(requested_taxa)
+    pruned_tree, retained_tips, removed_tips = _prune_tree_against_taxa(tree, requested_set)
+    return pruned_tree, RequestedTaxaPruningReport(
+        tree_path=tree_path,
+        original_tip_count=tree.tip_count,
+        requested_taxa=sorted(requested_set),
+        kept_taxa=retained_tips,
+        removed_taxa=removed_tips,
+        absent_requested_taxa=sorted(requested_set - set(tree.tip_names)),
+    )
+
+
+def drop_tree_taxa(
+    tree_path: Path,
+    excluded_taxa: list[str],
+) -> tuple[PhyloTree, RequestedTaxaPruningReport]:
+    """Drop a caller-provided exclusion list from a tree."""
+    tree = load_tree(tree_path)
+    excluded_set = set(excluded_taxa)
+    retained_taxa = [name for name in tree.tip_names if name not in excluded_set]
+    pruned_tree, retained_tips, removed_tips = _prune_tree_against_taxa(tree, set(retained_taxa))
+    return pruned_tree, RequestedTaxaPruningReport(
+        tree_path=tree_path,
+        original_tip_count=tree.tip_count,
+        requested_taxa=sorted(excluded_set),
+        kept_taxa=retained_tips,
+        removed_taxa=removed_tips,
+        absent_requested_taxa=sorted(excluded_set - set(tree.tip_names)),
     )
 
 
