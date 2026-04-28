@@ -35,6 +35,10 @@ class MetadataJoinError(PhylogeneticsError):
     code = "metadata_join_error"
 
 
+class InvalidAlignmentError(PhylogeneticsError):
+    code = "invalid_alignment_error"
+
+
 class AlignmentTaxonMismatchError(PhylogeneticsError):
     code = "alignment_taxon_mismatch_error"
 

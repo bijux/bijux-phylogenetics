@@ -6,6 +6,7 @@ from pathlib import Path
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
+from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
@@ -14,6 +15,7 @@ from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import (
     DuplicateTaxonError,
     InvalidBranchLengthError,
+    InvalidAlignmentError,
     MetadataJoinError,
     UnnamedTipError,
     UnsupportedTreeFormatError,
@@ -23,6 +25,7 @@ from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.io.fasta import summarise_fasta
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
 
@@ -110,6 +113,27 @@ def test_prune_tree_to_taxa_writes_expected_tip_set() -> None:
     assert dumps_newick(tree) == "((A:0.1,B:0.1):0.2,C:0.3);"
     assert report.kept_taxa == ["A", "B", "C"]
     assert report.removed_taxa == ["D"]
+
+
+def test_alignment_inspect_reports_core_diagnostics() -> None:
+    report = summarise_fasta(FIXTURES / "example_alignment.fasta")
+    assert isinstance(report, AlignmentSummary)
+    assert report.sequence_count == 4
+    assert report.alignment_length == 8
+    assert report.ids == ["A", "B", "C", "D"]
+    assert report.missing_data_fraction == 0.0
+    assert report.gap_fraction == 0.0
+    assert report.variable_site_count == 2
+    assert report.parsimony_informative_site_count == 2
+
+
+def test_alignment_inspect_rejects_unequal_lengths() -> None:
+    try:
+        summarise_fasta(FIXTURES / "example_alignment_invalid_lengths.fasta")
+    except InvalidAlignmentError as error:
+        assert error.code == "invalid_alignment_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected InvalidAlignmentError")
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
@@ -412,6 +436,17 @@ def test_cli_prune_writes_tree_and_pruned_taxa_report(tmp_path: Path, capsys) ->
     assert (tmp_path / "pruned_taxa.tsv").read_text(encoding="utf-8") == "taxon\nD\n"
 
 
+def test_cli_alignment_inspect_json_output(capsys) -> None:
+    exit_code = main(["alignment", "inspect", str(FIXTURES / "example_alignment.fasta"), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["command"] == "alignment"
+    assert payload["metrics"]["alignment_length"] == 8
+    assert payload["data"]["variable_site_count"] == 2
+
+
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:
     output = tmp_path / "report.html"
     result = render_phylogenetics_report(
@@ -458,6 +493,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "metadata",
         "traits",
         "prune",
+        "alignment",
         "inspect",
         "validate",
         "normalize",

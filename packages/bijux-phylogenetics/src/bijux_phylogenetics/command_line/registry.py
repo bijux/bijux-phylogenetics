@@ -37,6 +37,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("pruned-tree", "pruned-taxa"),
     ),
     CommandSpec(
+        name="alignment",
+        domain="comparative-inputs",
+        summary="Inspect and link FASTA alignments against tree taxa.",
+        inputs=("alignment",),
+        outputs=("alignment-report",),
+    ),
+    CommandSpec(
         name="inspect",
         domain="tree-io",
         summary="Inspect a tree and report high-level summary metrics.",
