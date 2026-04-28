@@ -1433,6 +1433,15 @@ def test_cli_alignment_alphabet_json_output(capsys) -> None:
     assert payload["data"]["inferred_alphabet"] == "protein"
 
 
+def test_cli_alignment_gc_json_output(capsys) -> None:
+    exit_code = main(["alignment", "gc", str(fixture("example_alignment.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["data"]["whole_alignment_gc_content"] == 0.5
+    assert payload["data"]["per_sequence_gc_content"][1] == {"gc_fraction": 0.375, "identifier": "B"}
+
+
 def test_cli_alignment_invalid_json_output(capsys) -> None:
     exit_code = main(
         [
