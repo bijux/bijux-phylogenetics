@@ -89,6 +89,13 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.taxa == ["A", "B", "C", "D"]
 
 
+def test_inspect_tree_path_distinguishes_rooted_and_unrooted_fixtures() -> None:
+    rooted = inspect_tree_path(FIXTURES / "example_tree.nwk")
+    unrooted = inspect_tree_path(FIXTURES / "example_tree_unrooted.nwk")
+    assert rooted.rooted is True
+    assert unrooted.rooted is False
+
+
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
     try:
         loads_newick("((A:abc,B:0.2):0.3,C:0.4);")
