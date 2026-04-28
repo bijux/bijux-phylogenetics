@@ -65,6 +65,17 @@ def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
     return records
 
 
+def write_fasta_alignment(path: Path, records: list[AlignmentRecord]) -> Path:
+    """Write FASTA records using a deterministic single-line sequence layout."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines: list[str] = []
+    for record in records:
+        lines.append(f">{record.identifier}")
+        lines.append(record.sequence)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
 def summarise_fasta(path: Path) -> AlignmentSummary:
     """Summarise a FASTA alignment without loading a heavy dependency."""
     records = load_fasta_alignment(path)

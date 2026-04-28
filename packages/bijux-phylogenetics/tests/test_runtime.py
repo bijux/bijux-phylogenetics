@@ -35,10 +35,11 @@ from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
-from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
+from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
     detect_sequences_with_excessive_missing_data,
     detect_sites_with_excessive_missing_data,
+    write_fasta_alignment,
 )
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.reports.service import (
@@ -240,6 +241,19 @@ def test_alignment_link_strict_mode_rejects_mismatch() -> None:
         assert error.code == "alignment_taxon_mismatch_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected AlignmentTaxonMismatchError")
+
+
+def test_write_fasta_alignment_preserves_record_order_and_sequences(tmp_path: Path) -> None:
+    records = load_fasta_alignment(fixture("example_alignment.fasta"))
+    output = tmp_path / "alignment.fasta"
+    write_fasta_alignment(output, records)
+    assert output.read_text(encoding="utf-8") == (
+        ">A\nACTGACTG\n"
+        ">B\nACTGACTA\n"
+        ">C\nACTGACGG\n"
+        ">D\nACTGACGA\n"
+    )
+    assert load_fasta_alignment(output) == records
 
 
 def test_alignment_detects_sequences_with_excessive_missing_data() -> None:
