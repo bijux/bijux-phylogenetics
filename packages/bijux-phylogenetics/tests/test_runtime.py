@@ -1113,6 +1113,12 @@ def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
     assert report.annotated_taxa == ["A", "B", "C"]
     assert report.missing_from_table == ["D"]
     assert report.extra_table_entries == ["E"]
+    assert [(row.taxon, row.matched) for row in report.joined_rows] == [
+        ("A", True),
+        ("B", True),
+        ("C", True),
+        ("D", False),
+    ]
 
 
 def test_cli_metadata_inspect_json_output(capsys) -> None:

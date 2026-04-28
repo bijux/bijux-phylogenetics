@@ -7,7 +7,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentSummary
 from bijux_phylogenetics.core.dataset import DatasetReadinessSummary, summarize_dataset_readiness
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_taxa, load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
@@ -25,6 +25,7 @@ class TableLinkageReport:
     extra_table_entries: list[str]
     index_column: str
     annotated_taxa: list[str]
+    joined_rows: list[MetadataJoinRow]
 
 
 @dataclass(slots=True)
@@ -62,22 +63,21 @@ def annotate_tree_against_table(
     taxon_column: str | None = None,
 ) -> TableLinkageReport:
     """Summarise how a TSV table links against tree tips."""
+    tree = _load_tree(tree_path)
     table = load_taxon_table(table_path, taxon_column=taxon_column)
-    full_tip_names = set(_load_tree(tree_path).tip_names)
-    missing = sorted(full_tip_names - table.indexed_values)
-    extras = sorted(table.indexed_values - full_tip_names)
-    annotated_taxa = sorted(full_tip_names & table.indexed_values)
-    linked = len(annotated_taxa)
+    join = join_table_to_taxa(tree.tip_names, table_path, taxon_column=taxon_column)
+    annotated_taxa = [row.taxon for row in join.joined_rows if row.matched]
     return TableLinkageReport(
         tree_path=tree_path,
         table_path=table_path,
-        tree_taxa=len(full_tip_names),
+        tree_taxa=tree.tip_count,
         table_rows=table.row_count,
-        linked_taxa=linked,
-        missing_from_table=missing,
-        extra_table_entries=extras,
+        linked_taxa=len(annotated_taxa),
+        missing_from_table=join.missing_from_metadata,
+        extra_table_entries=join.extra_metadata_taxa,
         index_column=table.index_column,
         annotated_taxa=annotated_taxa,
+        joined_rows=join.joined_rows,
     )
 
 
