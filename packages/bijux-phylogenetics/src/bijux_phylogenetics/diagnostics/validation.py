@@ -21,6 +21,7 @@ class TreeValidationReport:
     zero_length_branches: int
     negative_branch_lengths: int
     polytomy_count: int
+    polytomy_nodes: list[str]
     missing_taxa: int
     duplicate_taxa: list[str]
     ultrametric: bool | None
@@ -38,6 +39,8 @@ class TreeInspectionReport:
     clade_count: int
     rooted: bool
     is_binary: bool
+    polytomy_count: int
+    polytomy_nodes: list[str]
     has_branch_lengths: bool
     total_branch_length: float
     min_root_to_tip: float | None
@@ -52,6 +55,23 @@ def _load_tree(path: Path, *, source_format: str | None = None) -> PhyloTree:
 
 def _count_polytomies(tree: PhyloTree) -> int:
     return sum(1 for node in tree.iter_nodes() if not node.is_leaf() and len(node.children) > 2)
+
+
+def _polytomy_nodes(tree: PhyloTree) -> list[str]:
+    nodes: list[str] = []
+
+    def visit(node) -> list[str]:
+        if node.is_leaf():
+            return [node.name] if node.name is not None else []
+        taxa: list[str] = []
+        for child in node.children:
+            taxa.extend(visit(child))
+        if len(node.children) > 2:
+            nodes.append("|".join(sorted(taxa)))
+        return taxa
+
+    visit(tree.root)
+    return nodes
 
 
 def _edge_count(tree: PhyloTree) -> int:
@@ -112,6 +132,7 @@ def validate_tree_path(
     if missing_taxa and strict:
         raise UnnamedTipError(f"tree contains {missing_taxa} unnamed tip labels")
     ultrametric = _ultrametric(tree)
+    polytomy_nodes = _polytomy_nodes(tree)
     warnings: list[str] = []
     if duplicate_taxa:
         warnings.append("tree contains duplicate tip labels")
@@ -119,7 +140,7 @@ def validate_tree_path(
         warnings.append("tree contains unnamed tips")
     if negative_count:
         warnings.append("tree contains negative branch lengths")
-    if _count_polytomies(tree):
+    if polytomy_nodes:
         warnings.append("tree contains one or more polytomies")
     return TreeValidationReport(
         path=path,
@@ -131,7 +152,8 @@ def validate_tree_path(
         total_branch_length=tree.total_branch_length(),
         zero_length_branches=zero_count,
         negative_branch_lengths=negative_count,
-        polytomy_count=_count_polytomies(tree),
+        polytomy_count=len(polytomy_nodes),
+        polytomy_nodes=polytomy_nodes,
         missing_taxa=missing_taxa,
         duplicate_taxa=duplicate_taxa,
         ultrametric=ultrametric,
@@ -144,6 +166,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     tree = _load_tree(path, source_format=source_format)
     lengths = [length for length in tree.root_to_tip_lengths() if length is not None]
     branch_lengths = [node.branch_length for node in tree.iter_nodes() if node is not tree.root]
+    polytomy_nodes = _polytomy_nodes(tree)
     return TreeInspectionReport(
         path=path,
         source_format=tree.source_format,
@@ -154,6 +177,8 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         clade_count=tree.internal_node_count,
         rooted=len(tree.root.children) == 2,
         is_binary=all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()),
+        polytomy_count=len(polytomy_nodes),
+        polytomy_nodes=polytomy_nodes,
         has_branch_lengths=all(length is not None for length in branch_lengths) if branch_lengths else False,
         total_branch_length=tree.total_branch_length(),
         min_root_to_tip=min(lengths) if lengths else None,

@@ -218,6 +218,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "edge_count": report.edge_count,
                         "clade_count": report.clade_count,
                         "is_binary": report.is_binary,
+                        "polytomy_count": report.polytomy_count,
                     },
                     data=report,
                 ),

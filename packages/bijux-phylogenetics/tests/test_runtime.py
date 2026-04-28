@@ -96,6 +96,13 @@ def test_inspect_tree_path_distinguishes_rooted_and_unrooted_fixtures() -> None:
     assert unrooted.rooted is False
 
 
+def test_inspect_tree_path_reports_exact_polytomy_nodes() -> None:
+    report = inspect_tree_path(FIXTURES / "example_tree_polytomy.nwk")
+    assert report.is_binary is False
+    assert report.polytomy_count == 1
+    assert report.polytomy_nodes == ["A|B|C"]
+
+
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
     try:
         loads_newick("((A:abc,B:0.2):0.3,C:0.4);")
