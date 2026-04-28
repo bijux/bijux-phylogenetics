@@ -43,6 +43,7 @@ bijux-phylogenetics --help
 - compare shared clades, clade changes, and shared-split branch lengths between trees
 - validate trait and metadata linkage against tree tips
 - export joined metadata rows and missing trait-value diagnostics
+- inspect alignment alphabets, composition, GC content, duplicates, and composition outliers
 - produce HTML reports and file-level evidence manifests
 
 ## Read this next
