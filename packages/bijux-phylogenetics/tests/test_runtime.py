@@ -1595,8 +1595,20 @@ def test_render_tree_svg_writes_static_tree_image(tmp_path: Path) -> None:
     svg = output.read_text(encoding="utf-8")
     assert result.output_path == output
     assert result.format == "svg"
+    assert result.layout == "cladogram"
+    assert result.has_scale_bar is False
     assert "<svg" in svg
     assert "A" in svg and "D" in svg
+
+
+def test_render_tree_svg_can_render_phylogram_with_scale_bar(tmp_path: Path) -> None:
+    output = tmp_path / "phylogram.svg"
+    result = render_tree_svg(fixture("example_tree.nwk"), out_path=output, layout="phylogram")
+    svg = output.read_text(encoding="utf-8")
+    assert result.layout == "phylogram"
+    assert result.has_scale_bar is True
+    assert 'class="scale-bar"' in svg
+    assert 'class="scale-label"' in svg
 
 
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
