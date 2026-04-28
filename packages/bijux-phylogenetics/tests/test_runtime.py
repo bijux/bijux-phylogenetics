@@ -5,7 +5,15 @@ from pathlib import Path
 
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
-from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
+from bijux_phylogenetics.compare.topology import (
+    compare_branch_lengths,
+    compare_clade_sets,
+    compare_support_values,
+    compare_tree_paths,
+    detect_clade_changes,
+    prune_trees_to_shared_taxa,
+    write_tree_comparison_table,
+)
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.dataset import summarize_dataset_readiness
@@ -950,6 +958,60 @@ def test_compare_tree_paths_reports_nonzero_distance() -> None:
     assert report.robinson_foulds_distance > 0
 
 
+def test_prune_trees_to_shared_taxa_keeps_identical_tip_sets() -> None:
+    left, right, report = prune_trees_to_shared_taxa(
+        fixture("example_tree.nwk"),
+        fixture("example_tree_overlap.nwk"),
+    )
+    assert left.tip_names == ["A", "B", "C"]
+    assert right.tip_names == ["A", "B", "C"]
+    assert report.shared_taxa == ["A", "B", "C"]
+    assert report.left_only_taxa == ["D"]
+    assert report.right_only_taxa == ["E"]
+
+
+def test_compare_tree_paths_reports_identical_topology_boolean() -> None:
+    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree.nwk"))
+    assert report.topology_equal is True
+    assert report.same_unrooted_topology is True
+    assert report.same_taxa_different_rooting is False
+    assert report.same_topology_different_branch_lengths is False
+    assert report.robinson_foulds_distance == 0
+
+
+def test_compare_tree_paths_reports_different_topology_boolean() -> None:
+    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree_topology_diff.nwk"))
+    assert report.topology_equal is False
+    assert report.same_unrooted_topology is False
+    assert report.same_taxa_different_rooting is False
+
+
+def test_compare_clade_sets_reports_shared_and_unique_clades() -> None:
+    report = compare_clade_sets(fixture("example_tree.nwk"), fixture("example_tree_alt.nwk"))
+    assert report.shared_clades == ["A|B"]
+    assert report.left_only_clades == ["C|D"]
+    assert report.right_only_clades == ["A|B|C"]
+
+
+def test_compare_tree_paths_detects_same_topology_with_different_branch_lengths() -> None:
+    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk"))
+    assert report.topology_equal is True
+    assert report.same_topology_different_branch_lengths is True
+
+
+def test_compare_tree_paths_detects_same_taxa_with_different_rooting() -> None:
+    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree_rooting_diff.nwk"))
+    assert report.topology_equal is False
+    assert report.same_unrooted_topology is True
+    assert report.same_taxa_different_rooting is True
+
+
+def test_detect_clade_changes_reports_lost_and_gained_sets() -> None:
+    report = detect_clade_changes(fixture("example_tree.nwk"), fixture("example_tree_alt.nwk"))
+    assert report.lost_clades == ["C|D"]
+    assert report.gained_clades == ["A|B|C"]
+
+
 def test_compare_support_values_pairs_shared_clades() -> None:
     report = compare_support_values(fixture("example_tree_support_left.nwk"), fixture("example_tree_support_right.nwk"))
     assert report.shared_taxa == ["A", "B", "C", "D"]
@@ -970,6 +1032,17 @@ def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> Non
         ("A|B", 0.2, None, None, None),
         ("C|D", 0.1, 0.2, 0.1, 2.0),
     ]
+
+
+def test_write_tree_comparison_table_writes_one_row_per_compared_split(tmp_path: Path) -> None:
+    output = tmp_path / "comparison.tsv"
+    write_tree_comparison_table(output, fixture("example_tree.nwk"), fixture("example_tree_alt.nwk"))
+    assert output.read_text(encoding="utf-8") == (
+        "split_id\tcomparison_status\tshared_clade\tleft_support\tright_support\tleft_length\tright_length\tlength_delta\tlength_ratio\n"
+        "A|B\tshared\ttrue\t\t\t0.2\t0.1\t-0.1\t0.5\n"
+        "A|B|C\tright_only\tfalse\t\t\t\t\t\t\n"
+        "C|D\tleft_only\tfalse\t\t\t\t\t\t\n"
+    )
 
 
 def test_build_tree_comparison_report_writes_html_with_checksums(tmp_path: Path) -> None:
