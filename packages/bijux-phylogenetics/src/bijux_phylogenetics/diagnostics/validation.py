@@ -32,8 +32,10 @@ class TreeInspectionReport:
     path: Path
     source_format: str
     tip_count: int
+    node_count: int
     internal_node_count: int
     edge_count: int
+    clade_count: int
     rooted: bool
     is_binary: bool
     has_branch_lengths: bool
@@ -54,6 +56,10 @@ def _count_polytomies(tree: PhyloTree) -> int:
 
 def _edge_count(tree: PhyloTree) -> int:
     return sum(1 for node in tree.iter_nodes() if node is not tree.root)
+
+
+def _node_count(tree: PhyloTree) -> int:
+    return sum(1 for _ in tree.iter_nodes())
 
 
 def _branch_length_health(tree: PhyloTree) -> tuple[bool, int, int]:
@@ -142,8 +148,10 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         path=path,
         source_format=tree.source_format,
         tip_count=tree.tip_count,
+        node_count=_node_count(tree),
         internal_node_count=tree.internal_node_count,
         edge_count=_edge_count(tree),
+        clade_count=tree.internal_node_count,
         rooted=len(tree.root.children) == 2,
         is_binary=all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()),
         has_branch_lengths=all(length is not None for length in branch_lengths) if branch_lengths else False,

@@ -213,8 +213,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     inputs=[args.tree],
                     metrics={
                         "tip_count": report.tip_count,
+                        "node_count": report.node_count,
                         "internal_node_count": report.internal_node_count,
                         "edge_count": report.edge_count,
+                        "clade_count": report.clade_count,
                         "is_binary": report.is_binary,
                     },
                     data=report,

@@ -79,8 +79,10 @@ def test_validate_tree_path_rejects_unnamed_tips_in_strict_mode() -> None:
 def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     report = inspect_tree_path(FIXTURES / "example_tree.nwk")
     assert report.tip_count == 4
+    assert report.node_count == 7
     assert report.internal_node_count == 3
     assert report.edge_count == 6
+    assert report.clade_count == 3
     assert report.has_branch_lengths is True
     assert report.is_binary is True
     assert report.max_depth == 2
@@ -162,7 +164,9 @@ def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["data"]["source_format"] == "nexus"
+    assert payload["data"]["node_count"] == 7
     assert payload["data"]["edge_count"] == 6
+    assert payload["data"]["clade_count"] == 3
     assert payload["data"]["taxa"] == ["A", "B", "C", "D"]
     assert payload["metrics"]["tip_count"] == 4
 
