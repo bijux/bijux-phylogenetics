@@ -469,6 +469,19 @@ def test_render_tree_svg_writes_static_tree_image(tmp_path: Path) -> None:
     assert "A" in svg and "D" in svg
 
 
+def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
+    output = tmp_path / "annotated.svg"
+    result = render_tree_svg(
+        FIXTURES / "example_tree.nwk",
+        out_path=output,
+        labels={"A": "Alpha species", "B": "Beta species", "C": "Gamma species"},
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert "Alpha species" in svg
+    assert "Beta species" in svg
+    assert result.missing_metadata_labels == ["D"]
+
+
 def test_diagnose_tree_path_combines_inspection_and_validation() -> None:
     report = diagnose_tree_path(FIXTURES / "example_tree.nwk")
     assert report.inspection.tip_count == 4
@@ -706,6 +719,49 @@ def test_cli_render_writes_svg_output(tmp_path: Path, capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["outputs"] == [str(output)]
     assert "<svg" in output.read_text(encoding="utf-8")
+
+
+def test_cli_render_with_metadata_labels_reports_missing_taxa(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "annotated.svg"
+    exit_code = main(
+        [
+            "render",
+            str(FIXTURES / "example_tree.nwk"),
+            "--metadata",
+            str(FIXTURES / "example_metadata.tsv"),
+            "--label-column",
+            "species",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["data"]["missing_metadata_labels"] == []
+    assert "Alpha species" in output.read_text(encoding="utf-8")
+
+
+def test_cli_render_with_partial_metadata_warns_for_missing_labels(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "partial.svg"
+    exit_code = main(
+        [
+            "render",
+            str(FIXTURES / "example_tree.nwk"),
+            "--metadata",
+            str(FIXTURES / "example_traits.tsv"),
+            "--label-column",
+            "value",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["warnings"] == ["D"]
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:

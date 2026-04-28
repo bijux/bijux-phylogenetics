@@ -10,6 +10,7 @@ from typing import Any
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
+from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.diagnostics.root_to_tip import (
     compute_root_to_tip_distances,
     diagnose_ultrametricity,
@@ -23,7 +24,7 @@ from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
-from bijux_phylogenetics.errors import EvidenceContractError, PhylogeneticsError
+from bijux_phylogenetics.errors import EvidenceContractError, MetadataJoinError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -278,6 +279,8 @@ def build_parser() -> argparse.ArgumentParser:
     render = subparsers.add_parser(get_command_spec("render").name, help=get_command_spec("render").summary)
     render.add_argument("tree", type=Path)
     render.add_argument("--metadata", type=Path)
+    render.add_argument("--taxon-column")
+    render.add_argument("--label-column")
     render.add_argument("--out", required=True, type=Path)
     render.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(render)
@@ -687,7 +690,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "render":
-            result = render_tree_svg(args.tree, out_path=args.out)
+            labels: dict[str, str] | None = None
+            if args.metadata is not None and args.label_column is not None:
+                table = load_taxon_table(args.metadata, taxon_column=args.taxon_column)
+                if args.label_column not in table.columns:
+                    raise MetadataJoinError(f"metadata table does not contain label column '{args.label_column}'")
+                labels = {row[table.taxon_column]: row[args.label_column] for row in table.rows if row[args.label_column]}
+            result = render_tree_svg(args.tree, out_path=args.out, labels=labels)
             inputs = [args.tree]
             if args.metadata is not None:
                 inputs.append(args.metadata)
