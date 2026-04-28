@@ -597,7 +597,6 @@ def translate_coding_alignment(path: Path) -> tuple[list[AlignmentRecord], Trans
 def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
     """Generate a higher-level alignment quality report from composition and identity diagnostics."""
     summary = summarise_fasta(path)
-    records = load_fasta_alignment(path)
     inferred_alphabet = summary.inferred_alphabet
     invalid_characters = (
         []
