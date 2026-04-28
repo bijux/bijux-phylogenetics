@@ -55,16 +55,7 @@ def _prune_node(node: TreeNode, keep_taxa: set[str]) -> TreeNode | None:
     return pruned_node
 
 
-def prune_tree_to_taxa(
-    tree_path: Path,
-    keep_from_path: Path,
-    *,
-    taxon_column: str | None = None,
-) -> tuple[PhyloTree, TreePruningReport]:
-    """Prune a tree to the taxa present in a metadata or traits table."""
-    tree = load_tree(tree_path)
-    keep_table = load_taxon_table(keep_from_path, taxon_column=taxon_column)
-    keep_taxa = set(keep_table.taxa)
+def _prune_tree_against_taxa(tree: PhyloTree, keep_taxa: set[str]) -> tuple[PhyloTree, list[str], list[str]]:
     retained_tips = sorted(name for name in tree.tip_names if name in keep_taxa)
     removed_tips = sorted(name for name in tree.tip_names if name not in keep_taxa)
 
@@ -74,6 +65,19 @@ def prune_tree_to_taxa(
 
     pruned_root.branch_length = None
     pruned_tree = PhyloTree(root=pruned_root, source_format=tree.source_format)
+    return pruned_tree, retained_tips, removed_tips
+
+
+def prune_tree_to_taxa(
+    tree_path: Path,
+    keep_from_path: Path,
+    *,
+    taxon_column: str | None = None,
+) -> tuple[PhyloTree, TreePruningReport]:
+    """Prune a tree to the taxa present in a metadata or traits table."""
+    tree = load_tree(tree_path)
+    keep_table = load_taxon_table(keep_from_path, taxon_column=taxon_column)
+    pruned_tree, retained_tips, removed_tips = _prune_tree_against_taxa(tree, set(keep_table.taxa))
     return pruned_tree, TreePruningReport(
         tree_path=tree_path,
         keep_from_path=keep_from_path,
