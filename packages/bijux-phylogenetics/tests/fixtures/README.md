@@ -1,0 +1,11 @@
+# Test Fixtures
+
+This fixture corpus is organized by durable surface:
+
+- `trees/` for tree-format inputs
+- `alignments/` for aligned FASTA inputs
+- `metadata/` for metadata and trait tables
+- `expected/` for checked-in expected outputs and goldens
+
+Tests should resolve files through the local `fixture(...)` helper rather than
+assuming a flat directory layout.
