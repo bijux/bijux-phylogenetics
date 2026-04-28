@@ -26,6 +26,17 @@
 inspection, validation, comparison, metadata linkage, evidence capture, and
 publishable reporting.
 
+## Repository Layout
+
+The repository keeps these durable top-level surfaces:
+
+- `packages/` for published runtime, alias, and maintainer packages
+- `docs/` for documentation source
+- `examples/` for tracked workflow examples
+- `datasets/` for durable repository-owned reference inputs
+- `reports/` for tracked proof outputs and reviewer-facing artifacts
+- `tests/` for cross-package test assets as the repository grows
+
 The repository follows the same Bijux Python workspace pattern used by
 `bijux-canon`, `bijux-proteomics`, and `bijux-pollenomics`: shared `.bijux`
 assets, standardized `makes/` and `configs/`, a root `uv` workspace, a primary
@@ -69,4 +80,3 @@ Today, the checked-in repository produces these durable outcomes:
 - treat `.bijux/shared/`, `makes/`, and `configs/` as managed standard surfaces
 - keep generated outputs under `artifacts/` unless the task explicitly governs another tracked destination
 - update README and docs claims only when the current repository state actually supports them
-
