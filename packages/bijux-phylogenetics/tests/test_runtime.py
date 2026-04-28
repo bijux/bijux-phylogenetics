@@ -1461,6 +1461,24 @@ def test_cli_alignment_duplicates_json_output(capsys) -> None:
     assert payload["data"]["duplicate_sequence_groups"][0]["identifiers"] == ["A", "B"]
 
 
+def test_cli_alignment_outliers_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "outliers",
+            str(fixture("example_alignment_gc_outlier.fasta")),
+            "--deviation-threshold",
+            "0.2",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["composition_outlier_count"] == 1
+    assert payload["data"] == [{"deviation": 1.0, "identifier": "C"}]
+
+
 def test_cli_compare_support_json_output(capsys) -> None:
     exit_code = main(
         [

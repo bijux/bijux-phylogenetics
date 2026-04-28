@@ -22,6 +22,7 @@ from bijux_phylogenetics.io.fasta import (
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
+    detect_composition_outlier_sequences,
 )
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import (
@@ -153,6 +154,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.alignment_command == "inspect":
             return [args.alignment]
         if args.alignment_command == "composition":
+            return [args.alignment]
+        if args.alignment_command == "outliers":
             return [args.alignment]
         if args.alignment_command == "duplicates":
             return [args.alignment]
@@ -315,6 +318,14 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_duplicates.add_argument("--identity-threshold", type=float, default=0.95)
     alignment_duplicates.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_duplicates)
+    alignment_outliers = alignment_subparsers.add_parser(
+        "outliers",
+        help="Report composition outlier sequences from an alignment.",
+    )
+    alignment_outliers.add_argument("alignment", type=Path)
+    alignment_outliers.add_argument("--deviation-threshold", type=float, default=0.25)
+    alignment_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_outliers)
     alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
@@ -727,6 +738,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "duplicate_sequence_groups": duplicates,
                             "near_duplicate_pairs": near_duplicates,
                         },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "outliers":
+                report = detect_composition_outlier_sequences(
+                    args.alignment,
+                    deviation_threshold=args.deviation_threshold,
+                )
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "composition_outlier_count": len(report),
+                            "deviation_threshold": args.deviation_threshold,
+                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )
