@@ -8,6 +8,7 @@ from pathlib import Path
 from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentSummary
 from bijux_phylogenetics.core.dataset import DatasetReadinessSummary, summarize_dataset_readiness
 from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_taxa, load_taxon_table
+from bijux_phylogenetics.core.traits import TraitMissingValueReport, detect_missing_trait_values
 from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
@@ -37,6 +38,7 @@ class ReportBuildResult:
     inspection: TreeInspectionReport
     metadata_linkage: TableLinkageReport | None
     traits_linkage: TableLinkageReport | None
+    trait_missing_values: TraitMissingValueReport | None
     alignment: AlignmentSummary | None
     alignment_linkage: AlignmentLinkageReport | None
     dataset_readiness: DatasetReadinessSummary | None
@@ -139,6 +141,7 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
         inspection=inspection,
         metadata_linkage=None,
         traits_linkage=None,
+        trait_missing_values=None,
         alignment=None,
         alignment_linkage=None,
         dataset_readiness=None,
@@ -158,6 +161,7 @@ def render_dataset_report(
     inspection = inspect_tree_path(tree_path)
     metadata_linkage = annotate_tree_against_table(tree_path, metadata_path)
     traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path is not None else None
+    trait_missing_values = detect_missing_trait_values(traits_path) if traits_path is not None else None
     dataset_readiness = (
         summarize_dataset_readiness(tree_path, metadata_path, traits_path)
         if traits_path is not None
@@ -171,6 +175,8 @@ def render_dataset_report(
     ]
     if traits_linkage is not None:
         sections.append(_section("traits-linkage", asdict(traits_linkage)))
+    if trait_missing_values is not None:
+        sections.append(_section("trait-missing-values", asdict(trait_missing_values)))
     if dataset_readiness is not None:
         sections.append(_section("dataset-readiness", asdict(dataset_readiness)))
     input_paths = [tree_path, metadata_path]
@@ -192,6 +198,7 @@ def render_dataset_report(
         inspection=inspection,
         metadata_linkage=metadata_linkage,
         traits_linkage=traits_linkage,
+        trait_missing_values=trait_missing_values,
         alignment=None,
         alignment_linkage=None,
         dataset_readiness=dataset_readiness,
@@ -233,6 +240,7 @@ def render_phylo_inputs_report(
         inspection=inspection,
         metadata_linkage=None,
         traits_linkage=None,
+        trait_missing_values=None,
         alignment=alignment,
         alignment_linkage=alignment_linkage,
         dataset_readiness=None,
@@ -253,6 +261,7 @@ def render_phylogenetics_report(
     inspection = inspect_tree_path(tree_path)
     alignment = summarise_fasta(alignment_path) if alignment_path else None
     traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path else None
+    trait_missing_values = detect_missing_trait_values(traits_path) if traits_path else None
     metadata_linkage = annotate_tree_against_table(tree_path, metadata_path) if metadata_path else None
     dataset_readiness = (
         summarize_dataset_readiness(tree_path, metadata_path, traits_path)
@@ -268,6 +277,8 @@ def render_phylogenetics_report(
         sections.append(_section("alignment-summary", asdict(alignment)))
     if traits_linkage is not None:
         sections.append(_section("traits-linkage", asdict(traits_linkage)))
+    if trait_missing_values is not None:
+        sections.append(_section("trait-missing-values", asdict(trait_missing_values)))
     if metadata_linkage is not None:
         sections.append(_section("metadata-linkage", asdict(metadata_linkage)))
     if dataset_readiness is not None:
@@ -297,6 +308,7 @@ def render_phylogenetics_report(
         inspection=inspection,
         metadata_linkage=metadata_linkage,
         traits_linkage=traits_linkage,
+        trait_missing_values=trait_missing_values,
         alignment=alignment,
         alignment_linkage=None,
         dataset_readiness=dataset_readiness,

@@ -1526,8 +1526,11 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
         "tree-inspection",
         "metadata-linkage",
         "traits-linkage",
+        "trait-missing-values",
         "dataset-readiness",
     ]
+    assert result.trait_missing_values is not None
+    assert result.trait_missing_values.missing_values == []
     assert "Bijux Dataset Report" in text
 
 
