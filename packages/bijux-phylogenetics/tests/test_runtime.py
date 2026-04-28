@@ -92,6 +92,19 @@ def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
     assert payload["metrics"]["tip_count"] == 4
 
 
+def test_cli_normalize_writes_canonical_newick(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "normalized.nwk"
+    exit_code = main(
+        ["normalize", str(FIXTURES / "example_tree.nex"), "--format", "nexus", "--out", str(output), "--json"]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["outputs"] == [str(output)]
+    assert output.read_text(encoding="utf-8").strip() == "((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);"
+
+
 def test_compare_tree_paths_reports_nonzero_distance() -> None:
     report = compare_tree_paths(FIXTURES / "example_tree.nwk", FIXTURES / "example_tree_alt.nwk")
     assert report.shared_taxa == ["A", "B", "C", "D"]

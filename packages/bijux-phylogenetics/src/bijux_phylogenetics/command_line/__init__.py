@@ -13,6 +13,8 @@ from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import PhylogeneticsError
+from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 from bijux_phylogenetics.results import build_command_result, build_error_result
 
@@ -112,7 +114,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     normalize = subparsers.add_parser(get_command_spec("normalize").name, help=get_command_spec("normalize").summary)
     normalize.add_argument("tree", type=Path)
+    normalize.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     normalize.add_argument("--out", required=True, type=Path)
+    normalize.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
 
     compare = subparsers.add_parser(get_command_spec("compare").name, help=get_command_spec("compare").summary)
     compare.add_argument("left", type=Path)
@@ -193,7 +197,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "normalize":
-            parser.exit(status=2, message="normalize is not implemented yet\n")
+            tree = load_tree(args.tree, source_format=args.format)
+            output_path = write_newick(args.out, tree)
+            if args.json:
+                _print_result(
+                    build_command_result(
+                        command="normalize",
+                        inputs=[args.tree],
+                        outputs=[output_path],
+                        metrics={"tip_count": tree.tip_count},
+                        data={"source_format": tree.source_format, "output_format": "newick"},
+                    ),
+                    json_output=True,
+                )
+            else:
+                print(output_path)
+            return 0
         if args.command == "diagnose":
             parser.exit(status=2, message="diagnose is not implemented yet\n")
         if args.command == "compare":

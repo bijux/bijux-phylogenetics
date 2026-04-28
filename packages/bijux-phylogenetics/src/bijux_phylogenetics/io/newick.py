@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidBranchLengthError
 from bijux_phylogenetics.io.biopython import load_biophylo, loads_biophylo
 
@@ -38,3 +39,38 @@ def loads_newick(text: str):
 def load_newick(path: Path):
     """Load a Newick tree from disk."""
     return load_biophylo(path, source_format="newick")
+
+
+def _sort_key(node: TreeNode) -> tuple[str, int]:
+    tip_names = sorted(name for name in PhyloTree(root=node).tip_names if name)
+    return (tip_names[0] if tip_names else "", len(tip_names))
+
+
+def _format_branch_length(branch_length: float | None) -> str:
+    if branch_length is None:
+        return ""
+    return f":{format(branch_length, '.15g')}"
+
+
+def _serialize_node(node: TreeNode) -> str:
+    if node.children:
+        ordered_children = ",".join(_serialize_node(child) for child in sorted(node.children, key=_sort_key))
+        label = node.name or ""
+        return f"({ordered_children}){label}{_format_branch_length(node.branch_length)}"
+    return f"{node.name or ''}{_format_branch_length(node.branch_length)}"
+
+
+def dumps_newick(tree: PhyloTree) -> str:
+    """Serialize a local tree model into canonical Newick."""
+    if tree.root.children:
+        ordered_children = ",".join(_serialize_node(child) for child in sorted(tree.root.children, key=_sort_key))
+        root_label = tree.root.name or ""
+        return f"({ordered_children}){root_label};"
+    return f"{_serialize_node(tree.root)};"
+
+
+def write_newick(path: Path, tree: PhyloTree) -> Path:
+    """Write a canonical Newick tree to disk."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(f"{dumps_newick(tree)}\n", encoding="utf-8")
+    return path
