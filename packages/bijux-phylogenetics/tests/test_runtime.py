@@ -1664,6 +1664,21 @@ def test_render_tree_svg_can_render_continuous_tip_traits(tmp_path: Path) -> Non
     assert 'class="trait-bar-fill"' in svg
 
 
+def test_render_tree_svg_can_render_collapsed_clades(tmp_path: Path) -> None:
+    output = tmp_path / "collapsed.svg"
+    result = render_tree_svg(
+        fixture("example_tree_named_clades.nwk"),
+        out_path=output,
+        collapsed_clades=["Mammals"],
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.collapsed_clade_count == 1
+    assert "Mammals (2 tips)" in svg
+    assert 'class="collapsed-clade"' in svg
+    assert ">A<" not in svg
+    assert ">B<" not in svg
+
+
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
     output = tmp_path / "annotated.svg"
     result = render_tree_svg(

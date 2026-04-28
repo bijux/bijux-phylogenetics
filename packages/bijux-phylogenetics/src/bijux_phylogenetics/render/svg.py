@@ -50,6 +50,12 @@ def _count_render_leaves(node: TreeNode) -> int:
     return sum(_count_render_leaves(child) for child in node.children)
 
 
+def _count_subtree_leaves(node: TreeNode) -> int:
+    if node.is_leaf():
+        return 1
+    return sum(_count_subtree_leaves(child) for child in node.children)
+
+
 def _max_depth(node: TreeNode, depth: int = 0) -> int:
     if node.is_leaf():
         return depth
@@ -118,6 +124,29 @@ def _continuous_color(value: float, minimum: float, maximum: float) -> str:
     return f"#{red:02x}{green:02x}{blue:02x}"
 
 
+def _is_collapsed_node(node: TreeNode, collapsed_clades: set[str]) -> bool:
+    return not node.is_leaf() and node.name is not None and node.name in collapsed_clades
+
+
+def _count_visible_leaves(node: TreeNode, collapsed_clades: set[str]) -> int:
+    if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
+        return 1
+    return sum(_count_visible_leaves(child, collapsed_clades) for child in node.children)
+
+
+def _max_visible_depth(node: TreeNode, collapsed_clades: set[str], depth: int = 0) -> int:
+    if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
+        return depth
+    return max(_max_visible_depth(child, collapsed_clades, depth + 1) for child in node.children)
+
+
+def _max_visible_distance(node: TreeNode, collapsed_clades: set[str], distance: float = 0.0) -> float:
+    next_distance = distance + float(node.branch_length or 0.0)
+    if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
+        return next_distance
+    return max(_max_visible_distance(child, collapsed_clades, next_distance) for child in node.children)
+
+
 def render_tree_svg(
     tree_path: Path,
     *,
@@ -127,6 +156,7 @@ def render_tree_svg(
     show_support_values: bool = False,
     categorical_traits: dict[str, str] | None = None,
     continuous_traits: dict[str, float] | None = None,
+    collapsed_clades: list[str] | None = None,
 ) -> TreeRenderResult:
     """Render a deterministic SVG tree as a cladogram, phylogram, or circular tree."""
     if layout not in {"cladogram", "phylogram", "circular"}:
@@ -134,6 +164,7 @@ def render_tree_svg(
 
     tree = _load_tree(tree_path)
     labels = labels or {}
+    collapsed_clade_names = {name for name in (collapsed_clades or []) if name}
     row_height = 56
     left_margin = 48
     right_margin = 320
@@ -141,9 +172,13 @@ def render_tree_svg(
     bottom_margin = 72
     horizontal_step = 150
     scale_width = 520
-    leaf_count = _count_render_leaves(tree.root)
-    max_depth = max(_max_depth(tree.root), 1)
-    max_distance = _max_distance(tree.root, 0.0) if layout in {"phylogram", "circular"} else 0.0
+    leaf_count = _count_visible_leaves(tree.root, collapsed_clade_names)
+    max_depth = max(_max_visible_depth(tree.root, collapsed_clade_names), 1)
+    max_distance = (
+        _max_visible_distance(tree.root, collapsed_clade_names, 0.0)
+        if layout in {"phylogram", "circular"}
+        else 0.0
+    )
 
     if layout == "circular":
         tree_radius = 320
@@ -167,6 +202,7 @@ def render_tree_svg(
     rendered_support_count = 0
     rendered_categorical_trait_count = 0
     rendered_continuous_trait_count = 0
+    rendered_collapsed_clades = 0
     categorical_traits = categorical_traits or {}
     categorical_color_map = _categorical_color_map(categorical_traits)
     continuous_traits = continuous_traits or {}
@@ -184,13 +220,25 @@ def render_tree_svg(
         nonlocal rendered_support_count
         nonlocal rendered_categorical_trait_count
         nonlocal rendered_continuous_trait_count
+        nonlocal rendered_collapsed_clades
         branch_distance = distance + float(node.branch_length or 0.0)
         x = node_x(depth, branch_distance if node is not tree.root else distance)
-        if node.is_leaf():
+        if node.is_leaf() or _is_collapsed_node(node, collapsed_clade_names):
             y = top_margin + next_leaf_index * row_height + row_height / 2
             next_leaf_index += 1
             label = labels.get(node.name or "", node.name or "")
-            if node.name and node.name not in labels and labels:
+            if _is_collapsed_node(node, collapsed_clade_names):
+                label = f"{node.name or 'collapsed clade'} ({_count_subtree_leaves(node)} tips)"
+                rendered_collapsed_clades += 1
+                triangle = (
+                    f"{x:.1f},{y - 11:.1f} "
+                    f"{x + 24:.1f},{y:.1f} "
+                    f"{x:.1f},{y + 11:.1f}"
+                )
+                overlays.append(
+                    f'<polygon points="{triangle}" fill="#cbd5e1" stroke="#475569" stroke-width="1.5" class="collapsed-clade"/>'
+                )
+            elif node.name and node.name not in labels and labels:
                 missing_labels.append(node.name)
             label_x = x + 18
             texts.append(
@@ -249,7 +297,7 @@ def render_tree_svg(
 
         def assign_angles(node: TreeNode) -> tuple[float, float]:
             nonlocal next_leaf_index
-            if node.is_leaf():
+            if node.is_leaf() or _is_collapsed_node(node, collapsed_clade_names):
                 angle = (2 * math.pi * next_leaf_index / max(leaf_count, 1)) - math.pi / 2
                 next_leaf_index += 1
                 angle_cache[id(node)] = angle
@@ -264,18 +312,29 @@ def render_tree_svg(
             nonlocal rendered_support_count
             nonlocal rendered_categorical_trait_count
             nonlocal rendered_continuous_trait_count
+            nonlocal rendered_collapsed_clades
             branch_distance = distance + float(node.branch_length or 0.0)
             radial = radial_distance(depth, branch_distance if node is not tree.root else distance)
-            if node.is_leaf():
+            if node.is_leaf() or _is_collapsed_node(node, collapsed_clade_names):
                 angle = angle_cache[id(node)]
                 label = labels.get(node.name or "", node.name or "")
-                if node.name and node.name not in labels and labels:
+                if _is_collapsed_node(node, collapsed_clade_names):
+                    label = f"{node.name or 'collapsed clade'} ({_count_subtree_leaves(node)} tips)"
+                    rendered_collapsed_clades += 1
+                elif node.name and node.name not in labels and labels:
                     missing_labels.append(node.name)
                 anchor = "start" if math.cos(angle) >= 0 else "end"
                 label_point = _polar_point(center_x, center_y, radial + 18, angle)
                 texts.append(
                     f'<text x="{label_point.x:.1f}" y="{label_point.y + 5:.1f}" text-anchor="{anchor}" class="tip-label">{escape(label)}</text>'
                 )
+                if _is_collapsed_node(node, collapsed_clade_names):
+                    node_point = _polar_point(center_x, center_y, radial, angle)
+                    left_point = _polar_point(center_x, center_y, radial + 18, angle - 0.08)
+                    right_point = _polar_point(center_x, center_y, radial + 18, angle + 0.08)
+                    overlays.append(
+                        f'<polygon points="{node_point.x:.1f},{node_point.y:.1f} {left_point.x:.1f},{left_point.y:.1f} {right_point.x:.1f},{right_point.y:.1f}" fill="#cbd5e1" stroke="#475569" stroke-width="1.5" class="collapsed-clade"/>'
+                    )
                 trait_value = categorical_traits.get(node.name or "")
                 if trait_value:
                     marker_point = _polar_point(center_x, center_y, radial + 10, angle)
@@ -380,6 +439,7 @@ def render_tree_svg(
     .panel {{ fill: #f7fbfa; stroke: #d7e3e1; stroke-width: 1; rx: 18; ry: 18; }}
     .branch {{ stroke: #0f172a; stroke-width: 2.2; stroke-linecap: round; fill: none; }}
     .scale-bar {{ stroke: #0f172a; stroke-width: 2; stroke-linecap: round; }}
+    .collapsed-clade {{ fill-opacity: 0.95; }}
     .tip-label {{ fill: #0f172a; font: 16px "Avenir Next", "Segoe UI", sans-serif; }}
     .support-label {{ fill: #0f766e; font: 12px "Avenir Next", "Segoe UI", sans-serif; }}
     .legend-title {{ fill: #334155; font: 12px "Avenir Next", "Segoe UI", sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }}
@@ -409,6 +469,6 @@ def render_tree_svg(
         rendered_continuous_trait_count=rendered_continuous_trait_count,
         rendered_metadata_strip_count=0,
         rendered_heatmap_column_count=0,
-        collapsed_clade_count=0,
+        collapsed_clade_count=rendered_collapsed_clades,
         missing_metadata_labels=sorted(set(missing_labels)),
     )
