@@ -45,6 +45,18 @@ class TraitLinkageReport:
     extra_trait_taxa: list[str]
 
 
+@dataclass(slots=True)
+class TraitTablePruningReport:
+    """Explicit record of pruning a trait table to tree taxa."""
+
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    original_row_count: int
+    kept_taxa: list[str]
+    removed_taxa: list[str]
+
+
 def load_tsv_summary(path: Path) -> TaxonTable:
     """Compatibility wrapper for legacy callers expecting a taxon-keyed table."""
     return load_taxon_table(path)
@@ -147,3 +159,29 @@ def detect_unusable_trait_columns(
         for column in report.trait_columns
         if column.missing_fraction > missingness_threshold
     ]
+
+
+def prune_traits_to_tree(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    taxon_column: str | None = None,
+) -> tuple[list[dict[str, str]], TraitTablePruningReport]:
+    """Prune a trait table to the taxa present in a tree while preserving tree tip order."""
+    tree = load_tree(tree_path)
+    table = load_taxon_table(traits_path, taxon_column=taxon_column)
+    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
+    kept_rows = [dict(rows_by_taxon[taxon]) for taxon in tree.tip_names if taxon in rows_by_taxon]
+    if not kept_rows:
+        raise MetadataJoinError("no overlapping taxa remain after trait pruning request")
+
+    kept_taxa = [row[table.taxon_column] for row in kept_rows]
+    removed_taxa = sorted(set(table.taxa) - set(kept_taxa))
+    return kept_rows, TraitTablePruningReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=table.taxon_column,
+        original_row_count=table.row_count,
+        kept_taxa=kept_taxa,
+        removed_taxa=removed_taxa,
+    )

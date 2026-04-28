@@ -27,7 +27,12 @@ from bijux_phylogenetics.core.topology import (
     sort_tree_tips_alphabetically,
 )
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
-from bijux_phylogenetics.core.traits import detect_unusable_trait_columns, link_tree_to_traits, validate_traits_table
+from bijux_phylogenetics.core.traits import (
+    detect_unusable_trait_columns,
+    link_tree_to_traits,
+    prune_traits_to_tree,
+    validate_traits_table,
+)
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
 from bijux_phylogenetics.diagnostics.root_to_tip import diagnose_ultrametricity
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
@@ -217,6 +222,17 @@ def test_traits_link_strict_mode_rejects_mismatch() -> None:
         assert error.code == "metadata_join_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected MetadataJoinError")
+
+
+def test_prune_traits_to_tree_keeps_tree_order_for_overlapping_taxa() -> None:
+    rows, report = prune_traits_to_tree(
+        fixture("example_tree.nwk"),
+        fixture("example_traits.tsv"),
+    )
+    assert [row["taxon"] for row in rows] == ["A", "B", "C"]
+    assert report.original_row_count == 4
+    assert report.kept_taxa == ["A", "B", "C"]
+    assert report.removed_taxa == ["E"]
 
 
 def test_dataset_readiness_reports_ready_comparative_inputs() -> None:
