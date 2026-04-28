@@ -1636,6 +1636,20 @@ def test_render_tree_svg_can_render_internal_support_values(tmp_path: Path) -> N
     assert ">88<" in svg
 
 
+def test_render_tree_svg_can_render_categorical_tip_traits(tmp_path: Path) -> None:
+    output = tmp_path / "categorical.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        categorical_traits={"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"},
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_categorical_trait_count == 4
+    assert "categorical trait" in svg
+    assert "<circle" in svg
+    assert "Sweden" in svg
+
+
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
     output = tmp_path / "annotated.svg"
     result = render_tree_svg(
