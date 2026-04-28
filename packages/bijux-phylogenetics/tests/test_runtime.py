@@ -8,7 +8,7 @@ from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
-from bijux_phylogenetics.errors import InvalidBranchLengthError, UnsupportedTreeFormatError
+from bijux_phylogenetics.errors import DuplicateTaxonError, InvalidBranchLengthError, UnsupportedTreeFormatError
 from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.nexus import load_nexus
@@ -45,6 +45,15 @@ def test_validate_tree_path_reports_expected_counts() -> None:
     assert report.rooted is True
     assert report.ultrametric is True
     assert report.source_format == "newick"
+
+
+def test_validate_tree_path_rejects_duplicate_tip_labels_by_default() -> None:
+    try:
+        validate_tree_path(FIXTURES / "example_tree_duplicate.nwk")
+    except DuplicateTaxonError as error:
+        assert error.code == "duplicate_taxon_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected DuplicateTaxonError")
 
 
 def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
@@ -101,6 +110,15 @@ def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -
             "message": f"unsupported tree format for {path}",
         }
     ]
+
+
+def test_validate_cli_can_allow_duplicate_tip_labels(capsys) -> None:
+    exit_code = main(["validate", str(FIXTURES / "example_tree_duplicate.nwk"), "--allow-duplicates", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["data"]["duplicate_taxa"] == ["A"]
 
 
 def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:

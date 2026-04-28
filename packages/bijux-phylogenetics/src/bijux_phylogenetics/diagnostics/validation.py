@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.errors import DuplicateTaxonError
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -88,12 +89,19 @@ def _max_depth(tree: PhyloTree) -> int:
     return visit(tree.root, 0)
 
 
-def validate_tree_path(path: Path, *, source_format: str | None = None) -> TreeValidationReport:
+def validate_tree_path(
+    path: Path,
+    *,
+    source_format: str | None = None,
+    allow_duplicates: bool = False,
+) -> TreeValidationReport:
     """Validate a tree file and produce a diagnostic report."""
     tree = _load_tree(path, source_format=source_format)
     rooted = len(tree.root.children) == 2
     has_complete, zero_count, negative_count = _branch_length_health(tree)
     missing_taxa, duplicate_taxa = _duplicate_taxa(tree)
+    if duplicate_taxa and not allow_duplicates:
+        raise DuplicateTaxonError(f"duplicate tip labels found: {', '.join(duplicate_taxa)}")
     ultrametric = _ultrametric(tree)
     warnings: list[str] = []
     if duplicate_taxa:
