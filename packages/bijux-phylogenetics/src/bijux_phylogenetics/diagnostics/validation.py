@@ -88,6 +88,7 @@ class TreeInspectionReport:
     long_branch_taxa: list[str]
     star_like: bool
     comb_like: bool
+    tree_quality_score: float
     tree_quality_warnings: list[TreeQualityWarning]
     imbalance_summary: str
     cherry_count: int
@@ -474,6 +475,10 @@ def _tree_quality_warnings(
     return warnings
 
 
+def _tree_quality_score(warnings: list[TreeQualityWarning]) -> float:
+    return max(0.0, round(100.0 - sum(warning.penalty for warning in warnings), 15))
+
+
 def _imbalance_summary(tree: PhyloTree) -> str:
     def visit(node) -> tuple[int, int]:
         if node.is_leaf():
@@ -632,6 +637,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         long_branch_taxa=long_branch_taxa,
         star_like=star_like,
         comb_like=comb_like,
+        tree_quality_score=_tree_quality_score(tree_quality_warnings),
         tree_quality_warnings=tree_quality_warnings,
         imbalance_summary=_imbalance_summary(tree),
         cherry_count=_cherry_count(tree),

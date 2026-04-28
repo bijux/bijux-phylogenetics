@@ -476,6 +476,7 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.long_branch_taxa == []
     assert report.star_like is False
     assert report.comb_like is False
+    assert report.tree_quality_score == 100.0
     assert report.tree_quality_warnings == []
     assert report.imbalance_summary == "balanced"
     assert report.cherry_count == 2
@@ -495,6 +496,7 @@ def test_inspect_tree_path_distinguishes_ladderized_shape() -> None:
     assert report.long_branch_taxa == []
     assert report.star_like is False
     assert report.comb_like is True
+    assert report.tree_quality_score == 75.0
     assert [warning.code for warning in report.tree_quality_warnings] == [
         "unusually_imbalanced",
         "comb_like",
@@ -519,6 +521,7 @@ def test_inspect_tree_path_reports_exact_polytomy_nodes() -> None:
     assert report.long_branch_taxa == []
     assert report.star_like is False
     assert report.comb_like is False
+    assert report.tree_quality_score == 90.0
     assert [warning.code for warning in report.tree_quality_warnings] == ["polytomies"]
     assert report.polytomy_count == 1
     assert report.polytomy_nodes == ["A|B|C"]
@@ -528,6 +531,7 @@ def test_inspect_tree_path_detects_long_branch_taxa() -> None:
     report = inspect_tree_path(fixture("example_tree_long_branch.nwk"))
     assert report.long_branch_taxa == ["A"]
     assert report.star_like is False
+    assert report.tree_quality_score == 85.0
     assert [warning.code for warning in report.tree_quality_warnings] == ["long_branches"]
 
 
@@ -535,6 +539,7 @@ def test_inspect_tree_path_detects_star_like_tree() -> None:
     report = inspect_tree_path(fixture("example_tree_star.nwk"))
     assert report.star_like is True
     assert report.long_branch_taxa == []
+    assert report.tree_quality_score == 80.0
     assert [warning.code for warning in report.tree_quality_warnings] == ["polytomies", "star_like"]
 
 
