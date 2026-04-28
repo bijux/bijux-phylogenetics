@@ -33,3 +33,13 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
+- `bijux-phylogenetics inspect tree-with-support.nwk --json`
+
+## Tree Diagnostics Highlights
+
+- internal-node child counts are reported explicitly for every internal node
+- missing branch lengths are separated into internal-branch and terminal-branch diagnostics
+- singleton internal nodes are detected instead of being silently treated as ordinary branching structure
+- long and short nonzero branch outliers are reported as concrete affected nodes
+- numeric internal labels are classified as likely support values, textual internal labels as likely clade names
+- support-like labels are checked for suspicious ranges and mixed probability-versus-percentage scales
