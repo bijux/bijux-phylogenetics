@@ -26,6 +26,7 @@ from bijux_phylogenetics.core.pruning import (
     write_pruned_taxa,
 )
 from bijux_phylogenetics.core.traits import link_tree_to_traits, prune_traits_to_tree, validate_traits_table
+from bijux_phylogenetics.core.traits import detect_missing_trait_values
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.demo import run_capability_demo
@@ -122,6 +123,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         return [args.table]
     if args.command == "traits":
         if args.traits_command == "validate":
+            return [args.table]
+        if args.traits_command == "missing":
             return [args.table]
         if args.traits_command == "prune":
             return [args.tree, args.table, args.out]
@@ -224,6 +227,11 @@ def build_parser() -> argparse.ArgumentParser:
     traits_validate.add_argument("--taxon-column")
     traits_validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(traits_validate)
+    traits_missing = traits_subparsers.add_parser("missing", help="List missing trait values by taxon and column.")
+    traits_missing.add_argument("table", type=Path)
+    traits_missing.add_argument("--taxon-column")
+    traits_missing.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(traits_missing)
     traits_link = traits_subparsers.add_parser("link", help="Link tree tips to a traits table.")
     traits_link.add_argument("tree", type=Path)
     traits_link.add_argument("table", type=Path)
@@ -438,6 +446,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "row_count": report.row_count,
                             "trait_column_count": len(report.trait_columns),
                         },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.traits_command == "missing":
+                report = detect_missing_trait_values(args.table, taxon_column=args.taxon_column)
+                outputs = _finalize_outputs(args, command="traits", inputs=[args.table])
+                _print_result(
+                    build_command_result(
+                        command="traits",
+                        inputs=[args.table],
+                        outputs=outputs,
+                        metrics={"missing_value_count": len(report.missing_values)},
                         data=report,
                     ),
                     json_output=args.json,

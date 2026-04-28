@@ -286,6 +286,15 @@ def test_traits_prune_cli_writes_pruned_table_in_tree_order(tmp_path: Path, caps
     assert payload["data"]["removed_taxa"] == ["E"]
 
 
+def test_traits_missing_cli_reports_taxon_and_column(capsys) -> None:
+    exit_code = main(["traits", "missing", str(fixture("example_traits_validate.tsv")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["missing_value_count"] == 1
+    assert payload["data"]["missing_values"] == [{"taxon": "C", "trait": "status"}]
+
+
 def test_dataset_readiness_reports_ready_comparative_inputs() -> None:
     report = summarize_dataset_readiness(
         fixture("example_tree.nwk"),
