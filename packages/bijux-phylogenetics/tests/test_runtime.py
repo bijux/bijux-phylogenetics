@@ -1065,6 +1065,8 @@ def test_build_tree_comparison_report_writes_html_with_checksums(tmp_path: Path)
     assert result.output_path == output
     assert "Bijux Tree Comparison Report" in html
     assert "input-checksums" in html
+    assert "clade-comparison" in html
+    assert "clade-changes" in html
     assert "support-comparison" in html
 
 
