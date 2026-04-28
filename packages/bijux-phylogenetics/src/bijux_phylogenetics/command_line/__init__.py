@@ -169,6 +169,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         inputs = [args.tree, args.metadata]
         if args.out is not None:
             inputs.append(args.out)
+        if getattr(args, "joined_out", None) is not None:
+            inputs.append(args.joined_out)
         return inputs
     if args.command == "render":
         inputs = [args.tree, args.out]
@@ -329,6 +331,7 @@ def build_parser() -> argparse.ArgumentParser:
     annotate.add_argument("--metadata", required=True, type=Path)
     annotate.add_argument("--taxon-column")
     annotate.add_argument("--out", type=Path)
+    annotate.add_argument("--joined-out", type=Path)
     annotate.add_argument("--json", action="store_true", help="Emit the linkage report as JSON.")
     _add_manifest_argument(annotate)
 
@@ -929,6 +932,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             outputs: list[Path | str] = []
             if args.out is not None:
                 outputs.append(write_annotation_report(args.out, report))
+            if args.joined_out is not None:
+                table = load_taxon_table(args.metadata, taxon_column=args.taxon_column)
+                outputs.append(
+                    write_taxon_rows(
+                        args.joined_out,
+                        columns=["taxon", "matched", *[column for column in table.columns if column != table.taxon_column]],
+                        rows=[
+                            {
+                                "taxon": row.taxon,
+                                "matched": str(row.matched).lower(),
+                                **{column: row.values.get(column, "") for column in table.columns if column != table.taxon_column},
+                            }
+                            for row in report.joined_rows
+                        ],
+                    )
+                )
             outputs = _finalize_outputs(args, command="annotate", inputs=[args.tree, args.metadata], outputs=outputs)
             _print_result(
                 build_command_result(

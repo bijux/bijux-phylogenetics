@@ -1143,6 +1143,35 @@ def test_cli_metadata_inspect_json_output(capsys) -> None:
     assert payload["metrics"]["taxon_count"] == 4
 
 
+def test_cli_annotate_can_write_joined_tip_rows(tmp_path: Path, capsys) -> None:
+    report_path = tmp_path / "annotation.json"
+    joined_path = tmp_path / "annotation.tsv"
+    exit_code = main(
+        [
+            "annotate",
+            str(fixture("example_tree.nwk")),
+            "--metadata",
+            str(fixture("example_metadata.tsv")),
+            "--out",
+            str(report_path),
+            "--joined-out",
+            str(joined_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["data"]["joined_rows"][3]["taxon"] == "D"
+    assert joined_path.read_text(encoding="utf-8") == (
+        "taxon\tmatched\tspecies\tlocation\n"
+        "A\ttrue\tAlpha species\tSweden\n"
+        "B\ttrue\tBeta species\tNorway\n"
+        "C\ttrue\tGamma species\tDenmark\n"
+        "D\ttrue\tDelta species\tFinland\n"
+    )
+
+
 def test_cli_env_inspect_json_output(capsys) -> None:
     exit_code = main(["env", "inspect", "--json"])
     captured = capsys.readouterr()
