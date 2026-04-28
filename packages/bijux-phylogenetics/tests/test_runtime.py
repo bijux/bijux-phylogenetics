@@ -1338,6 +1338,27 @@ def test_cli_compare_changes_json_output(capsys) -> None:
     assert payload["data"]["gained_clades"] == ["A|B|C"]
 
 
+def test_cli_compare_prune_writes_shared_taxon_trees(tmp_path: Path, capsys) -> None:
+    output_dir = tmp_path / "shared"
+    exit_code = main(
+        [
+            "compare",
+            "prune",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_overlap.nwk")),
+            "--out",
+            str(output_dir),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["data"]["shared_taxa"] == ["A", "B", "C"]
+    assert (output_dir / "left-shared.nwk").read_text(encoding="utf-8") == "((A:0.1,B:0.1):0.2,C:0.3);\n"
+    assert (output_dir / "right-shared.nwk").read_text(encoding="utf-8") == "((A:0.1,B:0.1):0.2,C:0.3);\n"
+
+
 def test_cli_compare_table_writes_tsv_output(tmp_path: Path, capsys) -> None:
     output = tmp_path / "comparison.tsv"
     exit_code = main(
