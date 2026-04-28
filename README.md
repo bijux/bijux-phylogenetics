@@ -49,7 +49,9 @@ maintainer package.
 This repository publishes `2` public packages. The current runtime focuses on
 reproducible tree hygiene, taxon normalization, tree and trait pruning,
 metadata linkage, shared-clade comparison, alignment-quality diagnostics,
-evidence manifests, and HTML report generation rather than tree inference.
+alignment trimming, coding-sequence translation, identity-matrix export,
+explicit rooting transforms, evidence manifests, and HTML report generation
+rather than tree inference.
 
 ## Start Here
 
@@ -74,6 +76,15 @@ Today, the checked-in repository produces these durable outcomes:
 - `make docs-serve` serves the docs locally at `http://127.0.0.1:8000/`
 - `make package-verify` runs wheel, sdist, and smoke-install package proof targets
 - `make sync-badges` renders the shared badge catalog into managed README surfaces
+
+## Example Commands
+
+- `uv run bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4`
+- `uv run bijux-phylogenetics alignment coding coding-alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment translate coding-alignment.fasta --out translated.fasta`
+- `uv run bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
+- `uv run bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
+- `uv run bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
 
 ## Working Rules
 
