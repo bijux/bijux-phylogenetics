@@ -49,6 +49,15 @@ class BranchLengthSummary:
 
 
 @dataclass(slots=True)
+class TreeQualityWarning:
+    code: str
+    message: str
+    penalty: float
+    affected_taxa: list[str]
+    affected_nodes: list[str]
+
+
+@dataclass(slots=True)
 class TreeInspectionReport:
     path: Path
     source_format: str
@@ -79,6 +88,7 @@ class TreeInspectionReport:
     long_branch_taxa: list[str]
     star_like: bool
     comb_like: bool
+    tree_quality_warnings: list[TreeQualityWarning]
     imbalance_summary: str
     cherry_count: int
     taxa: list[str]
@@ -117,6 +127,22 @@ def _polytomy_nodes(tree: PhyloTree) -> list[str]:
     return nodes
 
 
+def _descendant_taxa(node) -> list[str]:
+    if node.is_leaf():
+        return [node.name] if node.name is not None else []
+    taxa: list[str] = []
+    for child in node.children:
+        taxa.extend(_descendant_taxa(child))
+    return sorted(taxa)
+
+
+def _node_signature(node) -> str:
+    taxa = _descendant_taxa(node)
+    if taxa:
+        return "|".join(taxa)
+    return node.name or "<unnamed>"
+
+
 def _edge_count(tree: PhyloTree) -> int:
     return sum(1 for node in tree.iter_nodes() if node is not tree.root)
 
@@ -131,6 +157,22 @@ def _branch_length_health(tree: PhyloTree) -> tuple[bool, int, int]:
     zero_count = sum(1 for length in branch_lengths if length == 0)
     negative_count = sum(1 for length in branch_lengths if length is not None and length < 0)
     return has_complete, zero_count, negative_count
+
+
+def _zero_length_branch_nodes(tree: PhyloTree) -> list[str]:
+    return sorted(
+        _node_signature(node)
+        for node in tree.iter_nodes()
+        if node is not tree.root and node.branch_length == 0
+    )
+
+
+def _negative_branch_nodes(tree: PhyloTree) -> list[str]:
+    return sorted(
+        _node_signature(node)
+        for node in tree.iter_nodes()
+        if node is not tree.root and node.branch_length is not None and node.branch_length < 0
+    )
 
 
 def _branch_length_status(tree: PhyloTree) -> str:
@@ -326,6 +368,112 @@ def _star_like(tree: PhyloTree) -> bool:
     return False
 
 
+def _tree_quality_warnings(
+    tree: PhyloTree,
+    *,
+    branch_length_status: str,
+    zero_length_branch_count: int,
+    negative_branch_count: int,
+    polytomy_nodes: list[str],
+    unusually_imbalanced: bool | None,
+    long_branch_taxa: list[str],
+    star_like: bool,
+    comb_like: bool,
+) -> list[TreeQualityWarning]:
+    warnings: list[TreeQualityWarning] = []
+    if branch_length_status == "partial":
+        warnings.append(
+            TreeQualityWarning(
+                code="partial_branch_lengths",
+                message="tree has partial branch lengths, so weighted diagnostics are incomplete",
+                penalty=20.0,
+                affected_taxa=[],
+                affected_nodes=[],
+            )
+        )
+    if branch_length_status == "absent":
+        warnings.append(
+            TreeQualityWarning(
+                code="missing_branch_lengths",
+                message="tree has no branch lengths, so weighted diagnostics are unavailable",
+                penalty=35.0,
+                affected_taxa=[],
+                affected_nodes=[],
+            )
+        )
+    if negative_branch_count:
+        warnings.append(
+            TreeQualityWarning(
+                code="negative_branch_lengths",
+                message="tree contains negative branch lengths, which violate common phylogenetic assumptions",
+                penalty=35.0,
+                affected_taxa=[],
+                affected_nodes=_negative_branch_nodes(tree),
+            )
+        )
+    if zero_length_branch_count:
+        warnings.append(
+            TreeQualityWarning(
+                code="zero_length_branches",
+                message="tree contains zero-length branches that may represent unresolved or collapsed splits",
+                penalty=10.0,
+                affected_taxa=[],
+                affected_nodes=_zero_length_branch_nodes(tree),
+            )
+        )
+    if polytomy_nodes:
+        warnings.append(
+            TreeQualityWarning(
+                code="polytomies",
+                message="tree contains multifurcations that reduce binary-resolution diagnostics",
+                penalty=10.0,
+                affected_taxa=[],
+                affected_nodes=polytomy_nodes,
+            )
+        )
+    if unusually_imbalanced:
+        warnings.append(
+            TreeQualityWarning(
+                code="unusually_imbalanced",
+                message="tree shape is unusually imbalanced relative to a fully balanced binary tree",
+                penalty=15.0,
+                affected_taxa=[],
+                affected_nodes=[_node_signature(tree.root)],
+            )
+        )
+    if long_branch_taxa:
+        warnings.append(
+            TreeQualityWarning(
+                code="long_branches",
+                message="one or more taxa sit on unusually long terminal branches",
+                penalty=15.0,
+                affected_taxa=long_branch_taxa,
+                affected_nodes=[],
+            )
+        )
+    if star_like:
+        warnings.append(
+            TreeQualityWarning(
+                code="star_like",
+                message="tree has a star-like shape with one node connected directly to most tips",
+                penalty=10.0,
+                affected_taxa=[],
+                affected_nodes=[_node_signature(tree.root)],
+            )
+        )
+    if comb_like:
+        warnings.append(
+            TreeQualityWarning(
+                code="comb_like",
+                message="tree has an extreme comb-like topology with a single ladderized chain",
+                penalty=10.0,
+                affected_taxa=[],
+                affected_nodes=[_node_signature(tree.root)],
+            )
+        )
+    return warnings
+
+
 def _imbalance_summary(tree: PhyloTree) -> str:
     def visit(node) -> tuple[int, int]:
         if node.is_leaf():
@@ -433,6 +581,18 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     long_branch_taxa = _long_branch_taxa(tree)
     star_like = _star_like(tree)
     comb_like = _comb_like(tree)
+    _, _, negative_branch_count = _branch_length_health(tree)
+    tree_quality_warnings = _tree_quality_warnings(
+        tree,
+        branch_length_status=branch_length_status,
+        zero_length_branch_count=zero_length_branch_count,
+        negative_branch_count=negative_branch_count,
+        polytomy_nodes=polytomy_nodes,
+        unusually_imbalanced=unusually_imbalanced,
+        long_branch_taxa=long_branch_taxa,
+        star_like=star_like,
+        comb_like=comb_like,
+    )
     warnings: list[str] = []
     if zero_length_branch_count:
         warnings.append("tree contains zero-length branches")
@@ -472,6 +632,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         long_branch_taxa=long_branch_taxa,
         star_like=star_like,
         comb_like=comb_like,
+        tree_quality_warnings=tree_quality_warnings,
         imbalance_summary=_imbalance_summary(tree),
         cherry_count=_cherry_count(tree),
         taxa=sorted(tree.tip_names),
