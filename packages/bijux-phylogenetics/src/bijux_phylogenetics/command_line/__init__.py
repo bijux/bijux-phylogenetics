@@ -25,7 +25,7 @@ from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
-from bijux_phylogenetics.errors import EvidenceContractError, MetadataJoinError, PhylogeneticsError
+from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -232,6 +232,8 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     validate.add_argument("--allow-duplicates", action="store_true")
     validate.add_argument("--allow-negative-branches", action="store_true")
+    validate.add_argument("--require-rooted", action="store_true")
+    validate.add_argument("--require-ultrametric", action="store_true")
     validate.add_argument("--strict", action="store_true")
     validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(validate)
@@ -407,6 +409,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 allow_duplicates=args.allow_duplicates,
                 strict=args.strict,
                 allow_negative_branch_lengths=args.allow_negative_branches,
+                require_rooted=args.require_rooted,
+                require_ultrametric=args.require_ultrametric,
             )
             outputs = _finalize_outputs(args, command="validate", inputs=[args.tree])
             _print_result(
@@ -801,7 +805,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             print(result.output_path)
             return 0
         if args.command == "adapter":
-            parser.exit(status=2, message=f"adapter is not implemented yet for {args.adapter_name}\n")
+            raise EngineUnavailableError(f"adapter is not available in this runtime: {args.adapter_name}")
     except PhylogeneticsError as error:
         if _json_requested(args):
             _print_result(

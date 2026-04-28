@@ -20,11 +20,14 @@ from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bund
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
     DuplicateTaxonError,
+    EngineUnavailableError,
     InvalidBranchLengthError,
     InvalidAlignmentError,
     MetadataJoinError,
+    NonUltrametricTreeError,
     UnnamedTipError,
     UnsupportedTreeFormatError,
+    UnrootedTreeError,
 )
 from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
@@ -37,6 +40,10 @@ from bijux_phylogenetics.reports.service import annotate_tree_against_table, ren
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def fixture(name: str) -> Path:
+    return FIXTURES / name
 
 
 def test_package_identity_matches_canonical_names() -> None:
@@ -235,6 +242,24 @@ def test_validate_tree_path_rejects_negative_branch_lengths_by_default() -> None
         raise AssertionError("expected InvalidBranchLengthError")
 
 
+def test_validate_tree_path_can_require_rooted_tree() -> None:
+    try:
+        validate_tree_path(fixture("example_tree_unrooted.nwk"), require_rooted=True)
+    except UnrootedTreeError as error:
+        assert error.code == "unrooted_tree_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected UnrootedTreeError")
+
+
+def test_validate_tree_path_can_require_ultrametric_tree() -> None:
+    try:
+        validate_tree_path(fixture("example_tree_ladderized.nwk"), require_ultrametric=True)
+    except NonUltrametricTreeError as error:
+        assert error.code == "non_ultrametric_tree_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected NonUltrametricTreeError")
+
+
 def test_validate_tree_path_warns_for_zero_length_branches() -> None:
     report = validate_tree_path(FIXTURES / "example_tree_zero_lengths.nwk")
     assert report.zero_length_branches == 3
@@ -366,6 +391,20 @@ def test_validate_cli_can_allow_negative_branch_lengths(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["data"]["negative_branch_lengths"] == 1
+
+
+def test_validate_cli_can_require_rooted_and_ultrametric_typed_errors(capsys) -> None:
+    exit_code = main(["validate", str(fixture("example_tree_unrooted.nwk")), "--require-rooted", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == UnrootedTreeError.code
+
+    exit_code = main(["validate", str(fixture("example_tree_ladderized.nwk")), "--require-ultrametric", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == NonUltrametricTreeError.code
 
 
 def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
@@ -1001,3 +1040,12 @@ def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> 
     assert payload["status"] == "ok"
     assert payload["command"] == "report"
     assert payload["outputs"] == [str(output)]
+
+
+def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
+    exit_code = main(["adapter", "iqtree", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == EngineUnavailableError.code
