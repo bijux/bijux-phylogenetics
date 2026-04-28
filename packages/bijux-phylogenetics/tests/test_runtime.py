@@ -119,6 +119,18 @@ def test_package_identity_matches_canonical_names() -> None:
     assert "bijux phylogenetics" == IDENTITY.umbrella_command
 
 
+def test_public_package_exports_alignment_and_topology_workflows() -> None:
+    assert bijux_phylogenetics.summarise_fasta is summarise_fasta
+    assert bijux_phylogenetics.build_alignment_quality_report is build_alignment_quality_report
+    assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
+    assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
+    assert bijux_phylogenetics.trim_alignment is trim_alignment
+    assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
+    assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
+    assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
+    assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
+
+
 def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:
     tree = loads_newick("('Homo sapiens':0.1,'NCBI|123/45':0.2,'A.B-1':0.3);")
     assert [(taxon.raw, taxon.key) for taxon in tree.tip_taxa] == [
