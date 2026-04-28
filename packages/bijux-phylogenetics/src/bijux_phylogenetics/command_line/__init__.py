@@ -19,7 +19,12 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
 )
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
-from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa, prune_tree_to_taxa, write_pruned_taxa
+from bijux_phylogenetics.core.pruning import (
+    drop_tree_taxa,
+    prune_tree_to_requested_taxa,
+    prune_tree_to_taxa,
+    write_pruned_taxa,
+)
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
@@ -230,6 +235,7 @@ def build_parser() -> argparse.ArgumentParser:
     prune_targets = prune.add_mutually_exclusive_group(required=True)
     prune_targets.add_argument("--keep-from", type=Path)
     prune_targets.add_argument("--taxa", nargs="+")
+    prune_targets.add_argument("--exclude-taxa", nargs="+")
     prune.add_argument("--taxon-column")
     prune.add_argument("--out", required=True, type=Path)
     prune.add_argument("--pruned-taxa-out", type=Path)
@@ -481,6 +487,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.keep_from is not None:
                 tree, report = prune_tree_to_taxa(args.tree, args.keep_from, taxon_column=args.taxon_column)
                 prune_inputs = [args.tree, args.keep_from]
+            elif args.exclude_taxa is not None:
+                tree, report = drop_tree_taxa(args.tree, list(args.exclude_taxa))
+                prune_inputs = [args.tree]
             else:
                 tree, report = prune_tree_to_requested_taxa(args.tree, list(args.taxa))
                 prune_inputs = [args.tree]
