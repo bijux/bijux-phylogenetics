@@ -665,9 +665,15 @@ def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
     assert payload["data"]["node_count"] == 7
     assert payload["data"]["edge_count"] == 6
     assert payload["data"]["clade_count"] == 3
+    assert payload["data"]["tree_diameter"] == 1.6
     assert payload["data"]["mean_depth"] == 2.0
+    assert payload["data"]["colless_imbalance_index"] == 0.0
+    assert payload["data"]["sackin_imbalance_index"] == 8
     assert payload["data"]["imbalance_summary"] == "balanced"
+    assert payload["data"]["tree_quality_score"] == 100.0
     assert payload["metrics"]["cherry_count"] == 2
+    assert payload["metrics"]["tree_diameter"] == 1.6
+    assert payload["metrics"]["tree_quality_score"] == 100.0
     assert payload["data"]["taxa"] == ["A", "B", "C", "D"]
     assert payload["metrics"]["tip_count"] == 4
 
@@ -1214,6 +1220,8 @@ def test_cli_diagnose_json_output(capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["command"] == "diagnose"
     assert payload["metrics"]["cherry_count"] == 2
+    assert payload["metrics"]["tree_diameter"] == 0.6
+    assert payload["metrics"]["tree_quality_score"] == 100.0
     assert payload["data"]["inspection"]["imbalance_summary"] == "balanced"
 
 
