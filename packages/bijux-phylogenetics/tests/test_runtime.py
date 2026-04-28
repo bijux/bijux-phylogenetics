@@ -73,15 +73,19 @@ def test_cli_validate_json_output(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["tip_count"] == 4
+    assert payload["status"] == "ok"
+    assert payload["command"] == "validate"
+    assert payload["metrics"]["tip_count"] == 4
+    assert payload["data"]["tip_count"] == 4
 
 
 def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     exit_code = main(["commands", "--format", "json"])
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
-    command_names = [item["name"] for item in payload]
+    command_names = [item["name"] for item in payload["data"]["commands"]]
     assert exit_code == 0
+    assert payload["status"] == "ok"
     assert command_names == [
         "inspect",
         "validate",
@@ -94,3 +98,29 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "evidence",
         "adapter",
     ]
+
+
+def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "report.html"
+    exit_code = main(
+        [
+            "report",
+            "--tree",
+            str(FIXTURES / "example_tree.nwk"),
+            "--alignment",
+            str(FIXTURES / "example_alignment.fasta"),
+            "--traits",
+            str(FIXTURES / "example_traits.tsv"),
+            "--metadata",
+            str(FIXTURES / "example_traits.tsv"),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output)]

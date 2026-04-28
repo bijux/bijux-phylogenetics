@@ -13,6 +13,7 @@ from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
+from bijux_phylogenetics.results import build_command_result
 
 
 def _json_ready(value: Any) -> Any:
@@ -38,11 +39,17 @@ def _print_result(result: Any, *, json_output: bool) -> None:
 
 
 def _print_commands(*, output_format: str) -> None:
-    payload = [_json_ready(spec) for spec in COMMAND_SPECS]
+    payload = build_command_result(
+        command="commands",
+        inputs=[],
+        outputs=[],
+        metrics={"command_count": len(COMMAND_SPECS)},
+        data={"commands": list(COMMAND_SPECS)},
+    )
     if output_format == "json":
-        print(json.dumps(payload, indent=2, sort_keys=True))
+        print(json.dumps(_json_ready(payload), indent=2, sort_keys=True))
         return
-    for command in payload:
+    for command in _json_ready(payload.data)["commands"]:
         print(f"{command['name']}: {command['domain']} - {command['summary']}")
 
 
@@ -86,6 +93,7 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("tree", type=Path)
     render.add_argument("--metadata", type=Path)
     render.add_argument("--out", required=True, type=Path)
+    render.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
 
     evidence = subparsers.add_parser(get_command_spec("evidence").name, help=get_command_spec("evidence").summary)
     evidence.add_argument("run_root", type=Path)
@@ -98,6 +106,7 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("--traits", type=Path)
     report.add_argument("--metadata", type=Path)
     report.add_argument("--out", required=True, type=Path)
+    report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
 
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
     adapter.add_argument("adapter_name")
@@ -113,27 +122,104 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             _print_commands(output_format=args.format)
             return 0
         if args.command == "validate":
-            _print_result(validate_tree_path(args.tree), json_output=args.json)
+            report = validate_tree_path(args.tree)
+            _print_result(
+                build_command_result(
+                    command="validate",
+                    inputs=[args.tree],
+                    warnings=report.warnings,
+                    metrics={
+                        "tip_count": report.tip_count,
+                        "internal_node_count": report.internal_node_count,
+                        "polytomy_count": report.polytomy_count,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "inspect":
-            _print_result(inspect_tree_path(args.tree), json_output=args.json)
+            report = inspect_tree_path(args.tree)
+            _print_result(
+                build_command_result(
+                    command="inspect",
+                    inputs=[args.tree],
+                    metrics={
+                        "tip_count": report.tip_count,
+                        "internal_node_count": report.internal_node_count,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "normalize":
             parser.exit(status=2, message="normalize is not implemented yet\n")
         if args.command == "diagnose":
             parser.exit(status=2, message="diagnose is not implemented yet\n")
         if args.command == "compare":
-            _print_result(compare_tree_paths(args.left, args.right), json_output=args.json)
+            report = compare_tree_paths(args.left, args.right)
+            _print_result(
+                build_command_result(
+                    command="compare",
+                    inputs=[args.left, args.right],
+                    metrics={
+                        "shared_taxa": len(report.shared_taxa),
+                        "robinson_foulds_distance": report.robinson_foulds_distance,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "annotate":
-            _print_result(annotate_tree_against_table(args.tree, args.metadata), json_output=args.json)
+            report = annotate_tree_against_table(args.tree, args.metadata)
+            _print_result(
+                build_command_result(
+                    command="annotate",
+                    inputs=[args.tree, args.metadata],
+                    metrics={
+                        "tree_taxa": report.tree_taxa,
+                        "table_rows": report.table_rows,
+                        "linked_taxa": report.linked_taxa,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "render":
             result = render_phylogenetics_report(tree_path=args.tree, metadata_path=args.metadata, out_path=args.out)
+            if args.json:
+                inputs = [args.tree]
+                if args.metadata is not None:
+                    inputs.append(args.metadata)
+                _print_result(
+                    build_command_result(
+                        command="render",
+                        inputs=inputs,
+                        outputs=[result.output_path],
+                        warnings=result.validation.warnings,
+                        metrics={"tip_count": result.inspection.tip_count},
+                        data=result,
+                    ),
+                    json_output=True,
+                )
+                return 0
             print(result.output_path)
             return 0
         if args.command == "evidence":
-            _print_result(bundle_directory(args.run_root, args.out), json_output=args.json)
+            report = bundle_directory(args.run_root, args.out)
+            _print_result(
+                build_command_result(
+                    command="evidence",
+                    inputs=[args.run_root],
+                    outputs=[args.out],
+                    metrics={"file_count": report.file_count},
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "report":
             result = render_phylogenetics_report(
@@ -143,6 +229,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 metadata_path=args.metadata,
                 out_path=args.out,
             )
+            if args.json:
+                inputs = [args.tree]
+                if args.alignment is not None:
+                    inputs.append(args.alignment)
+                if args.traits is not None:
+                    inputs.append(args.traits)
+                if args.metadata is not None:
+                    inputs.append(args.metadata)
+                _print_result(
+                    build_command_result(
+                        command="report",
+                        inputs=inputs,
+                        outputs=[result.output_path],
+                        warnings=result.validation.warnings,
+                        metrics={"tip_count": result.inspection.tip_count},
+                        data=result,
+                    ),
+                    json_output=True,
+                )
+                return 0
             print(result.output_path)
             return 0
         if args.command == "adapter":
