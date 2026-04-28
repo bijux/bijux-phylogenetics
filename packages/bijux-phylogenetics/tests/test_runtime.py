@@ -449,6 +449,7 @@ def test_diagnose_ultrametricity_reports_max_deviation() -> None:
 def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
     report = annotate_tree_against_table(FIXTURES / "example_tree.nwk", FIXTURES / "example_traits.tsv")
     assert report.linked_taxa == 3
+    assert report.annotated_taxa == ["A", "B", "C"]
     assert report.missing_from_table == ["D"]
     assert report.extra_table_entries == ["E"]
 
@@ -462,6 +463,30 @@ def test_cli_metadata_inspect_json_output(capsys) -> None:
     assert payload["command"] == "metadata"
     assert payload["data"]["taxon_column"] == "taxon"
     assert payload["metrics"]["taxon_count"] == 4
+
+
+def test_cli_annotate_writes_annotation_json(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "tree.annotated.json"
+    exit_code = main(
+        [
+            "annotate",
+            str(FIXTURES / "example_tree.nwk"),
+            "--metadata",
+            str(FIXTURES / "example_traits.tsv"),
+            "--taxon-column",
+            "taxon",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    artifact = json.loads(output.read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["outputs"] == [str(output)]
+    assert artifact["annotated_taxa"] == ["A", "B", "C"]
 
 
 def test_cli_traits_validate_json_output(capsys) -> None:

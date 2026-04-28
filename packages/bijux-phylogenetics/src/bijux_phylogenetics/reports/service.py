@@ -22,6 +22,7 @@ class TableLinkageReport:
     missing_from_table: list[str]
     extra_table_entries: list[str]
     index_column: str
+    annotated_taxa: list[str]
 
 
 @dataclass(slots=True)
@@ -39,13 +40,19 @@ def summarise_alignment_path(path: Path) -> AlignmentSummary:
     return summarise_fasta(path)
 
 
-def annotate_tree_against_table(tree_path: Path, table_path: Path) -> TableLinkageReport:
+def annotate_tree_against_table(
+    tree_path: Path,
+    table_path: Path,
+    *,
+    taxon_column: str | None = None,
+) -> TableLinkageReport:
     """Summarise how a TSV table links against tree tips."""
-    table = load_taxon_table(table_path)
+    table = load_taxon_table(table_path, taxon_column=taxon_column)
     full_tip_names = set(_load_tree(tree_path).tip_names)
     missing = sorted(full_tip_names - table.indexed_values)
     extras = sorted(table.indexed_values - full_tip_names)
-    linked = len(full_tip_names & table.indexed_values)
+    annotated_taxa = sorted(full_tip_names & table.indexed_values)
+    linked = len(annotated_taxa)
     return TableLinkageReport(
         tree_path=tree_path,
         table_path=table_path,
@@ -55,7 +62,15 @@ def annotate_tree_against_table(tree_path: Path, table_path: Path) -> TableLinka
         missing_from_table=missing,
         extra_table_entries=extras,
         index_column=table.index_column,
+        annotated_taxa=annotated_taxa,
     )
+
+
+def write_annotation_report(path: Path, report: TableLinkageReport) -> Path:
+    """Write a linkage report to a deterministic JSON artifact."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
 
 
 def _section(name: str, payload: object) -> tuple[str, str]:

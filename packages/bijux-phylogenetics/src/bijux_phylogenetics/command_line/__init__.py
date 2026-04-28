@@ -26,7 +26,7 @@ from bijux_phylogenetics.errors import EvidenceContractError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
+from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report, write_annotation_report
 from bijux_phylogenetics.results import build_command_result, build_error_result
 
 
@@ -131,7 +131,10 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "compare":
         return [args.left, args.right]
     if args.command == "annotate":
-        return [args.tree, args.metadata]
+        inputs = [args.tree, args.metadata]
+        if args.out is not None:
+            inputs.append(args.out)
+        return inputs
     if args.command == "render":
         inputs = [args.tree, args.out]
         if args.metadata is not None:
@@ -253,6 +256,8 @@ def build_parser() -> argparse.ArgumentParser:
     annotate = subparsers.add_parser(get_command_spec("annotate").name, help=get_command_spec("annotate").summary)
     annotate.add_argument("tree", type=Path)
     annotate.add_argument("--metadata", required=True, type=Path)
+    annotate.add_argument("--taxon-column")
+    annotate.add_argument("--out", type=Path)
     annotate.add_argument("--json", action="store_true", help="Emit the linkage report as JSON.")
     _add_manifest_argument(annotate)
 
@@ -597,8 +602,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "annotate":
-            report = annotate_tree_against_table(args.tree, args.metadata)
-            outputs = _finalize_outputs(args, command="annotate", inputs=[args.tree, args.metadata])
+            report = annotate_tree_against_table(args.tree, args.metadata, taxon_column=args.taxon_column)
+            outputs: list[Path | str] = []
+            if args.out is not None:
+                outputs.append(write_annotation_report(args.out, report))
+            outputs = _finalize_outputs(args, command="annotate", inputs=[args.tree, args.metadata], outputs=outputs)
             _print_result(
                 build_command_result(
                     command="annotate",
