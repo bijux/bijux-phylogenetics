@@ -39,6 +39,7 @@ from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     render_dataset_report,
+    render_phylo_inputs_report,
     render_phylogenetics_report,
     render_tree_report,
 )
@@ -879,6 +880,26 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
     assert "Bijux Dataset Report" in text
 
 
+def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) -> None:
+    output = tmp_path / "phylo-inputs-report.html"
+    result = render_phylo_inputs_report(
+        tree_path=FIXTURES / "example_tree.nwk",
+        alignment_path=FIXTURES / "example_alignment.fasta",
+        out_path=output,
+    )
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "phylo-inputs"
+    assert result.alignment is not None
+    assert result.alignment_linkage is not None
+    assert result.machine_manifest["sections"] == [
+        "tree-validation",
+        "tree-inspection",
+        "alignment-summary",
+        "alignment-linkage",
+    ]
+    assert "Bijux Phylo Inputs Report" in text
+
+
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
     run_root = tmp_path / "run"
     run_root.mkdir()
@@ -1102,6 +1123,30 @@ def test_cli_report_dataset_json_output_uses_dataset_contract(tmp_path: Path, ca
     assert exit_code == 0
     assert payload["command"] == "report"
     assert payload["data"]["report_kind"] == "dataset"
+    assert payload["metrics"]["linked_taxa"] == 4
+
+
+def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "phylo-inputs-report.html"
+    exit_code = main(
+        [
+            "report",
+            "phylo-inputs",
+            "--tree",
+            str(FIXTURES / "example_tree.nwk"),
+            "--alignment",
+            str(FIXTURES / "example_alignment.fasta"),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["data"]["report_kind"] == "phylo-inputs"
+    assert payload["metrics"]["alignment_length"] == 8
     assert payload["metrics"]["linked_taxa"] == 4
 
 

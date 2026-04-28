@@ -5,11 +5,11 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentSummary
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.io.fasta import summarise_fasta
+from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.render.html import write_html_report
 
 
@@ -36,6 +36,7 @@ class ReportBuildResult:
     metadata_linkage: TableLinkageReport | None
     traits_linkage: TableLinkageReport | None
     alignment: AlignmentSummary | None
+    alignment_linkage: AlignmentLinkageReport | None
     machine_manifest: dict[str, object]
 
 
@@ -137,6 +138,7 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
         metadata_linkage=None,
         traits_linkage=None,
         alignment=None,
+        alignment_linkage=None,
         machine_manifest=machine_manifest,
     )
 
@@ -181,6 +183,47 @@ def render_dataset_report(
         metadata_linkage=metadata_linkage,
         traits_linkage=traits_linkage,
         alignment=None,
+        alignment_linkage=None,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_phylo_inputs_report(
+    *,
+    tree_path: Path,
+    alignment_path: Path,
+    out_path: Path,
+) -> ReportBuildResult:
+    """Build the explicit tree plus alignment input report contract."""
+    validation = validate_tree_path(tree_path)
+    inspection = inspect_tree_path(tree_path)
+    alignment = summarise_fasta(alignment_path)
+    alignment_linkage = link_alignment_to_tree(tree_path, alignment_path)
+    title = "Bijux Phylo Inputs Report"
+    sections = [
+        _section("tree-validation", asdict(validation)),
+        _section("tree-inspection", asdict(inspection)),
+        _section("alignment-summary", asdict(alignment)),
+        _section("alignment-linkage", asdict(alignment_linkage)),
+    ]
+    machine_manifest = _build_machine_manifest(
+        report_kind="phylo-inputs",
+        title=title,
+        input_paths=[tree_path, alignment_path],
+        sections=sections,
+        inspection=inspection,
+    )
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return ReportBuildResult(
+        output_path=out_path,
+        report_kind="phylo-inputs",
+        title=title,
+        validation=validation,
+        inspection=inspection,
+        metadata_linkage=None,
+        traits_linkage=None,
+        alignment=alignment,
+        alignment_linkage=alignment_linkage,
         machine_manifest=machine_manifest,
     )
 
@@ -236,5 +279,6 @@ def render_phylogenetics_report(
         metadata_linkage=metadata_linkage,
         traits_linkage=traits_linkage,
         alignment=alignment,
+        alignment_linkage=None,
         machine_manifest=machine_manifest,
     )

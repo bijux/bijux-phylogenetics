@@ -33,6 +33,7 @@ from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     render_dataset_report,
+    render_phylo_inputs_report,
     render_phylogenetics_report,
     render_tree_report,
     write_annotation_report,
@@ -166,6 +167,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
             if args.traits is not None:
                 inputs.append(args.traits)
             return inputs
+        if args.report_command == "phylo-inputs":
+            return [args.tree, args.alignment, args.out]
         inputs = [args.tree, args.out]
         if getattr(args, "alignment", None) is not None:
             inputs.append(args.alignment)
@@ -335,6 +338,15 @@ def build_parser() -> argparse.ArgumentParser:
     report_dataset.add_argument("--out", required=True, type=Path)
     report_dataset.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(report_dataset)
+    report_phylo_inputs = report_subparsers.add_parser(
+        "phylo-inputs",
+        help="Render a tree plus alignment HTML input report.",
+    )
+    report_phylo_inputs.add_argument("--tree", required=True, type=Path)
+    report_phylo_inputs.add_argument("--alignment", required=True, type=Path)
+    report_phylo_inputs.add_argument("--out", required=True, type=Path)
+    report_phylo_inputs.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report_phylo_inputs)
 
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
     adapter.add_argument("adapter_name")
@@ -832,6 +844,33 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             outputs=outputs,
                             warnings=result.validation.warnings + result.inspection.warnings,
                             metrics={"tip_count": result.inspection.tip_count, "linked_taxa": result.metadata_linkage.linked_taxa},
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
+                return 0
+            if args.report_command == "phylo-inputs":
+                result = render_phylo_inputs_report(
+                    tree_path=args.tree,
+                    alignment_path=args.alignment,
+                    out_path=args.out,
+                )
+                inputs = [args.tree, args.alignment]
+                outputs = _finalize_outputs(args, command="report", inputs=inputs, outputs=[result.output_path])
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=inputs,
+                            outputs=outputs,
+                            warnings=result.validation.warnings + result.inspection.warnings,
+                            metrics={
+                                "tip_count": result.inspection.tip_count,
+                                "alignment_length": result.alignment.alignment_length,
+                                "linked_taxa": result.alignment_linkage.linked_taxa,
+                            },
                             data=result,
                         ),
                         json_output=True,
