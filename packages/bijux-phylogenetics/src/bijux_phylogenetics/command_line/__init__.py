@@ -19,7 +19,7 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
 )
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
-from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
+from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa, prune_tree_to_taxa, write_pruned_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
@@ -120,7 +120,9 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.table]
         return [args.tree, args.table]
     if args.command == "prune":
-        inputs = [args.tree, args.keep_from, args.out]
+        inputs = [args.tree, args.out]
+        if getattr(args, "keep_from", None) is not None:
+            inputs.append(args.keep_from)
         if args.pruned_taxa_out is not None:
             inputs.append(args.pruned_taxa_out)
         return inputs
@@ -225,7 +227,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     prune = subparsers.add_parser(get_command_spec("prune").name, help=get_command_spec("prune").summary)
     prune.add_argument("tree", type=Path)
-    prune.add_argument("--keep-from", required=True, type=Path)
+    prune_targets = prune.add_mutually_exclusive_group(required=True)
+    prune_targets.add_argument("--keep-from", type=Path)
+    prune_targets.add_argument("--taxa", nargs="+")
     prune.add_argument("--taxon-column")
     prune.add_argument("--out", required=True, type=Path)
     prune.add_argument("--pruned-taxa-out", type=Path)
@@ -474,20 +478,25 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "prune":
-            tree, report = prune_tree_to_taxa(args.tree, args.keep_from, taxon_column=args.taxon_column)
+            if args.keep_from is not None:
+                tree, report = prune_tree_to_taxa(args.tree, args.keep_from, taxon_column=args.taxon_column)
+                prune_inputs = [args.tree, args.keep_from]
+            else:
+                tree, report = prune_tree_to_requested_taxa(args.tree, list(args.taxa))
+                prune_inputs = [args.tree]
             output_path = write_newick(args.out, tree)
             pruned_taxa_path = args.pruned_taxa_out or args.out.with_name("pruned_taxa.tsv")
             write_pruned_taxa(pruned_taxa_path, report.removed_taxa)
             outputs = _finalize_outputs(
                 args,
                 command="prune",
-                inputs=[args.tree, args.keep_from],
+                inputs=prune_inputs,
                 outputs=[output_path, pruned_taxa_path],
             )
             _print_result(
                 build_command_result(
                     command="prune",
-                    inputs=[args.tree, args.keep_from],
+                    inputs=prune_inputs,
                     outputs=outputs,
                     metrics={
                         "kept_taxa": len(report.kept_taxa),

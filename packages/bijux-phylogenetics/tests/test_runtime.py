@@ -300,6 +300,33 @@ def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
     assert report.absent_requested_taxa == ["Z"]
 
 
+def test_prune_cli_accepts_explicit_taxon_keep_lists(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "pruned-tree.nwk"
+    pruned_taxa_path = tmp_path / "removed.tsv"
+    exit_code = main(
+        [
+            "prune",
+            str(fixture("example_tree.nwk")),
+            "--taxa",
+            "A",
+            "C",
+            "Z",
+            "--out",
+            str(output_path),
+            "--pruned-taxa-out",
+            str(pruned_taxa_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "(A:0.3,C:0.3);\n"
+    assert pruned_taxa_path.read_text(encoding="utf-8") == "taxon\nB\nD\n"
+    assert payload["data"]["absent_requested_taxa"] == ["Z"]
+    assert payload["data"]["kept_taxa"] == ["A", "C"]
+
+
 def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
     tree, report = extract_named_clade(
         fixture("example_tree_named_clades.nwk"),
