@@ -131,3 +131,24 @@ def prune_alignment_to_tree(
         kept_ids=kept_ids,
         removed_ids=removed_ids,
     )
+
+
+def prune_tree_to_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+) -> tuple[PhyloTree, TreePruningReport]:
+    """Prune a tree to the identifiers present in an alignment."""
+    tree = load_tree(tree_path)
+    records = load_fasta_alignment(alignment_path)
+    pruned_tree, retained_tips, removed_tips = _prune_tree_against_taxa(
+        tree,
+        {record.identifier for record in records},
+    )
+    return pruned_tree, TreePruningReport(
+        tree_path=tree_path,
+        keep_from_path=alignment_path,
+        taxon_column="identifier",
+        original_tip_count=tree.tip_count,
+        kept_taxa=retained_tips,
+        removed_taxa=removed_tips,
+    )
