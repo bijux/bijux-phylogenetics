@@ -13,7 +13,7 @@ from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_alignment_to_tree, prune_tree_to_alignment, prune_tree_to_taxa
-from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
+from bijux_phylogenetics.core.traits import detect_unusable_trait_columns, link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
 from bijux_phylogenetics.diagnostics.root_to_tip import diagnose_ultrametricity
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
@@ -129,11 +129,22 @@ def test_metadata_inspect_rejects_missing_requested_taxon_column() -> None:
 def test_traits_validate_infers_numeric_and_categorical_schema() -> None:
     report = validate_traits_table(fixture("example_traits_validate.tsv"))
     assert report.taxon_column == "taxon"
-    assert [(column.name, column.kind, column.missing_count) for column in report.trait_columns] == [
-        ("height_cm", "numeric", 0),
-        ("habitat", "categorical", 0),
-        ("status", "categorical", 1),
+    assert [
+        (column.name, column.kind, column.missing_count, column.missing_fraction)
+        for column in report.trait_columns
+    ] == [
+        ("height_cm", "numeric", 0, 0.0),
+        ("habitat", "categorical", 0, 0.0),
+        ("status", "categorical", 1, 0.25),
     ]
+
+
+def test_traits_detect_unusable_columns_by_missingness() -> None:
+    columns = detect_unusable_trait_columns(
+        fixture("example_traits_validate.tsv"),
+        missingness_threshold=0.2,
+    )
+    assert [(column.name, column.missing_fraction) for column in columns] == [("status", 0.25)]
 
 
 def test_traits_link_reports_mismatch_and_usable_taxa() -> None:

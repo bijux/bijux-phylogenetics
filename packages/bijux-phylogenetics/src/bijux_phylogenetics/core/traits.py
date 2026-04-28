@@ -15,6 +15,7 @@ class TraitColumnSummary:
     name: str
     kind: str
     missing_count: int
+    missing_fraction: float
     distinct_value_count: int
 
 
@@ -71,6 +72,7 @@ def _summarize_trait_column(table: TaxonTable, column: str) -> TraitColumnSummar
         name=column,
         kind=kind,
         missing_count=sum(1 for value in values if not value),
+        missing_fraction=sum(1 for value in values if not value) / max(len(values), 1),
         distinct_value_count=len(set(observed_values)),
     )
 
@@ -126,3 +128,22 @@ def link_tree_to_traits(
         missing_from_traits=missing_from_traits,
         extra_trait_taxa=extra_trait_taxa,
     )
+
+
+def detect_unusable_trait_columns(
+    path: Path,
+    *,
+    missingness_threshold: float,
+    taxon_column: str | None = None,
+) -> list[TraitColumnSummary]:
+    """Return trait columns whose missingness exceeds the given threshold."""
+    if not 0.0 <= missingness_threshold <= 1.0:
+        raise ValueError(
+            f"missingness threshold must be between 0 and 1 inclusive, got {missingness_threshold}"
+        )
+    report = validate_traits_table(path, taxon_column=taxon_column)
+    return [
+        column
+        for column in report.trait_columns
+        if column.missing_fraction > missingness_threshold
+    ]
