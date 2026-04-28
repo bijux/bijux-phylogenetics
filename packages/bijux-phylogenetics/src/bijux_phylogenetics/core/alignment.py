@@ -12,6 +12,14 @@ class AlignmentRecord:
     sequence: str
 
 
+@dataclass(frozen=True, slots=True)
+class SequenceMissingness:
+    """Missing-data fraction for one alignment sequence."""
+
+    identifier: str
+    missing_fraction: float
+
+
 @dataclass(slots=True)
 class AlignmentSummary:
     """Summary of an alignment input."""
@@ -24,6 +32,8 @@ class AlignmentSummary:
     ids: list[str]
     missing_data_fraction: float
     gap_fraction: float
+    per_sequence_missingness: list[SequenceMissingness]
+    constant_site_count: int
     variable_site_count: int
     parsimony_informative_site_count: int
 

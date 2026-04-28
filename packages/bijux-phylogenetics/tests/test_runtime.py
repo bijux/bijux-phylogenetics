@@ -161,8 +161,30 @@ def test_alignment_inspect_reports_core_diagnostics() -> None:
     assert report.ids == ["A", "B", "C", "D"]
     assert report.missing_data_fraction == 0.0
     assert report.gap_fraction == 0.0
+    assert report.constant_site_count == 6
     assert report.variable_site_count == 2
     assert report.parsimony_informative_site_count == 2
+    assert [(row.identifier, row.missing_fraction) for row in report.per_sequence_missingness] == [
+        ("A", 0.0),
+        ("B", 0.0),
+        ("C", 0.0),
+        ("D", 0.0),
+    ]
+
+
+def test_alignment_inspect_reports_per_sequence_missingness() -> None:
+    report = summarise_fasta(fixture("example_alignment_missingness.fasta"))
+    assert report.sequence_count == 3
+    assert report.alignment_length == 6
+    assert report.constant_site_count == 6
+    assert report.variable_site_count == 0
+    assert report.parsimony_informative_site_count == 0
+    assert report.missing_data_fraction == 4 / 18
+    assert [(row.identifier, row.missing_fraction) for row in report.per_sequence_missingness] == [
+        ("A", 2 / 6),
+        ("B", 2 / 6),
+        ("C", 0.0),
+    ]
 
 
 def test_alignment_inspect_rejects_unequal_lengths() -> None:

@@ -2,13 +2,21 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentRecord, AlignmentSummary
+from bijux_phylogenetics.core.alignment import (
+    AlignmentLinkageReport,
+    AlignmentRecord,
+    AlignmentSummary,
+    SequenceMissingness,
+)
 from bijux_phylogenetics.errors import AlignmentTaxonMismatchError, InvalidAlignmentError
 from bijux_phylogenetics.io.trees import load_tree
 
+_GAP_CHARACTERS = {"-"}
+_MISSING_CHARACTERS = {"?", "N", "n", "X", "x"}
 
-def summarise_fasta(path: Path) -> AlignmentSummary:
-    """Summarise a FASTA alignment without loading a heavy dependency."""
+
+def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
+    """Load FASTA records using the repository's deterministic alignment contract."""
     if not path.exists():
         raise FileNotFoundError(f"alignment file not found: {path}")
 
@@ -48,17 +56,37 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
             f"alignment contains unequal sequence lengths: min={min(lengths)} max={max(lengths)}"
         )
 
-    gap_characters = {"-"}
-    missing_characters = {"?", "N", "n", "X", "x"}
-    total_sites = len(records) * lengths[0]
-    gap_count = sum(sum(1 for residue in record.sequence if residue in gap_characters) for record in records)
-    missing_count = sum(sum(1 for residue in record.sequence if residue in missing_characters) for record in records)
+    return records
 
+
+def summarise_fasta(path: Path) -> AlignmentSummary:
+    """Summarise a FASTA alignment without loading a heavy dependency."""
+    records = load_fasta_alignment(path)
+    ids = [record.identifier for record in records]
+    lengths = [len(record.sequence) for record in records]
+    total_sites = len(records) * lengths[0]
+    gap_count = sum(sum(1 for residue in record.sequence if residue in _GAP_CHARACTERS) for record in records)
+    missing_count = sum(sum(1 for residue in record.sequence if residue in _MISSING_CHARACTERS) for record in records)
+    per_sequence_missingness = [
+        SequenceMissingness(
+            identifier=record.identifier,
+            missing_fraction=sum(1 for residue in record.sequence if residue in _MISSING_CHARACTERS) / lengths[0],
+        )
+        for record in records
+    ]
+
+    constant_site_count = 0
     variable_site_count = 0
     parsimony_informative_site_count = 0
     for column in zip(*(record.sequence for record in records), strict=True):
-        observed = [residue.upper() for residue in column if residue not in gap_characters and residue not in missing_characters]
+        observed = [
+            residue.upper()
+            for residue in column
+            if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+        ]
         states = set(observed)
+        if len(states) == 1 and observed:
+            constant_site_count += 1
         if len(states) > 1:
             variable_site_count += 1
         if states and sum(observed.count(state) >= 2 for state in states) >= 2:
@@ -73,6 +101,8 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
         ids=ids,
         missing_data_fraction=missing_count / total_sites,
         gap_fraction=gap_count / total_sites,
+        per_sequence_missingness=per_sequence_missingness,
+        constant_site_count=constant_site_count,
         variable_site_count=variable_site_count,
         parsimony_informative_site_count=parsimony_informative_site_count,
     )
