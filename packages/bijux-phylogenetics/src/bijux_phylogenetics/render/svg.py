@@ -103,6 +103,21 @@ def _categorical_color_map(values: dict[str, str]) -> dict[str, str]:
     }
 
 
+def _interpolate_channel(start: int, end: int, fraction: float) -> int:
+    return round(start + (end - start) * fraction)
+
+
+def _continuous_color(value: float, minimum: float, maximum: float) -> str:
+    if maximum <= minimum:
+        fraction = 0.5
+    else:
+        fraction = (value - minimum) / (maximum - minimum)
+    red = _interpolate_channel(219, 15, fraction)
+    green = _interpolate_channel(234, 118, fraction)
+    blue = _interpolate_channel(254, 110, fraction)
+    return f"#{red:02x}{green:02x}{blue:02x}"
+
+
 def render_tree_svg(
     tree_path: Path,
     *,
@@ -111,6 +126,7 @@ def render_tree_svg(
     layout: str = "cladogram",
     show_support_values: bool = False,
     categorical_traits: dict[str, str] | None = None,
+    continuous_traits: dict[str, float] | None = None,
 ) -> TreeRenderResult:
     """Render a deterministic SVG tree as a cladogram, phylogram, or circular tree."""
     if layout not in {"cladogram", "phylogram", "circular"}:
@@ -150,8 +166,13 @@ def render_tree_svg(
     next_leaf_index = 0
     rendered_support_count = 0
     rendered_categorical_trait_count = 0
+    rendered_continuous_trait_count = 0
     categorical_traits = categorical_traits or {}
     categorical_color_map = _categorical_color_map(categorical_traits)
+    continuous_traits = continuous_traits or {}
+    continuous_values = list(continuous_traits.values())
+    continuous_min = min(continuous_values) if continuous_values else 0.0
+    continuous_max = max(continuous_values) if continuous_values else 0.0
 
     def node_x(depth: int, distance: float) -> float:
         if layout == "phylogram" and max_distance > 0:
@@ -162,6 +183,7 @@ def render_tree_svg(
         nonlocal next_leaf_index
         nonlocal rendered_support_count
         nonlocal rendered_categorical_trait_count
+        nonlocal rendered_continuous_trait_count
         branch_distance = distance + float(node.branch_length or 0.0)
         x = node_x(depth, branch_distance if node is not tree.root else distance)
         if node.is_leaf():
@@ -181,6 +203,16 @@ def render_tree_svg(
                     f'<circle cx="{marker_x:.1f}" cy="{y - 4:.1f}" r="7" fill="{categorical_color_map[trait_value]}" class="trait-marker"/>'
                 )
                 rendered_categorical_trait_count += 1
+            continuous_value = continuous_traits.get(node.name or "")
+            if continuous_value is not None:
+                bar_x = left_margin + tree_width + 210
+                fill_fraction = 1.0 if continuous_max <= continuous_min else (continuous_value - continuous_min) / (continuous_max - continuous_min)
+                fill_width = 52 * max(0.0, min(fill_fraction, 1.0))
+                overlays.append(
+                    f'<rect x="{bar_x:.1f}" y="{y - 11:.1f}" width="52" height="12" rx="6" fill="#e2e8f0" class="trait-bar-outline"/>'
+                    f'<rect x="{bar_x:.1f}" y="{y - 11:.1f}" width="{fill_width:.1f}" height="12" rx="6" fill="{_continuous_color(continuous_value, continuous_min, continuous_max)}" class="trait-bar-fill"/>'
+                )
+                rendered_continuous_trait_count += 1
             return _Point(x=x, y=y)
 
         child_points = [visit_rectangular(child, depth + 1, branch_distance) for child in node.children]
@@ -231,6 +263,7 @@ def render_tree_svg(
         def draw(node: TreeNode, depth: int, distance: float) -> tuple[float, float]:
             nonlocal rendered_support_count
             nonlocal rendered_categorical_trait_count
+            nonlocal rendered_continuous_trait_count
             branch_distance = distance + float(node.branch_length or 0.0)
             radial = radial_distance(depth, branch_distance if node is not tree.root else distance)
             if node.is_leaf():
@@ -250,6 +283,13 @@ def render_tree_svg(
                         f'<circle cx="{marker_point.x:.1f}" cy="{marker_point.y:.1f}" r="6" fill="{categorical_color_map[trait_value]}" class="trait-marker"/>'
                     )
                     rendered_categorical_trait_count += 1
+                continuous_value = continuous_traits.get(node.name or "")
+                if continuous_value is not None:
+                    marker_point = _polar_point(center_x, center_y, radial + 10, angle)
+                    overlays.append(
+                        f'<circle cx="{marker_point.x:.1f}" cy="{marker_point.y:.1f}" r="6" fill="{_continuous_color(continuous_value, continuous_min, continuous_max)}" class="trait-marker"/>'
+                    )
+                    rendered_continuous_trait_count += 1
                 return angle, radial
 
             child_positions = [draw(child, depth + 1, branch_distance) for child in node.children]
@@ -320,6 +360,21 @@ def render_tree_svg(
             + "".join(legend_items)
         )
 
+    continuous_legend = ""
+    if continuous_values:
+        legend_x = width - 220
+        legend_y = height - 60
+        continuous_legend = (
+            f'<text x="{legend_x - 2:.1f}" y="{legend_y - 10:.1f}" class="legend-title">continuous trait</text>'
+            f'<defs><linearGradient id="continuous-trait-gradient" x1="0%" y1="0%" x2="100%" y2="0%">'
+            f'<stop offset="0%" stop-color="{_continuous_color(continuous_min, continuous_min, continuous_max)}"/>'
+            f'<stop offset="100%" stop-color="{_continuous_color(continuous_max, continuous_min, continuous_max)}"/>'
+            f'</linearGradient></defs>'
+            f'<rect x="{legend_x:.1f}" y="{legend_y:.1f}" width="120" height="12" rx="6" fill="url(#continuous-trait-gradient)"/>'
+            f'<text x="{legend_x:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(_format_branch_value(continuous_min))}</text>'
+            f'<text x="{legend_x + 88:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(_format_branch_value(continuous_max))}</text>'
+        )
+
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="phylogenetic tree">
   <style>
     .panel {{ fill: #f7fbfa; stroke: #d7e3e1; stroke-width: 1; rx: 18; ry: 18; }}
@@ -337,6 +392,7 @@ def render_tree_svg(
   {''.join(overlays)}
   {scale_bar}
   {categorical_legend}
+  {continuous_legend}
 </svg>
 """
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -350,7 +406,7 @@ def render_tree_svg(
         has_scale_bar=has_scale_bar,
         rendered_support_count=rendered_support_count,
         rendered_categorical_trait_count=rendered_categorical_trait_count,
-        rendered_continuous_trait_count=0,
+        rendered_continuous_trait_count=rendered_continuous_trait_count,
         rendered_metadata_strip_count=0,
         rendered_heatmap_column_count=0,
         collapsed_clade_count=0,

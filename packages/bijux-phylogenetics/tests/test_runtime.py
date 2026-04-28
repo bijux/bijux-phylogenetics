@@ -1650,6 +1650,20 @@ def test_render_tree_svg_can_render_categorical_tip_traits(tmp_path: Path) -> No
     assert "Sweden" in svg
 
 
+def test_render_tree_svg_can_render_continuous_tip_traits(tmp_path: Path) -> None:
+    output = tmp_path / "continuous.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        continuous_traits={"A": 1.2, "B": 1.4, "C": 1.8, "D": 2.0},
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_continuous_trait_count == 4
+    assert "continuous trait" in svg
+    assert "continuous-trait-gradient" in svg
+    assert 'class="trait-bar-fill"' in svg
+
+
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
     output = tmp_path / "annotated.svg"
     result = render_tree_svg(
