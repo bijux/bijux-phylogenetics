@@ -140,3 +140,14 @@ def inspect_metadata_table(path: Path, *, taxon_column: str | None = None) -> Me
         taxa=table.taxa,
         column_completeness=column_completeness,
     )
+
+
+def write_taxon_rows(path: Path, *, columns: list[str], rows: list[dict[str, str]]) -> Path:
+    """Write taxon-keyed rows as CSV or TSV based on the output suffix."""
+    delimiter, _ = _detect_delimiter(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=columns, delimiter=delimiter)
+        writer.writeheader()
+        writer.writerows(rows)
+    return path

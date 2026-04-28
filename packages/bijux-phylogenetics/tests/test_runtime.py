@@ -235,6 +235,32 @@ def test_prune_traits_to_tree_keeps_tree_order_for_overlapping_taxa() -> None:
     assert report.removed_taxa == ["E"]
 
 
+def test_traits_prune_cli_writes_pruned_table_in_tree_order(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "pruned-traits.tsv"
+    exit_code = main(
+        [
+            "traits",
+            "prune",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits.tsv")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "taxon\tvalue\n"
+        "A\t1.2\n"
+        "B\t1.4\n"
+        "C\t1.8\n"
+    )
+    assert payload["data"]["kept_taxa"] == ["A", "B", "C"]
+    assert payload["data"]["removed_taxa"] == ["E"]
+
+
 def test_dataset_readiness_reports_ready_comparative_inputs() -> None:
     report = summarize_dataset_readiness(
         fixture("example_tree.nwk"),

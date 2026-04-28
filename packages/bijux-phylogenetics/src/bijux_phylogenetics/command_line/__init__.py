@@ -11,7 +11,7 @@ from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.diagnostics.root_to_tip import (
     compute_root_to_tip_distances,
     diagnose_ultrametricity,
@@ -25,7 +25,7 @@ from bijux_phylogenetics.core.pruning import (
     prune_tree_to_taxa,
     write_pruned_taxa,
 )
-from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
+from bijux_phylogenetics.core.traits import link_tree_to_traits, prune_traits_to_tree, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.demo import run_capability_demo
@@ -123,6 +123,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "traits":
         if args.traits_command == "validate":
             return [args.table]
+        if args.traits_command == "prune":
+            return [args.tree, args.table, args.out]
         return [args.tree, args.table]
     if args.command == "prune":
         inputs = [args.tree, args.out]
@@ -229,6 +231,13 @@ def build_parser() -> argparse.ArgumentParser:
     traits_link.add_argument("--strict", action="store_true")
     traits_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(traits_link)
+    traits_prune = traits_subparsers.add_parser("prune", help="Prune a traits table to tree taxa.")
+    traits_prune.add_argument("tree", type=Path)
+    traits_prune.add_argument("table", type=Path)
+    traits_prune.add_argument("--taxon-column")
+    traits_prune.add_argument("--out", required=True, type=Path)
+    traits_prune.add_argument("--json", action="store_true", help="Emit the pruning report as JSON.")
+    _add_manifest_argument(traits_prune)
 
     prune = subparsers.add_parser(get_command_spec("prune").name, help=get_command_spec("prune").summary)
     prune.add_argument("tree", type=Path)
@@ -428,6 +437,35 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "row_count": report.row_count,
                             "trait_column_count": len(report.trait_columns),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.traits_command == "prune":
+                rows, report = prune_traits_to_tree(
+                    args.tree,
+                    args.table,
+                    taxon_column=args.taxon_column,
+                )
+                table = load_taxon_table(args.table, taxon_column=args.taxon_column)
+                output_path = write_taxon_rows(args.out, columns=table.columns, rows=rows)
+                outputs = _finalize_outputs(
+                    args,
+                    command="traits",
+                    inputs=[args.tree, args.table],
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="traits",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "original_row_count": report.original_row_count,
+                            "kept_taxa": len(report.kept_taxa),
+                            "removed_taxa": len(report.removed_taxa),
                         },
                         data=report,
                     ),
