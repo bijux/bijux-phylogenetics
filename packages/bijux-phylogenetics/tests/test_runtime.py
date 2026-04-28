@@ -13,6 +13,7 @@ from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import (
+    AlignmentTaxonMismatchError,
     DuplicateTaxonError,
     InvalidBranchLengthError,
     InvalidAlignmentError,
@@ -25,7 +26,7 @@ from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
-from bijux_phylogenetics.io.fasta import summarise_fasta
+from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
 
@@ -134,6 +135,24 @@ def test_alignment_inspect_rejects_unequal_lengths() -> None:
         assert error.code == "invalid_alignment_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected InvalidAlignmentError")
+
+
+def test_alignment_link_reports_exact_mismatch() -> None:
+    report = link_alignment_to_tree(FIXTURES / "example_tree.nwk", FIXTURES / "example_alignment.fasta")
+    assert report.tree_taxa == 4
+    assert report.alignment_ids == 4
+    assert report.linked_taxa == 4
+    assert report.missing_from_alignment == []
+    assert report.extra_alignment_ids == []
+
+
+def test_alignment_link_strict_mode_rejects_mismatch() -> None:
+    try:
+        link_alignment_to_tree(FIXTURES / "example_tree.nwk", FIXTURES / "example_alignment_mismatch.fasta", strict=True)
+    except AlignmentTaxonMismatchError as error:
+        assert error.code == "alignment_taxon_mismatch_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected AlignmentTaxonMismatchError")
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
@@ -445,6 +464,35 @@ def test_cli_alignment_inspect_json_output(capsys) -> None:
     assert payload["command"] == "alignment"
     assert payload["metrics"]["alignment_length"] == 8
     assert payload["data"]["variable_site_count"] == 2
+
+
+def test_cli_alignment_link_json_output(capsys) -> None:
+    exit_code = main(
+        ["alignment", "link", str(FIXTURES / "example_tree.nwk"), str(FIXTURES / "example_alignment.fasta"), "--json"]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["linked_taxa"] == 4
+
+
+def test_cli_alignment_link_strict_mode_returns_typed_error(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "link",
+            str(FIXTURES / "example_tree.nwk"),
+            str(FIXTURES / "example_alignment_mismatch.fasta"),
+            "--strict",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == AlignmentTaxonMismatchError.code
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:

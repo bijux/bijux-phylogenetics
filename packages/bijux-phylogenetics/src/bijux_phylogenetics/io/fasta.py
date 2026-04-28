@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentRecord, AlignmentSummary
+from bijux_phylogenetics.errors import AlignmentTaxonMismatchError, InvalidAlignmentError
+from bijux_phylogenetics.io.trees import load_tree
 
 
 def summarise_fasta(path: Path) -> AlignmentSummary:
@@ -74,4 +75,38 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
         gap_fraction=gap_count / total_sites,
         variable_site_count=variable_site_count,
         parsimony_informative_site_count=parsimony_informative_site_count,
+    )
+
+
+def link_alignment_to_tree(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    strict: bool = False,
+) -> AlignmentLinkageReport:
+    """Report how alignment sequence identifiers join against a tree."""
+    tree = load_tree(tree_path)
+    alignment = summarise_fasta(alignment_path)
+    tree_taxa = set(tree.tip_names)
+    alignment_ids = set(alignment.ids)
+    missing_from_alignment = sorted(tree_taxa - alignment_ids)
+    extra_alignment_ids = sorted(alignment_ids - tree_taxa)
+
+    if strict and (missing_from_alignment or extra_alignment_ids):
+        raise AlignmentTaxonMismatchError(
+            "alignment linkage mismatch: "
+            f"{len(missing_from_alignment)} tree taxa missing from alignment and "
+            f"{len(extra_alignment_ids)} alignment ids absent from tree"
+        )
+
+    usable_taxa = sorted(tree_taxa & alignment_ids)
+    return AlignmentLinkageReport(
+        tree_path=tree_path,
+        alignment_path=alignment_path,
+        tree_taxa=len(tree_taxa),
+        alignment_ids=len(alignment_ids),
+        linked_taxa=len(usable_taxa),
+        usable_taxa=usable_taxa,
+        missing_from_alignment=missing_from_alignment,
+        extra_alignment_ids=extra_alignment_ids,
     )

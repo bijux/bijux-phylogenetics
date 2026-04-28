@@ -26,3 +26,17 @@ class AlignmentSummary:
     gap_fraction: float
     variable_site_count: int
     parsimony_informative_site_count: int
+
+
+@dataclass(slots=True)
+class AlignmentLinkageReport:
+    """Summary of how an alignment links against a tree tip set."""
+
+    tree_path: Path
+    alignment_path: Path
+    tree_taxa: int
+    alignment_ids: int
+    linked_taxa: int
+    usable_taxa: list[str]
+    missing_from_alignment: list[str]
+    extra_alignment_ids: list[str]

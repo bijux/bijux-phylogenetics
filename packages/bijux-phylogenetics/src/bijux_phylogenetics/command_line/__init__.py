@@ -9,7 +9,7 @@ from typing import Any
 
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
-from bijux_phylogenetics.io.fasta import summarise_fasta
+from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
@@ -80,7 +80,9 @@ def _command_inputs(args: Any) -> list[Path | str]:
             inputs.append(args.pruned_taxa_out)
         return inputs
     if args.command == "alignment":
-        return [args.alignment]
+        if args.alignment_command == "inspect":
+            return [args.alignment]
+        return [args.tree, args.alignment]
     if args.command in {"validate", "inspect", "diagnose"}:
         return [args.tree]
     if args.command == "normalize":
@@ -158,6 +160,11 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_inspect = alignment_subparsers.add_parser("inspect", help="Inspect an aligned FASTA file.")
     alignment_inspect.add_argument("alignment", type=Path)
     alignment_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
+    alignment_link.add_argument("tree", type=Path)
+    alignment_link.add_argument("alignment", type=Path)
+    alignment_link.add_argument("--strict", action="store_true")
+    alignment_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -330,16 +337,32 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "alignment":
-            report = summarise_fasta(args.alignment)
+            if args.alignment_command == "inspect":
+                report = summarise_fasta(args.alignment)
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        metrics={
+                            "sequence_count": report.sequence_count,
+                            "alignment_length": report.alignment_length,
+                            "variable_site_count": report.variable_site_count,
+                            "parsimony_informative_site_count": report.parsimony_informative_site_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            report = link_alignment_to_tree(args.tree, args.alignment, strict=args.strict)
             _print_result(
                 build_command_result(
                     command="alignment",
-                    inputs=[args.alignment],
+                    inputs=[args.tree, args.alignment],
                     metrics={
-                        "sequence_count": report.sequence_count,
-                        "alignment_length": report.alignment_length,
-                        "variable_site_count": report.variable_site_count,
-                        "parsimony_informative_site_count": report.parsimony_informative_site_count,
+                        "tree_taxa": report.tree_taxa,
+                        "alignment_ids": report.alignment_ids,
+                        "linked_taxa": report.linked_taxa,
                     },
                     data=report,
                 ),
