@@ -20,6 +20,7 @@ from bijux_phylogenetics.core.pruning import (
     prune_tree_to_requested_taxa,
     prune_tree_to_taxa,
 )
+from bijux_phylogenetics.core.topology import extract_named_clade
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.core.traits import detect_unusable_trait_columns, link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
@@ -276,6 +277,18 @@ def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
     assert report.kept_taxa == ["A", "C"]
     assert report.removed_taxa == ["B", "D"]
     assert report.absent_requested_taxa == ["Z"]
+
+
+def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
+    tree, report = extract_named_clade(
+        fixture("example_tree_named_clades.nwk"),
+        clade_name="Mammals",
+    )
+    assert tree.tip_names == ["A", "B"]
+    assert dumps_newick(tree) == "(A:0.1,B:0.1)Mammals;"
+    assert report.clade_name == "Mammals"
+    assert report.tip_count == 2
+    assert report.taxa == ["A", "B"]
 
 
 def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
