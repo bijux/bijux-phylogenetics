@@ -1611,6 +1611,16 @@ def test_render_tree_svg_can_render_phylogram_with_scale_bar(tmp_path: Path) -> 
     assert 'class="scale-label"' in svg
 
 
+def test_render_tree_svg_can_render_circular_layout(tmp_path: Path) -> None:
+    output = tmp_path / "circular.svg"
+    result = render_tree_svg(fixture("example_tree.nwk"), out_path=output, layout="circular")
+    svg = output.read_text(encoding="utf-8")
+    assert result.layout == "circular"
+    assert result.has_scale_bar is False
+    assert "<path d=\"M " in svg
+    assert "text-anchor=" in svg
+
+
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
     output = tmp_path / "annotated.svg"
     result = render_tree_svg(

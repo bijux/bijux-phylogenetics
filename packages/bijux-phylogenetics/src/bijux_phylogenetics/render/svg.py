@@ -67,6 +67,13 @@ def _format_branch_value(value: float) -> str:
     return format(round(value, 15), ".15g")
 
 
+def _polar_point(center_x: float, center_y: float, radius: float, angle_radians: float) -> _Point:
+    return _Point(
+        x=center_x + radius * math.cos(angle_radians),
+        y=center_y + radius * math.sin(angle_radians),
+    )
+
+
 def render_tree_svg(
     tree_path: Path,
     *,
@@ -74,8 +81,8 @@ def render_tree_svg(
     labels: dict[str, str] | None = None,
     layout: str = "cladogram",
 ) -> TreeRenderResult:
-    """Render a deterministic SVG tree as a cladogram or phylogram."""
-    if layout not in {"cladogram", "phylogram"}:
+    """Render a deterministic SVG tree as a cladogram, phylogram, or circular tree."""
+    if layout not in {"cladogram", "phylogram", "circular"}:
         raise ValueError(f"unsupported tree layout: {layout}")
 
     tree = _load_tree(tree_path)
@@ -89,15 +96,21 @@ def render_tree_svg(
     scale_width = 520
     leaf_count = _count_render_leaves(tree.root)
     max_depth = max(_max_depth(tree.root), 1)
-    max_distance = _max_distance(tree.root, 0.0) if layout == "phylogram" else 0.0
+    max_distance = _max_distance(tree.root, 0.0) if layout in {"phylogram", "circular"} else 0.0
 
-    if layout == "phylogram" and max_distance > 0:
+    if layout == "circular":
+        tree_radius = 320
+        width = tree_radius * 2 + 280
+        height = tree_radius * 2 + 120
+        tree_width = tree_radius
+    elif layout == "phylogram" and max_distance > 0:
         tree_width = scale_width
         width = left_margin + tree_width + right_margin
+        height = top_margin + bottom_margin + row_height * max(leaf_count, 1)
     else:
         tree_width = horizontal_step * (max_depth + 1)
         width = left_margin + tree_width + right_margin
-    height = top_margin + bottom_margin + row_height * max(leaf_count, 1)
+        height = top_margin + bottom_margin + row_height * max(leaf_count, 1)
 
     lines: list[str] = []
     texts: list[str] = []
@@ -109,7 +122,7 @@ def render_tree_svg(
             return left_margin + (distance / max_distance) * tree_width
         return left_margin + depth * horizontal_step
 
-    def visit(node: TreeNode, depth: int, distance: float) -> _Point:
+    def visit_rectangular(node: TreeNode, depth: int, distance: float) -> _Point:
         nonlocal next_leaf_index
         branch_distance = distance + float(node.branch_length or 0.0)
         x = node_x(depth, branch_distance if node is not tree.root else distance)
@@ -124,7 +137,7 @@ def render_tree_svg(
             )
             return _Point(x=x, y=y)
 
-        child_points = [visit(child, depth + 1, branch_distance) for child in node.children]
+        child_points = [visit_rectangular(child, depth + 1, branch_distance) for child in node.children]
         y = sum(point.y for point in child_points) / len(child_points)
         min_y = min(point.y for point in child_points)
         max_y = max(point.y for point in child_points)
@@ -137,7 +150,75 @@ def render_tree_svg(
             )
         return _Point(x=x, y=y)
 
-    visit(tree.root, 0, 0.0)
+    def visit_circular() -> None:
+        nonlocal next_leaf_index
+        center_x = width / 2
+        center_y = height / 2
+        radius = min(width, height) / 2 - 80
+        angle_cache: dict[int, float] = {}
+
+        def radial_distance(depth: int, distance: float) -> float:
+            if max_distance > 0:
+                return (distance / max_distance) * radius
+            return (depth / max(max_depth, 1)) * radius
+
+        def assign_angles(node: TreeNode) -> tuple[float, float]:
+            nonlocal next_leaf_index
+            if node.is_leaf():
+                angle = (2 * math.pi * next_leaf_index / max(leaf_count, 1)) - math.pi / 2
+                next_leaf_index += 1
+                angle_cache[id(node)] = angle
+                return angle, angle
+            ranges = [assign_angles(child) for child in node.children]
+            start_angle = min(start for start, _ in ranges)
+            end_angle = max(end for _, end in ranges)
+            angle_cache[id(node)] = (start_angle + end_angle) / 2
+            return start_angle, end_angle
+
+        def draw(node: TreeNode, depth: int, distance: float) -> tuple[float, float]:
+            branch_distance = distance + float(node.branch_length or 0.0)
+            radial = radial_distance(depth, branch_distance if node is not tree.root else distance)
+            if node.is_leaf():
+                angle = angle_cache[id(node)]
+                label = labels.get(node.name or "", node.name or "")
+                if node.name and node.name not in labels and labels:
+                    missing_labels.append(node.name)
+                anchor = "start" if math.cos(angle) >= 0 else "end"
+                label_point = _polar_point(center_x, center_y, radial + 18, angle)
+                texts.append(
+                    f'<text x="{label_point.x:.1f}" y="{label_point.y + 5:.1f}" text-anchor="{anchor}" class="tip-label">{escape(label)}</text>'
+                )
+                return angle, radial
+
+            child_positions = [draw(child, depth + 1, branch_distance) for child in node.children]
+            start_angle = min(angle for angle, _ in child_positions)
+            end_angle = max(angle for angle, _ in child_positions)
+            if radial > 0 and start_angle != end_angle:
+                arc_start = _polar_point(center_x, center_y, radial, start_angle)
+                arc_end = _polar_point(center_x, center_y, radial, end_angle)
+                large_arc = 1 if end_angle - start_angle > math.pi else 0
+                lines.append(
+                    f'<path d="M {arc_start.x:.1f} {arc_start.y:.1f} A {radial:.1f} {radial:.1f} 0 {large_arc} 1 {arc_end.x:.1f} {arc_end.y:.1f}" class="branch"/>'
+                )
+            for child in node.children:
+                child_angle = angle_cache[id(child)]
+                child_branch_distance = branch_distance + float(child.branch_length or 0.0)
+                child_radial = radial_distance(depth + 1, child_branch_distance)
+                radial_start = _polar_point(center_x, center_y, radial, child_angle)
+                radial_end = _polar_point(center_x, center_y, child_radial, child_angle)
+                lines.append(
+                    f'<line x1="{radial_start.x:.1f}" y1="{radial_start.y:.1f}" x2="{radial_end.x:.1f}" y2="{radial_end.y:.1f}" class="branch"/>'
+                )
+            return angle_cache[id(node)], radial
+
+        next_leaf_index = 0
+        assign_angles(tree.root)
+        draw(tree.root, 0, 0.0)
+
+    if layout == "circular":
+        visit_circular()
+    else:
+        visit_rectangular(tree.root, 0, 0.0)
 
     scale_bar = ""
     has_scale_bar = layout == "phylogram" and max_distance > 0
