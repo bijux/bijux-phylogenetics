@@ -5,13 +5,13 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentQualityReport, AlignmentSummary
+from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentQualityReport, AlignmentSummary, CodingAlignmentDiagnostics
 from bijux_phylogenetics.core.dataset import DatasetReadinessSummary, summarize_dataset_readiness
 from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_taxa, load_taxon_table
 from bijux_phylogenetics.core.traits import TraitMissingValueReport, detect_missing_trait_values
 from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.io.fasta import build_alignment_quality_report, link_alignment_to_tree, summarise_fasta
+from bijux_phylogenetics.io.fasta import build_alignment_quality_report, inspect_coding_alignment, link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.render.html import write_html_report
 
 
@@ -41,6 +41,7 @@ class ReportBuildResult:
     trait_missing_values: TraitMissingValueReport | None
     alignment: AlignmentSummary | None
     alignment_quality: AlignmentQualityReport | None
+    alignment_coding: CodingAlignmentDiagnostics | None
     alignment_linkage: AlignmentLinkageReport | None
     dataset_readiness: DatasetReadinessSummary | None
     machine_manifest: dict[str, object]
@@ -145,6 +146,7 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
         trait_missing_values=None,
         alignment=None,
         alignment_quality=None,
+        alignment_coding=None,
         alignment_linkage=None,
         dataset_readiness=None,
         machine_manifest=machine_manifest,
@@ -203,6 +205,7 @@ def render_dataset_report(
         trait_missing_values=trait_missing_values,
         alignment=None,
         alignment_quality=None,
+        alignment_coding=None,
         alignment_linkage=None,
         dataset_readiness=dataset_readiness,
         machine_manifest=machine_manifest,
@@ -220,6 +223,11 @@ def render_phylo_inputs_report(
     inspection = inspect_tree_path(tree_path)
     alignment = summarise_fasta(alignment_path)
     alignment_quality = build_alignment_quality_report(alignment_path)
+    alignment_coding = (
+        inspect_coding_alignment(alignment_path)
+        if alignment.inferred_alphabet in {"dna", "rna"}
+        else None
+    )
     alignment_linkage = link_alignment_to_tree(tree_path, alignment_path)
     title = "Bijux Phylo Inputs Report"
     sections = [
@@ -227,6 +235,7 @@ def render_phylo_inputs_report(
         _section("tree-inspection", asdict(inspection)),
         _section("alignment-summary", asdict(alignment)),
         _section("alignment-quality", asdict(alignment_quality)),
+        *([_section("alignment-coding", asdict(alignment_coding))] if alignment_coding is not None else []),
         _section("alignment-linkage", asdict(alignment_linkage)),
     ]
     machine_manifest = _build_machine_manifest(
@@ -248,6 +257,7 @@ def render_phylo_inputs_report(
         trait_missing_values=None,
         alignment=alignment,
         alignment_quality=alignment_quality,
+        alignment_coding=alignment_coding,
         alignment_linkage=alignment_linkage,
         dataset_readiness=None,
         machine_manifest=machine_manifest,
@@ -267,6 +277,11 @@ def render_phylogenetics_report(
     inspection = inspect_tree_path(tree_path)
     alignment = summarise_fasta(alignment_path) if alignment_path else None
     alignment_quality = build_alignment_quality_report(alignment_path) if alignment_path else None
+    alignment_coding = (
+        inspect_coding_alignment(alignment_path)
+        if alignment_path is not None and alignment is not None and alignment.inferred_alphabet in {"dna", "rna"}
+        else None
+    )
     traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path else None
     trait_missing_values = detect_missing_trait_values(traits_path) if traits_path else None
     metadata_linkage = annotate_tree_against_table(tree_path, metadata_path) if metadata_path else None
@@ -284,6 +299,8 @@ def render_phylogenetics_report(
         sections.append(_section("alignment-summary", asdict(alignment)))
     if alignment_quality is not None:
         sections.append(_section("alignment-quality", asdict(alignment_quality)))
+    if alignment_coding is not None:
+        sections.append(_section("alignment-coding", asdict(alignment_coding)))
     if traits_linkage is not None:
         sections.append(_section("traits-linkage", asdict(traits_linkage)))
     if trait_missing_values is not None:
@@ -320,6 +337,7 @@ def render_phylogenetics_report(
         trait_missing_values=trait_missing_values,
         alignment=alignment,
         alignment_quality=alignment_quality,
+        alignment_coding=alignment_coding,
         alignment_linkage=None,
         dataset_readiness=dataset_readiness,
         machine_manifest=machine_manifest,
