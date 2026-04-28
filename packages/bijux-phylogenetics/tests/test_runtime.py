@@ -473,6 +473,8 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.normalized_colless_imbalance == 0.0
     assert report.sackin_imbalance_index == 8
     assert report.unusually_imbalanced is False
+    assert report.long_branch_taxa == []
+    assert report.star_like is False
     assert report.comb_like is False
     assert report.imbalance_summary == "balanced"
     assert report.cherry_count == 2
@@ -489,6 +491,8 @@ def test_inspect_tree_path_distinguishes_ladderized_shape() -> None:
     assert report.normalized_colless_imbalance == 1.0
     assert report.sackin_imbalance_index == 9
     assert report.unusually_imbalanced is True
+    assert report.long_branch_taxa == []
+    assert report.star_like is False
     assert report.comb_like is True
     assert report.imbalance_summary == "ladderized"
     assert report.cherry_count == 1
@@ -507,9 +511,23 @@ def test_inspect_tree_path_reports_exact_polytomy_nodes() -> None:
     assert report.colless_imbalance_index is None
     assert report.normalized_colless_imbalance is None
     assert report.unusually_imbalanced is None
+    assert report.long_branch_taxa == []
+    assert report.star_like is False
     assert report.comb_like is False
     assert report.polytomy_count == 1
     assert report.polytomy_nodes == ["A|B|C"]
+
+
+def test_inspect_tree_path_detects_long_branch_taxa() -> None:
+    report = inspect_tree_path(fixture("example_tree_long_branch.nwk"))
+    assert report.long_branch_taxa == ["A"]
+    assert report.star_like is False
+
+
+def test_inspect_tree_path_detects_star_like_tree() -> None:
+    report = inspect_tree_path(fixture("example_tree_star.nwk"))
+    assert report.star_like is True
+    assert report.long_branch_taxa == []
 
 
 def test_inspect_tree_path_classifies_branch_length_completeness() -> None:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+import math
 from pathlib import Path
 from statistics import mean, median
 
@@ -75,6 +76,8 @@ class TreeInspectionReport:
     normalized_colless_imbalance: float | None
     sackin_imbalance_index: int
     unusually_imbalanced: bool | None
+    long_branch_taxa: list[str]
+    star_like: bool
     comb_like: bool
     imbalance_summary: str
     cherry_count: int
@@ -305,6 +308,24 @@ def _comb_like(tree: PhyloTree) -> bool:
     return _cherry_count(tree) == 1 and _max_depth(tree) == tree.tip_count - 1
 
 
+def _long_branch_taxa(tree: PhyloTree, *, factor: float = 3.0) -> list[str]:
+    terminal_lengths = [(name, length) for name, length in tree.terminal_branch_lengths() if length is not None and length > 0]
+    if len(terminal_lengths) < 2:
+        return []
+    baseline = _median(sorted(length for _, length in terminal_lengths))
+    threshold = baseline * factor
+    return sorted(name for name, length in terminal_lengths if length > threshold)
+
+
+def _star_like(tree: PhyloTree) -> bool:
+    threshold = max(4, math.ceil(tree.tip_count * 0.75))
+    for node in tree.iter_nodes():
+        leaf_children = sum(1 for child in node.children if child.is_leaf())
+        if leaf_children == len(node.children) and leaf_children >= threshold:
+            return True
+    return False
+
+
 def _imbalance_summary(tree: PhyloTree) -> str:
     def visit(node) -> tuple[int, int]:
         if node.is_leaf():
@@ -409,6 +430,8 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     colless_imbalance_index = _colless_imbalance_index(tree)
     normalized_colless_imbalance = _normalized_colless_imbalance(tree)
     unusually_imbalanced = _unusually_imbalanced(tree)
+    long_branch_taxa = _long_branch_taxa(tree)
+    star_like = _star_like(tree)
     comb_like = _comb_like(tree)
     warnings: list[str] = []
     if zero_length_branch_count:
@@ -446,6 +469,8 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         normalized_colless_imbalance=normalized_colless_imbalance,
         sackin_imbalance_index=sum(depths),
         unusually_imbalanced=unusually_imbalanced,
+        long_branch_taxa=long_branch_taxa,
+        star_like=star_like,
         comb_like=comb_like,
         imbalance_summary=_imbalance_summary(tree),
         cherry_count=_cherry_count(tree),
