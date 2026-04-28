@@ -79,6 +79,12 @@ class AlignmentQualityReport:
     """Higher-level alignment quality report built from composition and identity diagnostics."""
 
     path: Path
+    sequence_count: int
+    alignment_length: int
+    missing_data_fraction: float
+    gap_fraction: float
+    variable_site_count: int
+    parsimony_informative_site_count: int
     inferred_alphabet: AlignmentAlphabet
     invalid_characters: list[InvalidAlignmentCharacter]
     composition_outliers: list[SequenceCompositionOutlier]

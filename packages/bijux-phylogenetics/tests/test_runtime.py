@@ -578,6 +578,9 @@ def test_alignment_detects_identical_and_near_duplicate_sequences() -> None:
 
 def test_alignment_quality_report_collects_composition_duplicates_and_warnings() -> None:
     report = build_alignment_quality_report(fixture("example_alignment_duplicates.fasta"))
+    assert report.sequence_count == 4
+    assert report.alignment_length == 8
+    assert report.variable_site_count == 1
     assert report.inferred_alphabet == "dna"
     assert report.invalid_characters == []
     assert report.duplicate_sequence_groups

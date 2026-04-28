@@ -247,8 +247,9 @@ def detect_near_duplicate_sequences(
 
 def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
     """Generate a higher-level alignment quality report from composition and identity diagnostics."""
+    summary = summarise_fasta(path)
     records = load_fasta_alignment(path)
-    inferred_alphabet = infer_alignment_alphabet(records)
+    inferred_alphabet = summary.inferred_alphabet
     invalid_characters = (
         []
         if inferred_alphabet == "unknown"
@@ -268,6 +269,12 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
         warnings.append("alignment contains near-duplicate sequences")
     return AlignmentQualityReport(
         path=path,
+        sequence_count=summary.sequence_count,
+        alignment_length=summary.alignment_length,
+        missing_data_fraction=summary.missing_data_fraction,
+        gap_fraction=summary.gap_fraction,
+        variable_site_count=summary.variable_site_count,
+        parsimony_informative_site_count=summary.parsimony_informative_site_count,
         inferred_alphabet=inferred_alphabet,
         invalid_characters=invalid_characters,
         composition_outliers=composition_outliers,
