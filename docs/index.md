@@ -32,8 +32,9 @@ last_reviewed: 2026-04-28
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 `bijux-phylogenetics` is a reproducible phylogenetics workbench for tree
-inspection, validation, comparison, evidence capture, and publishable HTML
-reports.
+inspection, validation, comparison, alignment trimming, coding-sequence
+translation, explicit rooting transforms, evidence capture, and publishable
+HTML reports.
 
 The repository keeps the same managed Python workspace shape as the other
 Bijux scientific repos: shared standards under `.bijux/`, repository-owned
@@ -45,3 +46,11 @@ one maintainer package.
 - runtime package handbook: [Repository overview](01-bijux-phylogenetics/index.md)
 - maintainer handbook: [Maintainer overview](03-bijux-phylogenetics-maintain/index.md)
 
+
+## Notable Workflows
+
+- trim all-gap or all-missing alignment sites and remove high-missingness sequences
+- inspect coding alignments for stop codons and frameshift-like sequence lengths
+- translate nucleotide coding alignments into amino-acid alignments
+- export pairwise sequence identity matrices for downstream review
+- root trees on explicit outgroups or reroot trees by midpoint
