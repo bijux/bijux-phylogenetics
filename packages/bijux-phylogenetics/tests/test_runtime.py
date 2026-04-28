@@ -794,6 +794,86 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
     assert report.frameshift_like_sequence_count == 1
 
 
+def test_cli_alignment_trim_writes_trimmed_fasta_and_report(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "trimmed.fasta"
+    exit_code = main(
+        [
+            "alignment",
+            "trim",
+            str(fixture("example_alignment_trim.fasta")),
+            "--out",
+            str(output_path),
+            "--sequence-missingness-threshold",
+            "0.3",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == ">B\nACTG\n"
+    assert payload["metrics"]["removed_column_count"] == 2
+    assert payload["metrics"]["removed_sequence_count"] == 2
+
+
+def test_cli_alignment_identity_matrix_writes_tsv(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "identity.tsv"
+    exit_code = main(
+        [
+            "alignment",
+            "identity-matrix",
+            str(fixture("example_alignment_duplicates.fasta")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8").splitlines()[:4] == [
+        "left_identifier\tright_identifier\tidentity\tcomparable_sites",
+        "A\tA\t1\t8",
+        "A\tB\t1\t8",
+        "A\tC\t0.875\t8",
+    ]
+    assert payload["metrics"]["pair_count"] == 10
+
+
+def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
+    exit_code = main(["alignment", "coding", str(fixture("example_alignment_coding.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["frameshift_like_sequence_count"] == 1
+    assert payload["metrics"]["stop_codon_count"] == 2
+
+
+def test_cli_alignment_translate_writes_amino_acid_alignment(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "translated.fasta"
+    exit_code = main(
+        [
+            "alignment",
+            "translate",
+            str(fixture("example_alignment_coding.fasta")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        ">A\nME*\n"
+        ">B\nMEW\n"
+        ">C\nMXW\n"
+        ">D\nM*W\n"
+    )
+    assert payload["metrics"]["translated_sequence_count"] == 4
+    assert payload["metrics"]["stop_codon_count"] == 2
+
+
 def test_build_run_manifest_captures_checksums_and_environment(tmp_path: Path) -> None:
     input_path = tmp_path / "input.txt"
     output_path = tmp_path / "output.txt"

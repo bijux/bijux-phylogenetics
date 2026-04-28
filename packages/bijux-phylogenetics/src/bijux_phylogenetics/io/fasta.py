@@ -458,6 +458,24 @@ def compute_pairwise_sequence_identity_matrix(path: Path) -> SequenceIdentityMat
     )
 
 
+def write_sequence_identity_matrix(path: Path, report: SequenceIdentityMatrix) -> Path:
+    """Write a pairwise sequence identity matrix as a deterministic TSV."""
+    rows = {(pair.left_identifier, pair.right_identifier): pair for pair in report.pairs}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["left_identifier\tright_identifier\tidentity\tcomparable_sites"]
+    for left in report.identifiers:
+        for right in report.identifiers:
+            pair = rows.get((left, right)) or rows.get((right, left))
+            if pair is None:
+                continue
+            identity = "" if pair.identity is None else format(pair.identity, ".15g")
+            lines.append(
+                f"{left}\t{right}\t{identity}\t{pair.comparable_sites}"
+            )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
 def _coding_residues(sequence: str) -> str:
     return "".join(
         residue.upper().replace("U", "T")

@@ -19,10 +19,16 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
 )
 from bijux_phylogenetics.io.fasta import build_alignment_quality_report, infer_alignment_alphabet, link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
+    compute_pairwise_sequence_identity_matrix,
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
     detect_composition_outlier_sequences,
+    inspect_coding_alignment,
+    translate_coding_alignment,
+    trim_alignment,
+    write_sequence_identity_matrix,
+    write_fasta_alignment,
 )
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import (
@@ -167,6 +173,17 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.alignment]
         if args.alignment_command == "quality":
             return [args.alignment]
+        if args.alignment_command == "trim":
+            return [args.alignment, args.out]
+        if args.alignment_command == "identity-matrix":
+            inputs = [args.alignment]
+            if args.out is not None:
+                inputs.append(args.out)
+            return inputs
+        if args.alignment_command == "coding":
+            return [args.alignment]
+        if args.alignment_command == "translate":
+            return [args.alignment, args.out]
         return [args.tree, args.alignment]
     if args.command in {"validate", "inspect"}:
         return [args.tree]
@@ -338,6 +355,40 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_outliers.add_argument("--deviation-threshold", type=float, default=0.25)
     alignment_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_outliers)
+    alignment_trim = alignment_subparsers.add_parser(
+        "trim",
+        help="Trim all-gap or all-missing sites and optionally drop high-missingness sequences.",
+    )
+    alignment_trim.add_argument("alignment", type=Path)
+    alignment_trim.add_argument("--out", required=True, type=Path)
+    alignment_trim.add_argument("--keep-all-gap-sites", action="store_true")
+    alignment_trim.add_argument("--keep-all-missing-sites", action="store_true")
+    alignment_trim.add_argument("--sequence-missingness-threshold", type=float)
+    alignment_trim.add_argument("--json", action="store_true", help="Emit the trimming report as JSON.")
+    _add_manifest_argument(alignment_trim)
+    alignment_identity = alignment_subparsers.add_parser(
+        "identity-matrix",
+        help="Compute a pairwise sequence identity matrix.",
+    )
+    alignment_identity.add_argument("alignment", type=Path)
+    alignment_identity.add_argument("--out", type=Path, help="Write the matrix as TSV.")
+    alignment_identity.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_identity)
+    alignment_coding = alignment_subparsers.add_parser(
+        "coding",
+        help="Inspect a nucleotide coding alignment for frameshift-like lengths and stop codons.",
+    )
+    alignment_coding.add_argument("alignment", type=Path)
+    alignment_coding.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_coding)
+    alignment_translate = alignment_subparsers.add_parser(
+        "translate",
+        help="Translate a nucleotide coding alignment to amino acids.",
+    )
+    alignment_translate.add_argument("alignment", type=Path)
+    alignment_translate.add_argument("--out", required=True, type=Path)
+    alignment_translate.add_argument("--json", action="store_true", help="Emit the translation report as JSON.")
+    _add_manifest_argument(alignment_translate)
     alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
@@ -810,6 +861,102 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "composition_outlier_count": len(report),
                             "deviation_threshold": args.deviation_threshold,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "trim":
+                records, report = trim_alignment(
+                    args.alignment,
+                    remove_all_gap_sites=not args.keep_all_gap_sites,
+                    remove_all_missing_sites=not args.keep_all_missing_sites,
+                    sequence_missingness_threshold=args.sequence_missingness_threshold,
+                )
+                output_path = write_fasta_alignment(args.out, records)
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "trimmed_sequence_count": report.trimmed_sequence_count,
+                            "trimmed_alignment_length": report.trimmed_alignment_length,
+                            "removed_column_count": len(report.removed_columns),
+                            "removed_sequence_count": len(report.removed_sequences),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "identity-matrix":
+                report = compute_pairwise_sequence_identity_matrix(args.alignment)
+                outputs: list[Path | str] = []
+                if args.out is not None:
+                    outputs.append(write_sequence_identity_matrix(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "sequence_count": len(report.identifiers),
+                            "pair_count": len(report.pairs),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "coding":
+                report = inspect_coding_alignment(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "frameshift_like_sequence_count": len(report.frameshift_like_sequences),
+                            "stop_codon_count": len(report.stop_codons),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "translate":
+                records, report = translate_coding_alignment(args.alignment)
+                output_path = write_fasta_alignment(args.out, records)
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "translated_sequence_count": report.translated_sequence_count,
+                            "translated_alignment_length": report.translated_alignment_length,
+                            "stop_codon_count": report.stop_codon_count,
                         },
                         data=report,
                     ),
