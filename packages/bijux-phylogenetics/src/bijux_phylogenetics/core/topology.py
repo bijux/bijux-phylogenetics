@@ -26,6 +26,15 @@ class BranchCollapseReport:
     collapsed_clades: list[str]
 
 
+@dataclass(slots=True)
+class TreeOrderingReport:
+    """Explicit record of a deterministic child-ordering transform."""
+
+    tree_path: Path
+    strategy: str
+    tip_order: list[str]
+
+
 def _clone_node(node: TreeNode) -> TreeNode:
     return TreeNode(
         name=node.name,
@@ -57,6 +66,12 @@ def _node_signature(node: TreeNode) -> str:
     if taxa:
         return "|".join(taxa)
     return node.name or "<unnamed>"
+
+
+def _leaf_count(node: TreeNode) -> int:
+    if node.is_leaf():
+        return 1
+    return sum(_leaf_count(child) for child in node.children)
 
 
 def _collapse_short_internal_branches(
@@ -146,4 +161,35 @@ def collapse_branches_below_length(
         tree_path=tree_path,
         threshold=threshold,
         collapsed_clades=sorted(collapsed_clades),
+    )
+
+
+def _order_tree(node: TreeNode, *, strategy: str) -> TreeNode:
+    if node.is_leaf():
+        return TreeNode(name=node.name, branch_length=node.branch_length, children=[])
+
+    ordered_children = [_order_tree(child, strategy=strategy) for child in node.children]
+    if strategy == "ladderize":
+        ordered_children.sort(key=lambda child: (-_leaf_count(child), _descendant_taxa(child)))
+    else:
+        raise ValueError(f"unsupported ordering strategy: {strategy}")
+
+    return TreeNode(
+        name=node.name,
+        branch_length=node.branch_length,
+        children=ordered_children,
+    )
+
+
+def ladderize_tree(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
+    """Ladderize a tree deterministically by descendant clade size."""
+    tree = load_tree(tree_path)
+    ladderized_tree = PhyloTree(
+        root=_order_tree(tree.root, strategy="ladderize"),
+        source_format=tree.source_format,
+    )
+    return ladderized_tree, TreeOrderingReport(
+        tree_path=tree_path,
+        strategy="ladderize",
+        tip_order=ladderized_tree.tip_names,
     )
