@@ -43,8 +43,19 @@ bijux-phylogenetics --help
 - compare shared clades, clade changes, and shared-split branch lengths between trees
 - validate trait and metadata linkage against tree tips
 - export joined metadata rows and missing trait-value diagnostics
-- inspect alignment alphabets, composition, GC content, duplicates, and composition outliers
+- inspect alignment alphabets, composition, GC content, duplicates, composition outliers, coding stop codons, and frameshift-like sequence lengths
+- trim all-gap or all-missing columns and remove high-missingness sequences
+- translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
+- root trees on explicit outgroups or reroot them by midpoint
 - produce HTML reports and file-level evidence manifests
+
+## Example CLI Runs
+
+```bash
+bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
+bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
+bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
+```
 
 ## Read this next
 
