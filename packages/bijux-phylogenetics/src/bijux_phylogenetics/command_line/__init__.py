@@ -32,6 +32,7 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
+    render_dataset_report,
     render_phylogenetics_report,
     render_tree_report,
     write_annotation_report,
@@ -160,6 +161,11 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "report":
         if args.report_command == "tree":
             return [args.tree, args.out]
+        if args.report_command == "dataset":
+            inputs = [args.tree, args.metadata, args.out]
+            if args.traits is not None:
+                inputs.append(args.traits)
+            return inputs
         inputs = [args.tree, args.out]
         if getattr(args, "alignment", None) is not None:
             inputs.append(args.alignment)
@@ -322,6 +328,13 @@ def build_parser() -> argparse.ArgumentParser:
     report_tree.add_argument("--out", required=True, type=Path)
     report_tree.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(report_tree)
+    report_dataset = report_subparsers.add_parser("dataset", help="Render a tree plus table dataset HTML report.")
+    report_dataset.add_argument("--tree", required=True, type=Path)
+    report_dataset.add_argument("--metadata", required=True, type=Path)
+    report_dataset.add_argument("--traits", type=Path)
+    report_dataset.add_argument("--out", required=True, type=Path)
+    report_dataset.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report_dataset)
 
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
     adapter.add_argument("adapter_name")
@@ -793,6 +806,32 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             outputs=outputs,
                             warnings=result.validation.warnings + result.inspection.warnings,
                             metrics={"tip_count": result.inspection.tip_count},
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
+                return 0
+            if args.report_command == "dataset":
+                result = render_dataset_report(
+                    tree_path=args.tree,
+                    metadata_path=args.metadata,
+                    traits_path=args.traits,
+                    out_path=args.out,
+                )
+                inputs = [args.tree, args.metadata]
+                if args.traits is not None:
+                    inputs.append(args.traits)
+                outputs = _finalize_outputs(args, command="report", inputs=inputs, outputs=[result.output_path])
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=inputs,
+                            outputs=outputs,
+                            warnings=result.validation.warnings + result.inspection.warnings,
+                            metrics={"tip_count": result.inspection.tip_count, "linked_taxa": result.metadata_linkage.linked_taxa},
                             data=result,
                         ),
                         json_output=True,

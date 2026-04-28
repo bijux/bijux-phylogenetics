@@ -36,7 +36,12 @@ from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.render.svg import render_tree_svg
-from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report, render_tree_report
+from bijux_phylogenetics.reports.service import (
+    annotate_tree_against_table,
+    render_dataset_report,
+    render_phylogenetics_report,
+    render_tree_report,
+)
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -854,6 +859,26 @@ def test_render_tree_report_writes_embedded_manifest(tmp_path: Path) -> None:
     assert "Bijux Tree Report" in text
 
 
+def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
+    output = tmp_path / "dataset-report.html"
+    result = render_dataset_report(
+        tree_path=FIXTURES / "example_tree.nwk",
+        metadata_path=FIXTURES / "example_metadata.tsv",
+        traits_path=FIXTURES / "example_traits.tsv",
+        out_path=output,
+    )
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "dataset"
+    assert result.metadata_linkage is not None
+    assert result.machine_manifest["sections"] == [
+        "tree-validation",
+        "tree-inspection",
+        "metadata-linkage",
+        "traits-linkage",
+    ]
+    assert "Bijux Dataset Report" in text
+
+
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
     run_root = tmp_path / "run"
     run_root.mkdir()
@@ -1053,6 +1078,31 @@ def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> 
     assert payload["command"] == "report"
     assert payload["outputs"] == [str(output)]
     assert payload["data"]["report_kind"] == "tree"
+
+
+def test_cli_report_dataset_json_output_uses_dataset_contract(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "dataset-report.html"
+    exit_code = main(
+        [
+            "report",
+            "dataset",
+            "--tree",
+            str(FIXTURES / "example_tree.nwk"),
+            "--metadata",
+            str(FIXTURES / "example_metadata.tsv"),
+            "--traits",
+            str(FIXTURES / "example_traits.tsv"),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["data"]["report_kind"] == "dataset"
+    assert payload["metrics"]["linked_taxa"] == 4
 
 
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:

@@ -141,6 +141,50 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
     )
 
 
+def render_dataset_report(
+    *,
+    tree_path: Path,
+    metadata_path: Path,
+    out_path: Path,
+    traits_path: Path | None = None,
+) -> ReportBuildResult:
+    """Build the explicit tree plus table dataset report contract."""
+    validation = validate_tree_path(tree_path)
+    inspection = inspect_tree_path(tree_path)
+    metadata_linkage = annotate_tree_against_table(tree_path, metadata_path)
+    traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path is not None else None
+    title = "Bijux Dataset Report"
+    sections = [
+        _section("tree-validation", asdict(validation)),
+        _section("tree-inspection", asdict(inspection)),
+        _section("metadata-linkage", asdict(metadata_linkage)),
+    ]
+    if traits_linkage is not None:
+        sections.append(_section("traits-linkage", asdict(traits_linkage)))
+    input_paths = [tree_path, metadata_path]
+    if traits_path is not None:
+        input_paths.append(traits_path)
+    machine_manifest = _build_machine_manifest(
+        report_kind="dataset",
+        title=title,
+        input_paths=input_paths,
+        sections=sections,
+        inspection=inspection,
+    )
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return ReportBuildResult(
+        output_path=out_path,
+        report_kind="dataset",
+        title=title,
+        validation=validation,
+        inspection=inspection,
+        metadata_linkage=metadata_linkage,
+        traits_linkage=traits_linkage,
+        alignment=None,
+        machine_manifest=machine_manifest,
+    )
+
+
 def render_phylogenetics_report(
     *,
     tree_path: Path,
