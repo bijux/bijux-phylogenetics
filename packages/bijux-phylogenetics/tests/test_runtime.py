@@ -1295,9 +1295,16 @@ def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
     assert partial.tree_diameter is None
     assert absent.tree_diameter is None
     assert partial.has_branch_lengths is True
-    assert partial.warnings == ["tree contains partial branch lengths"]
+    assert partial.warnings == [
+        "tree contains terminal branches without lengths",
+        "tree contains partial branch lengths",
+    ]
     assert absent.has_branch_lengths is False
-    assert absent.warnings == ["tree contains no branch lengths"]
+    assert absent.warnings == [
+        "tree contains internal branches without lengths",
+        "tree contains terminal branches without lengths",
+        "tree contains no branch lengths",
+    ]
 
 
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
