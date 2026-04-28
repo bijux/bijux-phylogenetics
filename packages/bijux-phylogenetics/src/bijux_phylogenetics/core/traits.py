@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import TaxonTable, load_taxon_table
+from bijux_phylogenetics.errors import MetadataJoinError
+from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)
@@ -25,6 +27,21 @@ class TraitValidationReport:
     row_count: int
     taxon_column: str
     trait_columns: list[TraitColumnSummary]
+
+
+@dataclass(slots=True)
+class TraitLinkageReport:
+    """Summary of how a trait table joins against a tree tip set."""
+
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    tree_taxa: int
+    trait_taxa: int
+    linked_taxa: int
+    usable_taxa: list[str]
+    missing_from_traits: list[str]
+    extra_trait_taxa: list[str]
 
 
 def load_tsv_summary(path: Path) -> TaxonTable:
@@ -72,4 +89,40 @@ def validate_traits_table(path: Path, *, taxon_column: str | None = None) -> Tra
         row_count=table.row_count,
         taxon_column=table.taxon_column,
         trait_columns=trait_columns,
+    )
+
+
+def link_tree_to_traits(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    taxon_column: str | None = None,
+    strict: bool = False,
+) -> TraitLinkageReport:
+    """Report how a traits table links against tree tips."""
+    tree = load_tree(tree_path)
+    table = load_taxon_table(traits_path, taxon_column=taxon_column)
+    tree_taxa = set(tree.tip_names)
+    trait_taxa = set(table.taxa)
+    missing_from_traits = sorted(tree_taxa - trait_taxa)
+    extra_trait_taxa = sorted(trait_taxa - tree_taxa)
+
+    if strict and (missing_from_traits or extra_trait_taxa):
+        raise MetadataJoinError(
+            "trait linkage mismatch: "
+            f"{len(missing_from_traits)} tree taxa missing from traits and "
+            f"{len(extra_trait_taxa)} trait taxa absent from tree"
+        )
+
+    usable_taxa = sorted(tree_taxa & trait_taxa)
+    return TraitLinkageReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=table.taxon_column,
+        tree_taxa=len(tree_taxa),
+        trait_taxa=len(trait_taxa),
+        linked_taxa=len(usable_taxa),
+        usable_taxa=usable_taxa,
+        missing_from_traits=missing_from_traits,
+        extra_trait_taxa=extra_trait_taxa,
     )

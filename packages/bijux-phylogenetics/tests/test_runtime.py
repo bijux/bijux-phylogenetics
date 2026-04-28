@@ -7,7 +7,7 @@ import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
-from bijux_phylogenetics.core.traits import validate_traits_table
+from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import (
@@ -82,6 +82,25 @@ def test_traits_validate_infers_numeric_and_categorical_schema() -> None:
         ("habitat", "categorical", 0),
         ("status", "categorical", 1),
     ]
+
+
+def test_traits_link_reports_mismatch_and_usable_taxa() -> None:
+    report = link_tree_to_traits(FIXTURES / "example_tree.nwk", FIXTURES / "example_traits.tsv")
+    assert report.tree_taxa == 4
+    assert report.trait_taxa == 4
+    assert report.linked_taxa == 3
+    assert report.usable_taxa == ["A", "B", "C"]
+    assert report.missing_from_traits == ["D"]
+    assert report.extra_trait_taxa == ["E"]
+
+
+def test_traits_link_strict_mode_rejects_mismatch() -> None:
+    try:
+        link_tree_to_traits(FIXTURES / "example_tree.nwk", FIXTURES / "example_traits.tsv", strict=True)
+    except MetadataJoinError as error:
+        assert error.code == "metadata_join_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected MetadataJoinError")
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
@@ -330,6 +349,36 @@ def test_cli_traits_validate_json_output(capsys) -> None:
     assert payload["command"] == "traits"
     assert payload["metrics"]["trait_column_count"] == 3
     assert payload["data"]["trait_columns"][0]["kind"] == "numeric"
+
+
+def test_cli_traits_link_json_output(capsys) -> None:
+    exit_code = main(
+        ["traits", "link", str(FIXTURES / "example_tree.nwk"), str(FIXTURES / "example_traits.tsv"), "--json"]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["linked_taxa"] == 3
+    assert payload["data"]["missing_from_traits"] == ["D"]
+
+
+def test_cli_traits_link_strict_mode_returns_typed_error(capsys) -> None:
+    exit_code = main(
+        [
+            "traits",
+            "link",
+            str(FIXTURES / "example_tree.nwk"),
+            str(FIXTURES / "example_traits.tsv"),
+            "--strict",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == MetadataJoinError.code
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:

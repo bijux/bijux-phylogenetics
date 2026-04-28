@@ -10,7 +10,7 @@ from typing import Any
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
-from bijux_phylogenetics.core.traits import validate_traits_table
+from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
@@ -69,7 +69,9 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "metadata":
         return [args.table]
     if args.command == "traits":
-        return [args.table]
+        if args.traits_command == "validate":
+            return [args.table]
+        return [args.tree, args.table]
     if args.command in {"validate", "inspect", "diagnose"}:
         return [args.tree]
     if args.command == "normalize":
@@ -127,6 +129,12 @@ def build_parser() -> argparse.ArgumentParser:
     traits_validate.add_argument("table", type=Path)
     traits_validate.add_argument("--taxon-column")
     traits_validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    traits_link = traits_subparsers.add_parser("link", help="Link tree tips to a traits table.")
+    traits_link.add_argument("tree", type=Path)
+    traits_link.add_argument("table", type=Path)
+    traits_link.add_argument("--taxon-column")
+    traits_link.add_argument("--strict", action="store_true")
+    traits_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -221,14 +229,35 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "traits":
-            report = validate_traits_table(args.table, taxon_column=args.taxon_column)
+            if args.traits_command == "validate":
+                report = validate_traits_table(args.table, taxon_column=args.taxon_column)
+                _print_result(
+                    build_command_result(
+                        command="traits",
+                        inputs=[args.table],
+                        metrics={
+                            "row_count": report.row_count,
+                            "trait_column_count": len(report.trait_columns),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            report = link_tree_to_traits(
+                args.tree,
+                args.table,
+                taxon_column=args.taxon_column,
+                strict=args.strict,
+            )
             _print_result(
                 build_command_result(
                     command="traits",
-                    inputs=[args.table],
+                    inputs=[args.tree, args.table],
                     metrics={
-                        "row_count": report.row_count,
-                        "trait_column_count": len(report.trait_columns),
+                        "tree_taxa": report.tree_taxa,
+                        "trait_taxa": report.trait_taxa,
+                        "linked_taxa": report.linked_taxa,
                     },
                     data=report,
                 ),
