@@ -14,7 +14,7 @@ from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_tree_paths
-from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
@@ -384,6 +384,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "is_binary": report.is_binary,
                         "polytomy_count": report.polytomy_count,
                         "branch_length_status": report.branch_length_status,
+                        "cherry_count": report.cherry_count,
                     },
                     data=report,
                 ),
@@ -428,7 +429,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 print(output_path)
             return 0
         if args.command == "diagnose":
-            parser.exit(status=2, message="diagnose is not implemented yet\n")
+            report = diagnose_tree_path(args.tree)
+            _print_result(
+                build_command_result(
+                    command="diagnose",
+                    inputs=[args.tree],
+                    warnings=report.validation.warnings,
+                    metrics={
+                        "tip_count": report.inspection.tip_count,
+                        "polytomy_count": report.validation.polytomy_count,
+                        "cherry_count": report.inspection.cherry_count,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
         if args.command == "compare":
             report = compare_tree_paths(args.left, args.right)
             _print_result(

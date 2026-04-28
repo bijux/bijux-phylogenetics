@@ -10,7 +10,7 @@ from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
-from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
@@ -207,7 +207,18 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.has_branch_lengths is True
     assert report.is_binary is True
     assert report.max_depth == 2
+    assert report.mean_depth == 2.0
+    assert report.imbalance_summary == "balanced"
+    assert report.cherry_count == 2
     assert report.taxa == ["A", "B", "C", "D"]
+
+
+def test_inspect_tree_path_distinguishes_ladderized_shape() -> None:
+    report = inspect_tree_path(FIXTURES / "example_tree_ladderized.nwk")
+    assert report.max_depth == 3
+    assert report.mean_depth == 2.25
+    assert report.imbalance_summary == "ladderized"
+    assert report.cherry_count == 1
 
 
 def test_inspect_tree_path_distinguishes_rooted_and_unrooted_fixtures() -> None:
@@ -322,6 +333,9 @@ def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
     assert payload["data"]["node_count"] == 7
     assert payload["data"]["edge_count"] == 6
     assert payload["data"]["clade_count"] == 3
+    assert payload["data"]["mean_depth"] == 2.0
+    assert payload["data"]["imbalance_summary"] == "balanced"
+    assert payload["metrics"]["cherry_count"] == 2
     assert payload["data"]["taxa"] == ["A", "B", "C", "D"]
     assert payload["metrics"]["tip_count"] == 4
 
@@ -372,6 +386,12 @@ def test_compare_tree_paths_reports_nonzero_distance() -> None:
     report = compare_tree_paths(FIXTURES / "example_tree.nwk", FIXTURES / "example_tree_alt.nwk")
     assert report.shared_taxa == ["A", "B", "C", "D"]
     assert report.robinson_foulds_distance > 0
+
+
+def test_diagnose_tree_path_combines_inspection_and_validation() -> None:
+    report = diagnose_tree_path(FIXTURES / "example_tree.nwk")
+    assert report.inspection.tip_count == 4
+    assert report.validation.tip_count == 4
 
 
 def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
@@ -528,6 +548,17 @@ def test_cli_validate_json_output(capsys) -> None:
     assert payload["command"] == "validate"
     assert payload["metrics"]["tip_count"] == 4
     assert payload["data"]["tip_count"] == 4
+
+
+def test_cli_diagnose_json_output(capsys) -> None:
+    exit_code = main(["diagnose", str(FIXTURES / "example_tree.nwk"), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["command"] == "diagnose"
+    assert payload["metrics"]["cherry_count"] == 2
+    assert payload["data"]["inspection"]["imbalance_summary"] == "balanced"
 
 
 def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:

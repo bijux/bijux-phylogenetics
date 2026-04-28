@@ -48,7 +48,17 @@ class TreeInspectionReport:
     min_root_to_tip: float | None
     max_root_to_tip: float | None
     max_depth: int
+    mean_depth: float
+    imbalance_summary: str
+    cherry_count: int
     taxa: list[str]
+
+
+@dataclass(slots=True)
+class TreeDiagnosticReport:
+    path: Path
+    inspection: TreeInspectionReport
+    validation: TreeValidationReport
 
 
 def _load_tree(path: Path, *, source_format: str | None = None) -> PhyloTree:
@@ -126,6 +136,51 @@ def _max_depth(tree: PhyloTree) -> int:
     return visit(tree.root, 0)
 
 
+def _leaf_depths(tree: PhyloTree) -> list[int]:
+    depths: list[int] = []
+
+    def visit(node, depth: int) -> None:
+        if node.is_leaf():
+            depths.append(depth)
+            return
+        for child in node.children:
+            visit(child, depth + 1)
+
+    visit(tree.root, 0)
+    return depths
+
+
+def _imbalance_summary(tree: PhyloTree) -> str:
+    def visit(node) -> tuple[int, int]:
+        if node.is_leaf():
+            return 1, 0
+        child_counts: list[int] = []
+        total_score = 0
+        for child in node.children:
+            tip_count, child_score = visit(child)
+            child_counts.append(tip_count)
+            total_score += child_score
+        if len(child_counts) >= 2:
+            total_score += max(child_counts) - min(child_counts)
+        return sum(child_counts), total_score
+
+    _, score = visit(tree.root)
+    normalized_score = score / max(tree.tip_count - 1, 1)
+    if normalized_score == 0:
+        return "balanced"
+    if normalized_score >= 1:
+        return "ladderized"
+    return "skewed"
+
+
+def _cherry_count(tree: PhyloTree) -> int:
+    return sum(
+        1
+        for node in tree.iter_nodes()
+        if len(node.children) == 2 and all(child.is_leaf() for child in node.children)
+    )
+
+
 def validate_tree_path(
     path: Path,
     *,
@@ -184,6 +239,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     branch_lengths = [node.branch_length for node in tree.iter_nodes() if node is not tree.root]
     polytomy_nodes = _polytomy_nodes(tree)
     branch_length_status = _branch_length_status(tree)
+    depths = _leaf_depths(tree)
     return TreeInspectionReport(
         path=path,
         source_format=tree.source_format,
@@ -202,5 +258,17 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,
         max_depth=_max_depth(tree),
+        mean_depth=sum(depths) / len(depths),
+        imbalance_summary=_imbalance_summary(tree),
+        cherry_count=_cherry_count(tree),
         taxa=sorted(tree.tip_names),
+    )
+
+
+def diagnose_tree_path(path: Path, *, source_format: str | None = None) -> TreeDiagnosticReport:
+    """Return a combined inspection and validation report for one tree."""
+    return TreeDiagnosticReport(
+        path=path,
+        inspection=inspect_tree_path(path, source_format=source_format),
+        validation=validate_tree_path(path, source_format=source_format),
     )
