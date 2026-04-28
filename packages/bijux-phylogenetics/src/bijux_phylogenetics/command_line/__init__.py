@@ -54,7 +54,7 @@ from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspe
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
-from bijux_phylogenetics.core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup
+from bijux_phylogenetics.core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.svg import render_tree_svg
@@ -366,6 +366,7 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_trim.add_argument("--out", required=True, type=Path)
     alignment_trim.add_argument("--keep-all-gap-sites", action="store_true")
     alignment_trim.add_argument("--keep-all-missing-sites", action="store_true")
+    alignment_trim.add_argument("--site-missingness-threshold", type=float)
     alignment_trim.add_argument("--sequence-missingness-threshold", type=float)
     alignment_trim.add_argument("--json", action="store_true", help="Emit the trimming report as JSON.")
     _add_manifest_argument(alignment_trim)
@@ -448,6 +449,11 @@ def build_parser() -> argparse.ArgumentParser:
     topology_midpoint.add_argument("--out", required=True, type=Path)
     topology_midpoint.add_argument("--json", action="store_true", help="Emit the rerooting report as JSON.")
     _add_manifest_argument(topology_midpoint)
+    topology_unroot = topology_subparsers.add_parser("unroot", help="Convert a rooted tree into an explicit unrooted trifurcation.")
+    topology_unroot.add_argument("tree", type=Path)
+    topology_unroot.add_argument("--out", required=True, type=Path)
+    topology_unroot.add_argument("--json", action="store_true", help="Emit the unrooting report as JSON.")
+    _add_manifest_argument(topology_unroot)
 
     compare = subparsers.add_parser(get_command_spec("compare").name, help=get_command_spec("compare").summary)
     compare.add_argument("left")
@@ -889,6 +895,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.alignment,
                     remove_all_gap_sites=not args.keep_all_gap_sites,
                     remove_all_missing_sites=not args.keep_all_missing_sites,
+                    site_missingness_threshold=args.site_missingness_threshold,
                     sequence_missingness_threshold=args.sequence_missingness_threshold,
                 )
                 output_path = write_fasta_alignment(args.out, records)
@@ -1075,8 +1082,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "topology":
             if args.topology_command == "root-outgroup":
                 tree, report = root_tree_on_outgroup(args.tree, outgroup_taxa=list(args.taxa))
-            else:
+            elif args.topology_command == "reroot-midpoint":
                 tree, report = reroot_tree_by_midpoint(args.tree)
+            else:
+                tree, report = unroot_tree(args.tree)
             output_path = write_newick(args.out, tree)
             outputs = _finalize_outputs(
                 args,

@@ -3,7 +3,7 @@
 from importlib import metadata
 
 from .compare.topology import TreeComparisonReport, compare_tree_paths
-from .core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup
+from .core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup, unroot_tree
 from .diagnostics.validation import (
     TreeDiagnosticReport,
     TreeInspectionReport,
@@ -19,6 +19,7 @@ from .io.fasta import (
     compute_pairwise_sequence_identity_matrix,
     inspect_coding_alignment,
     summarise_fasta,
+    trim_columns_above_missingness_threshold,
     translate_coding_alignment,
     trim_alignment,
 )
@@ -55,7 +56,9 @@ __all__ = [
     "reroot_tree_by_midpoint",
     "root_tree_on_outgroup",
     "summarise_fasta",
+    "trim_columns_above_missingness_threshold",
     "translate_coding_alignment",
     "trim_alignment",
+    "unroot_tree",
     "validate_tree_path",
 ]

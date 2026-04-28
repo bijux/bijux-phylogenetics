@@ -316,6 +316,35 @@ def remove_all_missing_columns(path: Path) -> tuple[list[AlignmentRecord], Align
     )
 
 
+def trim_columns_above_missingness_threshold(
+    path: Path,
+    *,
+    threshold: float,
+) -> tuple[list[AlignmentRecord], AlignmentTrimReport]:
+    """Remove columns whose missing-data fraction exceeds the given threshold."""
+    _validate_fraction_threshold(threshold)
+    records = load_fasta_alignment(path)
+    summary = summarise_fasta(path)
+    removed_positions = {
+        row.position
+        for row in detect_sites_with_excessive_missing_data(path, threshold=threshold)
+    }
+    keep_positions = [index for index in range(summary.alignment_length) if (index + 1) not in removed_positions]
+    trimmed_records = _trim_columns(records, keep_positions=keep_positions)
+    return trimmed_records, AlignmentTrimReport(
+        path=path,
+        original_sequence_count=summary.sequence_count,
+        trimmed_sequence_count=len(trimmed_records),
+        original_alignment_length=summary.alignment_length,
+        trimmed_alignment_length=len(keep_positions),
+        removed_columns=[
+            TrimmedAlignmentColumn(position=position, reason="missingness-threshold")
+            for position in sorted(removed_positions)
+        ],
+        removed_sequences=[],
+    )
+
+
 def remove_sequences_above_missingness_threshold(
     path: Path,
     *,
@@ -355,9 +384,12 @@ def trim_alignment(
     *,
     remove_all_gap_sites: bool = True,
     remove_all_missing_sites: bool = True,
+    site_missingness_threshold: float | None = None,
     sequence_missingness_threshold: float | None = None,
 ) -> tuple[list[AlignmentRecord], AlignmentTrimReport]:
     """Trim an alignment with explicit deterministic transform reporting."""
+    if site_missingness_threshold is not None:
+        _validate_fraction_threshold(site_missingness_threshold)
     if sequence_missingness_threshold is not None:
         _validate_fraction_threshold(sequence_missingness_threshold)
 
@@ -401,6 +433,20 @@ def trim_alignment(
             TrimmedAlignmentColumn(position=position, reason="all-missing")
             for position in summary.all_missing_columns
             if position not in summary.all_gap_columns or not remove_all_gap_sites
+        )
+    if site_missingness_threshold is not None:
+        excessive_sites = [
+            row.position
+            for row in detect_sites_with_excessive_missing_data(
+                path,
+                threshold=site_missingness_threshold,
+            )
+            if row.position not in removed_positions
+        ]
+        removed_positions.update(excessive_sites)
+        removed_columns.extend(
+            TrimmedAlignmentColumn(position=position, reason="missingness-threshold")
+            for position in excessive_sites
         )
 
     keep_positions = [index for index in range(summary.alignment_length) if (index + 1) not in removed_positions]

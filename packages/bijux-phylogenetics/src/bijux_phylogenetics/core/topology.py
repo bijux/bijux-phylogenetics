@@ -87,6 +87,16 @@ def _leaf_count(node: TreeNode) -> int:
     return sum(_leaf_count(child) for child in node.children)
 
 
+def _combine_branch_lengths(base: float | None, extra: float | None) -> float | None:
+    if base is None and extra is None:
+        return None
+    if base is None:
+        return extra
+    if extra is None:
+        return base
+    return base + extra
+
+
 def _collapse_short_internal_branches(
     node: TreeNode,
     *,
@@ -273,4 +283,40 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
         matched_taxa=[],
         absent_taxa=[],
         tip_order=rerooted_tree.tip_names,
+    )
+
+
+def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
+    """Convert a rooted binary tree into an explicit unrooted trifurcation."""
+    tree = load_tree(tree_path)
+    if len(tree.root.children) != 2:
+        raise ValueError(f"tree is not rooted under the repository convention: {tree_path}")
+
+    left, right = tree.root.children
+    expandable_children = [child for child in (left, right) if not child.is_leaf()]
+    if not expandable_children:
+        raise ValueError(f"cannot unroot a two-tip tree under the repository convention: {tree_path}")
+
+    expanded = sorted(expandable_children, key=_descendant_taxa)[0]
+    retained = right if expanded is left else left
+    new_children = [
+        TreeNode(
+            name=child.name,
+            branch_length=_combine_branch_lengths(child.branch_length, expanded.branch_length),
+            children=[_clone_node(grandchild) for grandchild in child.children],
+        )
+        for child in expanded.children
+    ]
+    new_children.append(_clone_node(retained))
+    unrooted_tree = PhyloTree(
+        root=TreeNode(name=tree.root.name, branch_length=None, children=new_children),
+        source_format=tree.source_format,
+    )
+    return unrooted_tree, TreeRootingReport(
+        tree_path=tree_path,
+        strategy="unroot",
+        requested_taxa=[],
+        matched_taxa=[],
+        absent_taxa=[],
+        tip_order=unrooted_tree.tip_names,
     )

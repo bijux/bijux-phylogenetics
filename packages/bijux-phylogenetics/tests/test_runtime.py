@@ -35,6 +35,7 @@ from bijux_phylogenetics.core.topology import (
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
     sort_tree_tips_alphabetically,
+    unroot_tree,
 )
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.core.traits import (
@@ -82,6 +83,7 @@ from bijux_phylogenetics.io.fasta import (
     remove_all_gap_columns,
     remove_all_missing_columns,
     remove_sequences_above_missingness_threshold,
+    trim_columns_above_missingness_threshold,
     translate_coding_alignment,
     trim_alignment,
     write_fasta_alignment,
@@ -124,10 +126,12 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.build_alignment_quality_report is build_alignment_quality_report
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
     assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
+    assert bijux_phylogenetics.trim_columns_above_missingness_threshold is trim_columns_above_missingness_threshold
     assert bijux_phylogenetics.trim_alignment is trim_alignment
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
     assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
     assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
+    assert bijux_phylogenetics.unroot_tree is unroot_tree
     assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
 
 
@@ -504,6 +508,14 @@ def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
     assert dumps_newick(tree) == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);"
 
 
+def test_unroot_tree_converts_rooted_binary_tree_into_trifurcation() -> None:
+    tree, report = unroot_tree(fixture("example_tree_rootable.nwk"))
+    assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
+    assert len(tree.root.children) == 3
+    assert report.strategy == "unroot"
+    assert dumps_newick(tree) == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);"
+
+
 def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
     records, report = prune_alignment_to_tree(
         fixture("example_alignment_extra_taxon.fasta"),
@@ -766,19 +778,36 @@ def test_alignment_removes_sequences_above_missingness_threshold() -> None:
     ]
 
 
+def test_alignment_trims_columns_above_missingness_threshold() -> None:
+    records, report = trim_columns_above_missingness_threshold(
+        fixture("example_alignment_site_missingness.fasta"),
+        threshold=0.4,
+    )
+    assert [record.sequence for record in records] == ["A-", "C-", "G-", "T-"]
+    assert report.original_alignment_length == 5
+    assert report.trimmed_alignment_length == 2
+    assert [(column.position, column.reason) for column in report.removed_columns] == [
+        (3, "missingness-threshold"),
+        (4, "missingness-threshold"),
+        (5, "missingness-threshold"),
+    ]
+
+
 def test_alignment_trimming_report_combines_sequence_and_column_transforms() -> None:
     records, report = trim_alignment(
         fixture("example_alignment_trim.fasta"),
+        site_missingness_threshold=0.4,
         sequence_missingness_threshold=0.3,
     )
-    assert [(record.identifier, record.sequence) for record in records] == [("B", "ACTG")]
+    assert [(record.identifier, record.sequence) for record in records] == [("B", "ACG")]
     assert report.original_sequence_count == 3
     assert report.trimmed_sequence_count == 1
     assert report.original_alignment_length == 6
-    assert report.trimmed_alignment_length == 4
+    assert report.trimmed_alignment_length == 3
     assert [(column.position, column.reason) for column in report.removed_columns] == [
         (3, "all-gap"),
         (4, "all-missing"),
+        (5, "missingness-threshold"),
     ]
     assert [(row.identifier, row.reason) for row in report.removed_sequences] == [
         ("A", "missingness-threshold"),
@@ -839,6 +868,8 @@ def test_cli_alignment_trim_writes_trimmed_fasta_and_report(tmp_path: Path, caps
             str(fixture("example_alignment_trim.fasta")),
             "--out",
             str(output_path),
+            "--site-missingness-threshold",
+            "0.4",
             "--sequence-missingness-threshold",
             "0.3",
             "--json",
@@ -847,8 +878,8 @@ def test_cli_alignment_trim_writes_trimmed_fasta_and_report(tmp_path: Path, caps
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert output_path.read_text(encoding="utf-8") == ">B\nACTG\n"
-    assert payload["metrics"]["removed_column_count"] == 2
+    assert output_path.read_text(encoding="utf-8") == ">B\nACG\n"
+    assert payload["metrics"]["removed_column_count"] == 3
     assert payload["metrics"]["removed_sequence_count"] == 2
 
 
@@ -950,6 +981,26 @@ def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> Non
     assert exit_code == 0
     assert output_path.read_text(encoding="utf-8") == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);\n"
     assert payload["data"]["strategy"] == "midpoint"
+    assert payload["metrics"]["tip_count"] == 4
+
+
+def test_cli_topology_unroot_writes_trifurcating_tree(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "unrooted.nwk"
+    exit_code = main(
+        [
+            "topology",
+            "unroot",
+            str(fixture("example_tree_rootable.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);\n"
+    assert payload["data"]["strategy"] == "unroot"
     assert payload["metrics"]["tip_count"] == 4
 
 
