@@ -114,6 +114,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("html-report", "provenance-manifest"),
     ),
     CommandSpec(
+        name="demo",
+        domain="examples",
+        summary="Run the repository capability demo workflow.",
+        inputs=(),
+        outputs=("demo-artifacts",),
+    ),
+    CommandSpec(
         name="evidence",
         domain="evidence",
         summary="Bundle a run directory into a checksummed evidence pack.",

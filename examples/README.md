@@ -6,3 +6,9 @@ This directory holds runnable example inputs and workflows for
 Use repository-owned example material here when documenting CLI behavior or
 teaching a workflow. Keep large generated outputs under `artifacts/` unless the
 task explicitly governs a tracked destination in this tree.
+
+Run the public capability walkthrough with:
+
+```bash
+make demo
+```

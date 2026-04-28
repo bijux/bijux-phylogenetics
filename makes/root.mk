@@ -29,7 +29,7 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 
 .PHONY: \
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
-	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens \
+	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	clean-root-artifacts root-check-env check-shared-bijux-py
 
 check: sync-license-assets lock-check lint test quality security docs build sbom ## Run the full repository verification flow
@@ -66,6 +66,10 @@ package-verify: package-check package-smoke package-source-smoke ## Run the full
 test-goldens: root-check-env ## Compare checked-in golden outputs
 	@"$(ROOT_CHECK_VENV)/bin/python" -m pytest packages/bijux-phylogenetics/tests/test_goldens.py
 .PHONY: test-goldens
+
+demo: root-check-env ## Run the public capability demo into repository artifacts
+	@"$(CLI)" demo run --out "$(CURDIR)/artifacts/bijux-phylogenetics/demo"
+.PHONY: demo
 
 HELP_WIDTH := 22
 include $(ROOT_MAKEFILE_DIR)/bijux-py/ci/help.mk

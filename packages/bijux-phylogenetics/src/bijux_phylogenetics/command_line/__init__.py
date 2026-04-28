@@ -23,6 +23,7 @@ from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_ta
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
@@ -159,6 +160,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.evidence_command == "bundle":
             return [*args.inputs, *args.outputs]
         return [args.bundle_root]
+    if args.command == "demo":
+        return []
     if args.command == "report":
         if args.report_command == "tree":
             return [args.tree, args.out]
@@ -351,6 +354,13 @@ def build_parser() -> argparse.ArgumentParser:
     report_phylo_inputs.add_argument("--out", required=True, type=Path)
     report_phylo_inputs.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(report_phylo_inputs)
+
+    demo = subparsers.add_parser(get_command_spec("demo").name, help=get_command_spec("demo").summary)
+    demo_subparsers = demo.add_subparsers(dest="demo_command", required=True)
+    demo_run = demo_subparsers.add_parser("run", help="Run the repository capability demo workflow.")
+    demo_run.add_argument("--out", required=True, type=Path)
+    demo_run.add_argument("--json", action="store_true", help="Emit the demo result as JSON.")
+    _add_manifest_argument(demo_run)
 
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
     adapter.add_argument("adapter_name")
@@ -815,6 +825,37 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 json_output=args.json,
             )
             return 0
+        if args.command == "demo":
+            if args.demo_command == "run":
+                result = run_capability_demo(args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.tree_report,
+                        result.dataset_report,
+                        result.phylo_inputs_report,
+                        result.comparison_report,
+                        result.evidence_bundle,
+                        result.capability_summary,
+                    ],
+                )
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={"artifact_count": 6},
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            raise NotImplementedError(f"unsupported demo command: {args.demo_command}")
         if args.command == "report":
             if args.report_command == "tree":
                 result = render_tree_report(tree_path=args.tree, out_path=args.out)

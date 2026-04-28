@@ -8,6 +8,7 @@ from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
@@ -1077,9 +1078,20 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "diagnose",
         "render",
         "report",
+        "demo",
         "evidence",
         "adapter",
     ]
+
+
+def test_run_capability_demo_creates_expected_artifacts(tmp_path: Path) -> None:
+    result = run_capability_demo(tmp_path / "demo")
+    assert result.tree_report.exists()
+    assert result.dataset_report.exists()
+    assert result.phylo_inputs_report.exists()
+    assert result.comparison_report.exists()
+    assert result.evidence_bundle.exists()
+    assert result.capability_summary.exists()
 
 
 def test_cli_evidence_bundle_and_validate_json_output(tmp_path: Path, capsys) -> None:
@@ -1117,6 +1129,18 @@ def test_cli_evidence_bundle_and_validate_json_output(tmp_path: Path, capsys) ->
     assert exit_code == 0
     assert validate_payload["status"] == "ok"
     assert validate_payload["data"]["valid"] is True
+
+
+def test_cli_demo_run_json_output_reports_generated_artifacts(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "demo"
+    exit_code = main(["demo", "run", "--out", str(output), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "demo"
+    assert payload["metrics"]["artifact_count"] == 6
+    assert payload["data"]["tree_report"] == str(output / "reports" / "tree-report.html")
+    assert payload["data"]["evidence_bundle"] == str(output / "evidence-pack")
 
 
 def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> None:
