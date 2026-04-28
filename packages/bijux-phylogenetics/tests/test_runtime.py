@@ -1990,6 +1990,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     assert result.alignment is not None
     assert result.alignment_quality is not None
     assert result.alignment_coding is not None
+    assert result.alignment_identity_matrix is not None
     assert result.alignment_linkage is not None
     assert result.machine_manifest["sections"] == [
         "tree-validation",
@@ -1997,6 +1998,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
         "alignment-summary",
         "alignment-quality",
         "alignment-coding",
+        "alignment-identity-matrix",
         "alignment-linkage",
     ]
     assert "Bijux Phylo Inputs Report" in text
