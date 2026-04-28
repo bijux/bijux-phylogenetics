@@ -1093,6 +1093,23 @@ def test_validate_tree_path_warns_for_zero_length_branches() -> None:
     assert "tree contains zero-length branches" in report.warnings
 
 
+def test_validate_tree_path_localizes_missing_internal_and_terminal_branch_lengths() -> None:
+    internal = validate_tree_path(fixture("example_tree_missing_internal_length.nwk"))
+    terminal = validate_tree_path(fixture("example_tree_partial_lengths.nwk"))
+    assert internal.missing_internal_branch_nodes == ["A|B"]
+    assert internal.missing_terminal_branch_taxa == []
+    assert "tree contains internal branches without lengths" in internal.warnings
+    assert terminal.missing_internal_branch_nodes == []
+    assert terminal.missing_terminal_branch_taxa == ["B"]
+    assert "tree contains terminal branches without lengths" in terminal.warnings
+
+
+def test_validate_tree_path_detects_singleton_internal_nodes() -> None:
+    report = validate_tree_path(fixture("example_tree_singleton.nwk"))
+    assert report.singleton_internal_nodes == ["A"]
+    assert "tree contains singleton internal nodes" in report.warnings
+
+
 def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     report = inspect_tree_path(fixture("example_tree.nwk"))
     assert report.tip_count == 4
@@ -1102,6 +1119,14 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.clade_count == 3
     assert report.has_branch_lengths is True
     assert report.is_binary is True
+    assert [(row.node, row.child_count) for row in report.internal_child_counts] == [
+        ("A|B|C|D", 2),
+        ("A|B", 2),
+        ("C|D", 2),
+    ]
+    assert report.singleton_internal_nodes == []
+    assert report.missing_internal_branch_nodes == []
+    assert report.missing_terminal_branch_taxa == []
     assert report.is_ultrametric is True
     assert report.branch_length_summary is not None
     assert (
@@ -1130,6 +1155,22 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.cherry_count == 2
     assert report.warnings == []
     assert report.taxa == ["A", "B", "C", "D"]
+
+
+def test_inspect_tree_path_reports_structural_and_missing_branch_diagnostics() -> None:
+    singleton = inspect_tree_path(fixture("example_tree_singleton.nwk"))
+    missing_internal = inspect_tree_path(fixture("example_tree_missing_internal_length.nwk"))
+    missing_terminal = inspect_tree_path(fixture("example_tree_partial_lengths.nwk"))
+    assert [(row.node, row.child_count) for row in singleton.internal_child_counts] == [
+        ("A|B|C", 2),
+        ("A|B", 2),
+        ("A", 1),
+    ]
+    assert singleton.singleton_internal_nodes == ["A"]
+    assert missing_internal.missing_internal_branch_nodes == ["A|B"]
+    assert missing_internal.missing_terminal_branch_taxa == []
+    assert missing_terminal.missing_internal_branch_nodes == []
+    assert missing_terminal.missing_terminal_branch_taxa == ["B"]
 
 
 def test_inspect_tree_path_distinguishes_ladderized_shape() -> None:

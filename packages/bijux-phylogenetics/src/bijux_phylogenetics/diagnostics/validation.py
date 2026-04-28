@@ -31,6 +31,9 @@ class TreeValidationReport:
     negative_branch_lengths: int
     polytomy_count: int
     polytomy_nodes: list[str]
+    missing_internal_branch_nodes: list[str]
+    missing_terminal_branch_taxa: list[str]
+    singleton_internal_nodes: list[str]
     missing_taxa: int
     duplicate_taxa: list[str]
     ultrametric: bool | None
@@ -58,6 +61,27 @@ class TreeQualityWarning:
 
 
 @dataclass(slots=True)
+class InternalNodeChildCount:
+    node: str
+    child_count: int
+
+
+@dataclass(slots=True)
+class BranchLengthOutlier:
+    node: str
+    branch_length: float
+    branch_type: str
+
+
+@dataclass(slots=True)
+class InternalLabelInterpretation:
+    node: str
+    label: str
+    interpretation: str
+    numeric_value: float | None
+
+
+@dataclass(slots=True)
 class TreeInspectionReport:
     path: Path
     source_format: str
@@ -68,10 +92,14 @@ class TreeInspectionReport:
     clade_count: int
     rooted: bool
     is_binary: bool
+    internal_child_counts: list[InternalNodeChildCount]
+    singleton_internal_nodes: list[str]
     polytomy_count: int
     polytomy_nodes: list[str]
     has_branch_lengths: bool
     branch_length_status: str
+    missing_internal_branch_nodes: list[str]
+    missing_terminal_branch_taxa: list[str]
     is_ultrametric: bool | None
     total_branch_length: float
     branch_length_summary: BranchLengthSummary | None
@@ -86,6 +114,12 @@ class TreeInspectionReport:
     sackin_imbalance_index: int
     unusually_imbalanced: bool | None
     long_branch_taxa: list[str]
+    long_branch_outliers: list[BranchLengthOutlier]
+    short_branch_outliers: list[BranchLengthOutlier]
+    suspicious_support_value_ranges: list[str]
+    mixed_support_scales: bool
+    likely_support_labels: list[InternalLabelInterpretation]
+    likely_named_internal_labels: list[InternalLabelInterpretation]
     star_like: bool
     comb_like: bool
     tree_quality_score: float
@@ -158,6 +192,38 @@ def _branch_length_health(tree: PhyloTree) -> tuple[bool, int, int]:
     zero_count = sum(1 for length in branch_lengths if length == 0)
     negative_count = sum(1 for length in branch_lengths if length is not None and length < 0)
     return has_complete, zero_count, negative_count
+
+
+def _internal_node_child_counts(tree: PhyloTree) -> list[InternalNodeChildCount]:
+    return [
+        InternalNodeChildCount(node=_node_signature(node), child_count=len(node.children))
+        for node in tree.iter_nodes()
+        if not node.is_leaf()
+    ]
+
+
+def _singleton_internal_nodes(tree: PhyloTree) -> list[str]:
+    return sorted(
+        _node_signature(node)
+        for node in tree.iter_nodes()
+        if not node.is_leaf() and len(node.children) == 1
+    )
+
+
+def _missing_internal_branch_nodes(tree: PhyloTree) -> list[str]:
+    return sorted(
+        _node_signature(node)
+        for node in tree.iter_nodes()
+        if node is not tree.root and not node.is_leaf() and node.branch_length is None
+    )
+
+
+def _missing_terminal_branch_taxa(tree: PhyloTree) -> list[str]:
+    return sorted(
+        node.name
+        for node in tree.iter_leaves()
+        if node.name is not None and node.branch_length is None
+    )
 
 
 def _zero_length_branch_nodes(tree: PhyloTree) -> list[str]:
@@ -525,6 +591,9 @@ def validate_tree_path(
     rooted = len(tree.root.children) == 2
     has_complete, zero_count, negative_count = _branch_length_health(tree)
     branch_length_status = _branch_length_status(tree)
+    missing_internal_branch_nodes = _missing_internal_branch_nodes(tree)
+    missing_terminal_branch_taxa = _missing_terminal_branch_taxa(tree)
+    singleton_internal_nodes = _singleton_internal_nodes(tree)
     missing_taxa, duplicate_taxa = _duplicate_taxa(tree)
     if duplicate_taxa and not allow_duplicates:
         raise DuplicateTaxonError(f"duplicate tip labels found: {', '.join(duplicate_taxa)}")
@@ -547,6 +616,12 @@ def validate_tree_path(
         warnings.append("tree contains negative branch lengths")
     if zero_count:
         warnings.append("tree contains zero-length branches")
+    if missing_internal_branch_nodes:
+        warnings.append("tree contains internal branches without lengths")
+    if missing_terminal_branch_taxa:
+        warnings.append("tree contains terminal branches without lengths")
+    if singleton_internal_nodes:
+        warnings.append("tree contains singleton internal nodes")
     if polytomy_nodes:
         warnings.append("tree contains one or more polytomies")
     return TreeValidationReport(
@@ -562,6 +637,9 @@ def validate_tree_path(
         negative_branch_lengths=negative_count,
         polytomy_count=len(polytomy_nodes),
         polytomy_nodes=polytomy_nodes,
+        missing_internal_branch_nodes=missing_internal_branch_nodes,
+        missing_terminal_branch_taxa=missing_terminal_branch_taxa,
+        singleton_internal_nodes=singleton_internal_nodes,
         missing_taxa=missing_taxa,
         duplicate_taxa=duplicate_taxa,
         ultrametric=ultrametric,
@@ -576,6 +654,10 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     branch_lengths = [node.branch_length for node in tree.iter_nodes() if node is not tree.root]
     polytomy_nodes = _polytomy_nodes(tree)
     branch_length_status = _branch_length_status(tree)
+    internal_child_counts = _internal_node_child_counts(tree)
+    singleton_internal_nodes = _singleton_internal_nodes(tree)
+    missing_internal_branch_nodes = _missing_internal_branch_nodes(tree)
+    missing_terminal_branch_taxa = _missing_terminal_branch_taxa(tree)
     depths = _leaf_depths(tree)
     zero_length_branch_count = sum(1 for length in branch_lengths if length == 0)
     ultrametric = _ultrametric(tree)
@@ -601,6 +683,12 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     warnings: list[str] = []
     if zero_length_branch_count:
         warnings.append("tree contains zero-length branches")
+    if missing_internal_branch_nodes:
+        warnings.append("tree contains internal branches without lengths")
+    if missing_terminal_branch_taxa:
+        warnings.append("tree contains terminal branches without lengths")
+    if singleton_internal_nodes:
+        warnings.append("tree contains singleton internal nodes")
     if polytomy_nodes:
         warnings.append("tree contains one or more polytomies")
     if branch_length_status == "partial":
@@ -617,10 +705,14 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         clade_count=tree.internal_node_count,
         rooted=len(tree.root.children) == 2,
         is_binary=all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()),
+        internal_child_counts=internal_child_counts,
+        singleton_internal_nodes=singleton_internal_nodes,
         polytomy_count=len(polytomy_nodes),
         polytomy_nodes=polytomy_nodes,
         has_branch_lengths=any(length is not None for length in branch_lengths),
         branch_length_status=branch_length_status,
+        missing_internal_branch_nodes=missing_internal_branch_nodes,
+        missing_terminal_branch_taxa=missing_terminal_branch_taxa,
         is_ultrametric=ultrametric,
         total_branch_length=tree.total_branch_length(),
         branch_length_summary=branch_length_summary,
@@ -635,6 +727,12 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         sackin_imbalance_index=sum(depths),
         unusually_imbalanced=unusually_imbalanced,
         long_branch_taxa=long_branch_taxa,
+        long_branch_outliers=[],
+        short_branch_outliers=[],
+        suspicious_support_value_ranges=[],
+        mixed_support_scales=False,
+        likely_support_labels=[],
+        likely_named_internal_labels=[],
         star_like=star_like,
         comb_like=comb_like,
         tree_quality_score=_tree_quality_score(tree_quality_warnings),
