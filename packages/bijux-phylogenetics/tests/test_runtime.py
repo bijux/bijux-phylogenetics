@@ -1367,6 +1367,8 @@ def test_cli_alignment_inspect_json_output(capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["command"] == "alignment"
     assert payload["metrics"]["alignment_length"] == 8
+    assert payload["metrics"]["alphabet"] == "dna"
+    assert payload["metrics"]["duplicate_group_count"] == 0
     assert payload["data"]["variable_site_count"] == 2
 
 
