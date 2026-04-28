@@ -3,19 +3,30 @@ from __future__ import annotations
 from pathlib import Path
 from statistics import median
 
+from Bio.Data import CodonTable
+
 from bijux_phylogenetics.core.alignment import (
     AlignmentAlphabet,
     AlignmentQualityReport,
     AlignmentLinkageReport,
     AlignmentRecord,
     AlignmentSummary,
+    AlignmentTrimReport,
+    CodingAlignmentDiagnostics,
     DuplicateSequenceGroup,
+    FrameshiftLikeSequence,
     InvalidAlignmentCharacter,
     NearDuplicateSequencePair,
+    PairwiseSequenceIdentity,
+    RemovedAlignmentSequence,
     SequenceMissingness,
+    SequenceIdentityMatrix,
     SequenceCompositionOutlier,
     SequenceGCContent,
     SiteMissingness,
+    StopCodonObservation,
+    TranslationReport,
+    TrimmedAlignmentColumn,
 )
 from bijux_phylogenetics.errors import AlignmentTaxonMismatchError, InvalidAlignmentError
 from bijux_phylogenetics.io.trees import load_tree
@@ -29,6 +40,10 @@ _DNA_CANONICAL = ("A", "C", "G", "T")
 _RNA_CANONICAL = ("A", "C", "G", "U")
 _PROTEIN_CHARACTERS = set("ABCDEFGHIKLMNPQRSTVWXYZabcdefghiklmnpqrstvwxyz*")
 _PROTEIN_CANONICAL = tuple("ACDEFGHIKLMNPQRSTVWY")
+_DNA_BASES = {"A", "C", "G", "T"}
+_STANDARD_DNA_TABLE = CodonTable.unambiguous_dna_by_name["Standard"]
+_STANDARD_FORWARD_TABLE = _STANDARD_DNA_TABLE.forward_table
+_STANDARD_STOP_CODONS = set(_STANDARD_DNA_TABLE.stop_codons)
 
 
 def _validate_fraction_threshold(threshold: float) -> None:
@@ -243,6 +258,322 @@ def detect_near_duplicate_sequences(
                     )
                 )
     return near_duplicates
+
+
+def _trim_columns(
+    records: list[AlignmentRecord],
+    *,
+    keep_positions: list[int],
+) -> list[AlignmentRecord]:
+    return [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence="".join(record.sequence[index] for index in keep_positions),
+        )
+        for record in records
+    ]
+
+
+def remove_all_gap_columns(path: Path) -> tuple[list[AlignmentRecord], AlignmentTrimReport]:
+    """Remove columns composed entirely of gap characters."""
+    records = load_fasta_alignment(path)
+    summary = summarise_fasta(path)
+    removed_positions = set(summary.all_gap_columns)
+    keep_positions = [index for index in range(summary.alignment_length) if (index + 1) not in removed_positions]
+    trimmed_records = _trim_columns(records, keep_positions=keep_positions)
+    return trimmed_records, AlignmentTrimReport(
+        path=path,
+        original_sequence_count=summary.sequence_count,
+        trimmed_sequence_count=len(trimmed_records),
+        original_alignment_length=summary.alignment_length,
+        trimmed_alignment_length=len(keep_positions),
+        removed_columns=[
+            TrimmedAlignmentColumn(position=position, reason="all-gap")
+            for position in summary.all_gap_columns
+        ],
+        removed_sequences=[],
+    )
+
+
+def remove_all_missing_columns(path: Path) -> tuple[list[AlignmentRecord], AlignmentTrimReport]:
+    """Remove columns composed entirely of missing-data symbols."""
+    records = load_fasta_alignment(path)
+    summary = summarise_fasta(path)
+    removed_positions = set(summary.all_missing_columns)
+    keep_positions = [index for index in range(summary.alignment_length) if (index + 1) not in removed_positions]
+    trimmed_records = _trim_columns(records, keep_positions=keep_positions)
+    return trimmed_records, AlignmentTrimReport(
+        path=path,
+        original_sequence_count=summary.sequence_count,
+        trimmed_sequence_count=len(trimmed_records),
+        original_alignment_length=summary.alignment_length,
+        trimmed_alignment_length=len(keep_positions),
+        removed_columns=[
+            TrimmedAlignmentColumn(position=position, reason="all-missing")
+            for position in summary.all_missing_columns
+        ],
+        removed_sequences=[],
+    )
+
+
+def remove_sequences_above_missingness_threshold(
+    path: Path,
+    *,
+    threshold: float,
+) -> tuple[list[AlignmentRecord], AlignmentTrimReport]:
+    """Remove sequences whose missing-data fraction exceeds the given threshold."""
+    _validate_fraction_threshold(threshold)
+    records = load_fasta_alignment(path)
+    summary = summarise_fasta(path)
+    excessive = {
+        row.identifier: row.missing_fraction
+        for row in detect_sequences_with_excessive_missing_data(path, threshold=threshold)
+    }
+    trimmed_records = [record for record in records if record.identifier not in excessive]
+    removed_sequences = [
+        RemovedAlignmentSequence(
+            identifier=record.identifier,
+            missing_fraction=excessive[record.identifier],
+            reason="missingness-threshold",
+        )
+        for record in records
+        if record.identifier in excessive
+    ]
+    return trimmed_records, AlignmentTrimReport(
+        path=path,
+        original_sequence_count=summary.sequence_count,
+        trimmed_sequence_count=len(trimmed_records),
+        original_alignment_length=summary.alignment_length,
+        trimmed_alignment_length=summary.alignment_length,
+        removed_columns=[],
+        removed_sequences=removed_sequences,
+    )
+
+
+def trim_alignment(
+    path: Path,
+    *,
+    remove_all_gap_sites: bool = True,
+    remove_all_missing_sites: bool = True,
+    sequence_missingness_threshold: float | None = None,
+) -> tuple[list[AlignmentRecord], AlignmentTrimReport]:
+    """Trim an alignment with explicit deterministic transform reporting."""
+    if sequence_missingness_threshold is not None:
+        _validate_fraction_threshold(sequence_missingness_threshold)
+
+    original_records = load_fasta_alignment(path)
+    summary = summarise_fasta(path)
+    records = list(original_records)
+    removed_columns: list[TrimmedAlignmentColumn] = []
+    removed_sequences: list[RemovedAlignmentSequence] = []
+
+    if sequence_missingness_threshold is not None:
+        excessive = {
+            row.identifier: row.missing_fraction
+            for row in detect_sequences_with_excessive_missing_data(
+                path,
+                threshold=sequence_missingness_threshold,
+            )
+        }
+        removed_sequences.extend(
+            RemovedAlignmentSequence(
+                identifier=record.identifier,
+                missing_fraction=excessive[record.identifier],
+                reason="missingness-threshold",
+            )
+            for record in records
+            if record.identifier in excessive
+        )
+        records = [record for record in records if record.identifier not in excessive]
+
+    removed_positions: set[int] = set()
+    if remove_all_gap_sites:
+        removed_positions.update(summary.all_gap_columns)
+        removed_columns.extend(
+            TrimmedAlignmentColumn(position=position, reason="all-gap")
+            for position in summary.all_gap_columns
+        )
+    if remove_all_missing_sites:
+        removed_positions.update(
+            position for position in summary.all_missing_columns if position not in removed_positions
+        )
+        removed_columns.extend(
+            TrimmedAlignmentColumn(position=position, reason="all-missing")
+            for position in summary.all_missing_columns
+            if position not in summary.all_gap_columns or not remove_all_gap_sites
+        )
+
+    keep_positions = [index for index in range(summary.alignment_length) if (index + 1) not in removed_positions]
+    trimmed_records = _trim_columns(records, keep_positions=keep_positions)
+    removed_columns.sort(key=lambda item: item.position)
+    removed_sequences.sort(key=lambda item: item.identifier)
+    return trimmed_records, AlignmentTrimReport(
+        path=path,
+        original_sequence_count=summary.sequence_count,
+        trimmed_sequence_count=len(trimmed_records),
+        original_alignment_length=summary.alignment_length,
+        trimmed_alignment_length=len(keep_positions),
+        removed_columns=removed_columns,
+        removed_sequences=removed_sequences,
+    )
+
+
+def compute_pairwise_sequence_identity_matrix(path: Path) -> SequenceIdentityMatrix:
+    """Compute a deterministic pairwise sequence identity matrix."""
+    records = load_fasta_alignment(path)
+    pairs: list[PairwiseSequenceIdentity] = []
+    for left_index, left in enumerate(records):
+        for right_index, right in enumerate(records):
+            if right_index < left_index:
+                continue
+            if left_index == right_index:
+                pairs.append(
+                    PairwiseSequenceIdentity(
+                        left_identifier=left.identifier,
+                        right_identifier=right.identifier,
+                        identity=1.0,
+                        comparable_sites=len(
+                            [
+                                residue
+                                for residue in left.sequence
+                                if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+                            ]
+                        ),
+                    )
+                )
+                continue
+            identity, comparable_sites = _pairwise_identity(left.sequence, right.sequence)
+            pairs.append(
+                PairwiseSequenceIdentity(
+                    left_identifier=left.identifier,
+                    right_identifier=right.identifier,
+                    identity=identity if comparable_sites > 0 else None,
+                    comparable_sites=comparable_sites,
+                )
+            )
+    return SequenceIdentityMatrix(
+        path=path,
+        identifiers=[record.identifier for record in records],
+        pairs=pairs,
+    )
+
+
+def _coding_residues(sequence: str) -> str:
+    return "".join(
+        residue.upper().replace("U", "T")
+        for residue in sequence
+        if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+    )
+
+
+def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]:
+    """Detect coding sequences whose comparable length is not divisible by three."""
+    records = load_fasta_alignment(path)
+    flagged: list[FrameshiftLikeSequence] = []
+    for record in records:
+        comparable_length = len(_coding_residues(record.sequence))
+        remainder = comparable_length % 3
+        if remainder != 0:
+            flagged.append(
+                FrameshiftLikeSequence(
+                    identifier=record.identifier,
+                    comparable_length=comparable_length,
+                    remainder=remainder,
+                )
+            )
+    return flagged
+
+
+def _iter_codon_windows(sequence: str) -> list[tuple[int, str]]:
+    return [
+        (position, sequence[position - 1 : position + 2])
+        for position in range(1, len(sequence) + 1, 3)
+        if len(sequence[position - 1 : position + 2]) == 3
+    ]
+
+
+def detect_stop_codons(path: Path) -> list[StopCodonObservation]:
+    """Detect stop codons in a coding alignment under the standard genetic code."""
+    records = load_fasta_alignment(path)
+    stop_codons: list[StopCodonObservation] = []
+    for record in records:
+        codons = _iter_codon_windows(record.sequence.upper().replace("U", "T"))
+        for codon_index, (start, codon) in enumerate(codons, start=1):
+            if set(codon) <= _GAP_CHARACTERS | _MISSING_CHARACTERS:
+                continue
+            if any(base not in _DNA_BASES for base in codon):
+                continue
+            if codon in _STANDARD_STOP_CODONS:
+                stop_codons.append(
+                    StopCodonObservation(
+                        identifier=record.identifier,
+                        codon_index=codon_index,
+                        nucleotide_start=start,
+                        codon=codon,
+                        terminal=codon_index == len(codons),
+                    )
+                )
+    return stop_codons
+
+
+def inspect_coding_alignment(path: Path) -> CodingAlignmentDiagnostics:
+    """Inspect one nucleotide alignment as a coding sequence dataset."""
+    summary = summarise_fasta(path)
+    if summary.inferred_alphabet not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            f"coding diagnostics require a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
+        )
+    return CodingAlignmentDiagnostics(
+        path=path,
+        sequence_count=summary.sequence_count,
+        alignment_length=summary.alignment_length,
+        frameshift_like_sequences=detect_frameshift_like_sequences(path),
+        stop_codons=detect_stop_codons(path),
+    )
+
+
+def _translate_codon(codon: str) -> str:
+    normalized = codon.upper().replace("U", "T")
+    if set(normalized) <= _GAP_CHARACTERS:
+        return "-"
+    if any(base in _GAP_CHARACTERS or base in _MISSING_CHARACTERS for base in normalized):
+        return "X"
+    if any(base not in _DNA_BASES for base in normalized):
+        return "X"
+    if normalized in _STANDARD_STOP_CODONS:
+        return "*"
+    return _STANDARD_FORWARD_TABLE.get(normalized, "X")
+
+
+def translate_coding_alignment(path: Path) -> tuple[list[AlignmentRecord], TranslationReport]:
+    """Translate an aligned nucleotide coding sequence dataset to amino acids."""
+    summary = summarise_fasta(path)
+    if summary.inferred_alphabet not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            f"coding translation requires a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
+        )
+    if summary.alignment_length % 3 != 0:
+        raise InvalidAlignmentError(
+            f"alignment length must be divisible by 3 for coding translation, got {summary.alignment_length}"
+        )
+
+    records = load_fasta_alignment(path)
+    translated_records = [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence="".join(_translate_codon(codon) for _, codon in _iter_codon_windows(record.sequence)),
+        )
+        for record in records
+    ]
+    diagnostics = inspect_coding_alignment(path)
+    return translated_records, TranslationReport(
+        source_path=path,
+        translated_sequence_count=len(translated_records),
+        source_alignment_length=summary.alignment_length,
+        translated_alignment_length=summary.alignment_length // 3,
+        stop_codon_count=len(diagnostics.stop_codons),
+        frameshift_like_sequence_count=len(diagnostics.frameshift_like_sequences),
+    )
 
 
 def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:

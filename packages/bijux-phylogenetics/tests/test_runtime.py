@@ -66,6 +66,7 @@ from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
     build_alignment_quality_report,
+    compute_pairwise_sequence_identity_matrix,
     compute_amino_acid_composition,
     compute_nucleotide_composition,
     detect_composition_outlier_sequences,
@@ -75,6 +76,12 @@ from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     detect_sequences_with_excessive_missing_data,
     detect_sites_with_excessive_missing_data,
+    inspect_coding_alignment,
+    remove_all_gap_columns,
+    remove_all_missing_columns,
+    remove_sequences_above_missingness_threshold,
+    translate_coding_alignment,
+    trim_alignment,
     write_fasta_alignment,
 )
 from bijux_phylogenetics.render.svg import render_tree_svg
@@ -688,6 +695,103 @@ def test_alignment_detects_sites_with_excessive_missing_data() -> None:
         (4, 1.0),
         (5, 0.5),
     ]
+
+
+def test_alignment_removes_all_gap_columns() -> None:
+    records, report = remove_all_gap_columns(fixture("example_alignment_site_missingness.fasta"))
+    assert [record.sequence for record in records] == ["AN?T", "CN?N", "GN?A", "TN?N"]
+    assert report.original_alignment_length == 5
+    assert report.trimmed_alignment_length == 4
+    assert [(column.position, column.reason) for column in report.removed_columns] == [(2, "all-gap")]
+
+
+def test_alignment_removes_all_missing_columns() -> None:
+    records, report = remove_all_missing_columns(fixture("example_alignment_site_missingness.fasta"))
+    assert [record.sequence for record in records] == ["A-T", "C-N", "G-A", "T-N"]
+    assert report.original_alignment_length == 5
+    assert report.trimmed_alignment_length == 3
+    assert [(column.position, column.reason) for column in report.removed_columns] == [
+        (3, "all-missing"),
+        (4, "all-missing"),
+    ]
+
+
+def test_alignment_removes_sequences_above_missingness_threshold() -> None:
+    records, report = remove_sequences_above_missingness_threshold(
+        fixture("example_alignment_missingness.fasta"),
+        threshold=0.3,
+    )
+    assert [record.identifier for record in records] == ["C"]
+    assert report.original_sequence_count == 3
+    assert report.trimmed_sequence_count == 1
+    assert [(row.identifier, row.missing_fraction, row.reason) for row in report.removed_sequences] == [
+        ("A", 2 / 6, "missingness-threshold"),
+        ("B", 2 / 6, "missingness-threshold"),
+    ]
+
+
+def test_alignment_trimming_report_combines_sequence_and_column_transforms() -> None:
+    records, report = trim_alignment(
+        fixture("example_alignment_trim.fasta"),
+        sequence_missingness_threshold=0.3,
+    )
+    assert [(record.identifier, record.sequence) for record in records] == [("B", "ACTG")]
+    assert report.original_sequence_count == 3
+    assert report.trimmed_sequence_count == 1
+    assert report.original_alignment_length == 6
+    assert report.trimmed_alignment_length == 4
+    assert [(column.position, column.reason) for column in report.removed_columns] == [
+        (3, "all-gap"),
+        (4, "all-missing"),
+    ]
+    assert [(row.identifier, row.reason) for row in report.removed_sequences] == [
+        ("A", "missingness-threshold"),
+        ("C", "missingness-threshold"),
+    ]
+
+
+def test_alignment_identity_matrix_reports_pairs_and_comparable_sites() -> None:
+    report = compute_pairwise_sequence_identity_matrix(fixture("example_alignment_duplicates.fasta"))
+    assert report.identifiers == ["A", "B", "C", "D"]
+    assert [(pair.left_identifier, pair.right_identifier, pair.identity, pair.comparable_sites) for pair in report.pairs] == [
+        ("A", "A", 1.0, 8),
+        ("A", "B", 1.0, 8),
+        ("A", "C", 0.875, 8),
+        ("A", "D", 0.875, 8),
+        ("B", "B", 1.0, 8),
+        ("B", "C", 0.875, 8),
+        ("B", "D", 0.875, 8),
+        ("C", "C", 1.0, 8),
+        ("C", "D", 0.875, 8),
+        ("D", "D", 1.0, 8),
+    ]
+
+
+def test_coding_alignment_reports_frameshift_like_sequences_and_stop_codons() -> None:
+    diagnostics = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
+    assert diagnostics.sequence_count == 4
+    assert [(row.identifier, row.comparable_length, row.remainder) for row in diagnostics.frameshift_like_sequences] == [
+        ("C", 8, 2)
+    ]
+    assert [(row.identifier, row.codon_index, row.nucleotide_start, row.codon, row.terminal) for row in diagnostics.stop_codons] == [
+        ("A", 3, 7, "TAA", True),
+        ("D", 2, 4, "TAG", False),
+    ]
+
+
+def test_translate_coding_alignment_emits_amino_acid_records() -> None:
+    records, report = translate_coding_alignment(fixture("example_alignment_coding.fasta"))
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("A", "ME*"),
+        ("B", "MEW"),
+        ("C", "MXW"),
+        ("D", "M*W"),
+    ]
+    assert report.translated_sequence_count == 4
+    assert report.source_alignment_length == 9
+    assert report.translated_alignment_length == 3
+    assert report.stop_codon_count == 2
+    assert report.frameshift_like_sequence_count == 1
 
 
 def test_build_run_manifest_captures_checksums_and_environment(tmp_path: Path) -> None:

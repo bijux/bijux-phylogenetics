@@ -74,6 +74,98 @@ class NearDuplicateSequencePair:
     comparable_sites: int
 
 
+@dataclass(frozen=True, slots=True)
+class TrimmedAlignmentColumn:
+    """One removed alignment column with its 1-based position and reason."""
+
+    position: int
+    reason: str
+
+
+@dataclass(frozen=True, slots=True)
+class RemovedAlignmentSequence:
+    """One removed alignment sequence with the explicit removal reason."""
+
+    identifier: str
+    missing_fraction: float
+    reason: str
+
+
+@dataclass(slots=True)
+class AlignmentTrimReport:
+    """Explicit report describing how an alignment was trimmed."""
+
+    path: Path
+    original_sequence_count: int
+    trimmed_sequence_count: int
+    original_alignment_length: int
+    trimmed_alignment_length: int
+    removed_columns: list[TrimmedAlignmentColumn]
+    removed_sequences: list[RemovedAlignmentSequence]
+
+
+@dataclass(frozen=True, slots=True)
+class PairwiseSequenceIdentity:
+    """Pairwise identity summary between two aligned sequences."""
+
+    left_identifier: str
+    right_identifier: str
+    identity: float | None
+    comparable_sites: int
+
+
+@dataclass(slots=True)
+class SequenceIdentityMatrix:
+    """Deterministic matrix-style export of pairwise sequence identities."""
+
+    path: Path
+    identifiers: list[str]
+    pairs: list[PairwiseSequenceIdentity]
+
+
+@dataclass(frozen=True, slots=True)
+class FrameshiftLikeSequence:
+    """Sequence whose ungapped coding length is not divisible by three."""
+
+    identifier: str
+    comparable_length: int
+    remainder: int
+
+
+@dataclass(frozen=True, slots=True)
+class StopCodonObservation:
+    """Observed stop codon within an aligned coding sequence."""
+
+    identifier: str
+    codon_index: int
+    nucleotide_start: int
+    codon: str
+    terminal: bool
+
+
+@dataclass(slots=True)
+class CodingAlignmentDiagnostics:
+    """Coding-sequence diagnostics for one aligned nucleotide dataset."""
+
+    path: Path
+    sequence_count: int
+    alignment_length: int
+    frameshift_like_sequences: list[FrameshiftLikeSequence]
+    stop_codons: list[StopCodonObservation]
+
+
+@dataclass(slots=True)
+class TranslationReport:
+    """Explicit record of a coding-alignment translation run."""
+
+    source_path: Path
+    translated_sequence_count: int
+    source_alignment_length: int
+    translated_alignment_length: int
+    stop_codon_count: int
+    frameshift_like_sequence_count: int
+
+
 @dataclass(slots=True)
 class AlignmentQualityReport:
     """Higher-level alignment quality report built from composition and identity diagnostics."""
