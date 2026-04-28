@@ -1424,6 +1424,24 @@ def test_cli_alignment_composition_json_output(capsys) -> None:
     }
 
 
+def test_cli_alignment_invalid_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "invalid",
+            str(fixture("example_alignment_invalid_dna.fasta")),
+            "--alphabet",
+            "dna",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["invalid_character_count"] == 1
+    assert payload["data"] == [{"character": "Z", "identifier": "A", "position": 5}]
+
+
 def test_cli_compare_support_json_output(capsys) -> None:
     exit_code = main(
         [

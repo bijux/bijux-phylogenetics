@@ -18,6 +18,7 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
     write_root_to_tip_tsv,
 )
 from bijux_phylogenetics.io.fasta import build_alignment_quality_report, link_alignment_to_tree, summarise_fasta
+from bijux_phylogenetics.io.fasta import detect_invalid_alignment_characters
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
@@ -148,6 +149,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.alignment_command == "inspect":
             return [args.alignment]
         if args.alignment_command == "composition":
+            return [args.alignment]
+        if args.alignment_command == "invalid":
             return [args.alignment]
         if args.alignment_command == "quality":
             return [args.alignment]
@@ -290,6 +293,14 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_composition.add_argument("alignment", type=Path)
     alignment_composition.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_composition)
+    alignment_invalid = alignment_subparsers.add_parser(
+        "invalid",
+        help="List alignment characters invalid for a declared alphabet.",
+    )
+    alignment_invalid.add_argument("alignment", type=Path)
+    alignment_invalid.add_argument("--alphabet", choices=("dna", "rna", "protein"), required=True)
+    alignment_invalid.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_invalid)
     alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
@@ -663,6 +674,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "per_sequence_gc_content": report.per_sequence_gc_content,
                             "whole_alignment_gc_content": report.whole_alignment_gc_content,
                         },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "invalid":
+                report = detect_invalid_alignment_characters(args.alignment, alphabet=args.alphabet)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={"invalid_character_count": len(report), "alphabet": args.alphabet},
+                        data=report,
                     ),
                     json_output=args.json,
                 )
