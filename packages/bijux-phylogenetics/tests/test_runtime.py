@@ -5,7 +5,7 @@ from pathlib import Path
 
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
-from bijux_phylogenetics.compare.topology import compare_tree_paths
+from bijux_phylogenetics.compare.topology import compare_support_values, compare_tree_paths
 from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
@@ -421,6 +421,15 @@ def test_compare_tree_paths_reports_nonzero_distance() -> None:
     assert report.robinson_foulds_distance > 0
 
 
+def test_compare_support_values_pairs_shared_clades() -> None:
+    report = compare_support_values(FIXTURES / "example_tree_support_left.nwk", FIXTURES / "example_tree_support_right.nwk")
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert [(row.split_id, row.left_support, row.right_support) for row in report.shared_clades] == [
+        ("A|B", 95.0, 90.0),
+        ("C|D", 88.0, 85.0),
+    ]
+
+
 def test_diagnose_tree_path_combines_inspection_and_validation() -> None:
     report = diagnose_tree_path(FIXTURES / "example_tree.nwk")
     assert report.inspection.tip_count == 4
@@ -590,6 +599,24 @@ def test_cli_alignment_link_strict_mode_returns_typed_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == AlignmentTaxonMismatchError.code
+
+
+def test_cli_compare_support_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "compare",
+            "support",
+            str(FIXTURES / "example_tree_support_left.nwk"),
+            str(FIXTURES / "example_tree_support_right.nwk"),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["shared_clades"] == 2
+    assert payload["data"]["shared_clades"][0]["split_id"] == "A|B"
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:

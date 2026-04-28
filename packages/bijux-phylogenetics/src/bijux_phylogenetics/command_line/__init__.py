@@ -19,7 +19,7 @@ from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
-from bijux_phylogenetics.compare.topology import compare_tree_paths
+from bijux_phylogenetics.compare.topology import compare_support_values, compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EvidenceContractError, PhylogeneticsError
@@ -129,7 +129,9 @@ def _command_inputs(args: Any) -> list[Path | str]:
             inputs.append(args.mapping_out)
         return inputs
     if args.command == "compare":
-        return [args.left, args.right]
+        if getattr(args, "third", None) is not None:
+            return [Path(args.right), Path(args.third)]
+        return [Path(args.left), Path(args.right)]
     if args.command == "annotate":
         inputs = [args.tree, args.metadata]
         if args.out is not None:
@@ -248,8 +250,9 @@ def build_parser() -> argparse.ArgumentParser:
     _add_manifest_argument(normalize_taxa)
 
     compare = subparsers.add_parser(get_command_spec("compare").name, help=get_command_spec("compare").summary)
-    compare.add_argument("left", type=Path)
-    compare.add_argument("right", type=Path)
+    compare.add_argument("left")
+    compare.add_argument("right")
+    compare.add_argument("third", nargs="?")
     compare.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(compare)
 
@@ -585,12 +588,32 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "compare":
-            report = compare_tree_paths(args.left, args.right)
-            outputs = _finalize_outputs(args, command="compare", inputs=[args.left, args.right])
+            if args.left == "support":
+                if args.third is None:
+                    parser.exit(status=2, message="compare support requires two tree paths\n")
+                left_path = Path(args.right)
+                right_path = Path(args.third)
+                report = compare_support_values(left_path, right_path)
+                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                _print_result(
+                    build_command_result(
+                        command="compare",
+                        inputs=[left_path, right_path],
+                        outputs=outputs,
+                        metrics={"shared_clades": len(report.shared_clades)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            left_path = Path(args.left)
+            right_path = Path(args.right)
+            report = compare_tree_paths(left_path, right_path)
+            outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
             _print_result(
                 build_command_result(
                     command="compare",
-                    inputs=[args.left, args.right],
+                    inputs=[left_path, right_path],
                     outputs=outputs,
                     metrics={
                         "shared_taxa": len(report.shared_taxa),
