@@ -72,7 +72,10 @@ class TreeInspectionReport:
     max_depth: int
     mean_depth: float
     colless_imbalance_index: float | None
+    normalized_colless_imbalance: float | None
     sackin_imbalance_index: int
+    unusually_imbalanced: bool | None
+    comb_like: bool
     imbalance_summary: str
     cherry_count: int
     taxa: list[str]
@@ -277,6 +280,31 @@ def _colless_imbalance_index(tree: PhyloTree) -> float | None:
     return None if score is None else float(score)
 
 
+def _normalized_colless_imbalance(tree: PhyloTree) -> float | None:
+    raw_score = _colless_imbalance_index(tree)
+    if raw_score is None:
+        return None
+    if tree.tip_count <= 2:
+        return 0.0
+    maximum = ((tree.tip_count - 1) * (tree.tip_count - 2)) / 2
+    return round(raw_score / maximum, 15)
+
+
+def _unusually_imbalanced(tree: PhyloTree, *, threshold: float = 0.75) -> bool | None:
+    normalized = _normalized_colless_imbalance(tree)
+    if normalized is None:
+        return None
+    return normalized >= threshold
+
+
+def _comb_like(tree: PhyloTree) -> bool:
+    if len(tree.root.children) != 2:
+        return False
+    if any(not node.is_leaf() and len(node.children) != 2 for node in tree.iter_nodes()):
+        return False
+    return _cherry_count(tree) == 1 and _max_depth(tree) == tree.tip_count - 1
+
+
 def _imbalance_summary(tree: PhyloTree) -> str:
     def visit(node) -> tuple[int, int]:
         if node.is_leaf():
@@ -378,6 +406,10 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     zero_length_branch_count = sum(1 for length in branch_lengths if length == 0)
     ultrametric = _ultrametric(tree)
     branch_length_summary = _branch_length_summary(tree)
+    colless_imbalance_index = _colless_imbalance_index(tree)
+    normalized_colless_imbalance = _normalized_colless_imbalance(tree)
+    unusually_imbalanced = _unusually_imbalanced(tree)
+    comb_like = _comb_like(tree)
     warnings: list[str] = []
     if zero_length_branch_count:
         warnings.append("tree contains zero-length branches")
@@ -410,8 +442,11 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         max_root_to_tip=max(lengths) if lengths else None,
         max_depth=_max_depth(tree),
         mean_depth=sum(depths) / len(depths),
-        colless_imbalance_index=_colless_imbalance_index(tree),
+        colless_imbalance_index=colless_imbalance_index,
+        normalized_colless_imbalance=normalized_colless_imbalance,
         sackin_imbalance_index=sum(depths),
+        unusually_imbalanced=unusually_imbalanced,
+        comb_like=comb_like,
         imbalance_summary=_imbalance_summary(tree),
         cherry_count=_cherry_count(tree),
         taxa=sorted(tree.tip_names),
