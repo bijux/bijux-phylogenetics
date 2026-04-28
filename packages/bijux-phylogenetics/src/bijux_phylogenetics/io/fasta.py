@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 from pathlib import Path
+from statistics import median
 
 from bijux_phylogenetics.core.alignment import (
+    AlignmentAlphabet,
+    AlignmentQualityReport,
     AlignmentLinkageReport,
     AlignmentRecord,
     AlignmentSummary,
+    DuplicateSequenceGroup,
+    InvalidAlignmentCharacter,
+    NearDuplicateSequencePair,
     SequenceMissingness,
+    SequenceCompositionOutlier,
+    SequenceGCContent,
     SiteMissingness,
 )
 from bijux_phylogenetics.errors import AlignmentTaxonMismatchError, InvalidAlignmentError
@@ -14,11 +22,259 @@ from bijux_phylogenetics.io.trees import load_tree
 
 _GAP_CHARACTERS = {"-"}
 _MISSING_CHARACTERS = {"?", "N", "n", "X", "x"}
+_DNA_CHARACTERS = set("ACGTNRYSWKMBDHVacgtnryswkmbdhv")
+_RNA_CHARACTERS = set("ACGUNRYSWKMBDHVacgunryswkmbdhv")
+_NUCLEOTIDE_GC_CHARACTERS = {"G", "C", "g", "c"}
+_DNA_CANONICAL = ("A", "C", "G", "T")
+_RNA_CANONICAL = ("A", "C", "G", "U")
+_PROTEIN_CHARACTERS = set("ABCDEFGHIKLMNPQRSTVWXYZabcdefghiklmnpqrstvwxyz*")
+_PROTEIN_CANONICAL = tuple("ACDEFGHIKLMNPQRSTVWY")
 
 
 def _validate_fraction_threshold(threshold: float) -> None:
     if not 0.0 <= threshold <= 1.0:
         raise ValueError(f"threshold must be between 0 and 1 inclusive, got {threshold}")
+
+
+def _observed_residues(records: list[AlignmentRecord]) -> list[str]:
+    return [
+        residue
+        for record in records
+        for residue in record.sequence
+        if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+    ]
+
+
+def infer_alignment_alphabet(records: list[AlignmentRecord]) -> AlignmentAlphabet:
+    """Infer whether an alignment is DNA, RNA, protein, or unknown."""
+    observed = _observed_residues(records)
+    if not observed:
+        return "unknown"
+    characters = set(observed)
+    if characters <= _DNA_CHARACTERS and "U" not in {residue.upper() for residue in observed}:
+        return "dna"
+    if characters <= _RNA_CHARACTERS and "T" not in {residue.upper() for residue in observed}:
+        return "rna"
+    if characters <= _PROTEIN_CHARACTERS:
+        return "protein"
+    return "unknown"
+
+
+def detect_invalid_alignment_characters(
+    path: Path,
+    *,
+    alphabet: AlignmentAlphabet,
+) -> list[InvalidAlignmentCharacter]:
+    """List sequence characters invalid for the declared alphabet."""
+    records = load_fasta_alignment(path)
+    if alphabet == "dna":
+        allowed = _DNA_CHARACTERS | _GAP_CHARACTERS | _MISSING_CHARACTERS
+    elif alphabet == "rna":
+        allowed = _RNA_CHARACTERS | _GAP_CHARACTERS | _MISSING_CHARACTERS
+    elif alphabet == "protein":
+        allowed = _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _MISSING_CHARACTERS
+    else:
+        raise ValueError(f"unsupported declared alphabet: {alphabet}")
+
+    invalid: list[InvalidAlignmentCharacter] = []
+    for record in records:
+        for position, residue in enumerate(record.sequence, start=1):
+            if residue not in allowed:
+                invalid.append(
+                    InvalidAlignmentCharacter(
+                        identifier=record.identifier,
+                        position=position,
+                        character=residue,
+                    )
+                )
+    return invalid
+
+
+def _normalized_frequency(values: list[str], alphabet: tuple[str, ...]) -> dict[str, float]:
+    if not values:
+        return {}
+    total = len(values)
+    return {
+        character: round(sum(1 for value in values if value.upper() == character) / total, 15)
+        for character in alphabet
+        if any(value.upper() == character for value in values)
+    }
+
+
+def compute_nucleotide_composition(records: list[AlignmentRecord], *, alphabet: AlignmentAlphabet) -> dict[str, float]:
+    """Compute canonical nucleotide composition for DNA or RNA alignments."""
+    observed = _observed_residues(records)
+    if alphabet == "dna":
+        return _normalized_frequency(observed, _DNA_CANONICAL)
+    if alphabet == "rna":
+        return _normalized_frequency(observed, _RNA_CANONICAL)
+    return {}
+
+
+def compute_amino_acid_composition(records: list[AlignmentRecord], *, alphabet: AlignmentAlphabet) -> dict[str, float]:
+    """Compute canonical amino-acid composition for protein alignments."""
+    if alphabet != "protein":
+        return {}
+    return _normalized_frequency(_observed_residues(records), _PROTEIN_CANONICAL)
+
+
+def _sequence_gc_fraction(sequence: str) -> float | None:
+    comparable = [residue for residue in sequence if residue.upper() in {"A", "C", "G", "T", "U"}]
+    if not comparable:
+        return None
+    return round(sum(1 for residue in comparable if residue in _NUCLEOTIDE_GC_CHARACTERS) / len(comparable), 15)
+
+
+def compute_per_sequence_gc_content(records: list[AlignmentRecord], *, alphabet: AlignmentAlphabet) -> list[SequenceGCContent]:
+    """Compute GC content for each sequence when the alignment is nucleotide-like."""
+    if alphabet not in {"dna", "rna"}:
+        return []
+    return [
+        SequenceGCContent(
+            identifier=record.identifier,
+            gc_fraction=_sequence_gc_fraction(record.sequence),
+        )
+        for record in records
+    ]
+
+
+def compute_whole_alignment_gc_content(records: list[AlignmentRecord], *, alphabet: AlignmentAlphabet) -> float | None:
+    """Compute whole-alignment GC content for nucleotide alignments."""
+    if alphabet not in {"dna", "rna"}:
+        return None
+    comparable = [
+        residue
+        for record in records
+        for residue in record.sequence
+        if residue.upper() in {"A", "C", "G", "T", "U"}
+    ]
+    if not comparable:
+        return None
+    return round(sum(1 for residue in comparable if residue in _NUCLEOTIDE_GC_CHARACTERS) / len(comparable), 15)
+
+
+def detect_composition_outlier_sequences(
+    path: Path,
+    *,
+    deviation_threshold: float = 0.25,
+) -> list[SequenceCompositionOutlier]:
+    """Detect sequences with unusually deviant GC or amino-acid composition."""
+    records = load_fasta_alignment(path)
+    alphabet = infer_alignment_alphabet(records)
+    if alphabet in {"dna", "rna"}:
+        per_sequence_gc = [row for row in compute_per_sequence_gc_content(records, alphabet=alphabet) if row.gc_fraction is not None]
+        if len(per_sequence_gc) < 2:
+            return []
+        baseline = median(row.gc_fraction for row in per_sequence_gc if row.gc_fraction is not None)
+        return sorted(
+            [
+                SequenceCompositionOutlier(
+                    identifier=row.identifier,
+                    deviation=round(abs(float(row.gc_fraction) - baseline), 15),
+                )
+                for row in per_sequence_gc
+                if row.gc_fraction is not None and abs(float(row.gc_fraction) - baseline) > deviation_threshold
+            ],
+            key=lambda item: (-item.deviation, item.identifier),
+        )
+
+    if alphabet == "protein":
+        profile = compute_amino_acid_composition(records, alphabet=alphabet)
+        outliers: list[SequenceCompositionOutlier] = []
+        for record in records:
+            sequence_profile = compute_amino_acid_composition([record], alphabet=alphabet)
+            deviation = sum(abs(sequence_profile.get(key, 0.0) - profile.get(key, 0.0)) for key in set(sequence_profile) | set(profile))
+            if deviation > deviation_threshold:
+                outliers.append(
+                    SequenceCompositionOutlier(identifier=record.identifier, deviation=round(deviation, 15))
+                )
+        return sorted(outliers, key=lambda item: (-item.deviation, item.identifier))
+    return []
+
+
+def detect_identical_duplicate_sequences(path: Path) -> list[DuplicateSequenceGroup]:
+    """Group sequences that are exactly identical over the full aligned string."""
+    records = load_fasta_alignment(path)
+    grouped: dict[str, list[str]] = {}
+    for record in records:
+        grouped.setdefault(record.sequence, []).append(record.identifier)
+    return [
+        DuplicateSequenceGroup(identifiers=sorted(identifiers), sequence=sequence)
+        for sequence, identifiers in sorted(grouped.items())
+        if len(identifiers) > 1
+    ]
+
+
+def _pairwise_identity(left: str, right: str) -> tuple[float, int]:
+    comparable_pairs = [
+        (left_residue, right_residue)
+        for left_residue, right_residue in zip(left, right, strict=True)
+        if left_residue not in _GAP_CHARACTERS
+        and right_residue not in _GAP_CHARACTERS
+        and left_residue not in _MISSING_CHARACTERS
+        and right_residue not in _MISSING_CHARACTERS
+    ]
+    if not comparable_pairs:
+        return 0.0, 0
+    matches = sum(1 for left_residue, right_residue in comparable_pairs if left_residue.upper() == right_residue.upper())
+    comparable_sites = len(comparable_pairs)
+    return round(matches / comparable_sites, 15), comparable_sites
+
+
+def detect_near_duplicate_sequences(
+    path: Path,
+    *,
+    identity_threshold: float,
+) -> list[NearDuplicateSequencePair]:
+    """Return sequence pairs above the given identity threshold."""
+    _validate_fraction_threshold(identity_threshold)
+    records = load_fasta_alignment(path)
+    near_duplicates: list[NearDuplicateSequencePair] = []
+    for index, left in enumerate(records):
+        for right in records[index + 1 :]:
+            identity, comparable_sites = _pairwise_identity(left.sequence, right.sequence)
+            if comparable_sites > 0 and identity >= identity_threshold and left.sequence != right.sequence:
+                near_duplicates.append(
+                    NearDuplicateSequencePair(
+                        left_identifier=left.identifier,
+                        right_identifier=right.identifier,
+                        identity=identity,
+                        comparable_sites=comparable_sites,
+                    )
+                )
+    return near_duplicates
+
+
+def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
+    """Generate a higher-level alignment quality report from composition and identity diagnostics."""
+    records = load_fasta_alignment(path)
+    inferred_alphabet = infer_alignment_alphabet(records)
+    invalid_characters = (
+        []
+        if inferred_alphabet == "unknown"
+        else detect_invalid_alignment_characters(path, alphabet=inferred_alphabet)
+    )
+    composition_outliers = detect_composition_outlier_sequences(path)
+    duplicate_sequence_groups = detect_identical_duplicate_sequences(path)
+    near_duplicate_pairs = detect_near_duplicate_sequences(path, identity_threshold=0.95)
+    warnings: list[str] = []
+    if invalid_characters:
+        warnings.append("alignment contains characters invalid for the inferred alphabet")
+    if composition_outliers:
+        warnings.append("alignment contains composition outlier sequences")
+    if duplicate_sequence_groups:
+        warnings.append("alignment contains identical duplicate sequences")
+    if near_duplicate_pairs:
+        warnings.append("alignment contains near-duplicate sequences")
+    return AlignmentQualityReport(
+        path=path,
+        inferred_alphabet=inferred_alphabet,
+        invalid_characters=invalid_characters,
+        composition_outliers=composition_outliers,
+        duplicate_sequence_groups=duplicate_sequence_groups,
+        near_duplicate_pairs=near_duplicate_pairs,
+        warnings=warnings,
+    )
 
 
 def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
@@ -79,6 +335,7 @@ def write_fasta_alignment(path: Path, records: list[AlignmentRecord]) -> Path:
 def summarise_fasta(path: Path) -> AlignmentSummary:
     """Summarise a FASTA alignment without loading a heavy dependency."""
     records = load_fasta_alignment(path)
+    inferred_alphabet = infer_alignment_alphabet(records)
     ids = [record.identifier for record in records]
     lengths = [len(record.sequence) for record in records]
     total_sites = len(records) * lengths[0]
@@ -118,6 +375,19 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
         if states and sum(observed.count(state) >= 2 for state in states) >= 2:
             parsimony_informative_site_count += 1
 
+    invalid_characters = (
+        []
+        if inferred_alphabet == "unknown"
+        else detect_invalid_alignment_characters(path, alphabet=inferred_alphabet)
+    )
+    nucleotide_composition = compute_nucleotide_composition(records, alphabet=inferred_alphabet)
+    amino_acid_composition = compute_amino_acid_composition(records, alphabet=inferred_alphabet)
+    per_sequence_gc_content = compute_per_sequence_gc_content(records, alphabet=inferred_alphabet)
+    whole_alignment_gc_content = compute_whole_alignment_gc_content(records, alphabet=inferred_alphabet)
+    composition_outliers = detect_composition_outlier_sequences(path)
+    duplicate_sequence_groups = detect_identical_duplicate_sequences(path)
+    near_duplicate_pairs = detect_near_duplicate_sequences(path, identity_threshold=0.95)
+
     return AlignmentSummary(
         path=path,
         sequence_count=len(records),
@@ -134,6 +404,15 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
         constant_site_count=constant_site_count,
         variable_site_count=variable_site_count,
         parsimony_informative_site_count=parsimony_informative_site_count,
+        inferred_alphabet=inferred_alphabet,
+        invalid_characters=invalid_characters,
+        nucleotide_composition=nucleotide_composition,
+        amino_acid_composition=amino_acid_composition,
+        per_sequence_gc_content=per_sequence_gc_content,
+        whole_alignment_gc_content=whole_alignment_gc_content,
+        composition_outliers=composition_outliers,
+        duplicate_sequence_groups=duplicate_sequence_groups,
+        near_duplicate_pairs=near_duplicate_pairs,
     )
 
 

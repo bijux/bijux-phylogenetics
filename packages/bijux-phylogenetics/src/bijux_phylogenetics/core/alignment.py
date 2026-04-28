@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+AlignmentAlphabet = str
+
+
 @dataclass(frozen=True, slots=True)
 class AlignmentRecord:
     """Single FASTA alignment record."""
@@ -28,6 +31,62 @@ class SiteMissingness:
     missing_fraction: float
 
 
+@dataclass(frozen=True, slots=True)
+class InvalidAlignmentCharacter:
+    """One sequence character invalid for a declared alignment alphabet."""
+
+    identifier: str
+    position: int
+    character: str
+
+
+@dataclass(frozen=True, slots=True)
+class SequenceGCContent:
+    """GC content summary for one sequence."""
+
+    identifier: str
+    gc_fraction: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class SequenceCompositionOutlier:
+    """One sequence whose composition deviates strongly from the alignment baseline."""
+
+    identifier: str
+    deviation: float
+
+
+@dataclass(frozen=True, slots=True)
+class DuplicateSequenceGroup:
+    """Identifiers sharing the exact same aligned sequence."""
+
+    identifiers: list[str]
+    sequence: str
+
+
+@dataclass(frozen=True, slots=True)
+class NearDuplicateSequencePair:
+    """Pair of sequences above a caller-provided identity threshold."""
+
+    left_identifier: str
+    right_identifier: str
+    identity: float
+    comparable_sites: int
+
+
+@dataclass(slots=True)
+class AlignmentQualityReport:
+    """Higher-level alignment quality report built from composition and identity diagnostics."""
+
+    path: Path
+    inferred_alphabet: AlignmentAlphabet
+    invalid_characters: list[InvalidAlignmentCharacter]
+    composition_outliers: list[SequenceCompositionOutlier]
+    duplicate_sequence_groups: list[DuplicateSequenceGroup]
+    near_duplicate_pairs: list[NearDuplicateSequencePair]
+    warnings: list[str]
+
+
 @dataclass(slots=True)
 class AlignmentSummary:
     """Summary of an alignment input."""
@@ -47,6 +106,15 @@ class AlignmentSummary:
     constant_site_count: int
     variable_site_count: int
     parsimony_informative_site_count: int
+    inferred_alphabet: AlignmentAlphabet
+    invalid_characters: list[InvalidAlignmentCharacter]
+    nucleotide_composition: dict[str, float]
+    amino_acid_composition: dict[str, float]
+    per_sequence_gc_content: list[SequenceGCContent]
+    whole_alignment_gc_content: float | None
+    composition_outliers: list[SequenceCompositionOutlier]
+    duplicate_sequence_groups: list[DuplicateSequenceGroup]
+    near_duplicate_pairs: list[NearDuplicateSequencePair]
 
 
 @dataclass(slots=True)

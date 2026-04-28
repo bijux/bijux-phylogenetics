@@ -65,6 +65,14 @@ from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
+    build_alignment_quality_report,
+    compute_amino_acid_composition,
+    compute_nucleotide_composition,
+    detect_composition_outlier_sequences,
+    detect_identical_duplicate_sequences,
+    detect_invalid_alignment_characters,
+    detect_near_duplicate_sequences,
+    infer_alignment_alphabet,
     detect_sequences_with_excessive_missing_data,
     detect_sites_with_excessive_missing_data,
     write_fasta_alignment,
@@ -487,12 +495,94 @@ def test_alignment_inspect_reports_core_diagnostics() -> None:
     assert report.constant_site_count == 6
     assert report.variable_site_count == 2
     assert report.parsimony_informative_site_count == 2
+    assert report.inferred_alphabet == "dna"
+    assert report.nucleotide_composition == {"A": 0.3125, "C": 0.25, "G": 0.25, "T": 0.1875}
+    assert report.whole_alignment_gc_content == 0.5
     assert [(row.identifier, row.missing_fraction) for row in report.per_sequence_missingness] == [
         ("A", 0.0),
         ("B", 0.0),
         ("C", 0.0),
         ("D", 0.0),
     ]
+    assert [(row.identifier, row.gc_fraction) for row in report.per_sequence_gc_content] == [
+        ("A", 0.5),
+        ("B", 0.375),
+        ("C", 0.625),
+        ("D", 0.5),
+    ]
+
+
+def test_alignment_detects_sequence_alphabet_types() -> None:
+    dna_records = load_fasta_alignment(fixture("example_alignment.fasta"))
+    protein_records = load_fasta_alignment(fixture("example_alignment_protein.fasta"))
+    assert infer_alignment_alphabet(dna_records) == "dna"
+    assert infer_alignment_alphabet(protein_records) == "protein"
+
+
+def test_alignment_detects_invalid_characters_for_declared_alphabet() -> None:
+    invalid = detect_invalid_alignment_characters(
+        fixture("example_alignment_invalid_dna.fasta"),
+        alphabet="dna",
+    )
+    assert [(row.identifier, row.position, row.character) for row in invalid] == [("A", 5, "Z")]
+
+
+def test_alignment_reports_nucleotide_and_amino_acid_composition() -> None:
+    dna_records = load_fasta_alignment(fixture("example_alignment.fasta"))
+    protein_records = load_fasta_alignment(fixture("example_alignment_protein.fasta"))
+    assert compute_nucleotide_composition(dna_records, alphabet="dna") == {
+        "A": 0.3125,
+        "C": 0.25,
+        "G": 0.25,
+        "T": 0.1875,
+    }
+    assert compute_amino_acid_composition(protein_records, alphabet="protein") == {
+        "F": 0.083333333333333,
+        "I": 0.083333333333333,
+        "K": 0.083333333333333,
+        "L": 0.125,
+        "M": 0.25,
+        "R": 0.041666666666667,
+        "T": 0.125,
+        "V": 0.041666666666667,
+        "W": 0.125,
+        "Y": 0.041666666666667,
+    }
+
+
+def test_alignment_detects_gc_composition_outliers() -> None:
+    outliers = detect_composition_outlier_sequences(
+        fixture("example_alignment_gc_outlier.fasta"),
+        deviation_threshold=0.2,
+    )
+    assert [(row.identifier, row.deviation) for row in outliers] == [("C", 1.0)]
+
+
+def test_alignment_detects_identical_and_near_duplicate_sequences() -> None:
+    duplicates = detect_identical_duplicate_sequences(fixture("example_alignment_duplicates.fasta"))
+    near_duplicates = detect_near_duplicate_sequences(
+        fixture("example_alignment_duplicates.fasta"),
+        identity_threshold=0.875,
+    )
+    assert [(group.identifiers, group.sequence) for group in duplicates] == [
+        (["A", "B"], "ACTGACTG")
+    ]
+    assert [(pair.left_identifier, pair.right_identifier, pair.identity, pair.comparable_sites) for pair in near_duplicates] == [
+        ("A", "C", 0.875, 8),
+        ("A", "D", 0.875, 8),
+        ("B", "C", 0.875, 8),
+        ("B", "D", 0.875, 8),
+        ("C", "D", 0.875, 8),
+    ]
+
+
+def test_alignment_quality_report_collects_composition_duplicates_and_warnings() -> None:
+    report = build_alignment_quality_report(fixture("example_alignment_duplicates.fasta"))
+    assert report.inferred_alphabet == "dna"
+    assert report.invalid_characters == []
+    assert report.duplicate_sequence_groups
+    assert report.near_duplicate_pairs == []
+    assert report.warnings == ["alignment contains identical duplicate sequences"]
 
 
 def test_alignment_inspect_reports_per_sequence_missingness() -> None:
