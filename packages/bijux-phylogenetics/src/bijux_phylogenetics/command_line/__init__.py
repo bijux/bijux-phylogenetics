@@ -35,7 +35,6 @@ from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     render_dataset_report,
     render_phylo_inputs_report,
-    render_phylogenetics_report,
     render_tree_report,
     write_annotation_report,
 )
