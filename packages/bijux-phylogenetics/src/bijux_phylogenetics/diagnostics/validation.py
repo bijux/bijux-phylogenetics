@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
+from statistics import mean, median
 
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import (
@@ -36,6 +37,17 @@ class TreeValidationReport:
 
 
 @dataclass(slots=True)
+class BranchLengthSummary:
+    count: int
+    minimum: float
+    maximum: float
+    mean: float
+    median: float
+    first_quartile: float
+    third_quartile: float
+
+
+@dataclass(slots=True)
 class TreeInspectionReport:
     path: Path
     source_format: str
@@ -52,6 +64,7 @@ class TreeInspectionReport:
     branch_length_status: str
     is_ultrametric: bool | None
     total_branch_length: float
+    branch_length_summary: BranchLengthSummary | None
     zero_length_branch_count: int
     min_root_to_tip: float | None
     max_root_to_tip: float | None
@@ -118,6 +131,46 @@ def _branch_length_status(tree: PhyloTree) -> str:
     if all(length is not None for length in branch_lengths):
         return "complete"
     return "partial"
+
+
+def _median(values: list[float]) -> float:
+    return float(median(values))
+
+
+def _quartiles(values: list[float]) -> tuple[float, float]:
+    ordered = sorted(values)
+    midpoint = len(ordered) // 2
+    if len(ordered) % 2 == 0:
+        lower = ordered[:midpoint]
+        upper = ordered[midpoint:]
+    else:
+        lower = ordered[:midpoint]
+        upper = ordered[midpoint + 1 :]
+    if not lower:
+        lower = ordered
+    if not upper:
+        upper = ordered
+    return _median(lower), _median(upper)
+
+
+def _branch_length_summary(tree: PhyloTree) -> BranchLengthSummary | None:
+    values = [float(length) for length in tree.branch_lengths() if length is not None]
+    if not values:
+        return None
+    first_quartile, third_quartile = _quartiles(values)
+
+    def stable(value: float) -> float:
+        return round(value, 15)
+
+    return BranchLengthSummary(
+        count=len(values),
+        minimum=stable(min(values)),
+        maximum=stable(max(values)),
+        mean=stable(float(mean(values))),
+        median=stable(_median(values)),
+        first_quartile=stable(first_quartile),
+        third_quartile=stable(third_quartile),
+    )
 
 
 def _duplicate_taxa(tree: PhyloTree) -> tuple[int, list[str]]:
@@ -259,6 +312,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     depths = _leaf_depths(tree)
     zero_length_branch_count = sum(1 for length in branch_lengths if length == 0)
     ultrametric = _ultrametric(tree)
+    branch_length_summary = _branch_length_summary(tree)
     warnings: list[str] = []
     if zero_length_branch_count:
         warnings.append("tree contains zero-length branches")
@@ -284,6 +338,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         branch_length_status=branch_length_status,
         is_ultrametric=ultrametric,
         total_branch_length=tree.total_branch_length(),
+        branch_length_summary=branch_length_summary,
         zero_length_branch_count=zero_length_branch_count,
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,

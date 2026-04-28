@@ -455,6 +455,16 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.has_branch_lengths is True
     assert report.is_binary is True
     assert report.is_ultrametric is True
+    assert report.branch_length_summary is not None
+    assert (
+        report.branch_length_summary.count,
+        report.branch_length_summary.minimum,
+        report.branch_length_summary.maximum,
+        report.branch_length_summary.mean,
+        report.branch_length_summary.median,
+        report.branch_length_summary.first_quartile,
+        report.branch_length_summary.third_quartile,
+    ) == (6, 0.1, 0.2, 0.15, 0.15, 0.1, 0.2)
     assert report.zero_length_branch_count == 0
     assert report.max_depth == 2
     assert report.mean_depth == 2.0
@@ -493,6 +503,9 @@ def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
     assert complete.branch_length_status == "complete"
     assert partial.branch_length_status == "partial"
     assert absent.branch_length_status == "absent"
+    assert complete.branch_length_summary is not None
+    assert partial.branch_length_summary is not None
+    assert absent.branch_length_summary is None
     assert partial.has_branch_lengths is True
     assert partial.warnings == ["tree contains partial branch lengths"]
     assert absent.has_branch_lengths is False
