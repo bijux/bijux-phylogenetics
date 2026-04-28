@@ -426,6 +426,42 @@ def _long_branch_taxa(tree: PhyloTree, *, factor: float = 3.0) -> list[str]:
     return sorted(name for name, length in terminal_lengths if length > threshold)
 
 
+def _branch_outliers(
+    tree: PhyloTree,
+    *,
+    long_factor: float = 3.0,
+    short_factor: float = 0.1,
+) -> tuple[list[BranchLengthOutlier], list[BranchLengthOutlier]]:
+    positive_branches = [
+        node
+        for node in tree.iter_nodes()
+        if node is not tree.root and node.branch_length is not None and node.branch_length > 0
+    ]
+    if len(positive_branches) < 2:
+        return [], []
+
+    baseline = _median(sorted(float(node.branch_length) for node in positive_branches if node.branch_length is not None))
+    long_threshold = baseline * long_factor
+    short_threshold = baseline * short_factor
+
+    def item(node) -> BranchLengthOutlier:
+        return BranchLengthOutlier(
+            node=_node_signature(node),
+            branch_length=round(float(node.branch_length), 15),
+            branch_type="terminal" if node.is_leaf() else "internal",
+        )
+
+    long_outliers = sorted(
+        [item(node) for node in positive_branches if float(node.branch_length) > long_threshold],
+        key=lambda row: (-row.branch_length, row.node),
+    )
+    short_outliers = sorted(
+        [item(node) for node in positive_branches if 0 < float(node.branch_length) < short_threshold],
+        key=lambda row: (row.branch_length, row.node),
+    )
+    return long_outliers, short_outliers
+
+
 def _star_like(tree: PhyloTree) -> bool:
     threshold = max(4, math.ceil(tree.tip_count * 0.75))
     for node in tree.iter_nodes():
@@ -444,6 +480,7 @@ def _tree_quality_warnings(
     polytomy_nodes: list[str],
     unusually_imbalanced: bool | None,
     long_branch_taxa: list[str],
+    short_branch_outliers: list[BranchLengthOutlier],
     star_like: bool,
     comb_like: bool,
 ) -> list[TreeQualityWarning]:
@@ -516,6 +553,16 @@ def _tree_quality_warnings(
                 penalty=15.0,
                 affected_taxa=long_branch_taxa,
                 affected_nodes=[],
+            )
+        )
+    if short_branch_outliers:
+        warnings.append(
+            TreeQualityWarning(
+                code="short_branches",
+                message="tree contains unusually short nonzero branches that may represent numerically fragile splits",
+                penalty=5.0,
+                affected_taxa=[row.node for row in short_branch_outliers if row.branch_type == "terminal"],
+                affected_nodes=[row.node for row in short_branch_outliers if row.branch_type == "internal"],
             )
         )
     if star_like:
@@ -666,6 +713,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     normalized_colless_imbalance = _normalized_colless_imbalance(tree)
     unusually_imbalanced = _unusually_imbalanced(tree)
     long_branch_taxa = _long_branch_taxa(tree)
+    long_branch_outliers, short_branch_outliers = _branch_outliers(tree)
     star_like = _star_like(tree)
     comb_like = _comb_like(tree)
     _, _, negative_branch_count = _branch_length_health(tree)
@@ -677,6 +725,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         polytomy_nodes=polytomy_nodes,
         unusually_imbalanced=unusually_imbalanced,
         long_branch_taxa=long_branch_taxa,
+        short_branch_outliers=short_branch_outliers,
         star_like=star_like,
         comb_like=comb_like,
     )
@@ -727,8 +776,8 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         sackin_imbalance_index=sum(depths),
         unusually_imbalanced=unusually_imbalanced,
         long_branch_taxa=long_branch_taxa,
-        long_branch_outliers=[],
-        short_branch_outliers=[],
+        long_branch_outliers=long_branch_outliers,
+        short_branch_outliers=short_branch_outliers,
         suspicious_support_value_ranges=[],
         mixed_support_scales=False,
         likely_support_labels=[],

@@ -1219,9 +1219,27 @@ def test_inspect_tree_path_reports_exact_polytomy_nodes() -> None:
 def test_inspect_tree_path_detects_long_branch_taxa() -> None:
     report = inspect_tree_path(fixture("example_tree_long_branch.nwk"))
     assert report.long_branch_taxa == ["A"]
+    assert [(row.node, row.branch_length, row.branch_type) for row in report.long_branch_outliers] == [
+        ("A", 1.0, "terminal")
+    ]
+    assert report.short_branch_outliers == []
     assert report.star_like is False
     assert report.tree_quality_score == 85.0
     assert [warning.code for warning in report.tree_quality_warnings] == ["long_branches"]
+
+
+def test_inspect_tree_path_detects_internal_long_and_short_branch_outliers() -> None:
+    long_report = inspect_tree_path(fixture("example_tree_internal_long_branch.nwk"))
+    short_report = inspect_tree_path(fixture("example_tree_short_branch.nwk"))
+    assert [(row.node, row.branch_length, row.branch_type) for row in long_report.long_branch_outliers] == [
+        ("A|B", 1.0, "internal")
+    ]
+    assert long_report.long_branch_taxa == []
+    assert long_report.short_branch_outliers == []
+    assert [(row.node, row.branch_length, row.branch_type) for row in short_report.short_branch_outliers] == [
+        ("B", 0.001, "terminal")
+    ]
+    assert [warning.code for warning in short_report.tree_quality_warnings] == ["short_branches"]
 
 
 def test_inspect_tree_path_detects_star_like_tree() -> None:
