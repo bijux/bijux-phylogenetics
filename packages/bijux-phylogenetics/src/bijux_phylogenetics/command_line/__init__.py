@@ -17,7 +17,7 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
     diagnose_ultrametricity,
     write_root_to_tip_tsv,
 )
-from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
+from bijux_phylogenetics.io.fasta import build_alignment_quality_report, link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
@@ -147,6 +147,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "alignment":
         if args.alignment_command == "inspect":
             return [args.alignment]
+        if args.alignment_command == "quality":
+            return [args.alignment]
         return [args.tree, args.alignment]
     if args.command in {"validate", "inspect"}:
         return [args.tree]
@@ -275,6 +277,10 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_inspect.add_argument("alignment", type=Path)
     alignment_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_inspect)
+    alignment_quality = alignment_subparsers.add_parser("quality", help="Generate a higher-level alignment quality report.")
+    alignment_quality.add_argument("alignment", type=Path)
+    alignment_quality.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_quality)
     alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
@@ -601,6 +607,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "alignment_length": report.alignment_length,
                             "variable_site_count": report.variable_site_count,
                             "parsimony_informative_site_count": report.parsimony_informative_site_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "quality":
+                report = build_alignment_quality_report(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "invalid_character_count": len(report.invalid_characters),
+                            "composition_outlier_count": len(report.composition_outliers),
+                            "duplicate_group_count": len(report.duplicate_sequence_groups),
+                            "near_duplicate_count": len(report.near_duplicate_pairs),
                         },
                         data=report,
                     ),

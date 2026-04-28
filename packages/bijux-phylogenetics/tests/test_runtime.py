@@ -1399,6 +1399,16 @@ def test_cli_alignment_link_strict_mode_returns_typed_error(capsys) -> None:
     assert payload["errors"][0]["code"] == AlignmentTaxonMismatchError.code
 
 
+def test_cli_alignment_quality_json_output(capsys) -> None:
+    exit_code = main(["alignment", "quality", str(fixture("example_alignment_duplicates.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["duplicate_group_count"] == 1
+    assert payload["metrics"]["near_duplicate_count"] == 0
+    assert payload["warnings"] == ["alignment contains identical duplicate sequences"]
+
+
 def test_cli_compare_support_json_output(capsys) -> None:
     exit_code = main(
         [
