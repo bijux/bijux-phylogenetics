@@ -76,6 +76,15 @@ def test_validate_tree_path_rejects_unnamed_tips_in_strict_mode() -> None:
         raise AssertionError("expected UnnamedTipError")
 
 
+def test_validate_tree_path_rejects_negative_branch_lengths_by_default() -> None:
+    try:
+        validate_tree_path(FIXTURES / "example_tree_negative_length.nwk")
+    except InvalidBranchLengthError as error:
+        assert error.code == "invalid_branch_length_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected InvalidBranchLengthError")
+
+
 def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     report = inspect_tree_path(FIXTURES / "example_tree.nwk")
     assert report.tip_count == 4
@@ -178,6 +187,17 @@ def test_validate_cli_strict_mode_rejects_unnamed_tips(capsys) -> None:
             "message": "tree contains 1 unnamed tip labels",
         }
     ]
+
+
+def test_validate_cli_can_allow_negative_branch_lengths(capsys) -> None:
+    exit_code = main(
+        ["validate", str(FIXTURES / "example_tree_negative_length.nwk"), "--allow-negative-branches", "--json"]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["data"]["negative_branch_lengths"] == 1
 
 
 def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:

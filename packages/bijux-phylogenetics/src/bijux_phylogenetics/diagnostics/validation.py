@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import DuplicateTaxonError, UnnamedTipError
+from bijux_phylogenetics.errors import DuplicateTaxonError, InvalidBranchLengthError, UnnamedTipError
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -132,6 +132,7 @@ def validate_tree_path(
     source_format: str | None = None,
     allow_duplicates: bool = False,
     strict: bool = False,
+    allow_negative_branch_lengths: bool = False,
 ) -> TreeValidationReport:
     """Validate a tree file and produce a diagnostic report."""
     tree = _load_tree(path, source_format=source_format)
@@ -143,6 +144,8 @@ def validate_tree_path(
         raise DuplicateTaxonError(f"duplicate tip labels found: {', '.join(duplicate_taxa)}")
     if missing_taxa and strict:
         raise UnnamedTipError(f"tree contains {missing_taxa} unnamed tip labels")
+    if negative_count and not allow_negative_branch_lengths:
+        raise InvalidBranchLengthError(f"tree contains {negative_count} negative branch lengths")
     ultrametric = _ultrametric(tree)
     polytomy_nodes = _polytomy_nodes(tree)
     warnings: list[str] = []
