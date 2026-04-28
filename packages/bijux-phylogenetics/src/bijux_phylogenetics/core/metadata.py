@@ -51,6 +51,28 @@ class MetadataInspectionReport:
     column_completeness: list[MetadataColumnCompleteness]
 
 
+@dataclass(slots=True)
+class MetadataJoinRow:
+    """One tree tip annotated against a metadata row when available."""
+
+    taxon: str
+    matched: bool
+    values: dict[str, str]
+
+
+@dataclass(slots=True)
+class MetadataJoinReport:
+    """Explicit tip-by-tip join of a metadata table onto a tree."""
+
+    path: Path
+    tree_taxa: int
+    metadata_rows: int
+    taxon_column: str
+    joined_rows: list[MetadataJoinRow]
+    missing_from_metadata: list[str]
+    extra_metadata_taxa: list[str]
+
+
 def _detect_delimiter(path: Path) -> tuple[str, str]:
     suffix = path.suffix.lower()
     if suffix == ".csv":
@@ -151,3 +173,33 @@ def write_taxon_rows(path: Path, *, columns: list[str], rows: list[dict[str, str
         writer.writeheader()
         writer.writerows(rows)
     return path
+
+
+def join_table_to_taxa(
+    taxa: list[str],
+    path: Path,
+    *,
+    taxon_column: str | None = None,
+) -> MetadataJoinReport:
+    """Join a taxon-keyed table onto an explicit ordered taxon list."""
+    table = load_taxon_table(path, taxon_column=taxon_column)
+    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
+    joined_rows = [
+        MetadataJoinRow(
+            taxon=taxon,
+            matched=taxon in rows_by_taxon,
+            values=dict(rows_by_taxon[taxon]) if taxon in rows_by_taxon else {},
+        )
+        for taxon in taxa
+    ]
+    missing_from_metadata = [row.taxon for row in joined_rows if not row.matched]
+    extra_metadata_taxa = sorted(set(table.taxa) - set(taxa))
+    return MetadataJoinReport(
+        path=path,
+        tree_taxa=len(taxa),
+        metadata_rows=table.row_count,
+        taxon_column=table.taxon_column,
+        joined_rows=joined_rows,
+        missing_from_metadata=missing_from_metadata,
+        extra_metadata_taxa=extra_metadata_taxa,
+    )

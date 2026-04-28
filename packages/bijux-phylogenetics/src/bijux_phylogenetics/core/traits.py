@@ -57,6 +57,23 @@ class TraitTablePruningReport:
     removed_taxa: list[str]
 
 
+@dataclass(slots=True)
+class MissingTraitValue:
+    """One missing trait observation tied to a taxon and column."""
+
+    taxon: str
+    trait: str
+
+
+@dataclass(slots=True)
+class TraitMissingValueReport:
+    """Explicit missing trait calls by taxon and trait column."""
+
+    path: Path
+    taxon_column: str
+    missing_values: list[MissingTraitValue]
+
+
 def load_tsv_summary(path: Path) -> TaxonTable:
     """Compatibility wrapper for legacy callers expecting a taxon-keyed table."""
     return load_taxon_table(path)
@@ -184,4 +201,27 @@ def prune_traits_to_tree(
         original_row_count=table.row_count,
         kept_taxa=kept_taxa,
         removed_taxa=removed_taxa,
+    )
+
+
+def detect_missing_trait_values(
+    path: Path,
+    *,
+    taxon_column: str | None = None,
+) -> TraitMissingValueReport:
+    """Return every missing trait value with its taxon and column name."""
+    table = load_taxon_table(path, taxon_column=taxon_column)
+    missing_values = [
+        MissingTraitValue(
+            taxon=row[table.taxon_column],
+            trait=column,
+        )
+        for row in table.rows
+        for column in table.columns
+        if column != table.taxon_column and not row[column]
+    ]
+    return TraitMissingValueReport(
+        path=table.path,
+        taxon_column=table.taxon_column,
+        missing_values=missing_values,
     )

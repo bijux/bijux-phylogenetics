@@ -12,7 +12,7 @@ from bijux_phylogenetics.core.dataset import summarize_dataset_readiness
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.core.metadata import inspect_metadata_table
+from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_alignment_to_tree,
@@ -28,6 +28,7 @@ from bijux_phylogenetics.core.topology import (
 )
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.core.traits import (
+    detect_missing_trait_values,
     detect_unusable_trait_columns,
     link_tree_to_traits,
     prune_traits_to_tree,
@@ -156,6 +157,17 @@ def test_metadata_inspect_reports_taxon_contract() -> None:
     ]
 
 
+def test_join_table_to_taxa_returns_tip_by_tip_metadata_rows() -> None:
+    report = join_table_to_taxa(["A", "B", "Z"], fixture("example_metadata.tsv"))
+    assert [(row.taxon, row.matched, row.values.get("species", "")) for row in report.joined_rows] == [
+        ("A", True, "Alpha species"),
+        ("B", True, "Beta species"),
+        ("Z", False, ""),
+    ]
+    assert report.missing_from_metadata == ["Z"]
+    assert report.extra_metadata_taxa == ["C", "D"]
+
+
 def test_inspect_environment_reports_available_and_optional_dependencies() -> None:
     report = inspect_environment()
     status_by_name = {item.name: item for item in report.dependencies}
@@ -203,6 +215,11 @@ def test_traits_detect_unusable_columns_by_missingness() -> None:
         missingness_threshold=0.2,
     )
     assert [(column.name, column.missing_fraction) for column in columns] == [("status", 0.25)]
+
+
+def test_detect_missing_trait_values_reports_taxon_and_column() -> None:
+    report = detect_missing_trait_values(fixture("example_traits_validate.tsv"))
+    assert [(item.taxon, item.trait) for item in report.missing_values] == [("C", "status")]
 
 
 def test_traits_link_reports_mismatch_and_usable_taxa() -> None:
