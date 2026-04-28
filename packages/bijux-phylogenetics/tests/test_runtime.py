@@ -7,6 +7,7 @@ import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
@@ -153,6 +154,29 @@ def test_alignment_link_strict_mode_rejects_mismatch() -> None:
         assert error.code == "alignment_taxon_mismatch_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected AlignmentTaxonMismatchError")
+
+
+def test_build_run_manifest_captures_checksums_and_environment(tmp_path: Path) -> None:
+    input_path = tmp_path / "input.txt"
+    output_path = tmp_path / "output.txt"
+    input_path.write_text("input\n", encoding="utf-8")
+    output_path.write_text("output\n", encoding="utf-8")
+    manifest = build_run_manifest(
+        command="inspect",
+        arguments=["inspect", str(input_path), "--json"],
+        input_paths=[input_path],
+        output_paths=[output_path],
+    )
+    manifest_path = write_run_manifest(tmp_path / "run.manifest.json", manifest)
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert payload["command"] == "inspect"
+    assert payload["arguments"] == ["inspect", str(input_path), "--json"]
+    assert payload["input_paths"] == [str(input_path)]
+    assert payload["output_paths"] == [str(output_path)]
+    assert payload["input_checksums"][str(input_path)]
+    assert payload["output_checksums"][str(output_path)]
+    assert payload["python_version"]
+    assert payload["host_platform"]
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
