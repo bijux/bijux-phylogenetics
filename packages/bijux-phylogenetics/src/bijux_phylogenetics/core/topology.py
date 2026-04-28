@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.io.biopython import tree_from_biophylo, tree_to_biophylo
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -32,6 +33,18 @@ class TreeOrderingReport:
 
     tree_path: Path
     strategy: str
+    tip_order: list[str]
+
+
+@dataclass(slots=True)
+class TreeRootingReport:
+    """Explicit record of a tree rooting transform."""
+
+    tree_path: Path
+    strategy: str
+    requested_taxa: list[str]
+    matched_taxa: list[str]
+    absent_taxa: list[str]
     tip_order: list[str]
 
 
@@ -208,4 +221,56 @@ def sort_tree_tips_alphabetically(tree_path: Path) -> tuple[PhyloTree, TreeOrder
         tree_path=tree_path,
         strategy="alphabetical",
         tip_order=sorted_tree.tip_names,
+    )
+
+
+def root_tree_on_outgroup(
+    tree_path: Path,
+    *,
+    outgroup_taxa: list[str],
+) -> tuple[PhyloTree, TreeRootingReport]:
+    """Root a tree on one or more named outgroup taxa."""
+    if not outgroup_taxa:
+        raise ValueError("at least one outgroup taxon is required")
+
+    tree = load_tree(tree_path)
+    biophylo_tree = tree_to_biophylo(tree)
+    matched_clades = [
+        next(biophylo_tree.find_clades(name=taxon), None)
+        for taxon in outgroup_taxa
+    ]
+    matched_taxa = [taxon for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True) if clade is not None]
+    absent_taxa = sorted(taxon for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True) if clade is None)
+    if not matched_taxa:
+        raise ValueError(f"none of the requested outgroup taxa were found in {tree_path}")
+
+    biophylo_tree.root_with_outgroup(*[clade for clade in matched_clades if clade is not None])
+    rooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
+    return rooted_tree, TreeRootingReport(
+        tree_path=tree_path,
+        strategy="outgroup",
+        requested_taxa=sorted(outgroup_taxa),
+        matched_taxa=sorted(matched_taxa),
+        absent_taxa=absent_taxa,
+        tip_order=rooted_tree.tip_names,
+    )
+
+
+def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
+    """Reroot a tree by the midpoint of its longest tip-to-tip path."""
+    tree = load_tree(tree_path)
+    branch_lengths = tree.branch_lengths()
+    if not branch_lengths or any(length is None for length in branch_lengths):
+        raise ValueError(f"midpoint rerooting requires complete branch lengths in {tree_path}")
+
+    biophylo_tree = tree_to_biophylo(tree)
+    biophylo_tree.root_at_midpoint()
+    rerooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
+    return rerooted_tree, TreeRootingReport(
+        tree_path=tree_path,
+        strategy="midpoint",
+        requested_taxa=[],
+        matched_taxa=[],
+        absent_taxa=[],
+        tip_order=rerooted_tree.tip_names,
     )

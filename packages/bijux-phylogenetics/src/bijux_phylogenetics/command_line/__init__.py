@@ -54,6 +54,7 @@ from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspe
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
+from bijux_phylogenetics.core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.svg import render_tree_svg
@@ -198,6 +199,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.mapping_out is not None:
             inputs.append(args.mapping_out)
         return inputs
+    if args.command == "topology":
+        return [args.tree, args.out]
     if args.command == "compare":
         if getattr(args, "third", None) is not None:
             return [Path(args.right), Path(args.third)]
@@ -431,6 +434,20 @@ def build_parser() -> argparse.ArgumentParser:
     normalize_taxa.add_argument("--mapping-out", type=Path)
     normalize_taxa.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
     _add_manifest_argument(normalize_taxa)
+
+    topology = subparsers.add_parser(get_command_spec("topology").name, help=get_command_spec("topology").summary)
+    topology_subparsers = topology.add_subparsers(dest="topology_command", required=True)
+    topology_outgroup = topology_subparsers.add_parser("root-outgroup", help="Root a tree on explicit outgroup taxa.")
+    topology_outgroup.add_argument("tree", type=Path)
+    topology_outgroup.add_argument("--taxa", nargs="+", required=True)
+    topology_outgroup.add_argument("--out", required=True, type=Path)
+    topology_outgroup.add_argument("--json", action="store_true", help="Emit the rooting report as JSON.")
+    _add_manifest_argument(topology_outgroup)
+    topology_midpoint = topology_subparsers.add_parser("reroot-midpoint", help="Reroot a tree by midpoint.")
+    topology_midpoint.add_argument("tree", type=Path)
+    topology_midpoint.add_argument("--out", required=True, type=Path)
+    topology_midpoint.add_argument("--json", action="store_true", help="Emit the rerooting report as JSON.")
+    _add_manifest_argument(topology_midpoint)
 
     compare = subparsers.add_parser(get_command_spec("compare").name, help=get_command_spec("compare").summary)
     compare.add_argument("left")
@@ -1054,6 +1071,33 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
             else:
                 print(output_path)
+            return 0
+        if args.command == "topology":
+            if args.topology_command == "root-outgroup":
+                tree, report = root_tree_on_outgroup(args.tree, outgroup_taxa=list(args.taxa))
+            else:
+                tree, report = reroot_tree_by_midpoint(args.tree)
+            output_path = write_newick(args.out, tree)
+            outputs = _finalize_outputs(
+                args,
+                command="topology",
+                inputs=[args.tree],
+                outputs=[output_path],
+            )
+            _print_result(
+                build_command_result(
+                    command="topology",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                    metrics={
+                        "tip_count": tree.tip_count,
+                        "matched_taxa": len(report.matched_taxa),
+                        "absent_taxa": len(report.absent_taxa),
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "diagnose":
             if args.target == "distances":

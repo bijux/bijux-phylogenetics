@@ -32,6 +32,8 @@ from bijux_phylogenetics.core.topology import (
     collapse_branches_below_length,
     extract_named_clade,
     ladderize_tree,
+    reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
     sort_tree_tips_alphabetically,
 )
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
@@ -468,6 +470,28 @@ def test_sort_tree_tips_alphabetically_preserves_topology_with_stable_tip_order(
     assert report.tip_order == ["A", "B", "X", "Y", "Z"]
 
 
+def test_root_tree_on_outgroup_reports_absent_taxa_and_roots_tree() -> None:
+    tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["D", "Z"],
+    )
+    assert tree.tip_names == ["A", "B", "C", "D"]
+    assert tree.root.children
+    assert report.strategy == "outgroup"
+    assert report.requested_taxa == ["D", "Z"]
+    assert report.matched_taxa == ["D"]
+    assert report.absent_taxa == ["Z"]
+    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);"
+
+
+def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
+    tree, report = reroot_tree_by_midpoint(fixture("example_tree_rootable.nwk"))
+    assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
+    assert report.strategy == "midpoint"
+    assert report.tip_order == ["C", "D", "B", "A"]
+    assert dumps_newick(tree) == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);"
+
+
 def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
     records, report = prune_alignment_to_tree(
         fixture("example_alignment_extra_taxon.fasta"),
@@ -872,6 +896,49 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(tmp_path: Path, cap
     )
     assert payload["metrics"]["translated_sequence_count"] == 4
     assert payload["metrics"]["stop_codon_count"] == 2
+
+
+def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "rooted.nwk"
+    exit_code = main(
+        [
+            "topology",
+            "root-outgroup",
+            str(fixture("example_tree_rootable.nwk")),
+            "--taxa",
+            "D",
+            "Z",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);\n"
+    assert payload["metrics"]["matched_taxa"] == 1
+    assert payload["metrics"]["absent_taxa"] == 1
+
+
+def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "midpoint.nwk"
+    exit_code = main(
+        [
+            "topology",
+            "reroot-midpoint",
+            str(fixture("example_tree_rootable.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);\n"
+    assert payload["data"]["strategy"] == "midpoint"
+    assert payload["metrics"]["tip_count"] == 4
 
 
 def test_build_run_manifest_captures_checksums_and_environment(tmp_path: Path) -> None:
@@ -2099,6 +2166,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "validate",
         "normalize",
         "normalize-taxa",
+        "topology",
         "compare",
         "annotate",
         "diagnose",

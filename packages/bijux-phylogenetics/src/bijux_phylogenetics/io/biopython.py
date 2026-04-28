@@ -18,9 +18,22 @@ def _convert_clade(clade: Clade) -> TreeNode:
     )
 
 
+def _convert_tree_node(node: TreeNode) -> Clade:
+    return Clade(
+        branch_length=node.branch_length,
+        name=node.name,
+        clades=[_convert_tree_node(child) for child in node.children],
+    )
+
+
 def tree_from_biophylo(tree: Tree, *, source_format: str) -> PhyloTree:
     """Convert a Bio.Phylo tree into the local tree model."""
     return PhyloTree(root=_convert_clade(tree.root), source_format=source_format)
+
+
+def tree_to_biophylo(tree: PhyloTree) -> Tree:
+    """Convert the local tree model into a Bio.Phylo tree."""
+    return Tree(root=_convert_tree_node(tree.root), rooted=False)
 
 
 def loads_biophylo(text: str, *, source_format: str) -> PhyloTree:

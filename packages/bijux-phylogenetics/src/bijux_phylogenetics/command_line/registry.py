@@ -79,6 +79,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("normalized-tree", "taxon-mapping"),
     ),
     CommandSpec(
+        name="topology",
+        domain="tree-io",
+        summary="Apply explicit rooting and ordering transforms to a tree.",
+        inputs=("tree",),
+        outputs=("transformed-tree",),
+    ),
+    CommandSpec(
         name="compare",
         domain="tree-comparison",
         summary="Compare two trees over their shared taxa.",
