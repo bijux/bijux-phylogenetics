@@ -40,8 +40,9 @@ bijux-phylogenetics --help
 - inspect tree shape and branch-length health
 - normalize unsafe taxon labels and audit normalization collisions
 - prune trees from explicit taxa, exclusions, traits, or metadata tables
-- compare shared clade structure between trees
+- compare shared clades, clade changes, and shared-split branch lengths between trees
 - validate trait and metadata linkage against tree tips
+- export joined metadata rows and missing trait-value diagnostics
 - produce HTML reports and file-level evidence manifests
 
 ## Read this next
