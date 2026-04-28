@@ -5,7 +5,7 @@ from pathlib import Path
 
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
-from bijux_phylogenetics.compare.topology import compare_support_values, compare_tree_paths
+from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
@@ -430,6 +430,19 @@ def test_compare_support_values_pairs_shared_clades() -> None:
     ]
 
 
+def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> None:
+    scaled = compare_branch_lengths(FIXTURES / "example_tree.nwk", FIXTURES / "example_tree_branch_lengths_right.nwk")
+    missing = compare_branch_lengths(FIXTURES / "example_tree.nwk", FIXTURES / "example_tree_branch_lengths_missing.nwk")
+    assert [(row.split_id, row.delta, row.ratio) for row in scaled.shared_splits] == [
+        ("A|B", 0.2, 2.0),
+        ("C|D", 0.1, 2.0),
+    ]
+    assert [(row.split_id, row.left_length, row.right_length, row.delta, row.ratio) for row in missing.shared_splits] == [
+        ("A|B", 0.2, None, None, None),
+        ("C|D", 0.1, 0.2, 0.1, 2.0),
+    ]
+
+
 def test_diagnose_tree_path_combines_inspection_and_validation() -> None:
     report = diagnose_tree_path(FIXTURES / "example_tree.nwk")
     assert report.inspection.tip_count == 4
@@ -617,6 +630,24 @@ def test_cli_compare_support_json_output(capsys) -> None:
     assert payload["status"] == "ok"
     assert payload["metrics"]["shared_clades"] == 2
     assert payload["data"]["shared_clades"][0]["split_id"] == "A|B"
+
+
+def test_cli_compare_branch_lengths_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "compare",
+            "branch-lengths",
+            str(FIXTURES / "example_tree.nwk"),
+            str(FIXTURES / "example_tree_branch_lengths_right.nwk"),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["shared_splits"] == 2
+    assert payload["data"]["shared_splits"][0]["ratio"] == 2.0
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:

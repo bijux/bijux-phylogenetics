@@ -19,7 +19,7 @@ from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
-from bijux_phylogenetics.compare.topology import compare_support_values, compare_tree_paths
+from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EvidenceContractError, PhylogeneticsError
@@ -601,6 +601,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[left_path, right_path],
                         outputs=outputs,
                         metrics={"shared_clades": len(report.shared_clades)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.left == "branch-lengths":
+                if args.third is None:
+                    parser.exit(status=2, message="compare branch-lengths requires two tree paths\n")
+                left_path = Path(args.right)
+                right_path = Path(args.third)
+                report = compare_branch_lengths(left_path, right_path)
+                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                _print_result(
+                    build_command_result(
+                        command="compare",
+                        inputs=[left_path, right_path],
+                        outputs=outputs,
+                        metrics={"shared_splits": len(report.shared_splits)},
                         data=report,
                     ),
                     json_output=args.json,
