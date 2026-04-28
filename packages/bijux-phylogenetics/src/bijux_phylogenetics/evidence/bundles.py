@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +22,20 @@ class EvidenceBundleReport:
     output_root: Path
     file_count: int
     files: list[EvidenceFile]
+
+
+@dataclass(slots=True)
+class EvidenceMismatch:
+    relative_path: Path
+    reason: str
+
+
+@dataclass(slots=True)
+class EvidenceValidationReport:
+    bundle_root: Path
+    file_count: int
+    valid: bool
+    mismatches: list[EvidenceMismatch]
 
 
 def _sha256(path: Path) -> str:
@@ -82,4 +97,41 @@ def bundle_directory(run_root: Path, output_root: Path) -> EvidenceBundleReport:
         output_root=output_root,
         file_count=len(bundled_files),
         files=bundled_files,
+    )
+
+
+def validate_bundle(bundle_root: Path) -> EvidenceValidationReport:
+    """Validate an evidence bundle against its manifest checksums."""
+    manifest_path = bundle_root / "manifest.json"
+    files_root = bundle_root / "files"
+    if not manifest_path.exists():
+        raise EvidenceContractError(f"evidence manifest not found: {manifest_path}")
+    if not files_root.exists():
+        raise EvidenceContractError(f"evidence files directory not found: {files_root}")
+
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest_files = payload.get("files")
+    if not isinstance(manifest_files, list):
+        raise EvidenceContractError(f"evidence manifest is missing a files list: {manifest_path}")
+
+    mismatches: list[EvidenceMismatch] = []
+    for entry in manifest_files:
+        relative_path = Path(str(entry["relative_path"]))
+        expected_sha = str(entry["sha256"])
+        expected_size = int(entry["size_bytes"])
+        candidate = files_root / relative_path
+        if not candidate.exists():
+            mismatches.append(EvidenceMismatch(relative_path=relative_path, reason="missing_file"))
+            continue
+        if candidate.stat().st_size != expected_size:
+            mismatches.append(EvidenceMismatch(relative_path=relative_path, reason="size_mismatch"))
+            continue
+        if _sha256(candidate) != expected_sha:
+            mismatches.append(EvidenceMismatch(relative_path=relative_path, reason="checksum_mismatch"))
+
+    return EvidenceValidationReport(
+        bundle_root=bundle_root,
+        file_count=len(manifest_files),
+        valid=not mismatches,
+        mismatches=mismatches,
     )

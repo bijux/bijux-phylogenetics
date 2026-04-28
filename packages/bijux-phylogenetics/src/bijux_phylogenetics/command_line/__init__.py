@@ -16,8 +16,8 @@ from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_ta
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
-from bijux_phylogenetics.evidence.bundles import bundle_directory
-from bijux_phylogenetics.errors import PhylogeneticsError
+from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
+from bijux_phylogenetics.errors import EvidenceContractError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -129,7 +129,9 @@ def _command_inputs(args: Any) -> list[Path | str]:
             inputs.append(args.metadata)
         return inputs
     if args.command == "evidence":
-        return [args.run_root, args.out]
+        if args.evidence_command == "bundle":
+            return [args.run_root, args.out]
+        return [args.bundle_root]
     if args.command == "report":
         inputs = [args.tree, args.out]
         if args.alignment is not None:
@@ -258,10 +260,16 @@ def build_parser() -> argparse.ArgumentParser:
     _add_manifest_argument(render)
 
     evidence = subparsers.add_parser(get_command_spec("evidence").name, help=get_command_spec("evidence").summary)
-    evidence.add_argument("run_root", type=Path)
-    evidence.add_argument("--out", required=True, type=Path)
-    evidence.add_argument("--json", action="store_true", help="Emit the bundle report as JSON.")
-    _add_manifest_argument(evidence)
+    evidence_subparsers = evidence.add_subparsers(dest="evidence_command", required=True)
+    evidence_bundle = evidence_subparsers.add_parser("bundle", help="Bundle a run directory as evidence.")
+    evidence_bundle.add_argument("run_root", type=Path)
+    evidence_bundle.add_argument("--out", required=True, type=Path)
+    evidence_bundle.add_argument("--json", action="store_true", help="Emit the bundle report as JSON.")
+    _add_manifest_argument(evidence_bundle)
+    evidence_validate = evidence_subparsers.add_parser("validate", help="Validate an existing evidence bundle.")
+    evidence_validate.add_argument("bundle_root", type=Path)
+    evidence_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    _add_manifest_argument(evidence_validate)
 
     report = subparsers.add_parser(get_command_spec("report").name, help=get_command_spec("report").summary)
     report.add_argument("--tree", required=True, type=Path)
@@ -574,12 +582,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             print(result.output_path)
             return 0
         if args.command == "evidence":
-            report = bundle_directory(args.run_root, args.out)
-            outputs = _finalize_outputs(args, command="evidence", inputs=[args.run_root], outputs=[args.out])
+            if args.evidence_command == "bundle":
+                report = bundle_directory(args.run_root, args.out)
+                outputs = _finalize_outputs(args, command="evidence", inputs=[args.run_root], outputs=[args.out])
+                _print_result(
+                    build_command_result(
+                        command="evidence",
+                        inputs=[args.run_root],
+                        outputs=outputs,
+                        metrics={"file_count": report.file_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            report = validate_bundle(args.bundle_root)
+            if not report.valid:
+                raise EvidenceContractError(f"evidence bundle validation failed with {len(report.mismatches)} mismatch(es)")
+            outputs = _finalize_outputs(args, command="evidence", inputs=[args.bundle_root])
             _print_result(
                 build_command_result(
                     command="evidence",
-                    inputs=[args.run_root],
+                    inputs=[args.bundle_root],
                     outputs=outputs,
                     metrics={"file_count": report.file_count},
                     data=report,

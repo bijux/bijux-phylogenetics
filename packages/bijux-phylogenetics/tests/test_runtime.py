@@ -12,7 +12,7 @@ from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
-from bijux_phylogenetics.evidence.bundles import bundle_directory
+from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
     DuplicateTaxonError,
@@ -563,6 +563,29 @@ def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
     assert "artifact.txt" in manifest
 
 
+def test_validate_bundle_accepts_matching_checksums(tmp_path: Path) -> None:
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+    (run_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    bundle_root = tmp_path / "bundle"
+    bundle_directory(run_root, bundle_root)
+    report = validate_bundle(bundle_root)
+    assert report.valid is True
+    assert report.mismatches == []
+
+
+def test_validate_bundle_detects_checksum_drift(tmp_path: Path) -> None:
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+    (run_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    bundle_root = tmp_path / "bundle"
+    bundle_directory(run_root, bundle_root)
+    (bundle_root / "files" / "artifact.txt").write_text("drift\n", encoding="utf-8")
+    report = validate_bundle(bundle_root)
+    assert report.valid is False
+    assert report.mismatches[0].reason in {"checksum_mismatch", "size_mismatch"}
+
+
 def test_cli_validate_json_output(capsys) -> None:
     exit_code = main(["validate", str(FIXTURES / "example_tree.nwk"), "--json"])
     captured = capsys.readouterr()
@@ -650,6 +673,26 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "evidence",
         "adapter",
     ]
+
+
+def test_cli_evidence_bundle_and_validate_json_output(tmp_path: Path, capsys) -> None:
+    run_root = tmp_path / "run"
+    bundle_root = tmp_path / "bundle"
+    run_root.mkdir()
+    (run_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+
+    exit_code = main(["evidence", "bundle", str(run_root), "--out", str(bundle_root), "--json"])
+    captured = capsys.readouterr()
+    bundle_payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert bundle_payload["status"] == "ok"
+
+    exit_code = main(["evidence", "validate", str(bundle_root), "--json"])
+    captured = capsys.readouterr()
+    validate_payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert validate_payload["status"] == "ok"
+    assert validate_payload["data"]["valid"] is True
 
 
 def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> None:
