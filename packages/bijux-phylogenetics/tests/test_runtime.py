@@ -36,6 +36,10 @@ from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
+from bijux_phylogenetics.io.fasta import (
+    detect_sequences_with_excessive_missing_data,
+    detect_sites_with_excessive_missing_data,
+)
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
@@ -236,6 +240,29 @@ def test_alignment_link_strict_mode_rejects_mismatch() -> None:
         assert error.code == "alignment_taxon_mismatch_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected AlignmentTaxonMismatchError")
+
+
+def test_alignment_detects_sequences_with_excessive_missing_data() -> None:
+    rows = detect_sequences_with_excessive_missing_data(
+        fixture("example_alignment_missingness.fasta"),
+        threshold=0.3,
+    )
+    assert [(row.identifier, row.missing_fraction) for row in rows] == [
+        ("A", 2 / 6),
+        ("B", 2 / 6),
+    ]
+
+
+def test_alignment_detects_sites_with_excessive_missing_data() -> None:
+    rows = detect_sites_with_excessive_missing_data(
+        fixture("example_alignment_site_missingness.fasta"),
+        threshold=0.4,
+    )
+    assert [(row.position, row.missing_fraction) for row in rows] == [
+        (3, 1.0),
+        (4, 1.0),
+        (5, 0.5),
+    ]
 
 
 def test_build_run_manifest_captures_checksums_and_environment(tmp_path: Path) -> None:

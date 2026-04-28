@@ -16,6 +16,11 @@ _GAP_CHARACTERS = {"-"}
 _MISSING_CHARACTERS = {"?", "N", "n", "X", "x"}
 
 
+def _validate_fraction_threshold(threshold: float) -> None:
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError(f"threshold must be between 0 and 1 inclusive, got {threshold}")
+
+
 def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
     """Load FASTA records using the repository's deterministic alignment contract."""
     if not path.exists():
@@ -153,3 +158,25 @@ def link_alignment_to_tree(
         missing_from_alignment=missing_from_alignment,
         extra_alignment_ids=extra_alignment_ids,
     )
+
+
+def detect_sequences_with_excessive_missing_data(
+    path: Path,
+    *,
+    threshold: float,
+) -> list[SequenceMissingness]:
+    """Return sequences whose missing-data fraction exceeds the given threshold."""
+    _validate_fraction_threshold(threshold)
+    summary = summarise_fasta(path)
+    return [row for row in summary.per_sequence_missingness if row.missing_fraction > threshold]
+
+
+def detect_sites_with_excessive_missing_data(
+    path: Path,
+    *,
+    threshold: float,
+) -> list[SiteMissingness]:
+    """Return alignment columns whose missing-data fraction exceeds the given threshold."""
+    _validate_fraction_threshold(threshold)
+    summary = summarise_fasta(path)
+    return [row for row in summary.per_site_missingness if row.missing_fraction > threshold]
