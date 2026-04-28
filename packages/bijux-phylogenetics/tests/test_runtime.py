@@ -1412,8 +1412,23 @@ def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
     assert payload["metrics"]["cherry_count"] == 2
     assert payload["metrics"]["tree_diameter"] == 1.6
     assert payload["metrics"]["tree_quality_score"] == 100.0
+    assert payload["metrics"]["likely_support_label_count"] == 0
     assert payload["data"]["taxa"] == ["A", "B", "C", "D"]
     assert payload["metrics"]["tip_count"] == 4
+
+
+def test_cli_validate_and_inspect_surface_structural_and_support_diagnostics(capsys) -> None:
+    validate_exit = main(["validate", str(fixture("example_tree_singleton.nwk")), "--json"])
+    validate_payload = json.loads(capsys.readouterr().out)
+    assert validate_exit == 0
+    assert validate_payload["metrics"]["singleton_internal_node_count"] == 1
+
+    inspect_exit = main(["inspect", str(fixture("example_tree_support_mixed.nwk")), "--json"])
+    inspect_payload = json.loads(capsys.readouterr().out)
+    assert inspect_exit == 0
+    assert inspect_payload["metrics"]["likely_support_label_count"] == 3
+    assert inspect_payload["metrics"]["suspicious_support_range_count"] == 0
+    assert inspect_payload["data"]["mixed_support_scales"] is True
 
 
 def test_cli_normalize_writes_canonical_newick(tmp_path: Path, capsys) -> None:
