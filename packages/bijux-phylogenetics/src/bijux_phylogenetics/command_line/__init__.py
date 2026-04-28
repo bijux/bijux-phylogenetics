@@ -9,6 +9,7 @@ from typing import Any
 
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
+from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
@@ -63,6 +64,32 @@ def _print_commands(*, output_format: str) -> None:
 
 def _json_requested(args: Any) -> bool:
     return bool(getattr(args, "json", False) or getattr(args, "format", "") == "json")
+
+
+def _add_manifest_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--manifest", type=Path, help="Write a reproducibility manifest to this JSON path.")
+
+
+def _finalize_outputs(
+    args: Any,
+    *,
+    command: str,
+    inputs: list[Path | str],
+    outputs: list[Path | str] | None = None,
+) -> list[Path | str]:
+    finalized_outputs = list(outputs or [])
+    manifest_path = getattr(args, "manifest", None)
+    if manifest_path is None:
+        return finalized_outputs
+    manifest = build_run_manifest(
+        command=command,
+        arguments=list(getattr(args, "_argv", [])),
+        input_paths=inputs,
+        output_paths=finalized_outputs,
+    )
+    write_run_manifest(manifest_path, manifest)
+    finalized_outputs.append(manifest_path)
+    return finalized_outputs
 
 
 def _command_inputs(args: Any) -> list[Path | str]:
@@ -133,6 +160,7 @@ def build_parser() -> argparse.ArgumentParser:
     metadata_inspect.add_argument("table", type=Path)
     metadata_inspect.add_argument("--taxon-column")
     metadata_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(metadata_inspect)
 
     traits = subparsers.add_parser(get_command_spec("traits").name, help=get_command_spec("traits").summary)
     traits_subparsers = traits.add_subparsers(dest="traits_command", required=True)
@@ -140,12 +168,14 @@ def build_parser() -> argparse.ArgumentParser:
     traits_validate.add_argument("table", type=Path)
     traits_validate.add_argument("--taxon-column")
     traits_validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(traits_validate)
     traits_link = traits_subparsers.add_parser("link", help="Link tree tips to a traits table.")
     traits_link.add_argument("tree", type=Path)
     traits_link.add_argument("table", type=Path)
     traits_link.add_argument("--taxon-column")
     traits_link.add_argument("--strict", action="store_true")
     traits_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(traits_link)
 
     prune = subparsers.add_parser(get_command_spec("prune").name, help=get_command_spec("prune").summary)
     prune.add_argument("tree", type=Path)
@@ -154,17 +184,20 @@ def build_parser() -> argparse.ArgumentParser:
     prune.add_argument("--out", required=True, type=Path)
     prune.add_argument("--pruned-taxa-out", type=Path)
     prune.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(prune)
 
     alignment = subparsers.add_parser(get_command_spec("alignment").name, help=get_command_spec("alignment").summary)
     alignment_subparsers = alignment.add_subparsers(dest="alignment_command", required=True)
     alignment_inspect = alignment_subparsers.add_parser("inspect", help="Inspect an aligned FASTA file.")
     alignment_inspect.add_argument("alignment", type=Path)
     alignment_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_inspect)
     alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
     alignment_link.add_argument("--strict", action="store_true")
     alignment_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_link)
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -173,17 +206,20 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--allow-negative-branches", action="store_true")
     validate.add_argument("--strict", action="store_true")
     validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(validate)
 
     inspect = subparsers.add_parser(get_command_spec("inspect").name, help=get_command_spec("inspect").summary)
     inspect.add_argument("tree", type=Path)
     inspect.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(inspect)
 
     normalize = subparsers.add_parser(get_command_spec("normalize").name, help=get_command_spec("normalize").summary)
     normalize.add_argument("tree", type=Path)
     normalize.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     normalize.add_argument("--out", required=True, type=Path)
     normalize.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
+    _add_manifest_argument(normalize)
 
     normalize_taxa = subparsers.add_parser(
         get_command_spec("normalize-taxa").name,
@@ -195,31 +231,37 @@ def build_parser() -> argparse.ArgumentParser:
     normalize_taxa.add_argument("--out", required=True, type=Path)
     normalize_taxa.add_argument("--mapping-out", type=Path)
     normalize_taxa.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
+    _add_manifest_argument(normalize_taxa)
 
     compare = subparsers.add_parser(get_command_spec("compare").name, help=get_command_spec("compare").summary)
     compare.add_argument("left", type=Path)
     compare.add_argument("right", type=Path)
     compare.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(compare)
 
     annotate = subparsers.add_parser(get_command_spec("annotate").name, help=get_command_spec("annotate").summary)
     annotate.add_argument("tree", type=Path)
     annotate.add_argument("--metadata", required=True, type=Path)
     annotate.add_argument("--json", action="store_true", help="Emit the linkage report as JSON.")
+    _add_manifest_argument(annotate)
 
     diagnose = subparsers.add_parser(get_command_spec("diagnose").name, help=get_command_spec("diagnose").summary)
     diagnose.add_argument("tree", type=Path)
     diagnose.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(diagnose)
 
     render = subparsers.add_parser(get_command_spec("render").name, help=get_command_spec("render").summary)
     render.add_argument("tree", type=Path)
     render.add_argument("--metadata", type=Path)
     render.add_argument("--out", required=True, type=Path)
     render.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(render)
 
     evidence = subparsers.add_parser(get_command_spec("evidence").name, help=get_command_spec("evidence").summary)
     evidence.add_argument("run_root", type=Path)
     evidence.add_argument("--out", required=True, type=Path)
     evidence.add_argument("--json", action="store_true", help="Emit the bundle report as JSON.")
+    _add_manifest_argument(evidence)
 
     report = subparsers.add_parser(get_command_spec("report").name, help=get_command_spec("report").summary)
     report.add_argument("--tree", required=True, type=Path)
@@ -228,6 +270,7 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("--metadata", type=Path)
     report.add_argument("--out", required=True, type=Path)
     report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report)
 
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
     adapter.add_argument("adapter_name")
@@ -244,10 +287,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "metadata":
             report = inspect_metadata_table(args.table, taxon_column=args.taxon_column)
+            outputs = _finalize_outputs(args, command="metadata", inputs=[args.table])
             _print_result(
                 build_command_result(
                     command="metadata",
                     inputs=[args.table],
+                    outputs=outputs,
                     metrics={
                         "row_count": report.row_count,
                         "column_count": report.column_count,
@@ -261,10 +306,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "traits":
             if args.traits_command == "validate":
                 report = validate_traits_table(args.table, taxon_column=args.taxon_column)
+                outputs = _finalize_outputs(args, command="traits", inputs=[args.table])
                 _print_result(
                     build_command_result(
                         command="traits",
                         inputs=[args.table],
+                        outputs=outputs,
                         metrics={
                             "row_count": report.row_count,
                             "trait_column_count": len(report.trait_columns),
@@ -280,10 +327,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 taxon_column=args.taxon_column,
                 strict=args.strict,
             )
+            outputs = _finalize_outputs(args, command="traits", inputs=[args.tree, args.table])
             _print_result(
                 build_command_result(
                     command="traits",
                     inputs=[args.tree, args.table],
+                    outputs=outputs,
                     metrics={
                         "tree_taxa": report.tree_taxa,
                         "trait_taxa": report.trait_taxa,
@@ -302,10 +351,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 strict=args.strict,
                 allow_negative_branch_lengths=args.allow_negative_branches,
             )
+            outputs = _finalize_outputs(args, command="validate", inputs=[args.tree])
             _print_result(
                 build_command_result(
                     command="validate",
                     inputs=[args.tree],
+                    outputs=outputs,
                     warnings=report.warnings,
                     metrics={
                         "tip_count": report.tip_count,
@@ -322,11 +373,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             output_path = write_newick(args.out, tree)
             pruned_taxa_path = args.pruned_taxa_out or args.out.with_name("pruned_taxa.tsv")
             write_pruned_taxa(pruned_taxa_path, report.removed_taxa)
+            outputs = _finalize_outputs(
+                args,
+                command="prune",
+                inputs=[args.tree, args.keep_from],
+                outputs=[output_path, pruned_taxa_path],
+            )
             _print_result(
                 build_command_result(
                     command="prune",
                     inputs=[args.tree, args.keep_from],
-                    outputs=[output_path, pruned_taxa_path],
+                    outputs=outputs,
                     metrics={
                         "kept_taxa": len(report.kept_taxa),
                         "removed_taxa": len(report.removed_taxa),
@@ -339,10 +396,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "alignment":
             if args.alignment_command == "inspect":
                 report = summarise_fasta(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
                 _print_result(
                     build_command_result(
                         command="alignment",
                         inputs=[args.alignment],
+                        outputs=outputs,
                         metrics={
                             "sequence_count": report.sequence_count,
                             "alignment_length": report.alignment_length,
@@ -355,10 +414,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             report = link_alignment_to_tree(args.tree, args.alignment, strict=args.strict)
+            outputs = _finalize_outputs(args, command="alignment", inputs=[args.tree, args.alignment])
             _print_result(
                 build_command_result(
                     command="alignment",
                     inputs=[args.tree, args.alignment],
+                    outputs=outputs,
                     metrics={
                         "tree_taxa": report.tree_taxa,
                         "alignment_ids": report.alignment_ids,
@@ -371,10 +432,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "inspect":
             report = inspect_tree_path(args.tree, source_format=args.format)
+            outputs = _finalize_outputs(args, command="inspect", inputs=[args.tree])
             _print_result(
                 build_command_result(
                     command="inspect",
                     inputs=[args.tree],
+                    outputs=outputs,
                     metrics={
                         "tip_count": report.tip_count,
                         "node_count": report.node_count,
@@ -394,12 +457,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "normalize":
             tree = load_tree(args.tree, source_format=args.format)
             output_path = write_newick(args.out, tree)
+            outputs = _finalize_outputs(args, command="normalize", inputs=[args.tree], outputs=[output_path])
             if args.json:
                 _print_result(
                     build_command_result(
                         command="normalize",
                         inputs=[args.tree],
-                        outputs=[output_path],
+                        outputs=outputs,
                         metrics={"tip_count": tree.tip_count},
                         data={"source_format": tree.source_format, "output_format": "newick"},
                     ),
@@ -414,12 +478,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             output_path = write_newick(args.out, normalized_tree)
             mapping_path = args.mapping_out or args.out.with_suffix(f"{args.out.suffix}.mapping.tsv")
             write_taxon_mapping(mapping_path, report.renamed_taxa)
+            outputs = _finalize_outputs(
+                args,
+                command="normalize-taxa",
+                inputs=[args.tree],
+                outputs=[output_path, mapping_path],
+            )
             if args.json:
                 _print_result(
                     build_command_result(
                         command="normalize-taxa",
                         inputs=[args.tree],
-                        outputs=[output_path, mapping_path],
+                        outputs=outputs,
                         metrics={"renamed_taxa": len(report.renamed_taxa)},
                         data=report,
                     ),
@@ -430,10 +500,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "diagnose":
             report = diagnose_tree_path(args.tree)
+            outputs = _finalize_outputs(args, command="diagnose", inputs=[args.tree])
             _print_result(
                 build_command_result(
                     command="diagnose",
                     inputs=[args.tree],
+                    outputs=outputs,
                     warnings=report.validation.warnings,
                     metrics={
                         "tip_count": report.inspection.tip_count,
@@ -447,10 +519,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "compare":
             report = compare_tree_paths(args.left, args.right)
+            outputs = _finalize_outputs(args, command="compare", inputs=[args.left, args.right])
             _print_result(
                 build_command_result(
                     command="compare",
                     inputs=[args.left, args.right],
+                    outputs=outputs,
                     metrics={
                         "shared_taxa": len(report.shared_taxa),
                         "robinson_foulds_distance": report.robinson_foulds_distance,
@@ -462,10 +536,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "annotate":
             report = annotate_tree_against_table(args.tree, args.metadata)
+            outputs = _finalize_outputs(args, command="annotate", inputs=[args.tree, args.metadata])
             _print_result(
                 build_command_result(
                     command="annotate",
                     inputs=[args.tree, args.metadata],
+                    outputs=outputs,
                     metrics={
                         "tree_taxa": report.tree_taxa,
                         "table_rows": report.table_rows,
@@ -478,15 +554,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "render":
             result = render_phylogenetics_report(tree_path=args.tree, metadata_path=args.metadata, out_path=args.out)
+            inputs = [args.tree]
+            if args.metadata is not None:
+                inputs.append(args.metadata)
+            outputs = _finalize_outputs(args, command="render", inputs=inputs, outputs=[result.output_path])
             if args.json:
-                inputs = [args.tree]
-                if args.metadata is not None:
-                    inputs.append(args.metadata)
                 _print_result(
                     build_command_result(
                         command="render",
                         inputs=inputs,
-                        outputs=[result.output_path],
+                        outputs=outputs,
                         warnings=result.validation.warnings,
                         metrics={"tip_count": result.inspection.tip_count},
                         data=result,
@@ -498,11 +575,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "evidence":
             report = bundle_directory(args.run_root, args.out)
+            outputs = _finalize_outputs(args, command="evidence", inputs=[args.run_root], outputs=[args.out])
             _print_result(
                 build_command_result(
                     command="evidence",
                     inputs=[args.run_root],
-                    outputs=[args.out],
+                    outputs=outputs,
                     metrics={"file_count": report.file_count},
                     data=report,
                 ),
@@ -517,19 +595,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 metadata_path=args.metadata,
                 out_path=args.out,
             )
+            inputs = [args.tree]
+            if args.alignment is not None:
+                inputs.append(args.alignment)
+            if args.traits is not None:
+                inputs.append(args.traits)
+            if args.metadata is not None:
+                inputs.append(args.metadata)
+            outputs = _finalize_outputs(args, command="report", inputs=inputs, outputs=[result.output_path])
             if args.json:
-                inputs = [args.tree]
-                if args.alignment is not None:
-                    inputs.append(args.alignment)
-                if args.traits is not None:
-                    inputs.append(args.traits)
-                if args.metadata is not None:
-                    inputs.append(args.metadata)
                 _print_result(
                     build_command_result(
                         command="report",
                         inputs=inputs,
-                        outputs=[result.output_path],
+                        outputs=outputs,
                         warnings=result.validation.warnings,
                         metrics={"tip_count": result.inspection.tip_count},
                         data=result,

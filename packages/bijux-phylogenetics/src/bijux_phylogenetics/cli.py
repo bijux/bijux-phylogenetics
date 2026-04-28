@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import sys
 from typing import Any
 
 from .command_line import build_parser as build_command_parser
@@ -30,9 +31,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point."""
     parser = build_parser()
     args = parser.parse_args(argv)
+    setattr(args, "_argv", list(argv) if argv is not None else list(sys.argv[1:]))
     return run_command(args, parser=parser)
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

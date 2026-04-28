@@ -585,6 +585,47 @@ def test_cli_diagnose_json_output(capsys) -> None:
     assert payload["data"]["inspection"]["imbalance_summary"] == "balanced"
 
 
+def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
+    manifest = tmp_path / "validate.manifest.json"
+    exit_code = main(["validate", str(FIXTURES / "example_tree.nwk"), "--json", "--manifest", str(manifest)])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+    assert exit_code == 0
+    assert payload["outputs"] == [str(manifest)]
+    assert manifest_payload["command"] == "validate"
+    assert manifest_payload["arguments"] == [
+        "validate",
+        str(FIXTURES / "example_tree.nwk"),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(FIXTURES / "example_tree.nwk")]
+
+
+def test_cli_normalize_includes_manifest_in_output_list(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "normalized.nwk"
+    manifest = tmp_path / "normalize.manifest.json"
+    exit_code = main(
+        [
+            "normalize",
+            str(FIXTURES / "example_tree.nex"),
+            "--format",
+            "nexus",
+            "--out",
+            str(output),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["outputs"] == [str(output), str(manifest)]
+
+
 def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     exit_code = main(["commands", "--format", "json"])
     captured = capsys.readouterr()
