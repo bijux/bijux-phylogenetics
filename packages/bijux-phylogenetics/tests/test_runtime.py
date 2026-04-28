@@ -14,6 +14,7 @@ from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_alignment_to_tree, prune_tree_to_alignment, prune_tree_to_taxa
+from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.core.traits import detect_unusable_trait_columns, link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
 from bijux_phylogenetics.diagnostics.root_to_tip import diagnose_ultrametricity
@@ -89,6 +90,39 @@ def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:
         ("A.B-1", 0.3),
     ]
     assert dumps_newick(tree) == "(A.B-1:0.3,'Homo sapiens':0.1,'NCBI|123/45':0.2);"
+
+
+def test_normalize_tree_taxa_reports_rename_mapping() -> None:
+    tree = loads_newick("('Homo sapiens':0.1,'Mus musculus':0.2,A:0.3);")
+    normalized_tree, report = normalize_tree_taxa(tree, policy="spaces-to-underscores")
+    assert normalized_tree.tip_names == ["Homo_sapiens", "Mus_musculus", "A"]
+    assert [(rename.raw_label, rename.normalized_label) for rename in report.renamed_taxa] == [
+        ("Homo sapiens", "Homo_sapiens"),
+        ("Mus musculus", "Mus_musculus"),
+    ]
+
+
+def test_taxon_safety_reports_unsafe_labels_and_normalization_collisions(tmp_path: Path) -> None:
+    tree = loads_newick(
+        "('Homo sapiens':0.1,Homo_sapiens:0.2,'NCBI/123':0.3,'Quoted''Name':0.4,A:0.5);"
+    )
+    report = inspect_tree_taxa_safety(tree, policy="spaces-to-underscores")
+    assert [(entry.raw_label, entry.normalized_label, entry.reasons) for entry in report.unsafe_taxa] == [
+        ("Homo sapiens", "Homo_sapiens", ["contains whitespace", "collides with another label after normalization"]),
+        ("Homo_sapiens", "Homo_sapiens", ["collides with another label after normalization"]),
+        ("NCBI/123", "NCBI/123", ["contains slash characters"]),
+        ("Quoted'Name", "Quoted'Name", ["contains quote characters"]),
+    ]
+    assert [(entry.normalized_label, entry.raw_labels) for entry in report.collisions] == [
+        ("Homo_sapiens", ["Homo sapiens", "Homo_sapiens"])
+    ]
+
+    mapping_path = tmp_path / "taxon-mapping.tsv"
+    write_taxon_mapping(mapping_path, normalize_tree_taxa(tree, policy="spaces-to-underscores")[1].renamed_taxa)
+    assert mapping_path.read_text(encoding="utf-8") == (
+        "raw_label\tnormalized_label\n"
+        "Homo sapiens\tHomo_sapiens\n"
+    )
 
 
 def test_metadata_inspect_reports_taxon_contract() -> None:
