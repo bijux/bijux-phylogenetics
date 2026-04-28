@@ -20,7 +20,12 @@ from bijux_phylogenetics.core.pruning import (
     prune_tree_to_requested_taxa,
     prune_tree_to_taxa,
 )
-from bijux_phylogenetics.core.topology import collapse_branches_below_length, extract_named_clade, ladderize_tree
+from bijux_phylogenetics.core.topology import (
+    collapse_branches_below_length,
+    extract_named_clade,
+    ladderize_tree,
+    sort_tree_tips_alphabetically,
+)
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.core.traits import detect_unusable_trait_columns, link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
@@ -308,6 +313,14 @@ def test_ladderize_tree_orders_larger_subtrees_first() -> None:
     assert [len(child.children) if child.children else 1 for child in tree.root.children] == [3, 2]
     assert report.strategy == "ladderize"
     assert report.tip_order == ["X", "Y", "Z", "A", "B"]
+
+
+def test_sort_tree_tips_alphabetically_preserves_topology_with_stable_tip_order() -> None:
+    tree, report = sort_tree_tips_alphabetically(fixture("example_tree_ordering.nwk"))
+    assert tree.tip_names == ["A", "B", "X", "Y", "Z"]
+    assert [len(child.children) if child.children else 1 for child in tree.root.children] == [2, 3]
+    assert report.strategy == "alphabetical"
+    assert report.tip_order == ["A", "B", "X", "Y", "Z"]
 
 
 def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:

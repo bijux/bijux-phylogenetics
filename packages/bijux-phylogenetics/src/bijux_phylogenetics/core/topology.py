@@ -171,6 +171,8 @@ def _order_tree(node: TreeNode, *, strategy: str) -> TreeNode:
     ordered_children = [_order_tree(child, strategy=strategy) for child in node.children]
     if strategy == "ladderize":
         ordered_children.sort(key=lambda child: (-_leaf_count(child), _descendant_taxa(child)))
+    elif strategy == "alphabetical":
+        ordered_children.sort(key=_descendant_taxa)
     else:
         raise ValueError(f"unsupported ordering strategy: {strategy}")
 
@@ -192,4 +194,18 @@ def ladderize_tree(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
         tree_path=tree_path,
         strategy="ladderize",
         tip_order=ladderized_tree.tip_names,
+    )
+
+
+def sort_tree_tips_alphabetically(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
+    """Sort tree children recursively by alphabetical descendant tip order."""
+    tree = load_tree(tree_path)
+    sorted_tree = PhyloTree(
+        root=_order_tree(tree.root, strategy="alphabetical"),
+        source_format=tree.source_format,
+    )
+    return sorted_tree, TreeOrderingReport(
+        tree_path=tree_path,
+        strategy="alphabetical",
+        tip_order=sorted_tree.tip_names,
     )
