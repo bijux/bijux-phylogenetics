@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bijux Tree Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1f24;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --accent: #0f766e;
+      --rule: #d6dee8;
+      --mono: "SFMono-Regular", "SF Mono", Consolas, monospace;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(180deg, #eef6f4 0%, var(--bg) 100%);
+      color: var(--ink);
+      font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", serif;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 24px 80px rgba(15, 118, 110, 0.08);
+    }
+    h1, h2 {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+    section + section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      background: #f6f8fa;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Bijux Tree Report</h1>
+    <script id="bijux-report-manifest" type="application/json">{
+  "input_checksums": {
+    "tests/fixtures/trees/example_tree.nwk": "8bec6d2798df67bd94a91356871351c073434512a2281a73bb4540ebb6f1e5fd"
+  },
+  "input_paths": [
+    "tests/fixtures/trees/example_tree.nwk"
+  ],
+  "metrics": {
+    "clade_count": 3,
+    "node_count": 7,
+    "tip_count": 4
+  },
+  "report_kind": "tree",
+  "sections": [
+    "tree-validation",
+    "tree-inspection"
+  ],
+  "title": "Bijux Tree Report"
+}</script>
+    <section><h2>tree-validation</h2><pre>{
+  &quot;branch_length_status&quot;: &quot;complete&quot;,
+  &quot;duplicate_taxa&quot;: [],
+  &quot;has_complete_branch_lengths&quot;: true,
+  &quot;internal_node_count&quot;: 3,
+  &quot;missing_taxa&quot;: 0,
+  &quot;negative_branch_lengths&quot;: 0,
+  &quot;path&quot;: &quot;tests/fixtures/trees/example_tree.nwk&quot;,
+  &quot;polytomy_count&quot;: 0,
+  &quot;polytomy_nodes&quot;: [],
+  &quot;rooted&quot;: true,
+  &quot;source_format&quot;: &quot;newick&quot;,
+  &quot;tip_count&quot;: 4,
+  &quot;total_branch_length&quot;: 0.8999999999999999,
+  &quot;ultrametric&quot;: true,
+  &quot;warnings&quot;: [],
+  &quot;zero_length_branches&quot;: 0
+}</pre></section>
+<section><h2>tree-inspection</h2><pre>{
+  &quot;branch_length_status&quot;: &quot;complete&quot;,
+  &quot;cherry_count&quot;: 2,
+  &quot;clade_count&quot;: 3,
+  &quot;edge_count&quot;: 6,
+  &quot;has_branch_lengths&quot;: true,
+  &quot;imbalance_summary&quot;: &quot;balanced&quot;,
+  &quot;internal_node_count&quot;: 3,
+  &quot;is_binary&quot;: true,
+  &quot;is_ultrametric&quot;: true,
+  &quot;max_depth&quot;: 2,
+  &quot;max_root_to_tip&quot;: 0.30000000000000004,
+  &quot;mean_depth&quot;: 2.0,
+  &quot;min_root_to_tip&quot;: 0.30000000000000004,
+  &quot;node_count&quot;: 7,
+  &quot;path&quot;: &quot;tests/fixtures/trees/example_tree.nwk&quot;,
+  &quot;polytomy_count&quot;: 0,
+  &quot;polytomy_nodes&quot;: [],
+  &quot;rooted&quot;: true,
+  &quot;source_format&quot;: &quot;newick&quot;,
+  &quot;taxa&quot;: [
+    &quot;A&quot;,
+    &quot;B&quot;,
+    &quot;C&quot;,
+    &quot;D&quot;
+  ],
+  &quot;tip_count&quot;: 4,
+  &quot;total_branch_length&quot;: 0.8999999999999999,
+  &quot;warnings&quot;: [],
+  &quot;zero_length_branch_count&quot;: 0
+}</pre></section>
+  </main>
+</body>
+</html>

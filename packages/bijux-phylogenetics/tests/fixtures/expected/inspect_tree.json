@@ -1,0 +1,60 @@
+{
+  "command": "inspect",
+  "data": {
+    "branch_length_status": "complete",
+    "cherry_count": 2,
+    "clade_count": 3,
+    "edge_count": 6,
+    "has_branch_lengths": true,
+    "imbalance_summary": "balanced",
+    "internal_node_count": 3,
+    "is_binary": true,
+    "is_ultrametric": true,
+    "max_depth": 2,
+    "max_root_to_tip": 0.30000000000000004,
+    "mean_depth": 2.0,
+    "min_root_to_tip": 0.30000000000000004,
+    "node_count": 7,
+    "path": "tests/fixtures/trees/example_tree.nwk",
+    "polytomy_count": 0,
+    "polytomy_nodes": [],
+    "rooted": true,
+    "source_format": "newick",
+    "taxa": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "tip_count": 4,
+    "total_branch_length": 0.8999999999999999,
+    "warnings": [],
+    "zero_length_branch_count": 0
+  },
+  "errors": [],
+  "inputs": [
+    "tests/fixtures/trees/example_tree.nwk"
+  ],
+  "metrics": {
+    "branch_length_status": "complete",
+    "cherry_count": 2,
+    "clade_count": 3,
+    "edge_count": 6,
+    "internal_node_count": 3,
+    "is_binary": true,
+    "is_ultrametric": true,
+    "node_count": 7,
+    "polytomy_count": 0,
+    "tip_count": 4,
+    "zero_length_branch_count": 0
+  },
+  "outputs": [],
+  "provenance": {
+    "cli": "bijux-phylogenetics",
+    "import_name": "bijux_phylogenetics",
+    "package": "bijux-phylogenetics",
+    "version": "0.1.1.dev5+dirty"
+  },
+  "status": "ok",
+  "warnings": []
+}

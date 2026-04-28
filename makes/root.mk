@@ -29,7 +29,7 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 
 .PHONY: \
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
-	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets \
+	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens \
 	clean-root-artifacts root-check-env check-shared-bijux-py
 
 check: sync-license-assets lock-check lint test quality security docs build sbom ## Run the full repository verification flow
@@ -62,6 +62,10 @@ package-source-smoke: build ## Install the sdist into a temp venv and run the CL
 
 package-verify: package-check package-smoke package-source-smoke ## Run the full packaging proof surface
 .PHONY: package-verify
+
+test-goldens: root-check-env ## Compare checked-in golden outputs
+	@"$(ROOT_CHECK_VENV)/bin/python" -m pytest packages/bijux-phylogenetics/tests/test_goldens.py
+.PHONY: test-goldens
 
 HELP_WIDTH := 22
 include $(ROOT_MAKEFILE_DIR)/bijux-py/ci/help.mk
