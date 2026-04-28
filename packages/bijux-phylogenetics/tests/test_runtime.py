@@ -2121,6 +2121,19 @@ def test_render_tree_report_writes_embedded_manifest(tmp_path: Path) -> None:
     assert "Bijux Tree Report" in text
 
 
+def test_render_tree_report_preserves_support_and_branch_diagnostics(tmp_path: Path) -> None:
+    output = tmp_path / "tree-support-report.html"
+    result = render_tree_report(tree_path=fixture("example_tree_support_invalid.nwk"), out_path=output)
+    assert result.validation.missing_internal_branch_nodes == []
+    assert result.inspection.suspicious_support_value_ranges == [
+        "support value 101 at A|B|C|D exceeds 100",
+        "support value 120 at A|B exceeds 100",
+        "support value -5 at C|D is negative",
+    ]
+    assert [warning.code for warning in result.inspection.tree_quality_warnings] == ["suspicious_support_ranges"]
+    assert output.read_text(encoding="utf-8").count("suspicious_support_value_ranges") >= 1
+
+
 def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
     output = tmp_path / "dataset-report.html"
     result = render_dataset_report(
