@@ -71,6 +71,7 @@ class TreeInspectionReport:
     max_root_to_tip: float | None
     max_depth: int
     mean_depth: float
+    colless_imbalance_index: float | None
     imbalance_summary: str
     cherry_count: int
     taxa: list[str]
@@ -256,6 +257,25 @@ def _leaf_depths(tree: PhyloTree) -> list[int]:
     return depths
 
 
+def _colless_imbalance_index(tree: PhyloTree) -> float | None:
+    if len(tree.root.children) != 2:
+        return None
+
+    def visit(node) -> tuple[int, float | None]:
+        if node.is_leaf():
+            return 1, 0.0
+        if len(node.children) != 2:
+            return sum(visit(child)[0] for child in node.children), None
+        left_count, left_score = visit(node.children[0])
+        right_count, right_score = visit(node.children[1])
+        if left_score is None or right_score is None:
+            return left_count + right_count, None
+        return left_count + right_count, left_score + right_score + abs(left_count - right_count)
+
+    _, score = visit(tree.root)
+    return None if score is None else float(score)
+
+
 def _imbalance_summary(tree: PhyloTree) -> str:
     def visit(node) -> tuple[int, int]:
         if node.is_leaf():
@@ -389,6 +409,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         max_root_to_tip=max(lengths) if lengths else None,
         max_depth=_max_depth(tree),
         mean_depth=sum(depths) / len(depths),
+        colless_imbalance_index=_colless_imbalance_index(tree),
         imbalance_summary=_imbalance_summary(tree),
         cherry_count=_cherry_count(tree),
         taxa=sorted(tree.tip_names),

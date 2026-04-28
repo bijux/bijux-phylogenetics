@@ -469,6 +469,7 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
     assert report.zero_length_branch_count == 0
     assert report.max_depth == 2
     assert report.mean_depth == 2.0
+    assert report.colless_imbalance_index == 0.0
     assert report.imbalance_summary == "balanced"
     assert report.cherry_count == 2
     assert report.warnings == []
@@ -480,6 +481,7 @@ def test_inspect_tree_path_distinguishes_ladderized_shape() -> None:
     assert report.tree_diameter == 0.4
     assert report.max_depth == 3
     assert report.mean_depth == 2.25
+    assert report.colless_imbalance_index == 3.0
     assert report.imbalance_summary == "ladderized"
     assert report.cherry_count == 1
 
@@ -494,6 +496,7 @@ def test_inspect_tree_path_distinguishes_rooted_and_unrooted_fixtures() -> None:
 def test_inspect_tree_path_reports_exact_polytomy_nodes() -> None:
     report = inspect_tree_path(fixture("example_tree_polytomy.nwk"))
     assert report.is_binary is False
+    assert report.colless_imbalance_index is None
     assert report.polytomy_count == 1
     assert report.polytomy_nodes == ["A|B|C"]
 
