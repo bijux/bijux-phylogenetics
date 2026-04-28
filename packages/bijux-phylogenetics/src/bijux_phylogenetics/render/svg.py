@@ -32,6 +32,12 @@ class _Point:
     y: float
 
 
+@dataclass(frozen=True, slots=True)
+class AnnotationStrip:
+    name: str
+    values: dict[str, str]
+
+
 _CATEGORICAL_PALETTE = (
     "#0f766e",
     "#1d4ed8",
@@ -156,6 +162,7 @@ def render_tree_svg(
     show_support_values: bool = False,
     categorical_traits: dict[str, str] | None = None,
     continuous_traits: dict[str, float] | None = None,
+    metadata_strips: list[AnnotationStrip] | None = None,
     collapsed_clades: list[str] | None = None,
 ) -> TreeRenderResult:
     """Render a deterministic SVG tree as a cladogram, phylogram, or circular tree."""
@@ -167,7 +174,7 @@ def render_tree_svg(
     collapsed_clade_names = {name for name in (collapsed_clades or []) if name}
     row_height = 56
     left_margin = 48
-    right_margin = 320
+    right_margin = 560
     top_margin = 40
     bottom_margin = 72
     horizontal_step = 150
@@ -209,6 +216,8 @@ def render_tree_svg(
     continuous_values = list(continuous_traits.values())
     continuous_min = min(continuous_values) if continuous_values else 0.0
     continuous_max = max(continuous_values) if continuous_values else 0.0
+    metadata_strips = metadata_strips or []
+    metadata_strip_colors = [_categorical_color_map(strip.values) for strip in metadata_strips]
 
     def node_x(depth: int, distance: float) -> float:
         if layout == "phylogram" and max_distance > 0:
@@ -261,6 +270,13 @@ def render_tree_svg(
                     f'<rect x="{bar_x:.1f}" y="{y - 11:.1f}" width="{fill_width:.1f}" height="12" rx="6" fill="{_continuous_color(continuous_value, continuous_min, continuous_max)}" class="trait-bar-fill"/>'
                 )
                 rendered_continuous_trait_count += 1
+            for strip_index, strip in enumerate(metadata_strips):
+                strip_value = strip.values.get(node.name or "")
+                if strip_value:
+                    strip_x = left_margin + tree_width + 290 + strip_index * 24
+                    overlays.append(
+                        f'<rect x="{strip_x:.1f}" y="{y - 13:.1f}" width="16" height="16" rx="4" fill="{metadata_strip_colors[strip_index][strip_value]}" class="metadata-strip-cell"/>'
+                    )
             return _Point(x=x, y=y)
 
         child_points = [visit_rectangular(child, depth + 1, branch_distance) for child in node.children]
@@ -434,17 +450,31 @@ def render_tree_svg(
             f'<text x="{legend_x + 88:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(_format_branch_value(continuous_max))}</text>'
         )
 
+    metadata_strip_headers = ""
+    if metadata_strips and layout != "circular":
+        header_fragments = []
+        base_x = left_margin + tree_width + 298
+        header_y = top_margin - 10
+        for strip_index, strip in enumerate(metadata_strips):
+            header_x = base_x + strip_index * 24
+            header_fragments.append(
+                f'<text x="{header_x:.1f}" y="{header_y:.1f}" transform="rotate(-35 {header_x:.1f} {header_y:.1f})" class="strip-header">{escape(strip.name)}</text>'
+            )
+        metadata_strip_headers = "".join(header_fragments)
+
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="phylogenetic tree">
   <style>
     .panel {{ fill: #f7fbfa; stroke: #d7e3e1; stroke-width: 1; rx: 18; ry: 18; }}
     .branch {{ stroke: #0f172a; stroke-width: 2.2; stroke-linecap: round; fill: none; }}
     .scale-bar {{ stroke: #0f172a; stroke-width: 2; stroke-linecap: round; }}
     .collapsed-clade {{ fill-opacity: 0.95; }}
+    .metadata-strip-cell {{ stroke: #f8fafc; stroke-width: 1; }}
     .tip-label {{ fill: #0f172a; font: 16px "Avenir Next", "Segoe UI", sans-serif; }}
     .support-label {{ fill: #0f766e; font: 12px "Avenir Next", "Segoe UI", sans-serif; }}
     .legend-title {{ fill: #334155; font: 12px "Avenir Next", "Segoe UI", sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }}
     .legend-label {{ fill: #334155; font: 13px "Avenir Next", "Segoe UI", sans-serif; }}
     .scale-label {{ fill: #334155; text-anchor: middle; font: 13px "Avenir Next", "Segoe UI", sans-serif; }}
+    .strip-header {{ fill: #475569; font: 11px "Avenir Next", "Segoe UI", sans-serif; }}
   </style>
   <rect x="1" y="1" width="{width - 2}" height="{height - 2}" class="panel" />
   {''.join(lines)}
@@ -453,6 +483,7 @@ def render_tree_svg(
   {scale_bar}
   {categorical_legend}
   {continuous_legend}
+  {metadata_strip_headers}
 </svg>
 """
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -467,7 +498,7 @@ def render_tree_svg(
         rendered_support_count=rendered_support_count,
         rendered_categorical_trait_count=rendered_categorical_trait_count,
         rendered_continuous_trait_count=rendered_continuous_trait_count,
-        rendered_metadata_strip_count=0,
+        rendered_metadata_strip_count=len(metadata_strips),
         rendered_heatmap_column_count=0,
         collapsed_clade_count=rendered_collapsed_clades,
         missing_metadata_labels=sorted(set(missing_labels)),

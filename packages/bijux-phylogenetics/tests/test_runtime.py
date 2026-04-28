@@ -88,7 +88,7 @@ from bijux_phylogenetics.io.fasta import (
     trim_alignment,
     write_fasta_alignment,
 )
-from bijux_phylogenetics.render.svg import render_tree_svg
+from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     render_dataset_report,
@@ -1677,6 +1677,23 @@ def test_render_tree_svg_can_render_collapsed_clades(tmp_path: Path) -> None:
     assert 'class="collapsed-clade"' in svg
     assert ">A<" not in svg
     assert ">B<" not in svg
+
+
+def test_render_tree_svg_can_render_metadata_strips(tmp_path: Path) -> None:
+    output = tmp_path / "metadata-strips.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        metadata_strips=[
+            AnnotationStrip("species", {"A": "Alpha species", "B": "Beta species", "C": "Gamma species", "D": "Delta species"}),
+            AnnotationStrip("location", {"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"}),
+        ],
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_metadata_strip_count == 2
+    assert 'class="metadata-strip-cell"' in svg
+    assert "species" in svg
+    assert "location" in svg
 
 
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
