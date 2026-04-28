@@ -8,7 +8,9 @@ from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
+from bijux_phylogenetics.errors import InvalidBranchLengthError, UnsupportedTreeFormatError
 from bijux_phylogenetics.identity import IDENTITY
+from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
 
@@ -29,6 +31,31 @@ def test_validate_tree_path_reports_expected_counts() -> None:
     assert report.internal_node_count == 3
     assert report.rooted is True
     assert report.ultrametric is True
+
+
+def test_newick_loader_raises_invalid_branch_length_error() -> None:
+    try:
+        loads_newick("((A:abc,B:0.2):0.3,C:0.4);")
+    except InvalidBranchLengthError as error:
+        assert error.code == "invalid_branch_length_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected InvalidBranchLengthError")
+
+
+def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -> None:
+    path = tmp_path / "tree.txt"
+    path.write_text("not a tree\n", encoding="utf-8")
+    exit_code = main(["validate", str(path), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"] == [
+        {
+            "code": UnsupportedTreeFormatError.code,
+            "message": f"unsupported tree format for {path}",
+        }
+    ]
 
 
 def test_compare_tree_paths_reports_nonzero_distance() -> None:

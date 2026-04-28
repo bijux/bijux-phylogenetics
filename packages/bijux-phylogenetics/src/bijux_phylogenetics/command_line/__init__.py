@@ -12,8 +12,9 @@ from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
+from bijux_phylogenetics.errors import PhylogeneticsError
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
-from bijux_phylogenetics.results import build_command_result
+from bijux_phylogenetics.results import build_command_result, build_error_result
 
 
 def _json_ready(value: Any) -> Any:
@@ -51,6 +52,42 @@ def _print_commands(*, output_format: str) -> None:
         return
     for command in _json_ready(payload.data)["commands"]:
         print(f"{command['name']}: {command['domain']} - {command['summary']}")
+
+
+def _json_requested(args: Any) -> bool:
+    return bool(getattr(args, "json", False) or getattr(args, "format", "") == "json")
+
+
+def _command_inputs(args: Any) -> list[Path | str]:
+    if args.command == "commands":
+        return []
+    if args.command in {"validate", "inspect", "diagnose"}:
+        return [args.tree]
+    if args.command == "normalize":
+        return [args.tree, args.out]
+    if args.command == "compare":
+        return [args.left, args.right]
+    if args.command == "annotate":
+        return [args.tree, args.metadata]
+    if args.command == "render":
+        inputs = [args.tree, args.out]
+        if args.metadata is not None:
+            inputs.append(args.metadata)
+        return inputs
+    if args.command == "evidence":
+        return [args.run_root, args.out]
+    if args.command == "report":
+        inputs = [args.tree, args.out]
+        if args.alignment is not None:
+            inputs.append(args.alignment)
+        if args.traits is not None:
+            inputs.append(args.traits)
+        if args.metadata is not None:
+            inputs.append(args.metadata)
+        return inputs
+    if args.command == "adapter":
+        return [args.adapter_name]
+    return []
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -253,6 +290,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "adapter":
             parser.exit(status=2, message=f"adapter is not implemented yet for {args.adapter_name}\n")
+    except PhylogeneticsError as error:
+        if _json_requested(args):
+            _print_result(
+                build_error_result(command=args.command, inputs=_command_inputs(args), error=error),
+                json_output=True,
+            )
+            return 2
+        parser.exit(status=2, message=f"{error.code}: {error.message}\n")
     except FileNotFoundError as error:
         parser.exit(status=2, message=f"{error}\n")
     except ValueError as error:

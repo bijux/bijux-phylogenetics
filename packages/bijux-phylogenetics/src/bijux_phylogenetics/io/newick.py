@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.errors import InvalidBranchLengthError, TreeParseError
 
 
 class _NewickParser:
@@ -12,13 +13,16 @@ class _NewickParser:
         self.index = 0
 
     def parse(self) -> PhyloTree:
-        node = self._parse_subtree()
+        try:
+            node = self._parse_subtree()
+        except ValueError as error:
+            raise TreeParseError(str(error)) from error
         self._skip_whitespace()
         if self._peek() == ";":
             self.index += 1
         self._skip_whitespace()
         if self.index != self.length:
-            raise ValueError(f"unexpected trailing content in Newick string at position {self.index}")
+            raise TreeParseError(f"unexpected trailing content in Newick string at position {self.index}")
         return PhyloTree(root=node, source_format="newick")
 
     def _parse_subtree(self) -> TreeNode:
@@ -36,7 +40,7 @@ class _NewickParser:
                 if token == ")":
                     self.index += 1
                     break
-                raise ValueError(f"expected ',' or ')' in Newick string at position {self.index}")
+                raise TreeParseError(f"expected ',' or ')' in Newick string at position {self.index}")
             name = self._parse_label()
             branch_length = self._parse_branch_length()
             return TreeNode(name=name or None, branch_length=branch_length, children=children)
@@ -63,8 +67,11 @@ class _NewickParser:
             self.index += 1
         raw_value = self.text[start:self.index].strip()
         if not raw_value:
-            raise ValueError(f"missing branch length in Newick string at position {start}")
-        return float(raw_value)
+            raise InvalidBranchLengthError(f"missing branch length in Newick string at position {start}")
+        try:
+            return float(raw_value)
+        except ValueError as error:
+            raise InvalidBranchLengthError(f"invalid branch length '{raw_value}' in Newick string") from error
 
     def _skip_whitespace(self) -> None:
         while self.index < self.length and self.text[self.index].isspace():
@@ -86,4 +93,3 @@ def load_newick(path: Path) -> PhyloTree:
     if not path.exists():
         raise FileNotFoundError(f"tree file not found: {path}")
     return loads_newick(path.read_text(encoding="utf-8"))
-

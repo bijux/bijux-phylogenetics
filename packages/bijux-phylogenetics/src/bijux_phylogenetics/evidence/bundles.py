@@ -5,6 +5,8 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.errors import EvidenceContractError
+
 
 @dataclass(slots=True)
 class EvidenceFile:
@@ -32,9 +34,9 @@ def _sha256(path: Path) -> str:
 def bundle_directory(run_root: Path, output_root: Path) -> EvidenceBundleReport:
     """Copy a run directory into a checksummed evidence bundle."""
     if not run_root.exists():
-        raise FileNotFoundError(f"run directory not found: {run_root}")
+        raise EvidenceContractError(f"run directory not found: {run_root}")
     if not run_root.is_dir():
-        raise ValueError(f"run root is not a directory: {run_root}")
+        raise EvidenceContractError(f"run root is not a directory: {run_root}")
 
     files_dir = output_root / "files"
     if output_root.exists():
@@ -81,4 +83,3 @@ def bundle_directory(run_root: Path, output_root: Path) -> EvidenceBundleReport:
         file_count=len(bundled_files),
         files=bundled_files,
     )
-

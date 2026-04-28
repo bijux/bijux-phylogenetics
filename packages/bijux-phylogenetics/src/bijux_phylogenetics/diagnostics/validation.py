@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.errors import UnsupportedTreeFormatError
 from bijux_phylogenetics.io.newick import load_newick
 
 
@@ -43,7 +44,7 @@ def _load_tree(path: Path) -> PhyloTree:
     suffix = path.suffix.lower()
     if suffix in {".nwk", ".newick", ".tree", ".tre", ""}:
         return load_newick(path)
-    raise NotImplementedError(f"unsupported tree format for {path}")
+    raise UnsupportedTreeFormatError(f"unsupported tree format for {path}")
 
 
 def _count_polytomies(tree: PhyloTree) -> int:
