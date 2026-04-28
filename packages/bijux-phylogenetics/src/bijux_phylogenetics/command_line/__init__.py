@@ -157,7 +157,7 @@ def _command_inputs(args: Any) -> list[Path | str]:
         return inputs
     if args.command == "evidence":
         if args.evidence_command == "bundle":
-            return [args.run_root, args.out]
+            return [*args.inputs, *args.outputs]
         return [args.bundle_root]
     if args.command == "report":
         if args.report_command == "tree":
@@ -314,8 +314,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     evidence = subparsers.add_parser(get_command_spec("evidence").name, help=get_command_spec("evidence").summary)
     evidence_subparsers = evidence.add_subparsers(dest="evidence_command", required=True)
-    evidence_bundle = evidence_subparsers.add_parser("bundle", help="Bundle a run directory as evidence.")
-    evidence_bundle.add_argument("run_root", type=Path)
+    evidence_bundle = evidence_subparsers.add_parser(
+        "bundle",
+        help="Bundle explicit phylogenetics inputs and outputs as evidence.",
+    )
+    evidence_bundle.add_argument("--inputs", nargs="+", required=True, type=Path)
+    evidence_bundle.add_argument("--outputs", nargs="+", required=True, type=Path)
     evidence_bundle.add_argument("--out", required=True, type=Path)
     evidence_bundle.add_argument("--json", action="store_true", help="Emit the bundle report as JSON.")
     _add_manifest_argument(evidence_bundle)
@@ -778,14 +782,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "evidence":
             if args.evidence_command == "bundle":
-                report = bundle_directory(args.run_root, args.out)
-                outputs = _finalize_outputs(args, command="evidence", inputs=[args.run_root], outputs=[args.out])
+                report = bundle_directory(args.inputs, args.outputs, args.out)
+                inputs = [*args.inputs, *args.outputs]
+                outputs = _finalize_outputs(args, command="evidence", inputs=inputs, outputs=[args.out])
                 _print_result(
                     build_command_result(
                         command="evidence",
-                        inputs=[args.run_root],
+                        inputs=inputs,
                         outputs=outputs,
-                        metrics={"file_count": report.file_count},
+                        metrics={
+                            "file_count": report.file_count,
+                            "input_file_count": report.input_file_count,
+                            "output_file_count": report.output_file_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,

@@ -901,33 +901,47 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
 
 
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
-    run_root = tmp_path / "run"
-    run_root.mkdir()
-    (run_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
-    report = bundle_directory(run_root, tmp_path / "bundle")
-    assert report.file_count == 1
+    inputs_root = tmp_path / "inputs"
+    outputs_root = tmp_path / "outputs"
+    inputs_root.mkdir()
+    outputs_root.mkdir()
+    (inputs_root / "tree.nwk").write_text("(A:0.1,B:0.1);\n", encoding="utf-8")
+    (outputs_root / "report.html").write_text("<html></html>\n", encoding="utf-8")
+    report = bundle_directory([inputs_root], [outputs_root], tmp_path / "bundle")
+    assert report.file_count == 2
+    assert report.input_file_count == 1
+    assert report.output_file_count == 1
     manifest = (tmp_path / "bundle" / "manifest.json").read_text(encoding="utf-8")
-    assert "artifact.txt" in manifest
+    assert "tree.nwk" in manifest
+    assert (tmp_path / "bundle" / "checksums.tsv").exists()
+    assert (tmp_path / "bundle" / "environment.json").exists()
+    assert (tmp_path / "bundle" / "README.md").exists()
 
 
 def test_validate_bundle_accepts_matching_checksums(tmp_path: Path) -> None:
-    run_root = tmp_path / "run"
-    run_root.mkdir()
-    (run_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    inputs_root = tmp_path / "inputs"
+    outputs_root = tmp_path / "outputs"
+    inputs_root.mkdir()
+    outputs_root.mkdir()
+    (inputs_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    (outputs_root / "summary.txt").write_text("result\n", encoding="utf-8")
     bundle_root = tmp_path / "bundle"
-    bundle_directory(run_root, bundle_root)
+    bundle_directory([inputs_root], [outputs_root], bundle_root)
     report = validate_bundle(bundle_root)
     assert report.valid is True
     assert report.mismatches == []
 
 
 def test_validate_bundle_detects_checksum_drift(tmp_path: Path) -> None:
-    run_root = tmp_path / "run"
-    run_root.mkdir()
-    (run_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    inputs_root = tmp_path / "inputs"
+    outputs_root = tmp_path / "outputs"
+    inputs_root.mkdir()
+    outputs_root.mkdir()
+    (inputs_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    (outputs_root / "summary.txt").write_text("result\n", encoding="utf-8")
     bundle_root = tmp_path / "bundle"
-    bundle_directory(run_root, bundle_root)
-    (bundle_root / "files" / "artifact.txt").write_text("drift\n", encoding="utf-8")
+    bundle_directory([inputs_root], [outputs_root], bundle_root)
+    (bundle_root / "outputs" / "outputs" / "summary.txt").write_text("drift\n", encoding="utf-8")
     report = validate_bundle(bundle_root)
     assert report.valid is False
     assert report.mismatches[0].reason in {"checksum_mismatch", "size_mismatch"}
@@ -1061,16 +1075,33 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
 
 
 def test_cli_evidence_bundle_and_validate_json_output(tmp_path: Path, capsys) -> None:
-    run_root = tmp_path / "run"
+    inputs_root = tmp_path / "inputs"
+    outputs_root = tmp_path / "outputs"
     bundle_root = tmp_path / "bundle"
-    run_root.mkdir()
-    (run_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    inputs_root.mkdir()
+    outputs_root.mkdir()
+    (inputs_root / "artifact.txt").write_text("evidence\n", encoding="utf-8")
+    (outputs_root / "summary.txt").write_text("result\n", encoding="utf-8")
 
-    exit_code = main(["evidence", "bundle", str(run_root), "--out", str(bundle_root), "--json"])
+    exit_code = main(
+        [
+            "evidence",
+            "bundle",
+            "--inputs",
+            str(inputs_root),
+            "--outputs",
+            str(outputs_root),
+            "--out",
+            str(bundle_root),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     bundle_payload = json.loads(captured.out)
     assert exit_code == 0
     assert bundle_payload["status"] == "ok"
+    assert bundle_payload["metrics"]["input_file_count"] == 1
+    assert bundle_payload["metrics"]["output_file_count"] == 1
 
     exit_code = main(["evidence", "validate", str(bundle_root), "--json"])
     captured = capsys.readouterr()
