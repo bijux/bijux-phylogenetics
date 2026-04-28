@@ -6,11 +6,13 @@ from pathlib import Path
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
+from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import (
     DuplicateTaxonError,
     InvalidBranchLengthError,
+    MetadataJoinError,
     UnnamedTipError,
     UnsupportedTreeFormatError,
 )
@@ -41,6 +43,34 @@ def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:
         ("A.B-1", "A.B-1"),
     ]
     assert dumps_newick(tree) == "(A.B-1:0.3,'Homo sapiens':0.1,'NCBI|123/45':0.2);"
+
+
+def test_metadata_inspect_reports_taxon_contract() -> None:
+    report = inspect_metadata_table(FIXTURES / "example_metadata.tsv")
+    assert report.format == "tsv"
+    assert report.row_count == 4
+    assert report.column_count == 3
+    assert report.taxon_column == "taxon"
+    assert report.taxa == ["A", "B", "C", "D"]
+
+
+def test_metadata_inspect_rejects_duplicate_taxa() -> None:
+    try:
+        inspect_metadata_table(FIXTURES / "example_metadata_duplicate.tsv")
+    except MetadataJoinError as error:
+        assert error.code == "metadata_join_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected MetadataJoinError")
+
+
+def test_metadata_inspect_rejects_missing_requested_taxon_column() -> None:
+    try:
+        inspect_metadata_table(FIXTURES / "example_metadata_missing_taxon.csv", taxon_column="taxon")
+    except MetadataJoinError as error:
+        assert error.code == "metadata_join_error"
+        assert error.message == "missing taxon column 'taxon'"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected MetadataJoinError")
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
@@ -269,6 +299,17 @@ def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
     assert report.extra_table_entries == ["E"]
 
 
+def test_cli_metadata_inspect_json_output(capsys) -> None:
+    exit_code = main(["metadata", "inspect", str(FIXTURES / "example_metadata.tsv"), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["command"] == "metadata"
+    assert payload["data"]["taxon_column"] == "taxon"
+    assert payload["metrics"]["taxon_count"] == 4
+
+
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:
     output = tmp_path / "report.html"
     result = render_phylogenetics_report(
@@ -312,6 +353,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert command_names == [
+        "metadata",
         "inspect",
         "validate",
         "normalize",

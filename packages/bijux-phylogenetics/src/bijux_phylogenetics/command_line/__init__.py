@@ -9,6 +9,7 @@ from typing import Any
 
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
+from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
@@ -64,6 +65,8 @@ def _json_requested(args: Any) -> bool:
 def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "commands":
         return []
+    if args.command == "metadata":
+        return [args.table]
     if args.command in {"validate", "inspect", "diagnose"}:
         return [args.tree]
     if args.command == "normalize":
@@ -107,6 +110,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     commands = subparsers.add_parser("commands", help="List the registered command taxonomy.")
     commands.add_argument("--format", choices=("text", "json"), default="text")
+
+    metadata = subparsers.add_parser(get_command_spec("metadata").name, help=get_command_spec("metadata").summary)
+    metadata_subparsers = metadata.add_subparsers(dest="metadata_command", required=True)
+    metadata_inspect = metadata_subparsers.add_parser("inspect", help="Inspect a metadata table keyed by taxon.")
+    metadata_inspect.add_argument("table", type=Path)
+    metadata_inspect.add_argument("--taxon-column")
+    metadata_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -183,6 +193,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     try:
         if args.command == "commands":
             _print_commands(output_format=args.format)
+            return 0
+        if args.command == "metadata":
+            report = inspect_metadata_table(args.table, taxon_column=args.taxon_column)
+            _print_result(
+                build_command_result(
+                    command="metadata",
+                    inputs=[args.table],
+                    metrics={
+                        "row_count": report.row_count,
+                        "column_count": report.column_count,
+                        "taxon_count": len(report.taxa),
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "validate":
             report = validate_tree_path(

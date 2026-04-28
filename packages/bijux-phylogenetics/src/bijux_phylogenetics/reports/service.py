@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.alignment import AlignmentSummary
-from bijux_phylogenetics.core.traits import load_tsv_summary
+from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.fasta import summarise_fasta
@@ -41,7 +41,7 @@ def summarise_alignment_path(path: Path) -> AlignmentSummary:
 
 def annotate_tree_against_table(tree_path: Path, table_path: Path) -> TableLinkageReport:
     """Summarise how a TSV table links against tree tips."""
-    table = load_tsv_summary(table_path)
+    table = load_taxon_table(table_path)
     full_tip_names = set(_load_tree(tree_path).tip_names)
     missing = sorted(full_tip_names - table.indexed_values)
     extras = sorted(table.indexed_values - full_tip_names)
