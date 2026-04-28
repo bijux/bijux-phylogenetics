@@ -74,3 +74,23 @@ def test_cli_validate_json_output(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["tip_count"] == 4
+
+
+def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
+    exit_code = main(["commands", "--format", "json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    command_names = [item["name"] for item in payload]
+    assert exit_code == 0
+    assert command_names == [
+        "inspect",
+        "validate",
+        "normalize",
+        "compare",
+        "annotate",
+        "diagnose",
+        "render",
+        "report",
+        "evidence",
+        "adapter",
+    ]
