@@ -1442,6 +1442,25 @@ def test_cli_alignment_invalid_json_output(capsys) -> None:
     assert payload["data"] == [{"character": "Z", "identifier": "A", "position": 5}]
 
 
+def test_cli_alignment_duplicates_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "duplicates",
+            str(fixture("example_alignment_duplicates.fasta")),
+            "--identity-threshold",
+            "0.875",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["duplicate_group_count"] == 1
+    assert payload["metrics"]["near_duplicate_count"] == 5
+    assert payload["data"]["duplicate_sequence_groups"][0]["identifiers"] == ["A", "B"]
+
+
 def test_cli_compare_support_json_output(capsys) -> None:
     exit_code = main(
         [

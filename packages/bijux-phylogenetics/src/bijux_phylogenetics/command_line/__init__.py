@@ -18,7 +18,11 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
     write_root_to_tip_tsv,
 )
 from bijux_phylogenetics.io.fasta import build_alignment_quality_report, link_alignment_to_tree, summarise_fasta
-from bijux_phylogenetics.io.fasta import detect_invalid_alignment_characters
+from bijux_phylogenetics.io.fasta import (
+    detect_identical_duplicate_sequences,
+    detect_invalid_alignment_characters,
+    detect_near_duplicate_sequences,
+)
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
@@ -149,6 +153,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.alignment_command == "inspect":
             return [args.alignment]
         if args.alignment_command == "composition":
+            return [args.alignment]
+        if args.alignment_command == "duplicates":
             return [args.alignment]
         if args.alignment_command == "invalid":
             return [args.alignment]
@@ -301,6 +307,14 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_invalid.add_argument("--alphabet", choices=("dna", "rna", "protein"), required=True)
     alignment_invalid.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_invalid)
+    alignment_duplicates = alignment_subparsers.add_parser(
+        "duplicates",
+        help="Report identical and near-duplicate aligned sequences.",
+    )
+    alignment_duplicates.add_argument("alignment", type=Path)
+    alignment_duplicates.add_argument("--identity-threshold", type=float, default=0.95)
+    alignment_duplicates.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_duplicates)
     alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
@@ -688,6 +702,31 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={"invalid_character_count": len(report), "alphabet": args.alphabet},
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "duplicates":
+                duplicates = detect_identical_duplicate_sequences(args.alignment)
+                near_duplicates = detect_near_duplicate_sequences(
+                    args.alignment,
+                    identity_threshold=args.identity_threshold,
+                )
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "duplicate_group_count": len(duplicates),
+                            "near_duplicate_count": len(near_duplicates),
+                            "identity_threshold": args.identity_threshold,
+                        },
+                        data={
+                            "duplicate_sequence_groups": duplicates,
+                            "near_duplicate_pairs": near_duplicates,
+                        },
                     ),
                     json_output=args.json,
                 )
