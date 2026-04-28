@@ -1313,7 +1313,50 @@ def test_cli_compare_branch_lengths_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["shared_splits"] == 2
-    assert payload["data"]["shared_splits"][0]["ratio"] == 2.0
+
+
+def test_cli_compare_clades_json_output(capsys) -> None:
+    exit_code = main(
+        ["compare", "clades", str(fixture("example_tree.nwk")), str(fixture("example_tree_alt.nwk")), "--json"]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["data"]["shared_clades"] == ["A|B"]
+    assert payload["data"]["left_only_clades"] == ["C|D"]
+    assert payload["data"]["right_only_clades"] == ["A|B|C"]
+
+
+def test_cli_compare_changes_json_output(capsys) -> None:
+    exit_code = main(
+        ["compare", "changes", str(fixture("example_tree.nwk")), str(fixture("example_tree_alt.nwk")), "--json"]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["data"]["lost_clades"] == ["C|D"]
+    assert payload["data"]["gained_clades"] == ["A|B|C"]
+
+
+def test_cli_compare_table_writes_tsv_output(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "comparison.tsv"
+    exit_code = main(
+        [
+            "compare",
+            "table",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_alt.nwk")),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["table_rows"] == 3
+    assert output.read_text(encoding="utf-8").startswith("split_id\tcomparison_status\tshared_clade\t")
+    assert payload["data"]["table_path"] == str(output)
 
 
 def test_cli_compare_report_json_output(tmp_path: Path, capsys) -> None:

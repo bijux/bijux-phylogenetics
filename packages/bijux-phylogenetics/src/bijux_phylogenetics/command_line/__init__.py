@@ -27,7 +27,14 @@ from bijux_phylogenetics.core.pruning import (
 )
 from bijux_phylogenetics.core.traits import link_tree_to_traits, prune_traits_to_tree, validate_traits_table
 from bijux_phylogenetics.core.traits import detect_missing_trait_values
-from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
+from bijux_phylogenetics.compare.topology import (
+    compare_branch_lengths,
+    compare_clade_sets,
+    compare_support_values,
+    compare_tree_paths,
+    detect_clade_changes,
+    write_tree_comparison_table,
+)
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
@@ -789,6 +796,49 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.left == "clades":
+                if args.third is None:
+                    parser.exit(status=2, message="compare clades requires two tree paths\n")
+                left_path = Path(args.right)
+                right_path = Path(args.third)
+                report = compare_clade_sets(left_path, right_path)
+                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                _print_result(
+                    build_command_result(
+                        command="compare",
+                        inputs=[left_path, right_path],
+                        outputs=outputs,
+                        metrics={
+                            "shared_clades": len(report.shared_clades),
+                            "left_only_clades": len(report.left_only_clades),
+                            "right_only_clades": len(report.right_only_clades),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.left == "changes":
+                if args.third is None:
+                    parser.exit(status=2, message="compare changes requires two tree paths\n")
+                left_path = Path(args.right)
+                right_path = Path(args.third)
+                report = detect_clade_changes(left_path, right_path)
+                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                _print_result(
+                    build_command_result(
+                        command="compare",
+                        inputs=[left_path, right_path],
+                        outputs=outputs,
+                        metrics={
+                            "lost_clades": len(report.lost_clades),
+                            "gained_clades": len(report.gained_clades),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.left == "branch-lengths":
                 if args.third is None:
                     parser.exit(status=2, message="compare branch-lengths requires two tree paths\n")
@@ -803,6 +853,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={"shared_splits": len(report.shared_splits)},
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.left == "table":
+                if args.third is None:
+                    parser.exit(status=2, message="compare table requires two tree paths\n")
+                if args.out is None:
+                    parser.exit(status=2, message="compare table requires --out\n")
+                left_path = Path(args.right)
+                right_path = Path(args.third)
+                output_path = write_tree_comparison_table(args.out, left_path, right_path)
+                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path], outputs=[output_path])
+                _print_result(
+                    build_command_result(
+                        command="compare",
+                        inputs=[left_path, right_path],
+                        outputs=outputs,
+                        metrics={"table_rows": sum(1 for _ in output_path.read_text(encoding='utf-8').splitlines()[1:])},
+                        data={"table_path": output_path},
                     ),
                     json_output=args.json,
                 )
