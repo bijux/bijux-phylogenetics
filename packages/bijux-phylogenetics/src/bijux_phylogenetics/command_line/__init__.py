@@ -102,10 +102,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
+    validate.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     inspect = subparsers.add_parser(get_command_spec("inspect").name, help=get_command_spec("inspect").summary)
     inspect.add_argument("tree", type=Path)
+    inspect.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     normalize = subparsers.add_parser(get_command_spec("normalize").name, help=get_command_spec("normalize").summary)
@@ -159,7 +161,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             _print_commands(output_format=args.format)
             return 0
         if args.command == "validate":
-            report = validate_tree_path(args.tree)
+            report = validate_tree_path(args.tree, source_format=args.format)
             _print_result(
                 build_command_result(
                     command="validate",
@@ -176,7 +178,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "inspect":
-            report = inspect_tree_path(args.tree)
+            report = inspect_tree_path(args.tree, source_format=args.format)
             _print_result(
                 build_command_result(
                     command="inspect",

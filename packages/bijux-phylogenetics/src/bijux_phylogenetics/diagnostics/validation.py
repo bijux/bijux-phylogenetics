@@ -5,8 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import UnsupportedTreeFormatError
-from bijux_phylogenetics.io.newick import load_newick
+from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)
@@ -40,11 +39,8 @@ class TreeInspectionReport:
     taxa_preview: list[str]
 
 
-def _load_tree(path: Path) -> PhyloTree:
-    suffix = path.suffix.lower()
-    if suffix in {".nwk", ".newick", ".tree", ".tre", ""}:
-        return load_newick(path)
-    raise UnsupportedTreeFormatError(f"unsupported tree format for {path}")
+def _load_tree(path: Path, *, source_format: str | None = None) -> PhyloTree:
+    return load_tree(path, source_format=source_format)
 
 
 def _count_polytomies(tree: PhyloTree) -> int:
@@ -75,9 +71,9 @@ def _ultrametric(tree: PhyloTree, *, tolerance: float = 1e-9) -> bool | None:
     return max(numeric_lengths) - min(numeric_lengths) <= tolerance
 
 
-def validate_tree_path(path: Path) -> TreeValidationReport:
+def validate_tree_path(path: Path, *, source_format: str | None = None) -> TreeValidationReport:
     """Validate a tree file and produce a diagnostic report."""
-    tree = _load_tree(path)
+    tree = _load_tree(path, source_format=source_format)
     rooted = len(tree.root.children) == 2
     has_complete, zero_count, negative_count = _branch_length_health(tree)
     missing_taxa, duplicate_taxa = _duplicate_taxa(tree)
@@ -109,9 +105,9 @@ def validate_tree_path(path: Path) -> TreeValidationReport:
     )
 
 
-def inspect_tree_path(path: Path) -> TreeInspectionReport:
+def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeInspectionReport:
     """Inspect a tree file and return lightweight summary metrics."""
-    tree = _load_tree(path)
+    tree = _load_tree(path, source_format=source_format)
     lengths = [length for length in tree.root_to_tip_lengths() if length is not None]
     return TreeInspectionReport(
         path=path,

@@ -13,6 +13,7 @@ from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
+from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
 
 
@@ -59,6 +60,12 @@ def test_phyloxml_loader_reads_annotated_tree_fixture() -> None:
     assert tree.tip_count == 3
 
 
+def test_detect_tree_format_uses_filename_suffixes() -> None:
+    assert detect_tree_format(Path("x.nwk")) == "newick"
+    assert detect_tree_format(Path("x.nex")) == "nexus"
+    assert detect_tree_format(Path("x.phyloxml")) == "phyloxml"
+
+
 def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -> None:
     path = tmp_path / "tree.txt"
     path.write_text("not a tree\n", encoding="utf-8")
@@ -73,6 +80,16 @@ def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -
             "message": f"unsupported tree format for {path}",
         }
     ]
+
+
+def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
+    exit_code = main(["inspect", str(FIXTURES / "example_tree.nex"), "--format", "nexus", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["data"]["source_format"] == "nexus"
+    assert payload["metrics"]["tip_count"] == 4
 
 
 def test_compare_tree_paths_reports_nonzero_distance() -> None:
