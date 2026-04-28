@@ -185,6 +185,30 @@ def test_alignment_inspect_reports_per_sequence_missingness() -> None:
         ("B", 2 / 6),
         ("C", 0.0),
     ]
+    assert [(row.position, row.missing_fraction) for row in report.per_site_missingness] == [
+        (1, 0.0),
+        (2, 0.0),
+        (3, 0.0),
+        (4, 0.0),
+        (5, 2 / 3),
+        (6, 2 / 3),
+    ]
+    assert report.all_gap_columns == []
+    assert report.all_missing_columns == []
+
+
+def test_alignment_inspect_reports_site_missingness_and_empty_columns() -> None:
+    report = summarise_fasta(fixture("example_alignment_site_missingness.fasta"))
+    assert report.alignment_length == 5
+    assert [(row.position, row.missing_fraction) for row in report.per_site_missingness] == [
+        (1, 0.0),
+        (2, 0.0),
+        (3, 1.0),
+        (4, 1.0),
+        (5, 0.5),
+    ]
+    assert report.all_gap_columns == [2]
+    assert report.all_missing_columns == [3, 4]
 
 
 def test_alignment_inspect_rejects_unequal_lengths() -> None:

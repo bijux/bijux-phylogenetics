@@ -20,6 +20,14 @@ class SequenceMissingness:
     missing_fraction: float
 
 
+@dataclass(frozen=True, slots=True)
+class SiteMissingness:
+    """Missing-data fraction for one alignment column."""
+
+    position: int
+    missing_fraction: float
+
+
 @dataclass(slots=True)
 class AlignmentSummary:
     """Summary of an alignment input."""
@@ -33,6 +41,9 @@ class AlignmentSummary:
     missing_data_fraction: float
     gap_fraction: float
     per_sequence_missingness: list[SequenceMissingness]
+    per_site_missingness: list[SiteMissingness]
+    all_gap_columns: list[int]
+    all_missing_columns: list[int]
     constant_site_count: int
     variable_site_count: int
     parsimony_informative_site_count: int

@@ -7,6 +7,7 @@ from bijux_phylogenetics.core.alignment import (
     AlignmentRecord,
     AlignmentSummary,
     SequenceMissingness,
+    SiteMissingness,
 )
 from bijux_phylogenetics.errors import AlignmentTaxonMismatchError, InvalidAlignmentError
 from bijux_phylogenetics.io.trees import load_tree
@@ -74,11 +75,20 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
         )
         for record in records
     ]
+    per_site_missingness: list[SiteMissingness] = []
+    all_gap_columns: list[int] = []
+    all_missing_columns: list[int] = []
 
     constant_site_count = 0
     variable_site_count = 0
     parsimony_informative_site_count = 0
-    for column in zip(*(record.sequence for record in records), strict=True):
+    for position, column in enumerate(zip(*(record.sequence for record in records), strict=True), start=1):
+        missing_fraction = sum(1 for residue in column if residue in _MISSING_CHARACTERS) / len(records)
+        per_site_missingness.append(SiteMissingness(position=position, missing_fraction=missing_fraction))
+        if all(residue in _GAP_CHARACTERS for residue in column):
+            all_gap_columns.append(position)
+        if all(residue in _MISSING_CHARACTERS for residue in column):
+            all_missing_columns.append(position)
         observed = [
             residue.upper()
             for residue in column
@@ -102,6 +112,9 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
         missing_data_fraction=missing_count / total_sites,
         gap_fraction=gap_count / total_sites,
         per_sequence_missingness=per_sequence_missingness,
+        per_site_missingness=per_site_missingness,
+        all_gap_columns=all_gap_columns,
+        all_missing_columns=all_missing_columns,
         constant_site_count=constant_site_count,
         variable_site_count=variable_site_count,
         parsimony_informative_site_count=parsimony_informative_site_count,
