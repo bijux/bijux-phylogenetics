@@ -1409,6 +1409,21 @@ def test_cli_alignment_quality_json_output(capsys) -> None:
     assert payload["warnings"] == ["alignment contains identical duplicate sequences"]
 
 
+def test_cli_alignment_composition_json_output(capsys) -> None:
+    exit_code = main(["alignment", "composition", str(fixture("example_alignment.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["alphabet"] == "dna"
+    assert payload["data"]["whole_alignment_gc_content"] == 0.5
+    assert payload["data"]["nucleotide_composition"] == {
+        "A": 0.3125,
+        "C": 0.25,
+        "G": 0.25,
+        "T": 0.1875,
+    }
+
+
 def test_cli_compare_support_json_output(capsys) -> None:
     exit_code = main(
         [

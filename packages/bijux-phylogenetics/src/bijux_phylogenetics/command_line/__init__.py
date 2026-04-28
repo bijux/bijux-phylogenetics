@@ -147,6 +147,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "alignment":
         if args.alignment_command == "inspect":
             return [args.alignment]
+        if args.alignment_command == "composition":
+            return [args.alignment]
         if args.alignment_command == "quality":
             return [args.alignment]
         return [args.tree, args.alignment]
@@ -281,6 +283,13 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_quality.add_argument("alignment", type=Path)
     alignment_quality.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_quality)
+    alignment_composition = alignment_subparsers.add_parser(
+        "composition",
+        help="Inspect inferred alphabet, composition, and GC content.",
+    )
+    alignment_composition.add_argument("alignment", type=Path)
+    alignment_composition.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_composition)
     alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
@@ -629,6 +638,31 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "near_duplicate_count": len(report.near_duplicate_pairs),
                         },
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "composition":
+                report = summarise_fasta(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "alphabet": report.inferred_alphabet,
+                            "sequence_count": report.sequence_count,
+                            "gc_sequence_count": len(report.per_sequence_gc_content),
+                        },
+                        data={
+                            "path": report.path,
+                            "inferred_alphabet": report.inferred_alphabet,
+                            "nucleotide_composition": report.nucleotide_composition,
+                            "amino_acid_composition": report.amino_acid_composition,
+                            "per_sequence_gc_content": report.per_sequence_gc_content,
+                            "whole_alignment_gc_content": report.whole_alignment_gc_content,
+                        },
                     ),
                     json_output=args.json,
                 )
