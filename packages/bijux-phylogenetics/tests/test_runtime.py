@@ -7,6 +7,7 @@ import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
+from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
@@ -101,6 +102,14 @@ def test_traits_link_strict_mode_rejects_mismatch() -> None:
         assert error.code == "metadata_join_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected MetadataJoinError")
+
+
+def test_prune_tree_to_taxa_writes_expected_tip_set() -> None:
+    tree, report = prune_tree_to_taxa(FIXTURES / "example_tree.nwk", FIXTURES / "example_traits.tsv")
+    assert tree.tip_names == ["A", "B", "C"]
+    assert dumps_newick(tree) == "((A:0.1,B:0.1):0.2,C:0.3);"
+    assert report.kept_taxa == ["A", "B", "C"]
+    assert report.removed_taxa == ["D"]
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
@@ -381,6 +390,28 @@ def test_cli_traits_link_strict_mode_returns_typed_error(capsys) -> None:
     assert payload["errors"][0]["code"] == MetadataJoinError.code
 
 
+def test_cli_prune_writes_tree_and_pruned_taxa_report(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "tree.pruned.nwk"
+    exit_code = main(
+        [
+            "prune",
+            str(FIXTURES / "example_tree.nwk"),
+            "--keep-from",
+            str(FIXTURES / "example_traits.tsv"),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert output.read_text(encoding="utf-8").strip() == "((A:0.1,B:0.1):0.2,C:0.3);"
+    assert payload["data"]["removed_taxa"] == ["D"]
+    assert (tmp_path / "pruned_taxa.tsv").read_text(encoding="utf-8") == "taxon\nD\n"
+
+
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:
     output = tmp_path / "report.html"
     result = render_phylogenetics_report(
@@ -426,6 +457,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     assert command_names == [
         "metadata",
         "traits",
+        "prune",
         "inspect",
         "validate",
         "normalize",

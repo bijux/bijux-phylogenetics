@@ -30,6 +30,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("traits-report",),
     ),
     CommandSpec(
+        name="prune",
+        domain="tree-io",
+        summary="Prune a tree to taxa present in a metadata or traits table.",
+        inputs=("tree", "taxon-table"),
+        outputs=("pruned-tree", "pruned-taxa"),
+    ),
+    CommandSpec(
         name="inspect",
         domain="tree-io",
         summary="Inspect a tree and report high-level summary metrics.",

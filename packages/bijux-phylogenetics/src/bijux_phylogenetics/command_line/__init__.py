@@ -10,6 +10,7 @@ from typing import Any
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
+from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
@@ -72,6 +73,11 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.traits_command == "validate":
             return [args.table]
         return [args.tree, args.table]
+    if args.command == "prune":
+        inputs = [args.tree, args.keep_from, args.out]
+        if args.pruned_taxa_out is not None:
+            inputs.append(args.pruned_taxa_out)
+        return inputs
     if args.command in {"validate", "inspect", "diagnose"}:
         return [args.tree]
     if args.command == "normalize":
@@ -135,6 +141,14 @@ def build_parser() -> argparse.ArgumentParser:
     traits_link.add_argument("--taxon-column")
     traits_link.add_argument("--strict", action="store_true")
     traits_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+
+    prune = subparsers.add_parser(get_command_spec("prune").name, help=get_command_spec("prune").summary)
+    prune.add_argument("tree", type=Path)
+    prune.add_argument("--keep-from", required=True, type=Path)
+    prune.add_argument("--taxon-column")
+    prune.add_argument("--out", required=True, type=Path)
+    prune.add_argument("--pruned-taxa-out", type=Path)
+    prune.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -281,6 +295,25 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "tip_count": report.tip_count,
                         "internal_node_count": report.internal_node_count,
                         "polytomy_count": report.polytomy_count,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "prune":
+            tree, report = prune_tree_to_taxa(args.tree, args.keep_from, taxon_column=args.taxon_column)
+            output_path = write_newick(args.out, tree)
+            pruned_taxa_path = args.pruned_taxa_out or args.out.with_name("pruned_taxa.tsv")
+            write_pruned_taxa(pruned_taxa_path, report.removed_taxa)
+            _print_result(
+                build_command_result(
+                    command="prune",
+                    inputs=[args.tree, args.keep_from],
+                    outputs=[output_path, pruned_taxa_path],
+                    metrics={
+                        "kept_taxa": len(report.kept_taxa),
+                        "removed_taxa": len(report.removed_taxa),
                     },
                     data=report,
                 ),
