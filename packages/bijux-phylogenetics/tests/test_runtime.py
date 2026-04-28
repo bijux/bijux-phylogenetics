@@ -91,6 +91,11 @@ def test_metadata_inspect_reports_taxon_contract() -> None:
     assert report.column_count == 3
     assert report.taxon_column == "taxon"
     assert report.taxa == ["A", "B", "C", "D"]
+    assert [(row.name, row.missing_count, row.completeness_fraction) for row in report.column_completeness] == [
+        ("taxon", 0, 1.0),
+        ("species", 0, 1.0),
+        ("location", 0, 1.0),
+    ]
 
 
 def test_inspect_environment_reports_available_and_optional_dependencies() -> None:

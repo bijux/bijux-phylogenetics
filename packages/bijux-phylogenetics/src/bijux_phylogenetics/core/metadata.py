@@ -29,6 +29,15 @@ class TaxonTable:
 
 
 @dataclass(slots=True)
+class MetadataColumnCompleteness:
+    """Completeness summary for one metadata column."""
+
+    name: str
+    missing_count: int
+    completeness_fraction: float
+
+
+@dataclass(slots=True)
 class MetadataInspectionReport:
     """Stable summary of a metadata table keyed by taxon."""
 
@@ -39,6 +48,7 @@ class MetadataInspectionReport:
     columns: list[str]
     taxon_column: str
     taxa: list[str]
+    column_completeness: list[MetadataColumnCompleteness]
 
 
 def _detect_delimiter(path: Path) -> tuple[str, str]:
@@ -111,6 +121,15 @@ def load_taxon_table(path: Path, *, taxon_column: str | None = None) -> TaxonTab
 def inspect_metadata_table(path: Path, *, taxon_column: str | None = None) -> MetadataInspectionReport:
     """Inspect a metadata table and expose the stable taxon-key contract."""
     table = load_taxon_table(path, taxon_column=taxon_column)
+    row_count = max(table.row_count, 1)
+    column_completeness = [
+        MetadataColumnCompleteness(
+            name=column,
+            missing_count=sum(1 for row in table.rows if not row[column]),
+            completeness_fraction=sum(1 for row in table.rows if row[column]) / row_count,
+        )
+        for column in table.columns
+    ]
     return MetadataInspectionReport(
         path=table.path,
         format=table.format,
@@ -119,4 +138,5 @@ def inspect_metadata_table(path: Path, *, taxon_column: str | None = None) -> Me
         columns=table.columns,
         taxon_column=table.taxon_column,
         taxa=table.taxa,
+        column_completeness=column_completeness,
     )
