@@ -1242,6 +1242,37 @@ def test_inspect_tree_path_detects_internal_long_and_short_branch_outliers() -> 
     assert [warning.code for warning in short_report.tree_quality_warnings] == ["short_branches"]
 
 
+def test_inspect_tree_path_classifies_internal_support_and_name_labels() -> None:
+    support = inspect_tree_path(fixture("example_tree_support_mixed.nwk"))
+    names = inspect_tree_path(fixture("example_tree_named_clades.nwk"))
+    assert [(row.node, row.label, row.numeric_value) for row in support.likely_support_labels] == [
+        ("A|B", "0.95", 0.95),
+        ("A|B|C|D", "99", 99.0),
+        ("C|D", "88", 88.0),
+    ]
+    assert support.likely_named_internal_labels == []
+    assert [(row.node, row.label, row.interpretation) for row in names.likely_named_internal_labels] == [
+        ("A|B", "Mammals", "name"),
+        ("A|B|C|D", "Root", "name"),
+        ("C|D", "Birds", "name"),
+    ]
+    assert names.likely_support_labels == []
+
+
+def test_inspect_tree_path_detects_suspicious_and_mixed_support_scales() -> None:
+    invalid = inspect_tree_path(fixture("example_tree_support_invalid.nwk"))
+    mixed = inspect_tree_path(fixture("example_tree_support_mixed.nwk"))
+    assert invalid.suspicious_support_value_ranges == [
+        "support value 101 at A|B|C|D exceeds 100",
+        "support value 120 at A|B exceeds 100",
+        "support value -5 at C|D is negative",
+    ]
+    assert invalid.mixed_support_scales is False
+    assert mixed.suspicious_support_value_ranges == []
+    assert mixed.mixed_support_scales is True
+    assert [warning.code for warning in mixed.tree_quality_warnings] == ["mixed_support_scales"]
+
+
 def test_inspect_tree_path_detects_star_like_tree() -> None:
     report = inspect_tree_path(fixture("example_tree_star.nwk"))
     assert report.star_like is True

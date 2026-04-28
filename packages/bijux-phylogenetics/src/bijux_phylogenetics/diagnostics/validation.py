@@ -471,6 +471,55 @@ def _star_like(tree: PhyloTree) -> bool:
     return False
 
 
+def _parse_internal_label_numeric(label: str) -> float | None:
+    try:
+        return float(label)
+    except ValueError:
+        return None
+
+
+def _internal_label_diagnostics(
+    tree: PhyloTree,
+) -> tuple[list[InternalLabelInterpretation], list[InternalLabelInterpretation], list[str], bool]:
+    likely_support_labels: list[InternalLabelInterpretation] = []
+    likely_named_internal_labels: list[InternalLabelInterpretation] = []
+
+    for node in tree.iter_nodes():
+        if node.is_leaf() or node.name is None or not node.name.strip():
+            continue
+        numeric_value = _parse_internal_label_numeric(node.name.strip())
+        interpretation = InternalLabelInterpretation(
+            node=_node_signature(node),
+            label=node.name,
+            interpretation="support" if numeric_value is not None else "name",
+            numeric_value=None if numeric_value is None else round(numeric_value, 15),
+        )
+        if numeric_value is not None:
+            likely_support_labels.append(interpretation)
+        else:
+            likely_named_internal_labels.append(interpretation)
+
+    suspicious_ranges: list[str] = []
+    support_values = [row.numeric_value for row in likely_support_labels if row.numeric_value is not None]
+    for row in likely_support_labels:
+        if row.numeric_value is None:
+            continue
+        if row.numeric_value < 0:
+            suspicious_ranges.append(f"support value {row.numeric_value:g} at {row.node} is negative")
+        elif row.numeric_value > 100:
+            suspicious_ranges.append(f"support value {row.numeric_value:g} at {row.node} exceeds 100")
+
+    has_fraction_scale = any(0 <= value <= 1 for value in support_values)
+    has_percent_scale = any(1 < value <= 100 for value in support_values)
+    mixed_scales = has_fraction_scale and has_percent_scale
+    return (
+        sorted(likely_support_labels, key=lambda row: (row.node, row.label)),
+        sorted(likely_named_internal_labels, key=lambda row: (row.node, row.label)),
+        suspicious_ranges,
+        mixed_scales,
+    )
+
+
 def _tree_quality_warnings(
     tree: PhyloTree,
     *,
@@ -481,6 +530,8 @@ def _tree_quality_warnings(
     unusually_imbalanced: bool | None,
     long_branch_taxa: list[str],
     short_branch_outliers: list[BranchLengthOutlier],
+    suspicious_support_value_ranges: list[str],
+    mixed_support_scales: bool,
     star_like: bool,
     comb_like: bool,
 ) -> list[TreeQualityWarning]:
@@ -563,6 +614,26 @@ def _tree_quality_warnings(
                 penalty=5.0,
                 affected_taxa=[row.node for row in short_branch_outliers if row.branch_type == "terminal"],
                 affected_nodes=[row.node for row in short_branch_outliers if row.branch_type == "internal"],
+            )
+        )
+    if suspicious_support_value_ranges:
+        warnings.append(
+            TreeQualityWarning(
+                code="suspicious_support_ranges",
+                message="tree contains support-like internal labels outside standard probability or percentage ranges",
+                penalty=10.0,
+                affected_taxa=[],
+                affected_nodes=[],
+            )
+        )
+    if mixed_support_scales:
+        warnings.append(
+            TreeQualityWarning(
+                code="mixed_support_scales",
+                message="tree mixes support-like internal labels on probability and percentage scales",
+                penalty=5.0,
+                affected_taxa=[],
+                affected_nodes=[],
             )
         )
     if star_like:
@@ -714,6 +785,9 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     unusually_imbalanced = _unusually_imbalanced(tree)
     long_branch_taxa = _long_branch_taxa(tree)
     long_branch_outliers, short_branch_outliers = _branch_outliers(tree)
+    likely_support_labels, likely_named_internal_labels, suspicious_support_value_ranges, mixed_support_scales = (
+        _internal_label_diagnostics(tree)
+    )
     star_like = _star_like(tree)
     comb_like = _comb_like(tree)
     _, _, negative_branch_count = _branch_length_health(tree)
@@ -726,6 +800,8 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         unusually_imbalanced=unusually_imbalanced,
         long_branch_taxa=long_branch_taxa,
         short_branch_outliers=short_branch_outliers,
+        suspicious_support_value_ranges=suspicious_support_value_ranges,
+        mixed_support_scales=mixed_support_scales,
         star_like=star_like,
         comb_like=comb_like,
     )
@@ -778,10 +854,10 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         long_branch_taxa=long_branch_taxa,
         long_branch_outliers=long_branch_outliers,
         short_branch_outliers=short_branch_outliers,
-        suspicious_support_value_ranges=[],
-        mixed_support_scales=False,
-        likely_support_labels=[],
-        likely_named_internal_labels=[],
+        suspicious_support_value_ranges=suspicious_support_value_ranges,
+        mixed_support_scales=mixed_support_scales,
+        likely_support_labels=likely_support_labels,
+        likely_named_internal_labels=likely_named_internal_labels,
         star_like=star_like,
         comb_like=comb_like,
         tree_quality_score=_tree_quality_score(tree_quality_warnings),

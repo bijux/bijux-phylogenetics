@@ -11,8 +11,11 @@ from bijux_phylogenetics.errors import TreeParseError
 
 
 def _convert_clade(clade: Clade) -> TreeNode:
+    label = clade.name
+    if label is None and clade.confidence is not None:
+        label = format(float(clade.confidence), ".15g")
     return TreeNode(
-        name=clade.name,
+        name=label,
         branch_length=clade.branch_length,
         children=[_convert_clade(child) for child in clade.clades],
     )
