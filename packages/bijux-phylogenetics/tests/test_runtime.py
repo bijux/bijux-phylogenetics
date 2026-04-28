@@ -103,6 +103,15 @@ def test_inspect_tree_path_reports_exact_polytomy_nodes() -> None:
     assert report.polytomy_nodes == ["A|B|C"]
 
 
+def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
+    complete = inspect_tree_path(FIXTURES / "example_tree.nwk")
+    partial = inspect_tree_path(FIXTURES / "example_tree_partial_lengths.nwk")
+    absent = inspect_tree_path(FIXTURES / "example_tree_no_lengths.nwk")
+    assert complete.branch_length_status == "complete"
+    assert partial.branch_length_status == "partial"
+    assert absent.branch_length_status == "absent"
+
+
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
     try:
         loads_newick("((A:abc,B:0.2):0.3,C:0.4);")

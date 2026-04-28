@@ -17,6 +17,7 @@ class TreeValidationReport:
     internal_node_count: int
     rooted: bool
     has_complete_branch_lengths: bool
+    branch_length_status: str
     total_branch_length: float
     zero_length_branches: int
     negative_branch_lengths: int
@@ -42,6 +43,7 @@ class TreeInspectionReport:
     polytomy_count: int
     polytomy_nodes: list[str]
     has_branch_lengths: bool
+    branch_length_status: str
     total_branch_length: float
     min_root_to_tip: float | None
     max_root_to_tip: float | None
@@ -90,6 +92,15 @@ def _branch_length_health(tree: PhyloTree) -> tuple[bool, int, int]:
     return has_complete, zero_count, negative_count
 
 
+def _branch_length_status(tree: PhyloTree) -> str:
+    branch_lengths = [node.branch_length for node in tree.iter_nodes() if node is not tree.root]
+    if not branch_lengths or all(length is None for length in branch_lengths):
+        return "absent"
+    if all(length is not None for length in branch_lengths):
+        return "complete"
+    return "partial"
+
+
 def _duplicate_taxa(tree: PhyloTree) -> tuple[int, list[str]]:
     names = [name for name in tree.tip_names if name]
     counts = Counter(names)
@@ -126,6 +137,7 @@ def validate_tree_path(
     tree = _load_tree(path, source_format=source_format)
     rooted = len(tree.root.children) == 2
     has_complete, zero_count, negative_count = _branch_length_health(tree)
+    branch_length_status = _branch_length_status(tree)
     missing_taxa, duplicate_taxa = _duplicate_taxa(tree)
     if duplicate_taxa and not allow_duplicates:
         raise DuplicateTaxonError(f"duplicate tip labels found: {', '.join(duplicate_taxa)}")
@@ -149,6 +161,7 @@ def validate_tree_path(
         internal_node_count=tree.internal_node_count,
         rooted=rooted,
         has_complete_branch_lengths=has_complete,
+        branch_length_status=branch_length_status,
         total_branch_length=tree.total_branch_length(),
         zero_length_branches=zero_count,
         negative_branch_lengths=negative_count,
@@ -167,6 +180,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     lengths = [length for length in tree.root_to_tip_lengths() if length is not None]
     branch_lengths = [node.branch_length for node in tree.iter_nodes() if node is not tree.root]
     polytomy_nodes = _polytomy_nodes(tree)
+    branch_length_status = _branch_length_status(tree)
     return TreeInspectionReport(
         path=path,
         source_format=tree.source_format,
@@ -180,6 +194,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         polytomy_count=len(polytomy_nodes),
         polytomy_nodes=polytomy_nodes,
         has_branch_lengths=all(length is not None for length in branch_lengths) if branch_lengths else False,
+        branch_length_status=branch_length_status,
         total_branch_length=tree.total_branch_length(),
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,
