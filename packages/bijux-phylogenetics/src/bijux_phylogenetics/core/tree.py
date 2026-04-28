@@ -1,7 +1,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import re
 from typing import Iterable
+
+
+_NORMALIZE_TAXON_KEY_PATTERN = re.compile(r"[^0-9A-Za-z._-]+")
+
+
+def normalize_taxon_key(raw: str) -> str:
+    """Normalize a raw taxon label into a stable comparison key."""
+    normalized = _NORMALIZE_TAXON_KEY_PATTERN.sub("_", raw.strip())
+    return normalized.strip("_")
+
+
+@dataclass(frozen=True, slots=True)
+class TaxonLabel:
+    """Taxon identity preserving the raw label and its normalized key."""
+
+    raw: str
+    key: str
+
+    @classmethod
+    def from_raw(cls, raw: str) -> "TaxonLabel":
+        return cls(raw=raw, key=normalize_taxon_key(raw))
 
 
 @dataclass(slots=True)
@@ -25,6 +47,12 @@ class TreeNode:
             if node.is_leaf():
                 yield node
 
+    @property
+    def taxon_label(self) -> TaxonLabel | None:
+        if self.name is None:
+            return None
+        return TaxonLabel.from_raw(self.name)
+
 
 @dataclass(slots=True)
 class PhyloTree:
@@ -42,6 +70,10 @@ class PhyloTree:
     @property
     def tip_names(self) -> list[str]:
         return [node.name for node in self.iter_leaves() if node.name]
+
+    @property
+    def tip_taxa(self) -> list[TaxonLabel]:
+        return [taxon for taxon in (node.taxon_label for node in self.iter_leaves()) if taxon is not None]
 
     @property
     def tip_count(self) -> int:
@@ -72,4 +104,3 @@ class PhyloTree:
 
         visit(self.root, 0.0)
         return lengths
-

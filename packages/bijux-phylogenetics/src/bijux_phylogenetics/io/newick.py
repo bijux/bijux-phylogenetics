@@ -8,6 +8,7 @@ from bijux_phylogenetics.errors import InvalidBranchLengthError
 from bijux_phylogenetics.io.biopython import load_biophylo, loads_biophylo
 
 _BRANCH_LENGTH_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$")
+_UNQUOTED_LABEL_PATTERN = re.compile(r"^[0-9A-Za-z._-]+$")
 
 
 def _validate_branch_lengths(text: str) -> None:
@@ -52,19 +53,28 @@ def _format_branch_length(branch_length: float | None) -> str:
     return f":{format(branch_length, '.15g')}"
 
 
+def _format_label(label: str | None) -> str:
+    if label is None:
+        return ""
+    if _UNQUOTED_LABEL_PATTERN.fullmatch(label):
+        return label
+    escaped = label.replace("'", "''")
+    return f"'{escaped}'"
+
+
 def _serialize_node(node: TreeNode) -> str:
     if node.children:
         ordered_children = ",".join(_serialize_node(child) for child in sorted(node.children, key=_sort_key))
-        label = node.name or ""
+        label = _format_label(node.name)
         return f"({ordered_children}){label}{_format_branch_length(node.branch_length)}"
-    return f"{node.name or ''}{_format_branch_length(node.branch_length)}"
+    return f"{_format_label(node.name)}{_format_branch_length(node.branch_length)}"
 
 
 def dumps_newick(tree: PhyloTree) -> str:
     """Serialize a local tree model into canonical Newick."""
     if tree.root.children:
         ordered_children = ",".join(_serialize_node(child) for child in sorted(tree.root.children, key=_sort_key))
-        root_label = tree.root.name or ""
+        root_label = _format_label(tree.root.name)
         return f"({ordered_children}){root_label};"
     return f"{_serialize_node(tree.root)};"
 

@@ -10,8 +10,8 @@ from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, valida
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import InvalidBranchLengthError, UnsupportedTreeFormatError
 from bijux_phylogenetics.identity import IDENTITY
+from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.nexus import load_nexus
-from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
@@ -26,6 +26,16 @@ def test_package_identity_matches_canonical_names() -> None:
     assert IDENTITY.import_name == "bijux_phylogenetics"
     assert IDENTITY.cli_name == "bijux-phylogenetics"
     assert "bijux phylogenetics" == IDENTITY.umbrella_command
+
+
+def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:
+    tree = loads_newick("('Homo sapiens':0.1,'NCBI|123/45':0.2,'A.B-1':0.3);")
+    assert [(taxon.raw, taxon.key) for taxon in tree.tip_taxa] == [
+        ("Homo sapiens", "Homo_sapiens"),
+        ("NCBI|123/45", "NCBI_123_45"),
+        ("A.B-1", "A.B-1"),
+    ]
+    assert dumps_newick(tree) == "(A.B-1:0.3,'Homo sapiens':0.1,'NCBI|123/45':0.2);"
 
 
 def test_validate_tree_path_reports_expected_counts() -> None:
