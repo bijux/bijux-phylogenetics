@@ -1,0 +1,44 @@
+target-version = "py311"
+line-length = 88
+respect-gitignore = true
+src = [
+  "packages/bijux-phylogenetics/src",
+  "packages/bijux-phylogenetics/tests",
+  "packages/phylogenetics/src",
+  "packages/phylogenetics/tests",
+  "packages/bijux-phylogenetics-dev/src",
+  "packages/bijux-phylogenetics-dev/tests",
+]
+exclude = [
+  ".git",
+  ".hg",
+  ".mypy_cache",
+  ".pytest_cache",
+  ".ruff_cache",
+  ".tox",
+  ".venv",
+  "artifacts",
+  "build",
+  "dist",
+  "docs/report",
+  "htmlcov",
+  "__pycache__",
+  "migrations",
+  "node_modules",
+  "*.egg-info",
+  "site",
+]
+extend-exclude = ["data"]
+
+[lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PIE", "RET", "ISC"]
+ignore = ["E501", "E203"]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[lint.isort]
+force-sort-within-sections = true
+
+[lint.mccabe]
+max-complexity = 10

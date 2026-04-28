@@ -1,0 +1,11 @@
+[generation]
+mode = "positive"
+
+[checks.positive_data_acceptance]
+expected-statuses = [200, 422]
+
+[checks.negative_data_rejection]
+expected-statuses = [400]
+
+[warnings]
+display = ["missing_auth", "missing_test_data"]

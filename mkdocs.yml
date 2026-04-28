@@ -1,0 +1,66 @@
+INHERIT: mkdocs.shared.yml
+
+site_name: Bijux Phylogenetics
+site_description: Reproducible phylogenetic analysis, comparative workflows, and evidence-first reporting documentation.
+site_url: !ENV [SITE_URL, https://bijux.io/bijux-phylogenetics/]
+site_author: Bijan Mousavi <bijan@bijux.io>
+repo_name: bijux/bijux-phylogenetics
+repo_url: https://github.com/bijux/bijux-phylogenetics
+edit_uri: edit/main/docs/
+docs_dir: docs
+exclude_docs: badges.md
+strict: true
+site_dir: artifacts/root/docs/site
+watch:
+  - docs
+  - docs/assets
+  - docs/overrides
+  - .bijux/shared/bijux-docs
+  - mkdocs.yml
+  - mkdocs.shared.yml
+  - packages/bijux-phylogenetics-dev/src/bijux_phylogenetics_dev/docs
+
+theme:
+  custom_dir: docs/overrides
+
+extra:
+  bijux:
+    repository: bijux-phylogenetics
+    docs_package: bijux-phylogenetics-dev
+    nav_mode: default
+    theme_key: bijux:theme
+    hub_links:
+      - key: bijux
+        label: Bijux
+        url: https://bijux.io/
+      - key: bijux-core
+        label: Core
+        url: https://bijux.io/bijux-core/
+      - key: bijux-canon
+        label: Canon
+        url: https://bijux.io/bijux-canon/
+      - key: bijux-atlas
+        label: Atlas
+        url: https://bijux.io/bijux-atlas/
+      - key: bijux-proteomics
+        label: Proteomics
+        url: https://bijux.io/bijux-proteomics/
+      - key: bijux-pollenomics
+        label: Pollenomics
+        url: https://bijux.io/bijux-pollenomics/
+      - key: bijux-phylogenetics
+        label: Phylogenetics
+        url: https://bijux.io/bijux-phylogenetics/
+
+not_in_nav: |
+  assets/**
+  report/**/*.html
+  report/**/*.json
+  report/**/*.md
+
+nav:
+  - Home: index.md
+  - Repository:
+      - Repository: 01-bijux-phylogenetics/index.md
+  - Maintainer:
+      - Maintainer: 03-bijux-phylogenetics-maintain/index.md
