@@ -8,6 +8,7 @@ from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.core.dataset import summarize_dataset_readiness
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
@@ -164,6 +165,37 @@ def test_traits_link_strict_mode_rejects_mismatch() -> None:
         assert error.code == "metadata_join_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected MetadataJoinError")
+
+
+def test_dataset_readiness_reports_ready_comparative_inputs() -> None:
+    report = summarize_dataset_readiness(
+        fixture("example_tree.nwk"),
+        fixture("example_metadata.tsv"),
+        fixture("example_traits_validate.tsv"),
+    )
+    assert report.ready_for_comparative_analysis is True
+    assert report.analysis_taxa == ["A", "B", "C", "D"]
+    assert report.missing_metadata_taxa == []
+    assert report.missing_trait_taxa == []
+    assert report.metadata_only_taxa == []
+    assert report.trait_only_taxa == []
+    assert report.unusable_trait_columns == []
+    assert report.blockers == []
+    assert report.warnings == []
+
+
+def test_dataset_readiness_reports_linkage_blockers() -> None:
+    report = summarize_dataset_readiness(
+        fixture("example_tree.nwk"),
+        fixture("example_metadata.tsv"),
+        fixture("example_traits.tsv"),
+    )
+    assert report.ready_for_comparative_analysis is False
+    assert report.analysis_taxa == ["A", "B", "C"]
+    assert report.missing_trait_taxa == ["D"]
+    assert report.trait_only_taxa == ["E"]
+    assert report.blockers == ["trait table is missing one or more tree taxa"]
+    assert report.warnings == ["trait table contains taxa absent from the tree"]
 
 
 def test_prune_tree_to_taxa_writes_expected_tip_set() -> None:
