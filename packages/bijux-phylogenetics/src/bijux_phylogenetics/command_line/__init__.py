@@ -13,6 +13,7 @@ from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import PhylogeneticsError
+from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.reports.service import annotate_tree_against_table, render_phylogenetics_report
@@ -67,6 +68,11 @@ def _command_inputs(args: Any) -> list[Path | str]:
         return [args.tree]
     if args.command == "normalize":
         return [args.tree, args.out]
+    if args.command == "normalize-taxa":
+        inputs = [args.tree, args.out]
+        if args.mapping_out is not None:
+            inputs.append(args.mapping_out)
+        return inputs
     if args.command == "compare":
         return [args.left, args.right]
     if args.command == "annotate":
@@ -117,6 +123,17 @@ def build_parser() -> argparse.ArgumentParser:
     normalize.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     normalize.add_argument("--out", required=True, type=Path)
     normalize.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
+
+    normalize_taxa = subparsers.add_parser(
+        get_command_spec("normalize-taxa").name,
+        help=get_command_spec("normalize-taxa").summary,
+    )
+    normalize_taxa.add_argument("tree", type=Path)
+    normalize_taxa.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
+    normalize_taxa.add_argument("--policy", choices=("spaces-to-underscores",), required=True)
+    normalize_taxa.add_argument("--out", required=True, type=Path)
+    normalize_taxa.add_argument("--mapping-out", type=Path)
+    normalize_taxa.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
 
     compare = subparsers.add_parser(get_command_spec("compare").name, help=get_command_spec("compare").summary)
     compare.add_argument("left", type=Path)
@@ -209,6 +226,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=[output_path],
                         metrics={"tip_count": tree.tip_count},
                         data={"source_format": tree.source_format, "output_format": "newick"},
+                    ),
+                    json_output=True,
+                )
+            else:
+                print(output_path)
+            return 0
+        if args.command == "normalize-taxa":
+            tree = load_tree(args.tree, source_format=args.format)
+            normalized_tree, report = normalize_tree_taxa(tree, policy=args.policy)
+            output_path = write_newick(args.out, normalized_tree)
+            mapping_path = args.mapping_out or args.out.with_suffix(f"{args.out.suffix}.mapping.tsv")
+            write_taxon_mapping(mapping_path, report.renamed_taxa)
+            if args.json:
+                _print_result(
+                    build_command_result(
+                        command="normalize-taxa",
+                        inputs=[args.tree],
+                        outputs=[output_path, mapping_path],
+                        metrics={"renamed_taxa": len(report.renamed_taxa)},
+                        data=report,
                     ),
                     json_output=True,
                 )

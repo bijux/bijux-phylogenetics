@@ -37,6 +37,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("normalized-tree",),
     ),
     CommandSpec(
+        name="normalize-taxa",
+        domain="taxa",
+        summary="Apply an explicit taxon normalization policy and emit a mapping file.",
+        inputs=("tree",),
+        outputs=("normalized-tree", "taxon-mapping"),
+    ),
+    CommandSpec(
         name="compare",
         domain="tree-comparison",
         summary="Compare two trees over their shared taxa.",
@@ -94,4 +101,3 @@ def get_command_spec(name: str) -> CommandSpec:
         if spec.name == name:
             return spec
     raise KeyError(name)
-

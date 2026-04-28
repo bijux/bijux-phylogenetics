@@ -128,6 +128,35 @@ def test_cli_normalize_writes_canonical_newick(tmp_path: Path, capsys) -> None:
     assert output.read_text(encoding="utf-8").strip() == "((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);"
 
 
+def test_cli_normalize_taxa_writes_mapping_file(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "normalized-taxa.nwk"
+    mapping = tmp_path / "normalized-taxa.tsv"
+    exit_code = main(
+        [
+            "normalize-taxa",
+            str(FIXTURES / "example_tree_labels.nwk"),
+            "--policy",
+            "spaces-to-underscores",
+            "--out",
+            str(output),
+            "--mapping-out",
+            str(mapping),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["renamed_taxa"] == 2
+    assert output.read_text(encoding="utf-8").strip() == "(A.B-1:0.3,Homo_sapiens:0.1,Mus_musculus:0.2);"
+    assert mapping.read_text(encoding="utf-8") == (
+        "raw_label\tnormalized_label\n"
+        "Homo sapiens\tHomo_sapiens\n"
+        "Mus musculus\tMus_musculus\n"
+    )
+
+
 def test_compare_tree_paths_reports_nonzero_distance() -> None:
     report = compare_tree_paths(FIXTURES / "example_tree.nwk", FIXTURES / "example_tree_alt.nwk")
     assert report.shared_taxa == ["A", "B", "C", "D"]
@@ -187,6 +216,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "inspect",
         "validate",
         "normalize",
+        "normalize-taxa",
         "compare",
         "annotate",
         "diagnose",
