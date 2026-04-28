@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.alignment import AlignmentLinkageReport, AlignmentSummary
+from bijux_phylogenetics.core.dataset import DatasetReadinessSummary, summarize_dataset_readiness
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.validation import _load_tree
@@ -37,6 +38,7 @@ class ReportBuildResult:
     traits_linkage: TableLinkageReport | None
     alignment: AlignmentSummary | None
     alignment_linkage: AlignmentLinkageReport | None
+    dataset_readiness: DatasetReadinessSummary | None
     machine_manifest: dict[str, object]
 
 
@@ -139,6 +141,7 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
         traits_linkage=None,
         alignment=None,
         alignment_linkage=None,
+        dataset_readiness=None,
         machine_manifest=machine_manifest,
     )
 
@@ -155,6 +158,11 @@ def render_dataset_report(
     inspection = inspect_tree_path(tree_path)
     metadata_linkage = annotate_tree_against_table(tree_path, metadata_path)
     traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path is not None else None
+    dataset_readiness = (
+        summarize_dataset_readiness(tree_path, metadata_path, traits_path)
+        if traits_path is not None
+        else None
+    )
     title = "Bijux Dataset Report"
     sections = [
         _section("tree-validation", asdict(validation)),
@@ -163,6 +171,8 @@ def render_dataset_report(
     ]
     if traits_linkage is not None:
         sections.append(_section("traits-linkage", asdict(traits_linkage)))
+    if dataset_readiness is not None:
+        sections.append(_section("dataset-readiness", asdict(dataset_readiness)))
     input_paths = [tree_path, metadata_path]
     if traits_path is not None:
         input_paths.append(traits_path)
@@ -184,6 +194,7 @@ def render_dataset_report(
         traits_linkage=traits_linkage,
         alignment=None,
         alignment_linkage=None,
+        dataset_readiness=dataset_readiness,
         machine_manifest=machine_manifest,
     )
 
@@ -224,6 +235,7 @@ def render_phylo_inputs_report(
         traits_linkage=None,
         alignment=alignment,
         alignment_linkage=alignment_linkage,
+        dataset_readiness=None,
         machine_manifest=machine_manifest,
     )
 
@@ -242,6 +254,11 @@ def render_phylogenetics_report(
     alignment = summarise_fasta(alignment_path) if alignment_path else None
     traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path else None
     metadata_linkage = annotate_tree_against_table(tree_path, metadata_path) if metadata_path else None
+    dataset_readiness = (
+        summarize_dataset_readiness(tree_path, metadata_path, traits_path)
+        if traits_path and metadata_path
+        else None
+    )
 
     sections = [
         _section("tree-validation", asdict(validation)),
@@ -253,6 +270,8 @@ def render_phylogenetics_report(
         sections.append(_section("traits-linkage", asdict(traits_linkage)))
     if metadata_linkage is not None:
         sections.append(_section("metadata-linkage", asdict(metadata_linkage)))
+    if dataset_readiness is not None:
+        sections.append(_section("dataset-readiness", asdict(dataset_readiness)))
 
     title = "Bijux Phylogenetics Report"
     input_paths = [tree_path]
@@ -280,5 +299,6 @@ def render_phylogenetics_report(
         traits_linkage=traits_linkage,
         alignment=alignment,
         alignment_linkage=None,
+        dataset_readiness=dataset_readiness,
         machine_manifest=machine_manifest,
     )

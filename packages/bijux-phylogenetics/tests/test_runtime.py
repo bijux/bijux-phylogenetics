@@ -1038,11 +1038,13 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
     text = output.read_text(encoding="utf-8")
     assert result.report_kind == "dataset"
     assert result.metadata_linkage is not None
+    assert result.dataset_readiness is not None
     assert result.machine_manifest["sections"] == [
         "tree-validation",
         "tree-inspection",
         "metadata-linkage",
         "traits-linkage",
+        "dataset-readiness",
     ]
     assert "Bijux Dataset Report" in text
 
