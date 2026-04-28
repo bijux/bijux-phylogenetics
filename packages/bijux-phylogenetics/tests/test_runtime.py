@@ -465,6 +465,7 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
         report.branch_length_summary.first_quartile,
         report.branch_length_summary.third_quartile,
     ) == (6, 0.1, 0.2, 0.15, 0.15, 0.1, 0.2)
+    assert report.tree_diameter == 0.6
     assert report.zero_length_branch_count == 0
     assert report.max_depth == 2
     assert report.mean_depth == 2.0
@@ -476,6 +477,7 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
 
 def test_inspect_tree_path_distinguishes_ladderized_shape() -> None:
     report = inspect_tree_path(fixture("example_tree_ladderized.nwk"))
+    assert report.tree_diameter == 0.4
     assert report.max_depth == 3
     assert report.mean_depth == 2.25
     assert report.imbalance_summary == "ladderized"
@@ -506,6 +508,9 @@ def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
     assert complete.branch_length_summary is not None
     assert partial.branch_length_summary is not None
     assert absent.branch_length_summary is None
+    assert complete.tree_diameter == 0.6
+    assert partial.tree_diameter is None
+    assert absent.tree_diameter is None
     assert partial.has_branch_lengths is True
     assert partial.warnings == ["tree contains partial branch lengths"]
     assert absent.has_branch_lengths is False

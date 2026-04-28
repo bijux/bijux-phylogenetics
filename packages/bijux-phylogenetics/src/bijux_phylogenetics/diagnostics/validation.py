@@ -65,6 +65,7 @@ class TreeInspectionReport:
     is_ultrametric: bool | None
     total_branch_length: float
     branch_length_summary: BranchLengthSummary | None
+    tree_diameter: float | None
     zero_length_branch_count: int
     min_root_to_tip: float | None
     max_root_to_tip: float | None
@@ -171,6 +172,49 @@ def _branch_length_summary(tree: PhyloTree) -> BranchLengthSummary | None:
         first_quartile=stable(first_quartile),
         third_quartile=stable(third_quartile),
     )
+
+
+def _tree_diameter(tree: PhyloTree) -> float | None:
+    branch_lengths = tree.branch_lengths()
+    if any(length is None for length in branch_lengths):
+        return None
+    leaves = [node for node in tree.iter_leaves() if node.name is not None]
+    if len(leaves) < 2:
+        return 0.0
+
+    adjacency: dict[int, list[tuple[int, float]]] = {}
+
+    def connect(parent, child) -> None:
+        parent_id = id(parent)
+        child_id = id(child)
+        adjacency.setdefault(parent_id, []).append((child_id, float(child.branch_length or 0.0)))
+        adjacency.setdefault(child_id, []).append((parent_id, float(child.branch_length or 0.0)))
+        for grandchild in child.children:
+            connect(child, grandchild)
+
+    for child in tree.root.children:
+        connect(tree.root, child)
+
+    leaf_ids = [id(node) for node in leaves]
+
+    def distances_from(start_id: int) -> dict[int, float]:
+        distances: dict[int, float] = {start_id: 0.0}
+        stack: list[int] = [start_id]
+        while stack:
+            current = stack.pop()
+            for neighbor, length in adjacency.get(current, []):
+                if neighbor in distances:
+                    continue
+                distances[neighbor] = distances[current] + length
+                stack.append(neighbor)
+        return distances
+
+    diameter = 0.0
+    for index, leaf_id in enumerate(leaf_ids):
+        distances = distances_from(leaf_id)
+        for other_id in leaf_ids[index + 1 :]:
+            diameter = max(diameter, distances[other_id])
+    return round(diameter, 15)
 
 
 def _duplicate_taxa(tree: PhyloTree) -> tuple[int, list[str]]:
@@ -339,6 +383,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         is_ultrametric=ultrametric,
         total_branch_length=tree.total_branch_length(),
         branch_length_summary=branch_length_summary,
+        tree_diameter=_tree_diameter(tree),
         zero_length_branch_count=zero_length_branch_count,
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,
