@@ -12,7 +12,7 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
-from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
+from bijux_phylogenetics.core.pruning import prune_alignment_to_tree, prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
 from bijux_phylogenetics.diagnostics.root_to_tip import diagnose_ultrametricity
@@ -156,6 +156,17 @@ def test_prune_tree_to_taxa_writes_expected_tip_set() -> None:
     assert dumps_newick(tree) == "((A:0.1,B:0.1):0.2,C:0.3);"
     assert report.kept_taxa == ["A", "B", "C"]
     assert report.removed_taxa == ["D"]
+
+
+def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
+    records, report = prune_alignment_to_tree(
+        fixture("example_alignment_extra_taxon.fasta"),
+        fixture("example_tree.nwk"),
+    )
+    assert [record.identifier for record in records] == ["A", "B", "C", "D"]
+    assert report.original_sequence_count == 5
+    assert report.kept_ids == ["A", "B", "C", "D"]
+    assert report.removed_ids == ["E"]
 
 
 def test_alignment_inspect_reports_core_diagnostics() -> None:

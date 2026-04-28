@@ -3,9 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import MetadataJoinError
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -19,6 +21,17 @@ class TreePruningReport:
     original_tip_count: int
     kept_taxa: list[str]
     removed_taxa: list[str]
+
+
+@dataclass(slots=True)
+class AlignmentPruningReport:
+    """Explicit record of alignment pruning against a tree tip set."""
+
+    alignment_path: Path
+    tree_path: Path
+    original_sequence_count: int
+    kept_ids: list[str]
+    removed_ids: list[str]
 
 
 def _merge_branch_lengths(left: float | None, right: float | None) -> float | None:
@@ -95,3 +108,26 @@ def write_pruned_taxa(path: Path, removed_taxa: list[str]) -> Path:
     lines.extend(removed_taxa)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
+
+
+def prune_alignment_to_tree(
+    alignment_path: Path,
+    tree_path: Path,
+) -> tuple[list[AlignmentRecord], AlignmentPruningReport]:
+    """Prune an alignment to the taxa present in a tree."""
+    records = load_fasta_alignment(alignment_path)
+    tree = load_tree(tree_path)
+    tree_taxa = set(tree.tip_names)
+    kept_records = [record for record in records if record.identifier in tree_taxa]
+    if not kept_records:
+        raise MetadataJoinError("no overlapping taxa remain after alignment pruning request")
+
+    kept_ids = [record.identifier for record in kept_records]
+    removed_ids = [record.identifier for record in records if record.identifier not in tree_taxa]
+    return kept_records, AlignmentPruningReport(
+        alignment_path=alignment_path,
+        tree_path=tree_path,
+        original_sequence_count=len(records),
+        kept_ids=kept_ids,
+        removed_ids=removed_ids,
+    )
