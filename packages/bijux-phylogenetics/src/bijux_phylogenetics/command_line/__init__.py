@@ -112,6 +112,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("tree", type=Path)
     validate.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     validate.add_argument("--allow-duplicates", action="store_true")
+    validate.add_argument("--strict", action="store_true")
     validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
 
     inspect = subparsers.add_parser(get_command_spec("inspect").name, help=get_command_spec("inspect").summary)
@@ -187,6 +188,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 args.tree,
                 source_format=args.format,
                 allow_duplicates=args.allow_duplicates,
+                strict=args.strict,
             )
             _print_result(
                 build_command_result(

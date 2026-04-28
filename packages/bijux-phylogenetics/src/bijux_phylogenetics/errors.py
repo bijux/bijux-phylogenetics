@@ -27,6 +27,10 @@ class DuplicateTaxonError(PhylogeneticsError):
     code = "duplicate_taxon_error"
 
 
+class UnnamedTipError(PhylogeneticsError):
+    code = "unnamed_tip_error"
+
+
 class MetadataJoinError(PhylogeneticsError):
     code = "metadata_join_error"
 

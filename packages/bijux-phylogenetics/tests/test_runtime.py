@@ -8,7 +8,12 @@ from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
-from bijux_phylogenetics.errors import DuplicateTaxonError, InvalidBranchLengthError, UnsupportedTreeFormatError
+from bijux_phylogenetics.errors import (
+    DuplicateTaxonError,
+    InvalidBranchLengthError,
+    UnnamedTipError,
+    UnsupportedTreeFormatError,
+)
 from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.nexus import load_nexus
@@ -54,6 +59,21 @@ def test_validate_tree_path_rejects_duplicate_tip_labels_by_default() -> None:
         assert error.code == "duplicate_taxon_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected DuplicateTaxonError")
+
+
+def test_validate_tree_path_warns_for_unnamed_tips_in_non_strict_mode() -> None:
+    report = validate_tree_path(FIXTURES / "example_tree_unnamed_tip.nwk")
+    assert report.missing_taxa == 1
+    assert "tree contains unnamed tips" in report.warnings
+
+
+def test_validate_tree_path_rejects_unnamed_tips_in_strict_mode() -> None:
+    try:
+        validate_tree_path(FIXTURES / "example_tree_unnamed_tip.nwk", strict=True)
+    except UnnamedTipError as error:
+        assert error.code == "unnamed_tip_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected UnnamedTipError")
 
 
 def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
@@ -119,6 +139,20 @@ def test_validate_cli_can_allow_duplicate_tip_labels(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["data"]["duplicate_taxa"] == ["A"]
+
+
+def test_validate_cli_strict_mode_rejects_unnamed_tips(capsys) -> None:
+    exit_code = main(["validate", str(FIXTURES / "example_tree_unnamed_tip.nwk"), "--strict", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"] == [
+        {
+            "code": UnnamedTipError.code,
+            "message": "tree contains 1 unnamed tip labels",
+        }
+    ]
 
 
 def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import DuplicateTaxonError
+from bijux_phylogenetics.errors import DuplicateTaxonError, UnnamedTipError
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -94,6 +94,7 @@ def validate_tree_path(
     *,
     source_format: str | None = None,
     allow_duplicates: bool = False,
+    strict: bool = False,
 ) -> TreeValidationReport:
     """Validate a tree file and produce a diagnostic report."""
     tree = _load_tree(path, source_format=source_format)
@@ -102,6 +103,8 @@ def validate_tree_path(
     missing_taxa, duplicate_taxa = _duplicate_taxa(tree)
     if duplicate_taxa and not allow_duplicates:
         raise DuplicateTaxonError(f"duplicate tip labels found: {', '.join(duplicate_taxa)}")
+    if missing_taxa and strict:
+        raise UnnamedTipError(f"tree contains {missing_taxa} unnamed tip labels")
     ultrametric = _ultrametric(tree)
     warnings: list[str] = []
     if duplicate_taxa:
