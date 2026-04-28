@@ -1696,6 +1696,23 @@ def test_render_tree_svg_can_render_metadata_strips(tmp_path: Path) -> None:
     assert "location" in svg
 
 
+def test_render_tree_svg_can_render_trait_heatmap_columns(tmp_path: Path) -> None:
+    output = tmp_path / "heatmap.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        heatmap_columns=[
+            AnnotationStrip("temperature", {"A": "1.2", "B": "1.4", "C": "1.8", "D": "2.0"}),
+            AnnotationStrip("status", {"A": "high", "B": "medium", "C": "medium", "D": "low"}),
+        ],
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_heatmap_column_count == 2
+    assert 'class="heatmap-cell"' in svg
+    assert "temperature" in svg
+    assert "status" in svg
+
+
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
     output = tmp_path / "annotated.svg"
     result = render_tree_svg(
