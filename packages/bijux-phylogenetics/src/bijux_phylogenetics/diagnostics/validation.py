@@ -32,11 +32,15 @@ class TreeInspectionReport:
     source_format: str
     tip_count: int
     internal_node_count: int
+    edge_count: int
     rooted: bool
+    is_binary: bool
+    has_branch_lengths: bool
     total_branch_length: float
     min_root_to_tip: float | None
     max_root_to_tip: float | None
-    taxa_preview: list[str]
+    max_depth: int
+    taxa: list[str]
 
 
 def _load_tree(path: Path, *, source_format: str | None = None) -> PhyloTree:
@@ -45,6 +49,10 @@ def _load_tree(path: Path, *, source_format: str | None = None) -> PhyloTree:
 
 def _count_polytomies(tree: PhyloTree) -> int:
     return sum(1 for node in tree.iter_nodes() if not node.is_leaf() and len(node.children) > 2)
+
+
+def _edge_count(tree: PhyloTree) -> int:
+    return sum(1 for node in tree.iter_nodes() if node is not tree.root)
 
 
 def _branch_length_health(tree: PhyloTree) -> tuple[bool, int, int]:
@@ -69,6 +77,15 @@ def _ultrametric(tree: PhyloTree, *, tolerance: float = 1e-9) -> bool | None:
         return None
     numeric_lengths = [float(length) for length in lengths if length is not None]
     return max(numeric_lengths) - min(numeric_lengths) <= tolerance
+
+
+def _max_depth(tree: PhyloTree) -> int:
+    def visit(node, depth: int) -> int:
+        if node.is_leaf():
+            return depth
+        return max(visit(child, depth + 1) for child in node.children)
+
+    return visit(tree.root, 0)
 
 
 def validate_tree_path(path: Path, *, source_format: str | None = None) -> TreeValidationReport:
@@ -109,14 +126,19 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     """Inspect a tree file and return lightweight summary metrics."""
     tree = _load_tree(path, source_format=source_format)
     lengths = [length for length in tree.root_to_tip_lengths() if length is not None]
+    branch_lengths = [node.branch_length for node in tree.iter_nodes() if node is not tree.root]
     return TreeInspectionReport(
         path=path,
         source_format=tree.source_format,
         tip_count=tree.tip_count,
         internal_node_count=tree.internal_node_count,
+        edge_count=_edge_count(tree),
         rooted=len(tree.root.children) == 2,
+        is_binary=all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()),
+        has_branch_lengths=all(length is not None for length in branch_lengths) if branch_lengths else False,
         total_branch_length=tree.total_branch_length(),
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,
-        taxa_preview=tree.tip_names[:10],
+        max_depth=_max_depth(tree),
+        taxa=sorted(tree.tip_names),
     )

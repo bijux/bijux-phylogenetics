@@ -6,7 +6,7 @@ from pathlib import Path
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import compare_tree_paths
-from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.errors import InvalidBranchLengthError, UnsupportedTreeFormatError
 from bijux_phylogenetics.identity import IDENTITY
@@ -35,6 +35,17 @@ def test_validate_tree_path_reports_expected_counts() -> None:
     assert report.rooted is True
     assert report.ultrametric is True
     assert report.source_format == "newick"
+
+
+def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
+    report = inspect_tree_path(FIXTURES / "example_tree.nwk")
+    assert report.tip_count == 4
+    assert report.internal_node_count == 3
+    assert report.edge_count == 6
+    assert report.has_branch_lengths is True
+    assert report.is_binary is True
+    assert report.max_depth == 2
+    assert report.taxa == ["A", "B", "C", "D"]
 
 
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
@@ -89,6 +100,8 @@ def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["data"]["source_format"] == "nexus"
+    assert payload["data"]["edge_count"] == 6
+    assert payload["data"]["taxa"] == ["A", "B", "C", "D"]
     assert payload["metrics"]["tip_count"] == 4
 
 

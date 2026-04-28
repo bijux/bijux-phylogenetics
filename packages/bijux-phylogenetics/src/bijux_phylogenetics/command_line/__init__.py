@@ -190,6 +190,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     metrics={
                         "tip_count": report.tip_count,
                         "internal_node_count": report.internal_node_count,
+                        "edge_count": report.edge_count,
+                        "is_binary": report.is_binary,
                     },
                     data=report,
                 ),
