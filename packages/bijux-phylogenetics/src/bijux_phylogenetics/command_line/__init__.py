@@ -10,6 +10,7 @@ from typing import Any
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
+from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances, write_root_to_tip_tsv
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, summarise_fasta
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa, write_pruned_taxa
@@ -110,8 +111,12 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.alignment_command == "inspect":
             return [args.alignment]
         return [args.tree, args.alignment]
-    if args.command in {"validate", "inspect", "diagnose"}:
+    if args.command in {"validate", "inspect"}:
         return [args.tree]
+    if args.command == "diagnose":
+        if getattr(args, "tree", None) is not None:
+            return [args.tree]
+        return [Path(args.target)]
     if args.command == "normalize":
         return [args.tree, args.out]
     if args.command == "normalize-taxa":
@@ -248,7 +253,9 @@ def build_parser() -> argparse.ArgumentParser:
     _add_manifest_argument(annotate)
 
     diagnose = subparsers.add_parser(get_command_spec("diagnose").name, help=get_command_spec("diagnose").summary)
-    diagnose.add_argument("tree", type=Path)
+    diagnose.add_argument("target")
+    diagnose.add_argument("tree", nargs="?", type=Path)
+    diagnose.add_argument("--out", type=Path)
     diagnose.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(diagnose)
 
@@ -508,12 +515,33 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 print(output_path)
             return 0
         if args.command == "diagnose":
-            report = diagnose_tree_path(args.tree)
-            outputs = _finalize_outputs(args, command="diagnose", inputs=[args.tree])
+            if args.target == "distances":
+                if args.tree is None:
+                    parser.exit(status=2, message="diagnose distances requires a tree path\n")
+                report = compute_root_to_tip_distances(args.tree)
+                outputs: list[Path | str] = []
+                if args.out is not None:
+                    output_path = write_root_to_tip_tsv(args.out, report)
+                    outputs.append(output_path)
+                outputs = _finalize_outputs(args, command="diagnose", inputs=[args.tree], outputs=outputs)
+                _print_result(
+                    build_command_result(
+                        command="diagnose",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={"tip_count": len(report.distances)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            tree_path = Path(args.target) if args.tree is None else args.tree
+            report = diagnose_tree_path(tree_path)
+            outputs = _finalize_outputs(args, command="diagnose", inputs=[tree_path])
             _print_result(
                 build_command_result(
                     command="diagnose",
-                    inputs=[args.tree],
+                    inputs=[tree_path],
                     outputs=outputs,
                     warnings=report.validation.warnings,
                     metrics={

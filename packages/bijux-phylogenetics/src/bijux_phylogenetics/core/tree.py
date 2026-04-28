@@ -86,8 +86,8 @@ class PhyloTree:
     def total_branch_length(self) -> float:
         return sum(node.branch_length or 0.0 for node in self.iter_nodes() if node is not self.root)
 
-    def root_to_tip_lengths(self) -> list[float | None]:
-        lengths: list[float | None] = []
+    def root_to_tip_pairs(self) -> list[tuple[str | None, float | None]]:
+        pairs: list[tuple[str | None, float | None]] = []
 
         def visit(node: TreeNode, distance: float | None) -> None:
             next_distance = distance
@@ -97,10 +97,13 @@ class PhyloTree:
                 else:
                     next_distance = distance + node.branch_length
             if node.is_leaf():
-                lengths.append(next_distance)
+                pairs.append((node.name, next_distance))
                 return
             for child in node.children:
                 visit(child, next_distance if node is not self.root else 0.0)
 
         visit(self.root, 0.0)
-        return lengths
+        return pairs
+
+    def root_to_tip_lengths(self) -> list[float | None]:
+        return [distance for _, distance in self.root_to_tip_pairs()]

@@ -11,6 +11,7 @@ from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_mani
 from bijux_phylogenetics.core.metadata import inspect_metadata_table
 from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
 from bijux_phylogenetics.core.traits import link_tree_to_traits, validate_traits_table
+from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import (
@@ -425,6 +426,16 @@ def test_diagnose_tree_path_combines_inspection_and_validation() -> None:
     assert report.validation.tip_count == 4
 
 
+def test_compute_root_to_tip_distances_reports_one_row_per_tip() -> None:
+    report = compute_root_to_tip_distances(FIXTURES / "example_tree.nwk")
+    assert [(row.tip, row.distance) for row in report.distances] == [
+        ("A", 0.30000000000000004),
+        ("B", 0.30000000000000004),
+        ("C", 0.30000000000000004),
+        ("D", 0.30000000000000004),
+    ]
+
+
 def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
     report = annotate_tree_against_table(FIXTURES / "example_tree.nwk", FIXTURES / "example_traits.tsv")
     assert report.linked_taxa == 3
@@ -622,6 +633,23 @@ def test_cli_diagnose_json_output(capsys) -> None:
     assert payload["command"] == "diagnose"
     assert payload["metrics"]["cherry_count"] == 2
     assert payload["data"]["inspection"]["imbalance_summary"] == "balanced"
+
+
+def test_cli_diagnose_distances_writes_tsv(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "distances.tsv"
+    exit_code = main(["diagnose", "distances", str(FIXTURES / "example_tree.nwk"), "--out", str(output), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["outputs"] == [str(output)]
+    assert output.read_text(encoding="utf-8") == (
+        "tip\tdistance\n"
+        "A\t0.3\n"
+        "B\t0.3\n"
+        "C\t0.3\n"
+        "D\t0.3\n"
+    )
 
 
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
