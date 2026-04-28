@@ -54,3 +54,4 @@ one maintainer package.
 - translate nucleotide coding alignments into amino-acid alignments
 - export pairwise sequence identity matrices for downstream review
 - root trees on explicit outgroups or reroot trees by midpoint
+- diagnose internal child counts, singleton nodes, missing branch-length locations, and suspicious support-label scales
