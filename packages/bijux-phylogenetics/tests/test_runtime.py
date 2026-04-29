@@ -56,7 +56,7 @@ from bijux_phylogenetics.comparative import (
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
-from bijux_phylogenetics.core.dataset import summarize_dataset_readiness
+from bijux_phylogenetics.core.dataset import audit_dataset_inputs, summarize_dataset_readiness
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
@@ -166,8 +166,11 @@ from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
+    build_alignment_forensic_report,
     build_alignment_quality_report,
+    clean_alignment_with_profile,
     classify_alignment_sequences,
+    compare_alignment_versions,
     compute_pairwise_sequence_identity_matrix,
     compute_amino_acid_composition,
     compute_nucleotide_composition,
@@ -178,7 +181,9 @@ from bijux_phylogenetics.io.fasta import (
     detect_over_aligned_regions,
     detect_sequence_length_outliers,
     detect_under_aligned_regions,
+    get_alignment_filter_profile,
     infer_alignment_alphabet,
+    list_alignment_filter_profiles,
     detect_sequences_with_excessive_missing_data,
     detect_sites_with_excessive_missing_data,
     inspect_coding_alignment,
@@ -255,7 +260,10 @@ def test_package_identity_matches_canonical_names() -> None:
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.summarise_fasta is summarise_fasta
     assert bijux_phylogenetics.build_alignment_quality_report is build_alignment_quality_report
+    assert bijux_phylogenetics.build_alignment_forensic_report is build_alignment_forensic_report
     assert bijux_phylogenetics.classify_alignment_sequences is classify_alignment_sequences
+    assert bijux_phylogenetics.clean_alignment_with_profile is clean_alignment_with_profile
+    assert bijux_phylogenetics.compare_alignment_versions is compare_alignment_versions
     assert bijux_phylogenetics.compute_pairwise_genetic_distance_matrix is compute_pairwise_genetic_distance_matrix
     assert bijux_phylogenetics.build_distance_tree is build_distance_tree
     assert bijux_phylogenetics.build_tree_from_imported_distance_matrix is build_tree_from_imported_distance_matrix
@@ -289,8 +297,12 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.detect_sequence_length_outliers is detect_sequence_length_outliers
     assert bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
     assert bijux_phylogenetics.detect_under_aligned_regions is detect_under_aligned_regions
+    assert bijux_phylogenetics.list_alignment_filter_profiles is list_alignment_filter_profiles
+    assert bijux_phylogenetics.get_alignment_filter_profile is get_alignment_filter_profile
     assert bijux_phylogenetics.summarize_alignment_windows is summarize_alignment_windows
     assert bijux_phylogenetics.summarize_alignment_readiness is summarize_alignment_readiness
+    assert bijux_phylogenetics.audit_dataset_inputs is audit_dataset_inputs
+    assert bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
     assert bijux_phylogenetics.load_tree_set is load_tree_set
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
     assert bijux_phylogenetics.compute_clade_frequency_table is compute_clade_frequency_table
@@ -1326,6 +1338,116 @@ def test_alignment_readiness_reports_method_specific_decisions() -> None:
     assert coding_methods["coding"].ready is False
     assert "one or more sequences contain premature stop codons" in coding_methods["coding"].blockers
     assert "one or more sequences contain partial codons after gaps and missing data are removed" in coding_methods["coding"].blockers
+
+
+def test_alignment_filter_profiles_include_coding_safe_profile() -> None:
+    profiles = {profile.name: profile for profile in list_alignment_filter_profiles()}
+    assert sorted(profiles) == [
+        "aggressive",
+        "coding-safe",
+        "conservative",
+        "moderate",
+        "phylogenomics-scale",
+    ]
+    assert get_alignment_filter_profile("coding-safe").preserve_codon_structure is True
+
+
+def test_coding_alignment_reports_mixed_coding_behaviors() -> None:
+    diagnostics = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
+    assert diagnostics.mixed_coding_signals is True
+    assert [(row.identifier, row.coding_like, row.premature_stop_count) for row in diagnostics.coding_behaviors] == [
+        ("A", True, 0),
+        ("B", True, 0),
+        ("C", False, 0),
+        ("D", False, 1),
+    ]
+
+
+def test_alignment_cleaning_profile_reports_comparison_and_bias_warnings() -> None:
+    records, report = clean_alignment_with_profile(
+        fixture("example_alignment_filtering.fasta"),
+        profile_name="moderate",
+        group_table_path=fixture("example_alignment_groups.tsv"),
+        group_columns=["region"],
+    )
+    assert [record.identifier for record in records] == ["A", "B", "C"]
+    assert [record.sequence for record in records] == ["ACTGACTG", "ACTGACTG", "ACTGACTA"]
+    assert report.profile.name == "moderate"
+    assert report.trim.trimmed_alignment_length == 8
+    assert [(row.position, row.reason) for row in report.trim.removed_columns] == [
+        (5, "missingness-threshold"),
+        (6, "missingness-threshold"),
+        (7, "missingness-threshold"),
+        (8, "missingness-threshold"),
+    ]
+    assert [(row.identifier, row.reason) for row in report.trim.removed_sequences] == [("D", "missingness-threshold")]
+    assert report.comparison.left_alignment_length == 12
+    assert report.comparison.right_alignment_length == 8
+    assert any(group.column == "region" and group.value == "island" and group.removed_fraction == 1.0 for group in report.group_retention)
+    assert "cleaning removed most taxa from one or more metadata or trait groups" in report.warnings
+
+
+def test_alignment_version_comparison_reports_taxa_length_and_signal_changes() -> None:
+    report = compare_alignment_versions(
+        fixture("example_alignment_filtering.fasta"),
+        fixture("example_alignment_filtering_cleaned_moderate.fasta"),
+    )
+    assert report.shared_taxa == ["A", "B", "C"]
+    assert report.left_only_taxa == ["D"]
+    assert report.right_only_taxa == []
+    assert report.left_alignment_length == 12
+    assert report.right_alignment_length == 8
+    assert report.left_parsimony_informative_site_count >= report.right_parsimony_informative_site_count
+
+
+def test_alignment_quality_report_includes_transparent_score_components() -> None:
+    report = build_alignment_quality_report(fixture("example_alignment_filtering.fasta"))
+    assert set(report.quality_components) == {
+        "composition_outliers",
+        "duplicates",
+        "gap_burden",
+        "informative_density",
+        "missingness",
+    }
+    assert 0.0 <= report.quality_score <= 100.0
+
+
+def test_alignment_forensic_report_integrates_alignment_risks() -> None:
+    report = build_alignment_forensic_report(fixture("example_alignment_coding.fasta"))
+    assert report.safe_for_distance_analysis is True
+    assert report.safe_for_coding_analysis is False
+    assert "alignment mixes coding-like and noncoding-like sequence behavior" in report.warnings
+
+
+def test_dataset_audit_integrates_alignment_and_time_tree_surfaces() -> None:
+    report = audit_dataset_inputs(
+        fixture("example_tree_named_clades.nwk"),
+        fixture("example_metadata.tsv"),
+        fixture("example_traits_validate.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        tip_dates_path=fixture("example_tip_dates.tsv"),
+        calibration_path=fixture("example_calibrations.tsv"),
+    )
+    assert report.readiness_decision == "ready_with_warnings"
+    assert "comparative" in report.allowed_analyses
+    assert "distance" in report.allowed_analyses
+    assert "time_tree" in report.allowed_analyses
+    assert report.alignment_forensic is not None
+    assert report.tip_dates is not None
+    assert report.calibrations is not None
+
+
+def test_dataset_audit_blocks_invalid_time_tree_inputs() -> None:
+    report = audit_dataset_inputs(
+        fixture("example_tree_named_clades.nwk"),
+        fixture("example_metadata.tsv"),
+        fixture("example_traits_validate.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        tip_dates_path=fixture("example_tip_dates_invalid.tsv"),
+        calibration_path=fixture("example_calibrations_invalid.tsv"),
+    )
+    assert report.readiness_decision == "blocked"
+    assert "time_tree" in report.blocked_analyses
 
 
 def test_alignment_inspect_rejects_unequal_lengths() -> None:
@@ -3262,6 +3384,98 @@ def test_cli_alignment_readiness_json_output(capsys) -> None:
     assert any(method["analysis"] == "coding" and method["ready"] is False for method in payload["data"]["methods"])
 
 
+def test_cli_alignment_profiles_json_output(capsys) -> None:
+    exit_code = main(["alignment", "profiles", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["profile_count"] == 5
+    assert any(profile["name"] == "coding-safe" for profile in payload["data"])
+
+
+def test_cli_alignment_forensic_json_output(capsys) -> None:
+    exit_code = main(["alignment", "forensic", str(fixture("example_alignment_coding.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["safe_for_coding_analysis"] is False
+    assert payload["data"]["coding"]["mixed_coding_signals"] is True
+
+
+def test_cli_alignment_filter_json_output(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "cleaned.fasta"
+    exit_code = main(
+        [
+            "alignment",
+            "filter",
+            str(fixture("example_alignment_filtering.fasta")),
+            "--profile",
+            "moderate",
+            "--group-table",
+            str(fixture("example_alignment_groups.tsv")),
+            "--group-columns",
+            "region",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output.read_text(encoding="utf-8") == fixture("example_alignment_filtering_cleaned_moderate.fasta").read_text(encoding="utf-8")
+    assert payload["metrics"]["profile"] == "moderate"
+    assert payload["metrics"]["trimmed_alignment_length"] == 8
+
+
+def test_cli_alignment_compare_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "compare",
+            str(fixture("example_alignment_filtering.fasta")),
+            str(fixture("example_alignment_filtering_cleaned_moderate.fasta")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["shared_taxa"] == 3
+    assert payload["metrics"]["left_alignment_length"] == 12
+    assert payload["metrics"]["right_alignment_length"] == 8
+
+
+def test_cli_report_dataset_json_output_includes_audit(capsys, tmp_path: Path) -> None:
+    output = tmp_path / "dataset-report.html"
+    exit_code = main(
+        [
+            "report",
+            "dataset",
+            "--tree",
+            str(fixture("example_tree_named_clades.nwk")),
+            "--metadata",
+            str(fixture("example_metadata.tsv")),
+            "--traits",
+            str(fixture("example_traits_validate.tsv")),
+            "--alignment",
+            str(fixture("example_alignment.fasta")),
+            "--tip-dates",
+            str(fixture("example_tip_dates.tsv")),
+            "--calibrations",
+            str(fixture("example_calibrations.tsv")),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["readiness_decision"] == "ready_with_warnings"
+    assert payload["data"]["dataset_audit"]["alignment_forensic"] is not None
+
+
 def test_cli_alignment_length_outliers_json_output(capsys) -> None:
     exit_code = main(["alignment", "length-outliers", str(fixture("example_sequences_raw.fasta")), "--json"])
     captured = capsys.readouterr()
@@ -3628,6 +3842,7 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
     assert result.report_kind == "dataset"
     assert result.metadata_linkage is not None
     assert result.dataset_readiness is not None
+    assert result.dataset_audit is not None
     assert result.machine_manifest["sections"] == [
         "tree-validation",
         "tree-inspection",
@@ -3636,6 +3851,7 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
         "traits-linkage",
         "trait-missing-values",
         "dataset-readiness",
+        "dataset-audit",
     ]
     assert result.trait_missing_values is not None
     assert result.trait_missing_values.missing_values == []
@@ -3653,6 +3869,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     assert result.report_kind == "phylo-inputs"
     assert result.alignment is not None
     assert result.alignment_quality is not None
+    assert result.alignment_forensic is not None
     assert result.alignment_coding is not None
     assert result.alignment_identity_matrix is not None
     assert result.alignment_linkage is not None
@@ -3662,6 +3879,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
         "tree-forensic",
         "alignment-summary",
         "alignment-quality",
+        "alignment-forensic",
         "alignment-coding",
         "alignment-identity-matrix",
         "alignment-linkage",
