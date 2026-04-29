@@ -10,11 +10,32 @@ from bijux_phylogenetics.bayesian.beast import (
     validate_tip_dating_metadata,
 )
 from bijux_phylogenetics.core.alignment import AlignmentForensicReport
-from bijux_phylogenetics.core.metadata import MetadataColumnCompleteness, inspect_metadata_table, load_taxon_table
+from bijux_phylogenetics.core.metadata import MetadataColumnCompleteness, TaxonTable, inspect_metadata_table, load_taxon_table
 from bijux_phylogenetics.core.traits import detect_unusable_trait_columns, link_tree_to_traits
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.io.fasta import build_alignment_forensic_report, link_alignment_to_tree
+from bijux_phylogenetics.io.fasta import build_alignment_forensic_report, link_alignment_to_tree, load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+
+_GEOGRAPHY_COLUMN_HINTS = (
+    "geography",
+    "region",
+    "location",
+    "country",
+    "area",
+    "locality",
+)
+_EXTERNAL_ID_COLUMN_HINTS = (
+    "accession",
+    "accession_id",
+    "sample_id",
+    "isolate_id",
+    "specimen_id",
+    "ncbi_taxon_id",
+    "gbif_id",
+    "taxonomy_id",
+    "external_id",
+)
+_GROUP_COLUMN_EXCLUSIONS = {"taxon", "taxa", "tip", "sample", "name"}
 
 
 @dataclass(slots=True)
@@ -38,6 +59,154 @@ class DatasetReadinessSummary:
 
 
 @dataclass(slots=True)
+class DatasetAuditFinding:
+    """One categorized dataset blocker or warning."""
+
+    severity: str
+    category: str
+    code: str
+    message: str
+    affected_analyses: list[str]
+
+
+@dataclass(slots=True)
+class DatasetAnalysisDecision:
+    """Eligibility decision for one downstream analysis family."""
+
+    analysis: str
+    decision: str
+    reasons: list[str]
+
+
+@dataclass(slots=True)
+class DatasetReadinessLevel:
+    """Named dataset readiness level suitable for reviewer-facing summaries."""
+
+    level: str
+    decision: str
+    reasons: list[str]
+
+
+@dataclass(slots=True)
+class DatasetCrosswalkRow:
+    """Explicit mapping for one taxon across dataset surfaces."""
+
+    taxon: str
+    tree_tip: str | None
+    alignment_id: str | None
+    metadata_id: str | None
+    trait_id: str | None
+    tip_date_id: str | None
+    geography_source: str | None
+    calibration_targets: list[str]
+    external_taxonomy_ids: dict[str, str]
+
+
+@dataclass(slots=True)
+class DatasetCrosswalkReport:
+    """Explicit taxon crosswalk across tree, alignment, metadata, traits, and dates."""
+
+    tree_path: Path
+    metadata_path: Path
+    traits_path: Path
+    alignment_path: Path | None
+    tip_dates_path: Path | None
+    calibration_path: Path | None
+    rows: list[DatasetCrosswalkRow]
+
+
+@dataclass(slots=True)
+class DatasetCompletenessRow:
+    """Presence or absence of one taxon across dataset surfaces."""
+
+    taxon: str
+    in_tree: bool
+    in_alignment: bool
+    in_metadata: bool
+    in_traits: bool
+    in_tip_dates: bool
+    in_geography: bool
+    in_calibrations: bool
+
+
+@dataclass(slots=True)
+class DatasetCompletenessMatrix:
+    """Taxon-by-surface completeness summary."""
+
+    tree_path: Path
+    metadata_path: Path
+    traits_path: Path
+    alignment_path: Path | None
+    tip_dates_path: Path | None
+    calibration_path: Path | None
+    geography_columns: list[str]
+    rows: list[DatasetCompletenessRow]
+    surface_counts: dict[str, int]
+
+
+@dataclass(slots=True)
+class DatasetExclusionRow:
+    """One excluded taxon with explicit causes and downstream consequences."""
+
+    taxon: str
+    causes: list[str]
+    first_failed_surface: str
+    affected_analyses: list[str]
+
+
+@dataclass(slots=True)
+class DatasetExclusionTable:
+    """All excluded taxa with exact causes and affected analysis families."""
+
+    rows: list[DatasetExclusionRow]
+
+
+@dataclass(slots=True)
+class DatasetOrderingConflict:
+    """One ordering conflict against the canonical taxon order."""
+
+    surface: str
+    taxon: str
+    expected_index: int
+    observed_index: int
+
+
+@dataclass(slots=True)
+class DatasetOrderingAudit:
+    """Ordering audit for tree-linked surfaces."""
+
+    canonical_surface: str
+    consistent: bool
+    drifted_surfaces: list[str]
+    conflicts: list[DatasetOrderingConflict]
+
+
+@dataclass(slots=True)
+class DatasetPruningStepSummary:
+    """Sample-size summary after one dataset linkage or pruning step."""
+
+    step: str
+    input_taxa: int
+    retained_taxa: int
+    excluded_taxa: int
+    reason: str
+
+
+@dataclass(slots=True)
+class DatasetGroupImbalanceWarning:
+    """Warning when pruning removes most taxa from one categorical group."""
+
+    surface: str
+    group_column: str
+    group: str
+    original_count: int
+    retained_count: int
+    removed_count: int
+    removed_fraction: float
+    message: str
+
+
+@dataclass(slots=True)
 class DatasetAuditReport:
     """Integrated audit across tree, alignment, metadata, traits, and optional dating surfaces."""
 
@@ -54,10 +223,364 @@ class DatasetAuditReport:
     blocked_analyses: list[str]
     blockers: list[str]
     warnings: list[str]
+    blocker_categories: dict[str, list[str]]
+    warning_categories: dict[str, list[str]]
+    findings: list[DatasetAuditFinding]
+    analysis_decisions: list[DatasetAnalysisDecision]
+    readiness_levels: list[DatasetReadinessLevel]
+    crosswalk: DatasetCrosswalkReport
+    completeness_matrix: DatasetCompletenessMatrix
+    exclusion_table: DatasetExclusionTable
+    ordering_audit: DatasetOrderingAudit
+    pruning_steps: list[DatasetPruningStepSummary]
+    group_imbalance_warnings: list[DatasetGroupImbalanceWarning]
     dataset_readiness: DatasetReadinessSummary
     alignment_forensic: AlignmentForensicReport | None
     tip_dates: TipDatingValidationReport | None
     calibrations: FossilCalibrationValidationReport | None
+
+
+@dataclass(slots=True)
+class _DatasetContext:
+    tree_path: Path
+    metadata_path: Path
+    traits_path: Path
+    alignment_path: Path | None
+    tip_dates_path: Path | None
+    calibration_path: Path | None
+    tree_taxa: list[str]
+    metadata_table: TaxonTable
+    traits_table: TaxonTable
+    alignment_ids: list[str]
+    tip_date_taxa: list[str]
+    geography_columns: list[str]
+    geography_taxa: set[str]
+    calibration_taxa_to_targets: dict[str, list[str]]
+    alignment_forensic: AlignmentForensicReport | None
+    tip_dates_report: TipDatingValidationReport | None
+    calibration_report: FossilCalibrationValidationReport | None
+
+
+def _ordered_taxa(table: TaxonTable) -> list[str]:
+    return [row[table.taxon_column] for row in table.rows]
+
+
+def _table_rows_by_taxon(table: TaxonTable) -> dict[str, dict[str, str]]:
+    return {row[table.taxon_column]: row for row in table.rows}
+
+
+def _is_external_id_column(name: str) -> bool:
+    normalized = name.strip().lower()
+    return normalized.endswith("_id") or normalized in _EXTERNAL_ID_COLUMN_HINTS
+
+
+def _non_empty_taxa_for_columns(table: TaxonTable, columns: list[str]) -> set[str]:
+    if not columns:
+        return set()
+    return {
+        row[table.taxon_column]
+        for row in table.rows
+        if any(row[column].strip() for column in columns)
+    }
+
+
+def _detect_geography_columns(table: TaxonTable) -> list[str]:
+    hints = set(_GEOGRAPHY_COLUMN_HINTS)
+    return [
+        column
+        for column in table.columns
+        if column != table.taxon_column and column.strip().lower() in hints
+    ]
+
+
+def _distinct_nonempty_values(table: TaxonTable, column: str) -> set[str]:
+    return {row[column].strip() for row in table.rows if row[column].strip()}
+
+
+def _infer_group_columns(table: TaxonTable) -> list[str]:
+    columns: list[str] = []
+    for column in table.columns:
+        normalized = column.strip().lower()
+        if normalized == table.taxon_column.strip().lower():
+            continue
+        if normalized in _GROUP_COLUMN_EXCLUSIONS or _is_external_id_column(normalized):
+            continue
+        values = _distinct_nonempty_values(table, column)
+        if 2 <= len(values) <= 12:
+            columns.append(column)
+    return columns
+
+
+def _calibration_taxa_to_targets(calibrations: FossilCalibrationValidationReport | None) -> dict[str, list[str]]:
+    if calibrations is None:
+        return {}
+    mapping: dict[str, list[str]] = {}
+    for calibration in calibrations.calibrations:
+        if not calibration.valid:
+            continue
+        target = calibration.calibration_id
+        for taxon in calibration.taxa:
+            mapping.setdefault(taxon, []).append(target)
+    return {taxon: sorted(targets) for taxon, targets in mapping.items()}
+
+
+def _collect_external_ids(
+    taxon: str,
+    metadata_table: TaxonTable,
+    traits_table: TaxonTable,
+) -> dict[str, str]:
+    external_ids: dict[str, str] = {}
+    for surface_name, table in (("metadata", metadata_table), ("traits", traits_table)):
+        row = _table_rows_by_taxon(table).get(taxon)
+        if row is None:
+            continue
+        for column in table.columns:
+            if column == table.taxon_column or not _is_external_id_column(column):
+                continue
+            value = row[column].strip()
+            if value:
+                external_ids[f"{surface_name}.{column}"] = value
+    return external_ids
+
+
+def _load_dataset_context(
+    tree_path: Path,
+    metadata_path: Path,
+    traits_path: Path,
+    *,
+    alignment_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    calibration_path: Path | None = None,
+    alignment_forensic: AlignmentForensicReport | None = None,
+    tip_dates_report: TipDatingValidationReport | None = None,
+    calibration_report: FossilCalibrationValidationReport | None = None,
+) -> _DatasetContext:
+    tree = load_tree(tree_path)
+    metadata_table = load_taxon_table(metadata_path)
+    traits_table = load_taxon_table(traits_path)
+    alignment_ids = (
+        [record.identifier for record in load_fasta_alignment(alignment_path)]
+        if alignment_path is not None
+        else []
+    )
+    tip_dates_table = load_taxon_table(tip_dates_path) if tip_dates_path is not None else None
+    geography_columns = sorted(
+        set(_detect_geography_columns(metadata_table)) | set(_detect_geography_columns(traits_table))
+    )
+    geography_taxa = _non_empty_taxa_for_columns(metadata_table, _detect_geography_columns(metadata_table))
+    geography_taxa.update(_non_empty_taxa_for_columns(traits_table, _detect_geography_columns(traits_table)))
+    calibrations = calibration_report
+    if calibration_path is not None and calibrations is None:
+        calibrations = validate_fossil_calibration_table(tree_path, calibration_path)
+    tip_dates = tip_dates_report
+    if tip_dates_path is not None and tip_dates is None:
+        tip_dates = validate_tip_dating_metadata(tree_path, tip_dates_path, alignment_path=alignment_path)
+    alignment_report = alignment_forensic
+    if alignment_path is not None and alignment_report is None:
+        alignment_report = build_alignment_forensic_report(alignment_path)
+    return _DatasetContext(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        traits_path=traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+        tree_taxa=list(tree.tip_names),
+        metadata_table=metadata_table,
+        traits_table=traits_table,
+        alignment_ids=alignment_ids,
+        tip_date_taxa=[] if tip_dates_table is None else _ordered_taxa(tip_dates_table),
+        geography_columns=geography_columns,
+        geography_taxa=geography_taxa,
+        calibration_taxa_to_targets=_calibration_taxa_to_targets(calibrations),
+        alignment_forensic=alignment_report,
+        tip_dates_report=tip_dates,
+        calibration_report=calibrations,
+    )
+
+
+def build_dataset_crosswalk(
+    tree_path: Path,
+    metadata_path: Path,
+    traits_path: Path,
+    *,
+    alignment_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    calibration_path: Path | None = None,
+) -> DatasetCrosswalkReport:
+    """Generate an explicit taxon crosswalk across the main dataset surfaces."""
+    context = _load_dataset_context(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+    )
+    metadata_taxa = set(_ordered_taxa(context.metadata_table))
+    trait_taxa = set(_ordered_taxa(context.traits_table))
+    alignment_taxa = set(context.alignment_ids)
+    tip_date_taxa = set(context.tip_date_taxa)
+    tree_taxa = set(context.tree_taxa)
+    union_taxa = sorted(tree_taxa | metadata_taxa | trait_taxa | alignment_taxa | tip_date_taxa)
+    rows = [
+        DatasetCrosswalkRow(
+            taxon=taxon,
+            tree_tip=taxon if taxon in tree_taxa else None,
+            alignment_id=taxon if taxon in alignment_taxa else None,
+            metadata_id=taxon if taxon in metadata_taxa else None,
+            trait_id=taxon if taxon in trait_taxa else None,
+            tip_date_id=taxon if taxon in tip_date_taxa else None,
+            geography_source="geography" if taxon in context.geography_taxa else None,
+            calibration_targets=context.calibration_taxa_to_targets.get(taxon, []),
+            external_taxonomy_ids=_collect_external_ids(
+                taxon,
+                context.metadata_table,
+                context.traits_table,
+            ),
+        )
+        for taxon in union_taxa
+    ]
+    return DatasetCrosswalkReport(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        traits_path=traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+        rows=rows,
+    )
+
+
+def build_dataset_completeness_matrix(
+    tree_path: Path,
+    metadata_path: Path,
+    traits_path: Path,
+    *,
+    alignment_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    calibration_path: Path | None = None,
+) -> DatasetCompletenessMatrix:
+    """Build a taxon-by-surface completeness matrix for one dataset."""
+    crosswalk = build_dataset_crosswalk(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+    )
+    rows = [
+        DatasetCompletenessRow(
+            taxon=row.taxon,
+            in_tree=row.tree_tip is not None,
+            in_alignment=row.alignment_id is not None,
+            in_metadata=row.metadata_id is not None,
+            in_traits=row.trait_id is not None,
+            in_tip_dates=row.tip_date_id is not None,
+            in_geography=row.geography_source is not None,
+            in_calibrations=bool(row.calibration_targets),
+        )
+        for row in crosswalk.rows
+    ]
+    surface_counts = {
+        "tree": sum(1 for row in rows if row.in_tree),
+        "alignment": sum(1 for row in rows if row.in_alignment),
+        "metadata": sum(1 for row in rows if row.in_metadata),
+        "traits": sum(1 for row in rows if row.in_traits),
+        "tip_dates": sum(1 for row in rows if row.in_tip_dates),
+        "geography": sum(1 for row in rows if row.in_geography),
+        "calibrations": sum(1 for row in rows if row.in_calibrations),
+    }
+    context = _load_dataset_context(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+    )
+    return DatasetCompletenessMatrix(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        traits_path=traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+        geography_columns=context.geography_columns,
+        rows=rows,
+        surface_counts=surface_counts,
+    )
+
+
+def _ordering_conflicts_for_surface(
+    *,
+    surface: str,
+    canonical_order: list[str],
+    observed_order: list[str],
+) -> list[DatasetOrderingConflict]:
+    canonical_shared = [taxon for taxon in canonical_order if taxon in set(observed_order)]
+    observed_shared = [taxon for taxon in observed_order if taxon in set(canonical_order)]
+    if canonical_shared == observed_shared:
+        return []
+
+    expected_index = {taxon: index for index, taxon in enumerate(canonical_shared, start=1)}
+    conflicts = [
+        DatasetOrderingConflict(
+            surface=surface,
+            taxon=taxon,
+            expected_index=expected_index[taxon],
+            observed_index=index,
+        )
+        for index, taxon in enumerate(observed_shared, start=1)
+        if expected_index[taxon] != index
+    ]
+    return conflicts
+
+
+def audit_dataset_taxon_ordering(
+    tree_path: Path,
+    metadata_path: Path,
+    traits_path: Path,
+    *,
+    alignment_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+) -> DatasetOrderingAudit:
+    """Detect silent taxon-order drift across dataset surfaces."""
+    context = _load_dataset_context(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+    )
+    conflicts: list[DatasetOrderingConflict] = []
+    drifted_surfaces: list[str] = []
+    surface_orders = {
+        "metadata": _ordered_taxa(context.metadata_table),
+        "traits": _ordered_taxa(context.traits_table),
+    }
+    if alignment_path is not None:
+        surface_orders["alignment"] = context.alignment_ids
+    if tip_dates_path is not None:
+        surface_orders["tip_dates"] = context.tip_date_taxa
+
+    for surface, observed_order in surface_orders.items():
+        surface_conflicts = _ordering_conflicts_for_surface(
+            surface=surface,
+            canonical_order=context.tree_taxa,
+            observed_order=observed_order,
+        )
+        if surface_conflicts:
+            drifted_surfaces.append(surface)
+            conflicts.extend(surface_conflicts)
+
+    return DatasetOrderingAudit(
+        canonical_surface="tree",
+        consistent=not conflicts,
+        drifted_surfaces=sorted(drifted_surfaces),
+        conflicts=conflicts,
+    )
 
 
 def summarize_dataset_readiness(
@@ -120,6 +643,236 @@ def summarize_dataset_readiness(
     )
 
 
+def _append_finding(
+    findings: list[DatasetAuditFinding],
+    *,
+    severity: str,
+    category: str,
+    code: str,
+    message: str,
+    affected_analyses: list[str],
+) -> None:
+    finding = DatasetAuditFinding(
+        severity=severity,
+        category=category,
+        code=code,
+        message=message,
+        affected_analyses=sorted(dict.fromkeys(affected_analyses)),
+    )
+    if finding not in findings:
+        findings.append(finding)
+
+
+def _categorize_findings(findings: list[DatasetAuditFinding], severity: str) -> dict[str, list[str]]:
+    categories: dict[str, list[str]] = {}
+    for finding in findings:
+        if finding.severity != severity:
+            continue
+        categories.setdefault(finding.category, []).append(finding.message)
+    return {category: messages for category, messages in sorted(categories.items())}
+
+
+def _pruning_steps(
+    context: _DatasetContext,
+) -> tuple[list[DatasetPruningStepSummary], set[str]]:
+    current = set(context.tree_taxa)
+    steps = [
+        DatasetPruningStepSummary(
+            step="tree",
+            input_taxa=len(current),
+            retained_taxa=len(current),
+            excluded_taxa=0,
+            reason="starting canonical taxon set from the tree tips",
+        )
+    ]
+
+    for step_name, next_taxa, reason in (
+        (
+            "alignment",
+            set(context.alignment_ids) if context.alignment_path is not None else set(context.tree_taxa),
+            "retain taxa present in the alignment",
+        ),
+        (
+            "metadata",
+            set(_ordered_taxa(context.metadata_table)),
+            "retain taxa present in the metadata table",
+        ),
+        (
+            "traits",
+            set(_ordered_taxa(context.traits_table)),
+            "retain taxa present in the trait table",
+        ),
+        (
+            "tip_dates",
+            set(context.tip_date_taxa) if context.tip_dates_path is not None else current,
+            "retain taxa with valid tip-date rows",
+        ),
+    ):
+        if step_name == "alignment" and context.alignment_path is None:
+            continue
+        if step_name == "tip_dates" and context.tip_dates_path is None:
+            continue
+        input_count = len(current)
+        current = current & set(next_taxa)
+        steps.append(
+            DatasetPruningStepSummary(
+                step=step_name,
+                input_taxa=input_count,
+                retained_taxa=len(current),
+                excluded_taxa=input_count - len(current),
+                reason=reason,
+            )
+        )
+    return steps, current
+
+
+def _group_imbalance_warnings(
+    context: _DatasetContext,
+    retained_taxa: set[str],
+) -> list[DatasetGroupImbalanceWarning]:
+    warnings: list[DatasetGroupImbalanceWarning] = []
+    for surface, table in (("metadata", context.metadata_table), ("traits", context.traits_table)):
+        for column in _infer_group_columns(table):
+            groups: dict[str, set[str]] = {}
+            for row in table.rows:
+                value = row[column].strip()
+                if value:
+                    groups.setdefault(value, set()).add(row[table.taxon_column])
+            for group, taxa in groups.items():
+                original_count = len(taxa)
+                retained_count = len(taxa & retained_taxa)
+                removed_count = original_count - retained_count
+                removed_fraction = 0.0 if original_count == 0 else removed_count / original_count
+                if original_count >= 1 and removed_fraction >= 0.5:
+                    warnings.append(
+                        DatasetGroupImbalanceWarning(
+                            surface=surface,
+                            group_column=column,
+                            group=group,
+                            original_count=original_count,
+                            retained_count=retained_count,
+                            removed_count=removed_count,
+                            removed_fraction=removed_fraction,
+                            message=f"{surface} group '{group}' in column '{column}' loses most taxa after pruning",
+                        )
+                    )
+    return warnings
+
+
+def _affected_analyses_for_missing_surface(surface: str) -> list[str]:
+    return {
+        "tree": ["inspection", "distance", "maximum_likelihood", "bayesian", "coding", "comparative", "time_tree", "publication"],
+        "alignment": ["distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"],
+        "metadata": ["comparative", "time_tree", "publication"],
+        "traits": ["comparative", "publication"],
+        "tip_dates": ["time_tree", "publication"],
+    }.get(surface, ["publication"])
+
+
+def _build_exclusion_table(
+    completeness_matrix: DatasetCompletenessMatrix,
+) -> DatasetExclusionTable:
+    rows: list[DatasetExclusionRow] = []
+    for row in completeness_matrix.rows:
+        causes: list[str] = []
+        if not row.in_tree:
+            causes.append("absent_from_tree")
+        if completeness_matrix.alignment_path is not None and not row.in_alignment:
+            causes.append("absent_from_alignment")
+        if not row.in_metadata:
+            causes.append("absent_from_metadata")
+        if not row.in_traits:
+            causes.append("absent_from_traits")
+        if completeness_matrix.tip_dates_path is not None and not row.in_tip_dates:
+            causes.append("absent_from_tip_dates")
+        if not causes:
+            continue
+        first_surface = causes[0].removeprefix("absent_from_")
+        affected_analyses: list[str] = []
+        for cause in causes:
+            affected_analyses.extend(
+                _affected_analyses_for_missing_surface(cause.removeprefix("absent_from_"))
+            )
+        rows.append(
+            DatasetExclusionRow(
+                taxon=row.taxon,
+                causes=causes,
+                first_failed_surface=first_surface,
+                affected_analyses=sorted(dict.fromkeys(affected_analyses)),
+            )
+        )
+    return DatasetExclusionTable(rows=rows)
+
+
+def _analysis_decisions(
+    findings: list[DatasetAuditFinding],
+    *,
+    alignment_forensic: AlignmentForensicReport | None,
+    tip_dates: TipDatingValidationReport | None,
+    calibrations: FossilCalibrationValidationReport | None,
+) -> list[DatasetAnalysisDecision]:
+    analyses = [
+        "inspection",
+        "distance",
+        "maximum_likelihood",
+        "bayesian",
+        "coding",
+        "comparative",
+        "time_tree",
+        "publication",
+    ]
+    blockers_by_analysis = {analysis: [] for analysis in analyses}
+    warnings_by_analysis = {analysis: [] for analysis in analyses}
+    for finding in findings:
+        target = blockers_by_analysis if finding.severity == "blocker" else warnings_by_analysis
+        for analysis in finding.affected_analyses:
+            if analysis in target:
+                target[analysis].append(finding.message)
+
+    decisions: list[DatasetAnalysisDecision] = []
+    for analysis in analyses:
+        reasons = sorted(dict.fromkeys(blockers_by_analysis[analysis] + warnings_by_analysis[analysis]))
+        if blockers_by_analysis[analysis]:
+            decision = "blocked"
+        elif warnings_by_analysis[analysis]:
+            decision = "risky"
+        else:
+            decision = "allowed"
+        if analysis in {"distance", "maximum_likelihood", "bayesian", "coding"} and alignment_forensic is None:
+            decision = "blocked"
+            reasons = ["analysis requires an alignment input"]
+        if analysis == "time_tree" and tip_dates is None and calibrations is None:
+            decision = "blocked"
+            reasons = ["analysis requires tip dates or fossil calibrations"]
+        decisions.append(DatasetAnalysisDecision(analysis=analysis, decision=decision, reasons=reasons))
+    return decisions
+
+
+def _readiness_levels(
+    decisions: list[DatasetAnalysisDecision],
+) -> list[DatasetReadinessLevel]:
+    decision_by_analysis = {row.analysis: row for row in decisions}
+
+    def summarize(level: str, analyses: list[str]) -> DatasetReadinessLevel:
+        members = [decision_by_analysis[analysis] for analysis in analyses]
+        reasons = sorted(dict.fromkeys(reason for member in members for reason in member.reasons))
+        if any(member.decision == "blocked" for member in members):
+            decision = "blocked"
+        elif any(member.decision == "risky" for member in members):
+            decision = "risky"
+        else:
+            decision = "ready"
+        return DatasetReadinessLevel(level=level, decision=decision, reasons=reasons)
+
+    return [
+        summarize("inspection_ready", ["inspection"]),
+        summarize("inference_ready", ["distance", "maximum_likelihood", "bayesian"]),
+        summarize("comparative_ready", ["comparative"]),
+        summarize("time_tree_ready", ["time_tree"]),
+        summarize("publication_ready", ["publication"]),
+    ]
+
+
 def audit_dataset_inputs(
     tree_path: Path,
     metadata_path: Path,
@@ -137,11 +890,34 @@ def audit_dataset_inputs(
         traits_path,
         trait_missingness_threshold=trait_missingness_threshold,
     )
-    tree_taxa = set(load_tree(tree_path).tip_names)
-    metadata_taxa = set(load_taxon_table(metadata_path).taxa)
-    trait_taxa = set(load_taxon_table(traits_path).taxa)
-    blockers = list(readiness.blockers)
-    warnings = list(readiness.warnings)
+    tree = load_tree(tree_path)
+    tree_taxa = set(tree.tip_names)
+    metadata_table = load_taxon_table(metadata_path)
+    traits_table = load_taxon_table(traits_path)
+    metadata_taxa = set(metadata_table.taxa)
+    trait_taxa = set(traits_table.taxa)
+
+    findings: list[DatasetAuditFinding] = []
+    for message in readiness.blockers:
+        category = "traits" if "trait" in message else ("metadata" if "metadata" in message else "tree")
+        _append_finding(
+            findings,
+            severity="blocker",
+            category=category,
+            code=message.replace(" ", "-"),
+            message=message,
+            affected_analyses=["comparative", "publication"],
+        )
+    for message in readiness.warnings:
+        category = "traits" if "trait" in message else ("metadata" if "metadata" in message else "dataset")
+        _append_finding(
+            findings,
+            severity="warning",
+            category=category,
+            code=message.replace(" ", "-"),
+            message=message,
+            affected_analyses=["comparative", "publication"],
+        )
 
     alignment_forensic: AlignmentForensicReport | None = None
     alignment_taxa = set(tree_taxa)
@@ -150,13 +926,46 @@ def audit_dataset_inputs(
         alignment_forensic = build_alignment_forensic_report(alignment_path)
         alignment_taxa = set(alignment_linkage.usable_taxa)
         if alignment_linkage.missing_from_alignment:
-            blockers.append("alignment is missing one or more tree taxa")
+            _append_finding(
+                findings,
+                severity="blocker",
+                category="alignment",
+                code="missing-tree-taxa",
+                message="alignment is missing one or more tree taxa",
+                affected_analyses=["distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"],
+            )
         if alignment_linkage.extra_alignment_ids:
-            warnings.append("alignment contains taxa absent from the tree")
+            _append_finding(
+                findings,
+                severity="warning",
+                category="alignment",
+                code="extra-alignment-taxa",
+                message="alignment contains taxa absent from the tree",
+                affected_analyses=["distance", "maximum_likelihood", "bayesian", "coding", "publication"],
+            )
         if not alignment_forensic.safe_for_distance_analysis and not alignment_forensic.safe_for_maximum_likelihood:
-            blockers.append("alignment is not currently safe for core inference workflows")
-        elif alignment_forensic.warnings:
-            warnings.extend(alignment_forensic.warnings)
+            _append_finding(
+                findings,
+                severity="blocker",
+                category="alignment",
+                code="inference-unsafe-alignment",
+                message="alignment is not currently safe for core inference workflows",
+                affected_analyses=["distance", "maximum_likelihood", "bayesian", "publication"],
+            )
+        for warning in alignment_forensic.warnings:
+            affected = ["publication"]
+            if "coding" in warning:
+                affected.append("coding")
+            if "alignment" in warning or "sites" in warning or "sequence" in warning:
+                affected.extend(["distance", "maximum_likelihood", "bayesian"])
+            _append_finding(
+                findings,
+                severity="warning",
+                category="alignment",
+                code=warning.replace(" ", "-"),
+                message=warning,
+                affected_analyses=affected,
+            )
 
     tip_dates: TipDatingValidationReport | None = None
     if tip_dates_path is not None:
@@ -166,54 +975,123 @@ def audit_dataset_inputs(
             alignment_path=alignment_path,
         )
         if tip_dates.invalid_tip_count > 0 or tip_dates.missing_tree_taxa:
-            blockers.append("tip-date metadata contains invalid or missing tree-tip dates")
+            _append_finding(
+                findings,
+                severity="blocker",
+                category="tip_dates",
+                code="invalid-tip-dates",
+                message="tip-date metadata contains invalid or missing tree-tip dates",
+                affected_analyses=["time_tree", "publication"],
+            )
         if tip_dates.extra_tip_taxa or tip_dates.extra_alignment_taxa:
-            warnings.append("tip-date metadata contains taxa absent from the tree or alignment")
+            _append_finding(
+                findings,
+                severity="warning",
+                category="tip_dates",
+                code="extra-tip-date-taxa",
+                message="tip-date metadata contains taxa absent from the tree or alignment",
+                affected_analyses=["time_tree", "publication"],
+            )
 
     calibrations: FossilCalibrationValidationReport | None = None
     if calibration_path is not None:
         calibrations = validate_fossil_calibration_table(tree_path, calibration_path)
         if calibrations.invalid_calibration_count > 0:
-            blockers.append("calibration table contains invalid fossil calibration targets or ages")
+            _append_finding(
+                findings,
+                severity="blocker",
+                category="calibration",
+                code="invalid-calibrations",
+                message="calibration table contains invalid fossil calibration targets or ages",
+                affected_analyses=["time_tree", "publication"],
+            )
 
-    analysis_taxa = sorted(tree_taxa & metadata_taxa & trait_taxa & alignment_taxa)
+    context = _load_dataset_context(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+        alignment_forensic=alignment_forensic,
+        tip_dates_report=tip_dates,
+        calibration_report=calibrations,
+    )
+    pruning_steps, analysis_taxa_set = _pruning_steps(context)
+    analysis_taxa = sorted(tree_taxa & metadata_taxa & trait_taxa & alignment_taxa & analysis_taxa_set)
     if len(analysis_taxa) < 2:
-        blockers.append("fewer than two taxa remain after intersecting all requested dataset surfaces")
+        _append_finding(
+            findings,
+            severity="blocker",
+            category="dataset",
+            code="too-few-intersection-taxa",
+            message="fewer than two taxa remain after intersecting all requested dataset surfaces",
+            affected_analyses=["comparative", "distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"],
+        )
 
-    blocked_analyses: list[str] = []
-    allowed_analyses: list[str] = []
-    if blockers:
-        blocked_analyses.extend(["comparative", "publication"])
-    else:
-        allowed_analyses.extend(["comparative", "publication"])
+    ordering_audit = audit_dataset_taxon_ordering(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+    )
+    if not ordering_audit.consistent:
+        _append_finding(
+            findings,
+            severity="warning",
+            category="metadata",
+            code="ordering-drift",
+            message="one or more dataset surfaces silently reorder shared taxa relative to the tree",
+            affected_analyses=["comparative", "publication"],
+        )
 
-    if alignment_forensic is None:
-        blocked_analyses.extend(["distance", "maximum_likelihood", "bayesian"])
-    else:
-        if alignment_forensic.safe_for_distance_analysis:
-            allowed_analyses.append("distance")
-        else:
-            blocked_analyses.append("distance")
-        if alignment_forensic.safe_for_maximum_likelihood:
-            allowed_analyses.append("maximum_likelihood")
-        else:
-            blocked_analyses.append("maximum_likelihood")
-        if alignment_forensic.safe_for_bayesian_inference:
-            allowed_analyses.append("bayesian")
-        else:
-            blocked_analyses.append("bayesian")
-        if alignment_forensic.safe_for_coding_analysis:
-            allowed_analyses.append("coding")
-        else:
-            blocked_analyses.append("coding")
+    group_imbalance_warnings = _group_imbalance_warnings(context, set(analysis_taxa))
+    for warning in group_imbalance_warnings:
+        _append_finding(
+            findings,
+            severity="warning",
+            category=warning.surface,
+            code="group-imbalance",
+            message=warning.message,
+            affected_analyses=["comparative", "publication"],
+        )
 
-    if tip_dates is not None or calibrations is not None:
-        if tip_dates is not None and calibrations is not None and tip_dates.invalid_tip_count == 0 and calibrations.invalid_calibration_count == 0:
-            allowed_analyses.append("time_tree")
-        else:
-            blocked_analyses.append("time_tree")
+    crosswalk = build_dataset_crosswalk(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+    )
+    completeness_matrix = build_dataset_completeness_matrix(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+    )
+    exclusion_table = _build_exclusion_table(completeness_matrix)
+    analysis_decisions = _analysis_decisions(
+        findings,
+        alignment_forensic=alignment_forensic,
+        tip_dates=tip_dates,
+        calibrations=calibrations,
+    )
+    readiness_levels = _readiness_levels(analysis_decisions)
 
+    blockers = sorted(dict.fromkeys(finding.message for finding in findings if finding.severity == "blocker"))
+    warnings = sorted(dict.fromkeys(finding.message for finding in findings if finding.severity == "warning"))
+    allowed_analyses = sorted(
+        decision.analysis for decision in analysis_decisions if decision.decision != "blocked"
+    )
+    blocked_analyses = sorted(
+        decision.analysis for decision in analysis_decisions if decision.decision == "blocked"
+    )
     readiness_decision = "blocked" if blockers else ("ready_with_warnings" if warnings else "ready")
+
     return DatasetAuditReport(
         tree_path=tree_path,
         metadata_path=metadata_path,
@@ -224,10 +1102,21 @@ def audit_dataset_inputs(
         tree_taxa=len(tree_taxa),
         analysis_taxa=analysis_taxa,
         readiness_decision=readiness_decision,
-        allowed_analyses=sorted(dict.fromkeys(allowed_analyses)),
-        blocked_analyses=sorted(dict.fromkeys(blocked_analyses)),
+        allowed_analyses=allowed_analyses,
+        blocked_analyses=blocked_analyses,
         blockers=blockers,
-        warnings=sorted(dict.fromkeys(warnings)),
+        warnings=warnings,
+        blocker_categories=_categorize_findings(findings, "blocker"),
+        warning_categories=_categorize_findings(findings, "warning"),
+        findings=findings,
+        analysis_decisions=analysis_decisions,
+        readiness_levels=readiness_levels,
+        crosswalk=crosswalk,
+        completeness_matrix=completeness_matrix,
+        exclusion_table=exclusion_table,
+        ordering_audit=ordering_audit,
+        pruning_steps=pruning_steps,
+        group_imbalance_warnings=group_imbalance_warnings,
         dataset_readiness=readiness,
         alignment_forensic=alignment_forensic,
         tip_dates=tip_dates,
