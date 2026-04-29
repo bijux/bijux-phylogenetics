@@ -24,8 +24,8 @@ Runtime package for the bijux-phylogenetics repository.
 This package provides the Python API and CLI for tree validation, inspection,
 comparison, metadata linkage, comparative trait analysis, ancestral-state
 reconstruction, discrete-state evolution analysis, external engine
-orchestration, Bayesian posterior summarization, evidence bundle creation, and
-HTML report generation.
+orchestration, Bayesian posterior summarization, diversification and
+macroevolution analysis, evidence bundle creation, and HTML report generation.
 
 ## Install
 
@@ -53,6 +53,7 @@ bijux-phylogenetics --help
 - reconstruct discrete ancestral states under Fitch parsimony with explicit ambiguity reporting
 - compare continuous ancestral reconstructions across two supported models and render annotated ancestral trees
 - validate discrete geographic state coding, detect state imbalance, estimate ancestral node states, compare equal-rates and all-rates-different models, export node and transition tables, and render discrete-state HTML reports
+- estimate lineage-through-time curves, simple Yule or birth-death diversification rates, sampling-aware corrections, clade outlier summaries, and trait-linked diversification tables for rooted ultrametric trees
 - run governed MAFFT-, trimAl-, IQ-TREE-, and FastTree-style external workflows with captured commands, versions, logs, and warning summaries
 - prepare and run deterministic MrBayes analyses, summarize posterior trees after burn-in filtering, parse parameter traces, and compute per-parameter ESS values
 - compare fast approximate and maximum-likelihood trees through the same deterministic tree-comparison report surface
@@ -86,6 +87,8 @@ bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --jso
 bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html
 bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json
 bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model all-rates-different --out artifacts/geography-report.html
+bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
+bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json
 bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json
 bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json
