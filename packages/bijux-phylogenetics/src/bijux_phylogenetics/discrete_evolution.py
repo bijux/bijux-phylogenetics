@@ -78,6 +78,39 @@ class TransitionRateRow:
 
 
 @dataclass(slots=True)
+class TransitionRateUncertaintyRow:
+    source_state: str
+    target_state: str
+    estimate: float
+    lower_95_interval: float
+    upper_95_interval: float
+    effective_transition_count: float
+
+
+@dataclass(slots=True)
+class TransitionRateUncertaintyReport:
+    model: str
+    state_ordering: str
+    rows: list[TransitionRateUncertaintyRow]
+
+
+@dataclass(slots=True)
+class SparseStateInstabilityReport:
+    sparse_states: list[str]
+    zero_support_transitions: list[str]
+    warning_count: int
+    unstable: bool
+
+
+@dataclass(slots=True)
+class DominantStateBiasReport:
+    dominant_states: list[str]
+    dominant_fraction: float
+    biased: bool
+    message: str | None
+
+
+@dataclass(slots=True)
 class TransitionModelReport:
     tree_path: Path
     traits_path: Path
@@ -93,6 +126,7 @@ class TransitionModelReport:
     aic: float
     stationary_frequencies: dict[str, float]
     transition_matrix: list[TransitionRateRow]
+    uncertainty: TransitionRateUncertaintyReport
     root_state_probabilities: dict[str, float]
 
 
@@ -145,6 +179,8 @@ class DiscreteStateEvolutionReport:
     state_counts: dict[str, int]
     coding_validation: StateCodingValidationReport
     imbalance: StateImbalanceReport
+    instability: SparseStateInstabilityReport
+    dominant_state_bias: DominantStateBiasReport
     transition_model: TransitionModelReport
     estimates: list[NodeStateEstimate]
     transition_summary: TransitionSummaryReport
@@ -368,6 +404,48 @@ def _stationary_frequencies(states_by_taxon: dict[str, str], state_order: list[s
     }
 
 
+def _build_transition_count_matrix(
+    state_order: list[str],
+    er_events: list[TransitionEvent],
+    *,
+    model: str,
+    state_ordering: str,
+) -> dict[str, dict[str, float]]:
+    counts = {
+        source: {
+            target: (
+                1.0
+                if target != source and _transition_allowed(source, target, state_order, state_ordering=state_ordering)
+                else 0.0
+            )
+            for target in state_order
+            if target != source
+        }
+        for source in state_order
+    }
+    for event in er_events:
+        if event.source_state == event.target_state:
+            continue
+        if not _transition_allowed(event.source_state, event.target_state, state_order, state_ordering=state_ordering):
+            continue
+        if model == "symmetric":
+            counts[event.source_state][event.target_state] += 1.0
+            if _transition_allowed(event.target_state, event.source_state, state_order, state_ordering=state_ordering):
+                counts[event.target_state][event.source_state] += 1.0
+        else:
+            counts[event.source_state][event.target_state] += 1.0
+    return counts
+
+
+def _normal_interval(estimate: float, sample_size: float) -> tuple[float, float]:
+    if sample_size <= 0.0:
+        return estimate, estimate
+    standard_error = math.sqrt(max(estimate * (1.0 - estimate), 0.0) / sample_size)
+    lower = max(0.0, estimate - 1.96 * standard_error)
+    upper = min(1.0, estimate + 1.96 * standard_error)
+    return float(format(lower, ".15g")), float(format(upper, ".15g"))
+
+
 def _fit_transition_matrix(
     model: str,
     state_order: list[str],
@@ -410,28 +488,12 @@ def _fit_transition_matrix(
             for source in state_order
         ]
 
-    counts = {
-        source: {
-            target: (
-                1.0
-                if target != source and _transition_allowed(source, target, state_order, state_ordering=state_ordering)
-                else 0.0
-            )
-            for target in state_order
-            if target != source
-        }
-        for source in state_order
-    }
-    for event in er_events:
-        if event.source_state != event.target_state:
-            if not _transition_allowed(event.source_state, event.target_state, state_order, state_ordering=state_ordering):
-                continue
-            if model == "symmetric":
-                counts[event.source_state][event.target_state] += 1.0
-                if _transition_allowed(event.target_state, event.source_state, state_order, state_ordering=state_ordering):
-                    counts[event.target_state][event.source_state] += 1.0
-            else:
-                counts[event.source_state][event.target_state] += 1.0
+    counts = _build_transition_count_matrix(
+        state_order,
+        er_events,
+        model=model,
+        state_ordering=state_ordering,
+    )
     rows: list[TransitionRateRow] = []
     for source in state_order:
         off_total = sum(counts[source].values())
@@ -551,6 +613,92 @@ def _pseudo_log_likelihood(estimates: list[NodeStateEstimate], events: list[Tran
         child_estimate = estimate_by_node[event.child_node]
         log_likelihood += math.log(max(child_estimate.state_probabilities.get(event.target_state, 1e-12), 1e-12))
     return float(format(log_likelihood, ".15g"))
+
+
+def _estimate_transition_rate_uncertainty(
+    *,
+    model: str,
+    state_ordering: str,
+    transition_matrix: list[TransitionRateRow],
+    count_matrix: dict[str, dict[str, float]],
+) -> TransitionRateUncertaintyReport:
+    rows: list[TransitionRateUncertaintyRow] = []
+    for row in transition_matrix:
+        off_total = sum(count_matrix.get(row.source_state, {}).values())
+        for target_state, estimate in row.target_rates.items():
+            if row.source_state == target_state:
+                lower, upper = estimate, estimate
+                effective_count = off_total
+            else:
+                if off_total <= 0.0:
+                    lower, upper = estimate, estimate
+                else:
+                    proportion = count_matrix[row.source_state][target_state] / off_total
+                    lower_p, upper_p = _normal_interval(proportion, off_total)
+                    lower = float(format(0.2 * lower_p, ".15g"))
+                    upper = float(format(0.2 * upper_p, ".15g"))
+                effective_count = count_matrix[row.source_state][target_state]
+            rows.append(
+                TransitionRateUncertaintyRow(
+                    source_state=row.source_state,
+                    target_state=target_state,
+                    estimate=estimate,
+                    lower_95_interval=lower,
+                    upper_95_interval=upper,
+                    effective_transition_count=effective_count,
+                )
+            )
+    return TransitionRateUncertaintyReport(
+        model=model,
+        state_ordering=state_ordering,
+        rows=rows,
+    )
+
+
+def _detect_sparse_state_instability(
+    *,
+    state_counts: dict[str, int],
+    count_matrix: dict[str, dict[str, float]],
+) -> SparseStateInstabilityReport:
+    sparse_states = sorted(state for state, count in state_counts.items() if count < 2)
+    zero_support_transitions = sorted(
+        f"{source}->{target}"
+        for source, targets in count_matrix.items()
+        for target, value in targets.items()
+        if value == 0.0
+    )
+    warning_count = int(bool(sparse_states)) + int(bool(zero_support_transitions))
+    return SparseStateInstabilityReport(
+        sparse_states=sparse_states,
+        zero_support_transitions=zero_support_transitions,
+        warning_count=warning_count,
+        unstable=bool(sparse_states or zero_support_transitions),
+    )
+
+
+def _summarize_dominant_state_bias(state_counts: dict[str, int]) -> DominantStateBiasReport:
+    if not state_counts:
+        return DominantStateBiasReport(
+            dominant_states=[],
+            dominant_fraction=0.0,
+            biased=False,
+            message=None,
+        )
+    total = sum(state_counts.values())
+    max_count = max(state_counts.values())
+    dominant_states = sorted(state for state, count in state_counts.items() if count == max_count)
+    dominant_fraction = float(format(max_count / max(total, 1), ".15g"))
+    biased = dominant_fraction >= 0.8
+    return DominantStateBiasReport(
+        dominant_states=dominant_states,
+        dominant_fraction=dominant_fraction,
+        biased=biased,
+        message=(
+            "one state dominates most taxa and may compress minority-state transition evidence"
+            if biased
+            else None
+        ),
+    )
 
 
 def validate_discrete_state_coding(
@@ -748,6 +896,12 @@ def run_discrete_state_transition_model(
     stationary = _stationary_frequencies(dataset.states_by_taxon, state_order)
     er_resolved = _resolve_er_states(dataset.tree, candidate_sets, dataset.states_by_taxon, state_order)
     er_events = _transition_events(dataset.tree, er_resolved)
+    count_matrix = _build_transition_count_matrix(
+        state_order,
+        er_events,
+        model=model,
+        state_ordering=state_ordering,
+    )
     matrix = _fit_transition_matrix(model, state_order, stationary, er_events, state_ordering=state_ordering)
     root_prior = _root_prior(model, stationary, candidate_sets[node_signature(dataset.tree.root)])
     estimates = _estimate_node_states(
@@ -767,6 +921,17 @@ def run_discrete_state_transition_model(
         transition_counts[key] = transition_counts.get(key, 0) + 1
     branch_count = len(events)
     transition_count = sum(1 for event in events if event.changed)
+    uncertainty = _estimate_transition_rate_uncertainty(
+        model=model,
+        state_ordering=state_ordering,
+        transition_matrix=matrix,
+        count_matrix=count_matrix,
+    )
+    instability = _detect_sparse_state_instability(
+        state_counts=dataset.state_counts,
+        count_matrix=count_matrix,
+    )
+    dominant_state_bias = _summarize_dominant_state_bias(dataset.state_counts)
     transition_model = TransitionModelReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -790,6 +955,7 @@ def run_discrete_state_transition_model(
         aic=0.0,
         stationary_frequencies=stationary,
         transition_matrix=matrix,
+        uncertainty=uncertainty,
         root_state_probabilities=_normalize_probabilities(root_prior),
     )
     transition_model.pseudo_log_likelihood = _pseudo_log_likelihood(estimates, events, transition_model)
@@ -807,6 +973,10 @@ def run_discrete_state_transition_model(
     )
     warnings = list(dataset.warnings)
     warnings.extend(warning.message for warning in imbalance.warnings)
+    if instability.unstable:
+        warnings.append("sparse-state transition estimates may be unstable for one or more source-target paths")
+    if dominant_state_bias.biased and dominant_state_bias.message is not None:
+        warnings.append(dominant_state_bias.message)
     return DiscreteStateEvolutionReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -822,6 +992,8 @@ def run_discrete_state_transition_model(
         state_counts=dataset.state_counts,
         coding_validation=coding,
         imbalance=imbalance,
+        instability=instability,
+        dominant_state_bias=dominant_state_bias,
         transition_model=transition_model,
         estimates=estimates,
         transition_summary=summary,

@@ -94,6 +94,19 @@ def test_run_discrete_state_transition_model_returns_transition_matrix_and_event
     assert report.transition_summary.branch_count == 6
     assert report.transition_summary.transition_count >= 1
     assert all(sum(row.target_rates.values()) > 0.99 for row in report.transition_model.transition_matrix)
+    assert report.transition_model.uncertainty.rows
+
+
+def test_run_discrete_state_transition_model_reports_instability_and_dominant_bias() -> None:
+    report = run_discrete_state_transition_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="equal-rates",
+    )
+    assert isinstance(report.instability.sparse_states, list)
+    assert isinstance(report.instability.zero_support_transitions, list)
+    assert report.dominant_state_bias.biased is False
 
 
 def test_run_discrete_state_transition_model_supports_symmetric_rates() -> None:
