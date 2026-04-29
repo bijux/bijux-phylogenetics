@@ -51,6 +51,8 @@ bijux-phylogenetics --help
 - compute p-distance or Jukes-Cantor DNA distance matrices with pairwise-deletion or complete-deletion gap handling
 - build Neighbor-Joining or UPGMA trees from computed DNA distance matrices and compare their topologies
 - validate imported long-form distance matrices, detect nonmetric violations, and build trees from imported distances
+- load posterior tree sets, compute consensus trees, and export clade-frequency or pairwise tree-distance summaries
+- cluster identical rooted topologies, detect unstable taxa or clades, and compare two posterior tree sets
 - root trees on explicit outgroups or reroot them by midpoint
 - produce HTML reports and file-level evidence manifests
 
@@ -61,6 +63,9 @@ bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequenc
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model p-distance --out distances.tsv
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics distance validate distances.tsv --json
+bijux-phylogenetics tree-set inspect posterior.trees --json
+bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
+bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
