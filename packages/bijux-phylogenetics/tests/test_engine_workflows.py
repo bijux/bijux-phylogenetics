@@ -3,6 +3,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
+    render_inference_workflow_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -11,6 +12,7 @@ from bijux_phylogenetics.engines import (
     run_model_selection,
     run_multiple_sequence_alignment,
 )
+from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 
@@ -103,6 +105,36 @@ print("warning: trimal fixture trimmed one trailing site", file=sys.stderr)
     )
 
 
+def _fake_trimal_empty(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print("trimAl v2.0")
+    raise SystemExit(0)
+
+args = sys.argv[1:]
+output_path = Path(args[args.index("-out") + 1])
+input_path = Path(args[args.index("-in") + 1])
+records = []
+identifier = None
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if line.startswith(">"):
+        identifier = line[1:]
+        records.append(identifier)
+output_path.parent.mkdir(parents=True, exist_ok=True)
+with output_path.open("w", encoding="utf-8") as handle:
+    for identifier in records:
+        handle.write(f">{identifier}\\n\\n")
+print("warning: trimal fixture removed every site", file=sys.stderr)
+""",
+    )
+
+
 def _fake_iqtree(path: Path) -> Path:
     return _write_executable(
         path,
@@ -144,6 +176,23 @@ if "-bb" in args:
 prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
 prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
 print("warning: iqtree fixture tree inference", file=sys.stderr)
+""",
+    )
+
+
+def _fake_iqtree_fail(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+
+if "--version" in sys.argv[1:]:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+print("warning: fixture is about to fail", file=sys.stderr)
+print("fatal: inference failed", file=sys.stderr)
+raise SystemExit(3)
 """,
     )
 
@@ -243,6 +292,66 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert bootstrap_report.run.warning_lines == ["warning: iqtree fixture bootstrap"]
     assert consensus_report.run.warning_lines == ["warning: iqtree fixture consensus"]
     assert fast_report.run.warning_lines == ["warning: fasttree fixture approximate support only"]
+
+
+def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(tmp_path: Path) -> None:
+    failing_iqtree = _fake_iqtree_fail(tmp_path / "iqtree-fail")
+    empty_trimal = _fake_trimal_empty(tmp_path / "trimal-empty")
+    input_path = fixture("alignments/example_alignment.fasta")
+
+    try:
+        run_maximum_likelihood_tree_inference(
+            input_path,
+            out_dir=tmp_path / "failed-ml",
+            model="GTR+G",
+            executable=failing_iqtree,
+            prefix="example",
+        )
+    except EngineWorkflowError as error:
+        assert "failed with exit code 3" in error.message
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected failing IQ-TREE fixture to raise EngineWorkflowError")
+
+    try:
+        run_alignment_trimming(input_path, tmp_path / "empty.fasta", executable=empty_trimal)
+    except EngineWorkflowError as error:
+        assert "inference alignment is empty after filtering" in error.message
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected empty trim output to raise EngineWorkflowError")
+
+
+def test_inference_workflow_resume_and_html_report(tmp_path: Path) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+
+    first = run_maximum_likelihood_tree_inference(
+        input_path,
+        out_dir=tmp_path / "ml",
+        model="GTR+G",
+        executable=iqtree,
+        prefix="example",
+        resume=False,
+    )
+    second = run_maximum_likelihood_tree_inference(
+        input_path,
+        out_dir=tmp_path / "ml",
+        model="GTR+G",
+        executable=iqtree,
+        prefix="example",
+        resume=True,
+    )
+
+    assert first.resumed is False
+    assert second.resumed is True
+    assert second.input_checksums == first.input_checksums
+    assert second.output_checksums == first.output_checksums
+
+    html_report = render_inference_workflow_report(
+        manifest_path=first.manifest_path,
+        out_path=tmp_path / "workflow-report.html",
+    )
+    assert html_report.output_path.exists()
+    assert html_report.report_kind == "inference-workflow"
 
 
 def test_compare_fast_and_ml_trees_builds_html_report(tmp_path: Path) -> None:

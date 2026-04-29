@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -34,6 +35,12 @@ class EngineRunReport:
     stderr_path: Path
     output_paths: dict[str, Path]
     warning_lines: list[str]
+
+
+@dataclass(slots=True)
+class EngineResumeCheck:
+    resume_allowed: bool
+    reason: str
 
 
 def resolve_engine_executable(executable: str | Path) -> str:
@@ -173,8 +180,27 @@ def load_unaligned_fasta(path: Path) -> list[tuple[str, str]]:
     return records
 
 
+def file_sha256(path: Path) -> str:
+    """Compute a deterministic SHA-256 checksum for one file."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def build_file_checksums(paths: list[Path]) -> dict[str, str]:
+    """Hash every existing file path in a stable key order."""
+    return {str(path): file_sha256(path) for path in sorted(paths, key=str) if path.exists() and path.is_file()}
+
+
 def write_engine_manifest(path: Path, payload: Any) -> Path:
     """Write a deterministic engine-workflow manifest."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(asdict(payload), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def load_engine_manifest(path: Path) -> dict[str, Any]:
+    """Load a previously written engine-workflow manifest."""
+    return json.loads(path.read_text(encoding="utf-8"))
