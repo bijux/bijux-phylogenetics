@@ -138,7 +138,7 @@ from bijux_phylogenetics.diagnostics.assumptions import (
     inspect_branch_length_units,
     standardize_support_labels,
 )
-from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, forensic_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, bundle_file_paths, validate_bundle
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
@@ -2358,6 +2358,32 @@ def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
         "tree contains terminal branches without lengths",
         "tree contains no branch lengths",
     ]
+    assert complete.root_state_confidence.classification == "apparently_rooted"
+
+
+def test_validate_tree_path_reports_validity_decision_contexts_and_repair_guidance() -> None:
+    report = validate_tree_path(fixture("example_tree_partial_lengths.nwk"), allow_duplicates=True)
+    assert report.syntax_valid is True
+    assert report.biologically_safe is False
+    assert report.validity_decision == "invalid"
+    assert report.root_state_confidence.classification == "apparently_rooted"
+    assert {context.context: context.allowed for context in report.branch_length_contexts} == {
+        "topology_only": True,
+        "substitution_tree": False,
+        "time_tree": False,
+        "comparative_methods": False,
+    }
+    assert [item.issue_code for item in report.branch_length_repair_suggestions] == ["partial_branch_lengths"]
+
+
+def test_forensic_tree_path_reports_unsafe_external_labels_and_downstream_safety() -> None:
+    report = forensic_tree_path(fixture("example_tree_labels.nwk"))
+    assert report.validity_decision == "valid_with_warnings"
+    assert report.safe_for_topology_comparison is True
+    assert report.safe_for_time_tree_analysis is False
+    assert report.safe_for_comparative_methods is False
+    assert report.unsafe_external_labels[0].engines == ["iqtree", "raxml", "mrbayes", "beast", "r", "shell"]
+    assert any(item.raw_label == "Homo sapiens" for item in report.unsafe_external_labels)
 
 
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
@@ -3386,6 +3412,7 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
     assert result.machine_manifest["sections"] == [
         "tree-validation",
         "tree-inspection",
+        "tree-forensic",
         "metadata-linkage",
         "traits-linkage",
         "trait-missing-values",
@@ -3413,6 +3440,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     assert result.machine_manifest["sections"] == [
         "tree-validation",
         "tree-inspection",
+        "tree-forensic",
         "alignment-summary",
         "alignment-quality",
         "alignment-coding",
