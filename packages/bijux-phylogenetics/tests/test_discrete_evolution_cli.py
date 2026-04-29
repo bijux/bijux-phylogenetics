@@ -127,6 +127,7 @@ def test_discrete_evolution_model_cli_accepts_symmetric_ordered_states(capsys) -
     assert exit_code == 0
     assert payload["data"]["model"] == "symmetric"
     assert payload["data"]["state_ordering"] == "ordered"
+    assert payload["metrics"]["state_ordering"] == "ordered"
 
 
 def test_discrete_evolution_render_and_report_cli_write_svg_and_html(tmp_path: Path, capsys) -> None:
@@ -171,5 +172,6 @@ def test_discrete_evolution_render_and_report_cli_write_svg_and_html(tmp_path: P
     report_payload = json.loads(capsys.readouterr().out)
     assert report_exit == 0
     assert report_payload["metrics"]["report_kind"] == "discrete-state-evolution"
+    assert report_payload["metrics"]["state_ordering"] == "unordered"
     assert report_path.exists()
     assert report_path.with_suffix(".svg").exists()

@@ -1071,6 +1071,9 @@ def render_discrete_state_evolution_report(
         "traits_path": str(traits_path),
         "trait": trait,
         "model": model,
+        "likelihood_method": report.likelihood_method,
+        "state_ordering": report.state_ordering,
+        "ordered_states": report.ordered_states,
         "rendered_tree": str(render_path),
         "sections": [name for name, _ in sections],
     }
