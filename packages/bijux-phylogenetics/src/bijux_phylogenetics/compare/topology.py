@@ -89,6 +89,26 @@ class CladeChangeReport:
     gained_clades: list[str]
 
 
+@dataclass(slots=True)
+class InMemoryTopologyComparison:
+    shared_taxa: list[str]
+    left_only_taxa: list[str]
+    right_only_taxa: list[str]
+    left_informative_clades: int
+    right_informative_clades: int
+    robinson_foulds_distance: int
+    normalized_robinson_foulds: float
+    topology_equal: bool
+    same_unrooted_topology: bool
+    same_taxa_different_rooting: bool
+
+
+@dataclass(slots=True)
+class InMemoryBranchLengthComparison:
+    shared_taxa: list[str]
+    shared_splits: list[BranchLengthPair]
+
+
 def _informative_clades(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
     clades: set[frozenset[str]] = set()
 
@@ -171,6 +191,65 @@ def _load_biophylo_tree(path: Path) -> Tree:
     return Phylo.read(path, detect_tree_format(path))
 
 
+def _compare_tree_objects(left: PhyloTree, right: PhyloTree) -> InMemoryTopologyComparison:
+    left_taxa = set(left.tip_names)
+    right_taxa = set(right.tip_names)
+    shared_taxa = left_taxa & right_taxa
+    if len(shared_taxa) < 2:
+        raise ValueError("tree comparison requires at least two shared taxa")
+
+    left_clades = _informative_clades(left, shared_taxa)
+    right_clades = _informative_clades(right, shared_taxa)
+    symmetric_difference = left_clades.symmetric_difference(right_clades)
+    denominator = len(left_clades) + len(right_clades)
+    normalized = 0.0 if denominator == 0 else len(symmetric_difference) / denominator
+    topology_equal = len(symmetric_difference) == 0
+    same_unrooted_topology = _unrooted_splits(left, shared_taxa) == _unrooted_splits(right, shared_taxa)
+    same_taxa_different_rooting = left_taxa == right_taxa and same_unrooted_topology and not topology_equal
+    return InMemoryTopologyComparison(
+        shared_taxa=sorted(shared_taxa),
+        left_only_taxa=sorted(left_taxa - right_taxa),
+        right_only_taxa=sorted(right_taxa - left_taxa),
+        left_informative_clades=len(left_clades),
+        right_informative_clades=len(right_clades),
+        robinson_foulds_distance=len(symmetric_difference),
+        normalized_robinson_foulds=normalized,
+        topology_equal=topology_equal,
+        same_unrooted_topology=same_unrooted_topology,
+        same_taxa_different_rooting=same_taxa_different_rooting,
+    )
+
+
+def _compare_branch_lengths_for_trees(left: PhyloTree, right: PhyloTree) -> InMemoryBranchLengthComparison:
+    left_taxa = set(left.tip_names)
+    right_taxa = set(right.tip_names)
+    shared_taxa = left_taxa & right_taxa
+    if len(shared_taxa) < 2:
+        raise ValueError("branch-length comparison requires at least two shared taxa")
+
+    left_clades = _informative_clade_nodes(left, shared_taxa)
+    right_clades = _informative_clade_nodes(right, shared_taxa)
+    shared_clade_ids = sorted(left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item))
+    pairs: list[BranchLengthPair] = []
+    for clade_id in shared_clade_ids:
+        left_length = left_clades[clade_id].branch_length
+        right_length = right_clades[clade_id].branch_length
+        delta = None if left_length is None or right_length is None else right_length - left_length
+        ratio = None
+        if left_length not in {None, 0} and right_length is not None:
+            ratio = right_length / left_length
+        pairs.append(
+            BranchLengthPair(
+                split_id="|".join(sorted(clade_id)),
+                left_length=left_length,
+                right_length=right_length,
+                delta=delta,
+                ratio=ratio,
+            )
+        )
+    return InMemoryBranchLengthComparison(shared_taxa=sorted(shared_taxa), shared_splits=pairs)
+
+
 def _informative_biophylo_clades(tree: Tree, shared_taxa: set[str]) -> dict[frozenset[str], Clade]:
     clades: dict[frozenset[str], Clade] = {}
 
@@ -251,38 +330,25 @@ def compare_tree_paths(left_path: Path, right_path: Path) -> TreeComparisonRepor
     """Compare two trees over their shared taxa."""
     left = _load_tree(left_path)
     right = _load_tree(right_path)
-    left_taxa = set(left.tip_names)
-    right_taxa = set(right.tip_names)
-    shared_taxa = left_taxa & right_taxa
-    if len(shared_taxa) < 2:
-        raise ValueError("tree comparison requires at least two shared taxa")
-
-    left_clades = _informative_clades(left, shared_taxa)
-    right_clades = _informative_clades(right, shared_taxa)
-    symmetric_difference = left_clades.symmetric_difference(right_clades)
-    denominator = len(left_clades) + len(right_clades)
-    normalized = 0.0 if denominator == 0 else len(symmetric_difference) / denominator
-    topology_equal = len(symmetric_difference) == 0
-    same_unrooted_topology = _unrooted_splits(left, shared_taxa) == _unrooted_splits(right, shared_taxa)
-    same_taxa_different_rooting = left_taxa == right_taxa and same_unrooted_topology and not topology_equal
-    branch_report = compare_branch_lengths(left_path, right_path)
-    same_topology_different_branch_lengths = topology_equal and any(
+    comparison = _compare_tree_objects(left, right)
+    branch_report = _compare_branch_lengths_for_trees(left, right)
+    same_topology_different_branch_lengths = comparison.topology_equal and any(
         row.left_length != row.right_length
         for row in branch_report.shared_splits
     )
     return TreeComparisonReport(
         left_path=left_path,
         right_path=right_path,
-        shared_taxa=sorted(shared_taxa),
-        left_only_taxa=sorted(left_taxa - right_taxa),
-        right_only_taxa=sorted(right_taxa - left_taxa),
-        left_informative_clades=len(left_clades),
-        right_informative_clades=len(right_clades),
-        robinson_foulds_distance=len(symmetric_difference),
-        normalized_robinson_foulds=normalized,
-        topology_equal=topology_equal,
-        same_unrooted_topology=same_unrooted_topology,
-        same_taxa_different_rooting=same_taxa_different_rooting,
+        shared_taxa=comparison.shared_taxa,
+        left_only_taxa=comparison.left_only_taxa,
+        right_only_taxa=comparison.right_only_taxa,
+        left_informative_clades=comparison.left_informative_clades,
+        right_informative_clades=comparison.right_informative_clades,
+        robinson_foulds_distance=comparison.robinson_foulds_distance,
+        normalized_robinson_foulds=comparison.normalized_robinson_foulds,
+        topology_equal=comparison.topology_equal,
+        same_unrooted_topology=comparison.same_unrooted_topology,
+        same_taxa_different_rooting=comparison.same_taxa_different_rooting,
         same_topology_different_branch_lengths=same_topology_different_branch_lengths,
     )
 
@@ -319,38 +385,12 @@ def compare_branch_lengths(left_path: Path, right_path: Path) -> BranchLengthCom
     """Compare branch lengths across matching informative splits."""
     left = _load_tree(left_path)
     right = _load_tree(right_path)
-    left_taxa = set(left.tip_names)
-    right_taxa = set(right.tip_names)
-    shared_taxa = left_taxa & right_taxa
-    if len(shared_taxa) < 2:
-        raise ValueError("branch-length comparison requires at least two shared taxa")
-
-    left_clades = _informative_clade_nodes(left, shared_taxa)
-    right_clades = _informative_clade_nodes(right, shared_taxa)
-    shared_clade_ids = sorted(left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item))
-    pairs: list[BranchLengthPair] = []
-    for clade_id in shared_clade_ids:
-        left_length = left_clades[clade_id].branch_length
-        right_length = right_clades[clade_id].branch_length
-        delta = None if left_length is None or right_length is None else right_length - left_length
-        ratio = None
-        if left_length not in {None, 0} and right_length is not None:
-            ratio = right_length / left_length
-        pairs.append(
-            BranchLengthPair(
-                split_id="|".join(sorted(clade_id)),
-                left_length=left_length,
-                right_length=right_length,
-                delta=delta,
-                ratio=ratio,
-            )
-        )
-
+    comparison = _compare_branch_lengths_for_trees(left, right)
     return BranchLengthComparisonReport(
         left_path=left_path,
         right_path=right_path,
-        shared_taxa=sorted(shared_taxa),
-        shared_splits=pairs,
+        shared_taxa=comparison.shared_taxa,
+        shared_splits=comparison.shared_splits,
     )
 
 
