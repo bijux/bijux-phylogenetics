@@ -71,6 +71,9 @@ bijux-phylogenetics --help
 - simulate birth-death or coalescent trees, Brownian or OU continuous traits, discrete traits, and DNA or protein alignments
 - benchmark validation, tree comparison, and alignment diagnostics across increasing problem sizes
 - root trees on explicit outgroups or reroot them by midpoint
+- audit rooting, ordering, clade extraction, and pruning transforms with before/after summaries and retained-versus-removed taxon reasoning
+- validate tree roundtrips across Newick, Nexus, and phyloXML formats with topology-preservation checks, support-label audits, and semantic-loss warnings
+- audit ambiguous taxon identities, whitespace or underscore collisions, and suspicious near-duplicate labels before downstream comparison or linkage
 - produce HTML reports and file-level evidence manifests
 
 ## Example CLI Runs

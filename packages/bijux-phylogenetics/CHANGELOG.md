@@ -19,3 +19,4 @@
 - embed coding diagnostics and identity matrices in phylo-input reports
 - add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
 - add tree integrity validation, validity decisions, rootedness confidence, node-stable forensic reporting, and external-label safety audits
+- add audited topology transforms, pruning artifact summaries, taxon-identity conflict detection, and cross-format tree roundtrip validation with semantic-loss reporting
