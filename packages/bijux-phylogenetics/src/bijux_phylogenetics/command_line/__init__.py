@@ -81,6 +81,17 @@ from bijux_phylogenetics.distance import (
     validate_imported_distance_matrix,
     write_genetic_distance_matrix,
 )
+from bijux_phylogenetics.engines import (
+    compare_fast_and_ml_trees,
+    read_engine_version,
+    run_alignment_trimming,
+    run_bootstrap_consensus_tree,
+    run_bootstrap_support_estimation,
+    run_fast_tree_inference,
+    run_maximum_likelihood_tree_inference,
+    run_model_selection,
+    run_multiple_sequence_alignment,
+)
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
@@ -211,6 +222,13 @@ def _json_requested(args: Any) -> bool:
 
 def _add_manifest_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--manifest", type=Path, help="Write a reproducibility manifest to this JSON path.")
+
+
+def _adapter_version_args(engine_name: str) -> tuple[str, ...]:
+    normalized = engine_name.lower()
+    if normalized == "fasttree":
+        return ("-help",)
+    return ("--version",)
 
 
 def _finalize_outputs(
@@ -381,7 +399,18 @@ def _command_inputs(args: Any) -> list[Path | str]:
             inputs.append(args.metadata)
         return inputs
     if args.command == "adapter":
-        return [args.adapter_name]
+        if args.adapter_command == "inspect":
+            return [args.engine_name]
+        if args.adapter_command == "compare":
+            inputs = [args.fast_tree, args.ml_tree]
+            if args.out is not None:
+                inputs.append(args.out)
+            return inputs
+        if getattr(args, "out", None) is not None:
+            return [args.input_path, args.out]
+        if getattr(args, "out_dir", None) is not None:
+            return [args.input_path, args.out_dir]
+        return [args.input_path]
     return []
 
 
@@ -1083,8 +1112,73 @@ def build_parser() -> argparse.ArgumentParser:
     _add_manifest_argument(demo_run)
 
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
-    adapter.add_argument("adapter_name")
-    adapter.add_argument("--json", action="store_true", help="Emit the adapter report as JSON.")
+    adapter_subparsers = adapter.add_subparsers(dest="adapter_command", required=True)
+    adapter_inspect = adapter_subparsers.add_parser("inspect", help="Report external engine version metadata.")
+    adapter_inspect.add_argument("engine_name", choices=("mafft", "trimal", "iqtree", "FastTree"))
+    adapter_inspect.add_argument("--executable", type=str)
+    adapter_inspect.add_argument("--json", action="store_true", help="Emit the adapter report as JSON.")
+    _add_manifest_argument(adapter_inspect)
+    adapter_align = adapter_subparsers.add_parser("align", help="Run multiple-sequence alignment on unaligned FASTA.")
+    adapter_align.add_argument("input_path", type=Path)
+    adapter_align.add_argument("--out", required=True, type=Path)
+    adapter_align.add_argument("--executable", type=str)
+    adapter_align.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_align)
+    adapter_trim = adapter_subparsers.add_parser("trim", help="Run external alignment trimming.")
+    adapter_trim.add_argument("input_path", type=Path)
+    adapter_trim.add_argument("--out", required=True, type=Path)
+    adapter_trim.add_argument("--gap-threshold", type=float, default=0.1)
+    adapter_trim.add_argument("--executable", type=str)
+    adapter_trim.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_trim)
+    adapter_model = adapter_subparsers.add_parser("model-select", help="Run external sequence-model selection.")
+    adapter_model.add_argument("input_path", type=Path)
+    adapter_model.add_argument("--out-dir", required=True, type=Path)
+    adapter_model.add_argument("--prefix", default="model-selection")
+    adapter_model.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_model.add_argument("--executable", type=str)
+    adapter_model.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_model)
+    adapter_ml = adapter_subparsers.add_parser("infer-ml", help="Run maximum-likelihood tree inference.")
+    adapter_ml.add_argument("input_path", type=Path)
+    adapter_ml.add_argument("--out-dir", required=True, type=Path)
+    adapter_ml.add_argument("--model", required=True)
+    adapter_ml.add_argument("--prefix", default="maximum-likelihood")
+    adapter_ml.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_ml.add_argument("--executable", type=str)
+    adapter_ml.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_ml)
+    adapter_bootstrap = adapter_subparsers.add_parser("bootstrap", help="Run bootstrap support estimation.")
+    adapter_bootstrap.add_argument("input_path", type=Path)
+    adapter_bootstrap.add_argument("--out-dir", required=True, type=Path)
+    adapter_bootstrap.add_argument("--model", required=True)
+    adapter_bootstrap.add_argument("--replicates", type=int, default=1000)
+    adapter_bootstrap.add_argument("--prefix", default="bootstrap-support")
+    adapter_bootstrap.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_bootstrap.add_argument("--executable", type=str)
+    adapter_bootstrap.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_bootstrap)
+    adapter_consensus = adapter_subparsers.add_parser("consensus", help="Build a consensus tree from bootstrap trees.")
+    adapter_consensus.add_argument("input_path", type=Path)
+    adapter_consensus.add_argument("--out-dir", required=True, type=Path)
+    adapter_consensus.add_argument("--prefix", default="bootstrap-consensus")
+    adapter_consensus.add_argument("--minimum-support", type=float, default=0.5)
+    adapter_consensus.add_argument("--executable", type=str)
+    adapter_consensus.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_consensus)
+    adapter_fast = adapter_subparsers.add_parser("infer-fast", help="Run fast approximate tree inference.")
+    adapter_fast.add_argument("input_path", type=Path)
+    adapter_fast.add_argument("--out", required=True, type=Path)
+    adapter_fast.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_fast.add_argument("--executable", type=str)
+    adapter_fast.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_fast)
+    adapter_compare = adapter_subparsers.add_parser("compare", help="Compare fast approximate and ML trees.")
+    adapter_compare.add_argument("--fast-tree", required=True, type=Path)
+    adapter_compare.add_argument("--ml-tree", required=True, type=Path)
+    adapter_compare.add_argument("--out", required=True, type=Path)
+    adapter_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    _add_manifest_argument(adapter_compare)
 
     return parser
 
@@ -3014,7 +3108,229 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             raise NotImplementedError(f"unsupported report command: {args.report_command}")
         if args.command == "adapter":
-            raise EngineUnavailableError(f"adapter is not available in this runtime: {args.adapter_name}")
+            if args.adapter_command == "inspect":
+                executable = args.executable or args.engine_name
+                report = read_engine_version(
+                    args.engine_name,
+                    executable,
+                    version_args=_adapter_version_args(args.engine_name),
+                )
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.engine_name])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.engine_name],
+                        outputs=outputs,
+                        metrics={"version_line_count": len(report.text.splitlines())},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "align":
+                report = run_multiple_sequence_alignment(
+                    args.input_path,
+                    args.out,
+                    executable=args.executable or "mafft",
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"warning_count": len(report.run.warning_lines)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "trim":
+                report = run_alignment_trimming(
+                    args.input_path,
+                    args.out,
+                    executable=args.executable or "trimal",
+                    gap_threshold=args.gap_threshold,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"warning_count": len(report.run.warning_lines)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "model-select":
+                report = run_model_selection(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    prefix=args.prefix,
+                    executable=args.executable or "iqtree2",
+                    sequence_type=args.sequence_type,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"selected_model": report.selected_model},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "infer-ml":
+                report = run_maximum_likelihood_tree_inference(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    model=args.model,
+                    prefix=args.prefix,
+                    executable=args.executable or "iqtree2",
+                    sequence_type=args.sequence_type,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"selected_model": report.selected_model},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "bootstrap":
+                report = run_bootstrap_support_estimation(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    model=args.model,
+                    replicates=args.replicates,
+                    prefix=args.prefix,
+                    executable=args.executable or "iqtree2",
+                    sequence_type=args.sequence_type,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"bootstrap_replicates": args.replicates},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "consensus":
+                report = run_bootstrap_consensus_tree(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    prefix=args.prefix,
+                    executable=args.executable or "iqtree2",
+                    minimum_support=args.minimum_support,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"minimum_support": args.minimum_support},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "infer-fast":
+                report = run_fast_tree_inference(
+                    args.input_path,
+                    args.out,
+                    executable=args.executable or "FastTree",
+                    sequence_type=args.sequence_type,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"warning_count": len(report.run.warning_lines)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "compare":
+                report = compare_fast_and_ml_trees(args.fast_tree, args.ml_tree, out_path=args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.fast_tree, args.ml_tree],
+                    outputs=[report.comparison_report.output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.fast_tree, args.ml_tree],
+                        outputs=outputs,
+                        metrics={
+                            "shared_taxa": len(report.comparison_report.topology.shared_taxa),
+                            "robinson_foulds_distance": report.comparison_report.topology.robinson_foulds_distance,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            raise EngineUnavailableError(f"unsupported adapter command: {args.adapter_command}")
     except PhylogeneticsError as error:
         if _json_requested(args):
             _print_result(

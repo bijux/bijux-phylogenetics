@@ -3638,7 +3638,7 @@ def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(tmp_path: P
 
 
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
-    exit_code = main(["adapter", "iqtree", "--json"])
+    exit_code = main(["adapter", "inspect", "iqtree", "--executable", "definitely-not-installed-engine", "--json"])
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 2
