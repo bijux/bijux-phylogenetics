@@ -60,7 +60,8 @@ bijux-phylogenetics --help
 - compare fast approximate and maximum-likelihood trees through the same deterministic tree-comparison report surface
 - resume inference only when saved manifests, inputs, and outputs still match, and render standalone HTML inference workflow reports from those manifests
 - export joined metadata rows and missing trait-value diagnostics
-- inspect alignment alphabets, composition, GC content, duplicates, composition outliers, coding stop codons, and frameshift-like sequence lengths
+- inspect alignment alphabets, composition, GC content, duplicates, raw-sequence length outliers, sliding-window quality, suspicious alignment regions, coding stop codons, and frameshift-like sequence lengths
+- classify FASTA inputs as aligned, raw-sequence, or equal-length-but-shape-ambiguous and report method-specific alignment readiness
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
 - compute p-distance or Jukes-Cantor DNA distance matrices with pairwise-deletion or complete-deletion gap handling
@@ -79,6 +80,10 @@ bijux-phylogenetics --help
 ## Example CLI Runs
 
 ```bash
+bijux-phylogenetics alignment classify sequences.fasta --json
+bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json
+bijux-phylogenetics alignment readiness alignment.fasta --json
+bijux-phylogenetics alignment length-outliers sequences.fasta --json
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model p-distance --out distances.tsv
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
