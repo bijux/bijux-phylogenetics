@@ -38,7 +38,7 @@ bijux-phylogenetics --help
 
 - parse Newick trees and FASTA alignments
 - inspect tree shape and branch-length health
-- inspect internal child counts, singleton nodes, missing internal versus terminal branch lengths, and branch-length outlier nodes
+- inspect internal child counts, singleton nodes, missing internal versus terminal branch lengths, branch-length outlier nodes, support normalization, and tree-assumption compatibility
 - normalize unsafe taxon labels and audit normalization collisions
 - prune trees from explicit taxa, exclusions, traits, or metadata tables
 - classify internal node labels as support-like or name-like and detect suspicious or mixed support scales
@@ -50,6 +50,7 @@ bijux-phylogenetics --help
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
 - compute p-distance or Jukes-Cantor DNA distance matrices with pairwise-deletion or complete-deletion gap handling
 - build Neighbor-Joining or UPGMA trees from computed DNA distance matrices and compare their topologies
+- validate imported long-form distance matrices, detect nonmetric violations, and build trees from imported distances
 - root trees on explicit outgroups or reroot them by midpoint
 - produce HTML reports and file-level evidence manifests
 
@@ -59,6 +60,8 @@ bijux-phylogenetics --help
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model p-distance --out distances.tsv
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
+bijux-phylogenetics distance validate distances.tsv --json
+bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
