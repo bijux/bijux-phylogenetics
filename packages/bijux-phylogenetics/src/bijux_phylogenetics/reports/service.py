@@ -22,7 +22,14 @@ from bijux_phylogenetics.distance import (
     compute_pairwise_genetic_distance_matrix,
     validate_imported_distance_matrix,
 )
-from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.diagnostics.validation import (
+    TreeForensicReport,
+    TreeInspectionReport,
+    TreeValidationReport,
+    forensic_tree_path,
+    inspect_tree_path,
+    validate_tree_path,
+)
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.fasta import (
     build_alignment_quality_report,
@@ -65,6 +72,7 @@ class ReportBuildResult:
     title: str
     validation: TreeValidationReport
     inspection: TreeInspectionReport
+    forensic: TreeForensicReport
     metadata_linkage: TableLinkageReport | None
     traits_linkage: TableLinkageReport | None
     trait_missing_values: TraitMissingValueReport | None
@@ -184,10 +192,12 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
     """Build the explicit single-tree report contract."""
     validation = validate_tree_path(tree_path)
     inspection = inspect_tree_path(tree_path)
+    forensic = forensic_tree_path(tree_path)
     title = "Bijux Tree Report"
     sections = [
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
+        _section("tree-forensic", asdict(forensic)),
     ]
     machine_manifest = _build_machine_manifest(
         report_kind="tree",
@@ -203,6 +213,7 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
         title=title,
         validation=validation,
         inspection=inspection,
+        forensic=forensic,
         metadata_linkage=None,
         traits_linkage=None,
         trait_missing_values=None,
@@ -226,6 +237,7 @@ def render_dataset_report(
     """Build the explicit tree plus table dataset report contract."""
     validation = validate_tree_path(tree_path)
     inspection = inspect_tree_path(tree_path)
+    forensic = forensic_tree_path(tree_path)
     metadata_linkage = annotate_tree_against_table(tree_path, metadata_path)
     traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path is not None else None
     trait_missing_values = detect_missing_trait_values(traits_path) if traits_path is not None else None
@@ -238,6 +250,7 @@ def render_dataset_report(
     sections = [
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
+        _section("tree-forensic", asdict(forensic)),
         _section("metadata-linkage", asdict(metadata_linkage)),
     ]
     if traits_linkage is not None:
@@ -263,6 +276,7 @@ def render_dataset_report(
         title=title,
         validation=validation,
         inspection=inspection,
+        forensic=forensic,
         metadata_linkage=metadata_linkage,
         traits_linkage=traits_linkage,
         trait_missing_values=trait_missing_values,
@@ -285,6 +299,7 @@ def render_phylo_inputs_report(
     """Build the explicit tree plus alignment input report contract."""
     validation = validate_tree_path(tree_path)
     inspection = inspect_tree_path(tree_path)
+    forensic = forensic_tree_path(tree_path)
     alignment = summarise_fasta(alignment_path)
     alignment_quality = build_alignment_quality_report(alignment_path)
     alignment_coding = (
@@ -298,6 +313,7 @@ def render_phylo_inputs_report(
     sections = [
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
+        _section("tree-forensic", asdict(forensic)),
         _section("alignment-summary", asdict(alignment)),
         _section("alignment-quality", asdict(alignment_quality)),
         *([_section("alignment-coding", asdict(alignment_coding))] if alignment_coding is not None else []),
@@ -318,6 +334,7 @@ def render_phylo_inputs_report(
         title=title,
         validation=validation,
         inspection=inspection,
+        forensic=forensic,
         metadata_linkage=None,
         traits_linkage=None,
         trait_missing_values=None,
@@ -458,6 +475,7 @@ def render_phylogenetics_report(
     """Build an HTML report around a tree and optional evidence tables."""
     validation = validate_tree_path(tree_path)
     inspection = inspect_tree_path(tree_path)
+    forensic = forensic_tree_path(tree_path)
     alignment = summarise_fasta(alignment_path) if alignment_path else None
     alignment_quality = build_alignment_quality_report(alignment_path) if alignment_path else None
     alignment_coding = (
@@ -482,6 +500,7 @@ def render_phylogenetics_report(
     sections = [
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
+        _section("tree-forensic", asdict(forensic)),
     ]
     if alignment is not None:
         sections.append(_section("alignment-summary", asdict(alignment)))
@@ -522,6 +541,7 @@ def render_phylogenetics_report(
         title=title,
         validation=validation,
         inspection=inspection,
+        forensic=forensic,
         metadata_linkage=metadata_linkage,
         traits_linkage=traits_linkage,
         trait_missing_values=trait_missing_values,
