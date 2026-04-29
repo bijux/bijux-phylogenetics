@@ -53,10 +53,12 @@ alignment trimming, coding-sequence translation, identity-matrix export,
 DNA distance-matrix analysis, distance-tree construction, explicit rooting
 transforms, comparative trait readiness, phylogenetic independent contrasts,
 phylogenetic signal estimation, phylogenetic generalized least-squares,
-tree-set consensus and posterior uncertainty analysis, tree and alignment
-simulation, scientific benchmarking, deterministic SVG tree rendering,
-publication figure packaging, evidence manifests, and HTML report generation
-rather than likelihood or Bayesian tree inference.
+continuous and discrete ancestral-state reconstruction, ancestral uncertainty
+reporting, ancestral tree rendering, tree-set consensus and posterior
+uncertainty analysis, tree and alignment simulation, scientific benchmarking,
+deterministic SVG tree rendering, publication figure packaging, evidence
+manifests, and HTML report generation rather than likelihood or Bayesian tree
+inference.
 
 Recent tree diagnostics now also classify internal-node child counts, missing
 internal versus terminal branch lengths, singleton internal nodes, branch-length
@@ -109,6 +111,10 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics comparative contrasts tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json`
+- `uv run bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json`
+- `uv run bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json`
+- `uv run bijux-phylogenetics ancestral compare tree.nwk traits.tsv --trait height_cm --left-model brownian --right-model ou --json`
+- `uv run bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html`
 - `uv run bijux-phylogenetics tree-set inspect posterior.trees --json`
 - `uv run bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk`
 - `uv run bijux-phylogenetics tree-set compare posterior-a.trees posterior-b.trees --json`
