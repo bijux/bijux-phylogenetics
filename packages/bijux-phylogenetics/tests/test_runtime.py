@@ -52,6 +52,16 @@ from bijux_phylogenetics.distance import (
     load_imported_distance_matrix,
     validate_imported_distance_matrix,
 )
+from bijux_phylogenetics.engines import (
+    compare_fast_and_ml_trees,
+    run_alignment_trimming,
+    run_bootstrap_consensus_tree,
+    run_bootstrap_support_estimation,
+    run_fast_tree_inference,
+    run_maximum_likelihood_tree_inference,
+    run_model_selection,
+    run_multiple_sequence_alignment,
+)
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_alignment_to_tree,
@@ -229,6 +239,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
     assert bijux_phylogenetics.render_ancestral_state_report is render_ancestral_state_report
     assert bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
+    assert bijux_phylogenetics.run_multiple_sequence_alignment is run_multiple_sequence_alignment
+    assert bijux_phylogenetics.run_alignment_trimming is run_alignment_trimming
+    assert bijux_phylogenetics.run_model_selection is run_model_selection
+    assert bijux_phylogenetics.run_maximum_likelihood_tree_inference is run_maximum_likelihood_tree_inference
+    assert bijux_phylogenetics.run_bootstrap_support_estimation is run_bootstrap_support_estimation
+    assert bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
+    assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
+    assert bijux_phylogenetics.compare_fast_and_ml_trees is compare_fast_and_ml_trees
 
 
 def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(tmp_path: Path) -> None:
