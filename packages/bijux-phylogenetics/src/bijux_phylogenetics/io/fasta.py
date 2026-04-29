@@ -7,23 +7,32 @@ from Bio.Data import CodonTable
 
 from bijux_phylogenetics.core.alignment import (
     AlignmentAlphabet,
+    AlignmentMethodReadiness,
     AlignmentQualityReport,
+    AlignmentReadinessReport,
     AlignmentLinkageReport,
     AlignmentRecord,
+    AlignmentSequenceKindReport,
     AlignmentSummary,
+    AlignmentSuspiciousRegion,
     AlignmentTrimReport,
+    AlignmentWindowSummary,
     CodingAlignmentDiagnostics,
     DuplicateSequenceGroup,
     FrameshiftLikeSequence,
     InvalidAlignmentCharacter,
     NearDuplicateSequencePair,
     PairwiseSequenceIdentity,
+    PartialCodonSequence,
     RemovedAlignmentSequence,
     SequenceMissingness,
+    SequenceLengthOutlier,
     SequenceIdentityMatrix,
     SequenceCompositionOutlier,
     SequenceGCContent,
+    SequenceUncertaintyProfile,
     SiteMissingness,
+    SiteUncertaintyProfile,
     StopCodonObservation,
     TranslationReport,
     TrimmedAlignmentColumn,
@@ -32,7 +41,7 @@ from bijux_phylogenetics.errors import AlignmentTaxonMismatchError, InvalidAlign
 from bijux_phylogenetics.io.trees import load_tree
 
 _GAP_CHARACTERS = {"-"}
-_MISSING_CHARACTERS = {"?", "N", "n", "X", "x"}
+_EXPLICIT_MISSING_CHARACTERS = {"?"}
 _DNA_CHARACTERS = set("ACGTNRYSWKMBDHVacgtnryswkmbdhv")
 _RNA_CHARACTERS = set("ACGUNRYSWKMBDHVacgunryswkmbdhv")
 _NUCLEOTIDE_GC_CHARACTERS = {"G", "C", "g", "c"}
@@ -41,6 +50,9 @@ _RNA_CANONICAL = ("A", "C", "G", "U")
 _PROTEIN_CHARACTERS = set("ABCDEFGHIKLMNPQRSTVWXYZabcdefghiklmnpqrstvwxyz*")
 _PROTEIN_CANONICAL = tuple("ACDEFGHIKLMNPQRSTVWY")
 _DNA_BASES = {"A", "C", "G", "T"}
+_DNA_AMBIGUITY_UPPER = {"N", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V"}
+_RNA_AMBIGUITY_UPPER = {"N", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V"}
+_PROTEIN_AMBIGUITY_UPPER = {"B", "J", "X", "Z"}
 _STANDARD_DNA_TABLE = CodonTable.unambiguous_dna_by_name["Standard"]
 _STANDARD_FORWARD_TABLE = _STANDARD_DNA_TABLE.forward_table
 _STANDARD_STOP_CODONS = set(_STANDARD_DNA_TABLE.stop_codons)
@@ -51,12 +63,48 @@ def _validate_fraction_threshold(threshold: float) -> None:
         raise ValueError(f"threshold must be between 0 and 1 inclusive, got {threshold}")
 
 
+def _median_absolute_deviation(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    center = median(values)
+    return float(median([abs(value - center) for value in values]))
+
+
+def _robust_z_score(value: float, values: list[float]) -> float | None:
+    mad = _median_absolute_deviation(values)
+    if mad == 0.0:
+        return None
+    return round(0.6744897501960817 * (value - float(median(values))) / mad, 15)
+
+
+def _is_explicit_missing(residue: str) -> bool:
+    return residue in _EXPLICIT_MISSING_CHARACTERS
+
+
+def _ambiguity_characters_for_alphabet(alphabet: AlignmentAlphabet) -> set[str]:
+    if alphabet == "dna":
+        return {character.lower() for character in _DNA_AMBIGUITY_UPPER} | _DNA_AMBIGUITY_UPPER
+    if alphabet == "rna":
+        return {character.lower() for character in _RNA_AMBIGUITY_UPPER} | _RNA_AMBIGUITY_UPPER
+    if alphabet == "protein":
+        return {character.lower() for character in _PROTEIN_AMBIGUITY_UPPER} | _PROTEIN_AMBIGUITY_UPPER
+    return set()
+
+
+def _is_ambiguity_character(residue: str, *, alphabet: AlignmentAlphabet) -> bool:
+    return residue in _ambiguity_characters_for_alphabet(alphabet)
+
+
+def _is_missing_like(residue: str, *, alphabet: AlignmentAlphabet) -> bool:
+    return _is_explicit_missing(residue) or _is_ambiguity_character(residue, alphabet=alphabet)
+
+
 def _observed_residues(records: list[AlignmentRecord]) -> list[str]:
     return [
         residue
         for record in records
         for residue in record.sequence
-        if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+        if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
     ]
 
 
@@ -83,11 +131,11 @@ def detect_invalid_alignment_characters(
     """List sequence characters invalid for the declared alphabet."""
     records = load_fasta_alignment(path)
     if alphabet == "dna":
-        allowed = _DNA_CHARACTERS | _GAP_CHARACTERS | _MISSING_CHARACTERS
+        allowed = _DNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
     elif alphabet == "rna":
-        allowed = _RNA_CHARACTERS | _GAP_CHARACTERS | _MISSING_CHARACTERS
+        allowed = _RNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
     elif alphabet == "protein":
-        allowed = _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _MISSING_CHARACTERS
+        allowed = _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
     else:
         raise ValueError(f"unsupported declared alphabet: {alphabet}")
 
@@ -180,28 +228,44 @@ def detect_composition_outlier_sequences(
         per_sequence_gc = [row for row in compute_per_sequence_gc_content(records, alphabet=alphabet) if row.gc_fraction is not None]
         if len(per_sequence_gc) < 2:
             return []
-        baseline = median(row.gc_fraction for row in per_sequence_gc if row.gc_fraction is not None)
+        gc_values = [float(row.gc_fraction) for row in per_sequence_gc if row.gc_fraction is not None]
+        baseline = median(gc_values)
         return sorted(
             [
                 SequenceCompositionOutlier(
                     identifier=row.identifier,
                     deviation=round(abs(float(row.gc_fraction) - baseline), 15),
+                    robust_z_score=None if row.gc_fraction is None else _robust_z_score(float(row.gc_fraction), gc_values),
                 )
                 for row in per_sequence_gc
-                if row.gc_fraction is not None and abs(float(row.gc_fraction) - baseline) > deviation_threshold
+                if row.gc_fraction is not None
+                and (
+                    abs(float(row.gc_fraction) - baseline) > deviation_threshold
+                    or abs(_robust_z_score(float(row.gc_fraction), gc_values) or 0.0) >= 3.5
+                )
             ],
             key=lambda item: (-item.deviation, item.identifier),
         )
 
     if alphabet == "protein":
         profile = compute_amino_acid_composition(records, alphabet=alphabet)
-        outliers: list[SequenceCompositionOutlier] = []
+        deviations_by_identifier: dict[str, float] = {}
         for record in records:
             sequence_profile = compute_amino_acid_composition([record], alphabet=alphabet)
             deviation = sum(abs(sequence_profile.get(key, 0.0) - profile.get(key, 0.0)) for key in set(sequence_profile) | set(profile))
-            if deviation > deviation_threshold:
+            deviations_by_identifier[record.identifier] = round(deviation, 15)
+        deviation_values = list(deviations_by_identifier.values())
+        outliers: list[SequenceCompositionOutlier] = []
+        for record in records:
+            deviation = deviations_by_identifier[record.identifier]
+            robust_z_score = _robust_z_score(deviation, deviation_values)
+            if deviation > deviation_threshold or abs(robust_z_score or 0.0) >= 3.5:
                 outliers.append(
-                    SequenceCompositionOutlier(identifier=record.identifier, deviation=round(deviation, 15))
+                    SequenceCompositionOutlier(
+                        identifier=record.identifier,
+                        deviation=deviation,
+                        robust_z_score=robust_z_score,
+                    )
                 )
         return sorted(outliers, key=lambda item: (-item.deviation, item.identifier))
     return []
@@ -226,8 +290,8 @@ def _pairwise_identity(left: str, right: str) -> tuple[float, int]:
         for left_residue, right_residue in zip(left, right, strict=True)
         if left_residue not in _GAP_CHARACTERS
         and right_residue not in _GAP_CHARACTERS
-        and left_residue not in _MISSING_CHARACTERS
-        and right_residue not in _MISSING_CHARACTERS
+        and not _is_explicit_missing(left_residue)
+        and not _is_explicit_missing(right_residue)
     ]
     if not comparable_pairs:
         return 0.0, 0
@@ -482,7 +546,7 @@ def compute_pairwise_sequence_identity_matrix(path: Path) -> SequenceIdentityMat
                             [
                                 residue
                                 for residue in left.sequence
-                                if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+                                if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
                             ]
                         ),
                     )
@@ -526,7 +590,7 @@ def _coding_residues(sequence: str) -> str:
     return "".join(
         residue.upper().replace("U", "T")
         for residue in sequence
-        if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+        if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
     )
 
 
@@ -561,9 +625,10 @@ def detect_stop_codons(path: Path) -> list[StopCodonObservation]:
     records = load_fasta_alignment(path)
     stop_codons: list[StopCodonObservation] = []
     for record in records:
-        codons = _iter_codon_windows(record.sequence.upper().replace("U", "T"))
+        coding_sequence = _coding_residues(record.sequence)
+        codons = _iter_codon_windows(coding_sequence)
         for codon_index, (start, codon) in enumerate(codons, start=1):
-            if set(codon) <= _GAP_CHARACTERS | _MISSING_CHARACTERS:
+            if set(codon) <= _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS:
                 continue
             if any(base not in _DNA_BASES for base in codon):
                 continue
@@ -587,11 +652,21 @@ def inspect_coding_alignment(path: Path) -> CodingAlignmentDiagnostics:
         raise InvalidAlignmentError(
             f"coding diagnostics require a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
         )
+    partial_codon_sequences = [
+        PartialCodonSequence(
+            identifier=row.identifier,
+            comparable_length=row.comparable_length,
+            trailing_bases=row.remainder,
+        )
+        for row in detect_frameshift_like_sequences(path)
+    ]
     return CodingAlignmentDiagnostics(
         path=path,
         sequence_count=summary.sequence_count,
         alignment_length=summary.alignment_length,
+        alignment_length_multiple_of_three=summary.alignment_length % 3 == 0,
         frameshift_like_sequences=detect_frameshift_like_sequences(path),
+        partial_codon_sequences=partial_codon_sequences,
         stop_codons=detect_stop_codons(path),
     )
 
@@ -600,7 +675,7 @@ def _translate_codon(codon: str) -> str:
     normalized = codon.upper().replace("U", "T")
     if set(normalized) <= _GAP_CHARACTERS:
         return "-"
-    if any(base in _GAP_CHARACTERS or base in _MISSING_CHARACTERS for base in normalized):
+    if any(base in _GAP_CHARACTERS or _is_explicit_missing(base) for base in normalized):
         return "X"
     if any(base not in _DNA_BASES for base in normalized):
         return "X"
@@ -640,6 +715,241 @@ def translate_coding_alignment(path: Path) -> tuple[list[AlignmentRecord], Trans
     )
 
 
+def summarize_alignment_windows(
+    path: Path,
+    *,
+    window_size: int = 30,
+    step_size: int = 10,
+) -> list[AlignmentWindowSummary]:
+    """Summarize an aligned FASTA file in sliding windows."""
+    if window_size <= 0:
+        raise ValueError(f"window_size must be positive, got {window_size}")
+    if step_size <= 0:
+        raise ValueError(f"step_size must be positive, got {step_size}")
+
+    summary = summarise_fasta(path)
+    records = load_fasta_alignment(path)
+    windows: list[AlignmentWindowSummary] = []
+    for start_index in range(0, summary.alignment_length, step_size):
+        end_index = min(start_index + window_size, summary.alignment_length)
+        if end_index <= start_index:
+            continue
+        # Flatten into per-position columns for metrics.
+        columns = list(zip(*(record.sequence[start_index:end_index] for record in records), strict=True))
+        if not columns:
+            continue
+
+        gap_count = 0
+        missing_count = 0
+        ambiguity_count = 0
+        variable_sites = 0
+        disagreement_fractions: list[float] = []
+        comparable_sites = 0
+        total_residues = len(records) * len(columns)
+        alphabet = summary.inferred_alphabet
+        for column in columns:
+            gap_count += sum(1 for residue in column if residue in _GAP_CHARACTERS)
+            missing_count += sum(1 for residue in column if _is_explicit_missing(residue))
+            ambiguity_count += sum(
+                1 for residue in column if _is_ambiguity_character(residue, alphabet=alphabet)
+            )
+            comparable = [
+                residue.upper()
+                for residue in column
+                if residue not in _GAP_CHARACTERS
+                and not _is_explicit_missing(residue)
+                and not _is_ambiguity_character(residue, alphabet=alphabet)
+            ]
+            if comparable:
+                comparable_sites += len(comparable)
+                state_counts = {state: comparable.count(state) for state in set(comparable)}
+                if len(state_counts) > 1:
+                    variable_sites += 1
+                disagreement_fractions.append(1.0 - (max(state_counts.values()) / len(comparable)))
+            else:
+                disagreement_fractions.append(0.0)
+
+        windows.append(
+            AlignmentWindowSummary(
+                start=start_index + 1,
+                end=end_index,
+                site_count=len(columns),
+                gap_fraction=round(gap_count / total_residues, 15),
+                missing_fraction=round(missing_count / total_residues, 15),
+                ambiguity_fraction=round(ambiguity_count / total_residues, 15),
+                variable_fraction=round(variable_sites / len(columns), 15),
+                disagreement_fraction=round(sum(disagreement_fractions) / len(disagreement_fractions), 15),
+                comparable_fraction=round(comparable_sites / total_residues, 15),
+            )
+        )
+        if end_index == summary.alignment_length:
+            break
+    return windows
+
+
+def detect_over_aligned_regions(
+    path: Path,
+    *,
+    window_size: int = 30,
+    step_size: int = 10,
+) -> list[AlignmentSuspiciousRegion]:
+    """Flag suspicious windows that look excessively gap-heavy or over-regularized."""
+    regions: list[AlignmentSuspiciousRegion] = []
+    for window in summarize_alignment_windows(path, window_size=window_size, step_size=step_size):
+        uncertainty_fraction = window.gap_fraction + window.missing_fraction + window.ambiguity_fraction
+        if uncertainty_fraction >= 0.4 and window.variable_fraction <= 0.2:
+            regions.append(
+                AlignmentSuspiciousRegion(
+                    start=window.start,
+                    end=window.end,
+                    kind="over_aligned",
+                    score=round(uncertainty_fraction - window.variable_fraction, 15),
+                    note="gap- or ambiguity-heavy window with little residual variability; review for aggressive or artifactual alignment",
+                )
+            )
+    return regions
+
+
+def detect_under_aligned_regions(
+    path: Path,
+    *,
+    window_size: int = 30,
+    step_size: int = 10,
+) -> list[AlignmentSuspiciousRegion]:
+    """Flag suspicious windows with strong local mismatch or gap disorder."""
+    regions: list[AlignmentSuspiciousRegion] = []
+    for window in summarize_alignment_windows(path, window_size=window_size, step_size=step_size):
+        if window.variable_fraction >= 0.7 and window.disagreement_fraction >= 0.35:
+            regions.append(
+                AlignmentSuspiciousRegion(
+                    start=window.start,
+                    end=window.end,
+                    kind="under_aligned",
+                    score=round(window.variable_fraction + window.disagreement_fraction, 15),
+                    note="high local mismatch and disagreement suggest the region may require realignment or masking",
+                )
+            )
+    return regions
+
+
+def summarize_alignment_readiness(path: Path) -> AlignmentReadinessReport:
+    """Classify whether an input alignment is ready for key downstream analysis families."""
+    sequence_kind = classify_alignment_sequences(path)
+    records = load_fasta_records(path)
+    inferred_alphabet = infer_alignment_alphabet(records)
+    sequence_count = len(records)
+    alignment_length = sequence_kind.max_sequence_length if sequence_kind.state != "raw_sequence_fasta" else None
+    methods: list[AlignmentMethodReadiness] = []
+    warnings: list[str] = []
+    length_outliers = detect_sequence_length_outliers(path)
+
+    if sequence_kind.state == "raw_sequence_fasta":
+        common_blocker = ["input sequences are not yet aligned"]
+        methods.extend(
+            [
+                AlignmentMethodReadiness(analysis="distance", ready=False, blockers=common_blocker, warnings=[]),
+                AlignmentMethodReadiness(analysis="maximum_likelihood", ready=False, blockers=common_blocker, warnings=[]),
+                AlignmentMethodReadiness(analysis="bayesian", ready=False, blockers=common_blocker, warnings=[]),
+                AlignmentMethodReadiness(analysis="coding", ready=False, blockers=common_blocker, warnings=[]),
+                AlignmentMethodReadiness(analysis="protein", ready=inferred_alphabet == "protein", blockers=[] if inferred_alphabet == "protein" else common_blocker, warnings=[]),
+            ]
+        )
+        if length_outliers:
+            warnings.append("raw sequences include substantial length outliers before alignment")
+        return AlignmentReadinessReport(
+            path=path,
+            sequence_kind=sequence_kind,
+            inferred_alphabet=inferred_alphabet,
+            sequence_count=sequence_count,
+            alignment_length=alignment_length,
+            methods=methods,
+            warnings=warnings,
+        )
+
+    summary = summarise_fasta(path)
+    quality = build_alignment_quality_report(path)
+    over_aligned = detect_over_aligned_regions(path)
+    under_aligned = detect_under_aligned_regions(path)
+    coding = inspect_coding_alignment(path) if inferred_alphabet in {"dna", "rna"} else None
+
+    def _method(analysis: str, ready: bool, blockers: list[str], extra_warnings: list[str]) -> AlignmentMethodReadiness:
+        return AlignmentMethodReadiness(analysis=analysis, ready=ready, blockers=blockers, warnings=extra_warnings)
+
+    generic_warnings: list[str] = []
+    if sequence_kind.state == "ambiguous_equal_length_fasta":
+        generic_warnings.append("equal-length ungapped FASTA may be aligned, but prior alignment cannot be proved from sequence shape alone")
+    if over_aligned:
+        generic_warnings.append("one or more windows look suspiciously over-aligned")
+    if under_aligned:
+        generic_warnings.append("one or more windows look suspiciously under-aligned")
+    if quality.composition_outliers:
+        generic_warnings.append("composition outliers may bias downstream inference")
+    if quality.sequence_length_outliers:
+        generic_warnings.append("sequence length outliers suggest problematic trimming, concatenation, or mixed loci")
+    warnings.extend(generic_warnings)
+
+    base_alignment_blockers = ["alignment contains invalid characters for the inferred alphabet"] if quality.invalid_characters else []
+    distance_blockers = list(base_alignment_blockers)
+    if summary.variable_site_count == 0:
+        distance_blockers.append("alignment has no variable sites")
+    methods.append(
+        _method(
+            "distance",
+            ready=not distance_blockers,
+            blockers=distance_blockers,
+            extra_warnings=generic_warnings,
+        )
+    )
+
+    model_blockers = list(base_alignment_blockers)
+    if summary.variable_site_count == 0:
+        model_blockers.append("alignment has no variable sites")
+    methods.append(
+        _method(
+            "maximum_likelihood",
+            ready=not model_blockers,
+            blockers=model_blockers,
+            extra_warnings=generic_warnings,
+        )
+    )
+    methods.append(
+        _method(
+            "bayesian",
+            ready=not model_blockers,
+            blockers=model_blockers,
+            extra_warnings=generic_warnings,
+        )
+    )
+
+    coding_blockers: list[str] = []
+    coding_warnings = list(generic_warnings)
+    if inferred_alphabet not in {"dna", "rna"}:
+        coding_blockers.append("coding analysis requires a nucleotide alignment")
+    elif coding is not None:
+        if not coding.alignment_length_multiple_of_three:
+            coding_blockers.append("alignment length is not divisible by three")
+        if coding.frameshift_like_sequences:
+            coding_blockers.append("one or more sequences contain partial codons after gaps and missing data are removed")
+        if any(not stop.terminal for stop in coding.stop_codons):
+            coding_blockers.append("one or more sequences contain premature stop codons")
+        if any(stop.terminal for stop in coding.stop_codons):
+            coding_warnings.append("terminal stop codons were detected and should be verified against coding conventions")
+    methods.append(_method("coding", ready=not coding_blockers, blockers=coding_blockers, extra_warnings=coding_warnings))
+
+    protein_blockers = [] if inferred_alphabet == "protein" else ["protein analysis requires an amino-acid alignment"]
+    methods.append(_method("protein", ready=not protein_blockers, blockers=protein_blockers, extra_warnings=generic_warnings))
+
+    return AlignmentReadinessReport(
+        path=path,
+        sequence_kind=sequence_kind,
+        inferred_alphabet=inferred_alphabet,
+        sequence_count=summary.sequence_count,
+        alignment_length=summary.alignment_length,
+        methods=methods,
+        warnings=warnings,
+    )
+
+
 def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
     """Generate a higher-level alignment quality report from composition and identity diagnostics."""
     summary = summarise_fasta(path)
@@ -650,6 +960,7 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
         else detect_invalid_alignment_characters(path, alphabet=inferred_alphabet)
     )
     composition_outliers = detect_composition_outlier_sequences(path)
+    sequence_length_outliers = detect_sequence_length_outliers(path)
     duplicate_sequence_groups = detect_identical_duplicate_sequences(path)
     near_duplicate_pairs = detect_near_duplicate_sequences(path, identity_threshold=0.95)
     warnings: list[str] = []
@@ -657,6 +968,8 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
         warnings.append("alignment contains characters invalid for the inferred alphabet")
     if composition_outliers:
         warnings.append("alignment contains composition outlier sequences")
+    if sequence_length_outliers:
+        warnings.append("alignment contains raw-sequence length outliers")
     if duplicate_sequence_groups:
         warnings.append("alignment contains identical duplicate sequences")
     if near_duplicate_pairs:
@@ -667,19 +980,21 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
         alignment_length=summary.alignment_length,
         missing_data_fraction=summary.missing_data_fraction,
         gap_fraction=summary.gap_fraction,
+        ambiguity_fraction=summary.ambiguity_fraction,
         variable_site_count=summary.variable_site_count,
         parsimony_informative_site_count=summary.parsimony_informative_site_count,
         inferred_alphabet=inferred_alphabet,
         invalid_characters=invalid_characters,
         composition_outliers=composition_outliers,
+        sequence_length_outliers=sequence_length_outliers,
         duplicate_sequence_groups=duplicate_sequence_groups,
         near_duplicate_pairs=near_duplicate_pairs,
         warnings=warnings,
     )
 
 
-def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
-    """Load FASTA records using the repository's deterministic alignment contract."""
+def load_fasta_records(path: Path) -> list[AlignmentRecord]:
+    """Load FASTA records without imposing equal-length alignment requirements."""
     if not path.exists():
         raise FileNotFoundError(f"alignment file not found: {path}")
 
@@ -713,12 +1028,74 @@ def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
     if duplicate_ids:
         raise InvalidAlignmentError(f"alignment contains duplicate sequence ids: {', '.join(duplicate_ids)}")
 
+    return records
+
+
+def classify_alignment_sequences(path: Path) -> AlignmentSequenceKindReport:
+    """Classify whether a FASTA input already behaves like an aligned dataset."""
+    records = load_fasta_records(path)
+    lengths = [len(record.sequence) for record in records]
+    min_length = min(lengths)
+    max_length = max(lengths)
+    has_gaps = any(any(residue in _GAP_CHARACTERS for residue in record.sequence) for record in records)
+
+    if min_length != max_length:
+        state = "raw_sequence_fasta"
+        note = "sequence lengths differ, so the FASTA cannot yet be treated as one aligned matrix"
+    elif has_gaps:
+        state = "aligned"
+        note = "equal sequence lengths with gap characters are consistent with an existing alignment"
+    else:
+        state = "ambiguous_equal_length_fasta"
+        note = "sequence lengths are equal but no gap characters were observed, so prior alignment cannot be proved"
+
+    return AlignmentSequenceKindReport(
+        path=path,
+        sequence_count=len(records),
+        min_sequence_length=min_length,
+        max_sequence_length=max_length,
+        has_gap_characters=has_gaps,
+        state=state,
+        note=note,
+    )
+
+
+def detect_sequence_length_outliers(path: Path) -> list[SequenceLengthOutlier]:
+    """Detect unusually short or long raw sequences before alignment assumptions are imposed."""
+    records = load_fasta_records(path)
+    lengths = [len(record.sequence) for record in records]
+    if len(lengths) < 3:
+        return []
+    median_length = float(median(lengths))
+    if median_length == 0.0:
+        return []
+
+    outliers: list[SequenceLengthOutlier] = []
+    for record in records:
+        robust_z_score = _robust_z_score(len(record.sequence), [float(length) for length in lengths])
+        relative_deviation = abs(len(record.sequence) - median_length) / median_length
+        if relative_deviation >= 0.2 or abs(robust_z_score or 0.0) >= 3.5:
+            note = "longer than baseline" if len(record.sequence) > median_length else "shorter than baseline"
+            outliers.append(
+                SequenceLengthOutlier(
+                    identifier=record.identifier,
+                    raw_length=len(record.sequence),
+                    median_length=median_length,
+                    robust_z_score=robust_z_score,
+                    note=note,
+                )
+            )
+    return sorted(outliers, key=lambda item: (item.raw_length, item.identifier))
+
+
+def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
+    """Load FASTA records using the repository's deterministic alignment contract."""
+    records = load_fasta_records(path)
     lengths = [len(record.sequence) for record in records]
     if min(lengths) != max(lengths):
         raise InvalidAlignmentError(
             f"alignment contains unequal sequence lengths: min={min(lengths)} max={max(lengths)}"
         )
-
     return records
 
 
@@ -741,15 +1118,41 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
     lengths = [len(record.sequence) for record in records]
     total_sites = len(records) * lengths[0]
     gap_count = sum(sum(1 for residue in record.sequence if residue in _GAP_CHARACTERS) for record in records)
-    missing_count = sum(sum(1 for residue in record.sequence if residue in _MISSING_CHARACTERS) for record in records)
+    missing_count = sum(
+        sum(1 for residue in record.sequence if _is_missing_like(residue, alphabet=inferred_alphabet))
+        for record in records
+    )
+    ambiguity_count = sum(
+        sum(1 for residue in record.sequence if _is_ambiguity_character(residue, alphabet=inferred_alphabet))
+        for record in records
+    )
     per_sequence_missingness = [
         SequenceMissingness(
             identifier=record.identifier,
-            missing_fraction=sum(1 for residue in record.sequence if residue in _MISSING_CHARACTERS) / lengths[0],
+            missing_fraction=sum(
+                1 for residue in record.sequence if _is_missing_like(residue, alphabet=inferred_alphabet)
+            )
+            / lengths[0],
+        )
+        for record in records
+    ]
+    per_sequence_uncertainty = [
+        SequenceUncertaintyProfile(
+            identifier=record.identifier,
+            gap_fraction=sum(1 for residue in record.sequence if residue in _GAP_CHARACTERS) / lengths[0],
+            missing_fraction=sum(
+                1 for residue in record.sequence if _is_missing_like(residue, alphabet=inferred_alphabet)
+            )
+            / lengths[0],
+            ambiguity_fraction=sum(
+                1 for residue in record.sequence if _is_ambiguity_character(residue, alphabet=inferred_alphabet)
+            )
+            / lengths[0],
         )
         for record in records
     ]
     per_site_missingness: list[SiteMissingness] = []
+    per_site_uncertainty: list[SiteUncertaintyProfile] = []
     all_gap_columns: list[int] = []
     all_missing_columns: list[int] = []
 
@@ -757,16 +1160,31 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
     variable_site_count = 0
     parsimony_informative_site_count = 0
     for position, column in enumerate(zip(*(record.sequence for record in records), strict=True), start=1):
-        missing_fraction = sum(1 for residue in column if residue in _MISSING_CHARACTERS) / len(records)
+        missing_fraction = sum(
+            1 for residue in column if _is_missing_like(residue, alphabet=inferred_alphabet)
+        ) / len(records)
         per_site_missingness.append(SiteMissingness(position=position, missing_fraction=missing_fraction))
+        per_site_uncertainty.append(
+            SiteUncertaintyProfile(
+                position=position,
+                gap_fraction=sum(1 for residue in column if residue in _GAP_CHARACTERS) / len(records),
+                missing_fraction=missing_fraction,
+                ambiguity_fraction=sum(
+                    1 for residue in column if _is_ambiguity_character(residue, alphabet=inferred_alphabet)
+                )
+                / len(records),
+            )
+        )
         if all(residue in _GAP_CHARACTERS for residue in column):
             all_gap_columns.append(position)
-        if all(residue in _MISSING_CHARACTERS for residue in column):
+        if all(_is_missing_like(residue, alphabet=inferred_alphabet) for residue in column):
             all_missing_columns.append(position)
         observed = [
             residue.upper()
             for residue in column
-            if residue not in _GAP_CHARACTERS and residue not in _MISSING_CHARACTERS
+            if residue not in _GAP_CHARACTERS
+            and not _is_explicit_missing(residue)
+            and not _is_ambiguity_character(residue, alphabet=inferred_alphabet)
         ]
         states = set(observed)
         if len(states) == 1 and observed:
@@ -798,8 +1216,11 @@ def summarise_fasta(path: Path) -> AlignmentSummary:
         ids=ids,
         missing_data_fraction=missing_count / total_sites,
         gap_fraction=gap_count / total_sites,
+        ambiguity_fraction=ambiguity_count / total_sites,
         per_sequence_missingness=per_sequence_missingness,
+        per_sequence_uncertainty=per_sequence_uncertainty,
         per_site_missingness=per_site_missingness,
+        per_site_uncertainty=per_site_uncertainty,
         all_gap_columns=all_gap_columns,
         all_missing_columns=all_missing_columns,
         constant_site_count=constant_site_count,
