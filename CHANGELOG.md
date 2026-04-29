@@ -20,3 +20,4 @@
 - add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
 - add deterministic tree figure rendering with phylogram, circular, support-label, trait-annotation, metadata-strip, heatmap, collapsed-clade, and publication-bundle workflows
 - expand distance analysis with Kimura 2-parameter and amino-acid p-distance models, ambiguity policies, saturation and low-information diagnostics, bootstrap support summaries, reference checks, and reproducibility bundles
+- expand ancestral-state workflows with node-level low-confidence warnings, sensitivity summaries, supplement-style reports, publication figure bundles, ordered discrete-state modeling, and ER/SYM/ARD discrete-state reporting
