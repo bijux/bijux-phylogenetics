@@ -55,10 +55,14 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
     write_root_to_tip_tsv,
 )
 from bijux_phylogenetics.io.fasta import (
+    build_alignment_forensic_report,
     build_alignment_quality_report,
+    clean_alignment_with_profile,
     classify_alignment_sequences,
+    compare_alignment_versions,
     infer_alignment_alphabet,
     link_alignment_to_tree,
+    list_alignment_filter_profiles,
     load_fasta_alignment,
     summarise_fasta,
     summarize_alignment_readiness,
@@ -537,6 +541,12 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_alphabet.add_argument("alignment", type=Path)
     alignment_alphabet.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_alphabet)
+    alignment_profiles = alignment_subparsers.add_parser(
+        "profiles",
+        help="List the supported named alignment-cleaning profiles.",
+    )
+    alignment_profiles.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_profiles)
     alignment_gc = alignment_subparsers.add_parser("gc", help="Report per-sequence and whole-alignment GC content.")
     alignment_gc.add_argument("alignment", type=Path)
     alignment_gc.add_argument("--json", action="store_true", help="Emit the report as JSON.")
@@ -572,6 +582,13 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_readiness.add_argument("alignment", type=Path)
     alignment_readiness.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_readiness)
+    alignment_forensic = alignment_subparsers.add_parser(
+        "forensic",
+        help="Build a reviewer-facing alignment forensic report.",
+    )
+    alignment_forensic.add_argument("alignment", type=Path)
+    alignment_forensic.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_forensic)
     alignment_composition = alignment_subparsers.add_parser(
         "composition",
         help="Inspect inferred alphabet, composition, and GC content.",
@@ -610,6 +627,25 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_length_outliers.add_argument("alignment", type=Path)
     alignment_length_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_length_outliers)
+    alignment_filter = alignment_subparsers.add_parser(
+        "filter",
+        help="Clean an alignment through one named profile and report what changed.",
+    )
+    alignment_filter.add_argument("alignment", type=Path)
+    alignment_filter.add_argument("--profile", required=True, choices=tuple(profile.name for profile in list_alignment_filter_profiles()))
+    alignment_filter.add_argument("--out", required=True, type=Path)
+    alignment_filter.add_argument("--group-table", type=Path)
+    alignment_filter.add_argument("--group-columns")
+    alignment_filter.add_argument("--json", action="store_true", help="Emit the cleaning report as JSON.")
+    _add_manifest_argument(alignment_filter)
+    alignment_compare = alignment_subparsers.add_parser(
+        "compare",
+        help="Compare two alignment versions for taxa, sites, missingness, gaps, signal, and composition.",
+    )
+    alignment_compare.add_argument("left_alignment", type=Path)
+    alignment_compare.add_argument("right_alignment", type=Path)
+    alignment_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    _add_manifest_argument(alignment_compare)
     alignment_trim = alignment_subparsers.add_parser(
         "trim",
         help="Trim all-gap or all-missing sites and optionally drop high-missingness sequences.",
@@ -1359,6 +1395,9 @@ def build_parser() -> argparse.ArgumentParser:
     report_dataset.add_argument("--tree", required=True, type=Path)
     report_dataset.add_argument("--metadata", required=True, type=Path)
     report_dataset.add_argument("--traits", type=Path)
+    report_dataset.add_argument("--alignment", type=Path)
+    report_dataset.add_argument("--tip-dates", type=Path)
+    report_dataset.add_argument("--calibrations", type=Path)
     report_dataset.add_argument("--out", required=True, type=Path)
     report_dataset.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(report_dataset)
@@ -1802,6 +1841,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.alignment_command == "profiles":
+                report = list_alignment_filter_profiles()
+                outputs = _finalize_outputs(args, command="alignment", inputs=[])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={"profile_count": len(report)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "gc":
                 report = summarise_fasta(args.alignment)
                 outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
@@ -1945,6 +1998,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.alignment_command == "forensic":
+                report = build_alignment_forensic_report(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "quality_score": report.quality.quality_score,
+                            "safe_for_distance_analysis": report.safe_for_distance_analysis,
+                            "safe_for_maximum_likelihood": report.safe_for_maximum_likelihood,
+                            "safe_for_bayesian_inference": report.safe_for_bayesian_inference,
+                            "safe_for_coding_analysis": report.safe_for_coding_analysis,
+                            "safe_for_publication": report.safe_for_publication,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "composition":
                 report = summarise_fasta(args.alignment)
                 outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
@@ -2038,6 +2113,64 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.alignment],
                         outputs=outputs,
                         metrics={"sequence_length_outlier_count": len(report)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "filter":
+                group_columns = None if not args.group_columns else [column.strip() for column in args.group_columns.split(",") if column.strip()]
+                records, report = clean_alignment_with_profile(
+                    args.alignment,
+                    profile_name=args.profile,
+                    group_table_path=args.group_table,
+                    group_columns=group_columns,
+                )
+                output_path = write_fasta_alignment(args.out, records)
+                filter_inputs = [args.alignment, *([args.group_table] if args.group_table is not None else [])]
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=filter_inputs,
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=filter_inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "profile": report.profile.name,
+                            "trimmed_sequence_count": report.trim.trimmed_sequence_count,
+                            "trimmed_alignment_length": report.trim.trimmed_alignment_length,
+                            "signal_warning_count": len(report.signal_warnings),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "compare":
+                report = compare_alignment_versions(args.left_alignment, args.right_alignment)
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.left_alignment, args.right_alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.left_alignment, args.right_alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "shared_taxa": len(report.shared_taxa),
+                            "left_only_taxa": len(report.left_only_taxa),
+                            "right_only_taxa": len(report.right_only_taxa),
+                            "left_alignment_length": report.left_alignment_length,
+                            "right_alignment_length": report.right_alignment_length,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -3968,11 +4101,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     tree_path=args.tree,
                     metadata_path=args.metadata,
                     traits_path=args.traits,
+                    alignment_path=args.alignment,
+                    tip_dates_path=args.tip_dates,
+                    calibration_path=args.calibrations,
                     out_path=args.out,
                 )
                 inputs = [args.tree, args.metadata]
                 if args.traits is not None:
                     inputs.append(args.traits)
+                if args.alignment is not None:
+                    inputs.append(args.alignment)
+                if args.tip_dates is not None:
+                    inputs.append(args.tip_dates)
+                if args.calibrations is not None:
+                    inputs.append(args.calibrations)
                 outputs = _finalize_outputs(args, command="report", inputs=inputs, outputs=[result.output_path])
                 if args.json:
                     _print_result(
@@ -3981,7 +4123,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             inputs=inputs,
                             outputs=outputs,
                             warnings=result.validation.warnings + result.inspection.warnings,
-                            metrics={"tip_count": result.inspection.tip_count, "linked_taxa": result.metadata_linkage.linked_taxa},
+                            metrics={
+                                "tip_count": result.inspection.tip_count,
+                                "linked_taxa": result.metadata_linkage.linked_taxa,
+                                "readiness_decision": None if result.dataset_audit is None else result.dataset_audit.readiness_decision,
+                            },
                             data=result,
                         ),
                         json_output=True,
