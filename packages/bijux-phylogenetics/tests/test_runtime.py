@@ -118,8 +118,13 @@ from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     simulate_brownian_traits,
     simulate_coalescent_trees,
+    simulate_discrete_traits,
+    simulate_dna_alignment,
     simulate_ou_traits,
+    simulate_protein_alignment,
     write_continuous_trait_table,
+    write_discrete_trait_table,
+    write_simulated_alignment,
     write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
@@ -247,6 +252,67 @@ def test_simulate_ou_traits_uses_declared_parameters() -> None:
         ("B", 0.687047684603513),
         ("C", 0.544493844861481),
         ("D", 0.68666212038887),
+    ]
+
+
+def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -> None:
+    report = simulate_discrete_traits(
+        fixture("example_tree.nwk"),
+        states=["wet", "dry", "mixed"],
+        transition_rate=8.0,
+        root_state="wet",
+        seed=3,
+    )
+    assert report.model == "symmetric-discrete"
+    assert report.tip_count == 4
+    assert [(row.taxon, row.state) for row in report.traits] == [
+        ("A", "wet"),
+        ("B", "dry"),
+        ("C", "wet"),
+        ("D", "mixed"),
+    ]
+    output_path = tmp_path / "discrete.tsv"
+    write_discrete_trait_table(output_path, report)
+    assert output_path.read_text(encoding="utf-8") == (
+        "taxon\tstate\n"
+        "A\twet\n"
+        "B\tdry\n"
+        "C\twet\n"
+        "D\tmixed\n"
+    )
+
+
+def test_simulate_dna_alignment_returns_requested_taxa_and_length(tmp_path: Path) -> None:
+    report = simulate_dna_alignment(fixture("example_tree.nwk"), sequence_length=8, substitution_rate=1.2, seed=7)
+    assert report.model == "jukes-cantor-like"
+    assert report.tip_count == 4
+    assert report.sequence_length == 8
+    assert [(row.identifier, row.sequence) for row in report.records] == [
+        ("A", "ACTAACGA"),
+        ("B", "ACTAACGA"),
+        ("C", "GCTAGAAA"),
+        ("D", "GCGAAGAA"),
+    ]
+    output_path = tmp_path / "simulated-dna.fasta"
+    write_simulated_alignment(output_path, report)
+    assert output_path.read_text(encoding="utf-8") == (
+        ">A\nACTAACGA\n"
+        ">B\nACTAACGA\n"
+        ">C\nGCTAGAAA\n"
+        ">D\nGCGAAGAA\n"
+    )
+
+
+def test_simulate_protein_alignment_returns_requested_length_and_alphabet() -> None:
+    report = simulate_protein_alignment(fixture("example_tree.nwk"), sequence_length=6, substitution_rate=0.8, seed=7)
+    assert report.model == "symmetric-protein"
+    assert report.inferred_alphabet == "protein"
+    assert report.sequence_length == 6
+    assert [(row.identifier, row.sequence) for row in report.records] == [
+        ("A", "MFDCDP"),
+        ("B", "MFDCDV"),
+        ("C", "MFPCDV"),
+        ("D", "MFICDV"),
     ]
 
 

@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from math import exp, sqrt
 from pathlib import Path
 
+from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
@@ -43,6 +45,36 @@ class ContinuousTraitSimulationReport:
     alpha: float | None
     theta: float | None
     traits: list[SimulatedContinuousTrait]
+
+
+@dataclass(frozen=True, slots=True)
+class SimulatedDiscreteTrait:
+    taxon: str
+    state: str
+
+
+@dataclass(slots=True)
+class DiscreteTraitSimulationReport:
+    model: str
+    tree_path: Path
+    tip_count: int
+    seed: int
+    states: list[str]
+    transition_rate: float
+    root_state: str
+    traits: list[SimulatedDiscreteTrait]
+
+
+@dataclass(slots=True)
+class AlignmentSimulationReport:
+    model: str
+    tree_path: Path
+    tip_count: int
+    seed: int
+    sequence_length: int
+    substitution_rate: float
+    inferred_alphabet: str
+    records: list[AlignmentRecord]
 
 
 @dataclass(slots=True)
@@ -201,7 +233,7 @@ def _iter_tip_trait_values(
     def visit(node: TreeNode, state: float) -> None:
         if node.is_leaf():
             if node.name is not None:
-                values[node.name] = round(state, 15)
+                values[node.name] = round(state, 15) if isinstance(state, float) else state
             return
         for child in node.children:
             branch_length = max(child.branch_length or 0.0, 0.0)
@@ -209,6 +241,35 @@ def _iter_tip_trait_values(
 
     visit(tree.root, root_state)
     return values
+
+
+def _poisson_count(expected_changes: float, rng: random.Random) -> int:
+    if expected_changes <= 0.0:
+        return 0
+    threshold = exp(-expected_changes)
+    product = 1.0
+    changes = 0
+    while product > threshold:
+        changes += 1
+        product *= rng.random()
+    return changes - 1
+
+
+def _simulate_symmetric_state_trajectory(
+    state: str,
+    *,
+    branch_length: float,
+    rate: float,
+    states: tuple[str, ...],
+    rng: random.Random,
+) -> str:
+    if rate < 0.0:
+        raise ValueError(f"rate must be nonnegative, got {rate}")
+    next_state = state
+    for _ in range(_poisson_count(rate * branch_length, rng)):
+        alternatives = [candidate for candidate in states if candidate != next_state]
+        next_state = rng.choice(alternatives)
+    return next_state
 
 
 def _simulate_coalescent_tree_once(
@@ -354,6 +415,134 @@ def simulate_ou_traits(
     )
 
 
+def simulate_discrete_traits(
+    tree_path: Path,
+    *,
+    states: list[str],
+    transition_rate: float = 1.0,
+    root_state: str | None = None,
+    seed: int = 1,
+) -> DiscreteTraitSimulationReport:
+    """Simulate one discrete tip trait over a tree using symmetric jump changes."""
+    unique_states = tuple(dict.fromkeys(state for state in states if state))
+    if len(unique_states) < 2:
+        raise ValueError("states must contain at least two distinct non-empty states")
+    if transition_rate < 0.0:
+        raise ValueError(f"transition_rate must be nonnegative, got {transition_rate}")
+    tree = load_tree(tree_path)
+    rng = random.Random(seed)
+    starting_state = root_state or unique_states[0]
+    if starting_state not in unique_states:
+        raise ValueError(f"root_state '{starting_state}' is not present in states")
+    values = _iter_tip_trait_values(
+        tree,
+        root_state=starting_state,
+        propagate=lambda state, branch_length: _simulate_symmetric_state_trajectory(
+            state,
+            branch_length=branch_length,
+            rate=transition_rate,
+            states=unique_states,
+            rng=rng,
+        ),
+    )
+    return DiscreteTraitSimulationReport(
+        model="symmetric-discrete",
+        tree_path=tree_path,
+        tip_count=tree.tip_count,
+        seed=seed,
+        states=list(unique_states),
+        transition_rate=transition_rate,
+        root_state=starting_state,
+        traits=[
+            SimulatedDiscreteTrait(taxon=taxon, state=state)
+            for taxon, state in sorted(values.items())
+        ],
+    )
+
+
+def _simulate_alignment_records(
+    tree_path: Path,
+    *,
+    alphabet: tuple[str, ...],
+    model: str,
+    sequence_length: int,
+    substitution_rate: float,
+    seed: int,
+) -> AlignmentSimulationReport:
+    if sequence_length < 1:
+        raise ValueError(f"sequence_length must be at least 1, got {sequence_length}")
+    if substitution_rate < 0.0:
+        raise ValueError(f"substitution_rate must be nonnegative, got {substitution_rate}")
+    tree = load_tree(tree_path)
+    rng = random.Random(seed)
+    root_sequence = "".join(rng.choice(alphabet) for _ in range(sequence_length))
+
+    def mutate_sequence(sequence: str, branch_length: float) -> str:
+        residues: list[str] = []
+        for residue in sequence:
+            next_residue = residue
+            for _ in range(_poisson_count(substitution_rate * branch_length, rng)):
+                alternatives = [candidate for candidate in alphabet if candidate != next_residue]
+                next_residue = rng.choice(alternatives)
+            residues.append(next_residue)
+        return "".join(residues)
+
+    values = _iter_tip_trait_values(
+        tree,
+        root_state=root_sequence,
+        propagate=lambda state, branch_length: mutate_sequence(state, branch_length),
+    )
+    return AlignmentSimulationReport(
+        model=model,
+        tree_path=tree_path,
+        tip_count=tree.tip_count,
+        seed=seed,
+        sequence_length=sequence_length,
+        substitution_rate=substitution_rate,
+        inferred_alphabet="dna" if alphabet == ("A", "C", "G", "T") else "protein",
+        records=[
+            AlignmentRecord(identifier=taxon, sequence=sequence)
+            for taxon, sequence in sorted(values.items())
+        ],
+    )
+
+
+def simulate_dna_alignment(
+    tree_path: Path,
+    *,
+    sequence_length: int,
+    substitution_rate: float = 1.0,
+    seed: int = 1,
+) -> AlignmentSimulationReport:
+    """Simulate a DNA alignment along a rooted tree under a simple JC-like process."""
+    return _simulate_alignment_records(
+        tree_path,
+        alphabet=("A", "C", "G", "T"),
+        model="jukes-cantor-like",
+        sequence_length=sequence_length,
+        substitution_rate=substitution_rate,
+        seed=seed,
+    )
+
+
+def simulate_protein_alignment(
+    tree_path: Path,
+    *,
+    sequence_length: int,
+    substitution_rate: float = 1.0,
+    seed: int = 1,
+) -> AlignmentSimulationReport:
+    """Simulate a protein alignment along a rooted tree under a symmetric exchange model."""
+    return _simulate_alignment_records(
+        tree_path,
+        alphabet=tuple("ACDEFGHIKLMNPQRSTVWY"),
+        model="symmetric-protein",
+        sequence_length=sequence_length,
+        substitution_rate=substitution_rate,
+        seed=seed,
+    )
+
+
 def write_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
     """Write a list of simulated trees as one canonical Newick tree per line."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -376,3 +565,20 @@ def write_continuous_trait_table(path: Path, report: ContinuousTraitSimulationRe
             for row in report.traits
         ],
     )
+
+
+def write_discrete_trait_table(path: Path, report: DiscreteTraitSimulationReport) -> Path:
+    """Write simulated discrete trait states as a taxon-keyed table."""
+    return write_taxon_rows(
+        path,
+        columns=["taxon", "state"],
+        rows=[
+            {"taxon": row.taxon, "state": row.state}
+            for row in report.traits
+        ],
+    )
+
+
+def write_simulated_alignment(path: Path, report: AlignmentSimulationReport) -> Path:
+    """Write a simulated alignment as FASTA."""
+    return write_fasta_alignment(path, report.records)
