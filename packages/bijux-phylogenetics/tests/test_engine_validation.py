@@ -5,6 +5,7 @@ from pathlib import Path
 from bijux_phylogenetics.engines import run_model_selection
 from bijux_phylogenetics.engines.validation import (
     audit_alignment_inference_readiness,
+    classify_inference_workflow_failure,
     compare_inferred_tree_to_taxon_metadata,
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
@@ -144,3 +145,33 @@ def test_compare_inferred_tree_to_taxon_metadata_reports_monophyly_and_splits(tm
     )
     assert split_report.split_group_count >= 1
     assert any(row.status == "split_unexpectedly" for row in split_report.observations)
+
+
+def test_classify_inference_workflow_failure_distinguishes_engine_and_parse_failures(tmp_path: Path) -> None:
+    engine_failure = classify_inference_workflow_failure(
+        workflow="maximum-likelihood-tree",
+        input_paths=[fixture("example_alignment.fasta")],
+        output_paths={},
+        run_exit_code=3,
+    )
+    assert engine_failure.failure_category == "engine_failure"
+
+    invalid_tree = tmp_path / "broken.treefile"
+    invalid_tree.write_text("(A,B\n", encoding="utf-8")
+    parse_failure = classify_inference_workflow_failure(
+        workflow="maximum-likelihood-tree",
+        input_paths=[fixture("example_alignment.fasta")],
+        output_paths={"tree": invalid_tree},
+        run_exit_code=0,
+    )
+    assert parse_failure.failure_category == "parse_failure"
+
+
+def test_classify_inference_workflow_failure_detects_input_failures(tmp_path: Path) -> None:
+    missing_input = tmp_path / "missing.fasta"
+    report = classify_inference_workflow_failure(
+        workflow="maximum-likelihood-tree",
+        input_paths=[missing_input],
+        output_paths={},
+    )
+    assert report.failure_category == "input_failure"

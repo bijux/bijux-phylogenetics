@@ -5,6 +5,7 @@ import gzip
 from pathlib import Path
 import re
 
+from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.engines.common import load_engine_manifest
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa
@@ -78,6 +79,14 @@ class MetadataClusteringReport:
     monophyletic_group_count: int
     split_group_count: int
     observations: list[MetadataClusterObservation]
+
+
+@dataclass(slots=True)
+class InferenceFailureTaxonomyReport:
+    workflow: str
+    failure_category: str
+    valid: bool
+    issues: list[str]
 
 
 def audit_alignment_inference_readiness(path: Path) -> InferenceReadinessAuditReport:
@@ -289,4 +298,65 @@ def compare_inferred_tree_to_taxon_metadata(
         monophyletic_group_count=sum(1 for row in observations if row.monophyletic is True),
         split_group_count=sum(1 for row in observations if row.monophyletic is False),
         observations=observations,
+    )
+
+
+def classify_inference_workflow_failure(
+    *,
+    workflow: str,
+    input_paths: list[Path],
+    output_paths: dict[str, Path],
+    run_exit_code: int | None = None,
+) -> InferenceFailureTaxonomyReport:
+    """Classify one workflow state into a stable inference-failure taxonomy."""
+    issues: list[str] = []
+    failure_category = "no_failure"
+    if any(not path.exists() for path in input_paths):
+        failure_category = "input_failure"
+        issues.append("one or more declared input files are missing")
+    else:
+        for input_path in input_paths:
+            if input_path.suffix.lower() in {".fasta", ".fa", ".fas", ".faa", ".fna"}:
+                try:
+                    load_fasta_alignment(input_path)
+                except InvalidAlignmentError:
+                    failure_category = "input_failure"
+                    issues.append("one or more alignment inputs are invalid")
+                    break
+    if run_exit_code is not None and run_exit_code != 0:
+        failure_category = "timeout" if run_exit_code == 124 else "engine_failure"
+        issues.append(f"engine exited with code {run_exit_code}")
+    missing_outputs = sorted(str(path) for path in output_paths.values() if not path.exists())
+    if missing_outputs:
+        failure_category = "missing_output"
+        issues.append("one or more expected outputs are missing")
+    parse_failures: list[str] = []
+    invalid_outputs: list[str] = []
+    for key, path in output_paths.items():
+        if not path.exists():
+            continue
+        if path.is_file() and not path.read_text(encoding="utf-8").strip():
+            invalid_outputs.append(key)
+            continue
+        if path.suffix.lower() in {".treefile", ".contree", ".nwk", ".tre", ".tree", ".ufboot"}:
+            try:
+                if key == "bootstrap_trees":
+                    from bijux_phylogenetics.tree_set import load_tree_set
+
+                    load_tree_set(path)
+                else:
+                    load_tree(path)
+            except Exception:
+                parse_failures.append(key)
+    if invalid_outputs:
+        failure_category = "invalid_output"
+        issues.append("one or more outputs exist but are blank or unusable")
+    if parse_failures:
+        failure_category = "parse_failure"
+        issues.append("one or more tree-like outputs could not be parsed")
+    return InferenceFailureTaxonomyReport(
+        workflow=workflow,
+        failure_category=failure_category,
+        valid=failure_category == "no_failure",
+        issues=issues,
     )

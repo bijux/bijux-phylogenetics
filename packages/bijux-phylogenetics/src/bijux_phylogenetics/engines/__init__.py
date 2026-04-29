@@ -1,7 +1,9 @@
 from .common import EngineRunReport, EngineVersionInfo, execute_engine_command, read_engine_version, resolve_engine_executable
 from .reports import InferenceWorkflowReportBuildResult, render_inference_workflow_report
 from .validation import (
+    classify_inference_workflow_failure,
     compare_inferred_tree_to_taxon_metadata,
+    InferenceFailureTaxonomyReport,
     InferenceReadinessAuditReport,
     InferenceReadinessDecision,
     MLTreeTaxonValidationReport,
@@ -26,11 +28,13 @@ from .workflows import (
 )
 
 __all__ = [
+    "classify_inference_workflow_failure",
     "compare_inferred_tree_to_taxon_metadata",
     "EngineRunReport",
     "EngineVersionInfo",
     "EngineWorkflowReport",
     "ExternalTreeComparisonReport",
+    "InferenceFailureTaxonomyReport",
     "InferenceReadinessAuditReport",
     "InferenceReadinessDecision",
     "MLTreeTaxonValidationReport",
