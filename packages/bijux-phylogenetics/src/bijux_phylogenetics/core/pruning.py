@@ -89,7 +89,7 @@ def _prune_tree_against_taxa(tree: PhyloTree, keep_taxa: set[str]) -> tuple[Phyl
         raise MetadataJoinError("no overlapping taxa remain after pruning request")
 
     pruned_root.branch_length = None
-    pruned_tree = PhyloTree(root=pruned_root, source_format=tree.source_format)
+    pruned_tree = PhyloTree(root=pruned_root, source_format=tree.source_format, rooted=tree.rooted)
     return pruned_tree, retained_tips, removed_tips
 
 

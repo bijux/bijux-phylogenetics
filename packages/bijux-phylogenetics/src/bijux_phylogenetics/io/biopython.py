@@ -31,12 +31,12 @@ def _convert_tree_node(node: TreeNode) -> Clade:
 
 def tree_from_biophylo(tree: Tree, *, source_format: str) -> PhyloTree:
     """Convert a Bio.Phylo tree into the local tree model."""
-    return PhyloTree(root=_convert_clade(tree.root), source_format=source_format)
+    return PhyloTree(root=_convert_clade(tree.root), source_format=source_format, rooted=tree.rooted)
 
 
 def tree_to_biophylo(tree: PhyloTree) -> Tree:
     """Convert the local tree model into a Bio.Phylo tree."""
-    return Tree(root=_convert_tree_node(tree.root), rooted=False)
+    return Tree(root=_convert_tree_node(tree.root), rooted=bool(tree.rooted))
 
 
 def loads_biophylo(text: str, *, source_format: str) -> PhyloTree:

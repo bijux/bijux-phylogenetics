@@ -153,7 +153,7 @@ def extract_named_clade(
 
     subtree_root = _clone_node(matches[0])
     subtree_root.branch_length = None
-    subtree = PhyloTree(root=subtree_root, source_format=tree.source_format)
+    subtree = PhyloTree(root=subtree_root, source_format=tree.source_format, rooted=tree.rooted)
     return subtree, CladeExtractionReport(
         tree_path=tree_path,
         clade_name=clade_name,
@@ -179,7 +179,7 @@ def collapse_branches_below_length(
         collapsed_clades=collapsed_clades,
     )
     collapsed_root.branch_length = None
-    collapsed_tree = PhyloTree(root=collapsed_root, source_format=tree.source_format)
+    collapsed_tree = PhyloTree(root=collapsed_root, source_format=tree.source_format, rooted=tree.rooted)
     return collapsed_tree, BranchCollapseReport(
         tree_path=tree_path,
         threshold=threshold,
@@ -212,6 +212,7 @@ def ladderize_tree(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
     ladderized_tree = PhyloTree(
         root=_order_tree(tree.root, strategy="ladderize"),
         source_format=tree.source_format,
+        rooted=tree.rooted,
     )
     return ladderized_tree, TreeOrderingReport(
         tree_path=tree_path,
@@ -226,6 +227,7 @@ def sort_tree_tips_alphabetically(tree_path: Path) -> tuple[PhyloTree, TreeOrder
     sorted_tree = PhyloTree(
         root=_order_tree(tree.root, strategy="alphabetical"),
         source_format=tree.source_format,
+        rooted=tree.rooted,
     )
     return sorted_tree, TreeOrderingReport(
         tree_path=tree_path,

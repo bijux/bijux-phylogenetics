@@ -60,6 +60,7 @@ class PhyloTree:
 
     root: TreeNode
     source_format: str = "newick"
+    rooted: bool | None = None
 
     def iter_nodes(self) -> Iterable[TreeNode]:
         return self.root.iter_nodes()
