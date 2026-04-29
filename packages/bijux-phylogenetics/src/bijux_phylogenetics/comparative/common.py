@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative._math import stable_covariance
@@ -243,6 +244,44 @@ def build_brownian_covariance_matrix(tree: PhyloTree, taxa: list[str]) -> list[l
             shared_ancestor_ids = set(left_path) & set(right_path)
             shared_depth = max(left_path[node_id] for node_id in shared_ancestor_ids)
             row.append(shared_depth)
+        matrix.append(row)
+    return matrix
+
+
+def tip_root_depths(tree: PhyloTree, taxa: list[str]) -> dict[str, float]:
+    """Return root-to-tip path lengths for an explicit ordered taxon set."""
+    leaf_paths = _leaf_ancestor_depths(tree)
+    return {
+        taxon: max(leaf_paths[taxon].values())
+        for taxon in taxa
+    }
+
+
+def build_ou_covariance_matrix(tree: PhyloTree, taxa: list[str], *, alpha: float) -> list[list[float]]:
+    """Build a stationary-root OU covariance matrix for an ordered tip list."""
+    if alpha <= 0.0:
+        raise ComparativeMethodError("OU alpha must be positive")
+    leaf_paths = _leaf_ancestor_depths(tree)
+    root_depths = tip_root_depths(tree, taxa)
+    matrix: list[list[float]] = []
+    for left_taxon in taxa:
+        left_path = leaf_paths[left_taxon]
+        left_depth = root_depths[left_taxon]
+        row: list[float] = []
+        for right_taxon in taxa:
+            right_path = leaf_paths[right_taxon]
+            right_depth = root_depths[right_taxon]
+            shared_ancestor_ids = set(left_path) & set(right_path)
+            shared_depth = max(left_path[node_id] for node_id in shared_ancestor_ids)
+            if left_taxon == right_taxon:
+                covariance = (1.0 - math.exp(-2.0 * alpha * left_depth)) / (2.0 * alpha)
+            else:
+                covariance = (
+                    math.exp(-alpha * ((left_depth - shared_depth) + (right_depth - shared_depth)))
+                    * (1.0 - math.exp(-2.0 * alpha * shared_depth))
+                    / (2.0 * alpha)
+                )
+            row.append(covariance)
         matrix.append(row)
     return matrix
 
