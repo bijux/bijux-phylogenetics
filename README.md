@@ -57,7 +57,9 @@ Bayesian tree inference.
 
 Recent tree diagnostics now also classify internal-node child counts, missing
 internal versus terminal branch lengths, singleton internal nodes, branch-length
-outlier nodes, and support-like versus name-like internal labels.
+outlier nodes, support-like versus name-like internal labels, metadata-declared
+branch-length units, and explicit time-tree versus substitution-tree
+compatibility assumptions.
 
 Tree rendering now supports rectangular cladograms, rectangular phylograms with
 scale bars, circular trees, support-value labels, categorical and continuous tip
@@ -97,6 +99,10 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment distance-matrix alignment.fasta --model jukes-cantor --gap-handling complete-deletion --out distances.tsv`
 - `uv run bijux-phylogenetics alignment build-tree alignment.fasta --method neighbor-joining --out nj-tree.nwk`
 - `uv run bijux-phylogenetics alignment compare-distance-trees alignment.fasta --json`
+- `uv run bijux-phylogenetics distance validate exported-distances.tsv --json`
+- `uv run bijux-phylogenetics distance build-tree exported-distances.tsv --method upgma --out imported-upgma.nwk`
+- `uv run bijux-phylogenetics distance report exported-distances.tsv --out artifacts/distance-report.html`
+- `uv run bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json`
 - `uv run bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `uv run bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
 - `uv run bijux-phylogenetics render tree.nwk --layout phylogram --support-labels --metadata metadata.tsv --label-column species --metadata-strip-columns location --traits traits.tsv --categorical-column habitat --continuous-column height_cm --heatmap-columns height_cm,status --package-dir artifacts/tree-figure --out artifacts/tree.svg`
