@@ -32,6 +32,25 @@ class MaximumCladeCredibilityTreeReport:
 
 
 @dataclass(slots=True)
+class PosteriorCladeAgeSummary:
+    clade: str
+    mean_height: float
+    minimum_height: float
+    maximum_height: float
+    tree_count: int
+
+
+@dataclass(slots=True)
+class PosteriorNodeAgeSummaryReport:
+    source_path: Path
+    filtered_tree_set_path: Path
+    burnin_fraction: float
+    total_tree_count: int
+    kept_tree_count: int
+    rows: list[PosteriorCladeAgeSummary]
+
+
+@dataclass(slots=True)
 class PosteriorTreeSetThinningReport:
     source_path: Path
     output_path: Path
@@ -103,6 +122,24 @@ def thin_posterior_tree_set(
     )
 
 
+def summarize_posterior_node_ages(
+    tree_set_path: Path,
+    *,
+    burnin_fraction: float = 0.25,
+) -> PosteriorNodeAgeSummaryReport:
+    """Summarize clade heights across a posterior tree set after burn-in removal."""
+    filtered = _filter_tree_set(tree_set_path, burnin_fraction=burnin_fraction)
+    age_rows = _summarize_clade_heights(filtered.trees)
+    return PosteriorNodeAgeSummaryReport(
+        source_path=tree_set_path,
+        filtered_tree_set_path=filtered.filtered_tree_set_path,
+        burnin_fraction=burnin_fraction,
+        total_tree_count=filtered.total_tree_count,
+        kept_tree_count=len(filtered.trees),
+        rows=age_rows,
+    )
+
+
 @dataclass(slots=True)
 class BayesianRunTreeComparison:
     left_path: Path
@@ -159,7 +196,12 @@ def _filter_tree_set(tree_set_path: Path, *, burnin_fraction: float) -> _Filtere
     if not kept_bio_trees:
         raise EngineWorkflowError(f"posterior tree set is empty after burn-in filtering: {tree_set_path}")
     trees = [tree_from_biophylo(tree, source_format=tree_format) for tree in kept_bio_trees]
-    filtered_tree_set_path = tree_set_path.with_suffix(f".burnin-{_fraction_token(burnin_fraction)}.nwk")
+    filtered_tree_set_path = Path(
+        tempfile.mkstemp(
+            prefix=f"{tree_set_path.stem}.burnin-{_fraction_token(burnin_fraction)}-",
+            suffix=".nwk",
+        )[1]
+    )
     filtered_tree_set_path.write_text(
         "".join(dumps_newick(tree) + "\n" for tree in trees),
         encoding="utf-8",
@@ -201,6 +243,52 @@ def _select_mcc_tree(
         scored.append((score, index, tree))
     best_score, best_index, best_tree = max(scored, key=lambda item: (item[0], -item[1]))
     return best_tree, best_index, best_score
+
+
+def _summarize_clade_heights(trees: list[PhyloTree]) -> list[PosteriorCladeAgeSummary]:
+    taxa_sets = {frozenset(tree.tip_names) for tree in trees}
+    if len(taxa_sets) != 1:
+        raise InvalidAlignmentError("posterior age summaries require all trees to share the exact same taxon set")
+    shared_taxa = set(next(iter(taxa_sets)))
+    clade_heights: dict[frozenset[str], list[float]] = {}
+    for tree in trees:
+        _collect_clade_heights(tree.root, shared_taxa=shared_taxa, current_height=0.0, clade_heights=clade_heights)
+    rows = [
+        PosteriorCladeAgeSummary(
+            clade="|".join(sorted(clade)),
+            mean_height=round(sum(heights) / len(heights), 15),
+            minimum_height=round(min(heights), 15),
+            maximum_height=round(max(heights), 15),
+            tree_count=len(heights),
+        )
+        for clade, heights in sorted(clade_heights.items(), key=lambda item: (len(item[0]), sorted(item[0])))
+    ]
+    return rows
+
+
+def _collect_clade_heights(
+    node: TreeNode,
+    *,
+    shared_taxa: set[str],
+    current_height: float,
+    clade_heights: dict[frozenset[str], list[float]],
+) -> set[str]:
+    if node.is_leaf():
+        return {node.name} if node.name in shared_taxa else set()
+    taxa: set[str] = set()
+    for child in node.children:
+        branch_length = float(child.branch_length or 0.0)
+        taxa.update(
+            _collect_clade_heights(
+                child,
+                shared_taxa=shared_taxa,
+                current_height=current_height + branch_length,
+                clade_heights=clade_heights,
+            )
+        )
+    if 1 < len(taxa) < len(shared_taxa):
+        clade_heights.setdefault(frozenset(taxa), []).append(current_height)
+    return taxa
 
 
 def _fraction_token(value: float) -> str:
