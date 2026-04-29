@@ -6,6 +6,8 @@ from bijux_phylogenetics.engines import run_model_selection
 from bijux_phylogenetics.engines.validation import (
     audit_alignment_inference_readiness,
     classify_inference_workflow_failure,
+    compare_inferred_trees_across_engines,
+    compare_ml_trees_across_models,
     compare_inferred_tree_to_taxon_metadata,
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
@@ -75,6 +77,44 @@ prefix.parent.mkdir(parents=True, exist_ok=True)
 prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
 prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
 raise SystemExit(0)
+""",
+    )
+
+
+def _fake_iqtree_tree_alt(path: Path, *, model: str, tree_newick: str) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1])
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".treefile").write_text({tree_newick!r} + "\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".model").write_text("Best-fit model: {model}\\n", encoding="utf-8")
+raise SystemExit(0)
+""",
+    )
+
+
+def _fake_fasttree_tree(path: Path, *, tree_newick: str) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+
+args = sys.argv[1:]
+if not args or "-help" in args:
+    print("FastTree Version 2.2 fixture")
+    raise SystemExit(0)
+
+print({tree_newick!r})
 """,
     )
 
@@ -225,6 +265,78 @@ def test_detect_weakly_supported_backbone_flags_major_internal_branches(tmp_path
     assert report.weak_backbone_node_count == 2
     assert any(node.node == "A|B|C|D|E" for node in report.weak_nodes)
     assert any("backbone" in warning for warning in report.warnings)
+
+
+def test_compare_ml_trees_across_models_reports_topology_and_branch_length_differences(tmp_path: Path) -> None:
+    from bijux_phylogenetics.engines import run_maximum_likelihood_tree_inference
+
+    left_executable = _fake_iqtree_tree_alt(
+        tmp_path / "iqtree-left",
+        model="GTR+G",
+        tree_newick="((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);",
+    )
+    right_executable = _fake_iqtree_tree_alt(
+        tmp_path / "iqtree-right",
+        model="HKY+G",
+        tree_newick="((A:0.1,C:0.1):0.25,(B:0.1,D:0.1):0.25);",
+    )
+    left = run_maximum_likelihood_tree_inference(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "left-ml",
+        model="GTR+G",
+        executable=left_executable,
+        prefix="left",
+    )
+    right = run_maximum_likelihood_tree_inference(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "right-ml",
+        model="HKY+G",
+        executable=right_executable,
+        prefix="right",
+    )
+
+    report = compare_ml_trees_across_models(left.manifest_path, right.manifest_path)
+
+    assert report.comparison_kind == "model"
+    assert report.left_selected_model == "GTR+G"
+    assert report.right_selected_model == "HKY+G"
+    assert report.topology.topology_equal is False
+    assert any("topologies differ" in warning for warning in report.warnings)
+
+
+def test_compare_inferred_trees_across_engines_reports_engine_labels(tmp_path: Path) -> None:
+    from bijux_phylogenetics.engines import run_fast_tree_inference, run_maximum_likelihood_tree_inference
+
+    iqtree_executable = _fake_iqtree_tree_alt(
+        tmp_path / "iqtree-engine",
+        model="GTR+G",
+        tree_newick="((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);",
+    )
+    fasttree_executable = _fake_fasttree_tree(
+        tmp_path / "fasttree-engine",
+        tree_newick="((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);",
+    )
+    ml = run_maximum_likelihood_tree_inference(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "ml",
+        model="GTR+G",
+        executable=iqtree_executable,
+        prefix="engine",
+    )
+    fast = run_fast_tree_inference(
+        fixture("example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=fasttree_executable,
+    )
+
+    report = compare_inferred_trees_across_engines(fast.manifest_path, ml.manifest_path)
+
+    assert report.comparison_kind == "engine"
+    assert report.left_label == "FastTree"
+    assert report.right_label == "IQ-TREE"
+    assert report.topology.topology_equal is True
+    assert report.branch_lengths.shared_splits
+    assert any("branch-length" in warning for warning in report.warnings)
 
 
 def test_validate_inference_engine_outputs_checks_manifest_consistency(tmp_path: Path) -> None:
