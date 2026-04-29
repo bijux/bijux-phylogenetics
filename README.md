@@ -50,12 +50,18 @@ This repository publishes `2` public packages. The current runtime focuses on
 reproducible tree hygiene, taxon normalization, tree and trait pruning,
 metadata linkage, shared-clade comparison, alignment-quality diagnostics,
 alignment trimming, coding-sequence translation, identity-matrix export,
-explicit rooting transforms, evidence manifests, and HTML report generation
-rather than tree inference.
+explicit rooting transforms, deterministic SVG tree rendering, publication
+figure packaging, evidence manifests, and HTML report generation rather than
+tree inference.
 
 Recent tree diagnostics now also classify internal-node child counts, missing
 internal versus terminal branch lengths, singleton internal nodes, branch-length
 outlier nodes, and support-like versus name-like internal labels.
+
+Tree rendering now supports rectangular cladograms, rectangular phylograms with
+scale bars, circular trees, support-value labels, categorical and continuous tip
+traits, collapsed named clades, metadata strips, trait heatmaps, and
+publication-style figure bundles.
 
 ## Start Here
 
@@ -89,6 +95,7 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `uv run bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `uv run bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
+- `uv run bijux-phylogenetics render tree.nwk --layout phylogram --support-labels --metadata metadata.tsv --label-column species --metadata-strip-columns location --traits traits.tsv --categorical-column habitat --continuous-column height_cm --heatmap-columns height_cm,status --package-dir artifacts/tree-figure --out artifacts/tree.svg`
 - `uv run bijux-phylogenetics inspect tree-with-support.nwk --json`
 
 ## Working Rules

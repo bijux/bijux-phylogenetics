@@ -4,7 +4,7 @@ audience: public
 type: overview
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-04-28
+last_reviewed: 2026-04-29
 ---
 
 # Bijux Phylogenetics
@@ -33,8 +33,8 @@ last_reviewed: 2026-04-28
 
 `bijux-phylogenetics` is a reproducible phylogenetics workbench for tree
 inspection, validation, comparison, alignment trimming, coding-sequence
-translation, explicit rooting transforms, evidence capture, and publishable
-HTML reports.
+translation, explicit rooting transforms, deterministic SVG tree rendering,
+publication figure packaging, evidence capture, and publishable HTML reports.
 
 The repository keeps the same managed Python workspace shape as the other
 Bijux scientific repos: shared standards under `.bijux/`, repository-owned
@@ -55,3 +55,6 @@ one maintainer package.
 - export pairwise sequence identity matrices for downstream review
 - root trees on explicit outgroups or reroot trees by midpoint
 - diagnose internal child counts, singleton nodes, missing branch-length locations, and suspicious support-label scales
+- render cladogram, phylogram, and circular tree figures with support labels and branch-length scale bars
+- annotate trees with categorical tip traits, continuous tip traits, metadata strips, and aligned trait heatmaps
+- package review-ready tree figures with SVG output, caption drafts, manifests, and tip-annotation tables
