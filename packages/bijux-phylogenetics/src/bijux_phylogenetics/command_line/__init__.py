@@ -140,12 +140,17 @@ from bijux_phylogenetics.discrete_evolution import (
     compare_discrete_state_models,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
+    load_stochastic_map_collection,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
+    simulate_discrete_stochastic_maps,
+    summarize_discrete_stochastic_maps,
     validate_discrete_transition_reference_examples,
     validate_discrete_state_coding,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
+    write_stochastic_map_collection,
+    write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
 from bijux_phylogenetics.diversification import (
@@ -1320,6 +1325,35 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_compare.add_argument("--table-out", type=Path, help="Write node-wise model differences as TSV.")
     discrete_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
     _add_manifest_argument(discrete_compare)
+    discrete_stochastic = discrete_evolution_subparsers.add_parser(
+        "stochastic-map",
+        help="Generate approximate stochastic maps conditioned on deterministic discrete-state estimates.",
+    )
+    discrete_stochastic.add_argument("tree", type=Path)
+    discrete_stochastic.add_argument("table", type=Path)
+    discrete_stochastic.add_argument("--trait", required=True)
+    discrete_stochastic.add_argument("--taxon-column")
+    discrete_stochastic.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
+    discrete_stochastic.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    discrete_stochastic.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    discrete_stochastic.add_argument(
+        "--allowed-states",
+        help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
+    )
+    discrete_stochastic.add_argument("--replicates", type=int, default=100)
+    discrete_stochastic.add_argument("--seed", type=int, default=0)
+    discrete_stochastic.add_argument("--collection-out", type=Path, help="Write stochastic maps as JSON.")
+    discrete_stochastic.add_argument("--summary-out", type=Path, help="Write stochastic-map summary as TSV.")
+    discrete_stochastic.add_argument("--json", action="store_true", help="Emit the stochastic-map collection as JSON.")
+    _add_manifest_argument(discrete_stochastic)
+    discrete_summarize_maps = discrete_evolution_subparsers.add_parser(
+        "summarize-maps",
+        help="Summarize a previously written stochastic-map collection.",
+    )
+    discrete_summarize_maps.add_argument("input_path", type=Path)
+    discrete_summarize_maps.add_argument("--summary-out", type=Path, help="Write stochastic-map summary as TSV.")
+    discrete_summarize_maps.add_argument("--json", action="store_true", help="Emit the stochastic-map summary as JSON.")
+    _add_manifest_argument(discrete_summarize_maps)
     discrete_render = discrete_evolution_subparsers.add_parser(
         "render",
         help="Render a tree annotated with reconstructed geographic or other discrete states.",
@@ -3747,6 +3781,74 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "strongly_supported_transition_count": report.transition_summary.strongly_supported_transition_count,
                             "model": report.model,
                             "state_ordering": report.state_ordering,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "stochastic-map":
+                report = simulate_discrete_stochastic_maps(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    allowed_states=allowed_states or None,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
+                    replicates=args.replicates,
+                    seed=args.seed,
+                )
+                outputs: list[Path | str] = []
+                if args.collection_out is not None:
+                    outputs.append(write_stochastic_map_collection(args.collection_out, report))
+                if args.summary_out is not None:
+                    outputs.append(write_stochastic_map_summary_table(args.summary_out, report.summary))
+                outputs = _finalize_outputs(
+                    args,
+                    command="discrete-evolution",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.summary.warnings,
+                        metrics={
+                            "replicate_count": report.summary.replicate_count,
+                            "mean_total_transition_count": report.summary.mean_total_transition_count,
+                            "model": report.model,
+                            "state_ordering": report.state_ordering,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "summarize-maps":
+                collection = load_stochastic_map_collection(args.input_path)
+                report = summarize_discrete_stochastic_maps(collection)
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(write_stochastic_map_summary_table(args.summary_out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="discrete-evolution",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "replicate_count": report.replicate_count,
+                            "mean_total_transition_count": report.mean_total_transition_count,
                         },
                         data=report,
                     ),

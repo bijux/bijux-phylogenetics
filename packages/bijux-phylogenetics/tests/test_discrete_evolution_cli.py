@@ -184,3 +184,51 @@ def test_discrete_evolution_render_and_report_cli_write_svg_and_html(tmp_path: P
     assert report_payload["metrics"]["state_ordering"] == "unordered"
     assert report_path.exists()
     assert report_path.with_suffix(".svg").exists()
+
+
+def test_discrete_evolution_stochastic_map_and_summary_cli_write_outputs(tmp_path: Path, capsys) -> None:
+    collection_path = tmp_path / "stochastic-maps.json"
+    summary_path = tmp_path / "stochastic-summary.tsv"
+
+    stochastic_exit = main(
+        [
+            "discrete-evolution",
+            "stochastic-map",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "symmetric",
+            "--replicates",
+            "6",
+            "--seed",
+            "13",
+            "--collection-out",
+            str(collection_path),
+            "--summary-out",
+            str(summary_path),
+            "--json",
+        ]
+    )
+    stochastic_payload = json.loads(capsys.readouterr().out)
+    assert stochastic_exit == 0
+    assert stochastic_payload["metrics"]["replicate_count"] == 6
+    assert stochastic_payload["metrics"]["mean_total_transition_count"] >= 0.0
+    assert collection_path.exists()
+    assert "transition\tmean_count" in summary_path.read_text(encoding="utf-8")
+
+    summarize_exit = main(
+        [
+            "discrete-evolution",
+            "summarize-maps",
+            str(collection_path),
+            "--summary-out",
+            str(summary_path),
+            "--json",
+        ]
+    )
+    summarize_payload = json.loads(capsys.readouterr().out)
+    assert summarize_exit == 0
+    assert summarize_payload["metrics"]["replicate_count"] == 6
+    assert summarize_payload["metrics"]["mean_total_transition_count"] >= 0.0
