@@ -54,13 +54,25 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
     diagnose_ultrametricity,
     write_root_to_tip_tsv,
 )
-from bijux_phylogenetics.io.fasta import build_alignment_quality_report, infer_alignment_alphabet, link_alignment_to_tree, load_fasta_alignment, summarise_fasta
+from bijux_phylogenetics.io.fasta import (
+    build_alignment_quality_report,
+    classify_alignment_sequences,
+    infer_alignment_alphabet,
+    link_alignment_to_tree,
+    load_fasta_alignment,
+    summarise_fasta,
+    summarize_alignment_readiness,
+    summarize_alignment_windows,
+)
 from bijux_phylogenetics.io.fasta import (
     compute_pairwise_sequence_identity_matrix,
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
     detect_composition_outlier_sequences,
+    detect_over_aligned_regions,
+    detect_sequence_length_outliers,
+    detect_under_aligned_regions,
     inspect_coding_alignment,
     translate_coding_alignment,
     trim_alignment,
@@ -533,10 +545,33 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_inspect.add_argument("alignment", type=Path)
     alignment_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_inspect)
+    alignment_classify = alignment_subparsers.add_parser(
+        "classify",
+        help="Classify whether a FASTA input is aligned, raw, or shape-ambiguous.",
+    )
+    alignment_classify.add_argument("alignment", type=Path)
+    alignment_classify.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_classify)
     alignment_quality = alignment_subparsers.add_parser("quality", help="Generate a higher-level alignment quality report.")
     alignment_quality.add_argument("alignment", type=Path)
     alignment_quality.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_quality)
+    alignment_windows = alignment_subparsers.add_parser(
+        "windows",
+        help="Summarize sliding-window alignment quality and suspicious regions.",
+    )
+    alignment_windows.add_argument("alignment", type=Path)
+    alignment_windows.add_argument("--window-size", type=int, default=30)
+    alignment_windows.add_argument("--step-size", type=int, default=10)
+    alignment_windows.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_windows)
+    alignment_readiness = alignment_subparsers.add_parser(
+        "readiness",
+        help="Classify whether an alignment is ready for distance, ML, Bayesian, coding, or protein workflows.",
+    )
+    alignment_readiness.add_argument("alignment", type=Path)
+    alignment_readiness.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_readiness)
     alignment_composition = alignment_subparsers.add_parser(
         "composition",
         help="Inspect inferred alphabet, composition, and GC content.",
@@ -568,6 +603,13 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_outliers.add_argument("--deviation-threshold", type=float, default=0.25)
     alignment_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_outliers)
+    alignment_length_outliers = alignment_subparsers.add_parser(
+        "length-outliers",
+        help="Report raw sequence length outliers before alignment assumptions are imposed.",
+    )
+    alignment_length_outliers.add_argument("alignment", type=Path)
+    alignment_length_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_length_outliers)
     alignment_trim = alignment_subparsers.add_parser(
         "trim",
         help="Trim all-gap or all-missing sites and optionally drop high-missingness sequences.",
