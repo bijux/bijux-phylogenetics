@@ -112,6 +112,42 @@ print("warning: fasttree fixture approximate support only", file=sys.stderr)
     )
 
 
+def _fake_mrbayes(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+prefix = nexus_path.with_suffix("")
+prefix.with_suffix(".run1.p").write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t-110.0\\t0.40\\t0.90\\n"
+    "100\\t-108.0\\t0.41\\t0.95\\n"
+    "200\\t-107.0\\t0.42\\t1.00\\n"
+    "300\\t-106.5\\t0.43\\t1.05\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".run1.t").write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen3 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\\n"
+    "tree gen4 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+print("warning: mrbayes fixture posterior run", file=sys.stderr)
+""",
+    )
+
+
 def test_adapter_inspect_cli_reports_engine_version(tmp_path: Path, capsys) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture")
 
@@ -229,3 +265,86 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(tmp_path: Path, ca
     assert compare_exit == 0
     assert compare_payload["metrics"]["shared_taxa"] == 4
     assert comparison_path.exists()
+
+
+def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
+    executable = _fake_mrbayes(tmp_path / "mb-fixture")
+    alignment_path = fixture("alignments/example_alignment.fasta")
+    nexus_path = tmp_path / "analysis.nex"
+
+    prepare_exit = main(
+        [
+            "adapter",
+            "mrbayes-prepare",
+            str(alignment_path),
+            "--out",
+            str(nexus_path),
+            "--ngen",
+            "2000",
+            "--samplefreq",
+            "50",
+            "--printfreq",
+            "50",
+            "--json",
+        ]
+    )
+    prepare_payload = json.loads(capsys.readouterr().out)
+    assert prepare_exit == 0
+    assert prepare_payload["metrics"]["taxon_count"] == 4
+
+    run_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(executable),
+            "--json",
+        ]
+    )
+    run_payload = json.loads(capsys.readouterr().out)
+    assert run_exit == 0
+    manifest_path = Path(run_payload["data"]["manifest_path"])
+    tree_path = Path(run_payload["data"]["output_paths"]["posterior_trees"])
+    trace_path = Path(run_payload["data"]["output_paths"]["parameter_traces"])
+    assert run_payload["warnings"] == ["warning: mrbayes fixture posterior run"]
+
+    summarize_exit = main(
+        [
+            "adapter",
+            "mrbayes-summarize",
+            str(tree_path),
+            "--burnin-fraction",
+            "0.25",
+            "--json",
+        ]
+    )
+    summarize_payload = json.loads(capsys.readouterr().out)
+    assert summarize_exit == 0
+    assert summarize_payload["metrics"]["kept_tree_count"] == 3
+
+    traces_exit = main(["adapter", "mrbayes-traces", str(trace_path), "--json"])
+    traces_payload = json.loads(capsys.readouterr().out)
+    assert traces_exit == 0
+    assert traces_payload["metrics"]["row_count"] == 4
+
+    ess_exit = main(["adapter", "mrbayes-ess", str(trace_path), "--json"])
+    ess_payload = json.loads(capsys.readouterr().out)
+    assert ess_exit == 0
+    assert ess_payload["metrics"]["parameter_count"] == 3
+
+    report_path = tmp_path / "inference-report.html"
+    report_exit = main(
+        [
+            "adapter",
+            "report",
+            str(manifest_path),
+            "--out",
+            str(report_path),
+            "--json",
+        ]
+    )
+    report_payload = json.loads(capsys.readouterr().out)
+    assert report_exit == 0
+    assert report_payload["metrics"]["warning_count"] == 1
+    assert report_path.exists()
