@@ -6,13 +6,18 @@ from bijux_phylogenetics.discrete_evolution import (
     compare_discrete_state_models,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
+    load_stochastic_map_collection,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
+    simulate_discrete_stochastic_maps,
+    summarize_discrete_stochastic_maps,
     validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
     validate_discrete_state_coding,
     write_node_state_probability_table,
+    write_stochastic_map_collection,
+    write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
 
@@ -153,6 +158,7 @@ def test_estimate_ancestral_geographic_states_and_compare_models_return_node_dif
     assert comparison.better_model in {"equal-rates", "all-rates-different"}
     assert len(comparison.rows) == 2
     assert len(comparison.node_differences) == len(report.estimates)
+    assert comparison.sensitive_region_count == len(comparison.sensitive_regions)
 
 
 def test_write_node_probability_table_and_render_report_outputs_files(tmp_path: Path) -> None:
@@ -200,7 +206,7 @@ def test_write_transition_summary_table_exports_branch_state_changes(tmp_path: P
     write_transition_summary_table(table_path, report)
 
     contents = table_path.read_text(encoding="utf-8")
-    assert "parent_node\tchild_node\tsource_state\ttarget_state\tchanged" in contents
+    assert "parent_node\tchild_node\tsource_state\ttarget_state\tchanged\tsupport\tstrongly_supported" in contents
     assert "false" in contents or "true" in contents
 
 
@@ -224,3 +230,28 @@ def test_validate_discrete_transition_reference_examples_matches_expected_cases(
     assert report.case_count == 3
     assert report.all_passed is True
     assert all(observation.max_rate_delta <= report.tolerance for observation in report.observations)
+
+
+def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(tmp_path: Path) -> None:
+    report = simulate_discrete_stochastic_maps(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="symmetric",
+        replicates=8,
+        seed=11,
+    )
+    summary = summarize_discrete_stochastic_maps(report)
+    collection_path = tmp_path / "stochastic-maps.json"
+    summary_path = tmp_path / "stochastic-summary.tsv"
+
+    write_stochastic_map_collection(collection_path, report)
+    write_stochastic_map_summary_table(summary_path, summary)
+    reloaded = load_stochastic_map_collection(collection_path)
+
+    assert report.summary.replicate_count == 8
+    assert report.summary.rows
+    assert report.summary.mean_total_transition_count >= 0.0
+    assert reloaded.summary.replicate_count == 8
+    assert reloaded.maps[0].branch_histories
+    assert "transition\tmean_count\tlower_95_interval" in summary_path.read_text(encoding="utf-8")

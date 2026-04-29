@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 import json
 import math
 from pathlib import Path
+import random
 import tempfile
 
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset, node_descendant_taxa, node_signature
@@ -209,6 +210,15 @@ class DiscreteModelComparisonRow:
 
 
 @dataclass(slots=True)
+class ModelSensitiveRegionRow:
+    node: str
+    descendant_taxa: list[str]
+    left_state: str
+    right_state: str
+    sensitivity_score: float
+
+
+@dataclass(slots=True)
 class NodeStateDifference:
     node: str
     descendant_taxa: list[str]
@@ -230,6 +240,84 @@ class DiscreteModelComparisonReport:
     better_model: str
     rows: list[DiscreteModelComparisonRow]
     node_differences: list[NodeStateDifference]
+    sensitive_region_count: int
+    sensitive_regions: list[ModelSensitiveRegionRow]
+
+
+@dataclass(slots=True)
+class DiscreteEvolutionNarrative:
+    summary: str
+    transition_summary: str
+    interpretation_boundary: str
+    caveats: list[str]
+
+
+@dataclass(slots=True)
+class StochasticMapTransitionEvent:
+    branch_index: int
+    parent_node: str
+    child_node: str
+    source_state: str
+    target_state: str
+    event_time_fraction: float
+
+
+@dataclass(slots=True)
+class StochasticMapBranchHistory:
+    branch_index: int
+    parent_node: str
+    child_node: str
+    branch_length: float
+    start_state: str
+    end_state: str
+    event_count: int
+    events: list[StochasticMapTransitionEvent]
+
+
+@dataclass(slots=True)
+class StochasticMapReplicate:
+    replicate_index: int
+    root_state: str
+    total_transition_count: int
+    transition_counts: dict[str, int]
+    branch_histories: list[StochasticMapBranchHistory]
+
+
+@dataclass(slots=True)
+class StochasticMapSummaryRow:
+    transition: str
+    mean_count: float
+    lower_95_interval: float
+    upper_95_interval: float
+    minimum_count: int
+    maximum_count: int
+    presence_fraction: float
+
+
+@dataclass(slots=True)
+class StochasticMapSummaryReport:
+    replicate_count: int
+    mean_total_transition_count: float
+    lower_95_total_transition_count: float
+    upper_95_total_transition_count: float
+    rows: list[StochasticMapSummaryRow]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class StochasticMapCollectionReport:
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    trait: str
+    model: str
+    state_ordering: str
+    ordered_states: list[str]
+    replicates: int
+    seed: int
+    conditioned_on_node_estimates: bool
+    maps: list[StochasticMapReplicate]
+    summary: StochasticMapSummaryReport
 
 
 @dataclass(slots=True)
@@ -749,6 +837,142 @@ def _estimate_transition_support_rows(
     return rows
 
 
+def _quantile(sorted_values: list[float], fraction: float) -> float:
+    if not sorted_values:
+        return 0.0
+    if len(sorted_values) == 1:
+        return float(format(sorted_values[0], ".15g"))
+    index = max(0, min(len(sorted_values) - 1, int(round(fraction * (len(sorted_values) - 1)))))
+    return float(format(sorted_values[index], ".15g"))
+
+
+def _build_discrete_evolution_narrative(
+    report: DiscreteStateEvolutionReport,
+    *,
+    comparison: DiscreteModelComparisonReport | None = None,
+) -> DiscreteEvolutionNarrative:
+    root_state = next(estimate.most_likely_state for estimate in report.estimates if estimate.node == node_signature(load_tree(report.tree_path).root))
+    summary = (
+        f"reconstructed {report.trait} across {report.taxon_count} taxa under the {report.model} model"
+        f" with root state '{root_state}' and {report.transition_summary.transition_count} inferred branch transitions"
+    )
+    strong = report.transition_summary.strongly_supported_transition_count
+    transition_summary = (
+        f"{strong} of {report.transition_summary.transition_count} changed branches remain strongly supported after"
+        " weighting by parent-child state probabilities"
+    )
+    caveats = list(report.warnings)
+    if comparison is not None and comparison.sensitive_region_count > 0:
+        caveats.append(
+            f"{comparison.sensitive_region_count} internal regions change reconstructed state between {comparison.left_model}"
+            f" and {comparison.right_model}"
+        )
+    caveats.extend(
+        [
+            "deterministic node probabilities are an approximation and do not replace full Bayesian or likelihood-marginal ancestral mapping",
+            "transition uncertainty intervals summarize effective event counts in the fitted deterministic model and are not posterior credible intervals",
+        ]
+    )
+    return DiscreteEvolutionNarrative(
+        summary=summary,
+        transition_summary=transition_summary,
+        interpretation_boundary=(
+            "treat these outputs as computational evidence about state histories, not as direct proof of dispersal timing, mechanism, or causal biogeography"
+        ),
+        caveats=caveats,
+    )
+
+
+def _build_model_sensitive_regions(
+    differences: list[NodeStateDifference],
+) -> list[ModelSensitiveRegionRow]:
+    rows: list[ModelSensitiveRegionRow] = []
+    for difference in differences:
+        if not difference.differs:
+            continue
+        left_probability = difference.left_probabilities.get(difference.left_state, 0.0)
+        right_probability = difference.right_probabilities.get(difference.right_state, 0.0)
+        rows.append(
+            ModelSensitiveRegionRow(
+                node=difference.node,
+                descendant_taxa=difference.descendant_taxa,
+                left_state=difference.left_state,
+                right_state=difference.right_state,
+                sensitivity_score=float(format(abs(left_probability - right_probability), ".15g")),
+            )
+        )
+    return sorted(rows, key=lambda row: (-row.sensitivity_score, row.node))
+
+
+def _sample_state(probabilities: dict[str, float], rng: random.Random) -> str:
+    threshold = rng.random()
+    cumulative = 0.0
+    ordered_items = sorted(probabilities.items())
+    for state, probability in ordered_items:
+        cumulative += probability
+        if threshold <= cumulative:
+            return state
+    return ordered_items[-1][0]
+
+
+def _sample_transition_target(
+    source_state: str,
+    transition_lookup: dict[str, dict[str, float]],
+    rng: random.Random,
+) -> str:
+    off_diagonal = {
+        target_state: probability
+        for target_state, probability in transition_lookup[source_state].items()
+        if target_state != source_state and probability > 0.0
+    }
+    if not off_diagonal:
+        return source_state
+    total = sum(off_diagonal.values())
+    normalized = {
+        state: float(format(probability / total, ".15g"))
+        for state, probability in off_diagonal.items()
+    }
+    return _sample_state(normalized, rng)
+
+
+def _summarize_stochastic_map_replicates(
+    replicates: list[StochasticMapReplicate],
+) -> StochasticMapSummaryReport:
+    total_counts = sorted(float(replicate.total_transition_count) for replicate in replicates)
+    transition_names = sorted(
+        {
+            transition
+            for replicate in replicates
+            for transition in replicate.transition_counts
+        }
+    )
+    rows: list[StochasticMapSummaryRow] = []
+    for transition in transition_names:
+        values = [replicate.transition_counts.get(transition, 0) for replicate in replicates]
+        sorted_values = sorted(float(value) for value in values)
+        rows.append(
+            StochasticMapSummaryRow(
+                transition=transition,
+                mean_count=float(format(sum(values) / max(len(values), 1), ".15g")),
+                lower_95_interval=_quantile(sorted_values, 0.025),
+                upper_95_interval=_quantile(sorted_values, 0.975),
+                minimum_count=min(values, default=0),
+                maximum_count=max(values, default=0),
+                presence_fraction=float(format(sum(1 for value in values if value > 0) / max(len(values), 1), ".15g")),
+            )
+        )
+    return StochasticMapSummaryReport(
+        replicate_count=len(replicates),
+        mean_total_transition_count=float(format(sum(total_counts) / max(len(total_counts), 1), ".15g")),
+        lower_95_total_transition_count=_quantile(total_counts, 0.025),
+        upper_95_total_transition_count=_quantile(total_counts, 0.975),
+        rows=rows,
+        warnings=[
+            "stochastic maps are simulated from deterministic node estimates and transition weights rather than sampled from a full posterior process"
+        ],
+    )
+
+
 def validate_discrete_state_coding(
     tree_path: Path,
     traits_path: Path,
@@ -1153,6 +1377,7 @@ def compare_discrete_state_models(
         ),
     ]
     better_model = min(rows, key=lambda row: row.aic).model
+    sensitive_regions = _build_model_sensitive_regions(differences)
     return DiscreteModelComparisonReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -1163,7 +1388,140 @@ def compare_discrete_state_models(
         better_model=better_model,
         rows=rows,
         node_differences=differences,
+        sensitive_region_count=len(sensitive_regions),
+        sensitive_regions=sensitive_regions,
     )
+
+
+def simulate_discrete_stochastic_maps(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    model: str = "equal-rates",
+    allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+    replicates: int = 100,
+    seed: int = 0,
+) -> StochasticMapCollectionReport:
+    """Generate approximate stochastic transition maps from deterministic node-state estimates."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    report = run_discrete_state_transition_model(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=model,
+        allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    tree = load_tree(tree_path)
+    estimate_by_node = {estimate.node: estimate for estimate in report.estimates}
+    transition_lookup = _row_lookup(report.transition_model.transition_matrix)
+    branch_rows = [
+        (index, event.parent_node, event.child_node, next(node for node in tree.iter_nodes() if node_signature(node) == event.child_node))
+        for index, event in enumerate(report.transition_summary.events)
+    ]
+    randomizer = random.Random(seed)
+    maps: list[StochasticMapReplicate] = []
+    for replicate_index in range(replicates):
+        root_state = _sample_state(
+            next(estimate.state_probabilities for estimate in report.estimates if estimate.node == node_signature(tree.root)),
+            randomizer,
+        )
+        node_states = {node_signature(tree.root): root_state}
+        branch_histories: list[StochasticMapBranchHistory] = []
+        transition_counts: dict[str, int] = {}
+        total_transition_count = 0
+        for branch_index, parent_node, child_node, child in branch_rows:
+            parent_state = node_states[parent_node]
+            child_estimate = estimate_by_node[child_node]
+            branch_length = float(child.branch_length or 0.0)
+            start_state = parent_state
+            end_state = _sample_state(child_estimate.state_probabilities, randomizer)
+            max_event_count = max(1, int(math.ceil(max(branch_length, 0.0) * 2.0)))
+            provisional_event_count = 0 if start_state == end_state else randomizer.randint(1, max_event_count)
+            events: list[StochasticMapTransitionEvent] = []
+            current_state = start_state
+            for _ in range(provisional_event_count):
+                next_state = _sample_transition_target(current_state, transition_lookup, randomizer)
+                if next_state == current_state:
+                    continue
+                event = StochasticMapTransitionEvent(
+                    branch_index=branch_index,
+                    parent_node=parent_node,
+                    child_node=child_node,
+                    source_state=current_state,
+                    target_state=next_state,
+                    event_time_fraction=float(format(randomizer.random(), ".15g")),
+                )
+                events.append(event)
+                transition = f"{current_state}->{next_state}"
+                transition_counts[transition] = transition_counts.get(transition, 0) + 1
+                total_transition_count += 1
+                current_state = next_state
+            if current_state != end_state:
+                events.append(
+                    StochasticMapTransitionEvent(
+                        branch_index=branch_index,
+                        parent_node=parent_node,
+                        child_node=child_node,
+                        source_state=current_state,
+                        target_state=end_state,
+                        event_time_fraction=1.0,
+                    )
+                )
+                transition = f"{current_state}->{end_state}"
+                transition_counts[transition] = transition_counts.get(transition, 0) + 1
+                total_transition_count += 1
+            ordered_events = sorted(events, key=lambda event: event.event_time_fraction)
+            node_states[child_node] = end_state
+            branch_histories.append(
+                StochasticMapBranchHistory(
+                    branch_index=branch_index,
+                    parent_node=parent_node,
+                    child_node=child_node,
+                    branch_length=branch_length,
+                    start_state=start_state,
+                    end_state=end_state,
+                    event_count=len(ordered_events),
+                    events=ordered_events,
+                )
+            )
+        maps.append(
+            StochasticMapReplicate(
+                replicate_index=replicate_index,
+                root_state=root_state,
+                total_transition_count=total_transition_count,
+                transition_counts=dict(sorted(transition_counts.items())),
+                branch_histories=branch_histories,
+            )
+        )
+    return StochasticMapCollectionReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=report.taxon_column,
+        trait=trait,
+        model=model,
+        state_ordering=report.state_ordering,
+        ordered_states=report.ordered_states,
+        replicates=replicates,
+        seed=seed,
+        conditioned_on_node_estimates=True,
+        maps=maps,
+        summary=_summarize_stochastic_map_replicates(maps),
+    )
+
+
+def summarize_discrete_stochastic_maps(
+    report: StochasticMapCollectionReport,
+) -> StochasticMapSummaryReport:
+    """Summarize one stochastic-map collection without regenerating maps."""
+    return _summarize_stochastic_map_replicates(report.maps)
 
 
 def validate_discrete_transition_reference_examples(
@@ -1315,6 +1673,10 @@ def write_node_state_probability_table(path: Path, report: DiscreteStateEvolutio
 
 def write_transition_summary_table(path: Path, report: DiscreteStateEvolutionReport) -> Path:
     """Export one branch-by-branch transition summary table."""
+    support_by_branch = {
+        (row.parent_node, row.child_node): row
+        for row in report.transition_summary.support_rows
+    }
     rows = [
         {
             "parent_node": event.parent_node,
@@ -1322,6 +1684,8 @@ def write_transition_summary_table(path: Path, report: DiscreteStateEvolutionRep
             "source_state": event.source_state,
             "target_state": event.target_state,
             "changed": str(event.changed).lower(),
+            "support": support_by_branch[(event.parent_node, event.child_node)].support,
+            "strongly_supported": str(support_by_branch[(event.parent_node, event.child_node)].strongly_supported).lower(),
         }
         for event in report.transition_summary.events
     ]
@@ -1333,6 +1697,8 @@ def write_transition_summary_table(path: Path, report: DiscreteStateEvolutionRep
             "source_state",
             "target_state",
             "changed",
+            "support",
+            "strongly_supported",
         ],
         rows=rows,
     )
@@ -1364,6 +1730,111 @@ def write_discrete_model_comparison_table(path: Path, report: DiscreteModelCompa
             "right_probabilities",
         ],
         rows=rows,
+    )
+
+
+def write_stochastic_map_summary_table(path: Path, report: StochasticMapSummaryReport) -> Path:
+    """Export one transition-by-transition stochastic-map uncertainty table."""
+    rows = [
+        {
+            "transition": row.transition,
+            "mean_count": row.mean_count,
+            "lower_95_interval": row.lower_95_interval,
+            "upper_95_interval": row.upper_95_interval,
+            "minimum_count": row.minimum_count,
+            "maximum_count": row.maximum_count,
+            "presence_fraction": row.presence_fraction,
+        }
+        for row in report.rows
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "transition",
+            "mean_count",
+            "lower_95_interval",
+            "upper_95_interval",
+            "minimum_count",
+            "maximum_count",
+            "presence_fraction",
+        ],
+        rows=rows,
+    )
+
+
+def write_stochastic_map_collection(path: Path, report: StochasticMapCollectionReport) -> Path:
+    """Write one stochastic-map collection as JSON."""
+    path.write_text(json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def load_stochastic_map_collection(path: Path) -> StochasticMapCollectionReport:
+    """Load one stochastic-map collection from JSON."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    maps = [
+        StochasticMapReplicate(
+            replicate_index=replicate["replicate_index"],
+            root_state=replicate["root_state"],
+            total_transition_count=replicate["total_transition_count"],
+            transition_counts=replicate["transition_counts"],
+            branch_histories=[
+                StochasticMapBranchHistory(
+                    branch_index=history["branch_index"],
+                    parent_node=history["parent_node"],
+                    child_node=history["child_node"],
+                    branch_length=history["branch_length"],
+                    start_state=history["start_state"],
+                    end_state=history["end_state"],
+                    event_count=history["event_count"],
+                    events=[
+                        StochasticMapTransitionEvent(
+                            branch_index=event["branch_index"],
+                            parent_node=event["parent_node"],
+                            child_node=event["child_node"],
+                            source_state=event["source_state"],
+                            target_state=event["target_state"],
+                            event_time_fraction=event["event_time_fraction"],
+                        )
+                        for event in history["events"]
+                    ],
+                )
+                for history in replicate["branch_histories"]
+            ],
+        )
+        for replicate in payload["maps"]
+    ]
+    summary = StochasticMapSummaryReport(
+        replicate_count=payload["summary"]["replicate_count"],
+        mean_total_transition_count=payload["summary"]["mean_total_transition_count"],
+        lower_95_total_transition_count=payload["summary"]["lower_95_total_transition_count"],
+        upper_95_total_transition_count=payload["summary"]["upper_95_total_transition_count"],
+        rows=[
+            StochasticMapSummaryRow(
+                transition=row["transition"],
+                mean_count=row["mean_count"],
+                lower_95_interval=row["lower_95_interval"],
+                upper_95_interval=row["upper_95_interval"],
+                minimum_count=row["minimum_count"],
+                maximum_count=row["maximum_count"],
+                presence_fraction=row["presence_fraction"],
+            )
+            for row in payload["summary"]["rows"]
+        ],
+        warnings=payload["summary"]["warnings"],
+    )
+    return StochasticMapCollectionReport(
+        tree_path=Path(payload["tree_path"]),
+        traits_path=Path(payload["traits_path"]),
+        taxon_column=payload["taxon_column"],
+        trait=payload["trait"],
+        model=payload["model"],
+        state_ordering=payload["state_ordering"],
+        ordered_states=payload["ordered_states"],
+        replicates=payload["replicates"],
+        seed=payload["seed"],
+        conditioned_on_node_estimates=payload["conditioned_on_node_estimates"],
+        maps=maps,
+        summary=summary,
     )
 
 
@@ -1445,7 +1916,9 @@ def render_discrete_state_evolution_report(
     )
     render_path = out_path.with_suffix(".svg")
     render_result = render_tree_with_geographic_states(tree_path, report, out_path=render_path, layout="phylogram")
+    narrative = _build_discrete_evolution_narrative(report, comparison=comparison)
     sections = [
+        ("discrete-state-summary", json.dumps(asdict(narrative), default=str, indent=2, sort_keys=True)),
         ("discrete-state-evolution", json.dumps(asdict(report), default=str, indent=2, sort_keys=True)),
         ("discrete-state-render", json.dumps(asdict(render_result), default=str, indent=2, sort_keys=True)),
     ]
@@ -1462,6 +1935,7 @@ def render_discrete_state_evolution_report(
         "likelihood_method": report.likelihood_method,
         "state_ordering": report.state_ordering,
         "ordered_states": report.ordered_states,
+        "caveat_count": len(narrative.caveats),
         "rendered_tree": str(render_path),
         "sections": [name for name, _ in sections],
     }
