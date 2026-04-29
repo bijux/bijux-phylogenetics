@@ -182,9 +182,11 @@ from .engines import (
 )
 from .diagnostics.validation import (
     TreeDiagnosticReport,
+    TreeForensicReport,
     TreeInspectionReport,
     TreeValidationReport,
     diagnose_tree_path,
+    forensic_tree_path,
     inspect_tree_path,
     validate_tree_path,
 )
@@ -363,6 +365,7 @@ __all__ = [
     "TreeAssumptionReport",
     "TreeComparisonBenchmarkReport",
     "TreeDiagnosticReport",
+    "TreeForensicReport",
     "TreeFigurePackageResult",
     "TreeDistanceMatrixReport",
     "TreeDistancePair",
@@ -426,6 +429,7 @@ __all__ = [
     "detect_unstable_clades",
     "detect_unstable_taxa",
     "diagnose_tree_path",
+    "forensic_tree_path",
     "estimate_ancestral_geographic_states",
     "estimate_diversification_rate",
     "estimate_pagels_lambda",
