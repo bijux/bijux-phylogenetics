@@ -131,6 +131,11 @@ bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment 
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
 
+## Alignment Filter Profiles
+
+The built-in alignment filtering profiles are `conservative`, `moderate`,
+`aggressive`, `coding-safe`, and `phylogenomics-scale`.
+
 ## Read this next
 
 - package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
