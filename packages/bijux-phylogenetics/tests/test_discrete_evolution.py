@@ -5,6 +5,7 @@ import pytest
 
 from bijux_phylogenetics.discrete_evolution import (
     assess_geographic_state_analysis_readiness,
+    audit_discrete_state_coding,
     compare_discrete_state_models,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
@@ -51,6 +52,42 @@ def test_validate_discrete_state_coding_reports_unsupported_and_delimited_states
     assert report.valid is False
     assert report.observed_states == ["island", "north"]
     assert {issue.code for issue in report.issues} == {"unsupported-state-delimiter", "unsupported-state-label"}
+
+
+def test_audit_discrete_state_coding_tracks_normalized_and_excluded_rows() -> None:
+    traits_path = fixture("example_traits_geography_invalid.tsv")
+    report = audit_discrete_state_coding(
+        fixture("example_tree.nwk"),
+        traits_path,
+        trait="region",
+        allowed_states=["north", "south", "island"],
+    )
+    assert report.row_count == 4
+    assert report.included_row_count == 2
+    by_taxon = {row.taxon: row for row in report.rows}
+    assert by_taxon["A"].normalized_state == "north"
+    assert by_taxon["A"].included is True
+    assert by_taxon["B"].issue_code == "unsupported-state-delimiter"
+    assert by_taxon["C"].issue_code == "unsupported-state-label"
+
+
+def test_audit_discrete_state_coding_applies_coding_map_and_tree_overlap(tmp_path: Path) -> None:
+    traits_path = tmp_path / "geography-audit.tsv"
+    traits_path.write_text(
+        "taxon\tregion\nA\tN\nB\tsouth\nGhost\tisland\n",
+        encoding="utf-8",
+    )
+    report = audit_discrete_state_coding(
+        fixture("example_tree.nwk"),
+        traits_path,
+        trait="region",
+        allowed_states=["north", "south", "island"],
+        coding_map={"N": "north"},
+    )
+    by_taxon = {row.taxon: row for row in report.rows}
+    assert by_taxon["A"].normalized_state == "north"
+    assert by_taxon["A"].included is True
+    assert by_taxon["Ghost"].issue_code == "taxon-not-in-tree"
 
 
 def test_validate_discrete_state_coding_records_ordered_vocabulary() -> None:

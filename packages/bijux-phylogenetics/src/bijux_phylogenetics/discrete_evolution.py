@@ -55,6 +55,32 @@ class StateCodingValidationReport:
 
 
 @dataclass(slots=True)
+class StateCodingAuditRow:
+    taxon: str
+    raw_state: str
+    normalized_state: str | None
+    in_tree: bool
+    included: bool
+    issue_code: str | None
+    note: str
+
+
+@dataclass(slots=True)
+class StateCodingAuditReport:
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    trait: str
+    state_ordering: str
+    ordered_states: list[str]
+    coding_map: dict[str, str]
+    row_count: int
+    included_row_count: int
+    excluded_row_count: int
+    rows: list[StateCodingAuditRow]
+
+
+@dataclass(slots=True)
 class StateImbalanceWarning:
     code: str
     message: str
@@ -1141,6 +1167,117 @@ def validate_discrete_state_coding(
         issues=issues,
         observed_states=sorted(observed_states),
         usable_taxa=sorted(usable_taxa),
+    )
+
+
+def audit_discrete_state_coding(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+    coding_map: dict[str, str] | None = None,
+) -> StateCodingAuditReport:
+    """Show how raw metadata states become model states or get excluded."""
+    tree = load_tree(tree_path)
+    table = load_tsv_summary(traits_path) if taxon_column is None else load_taxon_table(traits_path, taxon_column=taxon_column)
+    if trait not in table.columns:
+        raise AncestralReconstructionError(f"trait table does not contain column '{trait}'")
+    tree_taxa = set(tree.tip_names)
+    mapping = dict(coding_map or {})
+    ordered = list(ordered_states or [])
+    allowed = list(allowed_states or ordered or [])
+    allowed_set = set(allowed)
+    rows: list[StateCodingAuditRow] = []
+    for row in table.rows:
+        taxon = row[table.taxon_column]
+        raw_state = row[trait].strip()
+        in_tree = taxon in tree_taxa
+        if not raw_state:
+            rows.append(
+                StateCodingAuditRow(
+                    taxon=taxon,
+                    raw_state=raw_state,
+                    normalized_state=None,
+                    in_tree=in_tree,
+                    included=False,
+                    issue_code="missing-state",
+                    note="state is blank and cannot be used",
+                )
+            )
+            continue
+        normalized_state = mapping.get(raw_state, raw_state)
+        invalid_delimiter = next((token for token in _DEFAULT_ALLOWED_STATE_PATTERN_BLOCKLIST if token in normalized_state), None)
+        if not in_tree:
+            rows.append(
+                StateCodingAuditRow(
+                    taxon=taxon,
+                    raw_state=raw_state,
+                    normalized_state=normalized_state,
+                    in_tree=False,
+                    included=False,
+                    issue_code="taxon-not-in-tree",
+                    note="taxon does not overlap the tree and is excluded before state modeling",
+                )
+            )
+            continue
+        if invalid_delimiter is not None:
+            rows.append(
+                StateCodingAuditRow(
+                    taxon=taxon,
+                    raw_state=raw_state,
+                    normalized_state=normalized_state,
+                    in_tree=True,
+                    included=False,
+                    issue_code="unsupported-state-delimiter",
+                    note=f"normalized state contains reserved delimiter '{invalid_delimiter}'",
+                )
+            )
+            continue
+        if allowed and normalized_state not in allowed_set:
+            rows.append(
+                StateCodingAuditRow(
+                    taxon=taxon,
+                    raw_state=raw_state,
+                    normalized_state=normalized_state,
+                    in_tree=True,
+                    included=False,
+                    issue_code="unsupported-state-label" if state_ordering != "ordered" else "unordered-state-vocabulary",
+                    note=(
+                        "normalized state is absent from the declared ordered vocabulary"
+                        if state_ordering == "ordered" and ordered
+                        else "normalized state is absent from the allowed state vocabulary"
+                    ),
+                )
+            )
+            continue
+        rows.append(
+            StateCodingAuditRow(
+                taxon=taxon,
+                raw_state=raw_state,
+                normalized_state=normalized_state,
+                in_tree=True,
+                included=True,
+                issue_code=None,
+                note="state is retained for discrete-state modeling",
+            )
+        )
+    included_row_count = sum(1 for row in rows if row.included)
+    return StateCodingAuditReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=table.taxon_column,
+        trait=trait,
+        state_ordering=state_ordering,
+        ordered_states=ordered,
+        coding_map=mapping,
+        row_count=len(rows),
+        included_row_count=included_row_count,
+        excluded_row_count=len(rows) - included_row_count,
+        rows=rows,
     )
 
 
