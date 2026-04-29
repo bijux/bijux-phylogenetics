@@ -279,6 +279,13 @@ def _parse_labelled_run(raw: str) -> tuple[str, Path]:
     return label.strip(), Path(raw_path.strip())
 
 
+def _validate_ancestral_discrete_model_arguments(args: Any, parser: argparse.ArgumentParser) -> None:
+    if getattr(args, "kind", None) == "discrete" and getattr(args, "state_ordering", "unordered") == "ordered":
+        resolved_model = getattr(args, "model", None) or "fitch"
+        if resolved_model == "fitch":
+            parser.error("ordered ancestral discrete reconstruction requires a likelihood model")
+
+
 def _build_annotation_strips(table, columns: list[str]) -> list[AnnotationStrip]:
     missing_columns = [column for column in columns if column not in table.columns]
     if missing_columns:
@@ -3395,6 +3402,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.ancestral_command == "discrete":
+                if args.state_ordering == "ordered" and args.model == "fitch":
+                    parser.error("ordered ancestral discrete reconstruction requires a likelihood model")
                 report = reconstruct_discrete_ancestral_states(
                     args.tree,
                     args.table,
@@ -3456,6 +3465,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.ancestral_command == "sensitivity":
+                _validate_ancestral_discrete_model_arguments(args, parser)
                 resolved_model = args.model or ("brownian" if args.kind == "continuous" else "fitch")
                 report = build_ancestral_sensitivity_report(
                     tree_path=args.tree,
@@ -3491,6 +3501,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.ancestral_command == "render":
+                _validate_ancestral_discrete_model_arguments(args, parser)
                 if args.kind == "continuous":
                     resolved_model = args.model or "brownian"
                     reconstruction = reconstruct_continuous_ancestral_states(
@@ -3545,6 +3556,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             resolved_model = args.model or ("brownian" if args.kind == "continuous" else "fitch")
             if args.ancestral_command == "package":
+                _validate_ancestral_discrete_model_arguments(args, parser)
                 result = build_ancestral_figure_package(
                     tree_path=args.tree,
                     traits_path=args.table,
@@ -3586,6 +3598,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            _validate_ancestral_discrete_model_arguments(args, parser)
             result = render_ancestral_state_report(
                 tree_path=args.tree,
                 traits_path=args.table,

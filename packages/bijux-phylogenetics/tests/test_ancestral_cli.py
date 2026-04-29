@@ -160,3 +160,27 @@ def test_ancestral_package_cli_writes_publication_bundle(tmp_path: Path, capsys)
     assert exit_code == 0
     assert payload["metrics"]["artifact_count"] == 7
     assert (output_dir / "figure-manifest.json").exists()
+
+
+def test_ancestral_discrete_cli_rejects_ordered_fitch_model(capsys) -> None:
+    try:
+        main(
+            [
+                "ancestral",
+                "report",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_geography.tsv")),
+                "--trait",
+                "region",
+                "--kind",
+                "discrete",
+                "--state-ordering",
+                "ordered",
+                "--out",
+                "ignored.html",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    captured = capsys.readouterr()
+    assert "ordered ancestral discrete reconstruction requires a likelihood model" in captured.err
