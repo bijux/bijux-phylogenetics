@@ -65,3 +65,7 @@ class EvidenceContractError(PhylogeneticsError):
 
 class ComparativeMethodError(PhylogeneticsError):
     code = "comparative_method_error"
+
+
+class AncestralReconstructionError(PhylogeneticsError):
+    code = "ancestral_reconstruction_error"
