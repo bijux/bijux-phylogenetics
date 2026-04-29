@@ -22,8 +22,8 @@
 Runtime package for the bijux-phylogenetics repository.
 
 This package provides the Python API and CLI for tree validation, inspection,
-comparison, metadata linkage, evidence bundle creation, and HTML report
-generation.
+comparison, metadata linkage, comparative trait analysis, evidence bundle
+creation, and HTML report generation.
 
 ## Install
 
@@ -44,6 +44,9 @@ bijux-phylogenetics --help
 - classify internal node labels as support-like or name-like and detect suspicious or mixed support scales
 - compare shared clades, clade changes, and shared-split branch lengths between trees
 - validate trait and metadata linkage against tree tips
+- check comparative readiness for rooted trees and numeric traits
+- compute phylogenetic independent contrasts, Blomberg's K, Pagel's lambda, and permutation-based signal tests
+- fit phylogenetic generalized least-squares models with one or more numeric predictors
 - export joined metadata rows and missing trait-value diagnostics
 - inspect alignment alphabets, composition, GC content, duplicates, composition outliers, coding stop codons, and frameshift-like sequence lengths
 - trim all-gap or all-missing columns and remove high-missingness sequences
@@ -65,6 +68,9 @@ bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequenc
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model p-distance --out distances.tsv
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics distance validate distances.tsv --json
+bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json
+bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json
+bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
