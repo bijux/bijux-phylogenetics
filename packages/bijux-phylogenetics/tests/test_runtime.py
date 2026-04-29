@@ -78,6 +78,7 @@ from bijux_phylogenetics.core.dataset import (
     audit_dataset_taxon_ordering,
     build_dataset_completeness_matrix,
     build_dataset_crosswalk,
+    build_dataset_mismatch_report,
     summarize_dataset_readiness,
 )
 from bijux_phylogenetics.core.demo import run_capability_demo
@@ -1675,6 +1676,21 @@ def test_dataset_crosswalk_and_completeness_matrix_report_surface_presence() -> 
     assert matrix.surface_counts["calibrations"] == 4
 
 
+def test_dataset_mismatch_report_lists_taxa_missing_requested_surfaces() -> None:
+    report = build_dataset_mismatch_report(
+        fixture("example_tree.nwk"),
+        fixture("example_alignment_groups.tsv"),
+        fixture("example_traits.tsv"),
+        alignment_path=fixture("example_alignment_filtering_cleaned_moderate.fasta"),
+    )
+
+    rows = {row.taxon: row for row in report.rows}
+    assert "D" in rows
+    assert "alignment" in rows["D"].missing_surfaces
+    assert "tree" in rows["D"].present_surfaces
+    assert report.mismatch_counts["alignment"] >= 1
+
+
 def test_dataset_ordering_audit_detects_reordered_metadata_rows() -> None:
     report = audit_dataset_taxon_ordering(
         fixture("example_tree.nwk"),
@@ -1703,6 +1719,11 @@ def test_dataset_audit_reports_group_imbalance_and_exclusion_rows() -> None:
     exclusion_by_taxon = {row.taxon: row for row in report.exclusion_table.rows}
     assert exclusion_by_taxon["D"].causes == ["absent_from_alignment", "absent_from_traits"]
     assert exclusion_by_taxon["D"].first_failed_surface == "alignment"
+    assert report.mismatch_report.rows
+    assert report.risk_score.total_score > 0.0
+    assert any(component.component == "alignment" for component in report.risk_score.components)
+    assert report.minimal_fix_plan.recommendations
+    assert any(item.section == "dataset_risk" for item in report.reviewer_checklist.items)
 
 
 def test_alignment_inspect_rejects_unequal_lengths() -> None:
@@ -4117,6 +4138,10 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
         "dataset-crosswalk",
         "dataset-completeness",
         "dataset-exclusions",
+        "dataset-mismatches",
+        "dataset-risk-score",
+        "dataset-minimal-fix-plan",
+        "dataset-reviewer-checklist",
         "dataset-ordering",
         "dataset-pruning",
         "dataset-group-imbalance",
