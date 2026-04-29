@@ -244,6 +244,7 @@ from bijux_phylogenetics.simulation import (
 )
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
+    compare_bootstrap_and_posterior_uncertainty,
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -725,6 +726,21 @@ def test_compare_posterior_tree_sets_reports_clade_deltas_and_cross_set_distance
         ("B|D", 0.333333333333333, 0.0, -0.333333333333333),
         ("C|D", 0.666666666666667, 0.333333333333333, -0.333333333333333),
     ]
+
+
+def test_compare_bootstrap_and_posterior_uncertainty_reports_conflicting_clades(tmp_path: Path) -> None:
+    bootstrap_tree = tmp_path / "bootstrap-support.nwk"
+    bootstrap_tree.write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)60:0.2);\n", encoding="utf-8")
+
+    report = compare_bootstrap_and_posterior_uncertainty(
+        bootstrap_tree,
+        fixture("example_tree_set_right.nwk"),
+    )
+
+    rows = {row.clade: row for row in report.rows}
+    assert report.posterior_tree_count == 3
+    assert rows["A|B"].agreement == "strong_conflict"
+    assert rows["C|D"].posterior_frequency == 0.333333333333333
 
 
 def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:

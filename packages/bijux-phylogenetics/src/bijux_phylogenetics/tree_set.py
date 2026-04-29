@@ -7,7 +7,7 @@ from pathlib import Path
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Tree as BioTree
 
-from bijux_phylogenetics.compare.topology import _informative_clades, _unrooted_splits
+from bijux_phylogenetics.compare.topology import _informative_clade_nodes, _informative_clades, _unrooted_splits
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
@@ -150,6 +150,25 @@ class PosteriorTreeSetComparisonReport:
     mean_between_set_robinson_foulds: float
     mean_between_set_normalized_robinson_foulds: float
     clade_frequency_deltas: list[CladeFrequencyDelta]
+
+
+@dataclass(frozen=True, slots=True)
+class BootstrapPosteriorCladeComparison:
+    clade: str
+    bootstrap_support: float | None
+    posterior_frequency: float | None
+    absolute_delta: float | None
+    agreement: str
+
+
+@dataclass(slots=True)
+class BootstrapPosteriorSupportComparisonReport:
+    bootstrap_tree_path: Path
+    posterior_tree_set_path: Path
+    posterior_tree_count: int
+    shared_taxa: list[str]
+    high_conflict_clade_count: int
+    rows: list[BootstrapPosteriorCladeComparison]
 
 
 def _shared_taxa(trees: list[PhyloTree]) -> set[str]:
@@ -604,3 +623,90 @@ def compare_posterior_tree_sets(left_path: Path, right_path: Path) -> PosteriorT
         ),
         clade_frequency_deltas=deltas,
     )
+
+
+def compare_bootstrap_and_posterior_uncertainty(
+    bootstrap_tree_path: Path,
+    posterior_tree_set_path: Path,
+) -> BootstrapPosteriorSupportComparisonReport:
+    """Compare bootstrap support on one summary tree against posterior clade frequencies from a tree set."""
+    bootstrap_tree = _require_tree(bootstrap_tree_path)
+    posterior_report = compute_clade_frequency_table(posterior_tree_set_path)
+    shared_taxa = set(bootstrap_tree.tip_names)
+    posterior_taxa = set(posterior_report.shared_taxa)
+    if shared_taxa != posterior_taxa:
+        raise InvalidAlignmentError("bootstrap versus posterior comparison requires identical taxon sets")
+    bootstrap_nodes = _informative_clade_nodes(bootstrap_tree, shared_taxa)
+    bootstrap_support_by_clade = {
+        _format_clade(clade): _parse_support_label(node.name)
+        for clade, node in bootstrap_nodes.items()
+    }
+    posterior_frequency_by_clade = {
+        row.clade: row.frequency
+        for row in posterior_report.clade_frequencies
+    }
+    all_clades = sorted(set(bootstrap_support_by_clade) | set(posterior_frequency_by_clade))
+    rows: list[BootstrapPosteriorCladeComparison] = []
+    for clade in all_clades:
+        bootstrap_support = bootstrap_support_by_clade.get(clade)
+        posterior_frequency = posterior_frequency_by_clade.get(clade)
+        absolute_delta = None
+        if bootstrap_support is not None and posterior_frequency is not None:
+            absolute_delta = abs(bootstrap_support - posterior_frequency)
+        agreement = _support_agreement_label(bootstrap_support, posterior_frequency, absolute_delta)
+        rows.append(
+            BootstrapPosteriorCladeComparison(
+                clade=clade,
+                bootstrap_support=bootstrap_support,
+                posterior_frequency=posterior_frequency,
+                absolute_delta=absolute_delta,
+                agreement=agreement,
+            )
+        )
+    return BootstrapPosteriorSupportComparisonReport(
+        bootstrap_tree_path=bootstrap_tree_path,
+        posterior_tree_set_path=posterior_tree_set_path,
+        posterior_tree_count=posterior_report.tree_count,
+        shared_taxa=posterior_report.shared_taxa,
+        high_conflict_clade_count=sum(1 for row in rows if row.agreement == "strong_conflict"),
+        rows=rows,
+    )
+
+
+def _require_tree(path: Path) -> PhyloTree:
+    if not path.exists():
+        raise FileNotFoundError(f"tree file not found: {path}")
+    source_format = detect_tree_format(path)
+    bio_tree = Phylo.read(path, source_format)
+    return tree_from_biophylo(bio_tree, source_format=source_format)
+
+
+def _parse_support_label(value: str | None) -> float | None:
+    if value is None:
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    try:
+        parsed = float(text)
+    except ValueError:
+        return None
+    return round(parsed / 100.0, 15) if parsed > 1.0 else round(parsed, 15)
+
+
+def _support_agreement_label(
+    bootstrap_support: float | None,
+    posterior_frequency: float | None,
+    absolute_delta: float | None,
+) -> str:
+    if bootstrap_support is None and posterior_frequency is None:
+        return "not_observed"
+    if bootstrap_support is None or posterior_frequency is None:
+        return "method_specific"
+    if absolute_delta is None:
+        return "not_comparable"
+    if absolute_delta >= 0.35:
+        return "strong_conflict"
+    if absolute_delta >= 0.15:
+        return "moderate_difference"
+    return "broad_agreement"
