@@ -348,3 +348,194 @@ def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     assert report_exit == 0
     assert report_payload["metrics"]["warning_count"] == 1
     assert report_path.exists()
+
+
+def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(tmp_path: Path, capsys) -> None:
+    executable = _fake_mrbayes(tmp_path / "mb-fixture")
+    alignment_path = fixture("alignments/example_alignment.fasta")
+    nexus_path = tmp_path / "analysis.nex"
+    posterior_report_path = tmp_path / "posterior-report.html"
+
+    assert main(["adapter", "mrbayes-prepare", str(alignment_path), "--out", str(nexus_path), "--json"]) == 0
+    capsys.readouterr()
+
+    run_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(executable),
+            "--json",
+        ]
+    )
+    run_payload = json.loads(capsys.readouterr().out)
+    assert run_exit == 0
+    trace_path = Path(run_payload["data"]["output_paths"]["parameter_traces"])
+    tree_path = Path(run_payload["data"]["output_paths"]["posterior_trees"])
+
+    convergence_exit = main(
+        [
+            "adapter",
+            "mrbayes-convergence",
+            str(trace_path),
+            "--ess-threshold",
+            "5",
+            "--mean-shift-threshold",
+            "0.1",
+            "--json",
+        ]
+    )
+    convergence_payload = json.loads(capsys.readouterr().out)
+    assert convergence_exit == 0
+    assert convergence_payload["metrics"]["warning_count"] >= 1
+
+    report_exit = main(
+        [
+            "adapter",
+            "mrbayes-report",
+            str(tree_path),
+            "--traces",
+            str(trace_path),
+            "--out",
+            str(posterior_report_path),
+            "--ess-threshold",
+            "5",
+            "--mean-shift-threshold",
+            "0.1",
+            "--json",
+        ]
+    )
+    report_payload = json.loads(capsys.readouterr().out)
+    assert report_exit == 0
+    assert report_payload["metrics"]["kept_tree_count"] == 3
+    assert posterior_report_path.exists()
+
+
+def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(tmp_path: Path, capsys) -> None:
+    analysis_path = tmp_path / "analysis.xml"
+    report_path = tmp_path / "calibration-audit.html"
+    diagnostics_path = tmp_path / "diagnostics.json"
+    bundle_root = tmp_path / "bayesian-bundle"
+
+    prepare_exit = main(
+        [
+            "adapter",
+            "beast-prepare",
+            str(fixture("alignments/example_alignment.fasta")),
+            "--out",
+            str(analysis_path),
+            "--tree",
+            str(fixture("trees/example_tree_named_clades.nwk")),
+            "--calibrations",
+            str(fixture("metadata/example_calibrations.tsv")),
+            "--tip-dates",
+            str(fixture("metadata/example_tip_dates.tsv")),
+            "--clock-model",
+            "relaxed-lognormal",
+            "--tree-prior",
+            "birth-death",
+            "--json",
+        ]
+    )
+    prepare_payload = json.loads(capsys.readouterr().out)
+    assert prepare_exit == 0
+    assert prepare_payload["metrics"]["calibration_count"] == 2
+
+    calibrations_exit = main(
+        [
+            "adapter",
+            "beast-calibrations",
+            str(fixture("trees/example_tree_named_clades.nwk")),
+            str(fixture("metadata/example_calibrations.tsv")),
+            "--json",
+        ]
+    )
+    calibrations_payload = json.loads(capsys.readouterr().out)
+    assert calibrations_exit == 0
+    assert calibrations_payload["metrics"]["invalid_calibration_count"] == 0
+
+    tip_dates_exit = main(
+        [
+            "adapter",
+            "beast-tip-dates",
+            str(fixture("trees/example_tree_named_clades.nwk")),
+            str(fixture("metadata/example_tip_dates.tsv")),
+            "--alignment",
+            str(fixture("alignments/example_alignment.fasta")),
+            "--json",
+        ]
+    )
+    tip_dates_payload = json.loads(capsys.readouterr().out)
+    assert tip_dates_exit == 0
+    assert tip_dates_payload["metrics"]["valid_tip_count"] == 4
+
+    log_exit = main(["adapter", "beast-log", str(fixture("metadata/example_beast.log")), "--json"])
+    log_payload = json.loads(capsys.readouterr().out)
+    assert log_exit == 0
+    assert log_payload["metrics"]["row_count"] == 4
+
+    convergence_exit = main(
+        [
+            "adapter",
+            "beast-convergence",
+            str(fixture("metadata/example_beast.log")),
+            "--ess-threshold",
+            "5",
+            "--mean-shift-threshold",
+            "0.1",
+            "--json",
+        ]
+    )
+    convergence_payload = json.loads(capsys.readouterr().out)
+    assert convergence_exit == 0
+    assert convergence_payload["metrics"]["warning_count"] >= 1
+
+    report_exit = main(
+        [
+            "adapter",
+            "beast-calibration-report",
+            str(fixture("trees/example_tree_named_clades.nwk")),
+            str(fixture("metadata/example_calibrations.tsv")),
+            "--tip-dates",
+            str(fixture("metadata/example_tip_dates.tsv")),
+            "--alignment",
+            str(fixture("alignments/example_alignment.fasta")),
+            "--out",
+            str(report_path),
+            "--json",
+        ]
+    )
+    report_payload = json.loads(capsys.readouterr().out)
+    assert report_exit == 0
+    assert report_payload["metrics"]["invalid_calibration_count"] == 0
+    assert report_path.exists()
+
+    diagnostics_path.write_text(json.dumps({"warning_count": 0}, indent=2) + "\n", encoding="utf-8")
+    evidence_exit = main(
+        [
+            "adapter",
+            "bayesian-evidence",
+            "--out-dir",
+            str(bundle_root),
+            "--inputs",
+            str(fixture("alignments/example_alignment.fasta")),
+            str(fixture("metadata/example_calibrations.tsv")),
+            str(fixture("metadata/example_tip_dates.tsv")),
+            "--configs",
+            str(analysis_path),
+            "--trees",
+            str(fixture("trees/example_tree_named_clades.nwk")),
+            "--logs",
+            str(fixture("metadata/example_beast.log")),
+            "--diagnostics",
+            str(diagnostics_path),
+            "--reports",
+            str(report_path),
+            "--json",
+        ]
+    )
+    evidence_payload = json.loads(capsys.readouterr().out)
+    assert evidence_exit == 0
+    assert evidence_payload["metrics"]["valid"] is True
+    assert bundle_root.exists()

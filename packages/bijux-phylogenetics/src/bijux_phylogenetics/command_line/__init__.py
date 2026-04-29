@@ -9,13 +9,20 @@ from typing import Any
 
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.bayesian import (
+    assess_beast_convergence,
     assess_mrbayes_convergence,
+    build_bayesian_evidence_package,
     compute_mrbayes_effective_sample_sizes,
+    parse_beast_log,
     parse_mrbayes_parameter_traces,
+    prepare_beast_time_tree_analysis,
     prepare_mrbayes_analysis,
+    render_calibration_audit_report,
     render_bayesian_posterior_report,
     run_mrbayes_posterior_inference,
     summarize_mrbayes_posterior_trees,
+    validate_fossil_calibration_table,
+    validate_tip_dating_metadata,
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
@@ -1263,6 +1270,80 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_mrbayes_report.add_argument("--mean-shift-threshold", type=float, default=0.5)
     adapter_mrbayes_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(adapter_mrbayes_report)
+    adapter_beast_prepare = adapter_subparsers.add_parser(
+        "beast-prepare",
+        help="Prepare a BEAST-style time-tree XML analysis from aligned sequences and dating inputs.",
+    )
+    adapter_beast_prepare.add_argument("input_path", type=Path)
+    adapter_beast_prepare.add_argument("--out", required=True, type=Path)
+    adapter_beast_prepare.add_argument("--tree", type=Path)
+    adapter_beast_prepare.add_argument("--calibrations", type=Path)
+    adapter_beast_prepare.add_argument("--tip-dates", type=Path)
+    adapter_beast_prepare.add_argument("--clock-model", default="strict")
+    adapter_beast_prepare.add_argument("--tree-prior", default="yule")
+    adapter_beast_prepare.add_argument("--chain-length", type=int, default=1000000)
+    adapter_beast_prepare.add_argument("--log-every", type=int, default=1000)
+    adapter_beast_prepare.add_argument("--json", action="store_true", help="Emit the preparation report as JSON.")
+    _add_manifest_argument(adapter_beast_prepare)
+    adapter_beast_calibrations = adapter_subparsers.add_parser(
+        "beast-calibrations",
+        help="Validate a fossil calibration table against a tree.",
+    )
+    adapter_beast_calibrations.add_argument("tree_path", type=Path)
+    adapter_beast_calibrations.add_argument("calibration_path", type=Path)
+    adapter_beast_calibrations.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    _add_manifest_argument(adapter_beast_calibrations)
+    adapter_beast_tip_dates = adapter_subparsers.add_parser(
+        "beast-tip-dates",
+        help="Validate tip-dating metadata against a tree and optional alignment.",
+    )
+    adapter_beast_tip_dates.add_argument("tree_path", type=Path)
+    adapter_beast_tip_dates.add_argument("tip_dates_path", type=Path)
+    adapter_beast_tip_dates.add_argument("--alignment", type=Path)
+    adapter_beast_tip_dates.add_argument("--date-column", default="date")
+    adapter_beast_tip_dates.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    _add_manifest_argument(adapter_beast_tip_dates)
+    adapter_beast_log = adapter_subparsers.add_parser(
+        "beast-log",
+        help="Parse a BEAST log file into a deterministic numeric trace table.",
+    )
+    adapter_beast_log.add_argument("input_path", type=Path)
+    adapter_beast_log.add_argument("--json", action="store_true", help="Emit the parsed log report as JSON.")
+    _add_manifest_argument(adapter_beast_log)
+    adapter_beast_convergence = adapter_subparsers.add_parser(
+        "beast-convergence",
+        help="Assess BEAST log convergence from ESS and trace drift.",
+    )
+    adapter_beast_convergence.add_argument("input_path", type=Path)
+    adapter_beast_convergence.add_argument("--ess-threshold", type=float, default=200.0)
+    adapter_beast_convergence.add_argument("--mean-shift-threshold", type=float, default=0.5)
+    adapter_beast_convergence.add_argument("--json", action="store_true", help="Emit the convergence report as JSON.")
+    _add_manifest_argument(adapter_beast_convergence)
+    adapter_beast_calibration_report = adapter_subparsers.add_parser(
+        "beast-calibration-report",
+        help="Render an HTML calibration audit report.",
+    )
+    adapter_beast_calibration_report.add_argument("tree_path", type=Path)
+    adapter_beast_calibration_report.add_argument("calibration_path", type=Path)
+    adapter_beast_calibration_report.add_argument("--out", required=True, type=Path)
+    adapter_beast_calibration_report.add_argument("--tip-dates", type=Path)
+    adapter_beast_calibration_report.add_argument("--alignment", type=Path)
+    adapter_beast_calibration_report.add_argument("--date-column", default="date")
+    adapter_beast_calibration_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(adapter_beast_calibration_report)
+    adapter_bayesian_evidence = adapter_subparsers.add_parser(
+        "bayesian-evidence",
+        help="Bundle Bayesian configs, trees, logs, diagnostics, and reports into one evidence package.",
+    )
+    adapter_bayesian_evidence.add_argument("--out-dir", required=True, type=Path)
+    adapter_bayesian_evidence.add_argument("--inputs", nargs="+", required=True, type=Path)
+    adapter_bayesian_evidence.add_argument("--configs", nargs="+", required=True, type=Path)
+    adapter_bayesian_evidence.add_argument("--trees", nargs="+", required=True, type=Path)
+    adapter_bayesian_evidence.add_argument("--logs", nargs="+", required=True, type=Path)
+    adapter_bayesian_evidence.add_argument("--diagnostics", nargs="+", required=True, type=Path)
+    adapter_bayesian_evidence.add_argument("--reports", nargs="+", required=True, type=Path)
+    adapter_bayesian_evidence.add_argument("--json", action="store_true", help="Emit the evidence-package report as JSON.")
+    _add_manifest_argument(adapter_bayesian_evidence)
 
     return parser
 
@@ -3558,6 +3639,142 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.posterior_trees, args.traces],
                         outputs=outputs,
                         metrics={"kept_tree_count": report.kept_tree_count, "warning_count": report.warning_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-prepare":
+                report = prepare_beast_time_tree_analysis(
+                    args.input_path,
+                    args.out,
+                    tree_path=args.tree,
+                    calibration_path=args.calibrations,
+                    tip_dates_path=args.tip_dates,
+                    clock_model=args.clock_model,
+                    tree_prior=args.tree_prior,
+                    chain_length=args.chain_length,
+                    log_every=args.log_every,
+                )
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path], outputs=[args.out])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={"taxon_count": report.taxon_count, "calibration_count": report.calibration_count, "tip_date_count": report.tip_date_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-calibrations":
+                report = validate_fossil_calibration_table(args.tree_path, args.calibration_path)
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.tree_path, args.calibration_path])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.tree_path, args.calibration_path],
+                        outputs=outputs,
+                        metrics={"calibration_count": report.calibration_count, "invalid_calibration_count": report.invalid_calibration_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-tip-dates":
+                report = validate_tip_dating_metadata(
+                    args.tree_path,
+                    args.tip_dates_path,
+                    alignment_path=args.alignment,
+                    date_column=args.date_column,
+                )
+                inputs = [args.tree_path, args.tip_dates_path, *([args.alignment] if args.alignment is not None else [])]
+                outputs = _finalize_outputs(args, command="adapter", inputs=inputs)
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=inputs,
+                        outputs=outputs,
+                        metrics={"valid_tip_count": report.valid_tip_count, "invalid_tip_count": report.invalid_tip_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-log":
+                report = parse_beast_log(args.input_path)
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={"row_count": report.row_count, "column_count": len(report.columns)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-convergence":
+                report = assess_beast_convergence(
+                    args.input_path,
+                    ess_threshold=args.ess_threshold,
+                    mean_shift_threshold=args.mean_shift_threshold,
+                )
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=[warning["message"] for warning in report.warnings],
+                        metrics={"warning_count": len(report.warnings), "converged": report.converged},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-calibration-report":
+                report = render_calibration_audit_report(
+                    tree_path=args.tree_path,
+                    calibration_path=args.calibration_path,
+                    out_path=args.out,
+                    tip_dates_path=args.tip_dates,
+                    alignment_path=args.alignment,
+                    date_column=args.date_column,
+                )
+                inputs = [args.tree_path, args.calibration_path, *([args.tip_dates] if args.tip_dates is not None else []), *([args.alignment] if args.alignment is not None else [])]
+                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[report.output_path])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=inputs,
+                        outputs=outputs,
+                        metrics={"invalid_calibration_count": report.invalid_calibration_count, "warning_count": report.warning_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "bayesian-evidence":
+                report = build_bayesian_evidence_package(
+                    bundle_root=args.out_dir,
+                    input_paths=args.inputs,
+                    config_paths=args.configs,
+                    tree_paths=args.trees,
+                    log_paths=args.logs,
+                    diagnostic_paths=args.diagnostics,
+                    report_paths=args.reports,
+                )
+                inputs = [*args.inputs, *args.configs, *args.trees, *args.logs, *args.diagnostics, *args.reports]
+                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[args.out_dir])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=inputs,
+                        outputs=outputs,
+                        metrics={"file_count": report.file_count, "valid": report.valid},
                         data=report,
                     ),
                     json_output=args.json,
