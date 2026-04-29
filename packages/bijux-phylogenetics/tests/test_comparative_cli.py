@@ -142,3 +142,28 @@ def test_comparative_pgls_cli_accepts_formula_interactions(capsys) -> None:
     assert exit_code == 0
     assert payload["data"]["inputs"]["formula"]["interaction_terms"] == ["predictor_one:habitat"]
     assert math.isclose(coefficients["predictor_one:habitat[tundra]"], 0.5)
+
+
+def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "multiple-testing",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--responses",
+            "response_growth",
+            "response_range",
+            "--predictors",
+            "predictor_one",
+            "predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["response_count"] == 2
+    assert payload["metrics"]["test_count"] == 4

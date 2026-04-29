@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls
+from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls, run_pgls_multiple_testing
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -134,3 +134,17 @@ def test_pgls_overfit_guard_blocks_saturated_interaction_model() -> None:
         "PGLS overfit guard requires at least one residual degree of freedom after predictor encoding"
         in report.blockers
     )
+
+
+def test_run_pgls_multiple_testing_adjusts_p_values() -> None:
+    report = run_pgls_multiple_testing(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_multiple.tsv"),
+        responses=["response_growth", "response_range"],
+        predictors=["predictor_one", "predictor_two"],
+        lambda_value=0.0,
+    )
+    assert report.adjustment_method == "benjamini-hochberg"
+    assert len(report.rows) == 4
+    assert all(row.adjusted_p_value >= row.p_value for row in report.rows)
+    assert all(0.0 <= row.adjusted_p_value <= 1.0 for row in report.rows)

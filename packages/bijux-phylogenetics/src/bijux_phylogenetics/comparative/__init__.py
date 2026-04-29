@@ -22,6 +22,8 @@ from .models import (
 )
 from .pgls import (
     ComparativeFormulaSpecification,
+    ComparativeHypothesisTestRow,
+    ComparativeMultipleTestingReport,
     PGLSCoefficient,
     PGLSDiagnosticsReport,
     PGLSFittedObservation,
@@ -31,6 +33,7 @@ from .pgls import (
     PGLSResidualOutlier,
     PGLSResult,
     inspect_pgls_inputs,
+    run_pgls_multiple_testing,
     run_pgls,
 )
 from .signal import (
@@ -50,8 +53,10 @@ __all__ = [
     "BrownianMotionFitReport",
     "ComparativeDataset",
     "ComparativeFormulaSpecification",
+    "ComparativeHypothesisTestRow",
     "ComparativeModelComparisonReport",
     "ComparativeModelComparisonRow",
+    "ComparativeMultipleTestingReport",
     "ComparativeParameterInterval",
     "ComparativeReadinessReport",
     "ComparativeReferenceObservation",
@@ -84,6 +89,7 @@ __all__ = [
     "fit_ornstein_uhlenbeck_model",
     "inspect_pgls_inputs",
     "run_comparative_sensitivity_analysis",
+    "run_pgls_multiple_testing",
     "run_pgls",
     "summarize_numeric_trait",
     "summarize_numeric_trait_readiness",

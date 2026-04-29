@@ -45,7 +45,7 @@ from bijux_phylogenetics.comparative.models import (
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
-from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls
+from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls, run_pgls_multiple_testing
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
@@ -1000,6 +1000,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     comparative_pgls.add_argument("--json", action="store_true", help="Emit the model result as JSON.")
     _add_manifest_argument(comparative_pgls)
+    comparative_multiple_testing = comparative_subparsers.add_parser(
+        "multiple-testing",
+        help="Adjust PGLS coefficient p-values across many response traits.",
+    )
+    comparative_multiple_testing.add_argument("tree", type=Path)
+    comparative_multiple_testing.add_argument("table", type=Path)
+    comparative_multiple_testing.add_argument("--responses", nargs="+", required=True)
+    comparative_multiple_testing.add_argument("--predictors", nargs="+", required=True)
+    comparative_multiple_testing.add_argument("--taxon-column")
+    comparative_multiple_testing.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_multiple_testing.add_argument("--json", action="store_true", help="Emit the correction report as JSON.")
+    _add_manifest_argument(comparative_multiple_testing)
 
     ancestral = subparsers.add_parser(
         get_command_spec("ancestral").name,
@@ -3016,6 +3032,31 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 lambda_value = "estimate"
             else:
                 lambda_value = float(args.lambda_value)
+            if args.comparative_command == "multiple-testing":
+                report = run_pgls_multiple_testing(
+                    args.tree,
+                    args.table,
+                    responses=list(args.responses),
+                    predictors=list(args.predictors),
+                    taxon_column=args.taxon_column,
+                    lambda_value=lambda_value,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "response_count": len(report.responses),
+                            "test_count": len(report.rows),
+                            "significant_count": sum(1 for row in report.rows if row.significant),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             input_report = inspect_pgls_inputs(
                 args.tree,
                 args.table,
