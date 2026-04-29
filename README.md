@@ -53,7 +53,9 @@ alignment readiness classification, raw-versus-aligned FASTA detection,
 sliding-window region diagnostics, ambiguity-aware uncertainty accounting,
 alignment filtering profiles, cleaned-alignment comparison, transparent
 alignment quality scoring, alignment forensic reporting, one-shot dataset
-readiness audits, alignment trimming, coding-sequence translation,
+readiness audits, dataset crosswalk tables, completeness matrices, exclusion
+tables, ordering-drift detection, pruning step retention summaries,
+readiness-level reporting, alignment trimming, coding-sequence translation,
 identity-matrix export, DNA distance-matrix analysis, distance-tree
 construction, explicit rooting transforms, comparative trait readiness,
 phylogenetic independent contrasts, phylogenetic signal estimation,
@@ -127,6 +129,7 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics distance build-tree exported-distances.tsv --method upgma --out imported-upgma.nwk`
 - `uv run bijux-phylogenetics distance report exported-distances.tsv --out artifacts/distance-report.html`
 - `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json`
+- `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --out artifacts/dataset-review.html --json`
 - `uv run bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative contrasts tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json`
