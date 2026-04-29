@@ -22,8 +22,8 @@
 Runtime package for the bijux-phylogenetics repository.
 
 This package provides the Python API and CLI for tree validation, inspection,
-comparison, metadata linkage, comparative trait analysis, evidence bundle
-creation, and HTML report generation.
+comparison, metadata linkage, comparative trait analysis, ancestral-state
+reconstruction, evidence bundle creation, and HTML report generation.
 
 ## Install
 
@@ -47,6 +47,9 @@ bijux-phylogenetics --help
 - check comparative readiness for rooted trees and numeric traits
 - compute phylogenetic independent contrasts, Blomberg's K, Pagel's lambda, and permutation-based signal tests
 - fit phylogenetic generalized least-squares models with one or more numeric predictors
+- reconstruct continuous ancestral states under Brownian or OU-style trait models
+- reconstruct discrete ancestral states under Fitch parsimony with explicit ambiguity reporting
+- compare continuous ancestral reconstructions across two supported models and render annotated ancestral trees
 - export joined metadata rows and missing trait-value diagnostics
 - inspect alignment alphabets, composition, GC content, duplicates, composition outliers, coding stop codons, and frameshift-like sequence lengths
 - trim all-gap or all-missing columns and remove high-missingness sequences
@@ -71,6 +74,9 @@ bijux-phylogenetics distance validate distances.tsv --json
 bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
+bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json
+bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json
+bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
