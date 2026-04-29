@@ -106,6 +106,7 @@ class DistanceTreeBuildReport:
     method: str
     taxon_count: int
     pair_count: int
+    assumptions: "DistanceMethodAssumptionReport"
 
 
 @dataclass(slots=True)
@@ -124,6 +125,35 @@ class DistanceTreeTopologyComparison:
     topology_equal: bool
     same_unrooted_topology: bool
     same_taxa_different_rooting: bool
+
+
+@dataclass(frozen=True, slots=True)
+class UPGMAUltrametricViolation:
+    """One taxon triple whose distances are inconsistent with an ultrametric clock."""
+
+    left_identifier: str
+    middle_identifier: str
+    right_identifier: str
+    smallest_distance: float
+    middle_distance: float
+    largest_distance: float
+    deviation: float
+
+
+@dataclass(slots=True)
+class DistanceMethodAssumptionReport:
+    """Audit whether an alignment or matrix respects core distance-tree assumptions."""
+
+    source_path: Path
+    source_kind: str
+    taxon_count: int
+    pair_count: int
+    nj_assumptions: list[str]
+    upgma_assumptions: list[str]
+    ultrametric_compatible: bool
+    ultrametric_tolerance: float
+    upgma_ultrametric_violations: list[UPGMAUltrametricViolation]
+    warnings: list[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,6 +214,7 @@ class ImportedDistanceTreeBuildReport:
     method: str
     taxon_count: int
     pair_count: int
+    assumptions: DistanceMethodAssumptionReport
 
 
 @dataclass(frozen=True, slots=True)
@@ -207,7 +238,20 @@ class DistanceReferenceValidationReport:
     """Validation of built-in reference distance examples."""
 
     observations: list[DistanceReferenceObservation]
+    tree_observations: list["DistanceTreeReferenceObservation"]
     all_passed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class DistanceTreeReferenceObservation:
+    """One reference example used to validate distance-tree clustering."""
+
+    case: str
+    method: str
+    matrix_path: Path
+    expected_clades: list[str]
+    observed_clades: list[str]
+    passed: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -263,6 +307,7 @@ class DistanceMatrixQualityReport:
     saturated_pairs: list[SaturatedDistancePair]
     high_distance_outliers: list[DistanceOutlierPair]
     low_information_pairs: list[LowInformationPair]
+    assumptions: DistanceMethodAssumptionReport
     warnings: list[str]
     method_assessment: DistanceMethodAssessment
 
@@ -675,6 +720,148 @@ def _symmetric_distances(entries: list[ImportedDistanceEntry]) -> dict[tuple[str
     return distances
 
 
+def _iter_ultrametric_violations(
+    identifiers: list[str],
+    distances: dict[tuple[str, str], float],
+    *,
+    tolerance: float,
+) -> list[UPGMAUltrametricViolation]:
+    violations: list[UPGMAUltrametricViolation] = []
+    for left_index, left_identifier in enumerate(identifiers):
+        for middle_index in range(left_index + 1, len(identifiers)):
+            middle_identifier = identifiers[middle_index]
+            for right_index in range(middle_index + 1, len(identifiers)):
+                right_identifier = identifiers[right_index]
+                pair_keys = [
+                    _pair_key(left_identifier, middle_identifier),
+                    _pair_key(left_identifier, right_identifier),
+                    _pair_key(middle_identifier, right_identifier),
+                ]
+                if any(pair_key not in distances for pair_key in pair_keys):
+                    continue
+                triple = [distances[pair_key] for pair_key in pair_keys]
+                ordered = sorted(triple)
+                deviation = abs(ordered[2] - ordered[1])
+                if deviation > tolerance:
+                    violations.append(
+                        UPGMAUltrametricViolation(
+                            left_identifier=left_identifier,
+                            middle_identifier=middle_identifier,
+                            right_identifier=right_identifier,
+                            smallest_distance=ordered[0],
+                            middle_distance=ordered[1],
+                            largest_distance=ordered[2],
+                            deviation=deviation,
+                        )
+                    )
+    return sorted(
+        violations,
+        key=lambda row: (
+            row.left_identifier,
+            row.middle_identifier,
+            row.right_identifier,
+        ),
+    )
+
+
+def _build_alignment_distance_lookup(report: GeneticDistanceMatrix) -> dict[tuple[str, str], float]:
+    distances: dict[tuple[str, str], float] = {}
+    for pair in report.pairs:
+        if pair.left_identifier == pair.right_identifier or pair.distance is None:
+            continue
+        distances[_pair_key(pair.left_identifier, pair.right_identifier)] = float(pair.distance)
+    return distances
+
+
+def assess_distance_method_assumptions(
+    path: Path,
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+    ultrametric_tolerance: float = 1e-6,
+) -> DistanceMethodAssumptionReport:
+    """Audit clock-like compatibility and core distance-tree assumptions for an alignment."""
+    matrix = compute_pairwise_genetic_distance_matrix(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    distances = _build_alignment_distance_lookup(matrix)
+    expected_pairs = (len(matrix.identifiers) * (len(matrix.identifiers) - 1)) // 2
+    violations = _iter_ultrametric_violations(
+        matrix.identifiers,
+        distances,
+        tolerance=ultrametric_tolerance,
+    )
+    warnings: list[str] = []
+    if len(distances) < expected_pairs:
+        warnings.append(
+            "UPGMA clock-assumption auditing is incomplete because one or more pairwise distances are undefined under the selected model"
+        )
+    if violations:
+        warnings.append("pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated")
+    return DistanceMethodAssumptionReport(
+        source_path=path,
+        source_kind="alignment",
+        taxon_count=len(matrix.identifiers),
+        pair_count=len(distances),
+        nj_assumptions=[
+            "neighbor-joining treats the matrix as an additive approximation and does not require a strict molecular clock",
+            "neighbor-joining still becomes unreliable when pairwise distances are heavily saturated or estimated from too few comparable sites",
+        ],
+        upgma_assumptions=[
+            "UPGMA assumes the pairwise distances are ultrametric and therefore consistent with a clock-like process",
+            "UPGMA can mis-cluster taxa when rates vary among lineages even if the matrix remains symmetric and complete",
+        ],
+        ultrametric_compatible=not violations,
+        ultrametric_tolerance=ultrametric_tolerance,
+        upgma_ultrametric_violations=violations,
+        warnings=warnings,
+    )
+
+
+def assess_imported_distance_method_assumptions(
+    path: Path,
+    *,
+    ultrametric_tolerance: float = 1e-6,
+) -> DistanceMethodAssumptionReport:
+    """Audit clock-like compatibility and core distance-tree assumptions for an imported matrix."""
+    validation = validate_imported_distance_matrix(path)
+    distances = _symmetric_distances(load_imported_distance_matrix(path))
+    violations = (
+        []
+        if not validation.complete or not validation.symmetric or not validation.nonnegative
+        else _iter_ultrametric_violations(
+            validation.identifiers,
+            distances,
+            tolerance=ultrametric_tolerance,
+        )
+    )
+    warnings = list(validation.warnings)
+    if violations:
+        warnings.append("pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated")
+    return DistanceMethodAssumptionReport(
+        source_path=path,
+        source_kind="imported-distance-matrix",
+        taxon_count=len(validation.identifiers),
+        pair_count=len(distances),
+        nj_assumptions=[
+            "neighbor-joining treats the matrix as an additive approximation and does not require a strict molecular clock",
+            "neighbor-joining still inherits any errors or non-metric distortions present in the imported matrix",
+        ],
+        upgma_assumptions=[
+            "UPGMA assumes the imported matrix is ultrametric and therefore compatible with a clock-like process",
+            "UPGMA can enforce an ultrametric tree even when the source matrix does not satisfy that assumption",
+        ],
+        ultrametric_compatible=not violations,
+        ultrametric_tolerance=ultrametric_tolerance,
+        upgma_ultrametric_violations=violations,
+        warnings=warnings,
+    )
+
+
 def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixReport:
     """Validate a long-form imported distance matrix table."""
     entries = load_imported_distance_matrix(path)
@@ -1005,9 +1192,26 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
                 passed=passed,
             )
         )
+    tree_observations: list[DistanceTreeReferenceObservation] = []
+    upgma_matrix_path = Path(__file__).resolve().parents[2] / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
+    upgma_tree, _ = build_tree_from_imported_distance_matrix(upgma_matrix_path, method="upgma")
+    expected_clades = ["A|B", "C|D"]
+    observed_clades = sorted("|".join(sorted(clade)) for clade in _informative_clades(upgma_tree, set(upgma_tree.tip_names)))
+    tree_observations.append(
+        DistanceTreeReferenceObservation(
+            case="upgma-ultrametric-clustering",
+            method="upgma",
+            matrix_path=upgma_matrix_path,
+            expected_clades=expected_clades,
+            observed_clades=observed_clades,
+            passed=observed_clades == expected_clades,
+        )
+    )
     return DistanceReferenceValidationReport(
         observations=observations,
-        all_passed=all(observation.passed for observation in observations),
+        tree_observations=tree_observations,
+        all_passed=all(observation.passed for observation in observations)
+        and all(observation.passed for observation in tree_observations),
     )
 
 
@@ -1070,6 +1274,12 @@ def inspect_distance_matrix_quality(
         for pair in off_diagonal
         if pair.comparable_sites < low_information_cutoff
     ]
+    assumptions = assess_distance_method_assumptions(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
 
     warnings: list[str] = []
     blocker_reasons: list[str] = []
@@ -1087,6 +1297,7 @@ def inspect_distance_matrix_quality(
         warnings.append("alignment is short for robust distance-based tree building")
     if high_distance_outliers:
         warnings.append("one or more taxon pairs are unusually divergent")
+    warnings.extend(assumptions.warnings)
     decision = "blocked" if blocker_reasons else ("risky" if warnings else "allowed")
     assessment_reasons = blocker_reasons if blocker_reasons else warnings
     return DistanceMatrixQualityReport(
@@ -1100,6 +1311,7 @@ def inspect_distance_matrix_quality(
         saturated_pairs=saturated_pairs,
         high_distance_outliers=high_distance_outliers,
         low_information_pairs=low_information_pairs,
+        assumptions=assumptions,
         warnings=warnings,
         method_assessment=DistanceMethodAssessment(
             decision=decision,
@@ -1160,6 +1372,7 @@ def build_distance_tree(
         tree = constructor.upgma(distance_matrix)
     else:
         raise ValueError(f"unsupported tree-building method: {method}")
+    assumptions = quality.assumptions
 
     return tree_from_biophylo(tree, source_format="newick"), DistanceTreeBuildReport(
         alignment_path=path,
@@ -1169,6 +1382,7 @@ def build_distance_tree(
         method=method,
         taxon_count=len(report.identifiers),
         pair_count=len(report.pairs),
+        assumptions=assumptions,
     )
 
 
@@ -1427,6 +1641,7 @@ def build_tree_from_imported_distance_matrix(
     """Build a distance-based tree from an imported long-form distance matrix."""
     entries = load_imported_distance_matrix(path)
     validation = validate_imported_distance_matrix(path)
+    assumptions = assess_imported_distance_method_assumptions(path)
     constructor = DistanceTreeConstructor()
     distance_matrix = _bio_distance_matrix_from_imported(validation, entries)
     if method == "neighbor-joining":
@@ -1440,4 +1655,5 @@ def build_tree_from_imported_distance_matrix(
         method=method,
         taxon_count=len(validation.identifiers),
         pair_count=validation.pair_count,
+        assumptions=assumptions,
     )
