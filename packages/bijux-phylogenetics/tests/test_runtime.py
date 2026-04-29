@@ -4,6 +4,14 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics
+from bijux_phylogenetics.ancestral import (
+    compare_continuous_ancestral_models,
+    reconstruct_continuous_ancestral_states,
+    reconstruct_discrete_ancestral_states,
+    render_ancestral_state_report,
+    render_ancestral_state_tree,
+    write_ancestral_state_table,
+)
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_tree_comparison,
@@ -215,6 +223,12 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.compute_phylogenetic_signal_test is compute_phylogenetic_signal_test
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
+    assert bijux_phylogenetics.reconstruct_continuous_ancestral_states is reconstruct_continuous_ancestral_states
+    assert bijux_phylogenetics.reconstruct_discrete_ancestral_states is reconstruct_discrete_ancestral_states
+    assert bijux_phylogenetics.compare_continuous_ancestral_models is compare_continuous_ancestral_models
+    assert bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
+    assert bijux_phylogenetics.render_ancestral_state_report is render_ancestral_state_report
+    assert bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
 
 
 def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(tmp_path: Path) -> None:
@@ -3473,6 +3487,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "prune",
         "alignment",
         "comparative",
+        "ancestral",
         "distance",
         "tree-set",
         "simulate",
