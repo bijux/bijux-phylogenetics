@@ -48,6 +48,8 @@ bijux-phylogenetics --help
 - inspect alignment alphabets, composition, GC content, duplicates, composition outliers, coding stop codons, and frameshift-like sequence lengths
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
+- compute p-distance or Jukes-Cantor DNA distance matrices with pairwise-deletion or complete-deletion gap handling
+- build Neighbor-Joining or UPGMA trees from computed DNA distance matrices and compare their topologies
 - root trees on explicit outgroups or reroot them by midpoint
 - produce HTML reports and file-level evidence manifests
 
@@ -55,6 +57,8 @@ bijux-phylogenetics --help
 
 ```bash
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
+bijux-phylogenetics alignment distance-matrix alignment.fasta --model p-distance --out distances.tsv
+bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
