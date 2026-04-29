@@ -26,3 +26,4 @@
 - expand inference workflows with bootstrap support distributions, weak-backbone detection, model and engine tree comparisons, sensitivity reports, model-selection limitations reports, supplement-style workflow reports, and checksummed inference evidence bundles
 - add bootstrap-versus-posterior support comparison and HTML tree-set comparison reports for cross-analysis uncertainty review
 - add Bayesian posterior-tree thinning, MCC and node-age summaries, BEAST log validation and chain diagnostics, cross-run or scenario posterior comparisons, and reviewer-facing Bayesian diagnostics reports
+- deepen posterior uncertainty analysis with topology diversity and multimodality summaries, high-credibility clade conflicts, figure packages, supplementary diagnostics tables, and Bayesian methods text
