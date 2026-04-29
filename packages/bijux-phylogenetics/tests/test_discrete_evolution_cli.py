@@ -103,3 +103,49 @@ def test_discrete_evolution_model_and_compare_cli_write_tables(tmp_path: Path, c
     assert compare_payload["metrics"]["model_count"] == 2
     assert compare_payload["metrics"]["better_model"] in {"equal-rates", "all-rates-different"}
     assert "left_probabilities" in comparison_table.read_text(encoding="utf-8")
+
+
+def test_discrete_evolution_render_and_report_cli_write_svg_and_html(tmp_path: Path, capsys) -> None:
+    svg_path = tmp_path / "geography.svg"
+    report_path = tmp_path / "geography-report.html"
+
+    render_exit = main(
+        [
+            "discrete-evolution",
+            "render",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--layout",
+            "circular",
+            "--out",
+            str(svg_path),
+            "--json",
+        ]
+    )
+    render_payload = json.loads(capsys.readouterr().out)
+    assert render_exit == 0
+    assert render_payload["metrics"]["layout"] == "circular"
+    assert 'class="internal-annotation-label"' in svg_path.read_text(encoding="utf-8")
+
+    report_exit = main(
+        [
+            "discrete-evolution",
+            "report",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--compare-model",
+            "all-rates-different",
+            "--out",
+            str(report_path),
+            "--json",
+        ]
+    )
+    report_payload = json.loads(capsys.readouterr().out)
+    assert report_exit == 0
+    assert report_payload["metrics"]["report_kind"] == "discrete-state-evolution"
+    assert report_path.exists()
+    assert report_path.with_suffix(".svg").exists()
