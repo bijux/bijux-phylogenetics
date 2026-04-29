@@ -29,3 +29,5 @@
 - expand ancestral-state workflows with node-level low-confidence warnings, sensitivity summaries, supplement-style reports, publication figure bundles, ordered discrete-state modeling, and ER/SYM/ARD discrete-state reporting
 - expand discrete-state evolution workflows with transition reference validation, rate-uncertainty diagnostics, dominant-state and sparse-state warnings, model-sensitive ancestral-region comparison, stochastic-map summaries, and richer report caveats
 - add geographic-analysis readiness gates, state-coding audits, biogeographic interpretation reports, alignment inference-readiness audits, engine-output validation, metadata clustering checks, inference-failure taxonomy, and bootstrap tree-set validation
+- expand inference workflows with bootstrap support distributions, weak-backbone detection, model and engine tree comparisons, sensitivity reports, model-selection limitations reports, supplement-style workflow reports, and checksummed evidence bundles
+- add bootstrap-versus-posterior support comparison and HTML tree-set comparison reports for cross-analysis uncertainty review
