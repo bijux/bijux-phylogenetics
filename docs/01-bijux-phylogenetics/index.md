@@ -13,8 +13,8 @@ last_reviewed: 2026-04-29
 inspection, comparison, metadata linkage, alignment trimming, coding-sequence
 translation, explicit rooting transforms, comparative trait analysis,
 ancestral-state reconstruction, external engine orchestration, deterministic
-tree rendering, publication figure packaging, evidence bundles, and HTML
-report generation.
+tree rendering, dataset crosswalk and completeness auditing, publication
+figure packaging, evidence bundles, and HTML report generation.
 
 The repository intentionally does not reimplement inference engines. Its
 current product surface is the reproducible orchestration and evidence layer
@@ -32,6 +32,7 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4`
 - `bijux-phylogenetics alignment coding coding.fasta --json`
 - `bijux-phylogenetics alignment translate coding.fasta --out translated.fasta`
+- `bijux-phylogenetics report dataset --tree tree.nwk --metadata samples.tsv --traits traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json`
 - `bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json`
 - `bijux-phylogenetics comparative contrasts tree.nwk traits.tsv --trait height_cm --json`
 - `bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json`
@@ -91,6 +92,13 @@ around trees, alignments, and trait tables.
 - phylogenetic independent contrasts are available as one deterministic internal-node table per trait
 - trait signal can be summarized with Blomberg's K, Pagel's lambda, and a permutation-based significance surface
 - phylogenetic generalized least-squares accepts one or more numeric predictors and rejects categorical predictors or branch-length-incomplete trees explicitly
+
+## Dataset Audit Highlights
+
+- dataset reports now include explicit taxon crosswalk rows across tree, alignment, metadata, traits, dates, geography, and calibration targets
+- completeness matrices expose which taxa are present on each surface instead of leaving reviewers to infer omissions from separate tables
+- exclusion tables now attach exact causes, affected analysis families, pruning step counts, and ordering-drift warnings to dataset review artifacts
+- named readiness levels summarize whether the dataset is inspection-ready, inference-ready, comparative-ready, time-tree-ready, or publication-ready
 
 ## Ancestral-State Highlights
 
