@@ -13,6 +13,7 @@ from bijux_phylogenetics.bayesian.posterior import (
     summarize_maximum_clade_credibility_tree,
     thin_posterior_tree_set,
 )
+from bijux_phylogenetics.bayesian.reports import render_bayesian_run_comparison_report
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -158,3 +159,47 @@ def test_compare_posterior_tree_sets_by_clock_reports_clock_labels() -> None:
     assert report.right_label == "relaxed-clock"
     assert report.tree_comparison.tree_set_comparison.shared_rooted_topology_count == 1
     assert report.age_differences
+
+
+def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(tmp_path: Path) -> None:
+    left_trace = _write_mrbayes_trace(
+        tmp_path / "left.run1.p",
+        [
+            (0, -110.0, 0.40, 0.90),
+            (100, -109.7, 0.41, 0.92),
+            (200, -109.6, 0.42, 0.91),
+            (300, -109.5, 0.41, 0.93),
+            (400, -109.4, 0.42, 0.92),
+            (500, -109.3, 0.41, 0.91),
+        ],
+    )
+    right_trace = _write_mrbayes_trace(
+        tmp_path / "right.run1.p",
+        [
+            (0, -108.0, 0.55, 1.50),
+            (100, -107.8, 0.54, 1.52),
+            (200, -107.7, 0.56, 1.49),
+            (300, -107.6, 0.55, 1.51),
+            (400, -107.5, 0.54, 1.50),
+            (500, -107.4, 0.55, 1.48),
+        ],
+    )
+    output_path = tmp_path / "bayesian-run-comparison.html"
+
+    report = render_bayesian_run_comparison_report(
+        left_tree_set_path=fixture("trees/example_tree_set_left.nwk"),
+        right_tree_set_path=fixture("trees/example_tree_set_right.nwk"),
+        left_trace_path=left_trace,
+        right_trace_path=right_trace,
+        out_path=output_path,
+        burnin_fraction=0.0,
+        ess_threshold=2.0,
+        mean_shift_threshold=1.0,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.warning_count >= 1
+    assert "run-comparison" in html
+    assert "tree-comparison" in html
+    assert "parameter-differences" in html

@@ -15,7 +15,10 @@ from bijux_phylogenetics.bayesian.beast import (
     validate_tip_dating_metadata,
 )
 from bijux_phylogenetics.bayesian.evidence import build_bayesian_evidence_package
-from bijux_phylogenetics.bayesian.reports import render_calibration_audit_report
+from bijux_phylogenetics.bayesian.reports import (
+    render_bayesian_diagnostics_report,
+    render_calibration_audit_report,
+)
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -240,3 +243,41 @@ def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(tmp_
     assert bundle.tree_count == 1
     assert bundle.log_count == 1
     assert bundle.report_count == 1
+
+
+def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calibration_sections(tmp_path: Path) -> None:
+    output_path = tmp_path / "bayesian-diagnostics.html"
+    second_chain = tmp_path / "chain-2.log"
+    second_chain.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tclockRate\ttreeHeight\n"
+        "0\t-501.0\t-481.0\t0.0010\t13.0\n"
+        "1000\t-500.8\t-480.8\t0.0011\t13.1\n"
+        "2000\t-500.6\t-480.6\t0.0012\t13.1\n"
+        "3000\t-500.5\t-480.5\t0.0011\t13.2\n",
+        encoding="utf-8",
+    )
+
+    report = render_bayesian_diagnostics_report(
+        posterior_tree_path=fixture("example_tree_set_left.nwk"),
+        primary_log_path=fixture("example_beast.log"),
+        additional_log_paths=[second_chain],
+        tree_path=fixture("example_tree_named_clades.nwk"),
+        calibration_path=fixture("example_calibrations.tsv"),
+        tip_dates_path=fixture("example_tip_dates.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        out_path=output_path,
+        burnin_fractions=(0.0, 0.25, 0.5),
+        ess_threshold=2.0,
+        mean_shift_threshold=1.0,
+        cross_chain_mean_shift_threshold=5.0,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.chain_count == 2
+    assert "posterior-log-validation" in html
+    assert "burnin-sensitivity" in html
+    assert "chain-mixing" in html
+    assert "fossil-calibrations" in html
+    assert "tip-dates" in html
