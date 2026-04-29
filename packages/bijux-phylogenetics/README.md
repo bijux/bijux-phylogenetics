@@ -40,7 +40,8 @@ bijux-phylogenetics --help
 
 - parse Newick trees and FASTA alignments
 - inspect tree shape and branch-length health
-- inspect internal child counts, singleton nodes, missing internal versus terminal branch lengths, branch-length outlier nodes, support normalization, and tree-assumption compatibility
+- inspect internal child counts, singleton nodes, missing internal versus terminal branch lengths, branch-length outlier nodes, support normalization, rootedness confidence, and tree-assumption compatibility
+- classify tree validity, biological safety, unsafe external labels, node-label conflicts, and downstream forensic readiness for topology, time-tree, comparative, visualization, and publication use
 - normalize unsafe taxon labels and audit normalization collisions
 - prune trees from explicit taxa, exclusions, traits, or metadata tables
 - classify internal node labels as support-like or name-like and detect suspicious or mixed support scales
