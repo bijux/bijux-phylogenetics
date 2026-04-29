@@ -48,13 +48,17 @@ from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
+    compare_posterior_topological_diversity,
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_tree_distance_matrix,
+    detect_posterior_topology_multimodality,
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
+    summarize_clade_credibility_conflicts,
+    summarize_uncertainty_aware_conclusions,
 )
 
 
@@ -499,8 +503,12 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
     clade_frequencies = compute_clade_frequency_table(tree_set_path)
     distances = compute_tree_distance_matrix(tree_set_path)
     clusters = cluster_trees_by_topology(tree_set_path)
+    diversity = compare_posterior_topological_diversity(tree_set_path, tree_set_path)
+    multimodality = detect_posterior_topology_multimodality(tree_set_path)
     unstable_taxa = detect_unstable_taxa(tree_set_path)
     unstable_clades = detect_unstable_clades(tree_set_path)
+    clade_conflicts = summarize_clade_credibility_conflicts(tree_set_path)
+    conclusion_summary = summarize_uncertainty_aware_conclusions(tree_set_path)
     title = "Bijux Tree Uncertainty Report"
     sections = [
         _section("tree-set-summary", asdict(summary)),
@@ -508,8 +516,12 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
         _section("clade-frequencies", asdict(clade_frequencies)),
         _section("pairwise-tree-distances", asdict(distances)),
         _section("topology-clusters", asdict(clusters)),
+        _section("topological-diversity", asdict(diversity)),
+        _section("topology-multimodality", asdict(multimodality)),
         _section("unstable-taxa", asdict(unstable_taxa)),
         _section("unstable-clades", asdict(unstable_clades)),
+        _section("clade-credibility-conflicts", asdict(clade_conflicts)),
+        _section("uncertainty-aware-conclusions", asdict(conclusion_summary)),
     ]
     machine_manifest = {
         "report_kind": "tree-uncertainty",
