@@ -12,6 +12,7 @@
 - add local scientific benchmarks for tree validation, tree comparison, and alignment diagnostics across increasing problem sizes
 - add outgroup rooting and midpoint rerooting transforms
 - add comparative readiness checks, phylogenetic independent contrasts, Blomberg's K, Pagel's lambda, permutation-based signal tests, and phylogenetic GLS workflows
+- add standalone Brownian and OU comparative fits, confidence intervals, identifiability warnings, formula-audited PGLS interactions, repeated-test correction, comparative audit and influence outputs, and report or comparison surfaces across trees and pruning policies
 - add continuous and discrete ancestral-state reconstruction, uncertainty reporting, model comparison, annotated ancestral-tree rendering, table export, and HTML ancestral-state reports
 - add governed external-engine workflows for alignment, trimming, model selection, ML inference, bootstrap consensus, fast-tree comparison, and engine provenance capture
 - add inference resume safeguards, HTML inference workflow reports, and initial MrBayes preparation, posterior-tree summary, trace parsing, and ESS workflows
