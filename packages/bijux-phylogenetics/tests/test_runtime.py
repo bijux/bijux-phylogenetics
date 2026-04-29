@@ -15,19 +15,31 @@ from bijux_phylogenetics.ancestral import (
     write_ancestral_state_table,
 )
 from bijux_phylogenetics.bayesian import (
+    assess_beast_burnin_sensitivity,
+    assess_beast_chain_mixing,
     assess_beast_convergence,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
+    compare_bayesian_tree_sets,
+    compare_independent_bayesian_runs,
+    compare_posterior_tree_sets_by_clock,
+    compare_posterior_tree_sets_by_prior,
     compute_mrbayes_effective_sample_sizes,
     detect_impossible_calibration_constraints,
     parse_beast_log,
     parse_mrbayes_parameter_traces,
     prepare_beast_time_tree_analysis,
     prepare_mrbayes_analysis,
+    render_bayesian_diagnostics_report,
     render_bayesian_posterior_report,
+    render_bayesian_run_comparison_report,
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
+    summarize_maximum_clade_credibility_tree,
     summarize_mrbayes_posterior_trees,
+    summarize_posterior_node_ages,
+    thin_posterior_tree_set,
+    validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
@@ -414,6 +426,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.prepare_beast_time_tree_analysis is prepare_beast_time_tree_analysis
     assert bijux_phylogenetics.parse_beast_log is parse_beast_log
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
+    assert bijux_phylogenetics.validate_beast_posterior_log is validate_beast_posterior_log
+    assert bijux_phylogenetics.assess_beast_burnin_sensitivity is assess_beast_burnin_sensitivity
+    assert bijux_phylogenetics.assess_beast_chain_mixing is assess_beast_chain_mixing
+    assert bijux_phylogenetics.summarize_maximum_clade_credibility_tree is summarize_maximum_clade_credibility_tree
+    assert bijux_phylogenetics.thin_posterior_tree_set is thin_posterior_tree_set
+    assert bijux_phylogenetics.summarize_posterior_node_ages is summarize_posterior_node_ages
+    assert bijux_phylogenetics.compare_bayesian_tree_sets is compare_bayesian_tree_sets
+    assert bijux_phylogenetics.compare_independent_bayesian_runs is compare_independent_bayesian_runs
+    assert bijux_phylogenetics.compare_posterior_tree_sets_by_prior is compare_posterior_tree_sets_by_prior
+    assert bijux_phylogenetics.compare_posterior_tree_sets_by_clock is compare_posterior_tree_sets_by_clock
+    assert bijux_phylogenetics.render_bayesian_run_comparison_report is render_bayesian_run_comparison_report
+    assert bijux_phylogenetics.render_bayesian_diagnostics_report is render_bayesian_diagnostics_report
     assert bijux_phylogenetics.render_calibration_audit_report is render_calibration_audit_report
     assert bijux_phylogenetics.build_bayesian_evidence_package is build_bayesian_evidence_package
 
