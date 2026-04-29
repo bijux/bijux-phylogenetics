@@ -21,6 +21,7 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
+from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_alignment_to_tree,
@@ -906,6 +907,41 @@ def test_cli_alignment_identity_matrix_writes_tsv(tmp_path: Path, capsys) -> Non
         "A\tC\t0.875\t8",
     ]
     assert payload["metrics"]["pair_count"] == 10
+
+
+def test_compute_pairwise_genetic_distance_matrix_reports_p_distance() -> None:
+    report = compute_pairwise_genetic_distance_matrix(fixture("example_alignment_distance.fasta"))
+    assert report.model == "p-distance"
+    assert report.gap_handling == "pairwise-deletion"
+    assert report.identifiers == ["A", "B", "C", "D"]
+    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+        ("A", "A", 0.0, 8),
+        ("A", "B", 0.125, 8),
+        ("A", "C", 0.5, 8),
+        ("A", "D", 0.625, 8),
+        ("B", "B", 0.0, 8),
+        ("B", "C", 0.625, 8),
+        ("B", "D", 0.5, 8),
+        ("C", "C", 0.0, 8),
+        ("C", "D", 0.125, 8),
+        ("D", "D", 0.0, 8),
+    ]
+
+
+def test_compute_pairwise_genetic_distance_matrix_uses_pairwise_deletion() -> None:
+    report = compute_pairwise_genetic_distance_matrix(fixture("example_alignment_distance_gaps.fasta"))
+    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+        ("A", "A", 0.0, 6),
+        ("A", "B", 0.166666666666667, 6),
+        ("A", "C", 0.333333333333333, 6),
+        ("A", "D", 0.0, 4),
+        ("B", "B", 0.0, 6),
+        ("B", "C", 0.166666666666667, 6),
+        ("B", "D", 0.0, 4),
+        ("C", "C", 0.0, 6),
+        ("C", "D", 0.0, 4),
+        ("D", "D", 0.0, 4),
+    ]
 
 
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
