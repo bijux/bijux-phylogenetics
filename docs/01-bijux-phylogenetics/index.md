@@ -14,7 +14,8 @@ inspection, comparison, metadata linkage, alignment trimming, coding-sequence
 translation, explicit rooting transforms, comparative trait analysis,
 ancestral-state reconstruction, external engine orchestration, deterministic
 tree rendering, dataset crosswalk and completeness auditing, publication
-figure packaging, evidence bundles, and HTML report generation.
+figure packaging, evidence bundles, discrete-state stochastic-map summaries,
+and HTML report generation.
 
 The repository intentionally does not reimplement inference engines. Its
 current product surface is the reproducible orchestration and evidence layer
@@ -48,6 +49,8 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics ancestral sensitivity tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --json`
 - `bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --out artifacts/ancestral-report.html`
 - `bijux-phylogenetics ancestral package tree.nwk traits.tsv --trait habitat --kind discrete --model symmetric --state-ordering ordered --ordered-states low,medium,high --out-dir artifacts/ancestral-package --json`
+- `bijux-phylogenetics discrete-evolution stochastic-map tree.nwk geography.tsv --trait region --model symmetric --replicates 200 --collection-out artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --json`
+- `bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --json`
 - `bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json`
 - `bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json`
 - `bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json`
