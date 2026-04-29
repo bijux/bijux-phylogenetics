@@ -50,9 +50,10 @@ This repository publishes `2` public packages. The current runtime focuses on
 reproducible tree hygiene, taxon normalization, tree and trait pruning,
 metadata linkage, shared-clade comparison, alignment-quality diagnostics,
 alignment trimming, coding-sequence translation, identity-matrix export,
-explicit rooting transforms, deterministic SVG tree rendering, publication
-figure packaging, evidence manifests, and HTML report generation rather than
-tree inference.
+DNA distance-matrix analysis, distance-tree construction, explicit rooting
+transforms, deterministic SVG tree rendering, publication figure packaging,
+evidence manifests, and HTML report generation rather than likelihood or
+Bayesian tree inference.
 
 Recent tree diagnostics now also classify internal-node child counts, missing
 internal versus terminal branch lengths, singleton internal nodes, branch-length
@@ -93,6 +94,9 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment coding coding-alignment.fasta --json`
 - `uv run bijux-phylogenetics alignment translate coding-alignment.fasta --out translated.fasta`
 - `uv run bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
+- `uv run bijux-phylogenetics alignment distance-matrix alignment.fasta --model jukes-cantor --gap-handling complete-deletion --out distances.tsv`
+- `uv run bijux-phylogenetics alignment build-tree alignment.fasta --method neighbor-joining --out nj-tree.nwk`
+- `uv run bijux-phylogenetics alignment compare-distance-trees alignment.fasta --json`
 - `uv run bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `uv run bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
 - `uv run bijux-phylogenetics render tree.nwk --layout phylogram --support-labels --metadata metadata.tsv --label-column species --metadata-strip-columns location --traits traits.tsv --categorical-column habitat --continuous-column height_cm --heatmap-columns height_cm,status --package-dir artifacts/tree-figure --out artifacts/tree.svg`
