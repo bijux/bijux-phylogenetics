@@ -539,3 +539,143 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(tmp_path:
     assert evidence_exit == 0
     assert evidence_payload["metrics"]["valid"] is True
     assert bundle_root.exists()
+
+
+def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(tmp_path: Path, capsys) -> None:
+    package_dir = tmp_path / "posterior-uncertainty-package"
+
+    diversity_exit = main(
+        [
+            "tree-set",
+            "diversity-compare",
+            str(fixture("trees/example_tree_set_left.nwk")),
+            str(fixture("trees/example_tree_set_right.nwk")),
+            "--json",
+        ]
+    )
+    diversity_payload = json.loads(capsys.readouterr().out)
+    assert diversity_exit == 0
+    assert diversity_payload["metrics"]["left_rooted_topology_count"] == 2
+
+    multimodality_exit = main(
+        [
+            "tree-set",
+            "multimodality",
+            str(fixture("trees/example_tree_set_left.nwk")),
+            "--min-mode-frequency",
+            "0.3",
+            "--json",
+        ]
+    )
+    multimodality_payload = json.loads(capsys.readouterr().out)
+    assert multimodality_exit == 0
+    assert multimodality_payload["metrics"]["multimodal"] is True
+
+    conflicts_exit = main(
+        [
+            "tree-set",
+            "clade-conflicts",
+            str(fixture("trees/example_tree_set_left.nwk")),
+            "--credibility-threshold",
+            "0.3",
+            "--json",
+        ]
+    )
+    conflicts_payload = json.loads(capsys.readouterr().out)
+    assert conflicts_exit == 0
+    assert conflicts_payload["metrics"]["conflict_count"] == 2
+
+    package_exit = main(
+        [
+            "tree-set",
+            "package",
+            str(fixture("trees/example_tree_set_left.nwk")),
+            "--out-dir",
+            str(package_dir),
+            "--json",
+        ]
+    )
+    package_payload = json.loads(capsys.readouterr().out)
+    assert package_exit == 0
+    assert package_payload["metrics"]["artifact_count"] == 7
+    assert (package_dir / "consensus-tree.svg").exists()
+    assert (package_dir / "clade-frequency-plot.svg").exists()
+
+
+def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(tmp_path: Path, capsys) -> None:
+    second_chain = tmp_path / "chain-2.log"
+    second_chain.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tclockRate\ttreeHeight\n"
+        "0\t-501.0\t-481.0\t0.0010\t13.0\n"
+        "1000\t-500.8\t-480.8\t0.0011\t13.1\n"
+        "2000\t-500.6\t-480.6\t0.0012\t13.1\n"
+        "3000\t-500.5\t-480.5\t0.0011\t13.2\n",
+        encoding="utf-8",
+    )
+    table_path = tmp_path / "bayesian-diagnostics.tsv"
+    methods_path = tmp_path / "bayesian-methods.md"
+
+    table_exit = main(
+        [
+            "adapter",
+            "bayesian-diagnostics-table",
+            str(fixture("trees/example_tree_set_left.nwk")),
+            "--log",
+            str(fixture("metadata/example_beast.log")),
+            "--additional-logs",
+            str(second_chain),
+            "--out",
+            str(table_path),
+            "--burnin-fractions",
+            "0.0",
+            "0.25",
+            "--ess-threshold",
+            "2",
+            "--mean-shift-threshold",
+            "1.0",
+            "--cross-chain-mean-shift-threshold",
+            "5.0",
+            "--json",
+        ]
+    )
+    table_payload = json.loads(capsys.readouterr().out)
+    assert table_exit == 0
+    assert table_payload["metrics"]["row_count"] >= 1
+    assert table_path.exists()
+
+    methods_exit = main(
+        [
+            "adapter",
+            "bayesian-methods",
+            str(fixture("trees/example_tree_set_left.nwk")),
+            "--log",
+            str(fixture("metadata/example_beast.log")),
+            "--additional-logs",
+            str(second_chain),
+            "--out",
+            str(methods_path),
+            "--tree-prior",
+            "birth-death",
+            "--clock-model",
+            "relaxed-lognormal",
+            "--calibration-path",
+            str(fixture("metadata/example_calibrations.tsv")),
+            "--tip-dates-path",
+            str(fixture("metadata/example_tip_dates.tsv")),
+            "--burnin-fractions",
+            "0.0",
+            "0.25",
+            "--ess-threshold",
+            "2",
+            "--mean-shift-threshold",
+            "1.0",
+            "--cross-chain-mean-shift-threshold",
+            "5.0",
+            "--json",
+        ]
+    )
+    methods_payload = json.loads(capsys.readouterr().out)
+    assert methods_exit == 0
+    assert methods_payload["metrics"]["warning_count"] >= 0
+    assert "relaxed-lognormal" in methods_path.read_text(encoding="utf-8")

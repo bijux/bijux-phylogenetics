@@ -12,6 +12,7 @@ from bijux_phylogenetics.bayesian import (
     assess_beast_convergence,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
+    build_posterior_uncertainty_figure_package,
     compute_mrbayes_effective_sample_sizes,
     parse_beast_log,
     parse_mrbayes_parameter_traces,
@@ -23,6 +24,8 @@ from bijux_phylogenetics.bayesian import (
     summarize_mrbayes_posterior_trees,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
+    write_bayesian_methods_summary_text,
+    write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
@@ -222,13 +225,17 @@ from bijux_phylogenetics.simulation import (
 )
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
+    compare_posterior_topological_diversity,
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_tree_distance_matrix,
+    detect_posterior_topology_multimodality,
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
+    summarize_clade_credibility_conflicts,
+    summarize_uncertainty_aware_conclusions,
     write_clade_frequency_table,
     write_consensus_tree,
     write_tree_distance_matrix,
@@ -1578,6 +1585,51 @@ def build_parser() -> argparse.ArgumentParser:
     tree_set_compare.add_argument("right", type=Path)
     tree_set_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
     _add_manifest_argument(tree_set_compare)
+    tree_set_diversity = tree_set_subparsers.add_parser(
+        "diversity-compare",
+        help="Compare posterior topological diversity across two analyses.",
+    )
+    tree_set_diversity.add_argument("left", type=Path)
+    tree_set_diversity.add_argument("right", type=Path)
+    tree_set_diversity.add_argument("--json", action="store_true", help="Emit the diversity report as JSON.")
+    _add_manifest_argument(tree_set_diversity)
+    tree_set_multimodality = tree_set_subparsers.add_parser(
+        "multimodality",
+        help="Detect multimodal posterior topology distributions.",
+    )
+    tree_set_multimodality.add_argument("tree_set", type=Path)
+    tree_set_multimodality.add_argument("--min-mode-frequency", type=float, default=0.2)
+    tree_set_multimodality.add_argument("--min-mode-count", type=int, default=2)
+    tree_set_multimodality.add_argument("--json", action="store_true", help="Emit the multimodality report as JSON.")
+    _add_manifest_argument(tree_set_multimodality)
+    tree_set_conflicts = tree_set_subparsers.add_parser(
+        "clade-conflicts",
+        help="Summarize conflicting high-credibility clades across a posterior tree set.",
+    )
+    tree_set_conflicts.add_argument("tree_set", type=Path)
+    tree_set_conflicts.add_argument("--credibility-threshold", type=float, default=0.5)
+    tree_set_conflicts.add_argument("--json", action="store_true", help="Emit the clade-conflict report as JSON.")
+    _add_manifest_argument(tree_set_conflicts)
+    tree_set_summary = tree_set_subparsers.add_parser(
+        "conclusion-summary",
+        help="Summarize robust, uncertain, and conflict-prone clades from posterior uncertainty.",
+    )
+    tree_set_summary.add_argument("tree_set", type=Path)
+    tree_set_summary.add_argument("--robust-threshold", type=float, default=0.9)
+    tree_set_summary.add_argument("--uncertain-min-frequency", type=float, default=0.3)
+    tree_set_summary.add_argument("--uncertain-max-frequency", type=float, default=0.7)
+    tree_set_summary.add_argument("--credibility-threshold", type=float, default=0.5)
+    tree_set_summary.add_argument("--json", action="store_true", help="Emit the conclusion summary as JSON.")
+    _add_manifest_argument(tree_set_summary)
+    tree_set_package = tree_set_subparsers.add_parser(
+        "package",
+        help="Build a posterior uncertainty figure package for one tree set.",
+    )
+    tree_set_package.add_argument("tree_set", type=Path)
+    tree_set_package.add_argument("--out-dir", required=True, type=Path)
+    tree_set_package.add_argument("--layout", default="phylogram")
+    tree_set_package.add_argument("--json", action="store_true", help="Emit the package result as JSON.")
+    _add_manifest_argument(tree_set_package)
     tree_set_report = tree_set_subparsers.add_parser(
         "report",
         help="Render an HTML uncertainty report for a tree set.",
@@ -2118,6 +2170,38 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_bayesian_evidence.add_argument("--reports", nargs="+", required=True, type=Path)
     adapter_bayesian_evidence.add_argument("--json", action="store_true", help="Emit the evidence-package report as JSON.")
     _add_manifest_argument(adapter_bayesian_evidence)
+    adapter_bayesian_table = adapter_subparsers.add_parser(
+        "bayesian-diagnostics-table",
+        help="Write a supplementary Bayesian diagnostics table from posterior logs.",
+    )
+    adapter_bayesian_table.add_argument("posterior_trees", type=Path)
+    adapter_bayesian_table.add_argument("--log", required=True, type=Path)
+    adapter_bayesian_table.add_argument("--additional-logs", nargs="*", type=Path)
+    adapter_bayesian_table.add_argument("--out", required=True, type=Path)
+    adapter_bayesian_table.add_argument("--burnin-fractions", nargs="+", type=float, default=[0.1, 0.25, 0.5])
+    adapter_bayesian_table.add_argument("--ess-threshold", type=float, default=200.0)
+    adapter_bayesian_table.add_argument("--mean-shift-threshold", type=float, default=0.5)
+    adapter_bayesian_table.add_argument("--cross-chain-mean-shift-threshold", type=float, default=0.75)
+    adapter_bayesian_table.add_argument("--json", action="store_true", help="Emit the diagnostics-table result as JSON.")
+    _add_manifest_argument(adapter_bayesian_table)
+    adapter_bayesian_methods = adapter_subparsers.add_parser(
+        "bayesian-methods",
+        help="Write reviewer-facing Bayesian methods summary text.",
+    )
+    adapter_bayesian_methods.add_argument("posterior_trees", type=Path)
+    adapter_bayesian_methods.add_argument("--log", required=True, type=Path)
+    adapter_bayesian_methods.add_argument("--additional-logs", nargs="*", type=Path)
+    adapter_bayesian_methods.add_argument("--out", required=True, type=Path)
+    adapter_bayesian_methods.add_argument("--tree-prior", default="unspecified")
+    adapter_bayesian_methods.add_argument("--clock-model", default="unspecified")
+    adapter_bayesian_methods.add_argument("--calibration-path", type=Path)
+    adapter_bayesian_methods.add_argument("--tip-dates-path", type=Path)
+    adapter_bayesian_methods.add_argument("--burnin-fractions", nargs="+", type=float, default=[0.1, 0.25, 0.5])
+    adapter_bayesian_methods.add_argument("--ess-threshold", type=float, default=200.0)
+    adapter_bayesian_methods.add_argument("--mean-shift-threshold", type=float, default=0.5)
+    adapter_bayesian_methods.add_argument("--cross-chain-mean-shift-threshold", type=float, default=0.75)
+    adapter_bayesian_methods.add_argument("--json", action="store_true", help="Emit the methods-summary result as JSON.")
+    _add_manifest_argument(adapter_bayesian_methods)
 
     return parser
 
@@ -4428,6 +4512,113 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.tree_set_command == "diversity-compare":
+                report = compare_posterior_topological_diversity(args.left, args.right)
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.left, args.right])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.left, args.right],
+                        outputs=outputs,
+                        metrics={
+                            "left_rooted_topology_count": report.left_summary.rooted_topology_count,
+                            "right_rooted_topology_count": report.right_summary.rooted_topology_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "multimodality":
+                report = detect_posterior_topology_multimodality(
+                    args.tree_set,
+                    min_mode_frequency=args.min_mode_frequency,
+                    min_mode_count=args.min_mode_count,
+                )
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"mode_count": report.mode_count, "multimodal": report.multimodal},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "clade-conflicts":
+                report = summarize_clade_credibility_conflicts(
+                    args.tree_set,
+                    credibility_threshold=args.credibility_threshold,
+                )
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"conflict_count": report.conflict_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "conclusion-summary":
+                report = summarize_uncertainty_aware_conclusions(
+                    args.tree_set,
+                    robust_threshold=args.robust_threshold,
+                    uncertain_min_frequency=args.uncertain_min_frequency,
+                    uncertain_max_frequency=args.uncertain_max_frequency,
+                    credibility_threshold=args.credibility_threshold,
+                )
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={
+                            "robust_clade_count": report.robust_clade_count,
+                            "uncertain_clade_count": report.uncertain_clade_count,
+                            "conflicting_clade_count": report.conflicting_clade_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "package":
+                report = build_posterior_uncertainty_figure_package(
+                    args.tree_set,
+                    out_dir=args.out_dir,
+                    layout=args.layout,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=[
+                        report.consensus_tree_path,
+                        report.consensus_figure_path,
+                        report.clade_frequency_plot_path,
+                        report.unstable_taxa_table_path,
+                        report.topology_clusters_table_path,
+                        report.conclusion_summary_path,
+                        report.manifest_path,
+                    ],
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"artifact_count": 7},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             report = render_tree_uncertainty_report(tree_set_path=args.tree_set, out_path=args.out)
             outputs = _finalize_outputs(
                 args,
@@ -5902,6 +6093,58 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=inputs,
                         outputs=outputs,
                         metrics={"file_count": report.file_count, "valid": report.valid},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "bayesian-diagnostics-table":
+                report = write_supplementary_bayesian_diagnostics_table(
+                    args.out,
+                    posterior_tree_path=args.posterior_trees,
+                    primary_log_path=args.log,
+                    additional_log_paths=args.additional_logs,
+                    burnin_fractions=tuple(args.burnin_fractions),
+                    ess_threshold=args.ess_threshold,
+                    mean_shift_threshold=args.mean_shift_threshold,
+                    cross_chain_mean_shift_threshold=args.cross_chain_mean_shift_threshold,
+                )
+                inputs = [args.posterior_trees, args.log, *(args.additional_logs or [])]
+                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[args.out])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=inputs,
+                        outputs=outputs,
+                        metrics={"row_count": report.row_count, "warning_count": report.warning_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "bayesian-methods":
+                report = write_bayesian_methods_summary_text(
+                    args.out,
+                    posterior_tree_path=args.posterior_trees,
+                    primary_log_path=args.log,
+                    additional_log_paths=args.additional_logs,
+                    tree_prior=args.tree_prior,
+                    clock_model=args.clock_model,
+                    calibration_path=args.calibration_path,
+                    tip_dates_path=args.tip_dates_path,
+                    burnin_fractions=tuple(args.burnin_fractions),
+                    ess_threshold=args.ess_threshold,
+                    mean_shift_threshold=args.mean_shift_threshold,
+                    cross_chain_mean_shift_threshold=args.cross_chain_mean_shift_threshold,
+                )
+                inputs = [args.posterior_trees, args.log, *(args.additional_logs or [])]
+                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[args.out])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=inputs,
+                        outputs=outputs,
+                        metrics={"warning_count": report.warning_count},
                         data=report,
                     ),
                     json_output=args.json,
