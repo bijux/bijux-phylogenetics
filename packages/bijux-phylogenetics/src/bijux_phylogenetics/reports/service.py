@@ -21,6 +21,8 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
+    inspect_distance_matrix_quality,
+    validate_distance_reference_examples,
     validate_imported_distance_matrix,
 )
 from bijux_phylogenetics.diagnostics.validation import (
@@ -405,12 +407,16 @@ def render_distance_report(
     method_limitations = distance_method_limitations()
     if alignment_path is not None:
         matrix = compute_pairwise_genetic_distance_matrix(alignment_path)
+        quality = inspect_distance_matrix_quality(alignment_path)
+        reference_validation = validate_distance_reference_examples()
         nj_tree, _ = build_distance_tree(alignment_path, method="neighbor-joining")
         upgma_tree, _ = build_distance_tree(alignment_path, method="upgma")
         comparison = compare_distance_tree_topologies(alignment_path)
         title = "Bijux Distance Analysis Report"
         sections = [
             _section("computed-distance-matrix", asdict(matrix)),
+            _section("distance-quality", asdict(quality)),
+            _section("distance-reference-validation", asdict(reference_validation)),
             _section("neighbor-joining-tree", {"newick": dumps_newick(nj_tree)}),
             _section("upgma-tree", {"newick": dumps_newick(upgma_tree)}),
             _section("distance-tree-comparison", asdict(comparison)),
