@@ -21,3 +21,4 @@
 - add tree integrity validation, validity decisions, rootedness confidence, node-stable forensic reporting, and external-label safety audits
 - add audited topology transforms, pruning artifact summaries, taxon-identity conflict detection, and cross-format tree roundtrip validation with semantic-loss reporting
 - add alignment readiness decisions, raw-versus-aligned FASTA classification, sliding-window region diagnostics, raw length outlier detection, ambiguity-aware uncertainty accounting, and partial-codon reporting
+- add mixed coding versus noncoding detection, named alignment-filtering profiles, cleaned-alignment comparison, filtering risk warnings, transparent alignment quality scoring, alignment forensic reporting, and one-shot dataset audits
