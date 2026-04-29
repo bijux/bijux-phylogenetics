@@ -9,6 +9,7 @@ from bijux_phylogenetics.engines.validation import (
     compare_inferred_tree_to_taxon_metadata,
     validate_ml_tree_contains_expected_taxa,
     validate_bootstrap_tree_set,
+    validate_inference_engine_outputs,
     validate_model_selection_against_engine_outputs,
 )
 
@@ -196,3 +197,24 @@ def test_validate_bootstrap_tree_set_requires_consistent_taxa(tmp_path: Path) ->
     invalid_report = validate_bootstrap_tree_set(invalid_path)
     assert invalid_report.valid is False
     assert any("same taxon set" in issue for issue in invalid_report.issues)
+
+
+def test_validate_inference_engine_outputs_checks_manifest_consistency(tmp_path: Path) -> None:
+    executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
+    from bijux_phylogenetics.engines import run_maximum_likelihood_tree_inference
+
+    workflow = run_maximum_likelihood_tree_inference(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "ml",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+    )
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+    assert report.valid is True
+    assert report.current_output_checksum_match is True
+
+    workflow.output_paths["tree"].write_text("((A:0.1,B:0.1):0.2,(C:0.1,X:0.1):0.2);\n", encoding="utf-8")
+    drift_report = validate_inference_engine_outputs(workflow.manifest_path)
+    assert drift_report.valid is False
+    assert any("checksums" in issue or "expected taxa" in issue for issue in drift_report.issues)

@@ -12,8 +12,10 @@ from .validation import (
     ModelSelectionValidationReport,
     audit_alignment_inference_readiness,
     BootstrapTreeSetValidationReport,
+    InferenceOutputConsistencyReport,
     validate_ml_tree_contains_expected_taxa,
     validate_bootstrap_tree_set,
+    validate_inference_engine_outputs,
     validate_model_selection_against_engine_outputs,
 )
 from .workflows import (
@@ -46,8 +48,10 @@ __all__ = [
     "InferenceWorkflowReportBuildResult",
     "audit_alignment_inference_readiness",
     "BootstrapTreeSetValidationReport",
+    "InferenceOutputConsistencyReport",
     "validate_ml_tree_contains_expected_taxa",
     "validate_bootstrap_tree_set",
+    "validate_inference_engine_outputs",
     "validate_model_selection_against_engine_outputs",
     "compare_fast_and_ml_trees",
     "execute_engine_command",

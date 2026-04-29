@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.errors import InvalidAlignmentError
-from bijux_phylogenetics.engines.common import load_engine_manifest
+from bijux_phylogenetics.engines.common import build_file_checksums, load_engine_manifest
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
@@ -95,6 +95,16 @@ class BootstrapTreeSetValidationReport:
     tree_set_path: Path
     tree_count: int
     expected_taxa: list[str]
+    valid: bool
+    issues: list[str]
+
+
+@dataclass(slots=True)
+class InferenceOutputConsistencyReport:
+    manifest_path: Path
+    workflow: str
+    failure_category: str
+    current_output_checksum_match: bool
     valid: bool
     issues: list[str]
 
@@ -394,4 +404,48 @@ def validate_bootstrap_tree_set(path: Path) -> BootstrapTreeSetValidationReport:
         expected_taxa=report.shared_taxa,
         valid=not issues,
         issues=issues,
+    )
+
+
+def validate_inference_engine_outputs(manifest_path: Path) -> InferenceOutputConsistencyReport:
+    """Detect whether one engine workflow manifest and its current outputs still agree."""
+    manifest = load_engine_manifest(manifest_path)
+    workflow = str(manifest["workflow"])
+    input_paths = [Path(path) for path in manifest["input_paths"]]
+    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    run_payload = dict(manifest["run"])
+    failure = classify_inference_workflow_failure(
+        workflow=workflow,
+        input_paths=input_paths,
+        output_paths=output_paths,
+        run_exit_code=int(run_payload.get("exit_code", 0)),
+    )
+    issues = list(failure.issues)
+    current_checksums = build_file_checksums(list(output_paths.values()))
+    manifest_checksums = {str(key): str(value) for key, value in dict(manifest.get("output_checksums", {})).items()}
+    current_output_checksum_match = current_checksums == manifest_checksums
+    if not current_output_checksum_match:
+        issues.append("current output checksums do not match the recorded manifest outputs")
+    if workflow == "model-selection":
+        model_validation = validate_model_selection_against_engine_outputs(manifest_path)
+        issues.extend(model_validation.issues)
+    elif workflow == "maximum-likelihood-tree":
+        tree_validation = validate_ml_tree_contains_expected_taxa(manifest_path)
+        issues.extend(tree_validation.issues)
+    elif workflow == "bootstrap-support":
+        bootstrap_path = output_paths.get("bootstrap_trees")
+        if bootstrap_path is None:
+            issues.append("bootstrap-support manifest is missing the bootstrap_trees output")
+        else:
+            bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
+            issues.extend(bootstrap_validation.issues)
+        if manifest.get("selected_model") is None:
+            issues.append("bootstrap-support manifest is missing the selected model")
+    return InferenceOutputConsistencyReport(
+        manifest_path=manifest_path,
+        workflow=workflow,
+        failure_category=failure.failure_category,
+        current_output_checksum_match=current_output_checksum_match,
+        valid=not issues,
+        issues=sorted(dict.fromkeys(issues)),
     )
