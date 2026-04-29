@@ -2,6 +2,21 @@
 
 from importlib import metadata
 
+from .ancestral import (
+    AncestralStateReportBuildResult,
+    ContinuousAncestralComparisonReport,
+    ContinuousAncestralComparisonRow,
+    ContinuousAncestralEstimate,
+    ContinuousAncestralReport,
+    DiscreteAncestralEstimate,
+    DiscreteAncestralReport,
+    compare_continuous_ancestral_models,
+    reconstruct_continuous_ancestral_states,
+    reconstruct_discrete_ancestral_states,
+    render_ancestral_state_report,
+    render_ancestral_state_tree,
+    write_ancestral_state_table,
+)
 from .compare.topology import TreeComparisonReport, compare_tree_paths
 from .comparative import (
     BlombergKReport,
@@ -142,9 +157,14 @@ except metadata.PackageNotFoundError:
     __version__ = "0.1.0"
 
 __all__ = [
+    "AncestralStateReportBuildResult",
     "BlombergKReport",
     "ComparativeDataset",
     "ComparativeReadinessReport",
+    "ContinuousAncestralComparisonReport",
+    "ContinuousAncestralComparisonRow",
+    "ContinuousAncestralEstimate",
+    "ContinuousAncestralReport",
     "EvidenceBundleReport",
     "CLI_NAME",
     "BranchLengthUnitReport",
@@ -169,6 +189,8 @@ __all__ = [
     "CladeFrequencyDelta",
     "CladeFrequencyReport",
     "ContinuousTraitSimulationReport",
+    "DiscreteAncestralEstimate",
+    "DiscreteAncestralReport",
     "IndependentContrast",
     "IndependentContrastReport",
     "StandardizedSupportLabel",
@@ -216,6 +238,7 @@ __all__ = [
     "benchmark_tree_validation",
     "bundle_directory",
     "cluster_trees_by_topology",
+    "compare_continuous_ancestral_models",
     "compare_tree_paths",
     "compare_posterior_tree_sets",
     "compare_distance_tree_topologies",
@@ -238,6 +261,10 @@ __all__ = [
     "inspect_tree_path",
     "load_imported_distance_matrix",
     "load_tree_set",
+    "reconstruct_continuous_ancestral_states",
+    "reconstruct_discrete_ancestral_states",
+    "render_ancestral_state_report",
+    "render_ancestral_state_tree",
     "render_distance_report",
     "render_phylo_inputs_report",
     "render_phylogenetics_report",
@@ -265,6 +292,7 @@ __all__ = [
     "unroot_tree",
     "validate_imported_distance_matrix",
     "validate_tree_path",
+    "write_ancestral_state_table",
     "write_clade_frequency_table",
     "write_continuous_trait_table",
     "write_consensus_tree",
