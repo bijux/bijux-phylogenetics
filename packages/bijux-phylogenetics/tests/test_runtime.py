@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics
+from bijux_phylogenetics.benchmark import benchmark_tree_validation
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
@@ -314,6 +315,21 @@ def test_simulate_protein_alignment_returns_requested_length_and_alphabet() -> N
         ("C", "MFPCDV"),
         ("D", "MFICDV"),
     ]
+
+
+def test_benchmark_tree_validation_reports_runtime_and_memory_by_size_class() -> None:
+    report = benchmark_tree_validation(
+        replicates=1,
+        size_classes=[("small", 4), ("medium", 8), ("large", 16)],
+    )
+    assert report.replicates == 1
+    assert [(row.label, row.item_count) for row in report.observations] == [
+        ("small", 4),
+        ("medium", 8),
+        ("large", 16),
+    ]
+    assert all(row.runtime_seconds >= 0.0 for row in report.observations)
+    assert all(row.peak_memory_bytes >= 0 for row in report.observations)
 
 
 def test_load_tree_set_reports_tree_count_and_topology_diversity() -> None:
