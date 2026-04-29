@@ -1020,6 +1020,21 @@ def test_compute_pairwise_genetic_distance_matrix_supports_jukes_cantor() -> Non
     ]
 
 
+def test_compute_pairwise_genetic_distance_matrix_marks_saturated_jukes_cantor_pairs_undefined() -> None:
+    report = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance_saturated.fasta"),
+        model="jukes-cantor",
+    )
+    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+        ("A", "A", 0.0, 4),
+        ("A", "B", None, 4),
+        ("A", "C", 0.304098831081123, 4),
+        ("B", "B", 0.0, 4),
+        ("B", "C", None, 4),
+        ("C", "C", 0.0, 4),
+    ]
+
+
 def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
     tree, report = build_distance_tree(
         fixture("example_alignment_distance.fasta"),
@@ -1047,6 +1062,19 @@ def test_compare_distance_tree_topologies_reports_rooting_difference() -> None:
     assert report.same_unrooted_topology is True
     assert report.same_taxa_different_rooting is True
     assert report.robinson_foulds_distance == 1
+
+
+def test_build_distance_tree_rejects_undefined_corrected_distances() -> None:
+    try:
+        build_distance_tree(
+            fixture("example_alignment_distance_saturated.fasta"),
+            method="neighbor-joining",
+            model="jukes-cantor",
+        )
+    except InvalidAlignmentError as error:
+        assert "undefined entries" in error.message
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected InvalidAlignmentError")
 
 
 def test_cli_alignment_build_tree_writes_newick(tmp_path: Path, capsys) -> None:
