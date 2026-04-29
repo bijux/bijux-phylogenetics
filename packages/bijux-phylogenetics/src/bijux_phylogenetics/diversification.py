@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import math
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.errors import DiversificationAnalysisError
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.render.html import write_html_report
 
 _SAMPLING_COLUMNS = (
     "sampling_fraction",
@@ -130,6 +132,37 @@ class CladeDiversificationScanReport:
     warnings: list[str]
 
 
+@dataclass(slots=True)
+class TraitDependentDiversificationState:
+    state: str
+    taxon_count: int
+    taxa: list[str]
+    monophyletic: bool
+    crown_age: float | None
+    diversification_rate: float | None
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class TraitDependentDiversificationReport:
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    trait: str
+    observed_states: list[str]
+    states: list[TraitDependentDiversificationState]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class DiversificationReportBuildResult:
+    output_path: Path
+    report_kind: str
+    title: str
+    tree_path: Path
+    machine_manifest: dict[str, object]
+
+
 def _node_depths(tree: PhyloTree) -> dict[str, float]:
     depths: dict[str, float] = {node_signature(tree.root): 0.0}
 
@@ -205,6 +238,18 @@ def _interval_log_likelihood(tree: PhyloTree, *, birth_rate: float, death_rate: 
 
 def _node_age(tree: PhyloTree, depths: dict[str, float], node: TreeNode) -> float:
     return float(format(_root_age(tree) - depths[node_signature(node)], ".15g"))
+
+
+def _find_smallest_covering_node(tree: PhyloTree, taxa: set[str]) -> tuple[TreeNode, list[str]]:
+    best_node = tree.root
+    best_taxa = _descendant_taxa(tree.root)
+    for node in tree.iter_nodes():
+        descendant_taxa = _descendant_taxa(node)
+        descendant_set = set(descendant_taxa)
+        if taxa <= descendant_set and len(descendant_set) <= len(best_taxa):
+            best_node = node
+            best_taxa = descendant_taxa
+    return best_node, best_taxa
 
 
 def validate_time_tree_for_diversification(tree_path: Path) -> TimeTreeValidationReport:
@@ -606,4 +651,193 @@ def detect_diversification_outlier_clades(
         high_diversification_clades=high,
         low_diversification_clades=low,
         warnings=list(global_report.warnings),
+    )
+
+
+def run_trait_dependent_diversification_analysis(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+) -> TraitDependentDiversificationReport:
+    """Summarize simple state-linked diversification rates when trait states form interpretable clades."""
+    validate_time_tree_for_diversification(tree_path)
+    tree = load_tree(tree_path)
+    table = load_taxon_table(traits_path, taxon_column=taxon_column)
+    if trait not in table.columns:
+        raise DiversificationAnalysisError(f"trait table does not contain column '{trait}'")
+    tree_taxa = set(tree.tip_names)
+    rows_by_taxon = {
+        row[table.taxon_column]: row
+        for row in table.rows
+        if row[table.taxon_column] in tree_taxa and row[trait].strip()
+    }
+    observed_states = sorted({row[trait].strip() for row in rows_by_taxon.values()})
+    depths = _node_depths(tree)
+    states: list[TraitDependentDiversificationState] = []
+    warnings: list[str] = []
+    for state in observed_states:
+        taxa = sorted(taxon for taxon, row in rows_by_taxon.items() if row[trait].strip() == state)
+        state_warnings: list[str] = []
+        if len(taxa) < 2:
+            state_warnings.append("state is represented by fewer than two taxa")
+            states.append(
+                TraitDependentDiversificationState(
+                    state=state,
+                    taxon_count=len(taxa),
+                    taxa=taxa,
+                    monophyletic=False,
+                    crown_age=None,
+                    diversification_rate=None,
+                    warnings=state_warnings,
+                )
+            )
+            continue
+        covering_node, descendant_taxa = _find_smallest_covering_node(tree, set(taxa))
+        monophyletic = descendant_taxa == taxa
+        crown_age = _node_age(tree, depths, covering_node)
+        diversification_rate = float(format(math.log(len(taxa)) / crown_age, ".15g")) if monophyletic and crown_age > 0.0 else None
+        if not monophyletic:
+            state_warnings.append("state taxa are not monophyletic in the input tree")
+        states.append(
+            TraitDependentDiversificationState(
+                state=state,
+                taxon_count=len(taxa),
+                taxa=taxa,
+                monophyletic=monophyletic,
+                crown_age=crown_age if monophyletic else None,
+                diversification_rate=diversification_rate,
+                warnings=state_warnings,
+            )
+        )
+        warnings.extend(state_warnings)
+    return TraitDependentDiversificationReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=table.taxon_column,
+        trait=trait,
+        observed_states=observed_states,
+        states=states,
+        warnings=sorted(set(warnings)),
+    )
+
+
+def write_clade_diversification_table(path: Path, report: CladeDiversificationScanReport) -> Path:
+    """Export clade diversification summaries as a deterministic TSV."""
+    rows = [
+        {
+            "node": row.node,
+            "node_name": row.node_name or "",
+            "descendant_taxa": ",".join(row.descendant_taxa),
+            "tip_count": str(row.tip_count),
+            "crown_age": format(row.crown_age, ".15g"),
+            "diversification_rate": format(row.diversification_rate, ".15g"),
+            "z_score": format(row.z_score, ".15g"),
+            "classification": row.classification,
+        }
+        for row in report.observations
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "node",
+            "node_name",
+            "descendant_taxa",
+            "tip_count",
+            "crown_age",
+            "diversification_rate",
+            "z_score",
+            "classification",
+        ],
+        rows=rows,
+    )
+
+
+def write_trait_dependent_diversification_table(path: Path, report: TraitDependentDiversificationReport) -> Path:
+    """Export state-linked diversification summaries as a deterministic TSV."""
+    rows = [
+        {
+            "state": row.state,
+            "taxon_count": str(row.taxon_count),
+            "taxa": ",".join(row.taxa),
+            "monophyletic": str(row.monophyletic).lower(),
+            "crown_age": "" if row.crown_age is None else format(row.crown_age, ".15g"),
+            "diversification_rate": "" if row.diversification_rate is None else format(row.diversification_rate, ".15g"),
+            "warnings": "; ".join(row.warnings),
+        }
+        for row in report.states
+    ]
+    return write_taxon_rows(
+        path,
+        columns=["state", "taxon_count", "taxa", "monophyletic", "crown_age", "diversification_rate", "warnings"],
+        rows=rows,
+    )
+
+
+def render_diversification_report(
+    *,
+    tree_path: Path,
+    out_path: Path,
+    metadata_path: Path | None = None,
+    taxon_column: str | None = None,
+    sampling_column: str | None = None,
+    traits_path: Path | None = None,
+    trait: str | None = None,
+) -> DiversificationReportBuildResult:
+    """Render a deterministic HTML report for diversification and macroevolution summaries."""
+    ltt = compute_lineage_through_time_curve(tree_path)
+    estimate = estimate_diversification_rate(
+        tree_path,
+        metadata_path=metadata_path,
+        taxon_column=taxon_column,
+        sampling_column=sampling_column,
+        model="birth-death",
+    )
+    comparison = compare_diversification_models(
+        tree_path,
+        metadata_path=metadata_path,
+        taxon_column=taxon_column,
+        sampling_column=sampling_column,
+    )
+    clades = detect_diversification_outlier_clades(tree_path)
+    trait_report = (
+        run_trait_dependent_diversification_analysis(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+        )
+        if traits_path is not None and trait is not None
+        else None
+    )
+    sections = [
+        ("lineage-through-time", json.dumps(ltt, default=str, indent=2)),
+        ("diversification-estimate", json.dumps(estimate, default=str, indent=2)),
+        ("diversification-model-comparison", json.dumps(comparison, default=str, indent=2)),
+        ("clade-diversification-scan", json.dumps(clades, default=str, indent=2)),
+    ]
+    if trait_report is not None:
+        sections.append(("trait-dependent-diversification", json.dumps(trait_report, default=str, indent=2)))
+    title = "Bijux Diversification Report"
+    manifest = {
+        "report_kind": "diversification",
+        "tree_path": str(tree_path),
+        "metadata_path": None if metadata_path is None else str(metadata_path),
+        "traits_path": None if traits_path is None else str(traits_path),
+        "trait": trait,
+        "sections": [name for name, _value in sections],
+    }
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=manifest,
+    )
+    return DiversificationReportBuildResult(
+        output_path=out_path,
+        report_kind="diversification",
+        title=title,
+        tree_path=tree_path,
+        machine_manifest=manifest,
     )

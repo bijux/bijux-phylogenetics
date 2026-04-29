@@ -11,8 +11,12 @@ from bijux_phylogenetics.diversification import (
     detect_diversification_outlier_clades,
     estimate_diversification_rate,
     inspect_diversification_time_tree,
+    render_diversification_report,
+    run_trait_dependent_diversification_analysis,
     validate_time_tree_for_diversification,
+    write_clade_diversification_table,
     write_lineage_through_time_table,
+    write_trait_dependent_diversification_table,
 )
 from bijux_phylogenetics.errors import DiversificationAnalysisError, UnrootedTreeError
 
@@ -125,3 +129,48 @@ def test_detect_diversification_outlier_clades_flags_high_and_low_clades() -> No
     assert {row.classification for row in report.observations} == {"baseline", "high", "low"}
     assert [row.node for row in report.high_diversification_clades] == ["A|B"]
     assert [row.node for row in report.low_diversification_clades] == ["C|D"]
+
+
+def test_run_trait_dependent_diversification_analysis_reports_monophyly_and_polyphyly() -> None:
+    monophyletic = run_trait_dependent_diversification_analysis(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_diversification.tsv"),
+        trait="habitat",
+    )
+    polyphyletic = run_trait_dependent_diversification_analysis(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_diversification_polyphyletic.tsv"),
+        trait="habitat",
+    )
+
+    assert [row.monophyletic for row in monophyletic.states] == [True, True]
+    assert [row.diversification_rate for row in monophyletic.states] == [6.93147180559945, 3.46573590279973]
+    assert any("not monophyletic" in warning for warning in polyphyletic.warnings)
+
+
+def test_write_diversification_tables_and_report_outputs_files(tmp_path: Path) -> None:
+    clade_path = tmp_path / "clades.tsv"
+    trait_path = tmp_path / "trait-dependent.tsv"
+    html_path = tmp_path / "diversification-report.html"
+
+    clades = detect_diversification_outlier_clades(fixture("example_tree.nwk"))
+    trait_report = run_trait_dependent_diversification_analysis(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_diversification.tsv"),
+        trait="habitat",
+    )
+    report = render_diversification_report(
+        tree_path=fixture("example_tree.nwk"),
+        out_path=html_path,
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+        traits_path=fixture("example_traits_diversification.tsv"),
+        trait="habitat",
+    )
+
+    write_clade_diversification_table(clade_path, clades)
+    write_trait_dependent_diversification_table(trait_path, trait_report)
+
+    assert "classification" in clade_path.read_text(encoding="utf-8")
+    assert "monophyletic" in trait_path.read_text(encoding="utf-8")
+    assert "diversification-model-comparison" in html_path.read_text(encoding="utf-8")
+    assert report.report_kind == "diversification"
