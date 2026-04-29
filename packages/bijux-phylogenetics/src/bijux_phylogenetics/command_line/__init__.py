@@ -97,6 +97,18 @@ from bijux_phylogenetics.distance import (
     validate_imported_distance_matrix,
     write_genetic_distance_matrix,
 )
+from bijux_phylogenetics.discrete_evolution import (
+    compare_discrete_state_models,
+    detect_state_imbalance_problems,
+    estimate_ancestral_geographic_states,
+    render_discrete_state_evolution_report,
+    render_tree_with_geographic_states,
+    run_discrete_state_transition_model,
+    validate_discrete_state_coding,
+    write_discrete_model_comparison_table,
+    write_node_state_probability_table,
+    write_transition_summary_table,
+)
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
     render_inference_workflow_report,
@@ -771,6 +783,77 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_report.add_argument("--out", required=True, type=Path)
     ancestral_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(ancestral_report)
+
+    discrete_evolution = subparsers.add_parser(
+        get_command_spec("discrete-evolution").name,
+        help=get_command_spec("discrete-evolution").summary,
+    )
+    discrete_evolution_subparsers = discrete_evolution.add_subparsers(
+        dest="discrete_evolution_command",
+        required=True,
+    )
+    discrete_validate = discrete_evolution_subparsers.add_parser(
+        "validate-coding",
+        help="Validate discrete-state labels against tree-overlapping taxa.",
+    )
+    discrete_validate.add_argument("tree", type=Path)
+    discrete_validate.add_argument("table", type=Path)
+    discrete_validate.add_argument("--trait", required=True)
+    discrete_validate.add_argument("--taxon-column")
+    discrete_validate.add_argument(
+        "--allowed-states",
+        help="Comma-delimited allowed state vocabulary. When omitted, accept any single token state label.",
+    )
+    discrete_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    _add_manifest_argument(discrete_validate)
+    discrete_imbalance = discrete_evolution_subparsers.add_parser(
+        "imbalance",
+        help="Detect rare, dominant, or degenerate state balance problems.",
+    )
+    discrete_imbalance.add_argument("tree", type=Path)
+    discrete_imbalance.add_argument("table", type=Path)
+    discrete_imbalance.add_argument("--trait", required=True)
+    discrete_imbalance.add_argument("--taxon-column")
+    discrete_imbalance.add_argument("--json", action="store_true", help="Emit the imbalance report as JSON.")
+    _add_manifest_argument(discrete_imbalance)
+    discrete_model = discrete_evolution_subparsers.add_parser(
+        "model",
+        help="Run one discrete-state transition model and export node or branch summaries.",
+    )
+    discrete_model.add_argument("tree", type=Path)
+    discrete_model.add_argument("table", type=Path)
+    discrete_model.add_argument("--trait", required=True)
+    discrete_model.add_argument("--taxon-column")
+    discrete_model.add_argument("--model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_model.add_argument(
+        "--allowed-states",
+        help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
+    )
+    discrete_model.add_argument("--node-table-out", type=Path, help="Write node-state probabilities as TSV.")
+    discrete_model.add_argument("--transitions-out", type=Path, help="Write branch transition summaries as TSV.")
+    discrete_model.add_argument("--json", action="store_true", help="Emit the model report as JSON.")
+    _add_manifest_argument(discrete_model)
+    discrete_compare = discrete_evolution_subparsers.add_parser(
+        "compare-models",
+        help="Compare two supported discrete-state evolution models node by node.",
+    )
+    discrete_compare.add_argument("tree", type=Path)
+    discrete_compare.add_argument("table", type=Path)
+    discrete_compare.add_argument("--trait", required=True)
+    discrete_compare.add_argument("--taxon-column")
+    discrete_compare.add_argument("--left-model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_compare.add_argument(
+        "--right-model",
+        choices=("equal-rates", "all-rates-different"),
+        default="all-rates-different",
+    )
+    discrete_compare.add_argument(
+        "--allowed-states",
+        help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
+    )
+    discrete_compare.add_argument("--table-out", type=Path, help="Write node-wise model differences as TSV.")
+    discrete_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    _add_manifest_argument(discrete_compare)
 
     distance = subparsers.add_parser(get_command_spec("distance").name, help=get_command_spec("distance").summary)
     distance_subparsers = distance.add_subparsers(dest="distance_command", required=True)
@@ -2224,6 +2307,126 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "reconstruction_kind": result.reconstruction_kind,
                     },
                     data=result,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "discrete-evolution":
+            allowed_states = _split_csv_values(args.allowed_states) if hasattr(args, "allowed_states") else []
+            if args.discrete_evolution_command == "validate-coding":
+                report = validate_discrete_state_coding(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    allowed_states=allowed_states or None,
+                )
+                outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "valid": report.valid,
+                            "issue_count": len(report.issues),
+                            "observed_state_count": len(report.observed_states),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "imbalance":
+                report = detect_state_imbalance_problems(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=[warning.message for warning in report.warnings],
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "observed_state_count": len(report.observed_states),
+                            "warning_count": len(report.warnings),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "model":
+                report = estimate_ancestral_geographic_states(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    allowed_states=allowed_states or None,
+                )
+                outputs: list[Path | str] = []
+                if args.node_table_out is not None:
+                    outputs.append(write_node_state_probability_table(args.node_table_out, report))
+                if args.transitions_out is not None:
+                    outputs.append(write_transition_summary_table(args.transitions_out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="discrete-evolution",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "observed_state_count": len(report.observed_states),
+                            "transition_count": report.transition_summary.transition_count,
+                            "model": report.model,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            comparison = compare_discrete_state_models(
+                args.tree,
+                args.table,
+                trait=args.trait,
+                taxon_column=args.taxon_column,
+                left_model=args.left_model,
+                right_model=args.right_model,
+                allowed_states=allowed_states or None,
+            )
+            outputs: list[Path | str] = []
+            if args.table_out is not None:
+                outputs.append(write_discrete_model_comparison_table(args.table_out, comparison))
+            outputs = _finalize_outputs(
+                args,
+                command="discrete-evolution",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+            )
+            _print_result(
+                build_command_result(
+                    command="discrete-evolution",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                    metrics={
+                        "better_model": comparison.better_model,
+                        "model_count": len(comparison.rows),
+                        "differing_node_count": sum(1 for row in comparison.node_differences if row.differs),
+                    },
+                    data=comparison,
                 ),
                 json_output=args.json,
             )
