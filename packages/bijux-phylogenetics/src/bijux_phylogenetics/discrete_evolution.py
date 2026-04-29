@@ -297,6 +297,27 @@ class DiscreteEvolutionNarrative:
 
 
 @dataclass(slots=True)
+class BiogeographicComputedResult:
+    label: str
+    value: str
+
+
+@dataclass(slots=True)
+class BiogeographicInterpretationReport:
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    model: str
+    compare_model: str | None
+    computed_results: list[BiogeographicComputedResult]
+    model_sensitive_regions: list[ModelSensitiveRegionRow]
+    coding_audit_summary: dict[str, int]
+    readiness_blockers: list[str]
+    caveats: list[str]
+    interpretation_guidance: list[str]
+
+
+@dataclass(slots=True)
 class StochasticMapTransitionEvent:
     branch_index: int
     parent_node: str
@@ -1759,6 +1780,98 @@ def summarize_discrete_stochastic_maps(
     return _summarize_stochastic_map_replicates(report.maps)
 
 
+def build_biogeographic_interpretation_report(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    model: str = "equal-rates",
+    compare_model: str | None = None,
+    allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+    coding_map: dict[str, str] | None = None,
+) -> BiogeographicInterpretationReport:
+    """Separate computed biogeographic outputs from downstream interpretation guidance."""
+    readiness = assess_geographic_state_analysis_readiness(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    report = estimate_ancestral_geographic_states(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=model,
+        allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    comparison = (
+        compare_discrete_state_models(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+            left_model=model,
+            right_model=compare_model,
+            allowed_states=allowed_states,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
+        )
+        if compare_model is not None
+        else None
+    )
+    coding_audit = audit_discrete_state_coding(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+        coding_map=coding_map,
+    )
+    root_estimate = next(estimate for estimate in report.estimates if estimate.node == node_signature(load_tree(tree_path).root))
+    computed_results = [
+        BiogeographicComputedResult(label="root_state", value=root_estimate.most_likely_state),
+        BiogeographicComputedResult(label="transition_count", value=str(report.transition_summary.transition_count)),
+        BiogeographicComputedResult(
+            label="strongly_supported_transition_count",
+            value=str(report.transition_summary.strongly_supported_transition_count),
+        ),
+        BiogeographicComputedResult(label="state_count", value=str(len(report.observed_states))),
+        BiogeographicComputedResult(label="model", value=report.model),
+    ]
+    return BiogeographicInterpretationReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        trait=trait,
+        model=model,
+        compare_model=compare_model,
+        computed_results=computed_results,
+        model_sensitive_regions=[] if comparison is None else comparison.sensitive_regions,
+        coding_audit_summary={
+            "row_count": coding_audit.row_count,
+            "included_row_count": coding_audit.included_row_count,
+            "excluded_row_count": coding_audit.excluded_row_count,
+        },
+        readiness_blockers=readiness.blockers,
+        caveats=_build_discrete_evolution_narrative(report, comparison=comparison).caveats,
+        interpretation_guidance=[
+            "computed ancestral regions summarize model-conditioned state histories, not direct evidence of dispersal mechanism",
+            "biological interpretation should be restricted to patterns that remain stable across supported models and coding assumptions",
+            "sampling gaps, sparse states, and dominant-state bias should be discussed before turning transitions into historical claims",
+        ],
+    )
+
+
 def validate_discrete_transition_reference_examples(
     *,
     tolerance: float = 1e-9,
@@ -2152,9 +2265,21 @@ def render_discrete_state_evolution_report(
     render_path = out_path.with_suffix(".svg")
     render_result = render_tree_with_geographic_states(tree_path, report, out_path=render_path, layout="phylogram")
     narrative = _build_discrete_evolution_narrative(report, comparison=comparison)
+    interpretation = build_biogeographic_interpretation_report(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=model,
+        compare_model=compare_model,
+        allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
     sections = [
         ("discrete-state-summary", json.dumps(asdict(narrative), default=str, indent=2, sort_keys=True)),
         ("discrete-state-evolution", json.dumps(asdict(report), default=str, indent=2, sort_keys=True)),
+        ("biogeographic-interpretation", json.dumps(asdict(interpretation), default=str, indent=2, sort_keys=True)),
         ("discrete-state-render", json.dumps(asdict(render_result), default=str, indent=2, sort_keys=True)),
     ]
     if comparison is not None:
@@ -2171,6 +2296,7 @@ def render_discrete_state_evolution_report(
         "state_ordering": report.state_ordering,
         "ordered_states": report.ordered_states,
         "caveat_count": len(narrative.caveats),
+        "interpretation_sections": ["computed_results", "caveats", "interpretation_guidance"],
         "rendered_tree": str(render_path),
         "sections": [name for name, _ in sections],
     }

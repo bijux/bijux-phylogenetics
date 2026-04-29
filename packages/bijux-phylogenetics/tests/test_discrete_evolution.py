@@ -6,6 +6,7 @@ import pytest
 from bijux_phylogenetics.discrete_evolution import (
     assess_geographic_state_analysis_readiness,
     audit_discrete_state_coding,
+    build_biogeographic_interpretation_report,
     compare_discrete_state_models,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
@@ -264,6 +265,20 @@ def test_write_node_probability_table_and_render_report_outputs_files(tmp_path: 
     assert "discrete-state-evolution" in html_path.read_text(encoding="utf-8")
     assert report_result.report_kind == "discrete-state-evolution"
     assert report_result.machine_manifest["likelihood_method"] == "deterministic-node-probability"
+    assert "biogeographic-interpretation" in report_result.machine_manifest["sections"]
+
+
+def test_build_biogeographic_interpretation_report_separates_results_from_guidance() -> None:
+    report = build_biogeographic_interpretation_report(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="equal-rates",
+        compare_model="all-rates-different",
+    )
+    assert any(row.label == "root_state" for row in report.computed_results)
+    assert report.coding_audit_summary["included_row_count"] > 0
+    assert report.interpretation_guidance
 
 
 def test_write_transition_summary_table_exports_branch_state_changes(tmp_path: Path) -> None:
