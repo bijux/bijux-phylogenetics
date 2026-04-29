@@ -6,7 +6,9 @@ from pathlib import Path
 import re
 
 from bijux_phylogenetics.engines.common import load_engine_manifest
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta import summarize_alignment_readiness
+from bijux_phylogenetics.io.trees import load_tree
 
 _BEST_MODEL_PATTERN = re.compile(
     r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
@@ -40,6 +42,17 @@ class ModelSelectionValidationReport:
     manifest_selected_model: str | None
     report_selected_model: str | None
     artifact_selected_model: str | None
+    valid: bool
+    issues: list[str]
+
+
+@dataclass(slots=True)
+class MLTreeTaxonValidationReport:
+    manifest_path: Path
+    expected_taxa: list[str]
+    observed_taxa: list[str]
+    missing_taxa: list[str]
+    unexpected_taxa: list[str]
     valid: bool
     issues: list[str]
 
@@ -155,6 +168,42 @@ def validate_model_selection_against_engine_outputs(manifest_path: Path) -> Mode
         manifest_selected_model=None if manifest_selected_model is None else str(manifest_selected_model),
         report_selected_model=report_selected_model,
         artifact_selected_model=artifact_selected_model,
+        valid=not issues,
+        issues=issues,
+    )
+
+
+def validate_ml_tree_contains_expected_taxa(manifest_path: Path) -> MLTreeTaxonValidationReport:
+    """Ensure an inferred ML tree contains exactly the taxa present in the input alignment."""
+    manifest = load_engine_manifest(manifest_path)
+    input_paths = [Path(path) for path in manifest["input_paths"]]
+    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    issues: list[str] = []
+    if manifest.get("workflow") != "maximum-likelihood-tree":
+        issues.append("manifest does not describe a maximum-likelihood-tree workflow")
+    if not input_paths:
+        issues.append("manifest does not include an input alignment path")
+        expected_taxa: list[str] = []
+    else:
+        expected_taxa = sorted(record.identifier for record in load_fasta_alignment(input_paths[0]))
+    tree_path = output_paths.get("tree")
+    if tree_path is None or not tree_path.exists():
+        issues.append("manifest tree output is missing")
+        observed_taxa: list[str] = []
+    else:
+        observed_taxa = sorted(load_tree(tree_path).tip_names)
+    missing_taxa = sorted(set(expected_taxa) - set(observed_taxa))
+    unexpected_taxa = sorted(set(observed_taxa) - set(expected_taxa))
+    if missing_taxa:
+        issues.append("inferred tree is missing one or more expected taxa from the alignment")
+    if unexpected_taxa:
+        issues.append("inferred tree contains taxa not present in the input alignment")
+    return MLTreeTaxonValidationReport(
+        manifest_path=manifest_path,
+        expected_taxa=expected_taxa,
+        observed_taxa=observed_taxa,
+        missing_taxa=missing_taxa,
+        unexpected_taxa=unexpected_taxa,
         valid=not issues,
         issues=issues,
     )

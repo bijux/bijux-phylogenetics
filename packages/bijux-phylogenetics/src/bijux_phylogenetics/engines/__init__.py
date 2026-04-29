@@ -3,8 +3,10 @@ from .reports import InferenceWorkflowReportBuildResult, render_inference_workfl
 from .validation import (
     InferenceReadinessAuditReport,
     InferenceReadinessDecision,
+    MLTreeTaxonValidationReport,
     ModelSelectionValidationReport,
     audit_alignment_inference_readiness,
+    validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
 )
 from .workflows import (
@@ -27,9 +29,11 @@ __all__ = [
     "ExternalTreeComparisonReport",
     "InferenceReadinessAuditReport",
     "InferenceReadinessDecision",
+    "MLTreeTaxonValidationReport",
     "ModelSelectionValidationReport",
     "InferenceWorkflowReportBuildResult",
     "audit_alignment_inference_readiness",
+    "validate_ml_tree_contains_expected_taxa",
     "validate_model_selection_against_engine_outputs",
     "compare_fast_and_ml_trees",
     "execute_engine_command",
