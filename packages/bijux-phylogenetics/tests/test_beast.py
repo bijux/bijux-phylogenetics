@@ -10,6 +10,7 @@ from bijux_phylogenetics.bayesian.beast import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
+from bijux_phylogenetics.bayesian.reports import render_calibration_audit_report
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -110,3 +111,22 @@ def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> 
     assert log_report.rows[1].state == 1000
     assert convergence.converged is False
     assert {warning["code"] for warning in convergence.warnings} == {"low-ess", "mean-drift"}
+
+
+def test_render_calibration_audit_report_includes_calibration_and_tip_date_sections(tmp_path: Path) -> None:
+    output_path = tmp_path / "calibration-audit.html"
+
+    report = render_calibration_audit_report(
+        tree_path=fixture("example_tree_named_clades.nwk"),
+        calibration_path=fixture("example_calibrations.tsv"),
+        tip_dates_path=fixture("example_tip_dates.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        out_path=output_path,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.invalid_calibration_count == 0
+    assert "fossil-calibrations" in html
+    assert "impossible-constraints" in html
+    assert "tip-dates" in html
