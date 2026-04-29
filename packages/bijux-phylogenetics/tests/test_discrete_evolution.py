@@ -93,6 +93,8 @@ def test_run_discrete_state_transition_model_returns_transition_matrix_and_event
     assert report.transition_model.state_order == ["island", "north", "south"]
     assert report.transition_summary.branch_count == 6
     assert report.transition_summary.transition_count >= 1
+    assert report.transition_summary.strongly_supported_transition_count >= 0
+    assert len(report.transition_summary.support_rows) == report.transition_summary.branch_count
     assert all(sum(row.target_rates.values()) > 0.99 for row in report.transition_model.transition_matrix)
     assert report.transition_model.uncertainty.rows
 

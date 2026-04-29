@@ -3744,6 +3744,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "taxon_count": report.taxon_count,
                             "observed_state_count": len(report.observed_states),
                             "transition_count": report.transition_summary.transition_count,
+                            "strongly_supported_transition_count": report.transition_summary.strongly_supported_transition_count,
                             "model": report.model,
                             "state_ordering": report.state_ordering,
                         },

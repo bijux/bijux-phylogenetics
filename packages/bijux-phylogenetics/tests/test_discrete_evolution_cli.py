@@ -90,6 +90,7 @@ def test_discrete_evolution_model_and_compare_cli_write_tables(tmp_path: Path, c
     model_payload = json.loads(capsys.readouterr().out)
     assert model_exit == 0
     assert model_payload["metrics"]["model"] == "all-rates-different"
+    assert model_payload["metrics"]["strongly_supported_transition_count"] >= 0
     assert "state_probabilities" in node_table.read_text(encoding="utf-8")
     assert "source_state" in transitions_table.read_text(encoding="utf-8")
 

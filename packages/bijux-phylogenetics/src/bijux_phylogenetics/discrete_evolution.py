@@ -151,6 +151,15 @@ class TransitionEvent:
 
 
 @dataclass(slots=True)
+class TransitionSupportRow:
+    parent_node: str
+    child_node: str
+    inferred_transition: str
+    support: float
+    strongly_supported: bool
+
+
+@dataclass(slots=True)
 class TransitionSummaryReport:
     tree_path: Path
     traits_path: Path
@@ -159,7 +168,10 @@ class TransitionSummaryReport:
     model: str
     branch_count: int
     transition_count: int
+    strongly_supported_transition_count: int
     transition_counts: dict[str, int]
+    strongly_supported_transition_counts: dict[str, int]
+    support_rows: list[TransitionSupportRow]
     events: list[TransitionEvent]
 
 
@@ -701,6 +713,42 @@ def _summarize_dominant_state_bias(state_counts: dict[str, int]) -> DominantStat
     )
 
 
+def _estimate_transition_support_rows(
+    *,
+    estimates: list[NodeStateEstimate],
+    events: list[TransitionEvent],
+    transition_matrix: list[TransitionRateRow],
+) -> list[TransitionSupportRow]:
+    estimate_by_node = {estimate.node: estimate for estimate in estimates}
+    transition_lookup = _row_lookup(transition_matrix)
+    rows: list[TransitionSupportRow] = []
+    for event in events:
+        parent_probabilities = estimate_by_node[event.parent_node].state_probabilities
+        child_probabilities = estimate_by_node[event.child_node].state_probabilities
+        scores = {
+            (parent_state, child_state): (
+                parent_probability
+                * transition_lookup[parent_state][child_state]
+                * child_probabilities.get(child_state, 0.0)
+            )
+            for parent_state, parent_probability in parent_probabilities.items()
+            for child_state in child_probabilities
+        }
+        total_score = sum(scores.values())
+        inferred_key = (event.source_state, event.target_state)
+        support = 0.0 if total_score <= 0.0 else scores.get(inferred_key, 0.0) / total_score
+        rows.append(
+            TransitionSupportRow(
+                parent_node=event.parent_node,
+                child_node=event.child_node,
+                inferred_transition=f"{event.source_state}->{event.target_state}",
+                support=float(format(support, ".15g")),
+                strongly_supported=event.changed and support >= 0.8,
+            )
+        )
+    return rows
+
+
 def validate_discrete_state_coding(
     tree_path: Path,
     traits_path: Path,
@@ -919,8 +967,20 @@ def run_discrete_state_transition_model(
     for event in events:
         key = f"{event.source_state}->{event.target_state}"
         transition_counts[key] = transition_counts.get(key, 0) + 1
+    support_rows = _estimate_transition_support_rows(
+        estimates=estimates,
+        events=events,
+        transition_matrix=matrix,
+    )
     branch_count = len(events)
     transition_count = sum(1 for event in events if event.changed)
+    strongly_supported_transition_count = sum(1 for row in support_rows if row.strongly_supported)
+    strongly_supported_transition_counts: dict[str, int] = {}
+    for row in support_rows:
+        if row.strongly_supported:
+            strongly_supported_transition_counts[row.inferred_transition] = (
+                strongly_supported_transition_counts.get(row.inferred_transition, 0) + 1
+            )
     uncertainty = _estimate_transition_rate_uncertainty(
         model=model,
         state_ordering=state_ordering,
@@ -968,7 +1028,10 @@ def run_discrete_state_transition_model(
         model=model,
         branch_count=branch_count,
         transition_count=transition_count,
+        strongly_supported_transition_count=strongly_supported_transition_count,
         transition_counts=dict(sorted(transition_counts.items())),
+        strongly_supported_transition_counts=dict(sorted(strongly_supported_transition_counts.items())),
+        support_rows=support_rows,
         events=events,
     )
     warnings = list(dataset.warnings)
