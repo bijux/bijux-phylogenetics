@@ -65,6 +65,20 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("tree-set-report",),
     ),
     CommandSpec(
+        name="simulate",
+        domain="simulation",
+        summary="Simulate trees, traits, and alignments under explicit stochastic models.",
+        inputs=("simulation-input",),
+        outputs=("simulation-output",),
+    ),
+    CommandSpec(
+        name="benchmark",
+        domain="scientific-validation",
+        summary="Benchmark validation, comparison, and alignment diagnostics across size scales.",
+        inputs=(),
+        outputs=("benchmark-report",),
+    ),
+    CommandSpec(
         name="inspect",
         domain="tree-io",
         summary="Inspect a tree and report high-level summary metrics.",

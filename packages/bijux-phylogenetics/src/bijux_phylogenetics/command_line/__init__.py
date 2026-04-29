@@ -8,6 +8,11 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics import __version__
+from bijux_phylogenetics.benchmark import (
+    benchmark_alignment_diagnostics,
+    benchmark_tree_comparison,
+    benchmark_tree_validation,
+)
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
@@ -77,6 +82,19 @@ from bijux_phylogenetics.reports.service import (
     render_tree_uncertainty_report,
     render_tree_report,
     write_annotation_report,
+)
+from bijux_phylogenetics.simulation import (
+    simulate_birth_death_trees,
+    simulate_brownian_traits,
+    simulate_coalescent_trees,
+    simulate_discrete_traits,
+    simulate_dna_alignment,
+    simulate_ou_traits,
+    simulate_protein_alignment,
+    write_continuous_trait_table,
+    write_discrete_trait_table,
+    write_simulated_alignment,
+    write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
@@ -276,6 +294,12 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if getattr(args, "out", None) is not None:
             inputs.append(args.out)
         return inputs
+    if args.command == "simulate":
+        if getattr(args, "tree", None) is not None:
+            return [args.tree, args.out]
+        return [args.out]
+    if args.command == "benchmark":
+        return []
     if args.command in {"validate", "inspect"}:
         return [args.tree]
     if args.command == "diagnose":
@@ -637,6 +661,115 @@ def build_parser() -> argparse.ArgumentParser:
     tree_set_report.add_argument("--out", required=True, type=Path)
     tree_set_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(tree_set_report)
+
+    simulate = subparsers.add_parser(get_command_spec("simulate").name, help=get_command_spec("simulate").summary)
+    simulate_subparsers = simulate.add_subparsers(dest="simulate_command", required=True)
+    simulate_birth_death = simulate_subparsers.add_parser(
+        "tree-birth-death",
+        help="Simulate one or more trees under a birth-death process.",
+    )
+    simulate_birth_death.add_argument("--tree-count", type=int, default=1)
+    simulate_birth_death.add_argument("--tip-count", type=int, required=True)
+    simulate_birth_death.add_argument("--birth-rate", type=float, default=1.0)
+    simulate_birth_death.add_argument("--death-rate", type=float, default=0.25)
+    simulate_birth_death.add_argument("--seed", type=int, default=1)
+    simulate_birth_death.add_argument("--out", required=True, type=Path)
+    simulate_birth_death.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    _add_manifest_argument(simulate_birth_death)
+    simulate_coalescent = simulate_subparsers.add_parser(
+        "tree-coalescent",
+        help="Simulate one or more trees under a coalescent model.",
+    )
+    simulate_coalescent.add_argument("--tree-count", type=int, default=1)
+    simulate_coalescent.add_argument("--tip-count", type=int, required=True)
+    simulate_coalescent.add_argument("--population-size", type=float, default=1.0)
+    simulate_coalescent.add_argument("--seed", type=int, default=1)
+    simulate_coalescent.add_argument("--out", required=True, type=Path)
+    simulate_coalescent.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    _add_manifest_argument(simulate_coalescent)
+    simulate_brownian = simulate_subparsers.add_parser(
+        "traits-brownian",
+        help="Simulate a continuous tip trait under Brownian motion.",
+    )
+    simulate_brownian.add_argument("tree", type=Path)
+    simulate_brownian.add_argument("--root-state", type=float, default=0.0)
+    simulate_brownian.add_argument("--sigma", type=float, default=1.0)
+    simulate_brownian.add_argument("--seed", type=int, default=1)
+    simulate_brownian.add_argument("--out", required=True, type=Path)
+    simulate_brownian.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    _add_manifest_argument(simulate_brownian)
+    simulate_ou = simulate_subparsers.add_parser(
+        "traits-ou",
+        help="Simulate a continuous tip trait under an OU process.",
+    )
+    simulate_ou.add_argument("tree", type=Path)
+    simulate_ou.add_argument("--root-state", type=float, default=0.0)
+    simulate_ou.add_argument("--sigma", type=float, default=1.0)
+    simulate_ou.add_argument("--alpha", type=float, default=1.0)
+    simulate_ou.add_argument("--theta", type=float, default=0.0)
+    simulate_ou.add_argument("--seed", type=int, default=1)
+    simulate_ou.add_argument("--out", required=True, type=Path)
+    simulate_ou.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    _add_manifest_argument(simulate_ou)
+    simulate_discrete = simulate_subparsers.add_parser(
+        "traits-discrete",
+        help="Simulate a discrete tip trait under a symmetric jump process.",
+    )
+    simulate_discrete.add_argument("tree", type=Path)
+    simulate_discrete.add_argument("--states", nargs="+", required=True)
+    simulate_discrete.add_argument("--transition-rate", type=float, default=1.0)
+    simulate_discrete.add_argument("--root-state")
+    simulate_discrete.add_argument("--seed", type=int, default=1)
+    simulate_discrete.add_argument("--out", required=True, type=Path)
+    simulate_discrete.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    _add_manifest_argument(simulate_discrete)
+    simulate_dna = simulate_subparsers.add_parser(
+        "alignment-dna",
+        help="Simulate a DNA alignment along a rooted tree.",
+    )
+    simulate_dna.add_argument("tree", type=Path)
+    simulate_dna.add_argument("--sequence-length", type=int, required=True)
+    simulate_dna.add_argument("--substitution-rate", type=float, default=1.0)
+    simulate_dna.add_argument("--seed", type=int, default=1)
+    simulate_dna.add_argument("--out", required=True, type=Path)
+    simulate_dna.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    _add_manifest_argument(simulate_dna)
+    simulate_protein = simulate_subparsers.add_parser(
+        "alignment-protein",
+        help="Simulate a protein alignment along a rooted tree.",
+    )
+    simulate_protein.add_argument("tree", type=Path)
+    simulate_protein.add_argument("--sequence-length", type=int, required=True)
+    simulate_protein.add_argument("--substitution-rate", type=float, default=1.0)
+    simulate_protein.add_argument("--seed", type=int, default=1)
+    simulate_protein.add_argument("--out", required=True, type=Path)
+    simulate_protein.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    _add_manifest_argument(simulate_protein)
+
+    benchmark = subparsers.add_parser(get_command_spec("benchmark").name, help=get_command_spec("benchmark").summary)
+    benchmark_subparsers = benchmark.add_subparsers(dest="benchmark_command", required=True)
+    benchmark_validate = benchmark_subparsers.add_parser(
+        "tree-validation",
+        help="Benchmark tree validation across size classes.",
+    )
+    benchmark_validate.add_argument("--replicates", type=int, default=3)
+    benchmark_validate.add_argument("--json", action="store_true", help="Emit the benchmark report as JSON.")
+    _add_manifest_argument(benchmark_validate)
+    benchmark_compare = benchmark_subparsers.add_parser(
+        "tree-comparison",
+        help="Benchmark tree comparison across increasing taxon counts.",
+    )
+    benchmark_compare.add_argument("--replicates", type=int, default=3)
+    benchmark_compare.add_argument("--json", action="store_true", help="Emit the benchmark report as JSON.")
+    _add_manifest_argument(benchmark_compare)
+    benchmark_alignment = benchmark_subparsers.add_parser(
+        "alignment-diagnostics",
+        help="Benchmark alignment diagnostics across increasing sequence counts.",
+    )
+    benchmark_alignment.add_argument("--replicates", type=int, default=3)
+    benchmark_alignment.add_argument("--sequence-length", type=int, default=128)
+    benchmark_alignment.add_argument("--json", action="store_true", help="Emit the benchmark report as JSON.")
+    _add_manifest_argument(benchmark_alignment)
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -1577,6 +1710,172 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     inputs=[args.tree_set],
                     outputs=outputs,
                     metrics={"tree_count": report.tree_count, "section_count": len(report.machine_manifest["sections"])},
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "simulate":
+            if args.simulate_command == "tree-birth-death":
+                trees, report = simulate_birth_death_trees(
+                    tree_count=args.tree_count,
+                    tip_count=args.tip_count,
+                    birth_rate=args.birth_rate,
+                    death_rate=args.death_rate,
+                    seed=args.seed,
+                )
+                output_path = write_tree_set(args.out, trees)
+                outputs = _finalize_outputs(args, command="simulate", inputs=[], outputs=[output_path])
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "tip_count": report.tip_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "tree-coalescent":
+                trees, report = simulate_coalescent_trees(
+                    tree_count=args.tree_count,
+                    tip_count=args.tip_count,
+                    population_size=args.population_size,
+                    seed=args.seed,
+                )
+                output_path = write_tree_set(args.out, trees)
+                outputs = _finalize_outputs(args, command="simulate", inputs=[], outputs=[output_path])
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "tip_count": report.tip_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "traits-brownian":
+                report = simulate_brownian_traits(
+                    args.tree,
+                    root_state=args.root_state,
+                    sigma=args.sigma,
+                    seed=args.seed,
+                )
+                output_path = write_continuous_trait_table(args.out, report)
+                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={"tip_count": report.tip_count, "trait_count": len(report.traits)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "traits-ou":
+                report = simulate_ou_traits(
+                    args.tree,
+                    root_state=args.root_state,
+                    sigma=args.sigma,
+                    alpha=args.alpha,
+                    theta=args.theta,
+                    seed=args.seed,
+                )
+                output_path = write_continuous_trait_table(args.out, report)
+                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={"tip_count": report.tip_count, "trait_count": len(report.traits)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "traits-discrete":
+                report = simulate_discrete_traits(
+                    args.tree,
+                    states=args.states,
+                    transition_rate=args.transition_rate,
+                    root_state=args.root_state,
+                    seed=args.seed,
+                )
+                output_path = write_discrete_trait_table(args.out, report)
+                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={"tip_count": report.tip_count, "trait_count": len(report.traits)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.simulate_command == "alignment-dna":
+                report = simulate_dna_alignment(
+                    args.tree,
+                    sequence_length=args.sequence_length,
+                    substitution_rate=args.substitution_rate,
+                    seed=args.seed,
+                )
+                output_path = write_simulated_alignment(args.out, report)
+                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={"tip_count": report.tip_count, "sequence_length": report.sequence_length},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            report = simulate_protein_alignment(
+                args.tree,
+                sequence_length=args.sequence_length,
+                substitution_rate=args.substitution_rate,
+                seed=args.seed,
+            )
+            output_path = write_simulated_alignment(args.out, report)
+            outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+            _print_result(
+                build_command_result(
+                    command="simulate",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                    metrics={"tip_count": report.tip_count, "sequence_length": report.sequence_length},
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "benchmark":
+            if args.benchmark_command == "tree-validation":
+                report = benchmark_tree_validation(replicates=args.replicates)
+            elif args.benchmark_command == "tree-comparison":
+                report = benchmark_tree_comparison(replicates=args.replicates)
+            else:
+                report = benchmark_alignment_diagnostics(
+                    replicates=args.replicates,
+                    sequence_length=args.sequence_length,
+                )
+            outputs = _finalize_outputs(args, command="benchmark", inputs=[])
+            _print_result(
+                build_command_result(
+                    command="benchmark",
+                    inputs=[],
+                    outputs=outputs,
+                    metrics={"observation_count": len(report.observations), "replicates": report.replicates},
                     data=report,
                 ),
                 json_output=args.json,

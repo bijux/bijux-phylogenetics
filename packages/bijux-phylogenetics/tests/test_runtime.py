@@ -1691,6 +1691,64 @@ def test_cli_tree_set_report_writes_html(tmp_path: Path, capsys) -> None:
     assert payload["metrics"]["section_count"] == 7
 
 
+def test_cli_simulate_birth_death_writes_tree_set(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "simulated.trees"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-birth-death",
+            "--tree-count",
+            "2",
+            "--tip-count",
+            "4",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 2
+    assert output_path.read_text(encoding="utf-8").count(";\n") == 2
+
+
+def test_cli_simulate_dna_alignment_writes_fasta(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "simulated.fasta"
+    exit_code = main(
+        [
+            "simulate",
+            "alignment-dna",
+            str(fixture("example_tree.nwk")),
+            "--sequence-length",
+            "8",
+            "--substitution-rate",
+            "1.2",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["sequence_length"] == 8
+    assert ">A\nACTAACGA\n" in output_path.read_text(encoding="utf-8")
+
+
+def test_cli_benchmark_tree_validation_reports_observations(capsys) -> None:
+    exit_code = main(["benchmark", "tree-validation", "--replicates", "1", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["observation_count"] == 3
+    assert payload["data"]["replicates"] == 1
+
+
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
     exit_code = main(["alignment", "coding", str(fixture("example_alignment_coding.fasta")), "--json"])
     captured = capsys.readouterr()
@@ -3388,6 +3446,8 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "alignment",
         "distance",
         "tree-set",
+        "simulate",
+        "benchmark",
         "inspect",
         "validate",
         "normalize",
