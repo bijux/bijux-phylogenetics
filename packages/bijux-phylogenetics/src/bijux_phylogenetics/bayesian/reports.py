@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+import tempfile
 
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
@@ -18,6 +19,10 @@ from bijux_phylogenetics.bayesian.mrbayes import (
     compute_mrbayes_effective_sample_sizes,
     parse_mrbayes_parameter_traces,
     summarize_mrbayes_posterior_trees,
+)
+from bijux_phylogenetics.bayesian.uncertainty import (
+    write_bayesian_methods_summary_text,
+    write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.tree_set import compute_clade_frequency_table
@@ -286,11 +291,38 @@ def render_bayesian_diagnostics_report(
             taxon_column=taxon_column,
             date_column=date_column,
         )
+    supplementary_table_path = Path(tempfile.mkstemp(prefix="bijux-bayesian-diagnostics-", suffix=".tsv")[1])
+    methods_text_path = Path(tempfile.mkstemp(prefix="bijux-bayesian-methods-", suffix=".md")[1])
+    supplementary_table = write_supplementary_bayesian_diagnostics_table(
+        supplementary_table_path,
+        posterior_tree_path=posterior_tree_path,
+        primary_log_path=primary_log_path,
+        additional_log_paths=additional_log_paths,
+        burnin_fractions=burnin_fractions,
+        required_columns=required_columns,
+        ess_threshold=ess_threshold,
+        mean_shift_threshold=mean_shift_threshold,
+        cross_chain_mean_shift_threshold=cross_chain_mean_shift_threshold,
+    )
+    methods_summary = write_bayesian_methods_summary_text(
+        methods_text_path,
+        posterior_tree_path=posterior_tree_path,
+        primary_log_path=primary_log_path,
+        additional_log_paths=additional_log_paths,
+        burnin_fractions=burnin_fractions,
+        ess_threshold=ess_threshold,
+        mean_shift_threshold=mean_shift_threshold,
+        cross_chain_mean_shift_threshold=cross_chain_mean_shift_threshold,
+        calibration_path=calibration_path,
+        tip_dates_path=tip_dates_path,
+    )
     title = "Bijux Bayesian Diagnostics Report"
     sections = [
         ("posterior-log-validation", json.dumps(asdict(validation), default=str, indent=2, sort_keys=True)),
         ("burnin-sensitivity", json.dumps(asdict(burnin), default=str, indent=2, sort_keys=True)),
         ("chain-mixing", json.dumps(asdict(mixing), default=str, indent=2, sort_keys=True)),
+        ("supplementary-diagnostics-table", supplementary_table.output_path.read_text(encoding="utf-8")),
+        ("methods-summary-text", methods_summary.text),
     ]
     warning_count = len(validation.issues) + len(burnin.warnings) + len(mixing.issues)
     if calibration_report is not None:
@@ -312,6 +344,8 @@ def render_bayesian_diagnostics_report(
         "sections": [name for name, _ in sections],
     }
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    supplementary_table_path.unlink(missing_ok=True)
+    methods_text_path.unlink(missing_ok=True)
     return BayesianDiagnosticsReportBuildResult(
         output_path=out_path,
         report_kind="bayesian-diagnostics",

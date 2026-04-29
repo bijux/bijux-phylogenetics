@@ -279,5 +279,7 @@ def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calib
     assert "posterior-log-validation" in html
     assert "burnin-sensitivity" in html
     assert "chain-mixing" in html
+    assert "supplementary-diagnostics-table" in html
+    assert "methods-summary-text" in html
     assert "fossil-calibrations" in html
     assert "tip-dates" in html
