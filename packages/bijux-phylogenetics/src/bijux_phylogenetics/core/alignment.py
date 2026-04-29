@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 AlignmentAlphabet = str
+AlignmentState = str
 
 
 @dataclass(frozen=True, slots=True)
@@ -16,6 +17,19 @@ class AlignmentRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class AlignmentSequenceKindReport:
+    """Classification of whether a FASTA input already behaves like an alignment."""
+
+    path: Path
+    sequence_count: int
+    min_sequence_length: int
+    max_sequence_length: int
+    has_gap_characters: bool
+    state: AlignmentState
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
 class SequenceMissingness:
     """Missing-data fraction for one alignment sequence."""
 
@@ -24,11 +38,31 @@ class SequenceMissingness:
 
 
 @dataclass(frozen=True, slots=True)
+class SequenceUncertaintyProfile:
+    """Per-sequence split of gaps, explicit missing data, and ambiguity codes."""
+
+    identifier: str
+    gap_fraction: float
+    missing_fraction: float
+    ambiguity_fraction: float
+
+
+@dataclass(frozen=True, slots=True)
 class SiteMissingness:
     """Missing-data fraction for one alignment column."""
 
     position: int
     missing_fraction: float
+
+
+@dataclass(frozen=True, slots=True)
+class SiteUncertaintyProfile:
+    """Per-site split of gaps, explicit missing data, and ambiguity codes."""
+
+    position: int
+    gap_fraction: float
+    missing_fraction: float
+    ambiguity_fraction: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +88,18 @@ class SequenceCompositionOutlier:
 
     identifier: str
     deviation: float
+    robust_z_score: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class SequenceLengthOutlier:
+    """One raw sequence whose length is unusually short or long for the dataset."""
+
+    identifier: str
+    raw_length: int
+    median_length: float
+    robust_z_score: float | None
+    note: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,6 +179,15 @@ class FrameshiftLikeSequence:
 
 
 @dataclass(frozen=True, slots=True)
+class PartialCodonSequence:
+    """Sequence ending with an incomplete coding triplet after removing gaps and missing data."""
+
+    identifier: str
+    comparable_length: int
+    trailing_bases: int
+
+
+@dataclass(frozen=True, slots=True)
 class StopCodonObservation:
     """Observed stop codon within an aligned coding sequence."""
 
@@ -150,7 +205,9 @@ class CodingAlignmentDiagnostics:
     path: Path
     sequence_count: int
     alignment_length: int
+    alignment_length_multiple_of_three: bool
     frameshift_like_sequences: list[FrameshiftLikeSequence]
+    partial_codon_sequences: list[PartialCodonSequence]
     stop_codons: list[StopCodonObservation]
 
 
@@ -175,13 +232,64 @@ class AlignmentQualityReport:
     alignment_length: int
     missing_data_fraction: float
     gap_fraction: float
+    ambiguity_fraction: float
     variable_site_count: int
     parsimony_informative_site_count: int
     inferred_alphabet: AlignmentAlphabet
     invalid_characters: list[InvalidAlignmentCharacter]
     composition_outliers: list[SequenceCompositionOutlier]
+    sequence_length_outliers: list[SequenceLengthOutlier]
     duplicate_sequence_groups: list[DuplicateSequenceGroup]
     near_duplicate_pairs: list[NearDuplicateSequencePair]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentWindowSummary:
+    """Sliding-window summary across an aligned FASTA dataset."""
+
+    start: int
+    end: int
+    site_count: int
+    gap_fraction: float
+    missing_fraction: float
+    ambiguity_fraction: float
+    variable_fraction: float
+    disagreement_fraction: float
+    comparable_fraction: float
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentSuspiciousRegion:
+    """One alignment window flagged as suspicious for over- or under-alignment."""
+
+    start: int
+    end: int
+    kind: str
+    score: float
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentMethodReadiness:
+    """Readiness decision for one downstream analysis family."""
+
+    analysis: str
+    ready: bool
+    blockers: list[str]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class AlignmentReadinessReport:
+    """Integrated readiness report for multiple downstream analysis families."""
+
+    path: Path
+    sequence_kind: AlignmentSequenceKindReport
+    inferred_alphabet: AlignmentAlphabet
+    sequence_count: int
+    alignment_length: int | None
+    methods: list[AlignmentMethodReadiness]
     warnings: list[str]
 
 
@@ -197,8 +305,11 @@ class AlignmentSummary:
     ids: list[str]
     missing_data_fraction: float
     gap_fraction: float
+    ambiguity_fraction: float
     per_sequence_missingness: list[SequenceMissingness]
+    per_sequence_uncertainty: list[SequenceUncertaintyProfile]
     per_site_missingness: list[SiteMissingness]
+    per_site_uncertainty: list[SiteUncertaintyProfile]
     all_gap_columns: list[int]
     all_missing_columns: list[int]
     constant_site_count: int
