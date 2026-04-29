@@ -4,6 +4,7 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.bayesian.diagnostics import TraceConvergenceReport, summarize_trace_convergence
 from bijux_phylogenetics.comparative.common import descendant_taxa
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
@@ -96,6 +97,31 @@ class BeastPreparationReport:
     log_every: int
     calibration_count: int
     tip_date_count: int
+
+
+@dataclass(slots=True)
+class BeastLogRow:
+    state: int
+    values: dict[str, float]
+
+
+@dataclass(slots=True)
+class BeastLogReport:
+    path: Path
+    row_count: int
+    columns: list[str]
+    rows: list[BeastLogRow]
+
+
+@dataclass(slots=True)
+class BeastConvergenceReport:
+    path: Path
+    sample_count: int
+    converged: bool
+    ess_threshold: float
+    mean_shift_threshold: float
+    warnings: list[dict[str, object]]
+    parameter_summaries: list[dict[str, object]]
 
 
 def _read_delimited_rows(path: Path) -> list[dict[str, str]]:
@@ -466,4 +492,80 @@ def prepare_beast_time_tree_analysis(
         log_every=log_every,
         calibration_count=0 if calibration_report is None else calibration_report.calibration_count,
         tip_date_count=0 if tip_date_report is None else tip_date_report.valid_tip_count,
+    )
+
+
+def parse_beast_log(path: Path) -> BeastLogReport:
+    """Parse a BEAST-style log table into deterministic numeric rows."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        filtered_lines = [line for line in handle if line.strip() and not line.lstrip().startswith("#")]
+    reader = csv.DictReader(filtered_lines, delimiter="\t")
+    if reader.fieldnames is None:
+        raise ValueError(f"BEAST log contains no header: {path}")
+    state_field = "state" if "state" in reader.fieldnames else "State"
+    if state_field not in reader.fieldnames:
+        raise ValueError(f"BEAST log lacks a state column: {path}")
+    columns = [field for field in reader.fieldnames if field and field != state_field]
+    rows: list[BeastLogRow] = []
+    for row in reader:
+        values = {
+            column: float(row[column])
+            for column in columns
+            if row.get(column) not in {None, ""}
+        }
+        rows.append(BeastLogRow(state=int(float(row[state_field])), values=values))
+    if not rows:
+        raise ValueError(f"BEAST log contains no sampled rows: {path}")
+    return BeastLogReport(path=path, row_count=len(rows), columns=columns, rows=rows)
+
+
+def assess_beast_convergence(
+    path: Path,
+    *,
+    ess_threshold: float = 200.0,
+    mean_shift_threshold: float = 0.5,
+) -> BeastConvergenceReport:
+    """Flag low-ESS or unstable BEAST trace parameters."""
+    report = parse_beast_log(path)
+    convergence = summarize_trace_convergence(
+        path=path,
+        rows=[row.values for row in report.rows],
+        columns=report.columns,
+        ess_threshold=ess_threshold,
+        mean_shift_threshold=mean_shift_threshold,
+    )
+    return _build_beast_convergence_report(convergence)
+
+
+def _build_beast_convergence_report(convergence: TraceConvergenceReport) -> BeastConvergenceReport:
+    return BeastConvergenceReport(
+        path=convergence.path,
+        sample_count=convergence.sample_count,
+        converged=convergence.converged,
+        ess_threshold=convergence.ess_threshold,
+        mean_shift_threshold=convergence.mean_shift_threshold,
+        warnings=[
+            {
+                "parameter": warning.parameter,
+                "code": warning.code,
+                "message": warning.message,
+                "observed_value": warning.observed_value,
+                "threshold": warning.threshold,
+            }
+            for warning in convergence.warnings
+        ],
+        parameter_summaries=[
+            {
+                "parameter": summary.parameter,
+                "sample_count": summary.sample_count,
+                "effective_sample_size": summary.effective_sample_size,
+                "mean": summary.mean,
+                "minimum": summary.minimum,
+                "maximum": summary.maximum,
+                "first_half_mean": summary.first_half_mean,
+                "second_half_mean": summary.second_half_mean,
+                "standardized_mean_shift": summary.standardized_mean_shift,
+            }
+            for summary in convergence.series
+        ],
     )

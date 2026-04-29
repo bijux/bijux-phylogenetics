@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.bayesian.beast import (
+    assess_beast_convergence,
     detect_impossible_calibration_constraints,
+    parse_beast_log,
     prepare_beast_time_tree_analysis,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
@@ -93,3 +95,18 @@ def test_prepare_beast_time_tree_analysis_writes_clock_prior_calibrations_and_ti
     assert '<treePrior name="birth-death" />' in text
     assert '<calibration id="cal-mammals"' in text
     assert '<date taxon="A" value="2012.5" />' in text
+
+
+def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> None:
+    log_report = parse_beast_log(fixture("example_beast.log"))
+    convergence = assess_beast_convergence(
+        fixture("example_beast.log"),
+        ess_threshold=5.0,
+        mean_shift_threshold=0.1,
+    )
+
+    assert log_report.row_count == 4
+    assert log_report.columns == ["posterior", "likelihood", "clockRate", "treeHeight"]
+    assert log_report.rows[1].state == 1000
+    assert convergence.converged is False
+    assert {warning["code"] for warning in convergence.warnings} == {"low-ess", "mean-drift"}

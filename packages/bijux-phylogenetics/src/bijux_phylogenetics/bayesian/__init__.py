@@ -1,4 +1,7 @@
 from .beast import (
+    BeastConvergenceReport,
+    BeastLogReport,
+    BeastLogRow,
     BeastPreparationReport,
     CalibrationValidationIssue,
     FossilCalibrationValidationReport,
@@ -7,7 +10,9 @@ from .beast import (
     TipDatingValidationReport,
     ValidatedCalibration,
     ValidatedTipDate,
+    assess_beast_convergence,
     detect_impossible_calibration_constraints,
+    parse_beast_log,
     prepare_beast_time_tree_analysis,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
@@ -31,6 +36,9 @@ from .reports import BayesianPosteriorReportBuildResult, render_bayesian_posteri
 
 __all__ = [
     "BayesianPosteriorReportBuildResult",
+    "BeastConvergenceReport",
+    "BeastLogReport",
+    "BeastLogRow",
     "BeastPreparationReport",
     "CalibrationValidationIssue",
     "FossilCalibrationValidationReport",
@@ -44,7 +52,9 @@ __all__ = [
     "MrBayesTraceRow",
     "assess_mrbayes_convergence",
     "compute_mrbayes_effective_sample_sizes",
+    "assess_beast_convergence",
     "detect_impossible_calibration_constraints",
+    "parse_beast_log",
     "parse_mrbayes_parameter_traces",
     "prepare_beast_time_tree_analysis",
     "prepare_mrbayes_analysis",
