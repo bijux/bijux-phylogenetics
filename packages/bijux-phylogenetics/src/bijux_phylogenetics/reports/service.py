@@ -282,6 +282,15 @@ def render_dataset_report(
         sections.append(_section("dataset-readiness", asdict(dataset_readiness)))
     if dataset_audit is not None:
         sections.append(_section("dataset-audit", asdict(dataset_audit)))
+        sections.append(_section("dataset-findings", [asdict(row) for row in dataset_audit.findings]))
+        sections.append(_section("dataset-analysis-decisions", [asdict(row) for row in dataset_audit.analysis_decisions]))
+        sections.append(_section("dataset-readiness-levels", [asdict(row) for row in dataset_audit.readiness_levels]))
+        sections.append(_section("dataset-crosswalk", asdict(dataset_audit.crosswalk)))
+        sections.append(_section("dataset-completeness", asdict(dataset_audit.completeness_matrix)))
+        sections.append(_section("dataset-exclusions", asdict(dataset_audit.exclusion_table)))
+        sections.append(_section("dataset-ordering", asdict(dataset_audit.ordering_audit)))
+        sections.append(_section("dataset-pruning", [asdict(row) for row in dataset_audit.pruning_steps]))
+        sections.append(_section("dataset-group-imbalance", [asdict(row) for row in dataset_audit.group_imbalance_warnings]))
     input_paths = [tree_path, metadata_path]
     if traits_path is not None:
         input_paths.append(traits_path)
@@ -532,6 +541,16 @@ def render_phylogenetics_report(
         if traits_path and metadata_path
         else None
     )
+    dataset_audit = (
+        audit_dataset_inputs(
+            tree_path,
+            metadata_path,
+            traits_path,
+            alignment_path=alignment_path,
+        )
+        if traits_path and metadata_path
+        else None
+    )
 
     sections = [
         _section("tree-validation", asdict(validation)),
@@ -556,6 +575,10 @@ def render_phylogenetics_report(
         sections.append(_section("metadata-linkage", asdict(metadata_linkage)))
     if dataset_readiness is not None:
         sections.append(_section("dataset-readiness", asdict(dataset_readiness)))
+    if dataset_audit is not None:
+        sections.append(_section("dataset-audit", asdict(dataset_audit)))
+        sections.append(_section("dataset-crosswalk", asdict(dataset_audit.crosswalk)))
+        sections.append(_section("dataset-completeness", asdict(dataset_audit.completeness_matrix)))
 
     title = "Bijux Phylogenetics Report"
     input_paths = [tree_path]
@@ -590,6 +613,6 @@ def render_phylogenetics_report(
         alignment_identity_matrix=alignment_identity_matrix,
         alignment_linkage=None,
         dataset_readiness=dataset_readiness,
-        dataset_audit=None,
+        dataset_audit=dataset_audit,
         machine_manifest=machine_manifest,
     )
