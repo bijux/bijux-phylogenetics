@@ -116,7 +116,10 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
+    simulate_brownian_traits,
     simulate_coalescent_trees,
+    simulate_ou_traits,
+    write_continuous_trait_table,
     write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
@@ -204,6 +207,47 @@ def test_simulate_coalescent_trees_returns_requested_sample_size() -> None:
         "((Taxon1:0.41605101339611,Taxon4:0.41605101339611):0.455215777552457,"
         "(Taxon2:0.065219140705801,Taxon3:0.065219140705801):0.806047650242766);"
     )
+
+
+def test_simulate_brownian_traits_generates_one_value_per_tip(tmp_path: Path) -> None:
+    report = simulate_brownian_traits(fixture("example_tree.nwk"), seed=7, root_state=1.0, sigma=0.5)
+    assert report.model == "brownian-motion"
+    assert report.tip_count == 4
+    assert [(row.taxon, row.value) for row in report.traits] == [
+        ("A", 1.023647850429746),
+        ("B", 0.907034485545723),
+        ("C", 0.742224918944575),
+        ("D", 0.90248754291519),
+    ]
+    output_path = tmp_path / "brownian.tsv"
+    write_continuous_trait_table(output_path, report)
+    assert output_path.read_text(encoding="utf-8") == (
+        "taxon\tvalue\n"
+        "A\t1.02364785042975\n"
+        "B\t0.907034485545723\n"
+        "C\t0.742224918944575\n"
+        "D\t0.90248754291519\n"
+    )
+
+
+def test_simulate_ou_traits_uses_declared_parameters() -> None:
+    report = simulate_ou_traits(
+        fixture("example_tree.nwk"),
+        seed=7,
+        root_state=1.0,
+        sigma=0.5,
+        alpha=1.25,
+        theta=0.25,
+    )
+    assert report.model == "ornstein-uhlenbeck"
+    assert report.alpha == 1.25
+    assert report.theta == 0.25
+    assert [(row.taxon, row.value) for row in report.traits] == [
+        ("A", 0.796738462243473),
+        ("B", 0.687047684603513),
+        ("C", 0.544493844861481),
+        ("D", 0.68666212038887),
+    ]
 
 
 def test_load_tree_set_reports_tree_count_and_topology_diversity() -> None:

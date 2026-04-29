@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
+from math import exp, sqrt
 from pathlib import Path
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
+from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +24,25 @@ class TreeSimulationReport:
     tip_count: int
     seed: int
     records: list[SimulatedTreeRecord]
+
+
+@dataclass(frozen=True, slots=True)
+class SimulatedContinuousTrait:
+    taxon: str
+    value: float
+
+
+@dataclass(slots=True)
+class ContinuousTraitSimulationReport:
+    model: str
+    tree_path: Path
+    tip_count: int
+    seed: int
+    root_state: float
+    sigma: float
+    alpha: float | None
+    theta: float | None
+    traits: list[SimulatedContinuousTrait]
 
 
 @dataclass(slots=True)
@@ -168,6 +190,27 @@ def _choose_two_indices(rng: random.Random, count: int) -> tuple[int, int]:
     return tuple(sorted((left, right)))
 
 
+def _iter_tip_trait_values(
+    tree: PhyloTree,
+    *,
+    root_state: float,
+    propagate,
+) -> dict[str, float]:
+    values: dict[str, float] = {}
+
+    def visit(node: TreeNode, state: float) -> None:
+        if node.is_leaf():
+            if node.name is not None:
+                values[node.name] = round(state, 15)
+            return
+        for child in node.children:
+            branch_length = max(child.branch_length or 0.0, 0.0)
+            visit(child, propagate(state, branch_length))
+
+    visit(tree.root, root_state)
+    return values
+
+
 def _simulate_coalescent_tree_once(
     *,
     tip_count: int,
@@ -235,6 +278,82 @@ def simulate_coalescent_trees(
     )
 
 
+def simulate_brownian_traits(
+    tree_path: Path,
+    *,
+    root_state: float = 0.0,
+    sigma: float = 1.0,
+    seed: int = 1,
+) -> ContinuousTraitSimulationReport:
+    """Simulate one continuous tip trait under Brownian motion."""
+    if sigma < 0.0:
+        raise ValueError(f"sigma must be nonnegative, got {sigma}")
+    tree = load_tree(tree_path)
+    rng = random.Random(seed)
+    values = _iter_tip_trait_values(
+        tree,
+        root_state=root_state,
+        propagate=lambda state, branch_length: state + rng.gauss(0.0, sigma * sqrt(branch_length)),
+    )
+    return ContinuousTraitSimulationReport(
+        model="brownian-motion",
+        tree_path=tree_path,
+        tip_count=tree.tip_count,
+        seed=seed,
+        root_state=root_state,
+        sigma=sigma,
+        alpha=None,
+        theta=None,
+        traits=[
+            SimulatedContinuousTrait(taxon=taxon, value=value)
+            for taxon, value in sorted(values.items())
+        ],
+    )
+
+
+def simulate_ou_traits(
+    tree_path: Path,
+    *,
+    root_state: float = 0.0,
+    sigma: float = 1.0,
+    alpha: float = 1.0,
+    theta: float = 0.0,
+    seed: int = 1,
+) -> ContinuousTraitSimulationReport:
+    """Simulate one continuous tip trait under an OU process."""
+    if sigma < 0.0:
+        raise ValueError(f"sigma must be nonnegative, got {sigma}")
+    if alpha < 0.0:
+        raise ValueError(f"alpha must be nonnegative, got {alpha}")
+    tree = load_tree(tree_path)
+    rng = random.Random(seed)
+
+    def propagate(state: float, branch_length: float) -> float:
+        if branch_length == 0.0:
+            return state
+        if alpha == 0.0:
+            return state + rng.gauss(0.0, sigma * sqrt(branch_length))
+        mean = theta + (state - theta) * exp(-alpha * branch_length)
+        variance = (sigma ** 2) * (1.0 - exp(-2.0 * alpha * branch_length)) / (2.0 * alpha)
+        return mean + rng.gauss(0.0, sqrt(max(variance, 0.0)))
+
+    values = _iter_tip_trait_values(tree, root_state=root_state, propagate=propagate)
+    return ContinuousTraitSimulationReport(
+        model="ornstein-uhlenbeck",
+        tree_path=tree_path,
+        tip_count=tree.tip_count,
+        seed=seed,
+        root_state=root_state,
+        sigma=sigma,
+        alpha=alpha,
+        theta=theta,
+        traits=[
+            SimulatedContinuousTrait(taxon=taxon, value=value)
+            for taxon, value in sorted(values.items())
+        ],
+    )
+
+
 def write_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
     """Write a list of simulated trees as one canonical Newick tree per line."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -245,3 +364,15 @@ def write_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
 def write_simulated_tree(path: Path, tree: PhyloTree) -> Path:
     """Write one simulated tree as canonical Newick."""
     return write_newick(path, tree)
+
+
+def write_continuous_trait_table(path: Path, report: ContinuousTraitSimulationReport) -> Path:
+    """Write simulated continuous trait values as a taxon-keyed table."""
+    return write_taxon_rows(
+        path,
+        columns=["taxon", "value"],
+        rows=[
+            {"taxon": row.taxon, "value": format(row.value, ".15g")}
+            for row in report.traits
+        ],
+    )
