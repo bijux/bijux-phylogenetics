@@ -12,8 +12,9 @@ last_reviewed: 2026-04-29
 `bijux-phylogenetics` provides a governed Python surface for tree validation,
 inspection, comparison, metadata linkage, alignment trimming, coding-sequence
 translation, explicit rooting transforms, comparative trait analysis,
-ancestral-state reconstruction, deterministic tree rendering, publication
-figure packaging, evidence bundles, and HTML report generation.
+ancestral-state reconstruction, external engine orchestration, deterministic
+tree rendering, publication figure packaging, evidence bundles, and HTML
+report generation.
 
 The repository intentionally does not reimplement inference engines. Its
 current product surface is the reproducible orchestration and evidence layer
@@ -39,6 +40,13 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json`
 - `bijux-phylogenetics ancestral compare tree.nwk traits.tsv --trait height_cm --left-model brownian --right-model ou --json`
 - `bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html`
+- `bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json`
+- `bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json`
+- `bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json`
+- `bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json`
+- `bijux-phylogenetics adapter consensus artifacts/bootstrap/mammals.ufboot --out-dir artifacts/consensus --prefix mammals --json`
+- `bijux-phylogenetics adapter infer-fast alignment.fasta --out artifacts/fasttree.nwk --json`
+- `bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --json`
 - `bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
@@ -75,3 +83,10 @@ around trees, alignments, and trait tables.
 - discrete ancestral-state reconstruction supports Fitch parsimony with explicit ambiguous state sets and node-level probability summaries
 - uncertainty is surfaced directly through continuous confidence intervals and discrete state-probability tables instead of hidden heuristics
 - ancestral trees can be rendered with internal-node labels, exported as deterministic tables, compared across supported continuous models, and bundled into standalone HTML reports
+
+## External Engine Highlights
+
+- MAFFT-, trimAl-, IQ-TREE-, and FastTree-style workflows are exposed through one governed adapter surface instead of ad hoc shell snippets
+- every engine workflow records the resolved executable, exact command vector, version output, stdout, stderr, and extracted warning lines in a deterministic manifest
+- model selection emits a stable selected-model artifact, ML inference emits validated Newick trees, and bootstrap workflows retain both support trees and bootstrap tree sets
+- fast approximate and ML trees can be compared through the same topology, clade, support, and branch-length report surface already used for native tree comparison
