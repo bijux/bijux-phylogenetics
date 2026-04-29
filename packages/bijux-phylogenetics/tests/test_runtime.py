@@ -110,6 +110,9 @@ from bijux_phylogenetics.diversification import (
     write_trait_dependent_diversification_table,
 )
 from bijux_phylogenetics.engines import (
+    audit_alignment_inference_readiness,
+    classify_inference_workflow_failure,
+    compare_inferred_tree_to_taxon_metadata,
     compare_fast_and_ml_trees,
     render_inference_workflow_report,
     run_alignment_trimming,
@@ -119,6 +122,10 @@ from bijux_phylogenetics.engines import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    validate_bootstrap_tree_set,
+    validate_inference_engine_outputs,
+    validate_ml_tree_contains_expected_taxa,
+    validate_model_selection_against_engine_outputs,
 )
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
@@ -378,12 +385,19 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
     assert bijux_phylogenetics.run_multiple_sequence_alignment is run_multiple_sequence_alignment
     assert bijux_phylogenetics.run_alignment_trimming is run_alignment_trimming
+    assert bijux_phylogenetics.audit_alignment_inference_readiness is audit_alignment_inference_readiness
     assert bijux_phylogenetics.run_model_selection is run_model_selection
+    assert bijux_phylogenetics.validate_model_selection_against_engine_outputs is validate_model_selection_against_engine_outputs
     assert bijux_phylogenetics.run_maximum_likelihood_tree_inference is run_maximum_likelihood_tree_inference
+    assert bijux_phylogenetics.validate_ml_tree_contains_expected_taxa is validate_ml_tree_contains_expected_taxa
     assert bijux_phylogenetics.run_bootstrap_support_estimation is run_bootstrap_support_estimation
+    assert bijux_phylogenetics.validate_bootstrap_tree_set is validate_bootstrap_tree_set
     assert bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
     assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
     assert bijux_phylogenetics.compare_fast_and_ml_trees is compare_fast_and_ml_trees
+    assert bijux_phylogenetics.compare_inferred_tree_to_taxon_metadata is compare_inferred_tree_to_taxon_metadata
+    assert bijux_phylogenetics.classify_inference_workflow_failure is classify_inference_workflow_failure
+    assert bijux_phylogenetics.validate_inference_engine_outputs is validate_inference_engine_outputs
     assert bijux_phylogenetics.render_inference_workflow_report is render_inference_workflow_report
     assert bijux_phylogenetics.prepare_mrbayes_analysis is prepare_mrbayes_analysis
     assert bijux_phylogenetics.run_mrbayes_posterior_inference is run_mrbayes_posterior_inference
