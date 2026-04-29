@@ -873,6 +873,9 @@ def test_render_tree_set_comparison_report_embeds_tree_set_differences(tmp_path:
     assert result.report_kind == "tree-set-comparison"
     assert result.shared_rooted_topology_count == 1
     assert "left-topology-clusters" in result.machine_manifest["sections"]
+    assert "topological-diversity-comparison" in result.machine_manifest["sections"]
+    assert "left-topology-multimodality" in result.machine_manifest["sections"]
+    assert "right-uncertainty-aware-conclusions" in result.machine_manifest["sections"]
 
 
 def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:

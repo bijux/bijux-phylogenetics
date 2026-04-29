@@ -556,20 +556,34 @@ def render_tree_set_comparison_report(
     right_summary = load_tree_set(right_tree_set_path)
     left_clusters = cluster_trees_by_topology(left_tree_set_path)
     right_clusters = cluster_trees_by_topology(right_tree_set_path)
+    diversity = compare_posterior_topological_diversity(left_tree_set_path, right_tree_set_path)
+    left_multimodality = detect_posterior_topology_multimodality(left_tree_set_path)
+    right_multimodality = detect_posterior_topology_multimodality(right_tree_set_path)
     left_unstable_taxa = detect_unstable_taxa(left_tree_set_path)
     right_unstable_taxa = detect_unstable_taxa(right_tree_set_path)
     left_unstable_clades = detect_unstable_clades(left_tree_set_path)
     right_unstable_clades = detect_unstable_clades(right_tree_set_path)
+    left_conflicts = summarize_clade_credibility_conflicts(left_tree_set_path)
+    right_conflicts = summarize_clade_credibility_conflicts(right_tree_set_path)
+    left_conclusions = summarize_uncertainty_aware_conclusions(left_tree_set_path)
+    right_conclusions = summarize_uncertainty_aware_conclusions(right_tree_set_path)
     sections = [
         _section("tree-set-comparison", asdict(comparison)),
+        _section("topological-diversity-comparison", asdict(diversity)),
         _section("left-tree-set-summary", asdict(left_summary)),
         _section("right-tree-set-summary", asdict(right_summary)),
         _section("left-topology-clusters", asdict(left_clusters)),
         _section("right-topology-clusters", asdict(right_clusters)),
+        _section("left-topology-multimodality", asdict(left_multimodality)),
+        _section("right-topology-multimodality", asdict(right_multimodality)),
         _section("left-unstable-taxa", asdict(left_unstable_taxa)),
         _section("right-unstable-taxa", asdict(right_unstable_taxa)),
         _section("left-unstable-clades", asdict(left_unstable_clades)),
         _section("right-unstable-clades", asdict(right_unstable_clades)),
+        _section("left-clade-credibility-conflicts", asdict(left_conflicts)),
+        _section("right-clade-credibility-conflicts", asdict(right_conflicts)),
+        _section("left-uncertainty-aware-conclusions", asdict(left_conclusions)),
+        _section("right-uncertainty-aware-conclusions", asdict(right_conclusions)),
     ]
     title = "Bijux Tree-Set Comparison Report"
     machine_manifest = {
