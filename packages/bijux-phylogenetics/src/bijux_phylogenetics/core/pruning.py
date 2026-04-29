@@ -24,6 +24,7 @@ class TreePruningReport:
     removed_taxa: list[str]
     removed_taxa_with_reasons: list["RemovedTaxonReason"]
     pruning_audit: "PruningArtifactAudit"
+    information_loss: "PruningInformationLoss"
     summary: TreeTransformationSummary
 
 
@@ -39,6 +40,7 @@ class RequestedTaxaPruningReport:
     absent_requested_taxa: list[str]
     removed_taxa_with_reasons: list["RemovedTaxonReason"]
     pruning_audit: "PruningArtifactAudit"
+    information_loss: "PruningInformationLoss"
     summary: TreeTransformationSummary
 
 
@@ -76,6 +78,20 @@ class PruningArtifactAudit:
     branch_length_delta: float
 
 
+@dataclass(slots=True)
+class PruningInformationLoss:
+    """Quantified information loss after a pruning transform."""
+
+    lost_taxa_count: int
+    lost_taxa_fraction: float
+    lost_clade_count: int
+    lost_clade_fraction: float
+    lost_branch_length: float
+    lost_branch_length_fraction: float
+    lost_metadata_count: int | None
+    lost_metadata_fraction: float | None
+
+
 def _merge_branch_lengths(left: float | None, right: float | None) -> float | None:
     if left is None:
         return right
@@ -105,6 +121,23 @@ def _singleton_internal_nodes(tree: PhyloTree) -> list[str]:
     )
 
 
+def _informative_clades(tree: PhyloTree) -> set[frozenset[str]]:
+    clades: set[frozenset[str]] = set()
+
+    def visit(node: TreeNode) -> set[str]:
+        if node.is_leaf():
+            return {node.name} if node.name is not None else set()
+        taxa: set[str] = set()
+        for child in node.children:
+            taxa.update(visit(child))
+        if node is not tree.root and len(taxa) > 1:
+            clades.add(frozenset(taxa))
+        return taxa
+
+    visit(tree.root)
+    return clades
+
+
 def _pruning_artifact_audit(original: PhyloTree, pruned: PhyloTree) -> PruningArtifactAudit:
     root_to_tip = pruned.root_to_tip_lengths()
     numeric = [float(length) for length in root_to_tip if length is not None]
@@ -120,6 +153,41 @@ def _pruning_artifact_audit(original: PhyloTree, pruned: PhyloTree) -> PruningAr
         original_total_branch_length=original_total,
         pruned_total_branch_length=pruned_total,
         branch_length_delta=round(pruned_total - original_total, 15),
+    )
+
+
+def _pruning_information_loss(
+    original: PhyloTree,
+    pruned: PhyloTree,
+    *,
+    metadata_taxa: set[str] | None = None,
+) -> PruningInformationLoss:
+    original_clades = _informative_clades(original)
+    pruned_clades = _informative_clades(pruned)
+    lost_taxa_count = max(0, original.tip_count - pruned.tip_count)
+    lost_taxa_fraction = 0.0 if original.tip_count == 0 else lost_taxa_count / original.tip_count
+    lost_clade_count = max(0, len(original_clades) - len(pruned_clades))
+    lost_clade_fraction = 0.0 if not original_clades else lost_clade_count / len(original_clades)
+    original_total = round(original.total_branch_length(), 15)
+    pruned_total = round(pruned.total_branch_length(), 15)
+    lost_branch_length = max(0.0, round(original_total - pruned_total, 15))
+    lost_branch_length_fraction = 0.0 if original_total == 0.0 else lost_branch_length / original_total
+    lost_metadata_count = None
+    lost_metadata_fraction = None
+    if metadata_taxa is not None:
+        original_tree_taxa = set(original.tip_names)
+        lost_metadata_taxa = original_tree_taxa - metadata_taxa
+        lost_metadata_count = len(lost_metadata_taxa)
+        lost_metadata_fraction = 0.0 if not original_tree_taxa else lost_metadata_count / len(original_tree_taxa)
+    return PruningInformationLoss(
+        lost_taxa_count=lost_taxa_count,
+        lost_taxa_fraction=lost_taxa_fraction,
+        lost_clade_count=lost_clade_count,
+        lost_clade_fraction=lost_clade_fraction,
+        lost_branch_length=lost_branch_length,
+        lost_branch_length_fraction=lost_branch_length_fraction,
+        lost_metadata_count=lost_metadata_count,
+        lost_metadata_fraction=lost_metadata_fraction,
     )
 
 
@@ -185,6 +253,7 @@ def prune_tree_to_taxa(
             for taxon in removed_tips
         ],
         pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        information_loss=_pruning_information_loss(tree, pruned_tree, metadata_taxa=set(keep_table.taxa)),
         summary=summary,
     )
 
@@ -210,6 +279,7 @@ def prune_tree_to_requested_taxa(
             for taxon in removed_tips
         ],
         pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        information_loss=_pruning_information_loss(tree, pruned_tree),
         summary=summary,
     )
 
@@ -239,6 +309,7 @@ def drop_tree_taxa(
             for taxon in removed_tips
         ],
         pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        information_loss=_pruning_information_loss(tree, pruned_tree),
         summary=summary,
     )
 
@@ -303,5 +374,6 @@ def prune_tree_to_alignment(
             for taxon in removed_tips
         ],
         pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        information_loss=_pruning_information_loss(tree, pruned_tree),
         summary=summary,
     )
