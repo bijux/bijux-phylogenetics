@@ -98,6 +98,13 @@
       "C",
       "D"
     ],
+    "taxon_identity_audit": {
+      "case_collisions": [],
+      "spelling_variants": [],
+      "suspicious_near_duplicates": [],
+      "underscore_space_collisions": [],
+      "whitespace_variants": []
+    },
     "tip_count": 4,
     "total_branch_length": 0.9,
     "tree_diameter": 0.6,
