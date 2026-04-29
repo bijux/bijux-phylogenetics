@@ -49,6 +49,8 @@ maintainer package.
 This repository publishes `2` public packages. The current runtime focuses on
 reproducible tree hygiene, taxon normalization, tree and trait pruning,
 metadata linkage, shared-clade comparison, alignment-quality diagnostics,
+alignment readiness classification, raw-versus-aligned FASTA detection,
+sliding-window region diagnostics, ambiguity-aware uncertainty accounting,
 alignment trimming, coding-sequence translation, identity-matrix export,
 DNA distance-matrix analysis, distance-tree construction, explicit rooting
 transforms, comparative trait readiness, phylogenetic independent contrasts,
@@ -103,6 +105,10 @@ Today, the checked-in repository produces these durable outcomes:
 
 ## Example Commands
 
+- `uv run bijux-phylogenetics alignment classify sequences.fasta --json`
+- `uv run bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json`
+- `uv run bijux-phylogenetics alignment readiness alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment length-outliers sequences.fasta --json`
 - `uv run bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4`
 - `uv run bijux-phylogenetics alignment coding coding-alignment.fasta --json`
 - `uv run bijux-phylogenetics alignment translate coding-alignment.fasta --out translated.fasta`
