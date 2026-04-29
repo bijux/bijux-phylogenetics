@@ -48,6 +48,7 @@ from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
+    compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_tree_distance_matrix,
@@ -112,6 +113,17 @@ class TreeUncertaintyReportBuildResult:
     source_path: Path
     tree_count: int
     rooted_topology_count: int
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class TreeSetComparisonReportBuildResult:
+    output_path: Path
+    report_kind: str
+    title: str
+    left_path: Path
+    right_path: Path
+    shared_rooted_topology_count: int
     machine_manifest: dict[str, object]
 
 
@@ -516,6 +528,54 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
         source_path=tree_set_path,
         tree_count=summary.tree_count,
         rooted_topology_count=summary.rooted_topology_count,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_tree_set_comparison_report(
+    *,
+    left_tree_set_path: Path,
+    right_tree_set_path: Path,
+    out_path: Path,
+) -> TreeSetComparisonReportBuildResult:
+    """Render an HTML comparison report for two tree sets."""
+    comparison = compare_posterior_tree_sets(left_tree_set_path, right_tree_set_path)
+    left_summary = load_tree_set(left_tree_set_path)
+    right_summary = load_tree_set(right_tree_set_path)
+    left_clusters = cluster_trees_by_topology(left_tree_set_path)
+    right_clusters = cluster_trees_by_topology(right_tree_set_path)
+    left_unstable_taxa = detect_unstable_taxa(left_tree_set_path)
+    right_unstable_taxa = detect_unstable_taxa(right_tree_set_path)
+    left_unstable_clades = detect_unstable_clades(left_tree_set_path)
+    right_unstable_clades = detect_unstable_clades(right_tree_set_path)
+    sections = [
+        _section("tree-set-comparison", asdict(comparison)),
+        _section("left-tree-set-summary", asdict(left_summary)),
+        _section("right-tree-set-summary", asdict(right_summary)),
+        _section("left-topology-clusters", asdict(left_clusters)),
+        _section("right-topology-clusters", asdict(right_clusters)),
+        _section("left-unstable-taxa", asdict(left_unstable_taxa)),
+        _section("right-unstable-taxa", asdict(right_unstable_taxa)),
+        _section("left-unstable-clades", asdict(left_unstable_clades)),
+        _section("right-unstable-clades", asdict(right_unstable_clades)),
+    ]
+    title = "Bijux Tree-Set Comparison Report"
+    machine_manifest = {
+        "report_kind": "tree-set-comparison",
+        "title": title,
+        "left_path": str(left_tree_set_path),
+        "right_path": str(right_tree_set_path),
+        "shared_rooted_topology_count": comparison.shared_rooted_topology_count,
+        "sections": [name for name, _ in sections],
+    }
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return TreeSetComparisonReportBuildResult(
+        output_path=out_path,
+        report_kind="tree-set-comparison",
+        title=title,
+        left_path=left_tree_set_path,
+        right_path=right_tree_set_path,
+        shared_rooted_topology_count=comparison.shared_rooted_topology_count,
         machine_manifest=machine_manifest,
     )
 

@@ -226,6 +226,7 @@ from bijux_phylogenetics.reports.service import (
     render_distance_report,
     render_phylo_inputs_report,
     render_phylogenetics_report,
+    render_tree_set_comparison_report,
     render_tree_uncertainty_report,
     render_tree_report,
 )
@@ -741,6 +742,20 @@ def test_compare_bootstrap_and_posterior_uncertainty_reports_conflicting_clades(
     assert report.posterior_tree_count == 3
     assert rows["A|B"].agreement == "strong_conflict"
     assert rows["C|D"].posterior_frequency == 0.333333333333333
+
+
+def test_render_tree_set_comparison_report_embeds_tree_set_differences(tmp_path: Path) -> None:
+    output_path = tmp_path / "tree-set-comparison.html"
+    result = render_tree_set_comparison_report(
+        left_tree_set_path=fixture("example_tree_set_left.nwk"),
+        right_tree_set_path=fixture("example_tree_set_right.nwk"),
+        out_path=output_path,
+    )
+
+    assert result.output_path.exists()
+    assert result.report_kind == "tree-set-comparison"
+    assert result.shared_rooted_topology_count == 1
+    assert "left-topology-clusters" in result.machine_manifest["sections"]
 
 
 def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:
