@@ -115,9 +115,12 @@ from bijux_phylogenetics.reports.service import (
 )
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
+    compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_tree_distance_matrix,
+    detect_unstable_clades,
+    detect_unstable_taxa,
     load_tree_set,
     write_clade_frequency_table,
 )
@@ -231,6 +234,69 @@ def test_cluster_trees_by_topology_groups_identical_rooted_signatures() -> None:
     ] == [
         ("A|B||C|D", [1, 2], 2, 1),
         ("A|C||B|D", [3], 1, 3),
+    ]
+
+
+def test_detect_unstable_taxa_reports_inconsistent_placements() -> None:
+    report = detect_unstable_taxa(fixture("example_tree_set_left.nwk"))
+    assert [
+        (
+            row.taxon,
+            row.unique_placements,
+            row.dominant_frequency,
+            [(placement.signature, placement.tree_count, placement.frequency) for placement in row.placements],
+        )
+        for row in report.taxa
+    ] == [
+        ("A", 2, 0.666666666666667, [("A|B", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
+        ("B", 2, 0.666666666666667, [("A|B", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
+        ("C", 2, 0.666666666666667, [("C|D", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
+        ("D", 2, 0.666666666666667, [("C|D", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
+    ]
+
+
+def test_detect_unstable_clades_reports_frequencies_and_conflicts() -> None:
+    report = detect_unstable_clades(fixture("example_tree_set_left.nwk"))
+    assert [
+        (
+            row.clade,
+            row.tree_count,
+            row.frequency,
+            row.conflict_count,
+            row.conflicting_clades,
+        )
+        for row in report.clades
+    ] == [
+        ("A|B", 2, 0.666666666666667, 2, ["A|C", "B|D"]),
+        ("C|D", 2, 0.666666666666667, 2, ["A|C", "B|D"]),
+        ("A|C", 1, 0.333333333333333, 2, ["A|B", "C|D"]),
+        ("B|D", 1, 0.333333333333333, 2, ["A|B", "C|D"]),
+    ]
+
+
+def test_compare_posterior_tree_sets_reports_clade_deltas_and_cross_set_distance() -> None:
+    report = compare_posterior_tree_sets(
+        fixture("example_tree_set_left.nwk"),
+        fixture("example_tree_set_right.nwk"),
+    )
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.left_tree_count == 3
+    assert report.right_tree_count == 3
+    assert report.left_rooted_topology_count == 2
+    assert report.right_rooted_topology_count == 2
+    assert report.shared_rooted_topology_count == 1
+    assert report.mean_between_set_robinson_foulds == 3.111111111111111
+    assert report.mean_between_set_normalized_robinson_foulds == 0.777777777777778
+    assert [
+        (row.clade, row.left_frequency, row.right_frequency, row.delta)
+        for row in report.clade_frequency_deltas
+    ] == [
+        ("A|B", 0.666666666666667, 0.333333333333333, -0.333333333333333),
+        ("A|C", 0.333333333333333, 0.0, -0.333333333333333),
+        ("A|D", 0.0, 0.666666666666667, 0.666666666666667),
+        ("B|C", 0.0, 0.666666666666667, 0.666666666666667),
+        ("B|D", 0.333333333333333, 0.0, -0.333333333333333),
+        ("C|D", 0.666666666666667, 0.333333333333333, -0.333333333333333),
     ]
 
 

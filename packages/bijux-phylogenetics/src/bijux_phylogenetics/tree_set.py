@@ -91,6 +91,67 @@ class TreeTopologyClusterReport:
     clusters: list[TreeTopologyCluster]
 
 
+@dataclass(frozen=True, slots=True)
+class TaxonPlacementSignature:
+    signature: str
+    tree_count: int
+    frequency: float
+
+
+@dataclass(frozen=True, slots=True)
+class UnstableTaxon:
+    taxon: str
+    unique_placements: int
+    dominant_frequency: float
+    placements: list[TaxonPlacementSignature]
+
+
+@dataclass(slots=True)
+class UnstableTaxaReport:
+    path: Path
+    tree_count: int
+    taxa: list[UnstableTaxon]
+
+
+@dataclass(frozen=True, slots=True)
+class UnstableClade:
+    clade: str
+    tree_count: int
+    frequency: float
+    conflict_count: int
+    conflicting_clades: list[str]
+
+
+@dataclass(slots=True)
+class UnstableCladeReport:
+    path: Path
+    tree_count: int
+    clades: list[UnstableClade]
+
+
+@dataclass(frozen=True, slots=True)
+class CladeFrequencyDelta:
+    clade: str
+    left_frequency: float
+    right_frequency: float
+    delta: float
+
+
+@dataclass(slots=True)
+class PosteriorTreeSetComparisonReport:
+    left_path: Path
+    right_path: Path
+    shared_taxa: list[str]
+    left_tree_count: int
+    right_tree_count: int
+    left_rooted_topology_count: int
+    right_rooted_topology_count: int
+    shared_rooted_topology_count: int
+    mean_between_set_robinson_foulds: float
+    mean_between_set_normalized_robinson_foulds: float
+    clade_frequency_deltas: list[CladeFrequencyDelta]
+
+
 def _shared_taxa(trees: list[PhyloTree]) -> set[str]:
     shared = set(trees[0].tip_names)
     for tree in trees[1:]:
@@ -134,6 +195,29 @@ def _validate_same_taxa(trees: list[PhyloTree]) -> list[str]:
         if sorted(tree.tip_names) != first:
             raise InvalidAlignmentError("tree-set analysis requires all trees to share the exact same taxon set")
     return first
+
+
+def _clade_signature(tree: PhyloTree, shared_taxa: set[str], taxon: str) -> str:
+    containing_clades = sorted(
+        _format_clade(clade)
+        for clade in _informative_clades(tree, shared_taxa)
+        if taxon in clade
+    )
+    if not containing_clades:
+        return "(singleton-placement)"
+    return "||".join(containing_clades)
+
+
+def _clade_counts(trees: list[PhyloTree], shared_taxa: set[str]) -> dict[frozenset[str], int]:
+    counts: dict[frozenset[str], int] = {}
+    for tree in trees:
+        for clade in _informative_clades(tree, shared_taxa):
+            counts[clade] = counts.get(clade, 0) + 1
+    return counts
+
+
+def _clades_conflict(left: frozenset[str], right: frozenset[str]) -> bool:
+    return bool(left & right) and not (left <= right or right <= left)
 
 
 def _clade_branch_lengths(tree: PhyloTree, shared_taxa: set[str]) -> dict[frozenset[str], float | None]:
@@ -418,4 +502,105 @@ def cluster_trees_by_topology(path: Path) -> TreeTopologyClusterReport:
         tree_count=report.tree_count,
         rooted_topology_count=report.rooted_topology_count,
         clusters=clusters,
+    )
+
+
+def detect_unstable_taxa(path: Path) -> UnstableTaxaReport:
+    """Report taxa whose placement signatures vary across trees in a set."""
+    _, _, trees = _require_tree_set(path)
+    shared_taxa = set(_validate_same_taxa(trees))
+    taxa: list[UnstableTaxon] = []
+    for taxon in sorted(shared_taxa):
+        signature_counts: dict[str, int] = {}
+        for tree in trees:
+            signature = _clade_signature(tree, shared_taxa, taxon)
+            signature_counts[signature] = signature_counts.get(signature, 0) + 1
+        if len(signature_counts) < 2:
+            continue
+        placements = [
+            TaxonPlacementSignature(
+                signature=signature,
+                tree_count=count,
+                frequency=round(count / len(trees), 15),
+            )
+            for signature, count in sorted(
+                signature_counts.items(),
+                key=lambda item: (-item[1], item[0]),
+            )
+        ]
+        taxa.append(
+            UnstableTaxon(
+                taxon=taxon,
+                unique_placements=len(signature_counts),
+                dominant_frequency=placements[0].frequency,
+                placements=placements,
+            )
+        )
+    return UnstableTaxaReport(path=path, tree_count=len(trees), taxa=taxa)
+
+
+def detect_unstable_clades(path: Path) -> UnstableCladeReport:
+    """Report non-unanimous clades and their conflicting alternatives."""
+    _, _, trees = _require_tree_set(path)
+    shared_taxa = set(_validate_same_taxa(trees))
+    counts = _clade_counts(trees, shared_taxa)
+    all_clades = set(counts)
+    unstable_clades = [
+        UnstableClade(
+            clade=_format_clade(clade),
+            tree_count=count,
+            frequency=round(count / len(trees), 15),
+            conflict_count=len(conflicts := sorted(_format_clade(other) for other in all_clades if _clades_conflict(clade, other))),
+            conflicting_clades=conflicts,
+        )
+        for clade, count in sorted(
+            counts.items(),
+            key=lambda item: (_format_clade(item[0])),
+        )
+        if count < len(trees)
+    ]
+    unstable_clades.sort(key=lambda row: (-row.frequency, row.clade))
+    return UnstableCladeReport(path=path, tree_count=len(trees), clades=unstable_clades)
+
+
+def compare_posterior_tree_sets(left_path: Path, right_path: Path) -> PosteriorTreeSetComparisonReport:
+    """Compare two tree sets over shared taxa, clade support, and cross-set topology distance."""
+    _, _, left_trees = _require_tree_set(left_path)
+    _, _, right_trees = _require_tree_set(right_path)
+    left_taxa = _validate_same_taxa(left_trees)
+    right_taxa = _validate_same_taxa(right_trees)
+    if left_taxa != right_taxa:
+        raise InvalidAlignmentError("posterior tree-set comparison requires identical taxon sets across both inputs")
+
+    shared_taxa = set(left_taxa)
+    left_counts = _clade_counts(left_trees, shared_taxa)
+    right_counts = _clade_counts(right_trees, shared_taxa)
+    all_clades = left_counts.keys() | right_counts.keys()
+    deltas = [
+        CladeFrequencyDelta(
+            clade=_format_clade(clade),
+            left_frequency=round(left_counts.get(clade, 0) / len(left_trees), 15),
+            right_frequency=round(right_counts.get(clade, 0) / len(right_trees), 15),
+            delta=round((right_counts.get(clade, 0) / len(right_trees)) - (left_counts.get(clade, 0) / len(left_trees)), 15),
+        )
+        for clade in sorted(all_clades, key=_format_clade)
+    ]
+    comparisons = [_tree_distance(left, right, shared_taxa) for left in left_trees for right in right_trees]
+    left_topologies = {_rooted_topology_id(tree, shared_taxa) for tree in left_trees}
+    right_topologies = {_rooted_topology_id(tree, shared_taxa) for tree in right_trees}
+    return PosteriorTreeSetComparisonReport(
+        left_path=left_path,
+        right_path=right_path,
+        shared_taxa=left_taxa,
+        left_tree_count=len(left_trees),
+        right_tree_count=len(right_trees),
+        left_rooted_topology_count=len(left_topologies),
+        right_rooted_topology_count=len(right_topologies),
+        shared_rooted_topology_count=len(left_topologies & right_topologies),
+        mean_between_set_robinson_foulds=round(sum(distance for distance, _ in comparisons) / len(comparisons), 15),
+        mean_between_set_normalized_robinson_foulds=round(
+            sum(normalized for _, normalized in comparisons) / len(comparisons),
+            15,
+        ),
+        clade_frequency_deltas=deltas,
     )
