@@ -57,6 +57,18 @@ def test_validate_discrete_state_coding_records_ordered_vocabulary() -> None:
     assert report.ordered_states == ["north", "south", "island"]
 
 
+def test_validate_discrete_state_coding_rejects_missing_ordered_state_labels() -> None:
+    report = validate_discrete_state_coding(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        state_ordering="ordered",
+        ordered_states=["north", "south"],
+    )
+    assert report.valid is False
+    assert any(issue.code == "unordered-state-vocabulary" for issue in report.issues)
+
+
 def test_detect_state_imbalance_problems_flags_single_state_and_dominance() -> None:
     report = detect_state_imbalance_problems(
         fixture("example_tree.nwk"),

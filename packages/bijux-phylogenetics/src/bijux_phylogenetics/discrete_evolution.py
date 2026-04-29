@@ -539,7 +539,7 @@ def validate_discrete_state_coding(
     ordered = list(ordered_states or [])
     if ordered and len(set(ordered)) != len(ordered):
         raise AncestralReconstructionError("ordered state vocabulary contains duplicate labels")
-    allowed = list(allowed_states or [])
+    allowed = list(allowed_states or ordered or [])
     allowed_set = set(allowed)
     issues: list[StateCodingIssue] = []
     usable_taxa: list[str] = []
@@ -567,13 +567,28 @@ def validate_discrete_state_coding(
                 StateCodingIssue(
                     taxon=taxon,
                     raw_state=raw_state,
-                    code="unsupported-state-label",
-                    message="state label is not present in the allowed state vocabulary",
+                    code="unordered-state-vocabulary" if state_ordering == "ordered" and ordered else "unsupported-state-label",
+                    message=(
+                        "state label is not present in the declared ordered vocabulary"
+                        if state_ordering == "ordered" and ordered
+                        else "state label is not present in the allowed state vocabulary"
+                    ),
                 )
             )
             continue
         observed_states.add(raw_state)
         usable_taxa.append(taxon)
+    if state_ordering == "ordered" and ordered:
+        missing_from_order = sorted(observed_states - set(ordered))
+        issues.extend(
+            StateCodingIssue(
+                taxon="",
+                raw_state=state,
+                code="unordered-state-vocabulary",
+                message="observed state is missing from the declared ordered vocabulary",
+            )
+            for state in missing_from_order
+        )
     return StateCodingValidationReport(
         tree_path=tree_path,
         traits_path=traits_path,
