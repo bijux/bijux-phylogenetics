@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 import json
 import math
 from pathlib import Path
+import tempfile
 
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset, node_descendant_taxa, node_signature
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
@@ -193,6 +194,40 @@ class DiscreteEvolutionReportBuildResult:
     trait: str
     model: str
     machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class DiscreteTransitionReferenceRate:
+    source_state: str
+    target_state: str
+    expected_rate: float
+    observed_rate: float
+    absolute_delta: float
+
+
+@dataclass(slots=True)
+class DiscreteTransitionReferenceObservation:
+    label: str
+    model: str
+    expected_parameter_count: int
+    observed_parameter_count: int
+    expected_transition_count: int
+    observed_transition_count: int
+    expected_root_state: str
+    observed_root_state: str
+    expected_pseudo_log_likelihood: float
+    observed_pseudo_log_likelihood: float
+    max_rate_delta: float
+    rate_rows: list[DiscreteTransitionReferenceRate]
+    passed: bool
+
+
+@dataclass(slots=True)
+class DiscreteTransitionReferenceValidationReport:
+    case_count: int
+    all_passed: bool
+    tolerance: float
+    observations: list[DiscreteTransitionReferenceObservation]
 
 
 def _normalize_probabilities(scores: dict[str, float]) -> dict[str, float]:
@@ -893,6 +928,124 @@ def compare_discrete_state_models(
         better_model=better_model,
         rows=rows,
         node_differences=differences,
+    )
+
+
+def validate_discrete_transition_reference_examples(
+    *,
+    tolerance: float = 1e-9,
+) -> DiscreteTransitionReferenceValidationReport:
+    """Validate deterministic discrete-state transition outputs against built-in small references."""
+    cases = (
+        {
+            "label": "toy-geography-er",
+            "model": "equal-rates",
+            "tree_newick": "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);",
+            "trait_rows": [("A", "north"), ("B", "north"), ("C", "south"), ("D", "island")],
+            "expected_parameter_count": 1,
+            "expected_transition_count": 2,
+            "expected_root_state": "north",
+            "expected_pseudo_log_likelihood": -7.28950386047299,
+            "expected_rates": {
+                ("island", "north"): 0.1,
+                ("north", "south"): 0.1,
+                ("south", "south"): 0.8,
+            },
+        },
+        {
+            "label": "toy-geography-sym",
+            "model": "symmetric",
+            "tree_newick": "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);",
+            "trait_rows": [("A", "north"), ("B", "north"), ("C", "south"), ("D", "island")],
+            "expected_parameter_count": 3,
+            "expected_transition_count": 2,
+            "expected_root_state": "north",
+            "expected_pseudo_log_likelihood": -6.5047894874944,
+            "expected_rates": {
+                ("island", "south"): 0.133333333333333,
+                ("north", "south"): 0.133333333333333,
+                ("south", "island"): 0.1,
+            },
+        },
+        {
+            "label": "toy-geography-ard",
+            "model": "all-rates-different",
+            "tree_newick": "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);",
+            "trait_rows": [("A", "north"), ("B", "north"), ("C", "south"), ("D", "island")],
+            "expected_parameter_count": 6,
+            "expected_transition_count": 2,
+            "expected_root_state": "north",
+            "expected_pseudo_log_likelihood": -6.2424252230423,
+            "expected_rates": {
+                ("island", "north"): 0.1,
+                ("north", "south"): 0.133333333333333,
+                ("south", "island"): 0.133333333333333,
+            },
+        },
+    )
+    observations: list[DiscreteTransitionReferenceObservation] = []
+    for case in cases:
+        with tempfile.TemporaryDirectory(prefix="bijux-discrete-reference-") as tmp_dir:
+            tree_path = Path(tmp_dir) / "reference-tree.nwk"
+            traits_path = Path(tmp_dir) / "reference-traits.tsv"
+            tree_path.write_text(f"{case['tree_newick']}\n", encoding="utf-8")
+            traits_path.write_text(
+                "taxon\tregion\n"
+                + "".join(f"{taxon}\t{state}\n" for taxon, state in case["trait_rows"]),
+                encoding="utf-8",
+            )
+            report = run_discrete_state_transition_model(
+                tree_path,
+                traits_path,
+                trait="region",
+                model=str(case["model"]),
+            )
+        rate_lookup = {
+            (row.source_state, target): value
+            for row in report.transition_model.transition_matrix
+            for target, value in row.target_rates.items()
+        }
+        rate_rows = [
+            DiscreteTransitionReferenceRate(
+                source_state=source_state,
+                target_state=target_state,
+                expected_rate=expected_rate,
+                observed_rate=rate_lookup[(source_state, target_state)],
+                absolute_delta=abs(rate_lookup[(source_state, target_state)] - expected_rate),
+            )
+            for (source_state, target_state), expected_rate in sorted(case["expected_rates"].items())
+        ]
+        max_rate_delta = max((row.absolute_delta for row in rate_rows), default=0.0)
+        root_state = next(estimate.most_likely_state for estimate in report.estimates if estimate.node == "A|B|C|D")
+        passed = (
+            report.transition_model.parameter_count == case["expected_parameter_count"]
+            and report.transition_summary.transition_count == case["expected_transition_count"]
+            and root_state == case["expected_root_state"]
+            and abs(report.transition_model.pseudo_log_likelihood - case["expected_pseudo_log_likelihood"]) <= tolerance
+            and max_rate_delta <= tolerance
+        )
+        observations.append(
+            DiscreteTransitionReferenceObservation(
+                label=str(case["label"]),
+                model=str(case["model"]),
+                expected_parameter_count=int(case["expected_parameter_count"]),
+                observed_parameter_count=report.transition_model.parameter_count,
+                expected_transition_count=int(case["expected_transition_count"]),
+                observed_transition_count=report.transition_summary.transition_count,
+                expected_root_state=str(case["expected_root_state"]),
+                observed_root_state=root_state,
+                expected_pseudo_log_likelihood=float(case["expected_pseudo_log_likelihood"]),
+                observed_pseudo_log_likelihood=report.transition_model.pseudo_log_likelihood,
+                max_rate_delta=max_rate_delta,
+                rate_rows=rate_rows,
+                passed=passed,
+            )
+        )
+    return DiscreteTransitionReferenceValidationReport(
+        case_count=len(observations),
+        all_passed=all(observation.passed for observation in observations),
+        tolerance=tolerance,
+        observations=observations,
     )
 
 

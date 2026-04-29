@@ -57,6 +57,14 @@ def test_discrete_evolution_validate_and_imbalance_cli_report_findings(capsys) -
     assert "only one observed state remains after pruning to usable tree taxa" in imbalance_payload["warnings"]
 
 
+def test_discrete_evolution_reference_cli_reports_passing_cases(capsys) -> None:
+    exit_code = main(["discrete-evolution", "reference", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["case_count"] == 3
+    assert payload["metrics"]["all_passed"] is True
+
+
 def test_discrete_evolution_model_and_compare_cli_write_tables(tmp_path: Path, capsys) -> None:
     node_table = tmp_path / "node-probabilities.tsv"
     transitions_table = tmp_path / "transitions.tsv"

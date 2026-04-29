@@ -9,6 +9,7 @@ from bijux_phylogenetics.discrete_evolution import (
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
+    validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
     validate_discrete_state_coding,
     write_node_state_probability_table,
@@ -201,3 +202,10 @@ def test_write_discrete_model_comparison_table_exports_node_probabilities(tmp_pa
     contents = table_path.read_text(encoding="utf-8")
     assert "left_probabilities" in contents
     assert "right_probabilities" in contents
+
+
+def test_validate_discrete_transition_reference_examples_matches_expected_cases() -> None:
+    report = validate_discrete_transition_reference_examples()
+    assert report.case_count == 3
+    assert report.all_passed is True
+    assert all(observation.max_rate_delta <= report.tolerance for observation in report.observations)

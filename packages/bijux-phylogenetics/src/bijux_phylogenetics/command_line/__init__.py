@@ -142,6 +142,7 @@ from bijux_phylogenetics.discrete_evolution import (
     estimate_ancestral_geographic_states,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
+    validate_discrete_transition_reference_examples,
     validate_discrete_state_coding,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
@@ -1271,6 +1272,12 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_imbalance.add_argument("--taxon-column")
     discrete_imbalance.add_argument("--json", action="store_true", help="Emit the imbalance report as JSON.")
     _add_manifest_argument(discrete_imbalance)
+    discrete_reference = discrete_evolution_subparsers.add_parser(
+        "reference",
+        help="Validate deterministic discrete-state transition examples against built-in reference expectations.",
+    )
+    discrete_reference.add_argument("--json", action="store_true", help="Emit the reference-validation report as JSON.")
+    _add_manifest_argument(discrete_reference)
     discrete_model = discrete_evolution_subparsers.add_parser(
         "model",
         help="Run one discrete-state transition model and export node or branch summaries.",
@@ -3682,6 +3689,23 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "taxon_count": report.taxon_count,
                             "observed_state_count": len(report.observed_states),
                             "warning_count": len(report.warnings),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "reference":
+                report = validate_discrete_transition_reference_examples()
+                outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[])
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "case_count": report.case_count,
+                            "all_passed": report.all_passed,
                         },
                         data=report,
                     ),
