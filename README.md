@@ -61,6 +61,10 @@ analysis, tree-set consensus and posterior uncertainty analysis, tree and
 alignment simulation, scientific benchmarking, deterministic SVG tree
 rendering, publication figure packaging, evidence manifests, and HTML report
 generation rather than full likelihood or Bayesian inference engines.
+Diversification and macroevolution workflows now also estimate lineage-through-time
+curves, simple Yule or birth-death rates, sampling-aware corrections, clade
+outlier summaries, and trait-linked diversification tables for rooted
+ultrametric trees.
 
 Recent tree diagnostics now also classify internal-node child counts, missing
 internal versus terminal branch lengths, singleton internal nodes, branch-length
@@ -121,6 +125,10 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --model all-rates-different --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json`
 - `uv run bijux-phylogenetics discrete-evolution render tree.nwk geography.tsv --trait region --out artifacts/geography.svg --json`
 - `uv run bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model all-rates-different --out artifacts/geography-report.html --json`
+- `uv run bijux-phylogenetics diversification ltt tree.nwk --out artifacts/ltt.tsv --json`
+- `uv run bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json`
+- `uv run bijux-phylogenetics diversification clades tree.nwk --out artifacts/clades.tsv --json`
+- `uv run bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html --json`
 - `uv run bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json`
 - `uv run bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json`
 - `uv run bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json`
