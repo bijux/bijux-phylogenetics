@@ -2973,6 +2973,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "traits",
         "prune",
         "alignment",
+        "distance",
         "inspect",
         "validate",
         "normalize",
