@@ -73,3 +73,7 @@ class ComparativeMethodError(PhylogeneticsError):
 
 class AncestralReconstructionError(PhylogeneticsError):
     code = "ancestral_reconstruction_error"
+
+
+class DiversificationAnalysisError(PhylogeneticsError):
+    code = "diversification_analysis_error"
