@@ -108,6 +108,18 @@ from bijux_phylogenetics.discrete_evolution import (
     write_node_state_probability_table,
     write_transition_summary_table,
 )
+from bijux_phylogenetics.diversification import (
+    compare_diversification_models,
+    compute_lineage_through_time_curve,
+    detect_diversification_outlier_clades,
+    detect_incomplete_taxon_sampling_metadata,
+    estimate_diversification_rate,
+    render_diversification_report,
+    run_trait_dependent_diversification_analysis,
+    write_clade_diversification_table,
+    write_lineage_through_time_table,
+    write_trait_dependent_diversification_table,
+)
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
     render_inference_workflow_report,
@@ -887,6 +899,85 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_report.add_argument("--out", required=True, type=Path)
     discrete_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(discrete_report)
+
+    diversification = subparsers.add_parser(
+        get_command_spec("diversification").name,
+        help=get_command_spec("diversification").summary,
+    )
+    diversification_subparsers = diversification.add_subparsers(dest="diversification_command", required=True)
+    diversification_ltt = diversification_subparsers.add_parser(
+        "ltt",
+        help="Compute a lineage-through-time curve for one rooted ultrametric tree.",
+    )
+    diversification_ltt.add_argument("tree", type=Path)
+    diversification_ltt.add_argument("--out", type=Path, help="Write the lineage-through-time table as TSV.")
+    diversification_ltt.add_argument("--json", action="store_true", help="Emit the LTT report as JSON.")
+    _add_manifest_argument(diversification_ltt)
+    diversification_sampling = diversification_subparsers.add_parser(
+        "sampling",
+        help="Inspect taxon sampling-fraction metadata against the tree tips.",
+    )
+    diversification_sampling.add_argument("tree", type=Path)
+    diversification_sampling.add_argument("table", type=Path)
+    diversification_sampling.add_argument("--taxon-column")
+    diversification_sampling.add_argument("--sampling-column")
+    diversification_sampling.add_argument("--json", action="store_true", help="Emit the sampling report as JSON.")
+    _add_manifest_argument(diversification_sampling)
+    diversification_estimate = diversification_subparsers.add_parser(
+        "estimate",
+        help="Estimate a simple Yule or birth-death diversification model.",
+    )
+    diversification_estimate.add_argument("tree", type=Path)
+    diversification_estimate.add_argument("--metadata", type=Path)
+    diversification_estimate.add_argument("--taxon-column")
+    diversification_estimate.add_argument("--sampling-column")
+    diversification_estimate.add_argument("--model", choices=("yule", "birth-death"), default="birth-death")
+    diversification_estimate.add_argument("--json", action="store_true", help="Emit the diversification estimate as JSON.")
+    _add_manifest_argument(diversification_estimate)
+    diversification_compare = diversification_subparsers.add_parser(
+        "compare-models",
+        help="Compare Yule and birth-death diversification fits.",
+    )
+    diversification_compare.add_argument("tree", type=Path)
+    diversification_compare.add_argument("--metadata", type=Path)
+    diversification_compare.add_argument("--taxon-column")
+    diversification_compare.add_argument("--sampling-column")
+    diversification_compare.add_argument("--json", action="store_true", help="Emit the model comparison as JSON.")
+    _add_manifest_argument(diversification_compare)
+    diversification_clades = diversification_subparsers.add_parser(
+        "clades",
+        help="Detect clades with unusually high or low diversification.",
+    )
+    diversification_clades.add_argument("tree", type=Path)
+    diversification_clades.add_argument("--model", choices=("yule", "birth-death"), default="birth-death")
+    diversification_clades.add_argument("--min-tip-count", type=int, default=2)
+    diversification_clades.add_argument("--out", type=Path, help="Write the clade diversification table as TSV.")
+    diversification_clades.add_argument("--json", action="store_true", help="Emit the clade scan report as JSON.")
+    _add_manifest_argument(diversification_clades)
+    diversification_trait = diversification_subparsers.add_parser(
+        "trait-dependent",
+        help="Summarize simple trait-linked diversification rates when states form interpretable clades.",
+    )
+    diversification_trait.add_argument("tree", type=Path)
+    diversification_trait.add_argument("table", type=Path)
+    diversification_trait.add_argument("--trait", required=True)
+    diversification_trait.add_argument("--taxon-column")
+    diversification_trait.add_argument("--out", type=Path, help="Write the trait-dependent diversification table as TSV.")
+    diversification_trait.add_argument("--json", action="store_true", help="Emit the trait-dependent report as JSON.")
+    _add_manifest_argument(diversification_trait)
+    diversification_report = diversification_subparsers.add_parser(
+        "report",
+        help="Render an HTML diversification and macroevolution report.",
+    )
+    diversification_report.add_argument("tree", type=Path)
+    diversification_report.add_argument("--metadata", type=Path)
+    diversification_report.add_argument("--taxon-column")
+    diversification_report.add_argument("--sampling-column")
+    diversification_report.add_argument("--traits", type=Path)
+    diversification_report.add_argument("--trait")
+    diversification_report.add_argument("--out", required=True, type=Path)
+    diversification_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(diversification_report)
 
     distance = subparsers.add_parser(get_command_spec("distance").name, help=get_command_spec("distance").summary)
     distance_subparsers = distance.add_subparsers(dest="distance_command", required=True)
@@ -2532,6 +2623,207 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "differing_node_count": sum(1 for row in comparison.node_differences if row.differs),
                     },
                     data=comparison,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "diversification":
+            if args.diversification_command == "ltt":
+                report = compute_lineage_through_time_curve(args.tree)
+                outputs: list[Path | str] = []
+                if args.out is not None:
+                    outputs.append(write_lineage_through_time_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="diversification",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "root_age": report.root_age,
+                            "point_count": len(report.points),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.diversification_command == "sampling":
+                report = detect_incomplete_taxon_sampling_metadata(
+                    args.tree,
+                    args.table,
+                    taxon_column=args.taxon_column,
+                    sampling_column=args.sampling_column,
+                )
+                outputs = _finalize_outputs(args, command="diversification", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "complete": report.complete,
+                            "matched_taxon_count": len(report.matched_taxa),
+                            "missing_taxon_count": len(report.missing_taxa),
+                            "invalid_row_count": len(report.invalid_rows),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.diversification_command == "estimate":
+                inputs = [args.tree]
+                if args.metadata is not None:
+                    inputs.append(args.metadata)
+                report = estimate_diversification_rate(
+                    args.tree,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    sampling_column=args.sampling_column,
+                    model=args.model,
+                )
+                outputs = _finalize_outputs(args, command="diversification", inputs=inputs)
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "sampling_fraction": report.sampling_fraction,
+                            "net_diversification_rate": report.net_diversification_rate,
+                            "aic": report.aic,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.diversification_command == "compare-models":
+                inputs = [args.tree]
+                if args.metadata is not None:
+                    inputs.append(args.metadata)
+                report = compare_diversification_models(
+                    args.tree,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    sampling_column=args.sampling_column,
+                )
+                outputs = _finalize_outputs(args, command="diversification", inputs=inputs)
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=inputs,
+                        outputs=outputs,
+                        metrics={
+                            "better_model": report.better_model,
+                            "model_count": len(report.rows),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.diversification_command == "clades":
+                report = detect_diversification_outlier_clades(
+                    args.tree,
+                    min_tip_count=args.min_tip_count,
+                    model=args.model,
+                )
+                outputs: list[Path | str] = []
+                if args.out is not None:
+                    outputs.append(write_clade_diversification_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="diversification",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "global_rate": report.global_rate,
+                            "high_clade_count": len(report.high_diversification_clades),
+                            "low_clade_count": len(report.low_diversification_clades),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.diversification_command == "trait-dependent":
+                report = run_trait_dependent_diversification_analysis(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs: list[Path | str] = []
+                if args.out is not None:
+                    outputs.append(write_trait_dependent_diversification_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="diversification",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="diversification",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "state_count": len(report.states),
+                            "monophyletic_state_count": sum(1 for row in report.states if row.monophyletic),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            inputs = [args.tree]
+            if args.metadata is not None:
+                inputs.append(args.metadata)
+            if args.traits is not None:
+                inputs.append(args.traits)
+            result = render_diversification_report(
+                tree_path=args.tree,
+                out_path=args.out,
+                metadata_path=args.metadata,
+                taxon_column=args.taxon_column,
+                sampling_column=args.sampling_column,
+                traits_path=args.traits,
+                trait=args.trait,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="diversification",
+                inputs=inputs,
+                outputs=[result.output_path],
+            )
+            _print_result(
+                build_command_result(
+                    command="diversification",
+                    inputs=inputs,
+                    outputs=outputs,
+                    metrics={
+                        "report_kind": result.report_kind,
+                    },
+                    data=result,
                 ),
                 json_output=args.json,
             )

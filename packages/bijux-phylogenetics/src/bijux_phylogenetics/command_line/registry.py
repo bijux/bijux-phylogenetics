@@ -72,6 +72,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("discrete-state-evolution-report",),
     ),
     CommandSpec(
+        name="diversification",
+        domain="diversification-analysis",
+        summary="Estimate diversification rates, compare models, and report macroevolution summaries on time trees.",
+        inputs=("tree", "metadata-table", "traits-table"),
+        outputs=("diversification-report",),
+    ),
+    CommandSpec(
         name="distance",
         domain="distance-analysis",
         summary="Validate, build, and report on explicit distance matrices.",
