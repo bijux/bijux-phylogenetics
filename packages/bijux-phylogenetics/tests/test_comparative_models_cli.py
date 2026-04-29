@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+
+from bijux_phylogenetics.cli import main
+
+
+FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
+
+
+def fixture(name: str) -> Path:
+    direct = FIXTURES / name
+    if direct.exists():
+        return direct
+    for group in FIXTURE_GROUPS:
+        candidate = FIXTURES / group / name
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(name)
+
+
+def test_comparative_brownian_cli_reports_parameters(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "brownian",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert math.isclose(payload["metrics"]["root_state"], 2.8055555543209874)
+    assert math.isclose(payload["metrics"]["rate"], 4.774305191647407)
+
+
+def test_comparative_compare_models_cli_reports_selected_model(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "compare-models",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["better_model"] == "brownian"
+
+
+def test_comparative_validate_reference_cli_reports_pass(capsys) -> None:
+    exit_code = main(["comparative", "validate-reference", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["all_passed"] is True
+
+
+def test_comparative_sensitivity_cli_reports_influential_taxa(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "sensitivity",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--model",
+            "brownian",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["influential_taxa"] == 3

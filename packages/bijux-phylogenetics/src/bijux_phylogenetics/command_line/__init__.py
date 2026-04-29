@@ -38,6 +38,13 @@ from bijux_phylogenetics.ancestral.service import (
     write_ancestral_state_table,
 )
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait, summarize_numeric_trait_readiness
+from bijux_phylogenetics.comparative.models import (
+    compare_brownian_and_ou_models,
+    fit_brownian_motion_model,
+    fit_ornstein_uhlenbeck_model,
+    run_comparative_sensitivity_analysis,
+    validate_comparative_reference_examples,
+)
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
@@ -929,6 +936,53 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_signal.add_argument("--seed", type=int, default=1)
     comparative_signal.add_argument("--json", action="store_true", help="Emit the signal report as JSON.")
     _add_manifest_argument(comparative_signal)
+    comparative_brownian = comparative_subparsers.add_parser(
+        "brownian",
+        help="Fit a standalone Brownian-motion continuous-trait model.",
+    )
+    comparative_brownian.add_argument("tree", type=Path)
+    comparative_brownian.add_argument("table", type=Path)
+    comparative_brownian.add_argument("--trait", required=True)
+    comparative_brownian.add_argument("--taxon-column")
+    comparative_brownian.add_argument("--json", action="store_true", help="Emit the Brownian model fit as JSON.")
+    _add_manifest_argument(comparative_brownian)
+    comparative_ou = comparative_subparsers.add_parser(
+        "ou",
+        help="Fit a standalone Ornstein-Uhlenbeck continuous-trait model.",
+    )
+    comparative_ou.add_argument("tree", type=Path)
+    comparative_ou.add_argument("table", type=Path)
+    comparative_ou.add_argument("--trait", required=True)
+    comparative_ou.add_argument("--taxon-column")
+    comparative_ou.add_argument("--json", action="store_true", help="Emit the OU model fit as JSON.")
+    _add_manifest_argument(comparative_ou)
+    comparative_compare_models = comparative_subparsers.add_parser(
+        "compare-models",
+        help="Compare standalone Brownian-motion and OU models for one continuous trait.",
+    )
+    comparative_compare_models.add_argument("tree", type=Path)
+    comparative_compare_models.add_argument("table", type=Path)
+    comparative_compare_models.add_argument("--trait", required=True)
+    comparative_compare_models.add_argument("--taxon-column")
+    comparative_compare_models.add_argument("--json", action="store_true", help="Emit the model comparison as JSON.")
+    _add_manifest_argument(comparative_compare_models)
+    comparative_validate_reference = comparative_subparsers.add_parser(
+        "validate-reference",
+        help="Validate built-in Brownian-motion and OU reference examples.",
+    )
+    comparative_validate_reference.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    _add_manifest_argument(comparative_validate_reference)
+    comparative_sensitivity = comparative_subparsers.add_parser(
+        "sensitivity",
+        help="Run leave-one-taxon-out sensitivity for a standalone BM or OU model.",
+    )
+    comparative_sensitivity.add_argument("tree", type=Path)
+    comparative_sensitivity.add_argument("table", type=Path)
+    comparative_sensitivity.add_argument("--trait", required=True)
+    comparative_sensitivity.add_argument("--model", choices=("brownian", "ou"), required=True)
+    comparative_sensitivity.add_argument("--taxon-column")
+    comparative_sensitivity.add_argument("--json", action="store_true", help="Emit the sensitivity report as JSON.")
+    _add_manifest_argument(comparative_sensitivity)
     comparative_pgls = comparative_subparsers.add_parser(
         "pgls",
         help="Fit a phylogenetic generalized least-squares model.",
@@ -2839,6 +2893,123 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.comparative_command == "brownian":
+                report = fit_brownian_motion_model(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.residual_diagnostics.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "root_state": report.root_state,
+                            "rate": report.rate,
+                            "log_likelihood": report.log_likelihood,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "ou":
+                report = fit_ornstein_uhlenbeck_model(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=[
+                            *report.residual_diagnostics.warnings,
+                            *[warning.message for warning in report.identifiability_warnings],
+                        ],
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "alpha": report.alpha,
+                            "theta": report.theta,
+                            "log_likelihood": report.log_likelihood,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "compare-models":
+                report = compare_brownian_and_ou_models(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "better_model": report.better_model,
+                            "model_count": len(report.rows),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "validate-reference":
+                report = validate_comparative_reference_examples()
+                outputs = _finalize_outputs(args, command="comparative", inputs=[])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "case_count": len(report.observations),
+                            "all_passed": report.all_passed,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "sensitivity":
+                report = run_comparative_sensitivity_analysis(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    model=args.model,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": len(report.rows),
+                            "model": report.model,
+                            "influential_taxa": len(report.most_influential_taxa),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             lambda_value: float | str
             if args.lambda_value == "estimate":
                 lambda_value = "estimate"
@@ -2864,14 +3035,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 build_command_result(
                     command="comparative",
                     inputs=[args.tree, args.table],
-                    outputs=outputs,
-                    warnings=input_report.warnings,
-                    metrics={
-                        "taxon_count": report.taxon_count,
-                        "predictor_count": len(report.predictors),
-                        "lambda_value": report.lambda_value,
-                        "r_squared": report.r_squared,
-                    },
+                        outputs=outputs,
+                        warnings=input_report.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "predictor_count": len(report.predictors),
+                            "encoded_predictor_count": len(report.encoded_columns) - 1,
+                            "lambda_value": report.lambda_value,
+                            "r_squared": report.r_squared,
+                        },
                     data={
                         "inputs": input_report,
                         "model": report,
