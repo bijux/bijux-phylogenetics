@@ -25,3 +25,4 @@
 - add geographic-analysis readiness gates, state-coding audits, biogeographic interpretation reports, alignment inference-readiness audits, engine-output validation, metadata clustering checks, inference-failure taxonomy, and bootstrap tree-set validation
 - expand inference workflows with bootstrap support distributions, weak-backbone detection, model and engine tree comparisons, sensitivity reports, model-selection limitations reports, supplement-style workflow reports, and checksummed inference evidence bundles
 - add bootstrap-versus-posterior support comparison and HTML tree-set comparison reports for cross-analysis uncertainty review
+- add Bayesian posterior-tree thinning, MCC and node-age summaries, BEAST log validation and chain diagnostics, cross-run or scenario posterior comparisons, and reviewer-facing Bayesian diagnostics reports
