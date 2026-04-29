@@ -32,6 +32,7 @@
         "node": "C|D"
       }
     ],
+    "internal_label_conflicts": [],
     "internal_node_count": 3,
     "is_binary": true,
     "is_ultrametric": true,
@@ -51,11 +52,44 @@
     "path": "tests/fixtures/trees/example_tree.nwk",
     "polytomy_count": 0,
     "polytomy_nodes": [],
+    "root_state_confidence": {
+      "classification": "apparently_rooted",
+      "rationale": [
+        "root has exactly two child clades but no explicit rooted flag was preserved"
+      ],
+      "suspicious_placement": false,
+      "suspicious_reasons": []
+    },
     "rooted": true,
     "sackin_imbalance_index": 8,
     "short_branch_outliers": [],
     "singleton_internal_nodes": [],
     "source_format": "newick",
+    "stable_node_identities": [
+      {
+        "descendant_taxa": [
+          "A",
+          "B"
+        ],
+        "node_id": "A|B"
+      },
+      {
+        "descendant_taxa": [
+          "C",
+          "D"
+        ],
+        "node_id": "C|D"
+      },
+      {
+        "descendant_taxa": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "node_id": "A|B|C|D"
+      }
+    ],
     "star_like": false,
     "suspicious_support_value_ranges": [],
     "taxa": [
@@ -65,10 +99,11 @@
       "D"
     ],
     "tip_count": 4,
-    "total_branch_length": 0.8999999999999999,
+    "total_branch_length": 0.9,
     "tree_diameter": 0.6,
     "tree_quality_score": 100.0,
     "tree_quality_warnings": [],
+    "unsafe_external_labels": [],
     "unusually_imbalanced": false,
     "warnings": [],
     "zero_length_branch_count": 0
@@ -83,6 +118,7 @@
     "clade_count": 3,
     "colless_imbalance_index": 0.0,
     "edge_count": 6,
+    "internal_label_conflict_count": 0,
     "internal_node_count": 3,
     "is_binary": true,
     "is_ultrametric": true,
@@ -93,6 +129,7 @@
     "missing_terminal_branch_count": 0,
     "node_count": 7,
     "polytomy_count": 0,
+    "root_classification": "apparently_rooted",
     "sackin_imbalance_index": 8,
     "short_branch_outlier_count": 0,
     "singleton_internal_node_count": 0,
@@ -100,6 +137,7 @@
     "tip_count": 4,
     "tree_diameter": 0.6,
     "tree_quality_score": 100.0,
+    "unsafe_external_label_count": 0,
     "zero_length_branch_count": 0
   },
   "outputs": [],
