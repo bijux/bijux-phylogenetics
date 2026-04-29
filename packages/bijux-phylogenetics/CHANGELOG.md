@@ -20,3 +20,4 @@
 - add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
 - add tree integrity validation, validity decisions, rootedness confidence, node-stable forensic reporting, and external-label safety audits
 - add audited topology transforms, pruning artifact summaries, taxon-identity conflict detection, and cross-format tree roundtrip validation with semantic-loss reporting
+- add alignment readiness decisions, raw-versus-aligned FASTA classification, sliding-window region diagnostics, raw length outlier detection, ambiguity-aware uncertainty accounting, and partial-codon reporting
