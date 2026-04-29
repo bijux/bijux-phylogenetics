@@ -63,8 +63,9 @@ standalone Brownian and OU trait-model fitting, comparative-model
 comparison, formula-driven phylogenetic generalized least-squares,
 comparative multiple-testing correction, comparative audit and influence
 reporting, continuous and discrete
-ancestral-state reconstruction, ancestral uncertainty reporting, ancestral tree
-rendering, discrete-state geographic transition modeling and reporting,
+ancestral-state reconstruction, ancestral uncertainty reporting, ancestral sensitivity
+summaries, supplement-style ancestral reporting, ancestral tree
+rendering, ordered versus unordered discrete-state modeling, discrete-state geographic transition modeling and reporting,
 governed external-engine orchestration for alignment, trimming, model
 selection, tree inference, and initial MrBayes posterior analysis, tree-set
 consensus and posterior uncertainty analysis, tree and alignment simulation,
@@ -157,11 +158,13 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics comparative compare-trees tree-a.nwk tree-b.nwk traits.tsv --response height_cm --predictors body_mass log_range --json`
 - `uv run bijux-phylogenetics comparative compare-pruning tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --drop-taxa OutlierTaxon --json`
 - `uv run bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json`
-- `uv run bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json`
+- `uv run bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --model symmetric --state-ordering ordered --ordered-states low,medium,high --json`
 - `uv run bijux-phylogenetics ancestral compare tree.nwk traits.tsv --trait height_cm --left-model brownian --right-model ou --json`
-- `uv run bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html`
+- `uv run bijux-phylogenetics ancestral sensitivity tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --json`
+- `uv run bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --out artifacts/ancestral-report.html`
+- `uv run bijux-phylogenetics ancestral package tree.nwk traits.tsv --trait habitat --kind discrete --model symmetric --state-ordering ordered --ordered-states low,medium,high --out-dir artifacts/ancestral-package --json`
 - `uv run bijux-phylogenetics discrete-evolution validate-coding tree.nwk geography.tsv --trait region --allowed-states north,south,island --json`
-- `uv run bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --model all-rates-different --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json`
+- `uv run bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --model symmetric --state-ordering ordered --ordered-states north,south,island --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json`
 - `uv run bijux-phylogenetics discrete-evolution render tree.nwk geography.tsv --trait region --out artifacts/geography.svg --json`
 - `uv run bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model all-rates-different --out artifacts/geography-report.html --json`
 - `uv run bijux-phylogenetics diversification ltt tree.nwk --out artifacts/ltt.tsv --json`
