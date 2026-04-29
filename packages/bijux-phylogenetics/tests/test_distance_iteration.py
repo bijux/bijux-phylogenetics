@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.distance import (
+    assess_distance_method_assumptions,
+    assess_imported_distance_method_assumptions,
     bootstrap_distance_trees,
     compute_pairwise_genetic_distance_matrix,
     inspect_distance_matrix_quality,
@@ -31,6 +33,7 @@ def test_validate_distance_reference_examples_passes() -> None:
     report = validate_distance_reference_examples()
     assert report.all_passed is True
     assert len(report.observations) == 3
+    assert len(report.tree_observations) == 1
 
 
 def test_compute_pairwise_genetic_distance_matrix_supports_kimura_two_parameter() -> None:
@@ -82,6 +85,18 @@ def test_inspect_distance_matrix_quality_reports_saturation_risk() -> None:
     assert len(report.saturated_pairs) > 0
 
 
+def test_assess_distance_method_assumptions_reports_ultrametric_violation() -> None:
+    report = assess_distance_method_assumptions(fixture("example_alignment_distance.fasta"))
+    assert report.ultrametric_compatible is False
+    assert len(report.upgma_ultrametric_violations) > 0
+
+
+def test_assess_imported_distance_method_assumptions_accepts_ultrametric_matrix() -> None:
+    report = assess_imported_distance_method_assumptions(fixture("example_distance_matrix_ultrametric.tsv"))
+    assert report.ultrametric_compatible is True
+    assert report.upgma_ultrametric_violations == []
+
+
 def test_bootstrap_distance_trees_returns_consensus_and_support() -> None:
     trees, report = bootstrap_distance_trees(
         fixture("example_alignment_distance.fasta"),
@@ -123,4 +138,5 @@ def test_render_distance_report_for_alignment_embeds_quality_sections(tmp_path: 
     )
     html = output_path.read_text(encoding="utf-8")
     assert "distance-quality" in html
+    assert "distance-method-assumptions" in html
     assert "distance-reference-validation" in html
