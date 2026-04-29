@@ -7,6 +7,7 @@ from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ance
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
+    compare_discrete_ancestral_models,
     render_ancestral_state_report,
     render_ancestral_state_tree,
     write_ancestral_state_table,
@@ -59,6 +60,17 @@ def test_write_ancestral_state_table_exports_continuous_and_discrete_rows(tmp_pa
     write_ancestral_state_table(discrete_path, discrete)
     assert "estimate\tstandard_error" in continuous_path.read_text(encoding="utf-8")
     assert "most_likely_state\tstate_set" in discrete_path.read_text(encoding="utf-8")
+
+
+def test_compare_discrete_ancestral_models_selects_supported_model() -> None:
+    report = compare_discrete_ancestral_models(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+    )
+    assert len(report.rows) == 3
+    assert report.selected_model in {"equal-rates", "symmetric", "all-rates-different"}
+    assert any(difference.comparison_model == "symmetric" for difference in report.node_differences)
 
 
 def test_render_ancestral_state_tree_adds_internal_annotations(tmp_path: Path) -> None:

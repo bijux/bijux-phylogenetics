@@ -8,6 +8,7 @@ from typing import cast
 from bijux_phylogenetics.ancestral.common import reconstruction_manifest, write_ancestral_rows
 from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport, reconstruct_continuous_ancestral_states
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport, reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.discrete_evolution import run_discrete_state_transition_model
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
 
@@ -35,6 +36,42 @@ class ContinuousAncestralComparisonReport:
     left_model: str
     right_model: str
     rows: list[ContinuousAncestralComparisonRow]
+
+
+@dataclass(slots=True)
+class DiscreteAncestralModelComparisonRow:
+    """Model-comparison summary for one discrete ancestral-state model."""
+
+    model: str
+    parameter_count: int
+    pseudo_log_likelihood: float
+    aic: float
+    selected: bool
+
+
+@dataclass(slots=True)
+class DiscreteAncestralModelDifference:
+    """Node-level state difference between the selected and another discrete model."""
+
+    comparison_model: str
+    node: str
+    descendant_taxa: list[str]
+    selected_state: str
+    comparison_state: str
+    differs: bool
+
+
+@dataclass(slots=True)
+class DiscreteAncestralModelComparisonReport:
+    """Comparison of ER, SYM, and ARD discrete ancestral reconstructions."""
+
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    taxon_count: int
+    selected_model: str
+    rows: list[DiscreteAncestralModelComparisonRow]
+    node_differences: list[DiscreteAncestralModelDifference]
 
 
 @dataclass(slots=True)
@@ -107,6 +144,77 @@ def compare_continuous_ancestral_models(
         left_model=left_model,
         right_model=right_model,
         rows=rows,
+    )
+
+
+def compare_discrete_ancestral_models(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    models: tuple[str, str, str] = ("equal-rates", "symmetric", "all-rates-different"),
+) -> DiscreteAncestralModelComparisonReport:
+    """Compare supported discrete ancestral-state likelihood models and select the lowest-AIC fit."""
+    reconstructions = {
+        model: reconstruct_discrete_ancestral_states(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+            model=model,
+        )
+        for model in models
+    }
+    transition_reports = {
+        model: run_discrete_state_transition_model(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+            model=model,
+        )
+        for model in models
+    }
+    rows = [
+        DiscreteAncestralModelComparisonRow(
+            model=model,
+            parameter_count=transition_reports[model].transition_model.parameter_count,
+            pseudo_log_likelihood=transition_reports[model].transition_model.pseudo_log_likelihood,
+            aic=transition_reports[model].transition_model.aic,
+            selected=False,
+        )
+        for model in models
+    ]
+    selected_model = min(rows, key=lambda row: row.aic).model
+    for row in rows:
+        row.selected = row.model == selected_model
+    selected_report = reconstructions[selected_model]
+    selected_by_node = {estimate.node: estimate for estimate in selected_report.estimates}
+    node_differences: list[DiscreteAncestralModelDifference] = []
+    for model, report in reconstructions.items():
+        if model == selected_model:
+            continue
+        for estimate in report.estimates:
+            selected_estimate = selected_by_node[estimate.node]
+            node_differences.append(
+                DiscreteAncestralModelDifference(
+                    comparison_model=model,
+                    node=estimate.node,
+                    descendant_taxa=estimate.descendant_taxa,
+                    selected_state=selected_estimate.most_likely_state,
+                    comparison_state=estimate.most_likely_state,
+                    differs=selected_estimate.most_likely_state != estimate.most_likely_state,
+                )
+            )
+    return DiscreteAncestralModelComparisonReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        trait=trait,
+        taxon_count=selected_report.taxon_count,
+        selected_model=selected_model,
+        rows=rows,
+        node_differences=node_differences,
     )
 
 
