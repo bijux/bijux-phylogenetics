@@ -77,8 +77,11 @@ from bijux_phylogenetics.discrete_evolution import (
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     validate_discrete_state_coding,
+    write_discrete_model_comparison_table,
     write_node_state_probability_table,
+    write_transition_summary_table,
 )
+from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
     render_inference_workflow_report,
@@ -236,7 +239,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.run_discrete_state_transition_model is run_discrete_state_transition_model
     assert bijux_phylogenetics.estimate_ancestral_geographic_states is estimate_ancestral_geographic_states
     assert bijux_phylogenetics.compare_discrete_state_models is compare_discrete_state_models
+    assert bijux_phylogenetics.write_discrete_model_comparison_table is write_discrete_model_comparison_table
     assert bijux_phylogenetics.write_node_state_probability_table is write_node_state_probability_table
+    assert bijux_phylogenetics.write_transition_summary_table is write_transition_summary_table
     assert bijux_phylogenetics.render_tree_with_geographic_states is render_tree_with_geographic_states
     assert bijux_phylogenetics.render_discrete_state_evolution_report is render_discrete_state_evolution_report
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
@@ -258,6 +263,16 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.simulate_discrete_traits is simulate_discrete_traits
     assert bijux_phylogenetics.simulate_dna_alignment is simulate_dna_alignment
     assert bijux_phylogenetics.simulate_protein_alignment is simulate_protein_alignment
+
+
+def test_command_registry_exposes_discrete_evolution_surface() -> None:
+    spec = get_command_spec("discrete-evolution")
+
+    assert spec.domain == "discrete-state-evolution"
+    assert spec.outputs == ("discrete-state-evolution-report",)
+
+
+def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.benchmark_tree_validation is benchmark_tree_validation
     assert bijux_phylogenetics.benchmark_tree_comparison is benchmark_tree_comparison
     assert bijux_phylogenetics.benchmark_alignment_diagnostics is benchmark_alignment_diagnostics
