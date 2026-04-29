@@ -23,7 +23,8 @@ Runtime package for the bijux-phylogenetics repository.
 
 This package provides the Python API and CLI for tree validation, inspection,
 comparison, metadata linkage, comparative trait analysis, ancestral-state
-reconstruction, evidence bundle creation, and HTML report generation.
+reconstruction, external engine orchestration, evidence bundle creation, and
+HTML report generation.
 
 ## Install
 
@@ -50,6 +51,8 @@ bijux-phylogenetics --help
 - reconstruct continuous ancestral states under Brownian or OU-style trait models
 - reconstruct discrete ancestral states under Fitch parsimony with explicit ambiguity reporting
 - compare continuous ancestral reconstructions across two supported models and render annotated ancestral trees
+- run governed MAFFT-, trimAl-, IQ-TREE-, and FastTree-style external workflows with captured commands, versions, logs, and warning summaries
+- compare fast approximate and maximum-likelihood trees through the same deterministic tree-comparison report surface
 - export joined metadata rows and missing trait-value diagnostics
 - inspect alignment alphabets, composition, GC content, duplicates, composition outliers, coding stop codons, and frameshift-like sequence lengths
 - trim all-gap or all-missing columns and remove high-missingness sequences
@@ -77,6 +80,13 @@ bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --
 bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json
 bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json
 bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html
+bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json
+bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json
+bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json
+bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json
+bijux-phylogenetics adapter consensus artifacts/bootstrap/mammals.ufboot --out-dir artifacts/consensus --prefix mammals --json
+bijux-phylogenetics adapter infer-fast alignment.fasta --out artifacts/fasttree.nwk --json
+bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --json
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
