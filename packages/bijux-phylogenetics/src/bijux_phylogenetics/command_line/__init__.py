@@ -1136,7 +1136,9 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_discrete.add_argument("table", type=Path)
     ancestral_discrete.add_argument("--trait", required=True)
     ancestral_discrete.add_argument("--taxon-column")
-    ancestral_discrete.add_argument("--model", choices=("fitch",), default="fitch")
+    ancestral_discrete.add_argument("--model", choices=("fitch", "equal-rates", "symmetric", "all-rates-different"), default="fitch")
+    ancestral_discrete.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    ancestral_discrete.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     ancestral_discrete.add_argument("--table-out", type=Path)
     ancestral_discrete.add_argument("--json", action="store_true", help="Emit the reconstruction as JSON.")
     _add_manifest_argument(ancestral_discrete)
@@ -1164,6 +1166,8 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_sensitivity.add_argument("--kind", choices=("continuous", "discrete"), required=True)
     ancestral_sensitivity.add_argument("--taxon-column")
     ancestral_sensitivity.add_argument("--model")
+    ancestral_sensitivity.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    ancestral_sensitivity.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     ancestral_sensitivity.add_argument("--alpha", type=float, default=1.0)
     ancestral_sensitivity.add_argument("--compare-model")
     ancestral_sensitivity.add_argument("--compare-tree", type=Path)
@@ -1181,6 +1185,8 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_render.add_argument("--kind", choices=("continuous", "discrete"), required=True)
     ancestral_render.add_argument("--taxon-column")
     ancestral_render.add_argument("--model")
+    ancestral_render.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    ancestral_render.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     ancestral_render.add_argument("--alpha", type=float, default=1.0)
     ancestral_render.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
     ancestral_render.add_argument("--out", required=True, type=Path)
@@ -1196,6 +1202,8 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_report.add_argument("--kind", choices=("continuous", "discrete"), required=True)
     ancestral_report.add_argument("--taxon-column")
     ancestral_report.add_argument("--model")
+    ancestral_report.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    ancestral_report.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     ancestral_report.add_argument("--alpha", type=float, default=1.0)
     ancestral_report.add_argument("--compare-model")
     ancestral_report.add_argument("--compare-tree", type=Path)
@@ -1214,6 +1222,8 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_package.add_argument("--kind", choices=("continuous", "discrete"), required=True)
     ancestral_package.add_argument("--taxon-column")
     ancestral_package.add_argument("--model")
+    ancestral_package.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    ancestral_package.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     ancestral_package.add_argument("--alpha", type=float, default=1.0)
     ancestral_package.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
     ancestral_package.add_argument("--out-dir", required=True, type=Path)
@@ -1240,6 +1250,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, accept any single token state label.",
     )
+    discrete_validate.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    discrete_validate.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     discrete_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
     _add_manifest_argument(discrete_validate)
     discrete_imbalance = discrete_evolution_subparsers.add_parser(
@@ -1260,7 +1272,9 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_model.add_argument("table", type=Path)
     discrete_model.add_argument("--trait", required=True)
     discrete_model.add_argument("--taxon-column")
-    discrete_model.add_argument("--model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_model.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
+    discrete_model.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    discrete_model.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     discrete_model.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
@@ -1277,12 +1291,14 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_compare.add_argument("table", type=Path)
     discrete_compare.add_argument("--trait", required=True)
     discrete_compare.add_argument("--taxon-column")
-    discrete_compare.add_argument("--left-model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_compare.add_argument("--left-model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
     discrete_compare.add_argument(
         "--right-model",
-        choices=("equal-rates", "all-rates-different"),
+        choices=("equal-rates", "symmetric", "all-rates-different"),
         default="all-rates-different",
     )
+    discrete_compare.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    discrete_compare.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     discrete_compare.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
@@ -1298,7 +1314,9 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_render.add_argument("table", type=Path)
     discrete_render.add_argument("--trait", required=True)
     discrete_render.add_argument("--taxon-column")
-    discrete_render.add_argument("--model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_render.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
+    discrete_render.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    discrete_render.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     discrete_render.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
@@ -1315,12 +1333,14 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_report.add_argument("table", type=Path)
     discrete_report.add_argument("--trait", required=True)
     discrete_report.add_argument("--taxon-column")
-    discrete_report.add_argument("--model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_report.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
+    discrete_report.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
+    discrete_report.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
     discrete_report.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
     )
-    discrete_report.add_argument("--compare-model", choices=("equal-rates", "all-rates-different"))
+    discrete_report.add_argument("--compare-model", choices=("equal-rates", "symmetric", "all-rates-different"))
     discrete_report.add_argument("--out", required=True, type=Path)
     discrete_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(discrete_report)
@@ -3381,6 +3401,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                     model=args.model,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
                 )
                 outputs: list[Path | str] = []
                 if args.table_out is not None:
@@ -3443,6 +3465,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     model=resolved_model,
                     taxon_column=args.taxon_column,
                     alpha=args.alpha,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
                     compare_tree_path=args.compare_tree,
                     compare_model=args.compare_model,
                     drop_taxa=args.drop_taxa,
@@ -3485,6 +3509,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         trait=args.trait,
                         taxon_column=args.taxon_column,
                         model=resolved_model,
+                        state_ordering=args.state_ordering,
+                        ordered_states=_split_csv_values(args.ordered_states) or None,
                     )
                 result = render_ancestral_state_tree(
                     args.tree,
@@ -3528,6 +3554,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     model=resolved_model,
                     alpha=args.alpha,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
                     layout=args.layout,
                 )
                 outputs = _finalize_outputs(
@@ -3567,6 +3595,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 taxon_column=args.taxon_column,
                 model=resolved_model,
                 alpha=args.alpha,
+                state_ordering=args.state_ordering,
+                ordered_states=_split_csv_values(args.ordered_states) or None,
                 compare_model=args.compare_model,
                 compare_tree_path=args.compare_tree,
                 drop_taxa=args.drop_taxa,
@@ -3601,6 +3631,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                     allowed_states=allowed_states or None,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
                 )
                 outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[args.tree, args.table])
                 _print_result(
@@ -3650,6 +3682,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     model=args.model,
                     allowed_states=allowed_states or None,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
                 )
                 outputs: list[Path | str] = []
                 if args.node_table_out is not None:
@@ -3687,6 +3721,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     model=args.model,
                     allowed_states=allowed_states or None,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
                 )
                 result = render_tree_with_geographic_states(
                     args.tree,
@@ -3729,6 +3765,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     model=args.model,
                     allowed_states=allowed_states or None,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
                     compare_model=args.compare_model,
                 )
                 outputs = _finalize_outputs(
@@ -3759,6 +3797,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 left_model=args.left_model,
                 right_model=args.right_model,
                 allowed_states=allowed_states or None,
+                state_ordering=args.state_ordering,
+                ordered_states=_split_csv_values(args.ordered_states) or None,
             )
             outputs: list[Path | str] = []
             if args.table_out is not None:

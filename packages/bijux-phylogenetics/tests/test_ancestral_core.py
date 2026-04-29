@@ -125,6 +125,19 @@ def test_discrete_reconstruction_supports_likelihood_models() -> None:
     assert isinstance(report.unstable_nodes, list)
 
 
+def test_discrete_reconstruction_supports_ordered_state_models() -> None:
+    report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="equal-rates",
+        state_ordering="ordered",
+        ordered_states=["north", "south", "island"],
+    )
+    assert report.state_ordering == "ordered"
+    assert report.ordered_states == ["north", "south", "island"]
+
+
 def test_discrete_reconstruction_rejects_single_observed_state() -> None:
     with pytest.raises(AncestralReconstructionError):
         reconstruct_discrete_ancestral_states(

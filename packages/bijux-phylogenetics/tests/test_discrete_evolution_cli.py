@@ -105,6 +105,30 @@ def test_discrete_evolution_model_and_compare_cli_write_tables(tmp_path: Path, c
     assert "left_probabilities" in comparison_table.read_text(encoding="utf-8")
 
 
+def test_discrete_evolution_model_cli_accepts_symmetric_ordered_states(capsys) -> None:
+    exit_code = main(
+        [
+            "discrete-evolution",
+            "model",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "symmetric",
+            "--state-ordering",
+            "ordered",
+            "--ordered-states",
+            "north,south,island",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["data"]["model"] == "symmetric"
+    assert payload["data"]["state_ordering"] == "ordered"
+
+
 def test_discrete_evolution_render_and_report_cli_write_svg_and_html(tmp_path: Path, capsys) -> None:
     svg_path = tmp_path / "geography.svg"
     report_path = tmp_path / "geography-report.html"

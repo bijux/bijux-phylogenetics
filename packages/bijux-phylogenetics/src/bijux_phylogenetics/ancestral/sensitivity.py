@@ -48,6 +48,8 @@ def build_ancestral_sensitivity_report(
     model: str,
     taxon_column: str | None = None,
     alpha: float = 1.0,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
     compare_tree_path: Path | None = None,
     compare_model: str | None = None,
     drop_taxa: list[str] | None = None,
@@ -62,6 +64,8 @@ def build_ancestral_sensitivity_report(
         model=model,
         taxon_column=taxon_column,
         alpha=alpha,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     model_sensitivity = _model_sensitivity_summary(
         tree_path,
@@ -71,6 +75,8 @@ def build_ancestral_sensitivity_report(
         model=model,
         taxon_column=taxon_column,
         alpha=alpha,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
         compare_model=compare_model,
     )
     tree_sensitivity = _tree_sensitivity_summary(
@@ -81,6 +87,8 @@ def build_ancestral_sensitivity_report(
         model=model,
         taxon_column=taxon_column,
         alpha=alpha,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
         compare_tree_path=compare_tree_path,
     )
     pruning_sensitivity = _pruning_sensitivity_summary(
@@ -100,6 +108,8 @@ def build_ancestral_sensitivity_report(
         reconstruction_kind=reconstruction_kind,
         model=model,
         taxon_column=taxon_column,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
         coding_map=coding_map,
     )
     return AncestralSensitivityReport(
@@ -125,6 +135,8 @@ def _baseline_node_count(
     model: str,
     taxon_column: str | None,
     alpha: float,
+    state_ordering: str,
+    ordered_states: list[str] | None,
 ) -> int:
     if reconstruction_kind == "continuous":
         report = reconstruct_continuous_ancestral_states(
@@ -142,6 +154,8 @@ def _baseline_node_count(
             trait=trait,
             taxon_column=taxon_column,
             model=model,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
     return sum(1 for estimate in report.estimates if not estimate.is_tip)
 
@@ -155,6 +169,8 @@ def _model_sensitivity_summary(
     model: str,
     taxon_column: str | None,
     alpha: float,
+    state_ordering: str,
+    ordered_states: list[str] | None,
     compare_model: str | None,
 ) -> AncestralSensitivitySummary | None:
     if compare_model is None:
@@ -182,6 +198,8 @@ def _model_sensitivity_summary(
         trait=trait,
         taxon_column=taxon_column,
         models=(model, compare_model, "all-rates-different" if compare_model != "all-rates-different" else "equal-rates"),
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     ) if model != "fitch" and compare_model != "fitch" else None
     if comparison is not None:
         changed = sum(1 for row in comparison.node_differences if row.differs)
@@ -196,6 +214,8 @@ def _model_sensitivity_summary(
         trait=trait,
         taxon_column=taxon_column,
         model=model,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     alternative = reconstruct_discrete_ancestral_states(
         tree_path,
@@ -203,6 +223,8 @@ def _model_sensitivity_summary(
         trait=trait,
         taxon_column=taxon_column,
         model=compare_model,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     alternative_by_node = {estimate.node: estimate for estimate in alternative.estimates if not estimate.is_tip}
     changed = sum(
@@ -228,6 +250,8 @@ def _tree_sensitivity_summary(
     model: str,
     taxon_column: str | None,
     alpha: float,
+    state_ordering: str,
+    ordered_states: list[str] | None,
     compare_tree_path: Path | None,
 ) -> AncestralSensitivitySummary | None:
     if compare_tree_path is None:
@@ -251,6 +275,8 @@ def _tree_sensitivity_summary(
             trait=trait,
             taxon_column=taxon_column,
             model=model,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
         changed = sum(1 for row in comparison.rows if row.differs)
     return AncestralSensitivitySummary(
@@ -321,6 +347,8 @@ def _trait_coding_sensitivity_summary(
     model: str,
     taxon_column: str | None,
     coding_map: dict[str, str] | None,
+    state_ordering: str,
+    ordered_states: list[str] | None,
 ) -> AncestralSensitivitySummary | None:
     if reconstruction_kind != "discrete" or not coding_map:
         return None

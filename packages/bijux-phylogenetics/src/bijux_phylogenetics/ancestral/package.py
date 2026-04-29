@@ -32,6 +32,8 @@ def build_ancestral_figure_package(
     taxon_column: str | None = None,
     model: str = "brownian",
     alpha: float = 1.0,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
     layout: str = "phylogram",
 ) -> AncestralFigurePackageResult:
     """Build a publication-ready package for one ancestral-state reconstruction."""
@@ -52,6 +54,8 @@ def build_ancestral_figure_package(
             trait=trait,
             taxon_column=taxon_column,
             model=model,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
 
     figure_path = out_dir / "ancestral-figure.svg"

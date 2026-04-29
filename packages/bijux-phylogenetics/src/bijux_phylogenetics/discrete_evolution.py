@@ -43,6 +43,8 @@ class StateCodingValidationReport:
     taxon_column: str
     trait: str
     allowed_states: list[str]
+    state_ordering: str
+    ordered_states: list[str]
     valid: bool
     issues: list[StateCodingIssue]
     observed_states: list[str]
@@ -81,6 +83,9 @@ class TransitionModelReport:
     taxon_column: str
     trait: str
     model: str
+    likelihood_method: str
+    state_ordering: str
+    ordered_states: list[str]
     state_order: list[str]
     parameter_count: int
     pseudo_log_likelihood: float
@@ -130,6 +135,9 @@ class DiscreteStateEvolutionReport:
     taxon_column: str
     trait: str
     model: str
+    likelihood_method: str
+    state_ordering: str
+    ordered_states: list[str]
     analysis_tree_newick: str
     taxon_count: int
     observed_states: list[str]
@@ -199,6 +207,33 @@ def _normalize_probabilities(scores: dict[str, float]) -> dict[str, float]:
         state: float(format(scores[state] / total, ".15g"))
         for state in sorted(scores)
     }
+
+
+def _resolve_state_order(
+    observed_states: list[str],
+    *,
+    allowed_states: list[str] | None,
+    ordered_states: list[str] | None,
+    state_ordering: str,
+) -> list[str]:
+    if state_ordering == "ordered":
+        if ordered_states:
+            return ordered_states
+        if allowed_states:
+            return allowed_states
+    return sorted(observed_states)
+
+
+def _transition_allowed(
+    source_state: str,
+    target_state: str,
+    state_order: list[str],
+    *,
+    state_ordering: str,
+) -> bool:
+    if source_state == target_state or state_ordering != "ordered":
+        return True
+    return abs(state_order.index(source_state) - state_order.index(target_state)) == 1
 
 
 def _state_support(node, states_by_taxon: dict[str, str], state_order: list[str]) -> dict[str, int]:
@@ -298,16 +333,42 @@ def _stationary_frequencies(states_by_taxon: dict[str, str], state_order: list[s
     }
 
 
-def _fit_transition_matrix(model: str, state_order: list[str], stationary: dict[str, float], er_events: list[TransitionEvent]) -> list[TransitionRateRow]:
+def _fit_transition_matrix(
+    model: str,
+    state_order: list[str],
+    stationary: dict[str, float],
+    er_events: list[TransitionEvent],
+    *,
+    state_ordering: str,
+) -> list[TransitionRateRow]:
     change_mass = 0.2
     stay_mass = 0.8
     if model == "equal-rates":
-        off_diagonal = change_mass / max(len(state_order) - 1, 1)
         return [
             TransitionRateRow(
                 source_state=source,
                 target_rates={
-                    target: float(format(stay_mass if source == target else off_diagonal, ".15g"))
+                    target: float(
+                        format(
+                            stay_mass
+                            if source == target
+                            else (
+                                change_mass
+                                / max(
+                                    sum(
+                                        1
+                                        for candidate in state_order
+                                        if candidate != source
+                                        and _transition_allowed(source, candidate, state_order, state_ordering=state_ordering)
+                                    ),
+                                    1,
+                                )
+                                if _transition_allowed(source, target, state_order, state_ordering=state_ordering)
+                                else 0.0
+                            ),
+                            ".15g",
+                        )
+                    )
                     for target in state_order
                 },
             )
@@ -315,14 +376,25 @@ def _fit_transition_matrix(model: str, state_order: list[str], stationary: dict[
         ]
 
     counts = {
-        source: {target: 1.0 for target in state_order if target != source}
+        source: {
+            target: (
+                1.0
+                if target != source and _transition_allowed(source, target, state_order, state_ordering=state_ordering)
+                else 0.0
+            )
+            for target in state_order
+            if target != source
+        }
         for source in state_order
     }
     for event in er_events:
         if event.source_state != event.target_state:
+            if not _transition_allowed(event.source_state, event.target_state, state_order, state_ordering=state_ordering):
+                continue
             if model == "symmetric":
                 counts[event.source_state][event.target_state] += 1.0
-                counts[event.target_state][event.source_state] += 1.0
+                if _transition_allowed(event.target_state, event.source_state, state_order, state_ordering=state_ordering):
+                    counts[event.target_state][event.source_state] += 1.0
             else:
                 counts[event.source_state][event.target_state] += 1.0
     rows: list[TransitionRateRow] = []
@@ -335,7 +407,16 @@ def _fit_transition_matrix(model: str, state_order: list[str], stationary: dict[
                     target: (
                         float(format(stay_mass, ".15g"))
                         if source == target
-                        else float(format(change_mass * (counts[source][target] / off_total), ".15g"))
+                        else float(
+                            format(
+                                (
+                                    change_mass * (counts[source][target] / off_total)
+                                    if _transition_allowed(source, target, state_order, state_ordering=state_ordering) and off_total > 0.0
+                                    else 0.0
+                                ),
+                                ".15g",
+                            )
+                        )
                     )
                     for target in state_order
                 },
@@ -348,7 +429,16 @@ def _row_lookup(rows: list[TransitionRateRow]) -> dict[str, dict[str, float]]:
     return {row.source_state: row.target_rates for row in rows}
 
 
-def _estimate_node_states(tree, candidate_sets: dict[str, list[str]], states_by_taxon: dict[str, str], state_order: list[str], matrix: list[TransitionRateRow], root_prior: dict[str, float]) -> list[NodeStateEstimate]:
+def _estimate_node_states(
+    tree,
+    candidate_sets: dict[str, list[str]],
+    states_by_taxon: dict[str, str],
+    state_order: list[str],
+    matrix: list[TransitionRateRow],
+    root_prior: dict[str, float],
+    *,
+    state_ordering: str,
+) -> list[NodeStateEstimate]:
     transition_lookup = _row_lookup(matrix)
     support_by_node = {
         node_signature(node): _state_support(node, states_by_taxon, state_order)
@@ -360,7 +450,7 @@ def _estimate_node_states(tree, candidate_sets: dict[str, list[str]], states_by_
     root_signature = node_signature(tree.root)
     root_scores = {
         state: (support_by_node[root_signature].get(state, 0) + 1.0) * root_prior.get(state, 0.0)
-        for state in candidate_sets[root_signature]
+        for state in (state_order if state_ordering == "ordered" else candidate_sets[root_signature])
     }
     probabilities_by_node[root_signature] = _normalize_probabilities(root_scores)
     resolved_states[root_signature] = max(sorted(probabilities_by_node[root_signature]), key=lambda state: probabilities_by_node[root_signature][state])
@@ -377,7 +467,7 @@ def _estimate_node_states(tree, candidate_sets: dict[str, list[str]], states_by_
             else:
                 scores: dict[str, float] = {}
                 child_support = support_by_node[child_signature]
-                for child_state in candidate_sets[child_signature]:
+                for child_state in (state_order if state_ordering == "ordered" else candidate_sets[child_signature]):
                     transition_support = sum(
                         parent_probabilities[parent_state] * transition_lookup[parent_state][child_state]
                         for parent_state in parent_probabilities
@@ -435,6 +525,8 @@ def validate_discrete_state_coding(
     trait: str,
     taxon_column: str | None = None,
     allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> StateCodingValidationReport:
     """Detect impossible or unsupported discrete-state labels."""
     tree = load_tree(tree_path)
@@ -442,7 +534,12 @@ def validate_discrete_state_coding(
     if trait not in table.columns:
         raise AncestralReconstructionError(f"trait table does not contain column '{trait}'")
     tree_taxa = set(tree.tip_names)
-    allowed = sorted(allowed_states or [])
+    if state_ordering not in {"unordered", "ordered"}:
+        raise ValueError(f"unsupported state ordering: {state_ordering}")
+    ordered = list(ordered_states or [])
+    if ordered and len(set(ordered)) != len(ordered):
+        raise AncestralReconstructionError("ordered state vocabulary contains duplicate labels")
+    allowed = list(allowed_states or [])
     allowed_set = set(allowed)
     issues: list[StateCodingIssue] = []
     usable_taxa: list[str] = []
@@ -483,6 +580,8 @@ def validate_discrete_state_coding(
         taxon_column=table.taxon_column,
         trait=trait,
         allowed_states=allowed,
+        state_ordering=state_ordering,
+        ordered_states=ordered,
         valid=not issues,
         issues=issues,
         observed_states=sorted(observed_states),
@@ -558,6 +657,8 @@ def run_discrete_state_transition_model(
     taxon_column: str | None = None,
     model: str = "equal-rates",
     allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> DiscreteStateEvolutionReport:
     """Run a deterministic discrete-state evolution workflow on one tree and trait."""
     if model not in {"equal-rates", "symmetric", "all-rates-different"}:
@@ -568,6 +669,8 @@ def run_discrete_state_transition_model(
         trait=trait,
         taxon_column=taxon_column,
         allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     if not coding.valid:
         raise AncestralReconstructionError("discrete-state evolution input contains unsupported state labels")
@@ -585,14 +688,27 @@ def run_discrete_state_transition_model(
         trait=trait,
         taxon_column=taxon_column,
     )
-    state_order = sorted(dataset.observed_states)
+    state_order = _resolve_state_order(
+        dataset.observed_states,
+        allowed_states=allowed_states,
+        ordered_states=ordered_states,
+        state_ordering=state_ordering,
+    )
     candidate_sets = _fitch_candidate_sets(dataset.tree, dataset.states_by_taxon)
     stationary = _stationary_frequencies(dataset.states_by_taxon, state_order)
     er_resolved = _resolve_er_states(dataset.tree, candidate_sets, dataset.states_by_taxon, state_order)
     er_events = _transition_events(dataset.tree, er_resolved)
-    matrix = _fit_transition_matrix(model, state_order, stationary, er_events)
+    matrix = _fit_transition_matrix(model, state_order, stationary, er_events, state_ordering=state_ordering)
     root_prior = _root_prior(model, stationary, candidate_sets[node_signature(dataset.tree.root)])
-    estimates = _estimate_node_states(dataset.tree, candidate_sets, dataset.states_by_taxon, state_order, matrix, root_prior)
+    estimates = _estimate_node_states(
+        dataset.tree,
+        candidate_sets,
+        dataset.states_by_taxon,
+        state_order,
+        matrix,
+        root_prior,
+        state_ordering=state_ordering,
+    )
     resolved_states = {estimate.node: estimate.most_likely_state for estimate in estimates}
     events = _transition_events(dataset.tree, resolved_states)
     transition_counts: dict[str, int] = {}
@@ -607,6 +723,9 @@ def run_discrete_state_transition_model(
         taxon_column=dataset.taxon_column,
         trait=trait,
         model=model,
+        likelihood_method="deterministic-node-probability",
+        state_ordering=state_ordering,
+        ordered_states=state_order if state_ordering == "ordered" else [],
         state_order=state_order,
         parameter_count=(
             1
@@ -644,6 +763,9 @@ def run_discrete_state_transition_model(
         taxon_column=dataset.taxon_column,
         trait=trait,
         model=model,
+        likelihood_method="deterministic-node-probability",
+        state_ordering=state_ordering,
+        ordered_states=state_order if state_ordering == "ordered" else [],
         analysis_tree_newick=dumps_newick(dataset.tree),
         taxon_count=len(dataset.taxa),
         observed_states=state_order,
@@ -665,6 +787,8 @@ def estimate_ancestral_geographic_states(
     taxon_column: str | None = None,
     model: str = "equal-rates",
     allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> DiscreteStateEvolutionReport:
     """Estimate ancestral geographic states over a rooted tree."""
     return run_discrete_state_transition_model(
@@ -674,6 +798,8 @@ def estimate_ancestral_geographic_states(
         taxon_column=taxon_column,
         model=model,
         allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
 
 
@@ -686,6 +812,8 @@ def compare_discrete_state_models(
     left_model: str = "equal-rates",
     right_model: str = "all-rates-different",
     allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> DiscreteModelComparisonReport:
     """Compare discrete-state reconstructions across two supported models."""
     left = run_discrete_state_transition_model(
@@ -695,6 +823,8 @@ def compare_discrete_state_models(
         taxon_column=taxon_column,
         model=left_model,
         allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     right = run_discrete_state_transition_model(
         tree_path,
@@ -703,6 +833,8 @@ def compare_discrete_state_models(
         taxon_column=taxon_column,
         model=right_model,
         allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     right_by_node = {estimate.node: estimate for estimate in right.estimates}
     differences: list[NodeStateDifference] = []
@@ -879,6 +1011,8 @@ def render_discrete_state_evolution_report(
     model: str = "equal-rates",
     allowed_states: list[str] | None = None,
     compare_model: str | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> DiscreteEvolutionReportBuildResult:
     """Build a deterministic HTML report for one discrete-state evolution analysis."""
     report = run_discrete_state_transition_model(
@@ -888,6 +1022,8 @@ def render_discrete_state_evolution_report(
         taxon_column=taxon_column,
         model=model,
         allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     comparison = (
         compare_discrete_state_models(
@@ -898,6 +1034,8 @@ def render_discrete_state_evolution_report(
             left_model=model,
             right_model=compare_model,
             allowed_states=allowed_states,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
         if compare_model is not None
         else None

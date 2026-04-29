@@ -204,6 +204,8 @@ def compare_discrete_ancestral_models(
     trait: str,
     taxon_column: str | None = None,
     models: tuple[str, str, str] = ("equal-rates", "symmetric", "all-rates-different"),
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> DiscreteAncestralModelComparisonReport:
     """Compare supported discrete ancestral-state likelihood models and select the lowest-AIC fit."""
     reconstructions = {
@@ -213,6 +215,8 @@ def compare_discrete_ancestral_models(
             trait=trait,
             taxon_column=taxon_column,
             model=model,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
         for model in models
     }
@@ -223,6 +227,8 @@ def compare_discrete_ancestral_models(
             trait=trait,
             taxon_column=taxon_column,
             model=model,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
         for model in models
     }
@@ -325,6 +331,8 @@ def compare_discrete_ancestral_trees(
     trait: str,
     taxon_column: str | None = None,
     model: str = "fitch",
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> DiscreteAncestralTreeComparisonReport:
     """Compare discrete ancestral states across two alternative trees."""
     left = reconstruct_discrete_ancestral_states(
@@ -333,6 +341,8 @@ def compare_discrete_ancestral_trees(
         trait=trait,
         taxon_column=taxon_column,
         model=model,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     right = reconstruct_discrete_ancestral_states(
         right_tree_path,
@@ -340,6 +350,8 @@ def compare_discrete_ancestral_trees(
         trait=trait,
         taxon_column=taxon_column,
         model=model,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
     )
     right_by_node = {estimate.node: estimate for estimate in right.estimates if not estimate.is_tip}
     rows = [
@@ -499,6 +511,8 @@ def render_ancestral_state_report(
     model: str = "brownian",
     alpha: float = 1.0,
     compare_model: str | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
     compare_tree_path: Path | None = None,
     drop_taxa: list[str] | None = None,
     coding_map: dict[str, str] | None = None,
@@ -534,6 +548,8 @@ def render_ancestral_state_report(
             trait=trait,
             taxon_column=taxon_column,
             model=model,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
         comparison = (
             compare_discrete_ancestral_models(
@@ -542,6 +558,8 @@ def render_ancestral_state_report(
                 trait=trait,
                 taxon_column=taxon_column,
                 models=(model, compare_model, "all-rates-different"),
+                state_ordering=state_ordering,
+                ordered_states=ordered_states,
             )
             if compare_model is not None and model != "fitch"
             else None
@@ -556,6 +574,8 @@ def render_ancestral_state_report(
         model=model,
         taxon_column=taxon_column,
         alpha=alpha,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
         compare_tree_path=compare_tree_path,
         compare_model=compare_model,
         drop_taxa=drop_taxa,

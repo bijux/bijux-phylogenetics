@@ -44,6 +44,19 @@ def test_validate_discrete_state_coding_reports_unsupported_and_delimited_states
     assert {issue.code for issue in report.issues} == {"unsupported-state-delimiter", "unsupported-state-label"}
 
 
+def test_validate_discrete_state_coding_records_ordered_vocabulary() -> None:
+    report = validate_discrete_state_coding(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        state_ordering="ordered",
+        ordered_states=["north", "south", "island"],
+    )
+    assert report.valid is True
+    assert report.state_ordering == "ordered"
+    assert report.ordered_states == ["north", "south", "island"]
+
+
 def test_detect_state_imbalance_problems_flags_single_state_and_dominance() -> None:
     report = detect_state_imbalance_problems(
         fixture("example_tree.nwk"),
@@ -79,6 +92,20 @@ def test_run_discrete_state_transition_model_supports_symmetric_rates() -> None:
     )
     assert report.transition_model.model == "symmetric"
     assert report.transition_model.parameter_count == 3
+
+
+def test_run_discrete_state_transition_model_supports_ordered_states() -> None:
+    report = run_discrete_state_transition_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="equal-rates",
+        state_ordering="ordered",
+        ordered_states=["north", "south", "island"],
+    )
+    assert report.state_ordering == "ordered"
+    assert report.ordered_states == ["north", "south", "island"]
+    assert report.transition_model.ordered_states == ["north", "south", "island"]
 
 
 def test_estimate_ancestral_geographic_states_and_compare_models_return_node_differences() -> None:

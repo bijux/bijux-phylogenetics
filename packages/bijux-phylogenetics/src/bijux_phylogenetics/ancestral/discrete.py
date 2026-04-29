@@ -39,6 +39,8 @@ class DiscreteAncestralReport:
     taxon_column: str
     trait: str
     model: str
+    state_ordering: str
+    ordered_states: list[str]
     taxon_count: int
     observed_states: list[str]
     state_counts: dict[str, int]
@@ -58,9 +60,13 @@ def reconstruct_discrete_ancestral_states(
     trait: str,
     taxon_column: str | None = None,
     model: str = "fitch",
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
 ) -> DiscreteAncestralReport:
     """Reconstruct discrete ancestral states under Fitch parsimony."""
     resolved_model = _resolve_discrete_model_name(model)
+    if resolved_model == "fitch" and state_ordering != "unordered":
+        raise ValueError("ordered discrete ancestral reconstruction requires a likelihood model")
     dataset = load_discrete_dataset(
         tree_path,
         traits_path,
@@ -74,6 +80,8 @@ def reconstruct_discrete_ancestral_states(
             trait=trait,
             taxon_column=taxon_column,
             model=resolved_model,
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
         )
         estimates = [
             _build_discrete_estimate(
@@ -103,6 +111,8 @@ def reconstruct_discrete_ancestral_states(
             taxon_column=dataset.taxon_column,
             trait=trait,
             model=resolved_model,
+            state_ordering=state_ordering,
+            ordered_states=likelihood_report.ordered_states,
             taxon_count=len(dataset.taxa),
             observed_states=dataset.observed_states,
             state_counts=dataset.state_counts,
@@ -173,6 +183,8 @@ def reconstruct_discrete_ancestral_states(
         taxon_column=dataset.taxon_column,
         trait=trait,
         model=resolved_model,
+        state_ordering=state_ordering,
+        ordered_states=list(ordered_states or []),
         taxon_count=len(dataset.taxa),
         observed_states=dataset.observed_states,
         state_counts=dataset.state_counts,
