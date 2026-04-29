@@ -12,3 +12,11 @@ Run the public capability walkthrough with:
 ```bash
 make demo
 ```
+
+Distance iteration example:
+
+```bash
+uv run bijux-phylogenetics alignment distance-quality path/to/alignment.fasta --model kimura-2-parameter --json
+uv run bijux-phylogenetics alignment bootstrap-tree path/to/alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
+uv run bijux-phylogenetics alignment distance-bundle path/to/alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json
+```
