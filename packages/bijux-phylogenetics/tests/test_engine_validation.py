@@ -7,6 +7,8 @@ from bijux_phylogenetics.engines.validation import (
     audit_alignment_inference_readiness,
     classify_inference_workflow_failure,
     compare_inferred_tree_to_taxon_metadata,
+    detect_weakly_supported_backbone,
+    summarize_bootstrap_support_distribution,
     validate_ml_tree_contains_expected_taxa,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
@@ -197,6 +199,32 @@ def test_validate_bootstrap_tree_set_requires_consistent_taxa(tmp_path: Path) ->
     invalid_report = validate_bootstrap_tree_set(invalid_path)
     assert invalid_report.valid is False
     assert any("same taxon set" in issue for issue in invalid_report.issues)
+
+
+def test_summarize_bootstrap_support_distribution_reports_range_median_and_histogram(tmp_path: Path) -> None:
+    tree_path = tmp_path / "supported.nwk"
+    tree_path.write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)68:0.2)72:0.3;\n", encoding="utf-8")
+
+    report = summarize_bootstrap_support_distribution(tree_path)
+
+    assert report.supported_node_count == 3
+    assert report.minimum_support == 68.0
+    assert report.maximum_support == 95.0
+    assert report.median_support == 72.0
+    assert report.weakly_supported_clade_count == 1
+    assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 1, "ge90": 1}
+
+
+def test_detect_weakly_supported_backbone_flags_major_internal_branches(tmp_path: Path) -> None:
+    tree_path = tmp_path / "weak-backbone.nwk"
+    tree_path.write_text("(((A:0.1,B:0.1)95:0.2,C:0.1)62:0.3,(D:0.1,E:0.1)91:0.2)58:0.4;\n", encoding="utf-8")
+
+    report = detect_weakly_supported_backbone(tree_path, threshold=70.0)
+
+    assert report.evaluated_backbone_node_count >= 2
+    assert report.weak_backbone_node_count == 2
+    assert any(node.node == "A|B|C|D|E" for node in report.weak_nodes)
+    assert any("backbone" in warning for warning in report.warnings)
 
 
 def test_validate_inference_engine_outputs_checks_manifest_consistency(tmp_path: Path) -> None:

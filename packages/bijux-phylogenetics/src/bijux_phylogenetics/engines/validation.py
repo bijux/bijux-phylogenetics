@@ -100,6 +100,39 @@ class BootstrapTreeSetValidationReport:
 
 
 @dataclass(slots=True)
+class BootstrapSupportNode:
+    node: str
+    descendant_taxa: list[str]
+    support: float
+    support_fraction: float
+    is_backbone: bool
+
+
+@dataclass(slots=True)
+class BootstrapSupportSummaryReport:
+    tree_path: Path
+    internal_node_count: int
+    supported_node_count: int
+    minimum_support: float | None
+    maximum_support: float | None
+    median_support: float | None
+    weakly_supported_clade_count: int
+    support_histogram: dict[str, int]
+    nodes: list[BootstrapSupportNode]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class WeakBackboneReport:
+    tree_path: Path
+    threshold: float
+    evaluated_backbone_node_count: int
+    weak_backbone_node_count: int
+    weak_nodes: list[BootstrapSupportNode]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class InferenceOutputConsistencyReport:
     manifest_path: Path
     workflow: str
@@ -405,6 +438,104 @@ def validate_bootstrap_tree_set(path: Path) -> BootstrapTreeSetValidationReport:
         valid=not issues,
         issues=issues,
     )
+
+
+def summarize_bootstrap_support_distribution(
+    tree_path: Path,
+    *,
+    weak_support_threshold: float = 70.0,
+) -> BootstrapSupportSummaryReport:
+    """Summarize internal-node support values and their distribution across one tree."""
+    tree = load_tree(tree_path)
+    nodes: list[BootstrapSupportNode] = []
+    warnings: list[str] = []
+    total_tip_count = tree.tip_count
+    for node in tree.iter_nodes():
+        if node.is_leaf():
+            continue
+        descendant_taxa = node_descendant_taxa(node)
+        support = _parse_internal_support(node.name)
+        if support is None:
+            continue
+        support_fraction = support / 100.0 if support > 1.0 else support
+        nodes.append(
+            BootstrapSupportNode(
+                node="|".join(descendant_taxa) if descendant_taxa else (node.name or "<unnamed>"),
+                descendant_taxa=descendant_taxa,
+                support=support,
+                support_fraction=support_fraction,
+                is_backbone=len(descendant_taxa) >= max(2, total_tip_count // 2),
+            )
+        )
+    histogram = {
+        "lt50": sum(1 for node in nodes if node.support < 50.0),
+        "50to69": sum(1 for node in nodes if 50.0 <= node.support < 70.0),
+        "70to89": sum(1 for node in nodes if 70.0 <= node.support < 90.0),
+        "ge90": sum(1 for node in nodes if node.support >= 90.0),
+    }
+    supports = sorted(node.support for node in nodes)
+    if len(nodes) < sum(1 for node in tree.iter_nodes() if not node.is_leaf()):
+        warnings.append("one or more internal nodes did not expose numeric support labels")
+    if any(node.support < weak_support_threshold for node in nodes):
+        warnings.append("one or more internal clades remain weakly supported")
+    return BootstrapSupportSummaryReport(
+        tree_path=tree_path,
+        internal_node_count=sum(1 for node in tree.iter_nodes() if not node.is_leaf()),
+        supported_node_count=len(nodes),
+        minimum_support=None if not supports else supports[0],
+        maximum_support=None if not supports else supports[-1],
+        median_support=_median_support(supports),
+        weakly_supported_clade_count=sum(1 for node in nodes if node.support < weak_support_threshold),
+        support_histogram=histogram,
+        nodes=nodes,
+        warnings=warnings,
+    )
+
+
+def detect_weakly_supported_backbone(
+    tree_path: Path,
+    *,
+    threshold: float = 70.0,
+) -> WeakBackboneReport:
+    """Flag broad internal clades whose support falls below a declared backbone threshold."""
+    summary = summarize_bootstrap_support_distribution(tree_path, weak_support_threshold=threshold)
+    weak_nodes = [
+        node
+        for node in summary.nodes
+        if node.is_backbone and node.support < threshold
+    ]
+    warnings = list(summary.warnings)
+    if weak_nodes:
+        warnings.append("major internal branches remain weakly supported along the backbone")
+    return WeakBackboneReport(
+        tree_path=tree_path,
+        threshold=threshold,
+        evaluated_backbone_node_count=sum(1 for node in summary.nodes if node.is_backbone),
+        weak_backbone_node_count=len(weak_nodes),
+        weak_nodes=weak_nodes,
+        warnings=warnings,
+    )
+
+
+def _parse_internal_support(value: str | None) -> float | None:
+    if value is None:
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _median_support(values: list[float]) -> float | None:
+    if not values:
+        return None
+    midpoint = len(values) // 2
+    if len(values) % 2 == 1:
+        return values[midpoint]
+    return (values[midpoint - 1] + values[midpoint]) / 2.0
 
 
 def validate_inference_engine_outputs(manifest_path: Path) -> InferenceOutputConsistencyReport:
