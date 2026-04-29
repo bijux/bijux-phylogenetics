@@ -52,6 +52,15 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics adapter mrbayes-summarize artifacts/mrbayes/analysis.run1.t --burnin-fraction 0.25 --json`
 - `bijux-phylogenetics adapter mrbayes-traces artifacts/mrbayes/analysis.run1.p --json`
 - `bijux-phylogenetics adapter mrbayes-ess artifacts/mrbayes/analysis.run1.p --json`
+- `bijux-phylogenetics adapter mrbayes-convergence artifacts/mrbayes/analysis.run1.p --ess-threshold 200 --json`
+- `bijux-phylogenetics adapter mrbayes-report artifacts/mrbayes/analysis.run1.t --traces artifacts/mrbayes/analysis.run1.p --out artifacts/mrbayes/posterior-report.html --json`
+- `bijux-phylogenetics adapter beast-prepare alignment.fasta --out artifacts/beast/analysis.xml --tree tree.nwk --calibrations calibrations.tsv --tip-dates tip-dates.tsv --clock-model relaxed-lognormal --tree-prior birth-death --json`
+- `bijux-phylogenetics adapter beast-calibrations tree.nwk calibrations.tsv --json`
+- `bijux-phylogenetics adapter beast-tip-dates tree.nwk tip-dates.tsv --alignment alignment.fasta --json`
+- `bijux-phylogenetics adapter beast-log artifacts/beast/run.log --json`
+- `bijux-phylogenetics adapter beast-convergence artifacts/beast/run.log --ess-threshold 200 --json`
+- `bijux-phylogenetics adapter beast-calibration-report tree.nwk calibrations.tsv --tip-dates tip-dates.tsv --alignment alignment.fasta --out artifacts/beast/calibration-audit.html --json`
+- `bijux-phylogenetics adapter bayesian-evidence --out-dir artifacts/bayesian-bundle --inputs alignment.fasta calibrations.tsv tip-dates.tsv --configs artifacts/beast/analysis.xml --trees tree.nwk --logs artifacts/beast/run.log --diagnostics diagnostics.json --reports artifacts/beast/calibration-audit.html --json`
 - `bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --out artifacts/mrbayes/inference-report.html --json`
 - `bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
@@ -103,3 +112,7 @@ around trees, alignments, and trait tables.
 - MrBayes posterior runs emit posterior trees, parameter traces, resumable manifests, and HTML inference workflow reports through the same adapter layer as other external engines
 - posterior tree sets can be burn-in filtered and summarized into consensus trees, rooted-topology counts, and shared-taxon summaries
 - parameter traces can be parsed directly and converted into per-parameter effective sample size summaries without leaving the native Python/runtime surface
+- posterior trace diagnostics now flag low ESS and unstable mean drift explicitly, and posterior HTML reports package those warnings beside consensus and clade-support summaries
+- BEAST-style XML preparation now validates fossil calibrations, tip dates, and impossible age constraints before emitting a time-tree configuration
+- BEAST logs can be parsed and checked for ESS and drift problems through the same deterministic trace-diagnostics surface used for MrBayes
+- calibration audit reports and full Bayesian evidence packages now bundle dated-tree assumptions, diagnostics, logs, configs, and rendered reviewer-facing artifacts together

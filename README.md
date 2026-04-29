@@ -128,6 +128,15 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics adapter mrbayes-summarize artifacts/mrbayes/analysis.run1.t --burnin-fraction 0.25 --json`
 - `uv run bijux-phylogenetics adapter mrbayes-traces artifacts/mrbayes/analysis.run1.p --json`
 - `uv run bijux-phylogenetics adapter mrbayes-ess artifacts/mrbayes/analysis.run1.p --json`
+- `uv run bijux-phylogenetics adapter mrbayes-convergence artifacts/mrbayes/analysis.run1.p --ess-threshold 200 --json`
+- `uv run bijux-phylogenetics adapter mrbayes-report artifacts/mrbayes/analysis.run1.t --traces artifacts/mrbayes/analysis.run1.p --out artifacts/mrbayes/posterior-report.html --json`
+- `uv run bijux-phylogenetics adapter beast-prepare alignment.fasta --out artifacts/beast/analysis.xml --tree tree.nwk --calibrations calibrations.tsv --tip-dates tip-dates.tsv --clock-model relaxed-lognormal --tree-prior birth-death --json`
+- `uv run bijux-phylogenetics adapter beast-calibrations tree.nwk calibrations.tsv --json`
+- `uv run bijux-phylogenetics adapter beast-tip-dates tree.nwk tip-dates.tsv --alignment alignment.fasta --json`
+- `uv run bijux-phylogenetics adapter beast-log artifacts/beast/run.log --json`
+- `uv run bijux-phylogenetics adapter beast-convergence artifacts/beast/run.log --ess-threshold 200 --json`
+- `uv run bijux-phylogenetics adapter beast-calibration-report tree.nwk calibrations.tsv --tip-dates tip-dates.tsv --alignment alignment.fasta --out artifacts/beast/calibration-audit.html --json`
+- `uv run bijux-phylogenetics adapter bayesian-evidence --out-dir artifacts/bayesian-bundle --inputs alignment.fasta calibrations.tsv tip-dates.tsv --configs artifacts/beast/analysis.xml --trees tree.nwk --logs artifacts/beast/run.log --diagnostics diagnostics.json --reports artifacts/beast/calibration-audit.html --json`
 - `uv run bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --out artifacts/mrbayes/inference-report.html --json`
 - `uv run bijux-phylogenetics tree-set inspect posterior.trees --json`
 - `uv run bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk`

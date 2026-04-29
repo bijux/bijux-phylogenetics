@@ -15,5 +15,6 @@
 - add continuous and discrete ancestral-state reconstruction, uncertainty reporting, model comparison, annotated ancestral-tree rendering, table export, and HTML ancestral-state reports
 - add governed external-engine workflows for alignment, trimming, model selection, ML inference, bootstrap consensus, fast-tree comparison, and engine provenance capture
 - add inference resume safeguards, HTML inference workflow reports, and initial MrBayes preparation, posterior-tree summary, trace parsing, and ESS workflows
+- add explicit MrBayes convergence diagnostics, posterior HTML reports, BEAST-style XML preparation, fossil-calibration and tip-date validation, BEAST log parsing, calibration audit reports, and Bayesian evidence packages
 - embed coding diagnostics and identity matrices in phylo-input reports
 - add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
