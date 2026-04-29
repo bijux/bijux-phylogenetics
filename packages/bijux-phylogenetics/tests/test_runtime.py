@@ -25,6 +25,8 @@ from bijux_phylogenetics.distance import (
     build_distance_tree,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
+    load_imported_distance_matrix,
+    validate_imported_distance_matrix,
 )
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
@@ -1042,6 +1044,44 @@ def test_compute_pairwise_genetic_distance_matrix_marks_saturated_jukes_cantor_p
         ("B", "B", 0.0, 4),
         ("B", "C", None, 4),
         ("C", "C", 0.0, 4),
+    ]
+
+
+def test_load_imported_distance_matrix_reads_exported_long_form() -> None:
+    entries = load_imported_distance_matrix(fixture("example_distance_matrix.tsv"))
+    assert [(entry.left_identifier, entry.right_identifier, entry.distance, entry.comparable_sites) for entry in entries[:4]] == [
+        ("A", "A", 0.0, 8),
+        ("A", "B", 0.125, 8),
+        ("A", "C", 0.5, 8),
+        ("B", "A", 0.125, 8),
+    ]
+
+
+def test_validate_imported_distance_matrix_reports_clean_matrix() -> None:
+    report = validate_imported_distance_matrix(fixture("example_distance_matrix.tsv"))
+    assert report.complete is True
+    assert report.zero_diagonal is True
+    assert report.symmetric is True
+    assert report.nonnegative is True
+    assert report.missing_pairs == []
+    assert report.nonmetric_observations == []
+    assert report.warnings == []
+
+
+def test_validate_imported_distance_matrix_detects_nonmetric_violations() -> None:
+    report = validate_imported_distance_matrix(fixture("example_distance_matrix_nonmetric.tsv"))
+    assert [(row.left_identifier, row.middle_identifier, row.right_identifier, row.direct_distance, row.indirect_distance) for row in report.nonmetric_observations] == [
+        ("A", "B", "C", 5.0, 2.0),
+    ]
+    assert report.warnings == ["distance matrix violates triangle inequality for one or more taxon triples"]
+
+
+def test_validate_imported_distance_matrix_detects_asymmetry() -> None:
+    report = validate_imported_distance_matrix(fixture("example_distance_matrix_asymmetric.tsv"))
+    assert report.complete is True
+    assert report.symmetric is False
+    assert [(row.left_identifier, row.right_identifier, row.left_to_right_distance, row.right_to_left_distance) for row in report.asymmetric_pairs] == [
+        ("A", "B", 1.0, 2.0),
     ]
 
 
