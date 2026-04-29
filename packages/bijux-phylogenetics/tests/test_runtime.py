@@ -160,9 +160,16 @@ from bijux_phylogenetics.core.topology import (
     unroot_tree,
 )
 from bijux_phylogenetics.core.taxonomy import (
+    build_taxon_audit_report,
+    build_taxon_mapping_conflict_report,
+    detect_duplicate_biological_identities,
+    export_tree_accepted_names,
+    infer_taxon_rank,
     inspect_tree_taxa_safety,
     inspect_tree_taxon_identity,
+    inspect_tree_taxon_rank_consistency,
     normalize_tree_taxa,
+    write_accepted_name_mapping,
     write_taxon_mapping,
 )
 from bijux_phylogenetics.core.traits import (
@@ -355,7 +362,15 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.audit_dataset_taxon_ordering is audit_dataset_taxon_ordering
     assert bijux_phylogenetics.build_dataset_completeness_matrix is build_dataset_completeness_matrix
     assert bijux_phylogenetics.build_dataset_crosswalk is build_dataset_crosswalk
+    assert bijux_phylogenetics.build_dataset_mismatch_report is build_dataset_mismatch_report
     assert bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
+    assert bijux_phylogenetics.build_taxon_audit_report is build_taxon_audit_report
+    assert bijux_phylogenetics.build_taxon_mapping_conflict_report is build_taxon_mapping_conflict_report
+    assert bijux_phylogenetics.detect_duplicate_biological_identities is detect_duplicate_biological_identities
+    assert bijux_phylogenetics.export_tree_accepted_names is export_tree_accepted_names
+    assert bijux_phylogenetics.infer_taxon_rank is infer_taxon_rank
+    assert bijux_phylogenetics.inspect_tree_taxon_rank_consistency is inspect_tree_taxon_rank_consistency
+    assert bijux_phylogenetics.write_accepted_name_mapping is write_accepted_name_mapping
     assert bijux_phylogenetics.load_tree_set is load_tree_set
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
     assert bijux_phylogenetics.compute_clade_frequency_table is compute_clade_frequency_table
