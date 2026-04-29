@@ -58,9 +58,8 @@ def test_ancestral_discrete_cli_reports_sparse_state_warning(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["warnings"] == [
-        "one or more discrete states are represented by fewer than two taxa and should be interpreted cautiously"
-    ]
+    assert "one or more discrete states are represented by fewer than two taxa and should be interpreted cautiously" in payload["warnings"]
+    assert "one or more discrete ancestral nodes remain unstable across candidate states" in payload["warnings"]
 
 
 def test_ancestral_render_cli_writes_svg_with_internal_annotations(tmp_path: Path, capsys) -> None:
@@ -112,3 +111,52 @@ def test_ancestral_report_cli_writes_html_and_svg(tmp_path: Path, capsys) -> Non
     assert payload["metrics"]["report_kind"] == "ancestral-state"
     assert output.exists()
     assert output.with_suffix(".svg").exists()
+
+
+def test_ancestral_sensitivity_cli_reports_available_comparisons(capsys) -> None:
+    exit_code = main(
+        [
+            "ancestral",
+            "sensitivity",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--kind",
+            "continuous",
+            "--compare-model",
+            "ou",
+            "--compare-tree",
+            str(fixture("example_tree_topology_diff.nwk")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["has_model_sensitivity"] is True
+    assert payload["metrics"]["has_tree_sensitivity"] is True
+
+
+def test_ancestral_package_cli_writes_publication_bundle(tmp_path: Path, capsys) -> None:
+    output_dir = tmp_path / "ancestral-package"
+    exit_code = main(
+        [
+            "ancestral",
+            "package",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--kind",
+            "continuous",
+            "--out-dir",
+            str(output_dir),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["artifact_count"] == 7
+    assert (output_dir / "figure-manifest.json").exists()

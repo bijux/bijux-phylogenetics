@@ -36,3 +36,5 @@ def test_build_ancestral_figure_package_writes_publication_artifacts(tmp_path: P
     assert result.model_description_path.exists()
     assert result.caption_path.exists()
     assert result.manifest_path.exists()
+    assert "uncertainty" in result.legend_path.read_text(encoding="utf-8").lower()
+    assert "model" in result.model_description_path.read_text(encoding="utf-8").lower()

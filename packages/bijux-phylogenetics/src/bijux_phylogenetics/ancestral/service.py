@@ -134,6 +134,8 @@ class AncestralStateReportBuildResult:
     trait: str
     reconstruction_kind: str
     model: str
+    supplement_sections: list[str]
+    sensitivity: object | None
     machine_manifest: dict[str, object]
 
 
@@ -497,6 +499,9 @@ def render_ancestral_state_report(
     model: str = "brownian",
     alpha: float = 1.0,
     compare_model: str | None = None,
+    compare_tree_path: Path | None = None,
+    drop_taxa: list[str] | None = None,
+    coding_map: dict[str, str] | None = None,
 ) -> AncestralStateReportBuildResult:
     """Build a deterministic HTML report for ancestral-state reconstruction."""
     if reconstruction_kind == "continuous":
@@ -530,12 +535,49 @@ def render_ancestral_state_report(
             taxon_column=taxon_column,
             model=model,
         )
-        comparison = None
+        comparison = (
+            compare_discrete_ancestral_models(
+                tree_path,
+                traits_path,
+                trait=trait,
+                taxon_column=taxon_column,
+                models=(model, compare_model, "all-rates-different"),
+            )
+            if compare_model is not None and model != "fitch"
+            else None
+        )
+    from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
+
+    sensitivity = build_ancestral_sensitivity_report(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        trait=trait,
+        reconstruction_kind=reconstruction_kind,
+        model=model,
+        taxon_column=taxon_column,
+        alpha=alpha,
+        compare_tree_path=compare_tree_path,
+        compare_model=compare_model,
+        drop_taxa=drop_taxa,
+        coding_map=coding_map,
+    )
     render_path = out_path.with_suffix(".svg")
     render_result = render_ancestral_state_tree(tree_path, report, out_path=render_path, layout="phylogram")
+    supplement_sections = [
+        "ancestral-methods",
+        "ancestral-exclusions",
+        "ancestral-node-table",
+        "ancestral-uncertainty",
+        "ancestral-sensitivity",
+    ]
     sections = [
         ("ancestral-reconstruction", json.dumps(asdict(report), indent=2, sort_keys=True, default=str)),
         ("ancestral-render", json.dumps(asdict(render_result), indent=2, sort_keys=True, default=str)),
+        ("ancestral-methods", json.dumps(_report_methods(report, reconstruction_kind=reconstruction_kind), indent=2, sort_keys=True, default=str)),
+        ("ancestral-exclusions", json.dumps(_report_exclusions(report), indent=2, sort_keys=True, default=str)),
+        ("ancestral-node-table", json.dumps(_report_node_table(report), indent=2, sort_keys=True, default=str)),
+        ("ancestral-uncertainty", json.dumps(_report_uncertainty(report), indent=2, sort_keys=True, default=str)),
+        ("ancestral-sensitivity", json.dumps(asdict(sensitivity), indent=2, sort_keys=True, default=str)),
     ]
     if comparison is not None:
         sections.append(("ancestral-comparison", json.dumps(asdict(comparison), indent=2, sort_keys=True, default=str)))
@@ -549,6 +591,7 @@ def render_ancestral_state_report(
         model=model,
         rendered_tree=str(render_path),
     )
+    machine_manifest["supplement_sections"] = supplement_sections
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return AncestralStateReportBuildResult(
         output_path=out_path,
@@ -559,5 +602,96 @@ def render_ancestral_state_report(
         trait=trait,
         reconstruction_kind=reconstruction_kind,
         model=model,
+        supplement_sections=supplement_sections,
+        sensitivity=sensitivity,
         machine_manifest=machine_manifest,
     )
+
+
+def _report_methods(
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+    *,
+    reconstruction_kind: str,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "reconstruction_kind": reconstruction_kind,
+        "model": report.model,
+        "trait": report.trait,
+        "taxon_count": report.taxon_count,
+        "warning_count": len(report.warnings),
+    }
+    if isinstance(report, ContinuousAncestralReport):
+        payload["alpha"] = report.alpha
+        payload["supports_explicit_models"] = ["brownian", "ou"]
+    else:
+        payload["observed_states"] = report.observed_states
+        payload["supports_explicit_models"] = ["fitch", "equal-rates", "symmetric", "all-rates-different"]
+    return payload
+
+
+def _report_exclusions(report: ContinuousAncestralReport | DiscreteAncestralReport) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "dropped_missing_taxa": report.dropped_missing_taxa,
+        "warnings": report.warnings,
+    }
+    if isinstance(report, ContinuousAncestralReport):
+        payload["dropped_non_numeric_taxa"] = report.dropped_non_numeric_taxa
+    return payload
+
+
+def _report_node_table(report: ContinuousAncestralReport | DiscreteAncestralReport) -> list[dict[str, object]]:
+    if isinstance(report, ContinuousAncestralReport):
+        return [
+            {
+                "node": estimate.node,
+                "descendant_taxa": estimate.descendant_taxa,
+                "estimate": estimate.estimate,
+                "confidence": estimate.confidence,
+                "interpretation": estimate.interpretation,
+            }
+            for estimate in report.estimates
+            if not estimate.is_tip
+        ]
+    return [
+        {
+            "node": estimate.node,
+            "descendant_taxa": estimate.descendant_taxa,
+            "state": estimate.most_likely_state,
+            "confidence": estimate.confidence,
+            "unstable": estimate.unstable,
+            "interpretation": estimate.interpretation,
+        }
+        for estimate in report.estimates
+        if not estimate.is_tip
+    ]
+
+
+def _report_uncertainty(report: ContinuousAncestralReport | DiscreteAncestralReport) -> dict[str, object]:
+    if isinstance(report, ContinuousAncestralReport):
+        return {
+            "unstable_nodes": report.unstable_nodes,
+            "weak_support_nodes": report.weak_support_nodes,
+            "interval_rows": [
+                {
+                    "node": estimate.node,
+                    "lower_95_interval": estimate.lower_95_interval,
+                    "upper_95_interval": estimate.upper_95_interval,
+                    "downstream_risks": estimate.downstream_risks,
+                }
+                for estimate in report.estimates
+                if not estimate.is_tip
+            ],
+        }
+    return {
+        "unstable_nodes": report.unstable_nodes,
+        "weak_support_nodes": report.weak_support_nodes,
+        "probability_rows": [
+            {
+                "node": estimate.node,
+                "state_probabilities": estimate.state_probabilities,
+                "downstream_risks": estimate.downstream_risks,
+            }
+            for estimate in report.estimates
+            if not estimate.is_tip
+        ],
+    }

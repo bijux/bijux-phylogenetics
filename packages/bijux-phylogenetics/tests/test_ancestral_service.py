@@ -124,4 +124,15 @@ def test_render_ancestral_state_report_writes_html_and_svg(tmp_path: Path) -> No
     assert output.with_suffix(".svg").exists()
     assert "ancestral-reconstruction" in html
     assert "ancestral-comparison" in html
+    assert "ancestral-sensitivity" in html
+    assert "ancestral-node-table" in html
     assert manifest["report_kind"] == "ancestral-state"
+    assert manifest["supplement_sections"] == [
+        "ancestral-methods",
+        "ancestral-exclusions",
+        "ancestral-node-table",
+        "ancestral-uncertainty",
+        "ancestral-sensitivity",
+    ]
+    assert result.supplement_sections == manifest["supplement_sections"]
+    assert result.sensitivity is not None

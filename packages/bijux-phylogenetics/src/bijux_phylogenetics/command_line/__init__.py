@@ -31,6 +31,8 @@ from bijux_phylogenetics.benchmark import (
 )
 from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
+from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
     render_ancestral_state_report,
@@ -254,6 +256,18 @@ def _split_csv_values(raw: str | None) -> list[str]:
     if raw is None:
         return []
     return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def _parse_assignment_map(raw: str | None) -> dict[str, str]:
+    assignments: dict[str, str] = {}
+    for item in _split_csv_values(raw):
+        if "=" not in item:
+            raise ValueError(f"mapping item must be KEY=VALUE, got '{item}'")
+        key, value = item.split("=", 1)
+        if not key.strip() or not value.strip():
+            raise ValueError(f"mapping item must include both KEY and VALUE, got '{item}'")
+        assignments[key.strip()] = value.strip()
+    return assignments
 
 
 def _parse_labelled_run(raw: str) -> tuple[str, Path]:
@@ -1140,6 +1154,23 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_compare.add_argument("--right-alpha", type=float, default=1.0)
     ancestral_compare.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
     _add_manifest_argument(ancestral_compare)
+    ancestral_sensitivity = ancestral_subparsers.add_parser(
+        "sensitivity",
+        help="Summarize how ancestral results change across model, tree, pruning, or coding choices.",
+    )
+    ancestral_sensitivity.add_argument("tree", type=Path)
+    ancestral_sensitivity.add_argument("table", type=Path)
+    ancestral_sensitivity.add_argument("--trait", required=True)
+    ancestral_sensitivity.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_sensitivity.add_argument("--taxon-column")
+    ancestral_sensitivity.add_argument("--model")
+    ancestral_sensitivity.add_argument("--alpha", type=float, default=1.0)
+    ancestral_sensitivity.add_argument("--compare-model")
+    ancestral_sensitivity.add_argument("--compare-tree", type=Path)
+    ancestral_sensitivity.add_argument("--drop-taxa", nargs="+")
+    ancestral_sensitivity.add_argument("--coding-map", help="Comma-delimited KEY=VALUE recoding map for discrete traits.")
+    ancestral_sensitivity.add_argument("--json", action="store_true", help="Emit the sensitivity report as JSON.")
+    _add_manifest_argument(ancestral_sensitivity)
     ancestral_render = ancestral_subparsers.add_parser(
         "render",
         help="Render a tree annotated with reconstructed ancestral states.",
@@ -1167,9 +1198,27 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_report.add_argument("--model")
     ancestral_report.add_argument("--alpha", type=float, default=1.0)
     ancestral_report.add_argument("--compare-model")
+    ancestral_report.add_argument("--compare-tree", type=Path)
+    ancestral_report.add_argument("--drop-taxa", nargs="+")
+    ancestral_report.add_argument("--coding-map", help="Comma-delimited KEY=VALUE recoding map for discrete traits.")
     ancestral_report.add_argument("--out", required=True, type=Path)
     ancestral_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(ancestral_report)
+    ancestral_package = ancestral_subparsers.add_parser(
+        "package",
+        help="Write a publication-ready ancestral-state figure package.",
+    )
+    ancestral_package.add_argument("tree", type=Path)
+    ancestral_package.add_argument("table", type=Path)
+    ancestral_package.add_argument("--trait", required=True)
+    ancestral_package.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_package.add_argument("--taxon-column")
+    ancestral_package.add_argument("--model")
+    ancestral_package.add_argument("--alpha", type=float, default=1.0)
+    ancestral_package.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
+    ancestral_package.add_argument("--out-dir", required=True, type=Path)
+    ancestral_package.add_argument("--json", action="store_true", help="Emit the package build result as JSON.")
+    _add_manifest_argument(ancestral_package)
 
     discrete_evolution = subparsers.add_parser(
         get_command_spec("discrete-evolution").name,
@@ -3384,6 +3433,39 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.ancestral_command == "sensitivity":
+                resolved_model = args.model or ("brownian" if args.kind == "continuous" else "fitch")
+                report = build_ancestral_sensitivity_report(
+                    tree_path=args.tree,
+                    traits_path=args.table,
+                    trait=args.trait,
+                    reconstruction_kind=args.kind,
+                    model=resolved_model,
+                    taxon_column=args.taxon_column,
+                    alpha=args.alpha,
+                    compare_tree_path=args.compare_tree,
+                    compare_model=args.compare_model,
+                    drop_taxa=args.drop_taxa,
+                    coding_map=_parse_assignment_map(args.coding_map) or None,
+                )
+                outputs = _finalize_outputs(args, command="ancestral", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "baseline_node_count": report.baseline_node_count,
+                            "has_model_sensitivity": report.model_sensitivity is not None,
+                            "has_tree_sensitivity": report.tree_sensitivity is not None,
+                            "has_pruning_sensitivity": report.pruning_sensitivity is not None,
+                            "has_trait_coding_sensitivity": report.trait_coding_sensitivity is not None,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.ancestral_command == "render":
                 if args.kind == "continuous":
                     resolved_model = args.model or "brownian"
@@ -3436,6 +3518,46 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             resolved_model = args.model or ("brownian" if args.kind == "continuous" else "fitch")
+            if args.ancestral_command == "package":
+                result = build_ancestral_figure_package(
+                    tree_path=args.tree,
+                    traits_path=args.table,
+                    trait=args.trait,
+                    reconstruction_kind=args.kind,
+                    out_dir=args.out_dir,
+                    taxon_column=args.taxon_column,
+                    model=resolved_model,
+                    alpha=args.alpha,
+                    layout=args.layout,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=[
+                        result.figure_path,
+                        result.node_table_path,
+                        result.uncertainty_table_path,
+                        result.legend_path,
+                        result.model_description_path,
+                        result.caption_path,
+                        result.manifest_path,
+                    ],
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "output_dir": str(result.output_dir),
+                            "artifact_count": 7,
+                        },
+                        data=result,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             result = render_ancestral_state_report(
                 tree_path=args.tree,
                 traits_path=args.table,
@@ -3446,6 +3568,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 model=resolved_model,
                 alpha=args.alpha,
                 compare_model=args.compare_model,
+                compare_tree_path=args.compare_tree,
+                drop_taxa=args.drop_taxa,
+                coding_map=_parse_assignment_map(args.coding_map) or None,
             )
             outputs = _finalize_outputs(
                 args,
