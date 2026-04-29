@@ -1,6 +1,12 @@
 from .common import EngineRunReport, EngineVersionInfo, execute_engine_command, read_engine_version, resolve_engine_executable
 from .reports import InferenceWorkflowReportBuildResult, render_inference_workflow_report
-from .validation import InferenceReadinessAuditReport, InferenceReadinessDecision, audit_alignment_inference_readiness
+from .validation import (
+    InferenceReadinessAuditReport,
+    InferenceReadinessDecision,
+    ModelSelectionValidationReport,
+    audit_alignment_inference_readiness,
+    validate_model_selection_against_engine_outputs,
+)
 from .workflows import (
     EngineWorkflowReport,
     ExternalTreeComparisonReport,
@@ -21,8 +27,10 @@ __all__ = [
     "ExternalTreeComparisonReport",
     "InferenceReadinessAuditReport",
     "InferenceReadinessDecision",
+    "ModelSelectionValidationReport",
     "InferenceWorkflowReportBuildResult",
     "audit_alignment_inference_readiness",
+    "validate_model_selection_against_engine_outputs",
     "compare_fast_and_ml_trees",
     "execute_engine_command",
     "read_engine_version",

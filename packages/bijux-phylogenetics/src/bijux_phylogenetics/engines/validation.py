@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import gzip
 from pathlib import Path
+import re
 
+from bijux_phylogenetics.engines.common import load_engine_manifest
 from bijux_phylogenetics.io.fasta import summarize_alignment_readiness
+
+_BEST_MODEL_PATTERN = re.compile(
+    r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
+    re.IGNORECASE,
+)
 
 
 @dataclass(slots=True)
@@ -24,6 +32,16 @@ class InferenceReadinessAuditReport:
     recommended_workflow: str
     decisions: list[InferenceReadinessDecision]
     warnings: list[str]
+
+
+@dataclass(slots=True)
+class ModelSelectionValidationReport:
+    manifest_path: Path
+    manifest_selected_model: str | None
+    report_selected_model: str | None
+    artifact_selected_model: str | None
+    valid: bool
+    issues: list[str]
 
 
 def audit_alignment_inference_readiness(path: Path) -> InferenceReadinessAuditReport:
@@ -85,4 +103,58 @@ def audit_alignment_inference_readiness(path: Path) -> InferenceReadinessAuditRe
         recommended_workflow=recommended_workflow,
         decisions=decisions,
         warnings=generic_warnings,
+    )
+
+
+def _parse_best_model_text(text: str) -> str | None:
+    match = _BEST_MODEL_PATTERN.search(text)
+    return None if match is None else match.group("model")
+
+
+def _parse_best_model_file(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    return _parse_best_model_text(path.read_text(encoding="utf-8"))
+
+
+def validate_model_selection_against_engine_outputs(manifest_path: Path) -> ModelSelectionValidationReport:
+    """Verify that the selected model exposed in workflow artifacts matches the engine outputs exactly."""
+    manifest = load_engine_manifest(manifest_path)
+    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    iqtree_report = output_paths.get("iqtree_report")
+    selected_model_file = output_paths.get("selected_model")
+    report_selected_model = None if iqtree_report is None else _parse_best_model_file(iqtree_report)
+    artifact_selected_model = None
+    if selected_model_file is not None and selected_model_file.exists():
+        artifact_selected_model = selected_model_file.read_text(encoding="utf-8").strip() or None
+    if report_selected_model is None and iqtree_report is not None:
+        model_sidecar = iqtree_report.with_suffix(".model")
+        if model_sidecar.exists():
+            report_selected_model = _parse_best_model_file(model_sidecar)
+        else:
+            model_gz_sidecar = iqtree_report.with_suffix(".model.gz")
+            if model_gz_sidecar.exists():
+                report_selected_model = _parse_best_model_text(
+                    gzip.decompress(model_gz_sidecar.read_bytes()).decode("utf-8", errors="replace")
+                )
+    manifest_selected_model = manifest.get("selected_model")
+    issues: list[str] = []
+    if manifest.get("workflow") != "model-selection":
+        issues.append("manifest does not describe a model-selection workflow")
+    if manifest_selected_model is None:
+        issues.append("manifest selected_model field is missing")
+    if report_selected_model is None:
+        issues.append("engine report does not expose a parsable best-fit model")
+    if artifact_selected_model is None:
+        issues.append("selected-model artifact is missing or blank")
+    comparable = [value for value in (manifest_selected_model, report_selected_model, artifact_selected_model) if value is not None]
+    if comparable and len(set(comparable)) > 1:
+        issues.append("selected model disagrees across manifest, report, and exported artifact")
+    return ModelSelectionValidationReport(
+        manifest_path=manifest_path,
+        manifest_selected_model=None if manifest_selected_model is None else str(manifest_selected_model),
+        report_selected_model=report_selected_model,
+        artifact_selected_model=artifact_selected_model,
+        valid=not issues,
+        issues=issues,
     )
