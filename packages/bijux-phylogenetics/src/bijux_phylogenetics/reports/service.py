@@ -15,6 +15,13 @@ from bijux_phylogenetics.core.alignment import (
 from bijux_phylogenetics.core.dataset import DatasetReadinessSummary, summarize_dataset_readiness
 from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_taxa, load_taxon_table
 from bijux_phylogenetics.core.traits import TraitMissingValueReport, detect_missing_trait_values
+from bijux_phylogenetics.distance import (
+    build_distance_tree,
+    build_tree_from_imported_distance_matrix,
+    compare_distance_tree_topologies,
+    compute_pairwise_genetic_distance_matrix,
+    validate_imported_distance_matrix,
+)
 from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport, TreeValidationReport, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.fasta import (
@@ -25,6 +32,7 @@ from bijux_phylogenetics.io.fasta import (
     summarise_fasta,
 )
 from bijux_phylogenetics.render.html import write_html_report
+from bijux_phylogenetics.io.newick import dumps_newick
 
 
 @dataclass(slots=True)
@@ -57,6 +65,17 @@ class ReportBuildResult:
     alignment_identity_matrix: SequenceIdentityMatrix | None
     alignment_linkage: AlignmentLinkageReport | None
     dataset_readiness: DatasetReadinessSummary | None
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class DistanceReportBuildResult:
+    output_path: Path
+    report_kind: str
+    title: str
+    source_path: Path
+    source_kind: str
+    method_limitations: list[str]
     machine_manifest: dict[str, object]
 
 
@@ -129,6 +148,16 @@ def _build_machine_manifest(
             "clade_count": inspection.clade_count,
         },
     }
+
+
+def distance_method_limitations() -> list[str]:
+    """Explain why distance-based tree building is approximate."""
+    return [
+        "distance methods collapse site-by-site sequence evidence into pairwise summaries before tree building",
+        "different evolutionary histories can yield similar pairwise distances, so topology is not uniquely identified by the matrix alone",
+        "UPGMA additionally assumes an ultrametric clock-like process and can misplace taxa when rates vary across lineages",
+        "Neighbor-Joining is often useful for quick structure, but it is still a summary approximation rather than a full likelihood inference",
+    ]
 
 
 def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
@@ -278,6 +307,82 @@ def render_phylo_inputs_report(
         alignment_identity_matrix=alignment_identity_matrix,
         alignment_linkage=alignment_linkage,
         dataset_readiness=None,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_distance_report(
+    *,
+    out_path: Path,
+    alignment_path: Path | None = None,
+    matrix_path: Path | None = None,
+) -> DistanceReportBuildResult:
+    """Build a deterministic HTML report for computed or imported distance analysis."""
+    if (alignment_path is None) == (matrix_path is None):
+        raise ValueError("render_distance_report requires exactly one of alignment_path or matrix_path")
+
+    method_limitations = distance_method_limitations()
+    if alignment_path is not None:
+        matrix = compute_pairwise_genetic_distance_matrix(alignment_path)
+        nj_tree, _ = build_distance_tree(alignment_path, method="neighbor-joining")
+        upgma_tree, _ = build_distance_tree(alignment_path, method="upgma")
+        comparison = compare_distance_tree_topologies(alignment_path)
+        title = "Bijux Distance Analysis Report"
+        sections = [
+            _section("computed-distance-matrix", asdict(matrix)),
+            _section("neighbor-joining-tree", {"newick": dumps_newick(nj_tree)}),
+            _section("upgma-tree", {"newick": dumps_newick(upgma_tree)}),
+            _section("distance-tree-comparison", asdict(comparison)),
+            _section("distance-method-limitations", method_limitations),
+        ]
+        machine_manifest = {
+            "report_kind": "distance-analysis",
+            "source_kind": "alignment",
+            "source_path": str(alignment_path),
+            "method_limitations": method_limitations,
+            "sections": [name for name, _ in sections],
+        }
+        write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+        return DistanceReportBuildResult(
+            output_path=out_path,
+            report_kind="distance-analysis",
+            title=title,
+            source_path=alignment_path,
+            source_kind="alignment",
+            method_limitations=method_limitations,
+            machine_manifest=machine_manifest,
+        )
+
+    validation = validate_imported_distance_matrix(matrix_path)
+    title = "Bijux Imported Distance Report"
+    sections = [
+        _section("imported-distance-matrix-validation", asdict(validation)),
+        _section("distance-method-limitations", method_limitations),
+    ]
+    if validation.complete and validation.symmetric and validation.zero_diagonal and validation.nonnegative:
+        nj_tree, _ = build_tree_from_imported_distance_matrix(matrix_path, method="neighbor-joining")
+        upgma_tree, _ = build_tree_from_imported_distance_matrix(matrix_path, method="upgma")
+        sections.extend(
+            [
+                _section("neighbor-joining-tree", {"newick": dumps_newick(nj_tree)}),
+                _section("upgma-tree", {"newick": dumps_newick(upgma_tree)}),
+            ]
+        )
+    machine_manifest = {
+        "report_kind": "distance-analysis",
+        "source_kind": "imported-distance-matrix",
+        "source_path": str(matrix_path),
+        "method_limitations": method_limitations,
+        "sections": [name for name, _ in sections],
+    }
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return DistanceReportBuildResult(
+        output_path=out_path,
+        report_kind="distance-analysis",
+        title=title,
+        source_path=matrix_path,
+        source_kind="imported-distance-matrix",
+        method_limitations=method_limitations,
         machine_manifest=machine_manifest,
     )
 

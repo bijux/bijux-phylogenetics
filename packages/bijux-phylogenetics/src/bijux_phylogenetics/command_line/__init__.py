@@ -51,10 +51,14 @@ from bijux_phylogenetics.compare.topology import (
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
 from bijux_phylogenetics.distance import (
     build_distance_tree,
+    build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
+    load_imported_distance_matrix,
+    validate_imported_distance_matrix,
     write_genetic_distance_matrix,
 )
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
@@ -67,7 +71,9 @@ from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
+    distance_method_limitations,
     render_dataset_report,
+    render_distance_report,
     render_phylo_inputs_report,
     render_tree_report,
     write_annotation_report,
@@ -242,6 +248,14 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.alignment_command == "translate":
             return [args.alignment, args.out]
         return [args.tree, args.alignment]
+    if args.command == "distance":
+        if args.distance_command == "validate":
+            return [args.matrix]
+        if args.distance_command == "build-tree":
+            return [args.matrix, args.out]
+        if args.distance_command == "report":
+            return [args.matrix, args.out]
+        return [args.matrix]
     if args.command in {"validate", "inspect"}:
         return [args.tree]
     if args.command == "diagnose":
@@ -502,6 +516,37 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_link)
 
+    distance = subparsers.add_parser(get_command_spec("distance").name, help=get_command_spec("distance").summary)
+    distance_subparsers = distance.add_subparsers(dest="distance_command", required=True)
+    distance_validate = distance_subparsers.add_parser("validate", help="Validate an imported long-form distance matrix.")
+    distance_validate.add_argument("matrix", type=Path)
+    distance_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    _add_manifest_argument(distance_validate)
+    distance_build_tree = distance_subparsers.add_parser(
+        "build-tree",
+        help="Build a Neighbor-Joining or UPGMA tree from an imported distance matrix.",
+    )
+    distance_build_tree.add_argument("matrix", type=Path)
+    distance_build_tree.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    distance_build_tree.add_argument("--out", required=True, type=Path)
+    distance_build_tree.add_argument("--json", action="store_true", help="Emit the build report as JSON.")
+    _add_manifest_argument(distance_build_tree)
+    distance_report = distance_subparsers.add_parser(
+        "report",
+        help="Render an HTML report for an imported distance matrix.",
+    )
+    distance_report.add_argument("matrix", type=Path)
+    distance_report.add_argument("--out", required=True, type=Path)
+    distance_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(distance_report)
+    distance_explain = distance_subparsers.add_parser(
+        "explain",
+        help="Explain why distance-based tree building is approximate.",
+    )
+    distance_explain.add_argument("matrix", type=Path)
+    distance_explain.add_argument("--json", action="store_true", help="Emit the explanation as JSON.")
+    _add_manifest_argument(distance_explain)
+
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
     validate.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
@@ -577,6 +622,8 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose = subparsers.add_parser(get_command_spec("diagnose").name, help=get_command_spec("diagnose").summary)
     diagnose.add_argument("target")
     diagnose.add_argument("tree", nargs="?", type=Path)
+    diagnose.add_argument("--metadata", type=Path)
+    diagnose.add_argument("--taxon-column")
     diagnose.add_argument("--out", type=Path)
     diagnose.add_argument("--tolerance", type=float, default=1e-6)
     diagnose.add_argument("--json", action="store_true", help="Emit the report as JSON.")
@@ -1204,6 +1251,84 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 json_output=args.json,
             )
             return 0
+        if args.command == "distance":
+            if args.distance_command == "validate":
+                report = validate_imported_distance_matrix(args.matrix)
+                outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+                _print_result(
+                    build_command_result(
+                        command="distance",
+                        inputs=[args.matrix],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": len(report.identifiers),
+                            "pair_count": report.pair_count,
+                            "complete": report.complete,
+                            "symmetric": report.symmetric,
+                            "nonmetric_observation_count": len(report.nonmetric_observations),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.distance_command == "build-tree":
+                tree, report = build_tree_from_imported_distance_matrix(args.matrix, method=args.method)
+                output_path = write_newick(args.out, tree)
+                outputs = _finalize_outputs(
+                    args,
+                    command="distance",
+                    inputs=[args.matrix],
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="distance",
+                        inputs=[args.matrix],
+                        outputs=outputs,
+                        metrics={
+                            "method": report.method,
+                            "taxon_count": report.taxon_count,
+                            "pair_count": report.pair_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.distance_command == "report":
+                report = render_distance_report(out_path=args.out, matrix_path=args.matrix)
+                outputs = _finalize_outputs(
+                    args,
+                    command="distance",
+                    inputs=[args.matrix],
+                    outputs=[args.out],
+                )
+                _print_result(
+                    build_command_result(
+                        command="distance",
+                        inputs=[args.matrix],
+                        outputs=outputs,
+                        metrics={"section_count": len(report.machine_manifest["sections"])},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            limitations = distance_method_limitations()
+            outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+            _print_result(
+                build_command_result(
+                    command="distance",
+                    inputs=[args.matrix],
+                    outputs=outputs,
+                    metrics={"limitation_count": len(limitations)},
+                    data={"limitations": limitations},
+                ),
+                json_output=args.json,
+            )
+            return 0
         if args.command == "inspect":
             report = inspect_tree_path(args.tree, source_format=args.format)
             outputs = _finalize_outputs(args, command="inspect", inputs=[args.tree])
@@ -1351,6 +1476,34 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "tip_count": report.tip_count,
                             "tolerance": report.tolerance,
                             "max_deviation": report.max_deviation,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.target == "assumptions":
+                if args.tree is None:
+                    parser.exit(status=2, message="diagnose assumptions requires a tree path\n")
+                report = assess_tree_assumptions(
+                    args.tree,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                )
+                diagnose_inputs: list[Path | str] = [args.tree]
+                if args.metadata is not None:
+                    diagnose_inputs.append(args.metadata)
+                outputs = _finalize_outputs(args, command="diagnose", inputs=diagnose_inputs)
+                _print_result(
+                    build_command_result(
+                        command="diagnose",
+                        inputs=diagnose_inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "standardized_support_count": len(report.standardized_support_labels),
+                            "time_tree_compatible": report.time_tree_compatible,
+                            "substitution_tree_compatible": report.substitution_tree_compatible,
                         },
                         data=report,
                     ),

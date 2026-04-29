@@ -106,7 +106,9 @@ from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
+    distance_method_limitations,
     render_dataset_report,
+    render_distance_report,
     render_phylo_inputs_report,
     render_phylogenetics_report,
     render_tree_report,
@@ -1114,6 +1116,25 @@ def test_build_tree_from_imported_distance_matrix_rejects_asymmetric_input() -> 
         raise AssertionError("expected InvalidDistanceMatrixError")
 
 
+def test_distance_method_limitations_explain_approximate_methods() -> None:
+    limitations = distance_method_limitations()
+    assert len(limitations) == 4
+    assert limitations[0].startswith("distance methods collapse")
+
+
+def test_render_distance_report_embeds_limitations_and_validation(tmp_path: Path) -> None:
+    output_path = tmp_path / "distance-report.html"
+    result = render_distance_report(
+        out_path=output_path,
+        matrix_path=fixture("example_distance_matrix.tsv"),
+    )
+    html = output_path.read_text(encoding="utf-8")
+    assert result.source_kind == "imported-distance-matrix"
+    assert "distance-method-limitations" in html
+    assert "imported-distance-matrix-validation" in html
+    assert "neighbor-joining-tree" in html
+
+
 def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
     tree, report = build_distance_tree(
         fixture("example_alignment_distance.fasta"),
@@ -1193,6 +1214,65 @@ def test_cli_alignment_compare_distance_trees_reports_rooting_difference(capsys)
     assert exit_code == 0
     assert payload["metrics"]["robinson_foulds_distance"] == 1
     assert payload["metrics"]["same_unrooted_topology"] is True
+
+
+def test_cli_distance_validate_reports_imported_matrix_status(capsys) -> None:
+    exit_code = main(["distance", "validate", str(fixture("example_distance_matrix_nonmetric.tsv")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["nonmetric_observation_count"] == 1
+    assert payload["data"]["warnings"] == [
+        "distance matrix violates triangle inequality for one or more taxon triples"
+    ]
+
+
+def test_cli_distance_build_tree_writes_newick(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "imported-tree.nwk"
+    exit_code = main(
+        [
+            "distance",
+            "build-tree",
+            str(fixture("example_distance_matrix.tsv")),
+            "--method",
+            "upgma",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "((A:0.0625,B:0.0625)Inner1:0.21875,C:0.28125)Inner2;\n"
+    assert payload["metrics"]["method"] == "upgma"
+
+
+def test_cli_distance_report_writes_html(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-report.html"
+    exit_code = main(
+        [
+            "distance",
+            "report",
+            str(fixture("example_distance_matrix.tsv")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert "distance-method-limitations" in output_path.read_text(encoding="utf-8")
+    assert payload["metrics"]["section_count"] >= 3
+
+
+def test_cli_distance_explain_reports_limitations(capsys) -> None:
+    exit_code = main(["distance", "explain", str(fixture("example_distance_matrix.tsv")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["limitation_count"] == 4
 
 
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
@@ -2804,6 +2884,26 @@ def test_cli_diagnose_distances_writes_tsv(tmp_path: Path, capsys) -> None:
         "C\t0.3\n"
         "D\t0.3\n"
     )
+
+
+def test_cli_diagnose_assumptions_reports_unit_aware_compatibility(capsys) -> None:
+    exit_code = main(
+        [
+            "diagnose",
+            "assumptions",
+            str(fixture("example_tree.nwk")),
+            "--metadata",
+            str(fixture("example_metadata_branch_units_time.tsv")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["standardized_support_count"] == 0
+    assert payload["metrics"]["time_tree_compatible"] is True
+    assert payload["metrics"]["substitution_tree_compatible"] is False
 
 
 def test_cli_diagnose_ultrametric_reports_tolerance_and_deviation(capsys) -> None:
