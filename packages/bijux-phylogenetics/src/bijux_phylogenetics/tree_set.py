@@ -59,6 +59,38 @@ class ConsensusTreeReport:
     consensus_newick: str
 
 
+@dataclass(frozen=True, slots=True)
+class TreeDistancePair:
+    left_index: int
+    right_index: int
+    robinson_foulds_distance: int
+    normalized_robinson_foulds: float
+
+
+@dataclass(slots=True)
+class TreeDistanceMatrixReport:
+    path: Path
+    tree_count: int
+    shared_taxa: list[str]
+    pairs: list[TreeDistancePair]
+
+
+@dataclass(frozen=True, slots=True)
+class TreeTopologyCluster:
+    rooted_topology_id: str
+    tree_indices: list[int]
+    tree_count: int
+    representative_index: int
+
+
+@dataclass(slots=True)
+class TreeTopologyClusterReport:
+    path: Path
+    tree_count: int
+    rooted_topology_count: int
+    clusters: list[TreeTopologyCluster]
+
+
 def _shared_taxa(trees: list[PhyloTree]) -> set[str]:
     shared = set(trees[0].tip_names)
     for tree in trees[1:]:
@@ -174,6 +206,15 @@ def _build_consensus_node(
         branch_length=None if is_root else clade_lengths.get(taxa),
         children=children,
     )
+
+
+def _tree_distance(left: PhyloTree, right: PhyloTree, shared_taxa: set[str]) -> tuple[int, float]:
+    left_clades = _informative_clades(left, shared_taxa)
+    right_clades = _informative_clades(right, shared_taxa)
+    symmetric_difference = left_clades.symmetric_difference(right_clades)
+    denominator = len(left_clades) + len(right_clades)
+    normalized = 0.0 if denominator == 0 else len(symmetric_difference) / denominator
+    return len(symmetric_difference), normalized
 
 
 def load_tree_set(path: Path) -> TreeSetReport:
@@ -301,3 +342,80 @@ def compute_consensus_tree(path: Path) -> tuple[PhyloTree, ConsensusTreeReport]:
 def write_consensus_tree(path: Path, tree: PhyloTree) -> Path:
     """Write a consensus tree as canonical Newick."""
     return write_newick(path, tree)
+
+
+def compute_tree_distance_matrix(path: Path) -> TreeDistanceMatrixReport:
+    """Compute a pairwise RF-distance matrix across a tree set."""
+    _, _, trees = _require_tree_set(path)
+    shared_taxa = set(_validate_same_taxa(trees))
+    pairs: list[TreeDistancePair] = []
+    for left_index, left in enumerate(trees, start=1):
+        for right_index, right in enumerate(trees[left_index - 1 :], start=left_index):
+            distance, normalized = _tree_distance(left, right, shared_taxa)
+            pairs.append(
+                TreeDistancePair(
+                    left_index=left_index,
+                    right_index=right_index,
+                    robinson_foulds_distance=distance,
+                    normalized_robinson_foulds=normalized,
+                )
+            )
+    return TreeDistanceMatrixReport(
+        path=path,
+        tree_count=len(trees),
+        shared_taxa=sorted(shared_taxa),
+        pairs=pairs,
+    )
+
+
+def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> Path:
+    """Write a pairwise tree-distance matrix as TSV."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "left_index",
+                "right_index",
+                "robinson_foulds_distance",
+                "normalized_robinson_foulds",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.pairs:
+            writer.writerow(
+                {
+                    "left_index": row.left_index,
+                    "right_index": row.right_index,
+                    "robinson_foulds_distance": row.robinson_foulds_distance,
+                    "normalized_robinson_foulds": format(row.normalized_robinson_foulds, ".15g"),
+                }
+            )
+    return path
+
+
+def cluster_trees_by_topology(path: Path) -> TreeTopologyClusterReport:
+    """Cluster trees by identical rooted topology signatures."""
+    report = load_tree_set(path)
+    clusters_by_id: dict[str, list[int]] = {}
+    for record in report.records:
+        clusters_by_id.setdefault(record.rooted_topology_id, []).append(record.index)
+    clusters = [
+        TreeTopologyCluster(
+            rooted_topology_id=topology_id,
+            tree_indices=indices,
+            tree_count=len(indices),
+            representative_index=indices[0],
+        )
+        for topology_id, indices in sorted(
+            clusters_by_id.items(),
+            key=lambda item: (-len(item[1]), item[1][0]),
+        )
+    ]
+    return TreeTopologyClusterReport(
+        path=path,
+        tree_count=report.tree_count,
+        rooted_topology_count=report.rooted_topology_count,
+        clusters=clusters,
+    )

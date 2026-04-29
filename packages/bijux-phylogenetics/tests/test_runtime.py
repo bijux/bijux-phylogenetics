@@ -114,8 +114,10 @@ from bijux_phylogenetics.reports.service import (
     render_tree_report,
 )
 from bijux_phylogenetics.tree_set import (
+    cluster_trees_by_topology,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_tree_distance_matrix,
     load_tree_set,
     write_clade_frequency_table,
 )
@@ -190,6 +192,46 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
     assert bijux_phylogenetics.unroot_tree is unroot_tree
     assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
+
+
+def test_compute_tree_distance_matrix_reports_symmetric_rf_pairs() -> None:
+    report = compute_tree_distance_matrix(fixture("example_tree_set_left.nwk"))
+    assert report.tree_count == 3
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert [
+        (
+            row.left_index,
+            row.right_index,
+            row.robinson_foulds_distance,
+            row.normalized_robinson_foulds,
+        )
+        for row in report.pairs
+    ] == [
+        (1, 1, 0, 0.0),
+        (1, 2, 0, 0.0),
+        (1, 3, 4, 1.0),
+        (2, 2, 0, 0.0),
+        (2, 3, 4, 1.0),
+        (3, 3, 0, 0.0),
+    ]
+
+
+def test_cluster_trees_by_topology_groups_identical_rooted_signatures() -> None:
+    report = cluster_trees_by_topology(fixture("example_tree_set_left.nwk"))
+    assert report.tree_count == 3
+    assert report.rooted_topology_count == 2
+    assert [
+        (
+            cluster.rooted_topology_id,
+            cluster.tree_indices,
+            cluster.tree_count,
+            cluster.representative_index,
+        )
+        for cluster in report.clusters
+    ] == [
+        ("A|B||C|D", [1, 2], 2, 1),
+        ("A|C||B|D", [3], 1, 3),
+    ]
 
 
 def test_taxon_labels_preserve_raw_names_and_normalized_keys() -> None:
