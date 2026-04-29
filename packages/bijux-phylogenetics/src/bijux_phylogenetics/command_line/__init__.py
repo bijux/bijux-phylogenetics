@@ -184,9 +184,13 @@ from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bund
 from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import (
     audit_tree_taxon_synonyms,
+    build_taxon_audit_report,
+    export_tree_accepted_names,
+    inspect_tree_taxon_rank_consistency,
     inspect_tree_taxon_namespaces,
     normalize_tree_taxa,
     resolve_tree_taxon_synonyms,
+    write_accepted_name_mapping,
     write_synonym_resolution_mapping,
     write_taxon_mapping,
 )
@@ -1815,6 +1819,33 @@ def build_parser() -> argparse.ArgumentParser:
     taxonomy_namespaces.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     taxonomy_namespaces.add_argument("--json", action="store_true", help="Emit the namespace report as JSON.")
     _add_manifest_argument(taxonomy_namespaces)
+    taxonomy_ranks = taxonomy_subparsers.add_parser(
+        "rank-consistency",
+        help="Audit whether tree labels mix species, genus, sample, accession, or population naming levels.",
+    )
+    taxonomy_ranks.add_argument("tree", type=Path)
+    taxonomy_ranks.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
+    taxonomy_ranks.add_argument("--json", action="store_true", help="Emit the rank audit as JSON.")
+    _add_manifest_argument(taxonomy_ranks)
+    taxonomy_accepted = taxonomy_subparsers.add_parser(
+        "accepted-names",
+        help="Export raw tree labels to accepted names through a configurable synonym table.",
+    )
+    taxonomy_accepted.add_argument("tree", type=Path)
+    taxonomy_accepted.add_argument("--synonym-table", required=True, type=Path)
+    taxonomy_accepted.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
+    taxonomy_accepted.add_argument("--out", type=Path)
+    taxonomy_accepted.add_argument("--json", action="store_true", help="Emit the accepted-name export as JSON.")
+    _add_manifest_argument(taxonomy_accepted)
+    taxonomy_audit = taxonomy_subparsers.add_parser(
+        "audit",
+        help="Build a reviewer-readable taxon audit across namespaces, ranks, synonyms, and mapping conflicts.",
+    )
+    taxonomy_audit.add_argument("tree", type=Path)
+    taxonomy_audit.add_argument("--synonym-table", type=Path)
+    taxonomy_audit.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
+    taxonomy_audit.add_argument("--json", action="store_true", help="Emit the taxon audit as JSON.")
+    _add_manifest_argument(taxonomy_audit)
     taxonomy_loss = taxonomy_subparsers.add_parser(
         "loss",
         help="Trace where taxa were lost across tree, alignment, metadata, traits, inference, and reporting stages.",
@@ -4954,6 +4985,78 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "namespace_count": len(report.namespace_counts),
                             "mixed_namespaces": report.mixed_namespaces,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.taxonomy_command == "rank-consistency":
+                tree = load_tree(args.tree, source_format=args.format)
+                report = inspect_tree_taxon_rank_consistency(tree)
+                outputs = _finalize_outputs(args, command="taxonomy", inputs=[args.tree])
+                _print_result(
+                    build_command_result(
+                        command="taxonomy",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "rank_count": len(report.rank_counts),
+                            "mixed_ranks": report.mixed_ranks,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.taxonomy_command == "accepted-names":
+                tree = load_tree(args.tree, source_format=args.format)
+                report = export_tree_accepted_names(tree, args.synonym_table)
+                output_paths: list[Path] = []
+                if args.out is not None:
+                    output_paths.append(write_accepted_name_mapping(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="taxonomy",
+                    inputs=[args.tree, args.synonym_table],
+                    outputs=output_paths,
+                )
+                _print_result(
+                    build_command_result(
+                        command="taxonomy",
+                        inputs=[args.tree, args.synonym_table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "row_count": len(report.rows),
+                            "ambiguous_count": sum(1 for row in report.rows if row.status == "ambiguous"),
+                            "resolved_count": sum(1 for row in report.rows if row.status == "resolved"),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                if not args.json and args.out is not None:
+                    print(args.out)
+                return 0
+            if args.taxonomy_command == "audit":
+                tree = load_tree(args.tree, source_format=args.format)
+                report = build_taxon_audit_report(tree, synonym_table_path=args.synonym_table)
+                inputs = [args.tree]
+                if args.synonym_table is not None:
+                    inputs.append(args.synonym_table)
+                outputs = _finalize_outputs(args, command="taxonomy", inputs=inputs)
+                _print_result(
+                    build_command_result(
+                        command="taxonomy",
+                        inputs=inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tree_tip_count": report.tree_tip_count,
+                            "status": report.status,
+                            "mapping_conflict_count": len(report.mapping_conflicts.rows),
                         },
                         data=report,
                     ),

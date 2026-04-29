@@ -80,3 +80,56 @@ def test_cli_taxonomy_stability_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["source_count"] == 3
     assert payload["metrics"]["unstable_taxa"] == 2
+
+
+def test_cli_taxonomy_rank_consistency_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "taxonomy",
+            "rank-consistency",
+            str(fixture("example_taxonomy_rank_mixed.nwk")),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["mixed_ranks"] is True
+    assert payload["metrics"]["rank_count"] >= 4
+
+
+def test_cli_taxonomy_accepted_names_writes_mapping(tmp_path: Path, capsys) -> None:
+    out_path = tmp_path / "accepted.tsv"
+    exit_code = main(
+        [
+            "taxonomy",
+            "accepted-names",
+            str(fixture("example_taxonomy_tree.nwk")),
+            "--synonym-table",
+            str(fixture("example_taxon_synonyms.tsv")),
+            "--out",
+            str(out_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert out_path.exists()
+    assert payload["metrics"]["resolved_count"] == 1
+    assert payload["metrics"]["ambiguous_count"] == 1
+
+
+def test_cli_taxonomy_audit_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "taxonomy",
+            "audit",
+            str(fixture("example_taxonomy_rank_mixed.nwk")),
+            "--synonym-table",
+            str(fixture("example_taxon_synonyms.tsv")),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["status"] == "needs_review"
+    assert payload["metrics"]["mapping_conflict_count"] >= 1
