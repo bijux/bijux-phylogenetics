@@ -238,6 +238,81 @@ class DatasetAuditReport:
     alignment_forensic: AlignmentForensicReport | None
     tip_dates: TipDatingValidationReport | None
     calibrations: FossilCalibrationValidationReport | None
+    mismatch_report: "DatasetMismatchReport"
+    risk_score: "DatasetRiskScoreReport"
+    minimal_fix_plan: "DatasetMinimalFixPlan"
+    reviewer_checklist: "DatasetReviewerChecklist"
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetMismatchRow:
+    """One taxon with inconsistent presence across requested dataset surfaces."""
+
+    taxon: str
+    present_surfaces: list[str]
+    missing_surfaces: list[str]
+    message: str
+
+
+@dataclass(slots=True)
+class DatasetMismatchReport:
+    """Taxon-by-surface mismatch report across the requested inputs."""
+
+    requested_surfaces: list[str]
+    rows: list[DatasetMismatchRow]
+    mismatch_counts: dict[str, int]
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetRiskComponent:
+    """Transparent contribution of one surface to overall dataset risk."""
+
+    component: str
+    score: float
+    reasons: list[str]
+
+
+@dataclass(slots=True)
+class DatasetRiskScoreReport:
+    """Dataset risk score decomposed across major evidence surfaces."""
+
+    total_score: float
+    risk_level: str
+    components: list[DatasetRiskComponent]
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetFixRecommendation:
+    """One minimal change that unlocks additional downstream analyses."""
+
+    priority: int
+    summary: str
+    affected_surfaces: list[str]
+    unlocks_analyses: list[str]
+
+
+@dataclass(slots=True)
+class DatasetMinimalFixPlan:
+    """Smallest next fixes that materially improve dataset readiness."""
+
+    recommendations: list[DatasetFixRecommendation]
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetReviewerChecklistItem:
+    """Reviewer-facing pass/risk/block item for one audit surface."""
+
+    section: str
+    status: str
+    summary: str
+    evidence: list[str]
+
+
+@dataclass(slots=True)
+class DatasetReviewerChecklist:
+    """Reviewer-readable checklist across all major dataset trust surfaces."""
+
+    items: list[DatasetReviewerChecklistItem]
 
 
 @dataclass(slots=True)
@@ -510,6 +585,67 @@ def build_dataset_completeness_matrix(
         geography_columns=context.geography_columns,
         rows=rows,
         surface_counts=surface_counts,
+    )
+
+
+def build_dataset_mismatch_report(
+    tree_path: Path,
+    metadata_path: Path,
+    traits_path: Path,
+    *,
+    alignment_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    calibration_path: Path | None = None,
+) -> DatasetMismatchReport:
+    """Show which taxa are missing from which requested dataset surfaces."""
+    matrix = build_dataset_completeness_matrix(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+    )
+    requested_surfaces = ["tree", "metadata", "traits"]
+    if alignment_path is not None:
+        requested_surfaces.append("alignment")
+    if tip_dates_path is not None:
+        requested_surfaces.append("tip_dates")
+    if calibration_path is not None:
+        requested_surfaces.append("calibrations")
+
+    rows: list[DatasetMismatchRow] = []
+    mismatch_counts = {surface: 0 for surface in requested_surfaces}
+    for row in matrix.rows:
+        present_surfaces: list[str] = []
+        missing_surfaces: list[str] = []
+        for surface in requested_surfaces:
+            present = {
+                "tree": row.in_tree,
+                "metadata": row.in_metadata,
+                "traits": row.in_traits,
+                "alignment": row.in_alignment,
+                "tip_dates": row.in_tip_dates,
+                "calibrations": row.in_calibrations,
+            }[surface]
+            if present:
+                present_surfaces.append(surface)
+            else:
+                missing_surfaces.append(surface)
+                mismatch_counts[surface] += 1
+        if missing_surfaces and present_surfaces:
+            rows.append(
+                DatasetMismatchRow(
+                    taxon=row.taxon,
+                    present_surfaces=present_surfaces,
+                    missing_surfaces=missing_surfaces,
+                    message=f"taxon is missing from {', '.join(missing_surfaces)} while present in {', '.join(present_surfaces)}",
+                )
+            )
+    return DatasetMismatchReport(
+        requested_surfaces=requested_surfaces,
+        rows=rows,
+        mismatch_counts=mismatch_counts,
     )
 
 
@@ -873,6 +1009,134 @@ def _readiness_levels(
     ]
 
 
+def _dataset_risk_score(
+    findings: list[DatasetAuditFinding],
+    *,
+    tip_dates: TipDatingValidationReport | None,
+    calibrations: FossilCalibrationValidationReport | None,
+) -> DatasetRiskScoreReport:
+    components: list[DatasetRiskComponent] = []
+    component_order = ["tree", "alignment", "taxon", "trait", "metadata", "calibration"]
+    category_aliases = {
+        "tree": {"tree", "dataset"},
+        "alignment": {"alignment"},
+        "taxon": {"taxon", "tip_dates"},
+        "trait": {"traits"},
+        "metadata": {"metadata"},
+        "calibration": {"calibration"},
+    }
+    for component in component_order:
+        component_findings = [
+            finding
+            for finding in findings
+            if finding.category in category_aliases[component]
+        ]
+        score = 0.0
+        reasons = [finding.message for finding in component_findings]
+        score += 25.0 * sum(1 for finding in component_findings if finding.severity == "blocker")
+        score += 10.0 * sum(1 for finding in component_findings if finding.severity == "warning")
+        if component == "calibration" and tip_dates is None and calibrations is None:
+            reasons.append("time-tree surfaces were not supplied")
+        components.append(
+            DatasetRiskComponent(
+                component=component,
+                score=min(100.0, score),
+                reasons=sorted(dict.fromkeys(reasons)),
+            )
+        )
+    total_score = round(sum(component.score for component in components) / len(components), 15)
+    if total_score >= 50.0:
+        risk_level = "high"
+    elif total_score >= 20.0:
+        risk_level = "moderate"
+    else:
+        risk_level = "low"
+    return DatasetRiskScoreReport(total_score=total_score, risk_level=risk_level, components=components)
+
+
+def _minimal_fix_plan(
+    findings: list[DatasetAuditFinding],
+    decisions: list[DatasetAnalysisDecision],
+) -> DatasetMinimalFixPlan:
+    recommendations: list[DatasetFixRecommendation] = []
+
+    def add(priority: int, summary: str, affected_surfaces: list[str], unlocks: list[str]) -> None:
+        row = DatasetFixRecommendation(
+            priority=priority,
+            summary=summary,
+            affected_surfaces=affected_surfaces,
+            unlocks_analyses=unlocks,
+        )
+        if row not in recommendations:
+            recommendations.append(row)
+
+    messages = {finding.message: finding for finding in findings}
+    if "tree requires complete branch lengths" in messages:
+        add(1, "supply complete branch lengths for every non-root edge", ["tree"], ["comparative", "publication"])
+    if "metadata table is missing one or more tree taxa" in messages:
+        add(1, "fill metadata rows for every tree tip or prune unmatched tips explicitly", ["metadata"], ["comparative", "publication"])
+    if "trait table is missing one or more tree taxa" in messages:
+        add(1, "complete the trait table for every retained tree tip", ["traits"], ["comparative", "publication"])
+    if "alignment is missing one or more tree taxa" in messages:
+        add(1, "reconcile tree and alignment taxon sets before inference", ["alignment", "tree"], ["distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"])
+    if "tip-date metadata contains invalid or missing tree-tip dates" in messages:
+        add(1, "correct invalid or missing tip-date rows", ["tip_dates"], ["time_tree", "publication"])
+    if "calibration table contains invalid fossil calibration targets or ages" in messages:
+        add(1, "repair invalid fossil calibrations or remove unsupported targets", ["calibration"], ["time_tree", "publication"])
+    if any(decision.analysis in {"distance", "maximum_likelihood", "bayesian", "coding"} for decision in decisions if decision.decision == "blocked" and "alignment input" in " ".join(decision.reasons)):
+        add(2, "add an alignment input for sequence-based inference workflows", ["alignment"], ["distance", "maximum_likelihood", "bayesian", "coding"])
+    if any(decision.analysis == "time_tree" for decision in decisions if decision.decision == "blocked" and "tip dates or fossil calibrations" in " ".join(decision.reasons)):
+        add(2, "supply tip dates or fossil calibrations for time-tree analysis", ["tip_dates", "calibration"], ["time_tree"])
+
+    recommendations.sort(key=lambda row: (row.priority, row.summary))
+    return DatasetMinimalFixPlan(recommendations=recommendations)
+
+
+def _reviewer_checklist(
+    *,
+    readiness_decision: str,
+    blockers: list[str],
+    warnings: list[str],
+    mismatch_report: DatasetMismatchReport,
+    risk_score: DatasetRiskScoreReport,
+    decisions: list[DatasetAnalysisDecision],
+) -> DatasetReviewerChecklist:
+    def status_for_messages(messages: list[str]) -> str:
+        if messages:
+            return "blocked"
+        return "pass"
+
+    risky_analyses = [decision.analysis for decision in decisions if decision.decision == "risky"]
+    blocked_analyses = [decision.analysis for decision in decisions if decision.decision == "blocked"]
+    items = [
+        DatasetReviewerChecklistItem(
+            section="overall_readiness",
+            status="blocked" if readiness_decision == "blocked" else ("risk" if warnings else "pass"),
+            summary=f"dataset readiness is {readiness_decision}",
+            evidence=blockers or warnings,
+        ),
+        DatasetReviewerChecklistItem(
+            section="taxon_mismatch",
+            status="risk" if mismatch_report.rows else "pass",
+            summary="cross-surface taxon mismatches were audited",
+            evidence=[row.message for row in mismatch_report.rows[:10]],
+        ),
+        DatasetReviewerChecklistItem(
+            section="dataset_risk",
+            status="risk" if risk_score.risk_level != "low" else "pass",
+            summary=f"transparent dataset risk level is {risk_score.risk_level}",
+            evidence=[f"{row.component}: {row.score:g}" for row in risk_score.components],
+        ),
+        DatasetReviewerChecklistItem(
+            section="analysis_eligibility",
+            status=status_for_messages(blocked_analyses),
+            summary="downstream analysis eligibility was classified explicitly",
+            evidence=blocked_analyses + risky_analyses,
+        ),
+    ]
+    return DatasetReviewerChecklist(items=items)
+
+
 def audit_dataset_inputs(
     tree_path: Path,
     metadata_path: Path,
@@ -1074,6 +1338,14 @@ def audit_dataset_inputs(
         calibration_path=calibration_path,
     )
     exclusion_table = _build_exclusion_table(completeness_matrix)
+    mismatch_report = build_dataset_mismatch_report(
+        tree_path,
+        metadata_path,
+        traits_path,
+        alignment_path=alignment_path,
+        tip_dates_path=tip_dates_path,
+        calibration_path=calibration_path,
+    )
     analysis_decisions = _analysis_decisions(
         findings,
         alignment_forensic=alignment_forensic,
@@ -1091,6 +1363,16 @@ def audit_dataset_inputs(
         decision.analysis for decision in analysis_decisions if decision.decision == "blocked"
     )
     readiness_decision = "blocked" if blockers else ("ready_with_warnings" if warnings else "ready")
+    risk_score = _dataset_risk_score(findings, tip_dates=tip_dates, calibrations=calibrations)
+    minimal_fix_plan = _minimal_fix_plan(findings, analysis_decisions)
+    reviewer_checklist = _reviewer_checklist(
+        readiness_decision=readiness_decision,
+        blockers=blockers,
+        warnings=warnings,
+        mismatch_report=mismatch_report,
+        risk_score=risk_score,
+        decisions=analysis_decisions,
+    )
 
     return DatasetAuditReport(
         tree_path=tree_path,
@@ -1121,4 +1403,8 @@ def audit_dataset_inputs(
         alignment_forensic=alignment_forensic,
         tip_dates=tip_dates,
         calibrations=calibrations,
+        mismatch_report=mismatch_report,
+        risk_score=risk_score,
+        minimal_fix_plan=minimal_fix_plan,
+        reviewer_checklist=reviewer_checklist,
     )
