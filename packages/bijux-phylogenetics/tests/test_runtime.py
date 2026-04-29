@@ -88,6 +88,7 @@ from bijux_phylogenetics.io.fasta import (
     trim_alignment,
     write_fasta_alignment,
 )
+from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
@@ -1711,6 +1712,25 @@ def test_render_tree_svg_can_render_trait_heatmap_columns(tmp_path: Path) -> Non
     assert 'class="heatmap-cell"' in svg
     assert "temperature" in svg
     assert "status" in svg
+
+
+def test_build_tree_figure_package_writes_publication_bundle(tmp_path: Path) -> None:
+    output_dir = tmp_path / "tree-figure"
+    result = build_tree_figure_package(
+        fixture("example_tree_support_left.nwk"),
+        out_dir=output_dir,
+        show_support_values=True,
+        categorical_traits={"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"},
+        metadata_strips=[AnnotationStrip("location", {"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"})],
+        heatmap_columns=[AnnotationStrip("temperature", {"A": "1.2", "B": "1.4", "C": "1.8", "D": "2.0"})],
+    )
+    manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    assert result.figure_path.exists()
+    assert result.caption_path.exists()
+    assert result.annotations_path.exists()
+    assert manifest["layout"] == "phylogram"
+    assert manifest["render"]["rendered_support_count"] == 2
+    assert "taxon\tlabel\tcategorical_trait\tcontinuous_trait\tlocation\ttemperature" in result.annotations_path.read_text(encoding="utf-8")
 
 
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
