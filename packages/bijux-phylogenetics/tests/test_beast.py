@@ -5,6 +5,7 @@ import json
 
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
+    assess_beast_chain_mixing,
     assess_beast_convergence,
     detect_impossible_calibration_constraints,
     parse_beast_log,
@@ -149,6 +150,39 @@ def test_assess_beast_burnin_sensitivity_reports_tree_and_log_shifts() -> None:
     assert report.slices[0].posterior_mean == -503.0
     assert report.slices[1].posterior_mean == -500.666667
     assert report.slices[2].tree_height_mean == 13.1
+
+
+def test_assess_beast_chain_mixing_flags_stuck_and_inconsistent_chains(tmp_path: Path) -> None:
+    stable = tmp_path / "stable.log"
+    stable.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tclockRate\ttreeHeight\n"
+        "0\t-510.0\t-490.0\t0.0010\t12.0\n"
+        "1000\t-509.0\t-489.0\t0.0011\t12.2\n"
+        "2000\t-508.0\t-488.0\t0.0012\t12.3\n"
+        "3000\t-507.0\t-487.0\t0.0013\t12.4\n",
+        encoding="utf-8",
+    )
+    stuck = tmp_path / "stuck.log"
+    stuck.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tclockRate\ttreeHeight\n"
+        "0\t-500.0\t-480.0\t0.0010\t15.0\n"
+        "1000\t-500.0\t-480.0\t0.0010\t15.0\n"
+        "2000\t-500.0\t-480.0\t0.0010\t15.0\n"
+        "3000\t-500.0\t-480.0\t0.0010\t15.0\n",
+        encoding="utf-8",
+    )
+
+    report = assess_beast_chain_mixing(
+        [stable, stuck],
+        ess_threshold=2.0,
+        mean_shift_threshold=0.5,
+        cross_chain_mean_shift_threshold=1.0,
+    )
+
+    assert report.converged is False
+    assert {issue.code for issue in report.issues} >= {"stuck-parameter", "inconsistent-chains"}
 
 
 def test_render_calibration_audit_report_includes_calibration_and_tip_date_sections(tmp_path: Path) -> None:

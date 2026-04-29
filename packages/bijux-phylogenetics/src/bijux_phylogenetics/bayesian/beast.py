@@ -157,6 +157,25 @@ class BeastBurninSensitivityReport:
 
 
 @dataclass(slots=True)
+class BeastChainMixingIssue:
+    path: Path | None
+    parameter: str
+    code: str
+    message: str
+    observed_value: float
+    threshold: float
+
+
+@dataclass(slots=True)
+class BeastChainMixingReport:
+    log_paths: list[Path]
+    chain_count: int
+    converged: bool
+    issues: list[BeastChainMixingIssue]
+    chain_summaries: list[BeastConvergenceReport]
+
+
+@dataclass(slots=True)
 class BeastConvergenceReport:
     path: Path
     sample_count: int
@@ -693,6 +712,82 @@ def assess_beast_burnin_sensitivity(
         slices=slices,
         changed_mcc_count=changed_mcc_count,
         warnings=warnings,
+    )
+
+
+def assess_beast_chain_mixing(
+    log_paths: list[Path],
+    *,
+    ess_threshold: float = 200.0,
+    mean_shift_threshold: float = 0.5,
+    cross_chain_mean_shift_threshold: float = 0.75,
+    stuck_parameter_span_threshold: float = 1e-9,
+) -> BeastChainMixingReport:
+    """Flag low ESS, mean drift, stuck parameters, and inconsistent chain means across BEAST logs."""
+    if not log_paths:
+        raise ValueError("assess_beast_chain_mixing requires at least one log path")
+    chain_summaries = [
+        assess_beast_convergence(
+            path,
+            ess_threshold=ess_threshold,
+            mean_shift_threshold=mean_shift_threshold,
+        )
+        for path in log_paths
+    ]
+    issues: list[BeastChainMixingIssue] = []
+    for summary in chain_summaries:
+        for warning in summary.warnings:
+            issues.append(
+                BeastChainMixingIssue(
+                    path=summary.path,
+                    parameter=str(warning["parameter"]),
+                    code=str(warning["code"]),
+                    message=str(warning["message"]),
+                    observed_value=float(warning["observed_value"]),
+                    threshold=float(warning["threshold"]),
+                )
+            )
+        for parameter_summary in summary.parameter_summaries:
+            span = float(parameter_summary["maximum"]) - float(parameter_summary["minimum"])
+            if span <= stuck_parameter_span_threshold:
+                issues.append(
+                    BeastChainMixingIssue(
+                        path=summary.path,
+                        parameter=str(parameter_summary["parameter"]),
+                        code="stuck-parameter",
+                        message="parameter shows effectively no movement across the sampled chain",
+                        observed_value=span,
+                        threshold=stuck_parameter_span_threshold,
+                    )
+                )
+    parameter_to_means: dict[str, list[tuple[Path, float]]] = {}
+    for summary in chain_summaries:
+        for parameter_summary in summary.parameter_summaries:
+            parameter_to_means.setdefault(str(parameter_summary["parameter"]), []).append(
+                (summary.path, float(parameter_summary["mean"]))
+            )
+    for parameter, chain_means in parameter_to_means.items():
+        if len(chain_means) < 2:
+            continue
+        mean_values = [value for _, value in chain_means]
+        span = max(mean_values) - min(mean_values)
+        if span > cross_chain_mean_shift_threshold:
+            issues.append(
+                BeastChainMixingIssue(
+                    path=None,
+                    parameter=parameter,
+                    code="inconsistent-chains",
+                    message="independent chains disagree more than the allowed mean-shift threshold",
+                    observed_value=span,
+                    threshold=cross_chain_mean_shift_threshold,
+                )
+            )
+    return BeastChainMixingReport(
+        log_paths=log_paths,
+        chain_count=len(log_paths),
+        converged=not issues,
+        issues=issues,
+        chain_summaries=chain_summaries,
     )
 
 
