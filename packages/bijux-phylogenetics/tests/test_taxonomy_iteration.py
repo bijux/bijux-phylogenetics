@@ -10,10 +10,17 @@ from bijux_phylogenetics.core.taxon_workflows import (
 )
 from bijux_phylogenetics.core.taxonomy import (
     audit_tree_taxon_synonyms,
+    build_taxon_audit_report,
+    build_taxon_mapping_conflict_report,
+    detect_duplicate_biological_identities,
+    export_tree_accepted_names,
+    inspect_tree_taxon_rank_consistency,
     inspect_tree_taxon_namespaces,
     resolve_tree_taxon_synonyms,
+    write_accepted_name_mapping,
     write_synonym_resolution_mapping,
 )
+from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.io.trees import load_tree
 
 
@@ -71,6 +78,63 @@ def test_inspect_tree_taxon_namespaces_reports_mixed_identifier_styles() -> None
     assert report.namespace_counts["sample_id"] == 1
     assert report.namespace_counts["isolate_id"] == 1
     assert any("multiple explicit taxon namespaces" in warning for warning in report.warnings)
+
+
+def test_inspect_tree_taxon_rank_consistency_flags_mixed_label_levels() -> None:
+    tree = load_tree(fixture("example_taxonomy_rank_mixed.nwk"))
+    report = inspect_tree_taxon_rank_consistency(tree)
+
+    assert report.mixed_ranks is True
+    assert report.rank_counts["genus"] == 1
+    assert report.rank_counts["species"] == 1
+    assert report.rank_counts["population"] == 1
+    assert report.rank_counts["accession"] == 1
+    assert report.rank_counts["sample"] == 1
+
+
+def test_export_tree_accepted_names_marks_resolved_unchanged_and_ambiguous_rows(tmp_path: Path) -> None:
+    tree = load_tree(fixture("example_taxonomy_tree.nwk"))
+    report = export_tree_accepted_names(tree, fixture("example_taxon_synonyms.tsv"))
+
+    rows = {row.raw_label: row for row in report.rows}
+    assert rows["Felis_concolor"].accepted_label == "Puma_concolor"
+    assert rows["Felis_concolor"].status == "resolved"
+    assert rows["Jaguar"].status == "ambiguous"
+    assert rows["Homo_sapiens"].status == "unchanged"
+
+    mapping_path = write_accepted_name_mapping(tmp_path / "accepted.tsv", report)
+    assert "accepted_label" in mapping_path.read_text(encoding="utf-8")
+
+
+def test_duplicate_biological_identity_detection_uses_shared_accepted_names() -> None:
+    tree = loads_newick("(Felis_concolor:0.1,Puma_concolor:0.2,Jaguar:0.3);")
+    report = detect_duplicate_biological_identities(tree, synonym_table_path=fixture("example_taxon_synonyms.tsv"))
+
+    assert any(
+        row.evidence == "shared_accepted_name"
+        and {row.left_label, row.right_label} == {"Felis_concolor", "Puma_concolor"}
+        and row.accepted_label == "Puma_concolor"
+        for row in report.candidates
+    )
+
+
+def test_build_taxon_mapping_conflict_report_collects_synonym_ambiguity() -> None:
+    tree = load_tree(fixture("example_taxonomy_tree.nwk"))
+    report = build_taxon_mapping_conflict_report(tree, synonym_table_path=fixture("example_taxon_synonyms.tsv"))
+
+    assert any(row.conflict_type == "ambiguous_synonym" for row in report.rows)
+    assert any("reviewer attention" in warning for warning in report.warnings)
+
+
+def test_build_taxon_audit_report_combines_rank_namespace_and_mapping_reviews() -> None:
+    tree = load_tree(fixture("example_taxonomy_rank_mixed.nwk"))
+    report = build_taxon_audit_report(tree, synonym_table_path=fixture("example_taxon_synonyms.tsv"))
+
+    assert report.tree_tip_count == 5
+    assert report.rank_consistency.mixed_ranks is True
+    assert report.namespace_report.mixed_namespaces is True
+    assert report.status == "needs_review"
+    assert report.summary
 
 
 def test_prune_tree_to_taxa_reports_information_loss() -> None:
