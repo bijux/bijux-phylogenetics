@@ -5,8 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.common import descendant_taxa
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.engines.workflows import _ensure_inference_ready_alignment
 
 
 @dataclass(slots=True)
@@ -46,6 +48,54 @@ class ImpossibleCalibrationConstraintReport:
     calibration_path: Path
     impossible_calibration_ids: list[str]
     issues: list[CalibrationValidationIssue]
+
+
+@dataclass(slots=True)
+class ValidatedTipDate:
+    taxon: str
+    date: float | None
+    valid: bool
+
+
+@dataclass(slots=True)
+class TipDatingValidationIssue:
+    taxon: str
+    code: str
+    message: str
+
+
+@dataclass(slots=True)
+class TipDatingValidationReport:
+    tree_path: Path
+    tip_dates_path: Path
+    alignment_path: Path | None
+    taxon_column: str
+    date_column: str
+    valid_tip_count: int
+    invalid_tip_count: int
+    missing_tree_taxa: list[str]
+    extra_tip_taxa: list[str]
+    extra_alignment_taxa: list[str]
+    tip_dates: list[ValidatedTipDate]
+    issues: list[TipDatingValidationIssue]
+
+
+@dataclass(slots=True)
+class BeastPreparationReport:
+    alignment_path: Path
+    output_path: Path
+    tree_path: Path | None
+    calibration_path: Path | None
+    tip_dates_path: Path | None
+    taxon_count: int
+    character_count: int
+    inferred_alphabet: str
+    clock_model: str
+    tree_prior: str
+    chain_length: int
+    log_every: int
+    calibration_count: int
+    tip_date_count: int
 
 
 def _read_delimited_rows(path: Path) -> list[dict[str, str]]:
@@ -253,4 +303,167 @@ def detect_impossible_calibration_constraints(tree_path: Path, calibration_path:
         calibration_path=calibration_path,
         impossible_calibration_ids=impossible_ids,
         issues=[issue for issue in report.issues if issue.calibration_id in impossible_ids],
+    )
+
+
+def validate_tip_dating_metadata(
+    tree_path: Path,
+    tip_dates_path: Path,
+    *,
+    alignment_path: Path | None = None,
+    taxon_column: str | None = None,
+    date_column: str = "date",
+) -> TipDatingValidationReport:
+    """Validate that dated tips resolve cleanly against the tree and optional alignment."""
+    tree = load_tree(tree_path)
+    tree_taxa = set(tree.tip_names)
+    alignment_taxa: set[str] | None = None
+    if alignment_path is not None:
+        _ensure_inference_ready_alignment(alignment_path)
+        alignment_taxa = {record.identifier for record in load_fasta_alignment(alignment_path)}
+    table = load_taxon_table(tip_dates_path, taxon_column=taxon_column)
+    if date_column not in table.columns:
+        raise ValueError(f"tip-dating table does not contain column '{date_column}'")
+
+    issues: list[TipDatingValidationIssue] = []
+    tip_dates: list[ValidatedTipDate] = []
+    extra_tip_taxa = sorted(set(table.taxa) - tree_taxa)
+    missing_tree_taxa = sorted(tree_taxa - set(table.taxa))
+    extra_alignment_taxa = sorted(set(table.taxa) - alignment_taxa) if alignment_taxa is not None else []
+    for row in table.rows:
+        taxon = row[table.taxon_column]
+        raw_date = row.get(date_column, "")
+        valid = True
+        parsed_date: float | None = None
+        if taxon not in tree_taxa:
+            valid = False
+            issues.append(TipDatingValidationIssue(taxon=taxon, code="taxon-missing-from-tree", message="dated tip is absent from the tree"))
+        if alignment_taxa is not None and taxon not in alignment_taxa:
+            valid = False
+            issues.append(TipDatingValidationIssue(taxon=taxon, code="taxon-missing-from-alignment", message="dated tip is absent from the alignment"))
+        if not raw_date.strip():
+            valid = False
+            issues.append(TipDatingValidationIssue(taxon=taxon, code="missing-date", message="dated tip requires a numeric date value"))
+        else:
+            try:
+                parsed_date = float(raw_date)
+            except ValueError:
+                valid = False
+                issues.append(TipDatingValidationIssue(taxon=taxon, code="invalid-date", message="dated tip value must be numeric"))
+        tip_dates.append(ValidatedTipDate(taxon=taxon, date=parsed_date, valid=valid))
+
+    valid_tip_count = sum(1 for tip in tip_dates if tip.valid)
+    return TipDatingValidationReport(
+        tree_path=tree_path,
+        tip_dates_path=tip_dates_path,
+        alignment_path=alignment_path,
+        taxon_column=table.taxon_column,
+        date_column=date_column,
+        valid_tip_count=valid_tip_count,
+        invalid_tip_count=len(tip_dates) - valid_tip_count,
+        missing_tree_taxa=missing_tree_taxa,
+        extra_tip_taxa=extra_tip_taxa,
+        extra_alignment_taxa=extra_alignment_taxa,
+        tip_dates=tip_dates,
+        issues=issues,
+    )
+
+
+def prepare_beast_time_tree_analysis(
+    alignment_path: Path,
+    output_path: Path,
+    *,
+    tree_path: Path | None = None,
+    calibration_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    clock_model: str = "strict",
+    tree_prior: str = "yule",
+    chain_length: int = 1000000,
+    log_every: int = 1000,
+    taxon_column: str | None = None,
+    date_column: str = "date",
+) -> BeastPreparationReport:
+    """Prepare a deterministic BEAST-style XML configuration from alignment and dating inputs."""
+    _ensure_inference_ready_alignment(alignment_path)
+    records = load_fasta_alignment(alignment_path)
+    inferred_alphabet = infer_alignment_alphabet(records)
+    calibration_report = (
+        validate_fossil_calibration_table(tree_path, calibration_path)
+        if tree_path is not None and calibration_path is not None
+        else None
+    )
+    if calibration_report is not None and calibration_report.invalid_calibration_count:
+        raise ValueError("BEAST preparation requires all fossil calibrations to validate successfully")
+    tip_date_report = (
+        validate_tip_dating_metadata(
+            tree_path or alignment_path,
+            tip_dates_path,
+            alignment_path=alignment_path,
+            taxon_column=taxon_column,
+            date_column=date_column,
+        )
+        if tip_dates_path is not None and tree_path is not None
+        else None
+    )
+    if tip_dates_path is not None and tree_path is None:
+        raise ValueError("BEAST preparation requires tree_path when tip_dates_path is provided")
+    if tip_date_report is not None and tip_date_report.invalid_tip_count:
+        raise ValueError("BEAST preparation requires all tip dates to validate successfully")
+
+    sequence_block = "\n".join(
+        f'    <sequence taxon="{record.identifier}" value="{record.sequence}" />'
+        for record in records
+    )
+    tip_date_block = ""
+    if tip_date_report is not None:
+        tip_date_lines = [
+            f'    <date taxon="{tip.taxon}" value="{tip.date}" />'
+            for tip in tip_date_report.tip_dates
+            if tip.valid and tip.date is not None
+        ]
+        tip_date_block = "\n".join(["  <tipDates>", *tip_date_lines, "  </tipDates>"])
+    calibration_block = ""
+    if calibration_report is not None:
+        calibration_lines = [
+            (
+                f'    <calibration id="{calibration.calibration_id}" kind="{calibration.target_kind}" '
+                f'target="{calibration.target_label}" minimum="{calibration.minimum_age}" '
+                f'maximum="{calibration.maximum_age}" distribution="{calibration.distribution}" />'
+            )
+            for calibration in calibration_report.calibrations
+        ]
+        calibration_block = "\n".join(["  <calibrations>", *calibration_lines, "  </calibrations>"])
+    xml = "\n".join(
+        [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<beast version="bijux-beast-prep-1">',
+            f'  <alignment alphabet="{inferred_alphabet}">',
+            sequence_block,
+            "  </alignment>",
+            f'  <clockModel name="{clock_model}" />',
+            f'  <treePrior name="{tree_prior}" />',
+            *( [tip_date_block] if tip_date_block else [] ),
+            *( [calibration_block] if calibration_block else [] ),
+            f'  <run chainLength="{chain_length}" logEvery="{log_every}" />',
+            "</beast>",
+            "",
+        ]
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(xml, encoding="utf-8")
+    return BeastPreparationReport(
+        alignment_path=alignment_path,
+        output_path=output_path,
+        tree_path=tree_path,
+        calibration_path=calibration_path,
+        tip_dates_path=tip_dates_path,
+        taxon_count=len(records),
+        character_count=len(records[0].sequence),
+        inferred_alphabet=inferred_alphabet,
+        clock_model=clock_model,
+        tree_prior=tree_prior,
+        chain_length=chain_length,
+        log_every=log_every,
+        calibration_count=0 if calibration_report is None else calibration_report.calibration_count,
+        tip_date_count=0 if tip_date_report is None else tip_date_report.valid_tip_count,
     )
