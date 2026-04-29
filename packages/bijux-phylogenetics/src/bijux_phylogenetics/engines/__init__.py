@@ -1,4 +1,5 @@
 from .common import EngineRunReport, EngineVersionInfo, execute_engine_command, read_engine_version, resolve_engine_executable
+from .evidence import InferenceEvidenceBundleResult, bundle_inference_workflow_evidence
 from .reports import (
     InferenceSensitivityReport,
     InferenceSensitivityReportBuildResult,
@@ -47,6 +48,7 @@ __all__ = [
     "compare_inferred_tree_to_taxon_metadata",
     "EngineRunReport",
     "EngineVersionInfo",
+    "InferenceEvidenceBundleResult",
     "EngineWorkflowReport",
     "ExternalTreeComparisonReport",
     "InferenceFailureTaxonomyReport",
@@ -72,6 +74,7 @@ __all__ = [
     "validate_model_selection_against_engine_outputs",
     "compare_fast_and_ml_trees",
     "execute_engine_command",
+    "bundle_inference_workflow_evidence",
     "read_engine_version",
     "render_inference_sensitivity_report",
     "render_inference_workflow_report",

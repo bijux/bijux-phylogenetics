@@ -4,6 +4,7 @@ from pathlib import Path
 from bijux_phylogenetics.engines import (
     build_inference_sensitivity_report,
     build_model_selection_limitations_report,
+    bundle_inference_workflow_evidence,
     compare_fast_and_ml_trees,
     render_inference_sensitivity_report,
     render_model_selection_limitations_report,
@@ -506,3 +507,31 @@ def test_bootstrap_workflow_report_includes_support_and_backbone_sections(tmp_pa
 
     assert "bootstrap-support-summary" in rendered.supplement_sections
     assert "weak-backbone" in rendered.supplement_sections
+
+
+def test_bundle_inference_workflow_evidence_copies_inputs_outputs_and_manifests(tmp_path: Path) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    model = run_model_selection(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="example",
+    )
+    ml = run_maximum_likelihood_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "ml",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+    )
+
+    result = bundle_inference_workflow_evidence(
+        [model.manifest_path, ml.manifest_path],
+        bundle_root=tmp_path / "inference-bundle",
+    )
+
+    assert result.bundle_root.exists()
+    assert result.workflow_count == 2
+    assert result.manifest_file_count == 2
+    assert result.validation.mismatches == []
+    assert (result.bundle_root / "outputs").exists()
