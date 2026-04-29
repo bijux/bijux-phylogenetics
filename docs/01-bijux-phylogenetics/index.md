@@ -47,6 +47,12 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics adapter consensus artifacts/bootstrap/mammals.ufboot --out-dir artifacts/consensus --prefix mammals --json`
 - `bijux-phylogenetics adapter infer-fast alignment.fasta --out artifacts/fasttree.nwk --json`
 - `bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --json`
+- `bijux-phylogenetics adapter mrbayes-prepare alignment.fasta --out artifacts/mrbayes/analysis.nex --ngen 20000 --samplefreq 100 --json`
+- `bijux-phylogenetics adapter mrbayes-run artifacts/mrbayes/analysis.nex --resume --json`
+- `bijux-phylogenetics adapter mrbayes-summarize artifacts/mrbayes/analysis.run1.t --burnin-fraction 0.25 --json`
+- `bijux-phylogenetics adapter mrbayes-traces artifacts/mrbayes/analysis.run1.p --json`
+- `bijux-phylogenetics adapter mrbayes-ess artifacts/mrbayes/analysis.run1.p --json`
+- `bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --out artifacts/mrbayes/inference-report.html --json`
 - `bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
@@ -90,3 +96,10 @@ around trees, alignments, and trait tables.
 - every engine workflow records the resolved executable, exact command vector, version output, stdout, stderr, and extracted warning lines in a deterministic manifest
 - model selection emits a stable selected-model artifact, ML inference emits validated Newick trees, and bootstrap workflows retain both support trees and bootstrap tree sets
 - fast approximate and ML trees can be compared through the same topology, clade, support, and branch-length report surface already used for native tree comparison
+
+## Bayesian Workflow Highlights
+
+- aligned FASTA inputs can now be turned into deterministic MrBayes NEXUS analyses with explicit model and MCMC settings
+- MrBayes posterior runs emit posterior trees, parameter traces, resumable manifests, and HTML inference workflow reports through the same adapter layer as other external engines
+- posterior tree sets can be burn-in filtered and summarized into consensus trees, rooted-topology counts, and shared-taxon summaries
+- parameter traces can be parsed directly and converted into per-parameter effective sample size summaries without leaving the native Python/runtime surface
