@@ -3,6 +3,9 @@
 from importlib import metadata
 
 from .ancestral import (
+    AncestralFigurePackageResult,
+    AncestralSensitivityReport,
+    AncestralSensitivitySummary,
     AncestralStateReportBuildResult,
     ContinuousAncestralComparisonReport,
     ContinuousAncestralComparisonRow,
@@ -10,6 +13,8 @@ from .ancestral import (
     ContinuousAncestralReport,
     DiscreteAncestralEstimate,
     DiscreteAncestralReport,
+    build_ancestral_figure_package,
+    build_ancestral_sensitivity_report,
     compare_continuous_ancestral_models,
     reconstruct_continuous_ancestral_states,
     reconstruct_discrete_ancestral_states,
@@ -388,6 +393,9 @@ except metadata.PackageNotFoundError:
 
 __all__ = [
     "AncestralStateReportBuildResult",
+    "AncestralFigurePackageResult",
+    "AncestralSensitivityReport",
+    "AncestralSensitivitySummary",
     "BlombergKReport",
     "BayesianEvidencePackageReport",
     "BayesianPosteriorReportBuildResult",
@@ -584,6 +592,8 @@ __all__ = [
     "assess_mrbayes_convergence",
     "build_alignment_forensic_report",
     "build_alignment_quality_report",
+    "build_ancestral_figure_package",
+    "build_ancestral_sensitivity_report",
     "build_bayesian_evidence_package",
     "build_tree_figure_package",
     "build_tree_from_imported_distance_matrix",

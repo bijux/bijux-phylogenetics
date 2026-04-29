@@ -5,6 +5,8 @@ from pathlib import Path
 
 import bijux_phylogenetics
 from bijux_phylogenetics.ancestral import (
+    build_ancestral_figure_package,
+    build_ancestral_sensitivity_report,
     compare_continuous_ancestral_models,
     reconstruct_continuous_ancestral_states,
     reconstruct_discrete_ancestral_states,
@@ -358,6 +360,8 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.run_pgls is run_pgls
     assert bijux_phylogenetics.reconstruct_continuous_ancestral_states is reconstruct_continuous_ancestral_states
     assert bijux_phylogenetics.reconstruct_discrete_ancestral_states is reconstruct_discrete_ancestral_states
+    assert bijux_phylogenetics.build_ancestral_figure_package is build_ancestral_figure_package
+    assert bijux_phylogenetics.build_ancestral_sensitivity_report is build_ancestral_sensitivity_report
     assert bijux_phylogenetics.compare_continuous_ancestral_models is compare_continuous_ancestral_models
     assert bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
     assert bijux_phylogenetics.render_ancestral_state_report is render_ancestral_state_report

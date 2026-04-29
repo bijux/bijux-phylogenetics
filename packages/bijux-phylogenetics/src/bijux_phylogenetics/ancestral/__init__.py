@@ -2,6 +2,8 @@
 
 from .continuous import ContinuousAncestralEstimate, ContinuousAncestralReport, reconstruct_continuous_ancestral_states
 from .discrete import DiscreteAncestralEstimate, DiscreteAncestralReport, reconstruct_discrete_ancestral_states
+from .package import AncestralFigurePackageResult, build_ancestral_figure_package
+from .sensitivity import AncestralSensitivityReport, AncestralSensitivitySummary, build_ancestral_sensitivity_report
 from .service import (
     AncestralStateReportBuildResult,
     ContinuousAncestralComparisonReport,
@@ -14,12 +16,17 @@ from .service import (
 
 __all__ = [
     "AncestralStateReportBuildResult",
+    "AncestralFigurePackageResult",
+    "AncestralSensitivityReport",
+    "AncestralSensitivitySummary",
     "ContinuousAncestralComparisonReport",
     "ContinuousAncestralComparisonRow",
     "ContinuousAncestralEstimate",
     "ContinuousAncestralReport",
     "DiscreteAncestralEstimate",
     "DiscreteAncestralReport",
+    "build_ancestral_figure_package",
+    "build_ancestral_sensitivity_report",
     "compare_continuous_ancestral_models",
     "reconstruct_continuous_ancestral_states",
     "reconstruct_discrete_ancestral_states",
