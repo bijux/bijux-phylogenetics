@@ -3,12 +3,12 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from statistics import mean
 
 from Bio import Phylo
 
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.core.tree import PhyloTree
+from bijux_phylogenetics.bayesian.diagnostics import TraceConvergenceReport, summarize_trace_convergence
 from bijux_phylogenetics.engines.common import build_file_checksums
 from bijux_phylogenetics.engines.workflows import (
     EngineWorkflowReport,
@@ -72,6 +72,17 @@ class MrBayesESSReport:
     path: Path
     sample_count: int
     effective_sample_sizes: list[EffectiveSampleSize]
+
+
+@dataclass(slots=True)
+class MrBayesConvergenceReport:
+    path: Path
+    sample_count: int
+    converged: bool
+    ess_threshold: float
+    mean_shift_threshold: float
+    warnings: list[dict[str, object]]
+    parameter_summaries: list[dict[str, object]]
 
 
 @dataclass(slots=True)
@@ -273,44 +284,78 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
     return MrBayesTraceReport(path=path, row_count=len(rows), columns=columns, rows=rows)
 
 
-def _autocorrelation(series: list[float], lag: int) -> float:
-    n = len(series)
-    mu = mean(series)
-    denominator = sum((value - mu) ** 2 for value in series)
-    if denominator == 0.0:
-        return 0.0
-    numerator = sum((series[index] - mu) * (series[index + lag] - mu) for index in range(n - lag))
-    return numerator / denominator
-
-
-def _effective_sample_size(series: list[float]) -> float:
-    n = len(series)
-    if n < 3:
-        return float(n)
-    rho_sum = 0.0
-    for lag in range(1, n):
-        rho = _autocorrelation(series, lag)
-        if rho <= 0:
-            break
-        rho_sum += rho
-    return round(n / (1.0 + 2.0 * rho_sum), 6)
-
-
 def compute_mrbayes_effective_sample_sizes(path: Path) -> MrBayesESSReport:
     """Compute per-parameter effective sample sizes from a MrBayes trace file."""
     report = parse_mrbayes_parameter_traces(path)
+    convergence = summarize_trace_convergence(
+        path=path,
+        rows=[row.values for row in report.rows],
+        columns=report.columns,
+    )
     effective_sample_sizes = [
         EffectiveSampleSize(
-            parameter=column,
-            sample_count=report.row_count,
-            effective_sample_size=_effective_sample_size([row.values[column] for row in report.rows if column in row.values]),
+            parameter=summary.parameter,
+            sample_count=summary.sample_count,
+            effective_sample_size=summary.effective_sample_size,
         )
-        for column in report.columns
+        for summary in convergence.series
     ]
     return MrBayesESSReport(
         path=path,
         sample_count=report.row_count,
         effective_sample_sizes=effective_sample_sizes,
+    )
+
+
+def assess_mrbayes_convergence(
+    path: Path,
+    *,
+    ess_threshold: float = 200.0,
+    mean_shift_threshold: float = 0.5,
+) -> MrBayesConvergenceReport:
+    """Flag low-ESS or unstable MrBayes trace parameters."""
+    report = parse_mrbayes_parameter_traces(path)
+    convergence = summarize_trace_convergence(
+        path=path,
+        rows=[row.values for row in report.rows],
+        columns=report.columns,
+        ess_threshold=ess_threshold,
+        mean_shift_threshold=mean_shift_threshold,
+    )
+    return _build_mrbayes_convergence_report(convergence)
+
+
+def _build_mrbayes_convergence_report(convergence: TraceConvergenceReport) -> MrBayesConvergenceReport:
+    return MrBayesConvergenceReport(
+        path=convergence.path,
+        sample_count=convergence.sample_count,
+        converged=convergence.converged,
+        ess_threshold=convergence.ess_threshold,
+        mean_shift_threshold=convergence.mean_shift_threshold,
+        warnings=[
+            {
+                "parameter": warning.parameter,
+                "code": warning.code,
+                "message": warning.message,
+                "observed_value": warning.observed_value,
+                "threshold": warning.threshold,
+            }
+            for warning in convergence.warnings
+        ],
+        parameter_summaries=[
+            {
+                "parameter": summary.parameter,
+                "sample_count": summary.sample_count,
+                "effective_sample_size": summary.effective_sample_size,
+                "mean": summary.mean,
+                "minimum": summary.minimum,
+                "maximum": summary.maximum,
+                "first_half_mean": summary.first_half_mean,
+                "second_half_mean": summary.second_half_mean,
+                "standardized_mean_shift": summary.standardized_mean_shift,
+            }
+            for summary in convergence.series
+        ],
     )
 
 

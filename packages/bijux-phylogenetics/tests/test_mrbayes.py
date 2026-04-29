@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.bayesian import (
+    assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
     parse_mrbayes_parameter_traces,
     prepare_mrbayes_analysis,
@@ -121,3 +122,18 @@ def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(tmp_path: Path)
     assert ess_report.sample_count == 4
     assert [row.parameter for row in ess_report.effective_sample_sizes] == ["LnL", "TL", "alpha"]
     assert all(row.effective_sample_size > 0 for row in ess_report.effective_sample_sizes)
+
+
+def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(tmp_path: Path) -> None:
+    executable = _fake_mrbayes(tmp_path / "mb-fixture")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+    run_report = run_mrbayes_posterior_inference(nexus_path, executable=executable, resume=False)
+    trace_path = run_report.output_paths["parameter_traces"]
+
+    report = assess_mrbayes_convergence(trace_path, ess_threshold=5.0, mean_shift_threshold=0.1)
+
+    assert report.sample_count == 4
+    assert report.converged is False
+    assert {warning["code"] for warning in report.warnings} == {"low-ess", "mean-drift"}
+    assert [summary["parameter"] for summary in report.parameter_summaries] == ["LnL", "TL", "alpha"]

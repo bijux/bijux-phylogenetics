@@ -1,10 +1,12 @@
 from .mrbayes import (
+    MrBayesConvergenceReport,
     EffectiveSampleSize,
     MrBayesESSReport,
     MrBayesPosteriorSummaryReport,
     MrBayesPreparationReport,
     MrBayesTraceReport,
     MrBayesTraceRow,
+    assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
     parse_mrbayes_parameter_traces,
     prepare_mrbayes_analysis,
@@ -13,12 +15,14 @@ from .mrbayes import (
 )
 
 __all__ = [
+    "MrBayesConvergenceReport",
     "EffectiveSampleSize",
     "MrBayesESSReport",
     "MrBayesPosteriorSummaryReport",
     "MrBayesPreparationReport",
     "MrBayesTraceReport",
     "MrBayesTraceRow",
+    "assess_mrbayes_convergence",
     "compute_mrbayes_effective_sample_sizes",
     "parse_mrbayes_parameter_traces",
     "prepare_mrbayes_analysis",
