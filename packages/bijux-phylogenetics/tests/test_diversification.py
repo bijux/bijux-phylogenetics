@@ -6,6 +6,8 @@ import pytest
 
 from bijux_phylogenetics.diversification import (
     compute_lineage_through_time_curve,
+    detect_incomplete_taxon_sampling_metadata,
+    estimate_diversification_rate,
     inspect_diversification_time_tree,
     validate_time_tree_for_diversification,
     write_lineage_through_time_table,
@@ -70,3 +72,34 @@ def test_inspect_diversification_time_tree_rejects_invalid_time_tree() -> None:
 
     with pytest.raises(UnrootedTreeError):
         validate_time_tree_for_diversification(fixture("example_tree_unrooted.nwk"))
+
+
+def test_detect_incomplete_taxon_sampling_metadata_reports_missing_and_invalid_rows() -> None:
+    report = detect_incomplete_taxon_sampling_metadata(
+        fixture("example_tree.nwk"),
+        fixture("example_sampling_fractions_incomplete.tsv"),
+    )
+
+    assert report.complete is False
+    assert report.sampling_column == "sampling_fraction"
+    assert report.missing_taxa == ["D"]
+    assert [issue.code for issue in report.invalid_rows] == [
+        "missing-sampling-fraction",
+        "out-of-range-sampling-fraction",
+    ]
+
+
+def test_estimate_diversification_rate_applies_sampling_correction() -> None:
+    report = estimate_diversification_rate(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+        model="birth-death",
+    )
+
+    assert report.model == "birth-death"
+    assert report.crown_age == 0.3
+    assert report.observed_tip_count == 4
+    assert report.sampling_fraction == 0.75
+    assert report.corrected_tip_count == 5.33333333333333
+    assert report.birth_rate >= report.net_diversification_rate
+    assert report.aic > 0.0
