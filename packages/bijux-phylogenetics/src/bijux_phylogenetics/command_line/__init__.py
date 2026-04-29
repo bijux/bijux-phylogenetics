@@ -989,8 +989,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     comparative_pgls.add_argument("tree", type=Path)
     comparative_pgls.add_argument("table", type=Path)
-    comparative_pgls.add_argument("--response", required=True)
-    comparative_pgls.add_argument("--predictors", nargs="+", required=True)
+    comparative_pgls.add_argument("--response")
+    comparative_pgls.add_argument("--predictors", nargs="+")
+    comparative_pgls.add_argument("--formula", help="Formula-style specification such as 'response ~ body_mass * habitat'.")
     comparative_pgls.add_argument("--taxon-column")
     comparative_pgls.add_argument(
         "--lambda-value",
@@ -3019,14 +3020,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 args.tree,
                 args.table,
                 response=args.response,
-                predictors=list(args.predictors),
+                predictors=list(args.predictors or []),
+                formula=args.formula,
                 taxon_column=args.taxon_column,
             )
             report = run_pgls(
                 args.tree,
                 args.table,
                 response=args.response,
-                predictors=list(args.predictors),
+                predictors=list(args.predictors or []),
+                formula=args.formula,
                 taxon_column=args.taxon_column,
                 lambda_value=lambda_value,
             )

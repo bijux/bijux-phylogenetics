@@ -117,3 +117,28 @@ def test_comparative_pgls_cli_encodes_categorical_predictor(capsys) -> None:
         for coefficient in payload["data"]["model"]["coefficients"]
     }
     assert math.isclose(coefficients["habitat[tundra]"], -2.0)
+
+
+def test_comparative_pgls_cli_accepts_formula_interactions(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "pgls",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_interaction.tsv")),
+            "--formula",
+            "response ~ predictor_one * habitat",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    coefficients = {
+        coefficient["name"]: coefficient["estimate"]
+        for coefficient in payload["data"]["model"]["coefficients"]
+    }
+    assert exit_code == 0
+    assert payload["data"]["inputs"]["formula"]["interaction_terms"] == ["predictor_one:habitat"]
+    assert math.isclose(coefficients["predictor_one:habitat[tundra]"], 0.5)

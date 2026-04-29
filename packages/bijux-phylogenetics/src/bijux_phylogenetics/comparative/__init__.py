@@ -21,6 +21,7 @@ from .models import (
     validate_comparative_reference_examples,
 )
 from .pgls import (
+    ComparativeFormulaSpecification,
     PGLSCoefficient,
     PGLSDiagnosticsReport,
     PGLSFittedObservation,
@@ -48,6 +49,7 @@ __all__ = [
     "BlombergKReport",
     "BrownianMotionFitReport",
     "ComparativeDataset",
+    "ComparativeFormulaSpecification",
     "ComparativeModelComparisonReport",
     "ComparativeModelComparisonRow",
     "ComparativeParameterInterval",

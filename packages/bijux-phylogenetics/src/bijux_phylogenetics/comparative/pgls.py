@@ -28,6 +28,16 @@ class PGLSPredictorClassification:
 
 
 @dataclass(slots=True)
+class ComparativeFormulaSpecification:
+    """Auditable formula-style comparative model specification."""
+
+    response: str
+    formula: str
+    predictors: list[str]
+    interaction_terms: list[str]
+
+
+@dataclass(slots=True)
 class PGLSInputReport:
     """Method-specific readiness summary for a PGLS request."""
 
@@ -35,10 +45,12 @@ class PGLSInputReport:
     traits_path: Path
     taxon_column: str
     response: str
+    formula: ComparativeFormulaSpecification
     predictors: list[PGLSPredictorClassification]
     categorical_predictors: list[str]
     encoded_columns: list[str]
     analysis_taxa: list[str]
+    residual_degrees_of_freedom: int
     ready: bool
     blockers: list[str]
     warnings: list[str]
@@ -100,7 +112,9 @@ class PGLSResult:
     tree_path: Path
     traits_path: Path
     response: str
+    formula: ComparativeFormulaSpecification
     predictors: list[str]
+    interaction_terms: list[str]
     encoded_columns: list[str]
     taxon_count: int
     lambda_value: float
@@ -118,17 +132,21 @@ def inspect_pgls_inputs(
     tree_path: Path,
     traits_path: Path,
     *,
-    response: str,
-    predictors: list[str],
+    response: str | None = None,
+    predictors: list[str] | None = None,
+    formula: str | None = None,
     taxon_column: str | None = None,
 ) -> PGLSInputReport:
     """Inspect whether a PGLS request is valid for the given tree and trait table."""
-    if not predictors:
-        raise ComparativeMethodError("PGLS requires at least one predictor column")
+    specification = _resolve_formula_specification(
+        response=response,
+        predictors=predictors,
+        formula=formula,
+    )
     readiness = summarize_numeric_trait_readiness(
         tree_path,
         traits_path,
-        trait=response,
+        trait=specification.response,
         taxon_column=taxon_column,
     )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
@@ -142,15 +160,15 @@ def inspect_pgls_inputs(
         blockers.append("PGLS requires a rooted tree")
     if not readiness.complete_branch_lengths:
         blockers.append("PGLS requires complete tree branch lengths")
-    if response not in column_kinds:
-        blockers.append(f"trait table does not contain response column '{response}'")
-    elif column_kinds[response] != "numeric":
-        blockers.append(f"response column '{response}' must be numeric for PGLS")
+    if specification.response not in column_kinds:
+        blockers.append(f"trait table does not contain response column '{specification.response}'")
+    elif column_kinds[specification.response] != "numeric":
+        blockers.append(f"response column '{specification.response}' must be numeric for PGLS")
 
     predictor_reports: list[PGLSPredictorClassification] = []
     categorical_predictors: list[str] = []
     encoded_columns = ["intercept"]
-    for predictor in predictors:
+    for predictor in specification.predictors:
         kind = column_kinds.get(predictor)
         if kind is None:
             blockers.append(f"trait table does not contain predictor column '{predictor}'")
@@ -191,8 +209,19 @@ def inspect_pgls_inputs(
                 kind=kind,
                 reference_level=reference_level,
                 encoded_columns=dummy_columns,
+                )
             )
-        )
+
+    report_by_name = {report.name: report for report in predictor_reports}
+    for interaction in specification.interaction_terms:
+        factor_names = interaction.split(":")
+        missing_factors = [name for name in factor_names if name not in report_by_name]
+        if missing_factors:
+            blockers.append(
+                f"interaction term '{interaction}' references unknown predictor(s): {', '.join(missing_factors)}"
+            )
+            continue
+        encoded_columns.extend(_interaction_column_names(interaction, report_by_name))
 
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     analysis_taxa: list[str] = []
@@ -202,11 +231,11 @@ def inspect_pgls_inputs(
         if row is None:
             missing_tree_taxa.append(taxon)
             continue
-        requested_columns = [response, *predictors]
+        requested_columns = [specification.response, *specification.predictors]
         if any(not row.get(column, "") for column in requested_columns):
             continue
         try:
-            float(row[response])
+            float(row[specification.response])
             for predictor_report in predictor_reports:
                 if predictor_report.kind == "numeric":
                     float(row[predictor_report.name])
@@ -215,18 +244,25 @@ def inspect_pgls_inputs(
         analysis_taxa.append(taxon)
     if missing_tree_taxa:
         blockers.append("PGLS requires all analyzed taxa to be resolved against the trait table")
-    if len(analysis_taxa) <= len(encoded_columns):
-        blockers.append("PGLS requires more taxa than fitted parameters after predictor encoding")
+    residual_degrees_of_freedom = len(analysis_taxa) - len(encoded_columns)
+    if residual_degrees_of_freedom <= 0:
+        blockers.append(
+            "PGLS overfit guard requires at least one residual degree of freedom after predictor encoding"
+        )
+    elif residual_degrees_of_freedom == 1:
+        warnings.append("PGLS has only one residual degree of freedom after predictor encoding")
 
     return PGLSInputReport(
         tree_path=tree_path,
         traits_path=traits_path,
         taxon_column=table.taxon_column,
-        response=response,
+        response=specification.response,
+        formula=specification,
         predictors=predictor_reports,
         categorical_predictors=categorical_predictors,
         encoded_columns=encoded_columns,
         analysis_taxa=analysis_taxa,
+        residual_degrees_of_freedom=residual_degrees_of_freedom,
         ready=not blockers,
         blockers=blockers,
         warnings=warnings,
@@ -237,8 +273,9 @@ def run_pgls(
     tree_path: Path,
     traits_path: Path,
     *,
-    response: str,
-    predictors: list[str],
+    response: str | None = None,
+    predictors: list[str] | None = None,
+    formula: str | None = None,
     taxon_column: str | None = None,
     lambda_value: float | str = "estimate",
 ) -> PGLSResult:
@@ -248,6 +285,7 @@ def run_pgls(
         traits_path,
         response=response,
         predictors=predictors,
+        formula=formula,
         taxon_column=taxon_column,
     )
     if not input_report.ready:
@@ -256,7 +294,7 @@ def run_pgls(
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
-        trait=response,
+        trait=input_report.response,
         taxon_column=taxon_column,
         minimum_taxa=len(input_report.encoded_columns) + 1,
         require_rooted=True,
@@ -265,12 +303,13 @@ def run_pgls(
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     taxa = list(input_report.analysis_taxa)
-    response_values = [float(rows_by_taxon[taxon][response]) for taxon in taxa]
+    response_values = [float(rows_by_taxon[taxon][input_report.response]) for taxon in taxa]
     design_matrix, encoded_columns = _build_design_matrix(
         rows_by_taxon,
         taxa,
-        predictors,
+        input_report.formula.predictors,
         input_report.predictors,
+        input_report.formula.interaction_terms,
     )
     dataset = ComparativeDataset(
         tree_path=dataset.tree_path,
@@ -317,8 +356,10 @@ def run_pgls(
     return PGLSResult(
         tree_path=tree_path,
         traits_path=traits_path,
-        response=response,
-        predictors=list(predictors),
+        response=input_report.response,
+        formula=input_report.formula,
+        predictors=list(input_report.formula.predictors),
+        interaction_terms=list(input_report.formula.interaction_terms),
         encoded_columns=encoded_columns,
         taxon_count=len(taxa),
         lambda_value=resolved_lambda,
@@ -346,6 +387,7 @@ def _build_design_matrix(
     taxa: list[str],
     predictors: list[str],
     predictor_reports: list[PGLSPredictorClassification],
+    interaction_terms: list[str],
 ) -> tuple[list[list[float]], list[str]]:
     encoded_columns = ["intercept"]
     report_by_name = {report.name: report for report in predictor_reports}
@@ -355,20 +397,138 @@ def _build_design_matrix(
             encoded_columns.append(predictor)
         else:
             encoded_columns.extend(report.encoded_columns or [])
+    interaction_columns = {
+        interaction: _interaction_column_names(interaction, report_by_name)
+        for interaction in interaction_terms
+    }
+    for columns in interaction_columns.values():
+        encoded_columns.extend(columns)
     matrix: list[list[float]] = []
     for taxon in taxa:
         row = rows_by_taxon[taxon]
         encoded_row = [1.0]
+        encoded_main_effects: dict[str, list[tuple[str, float]]] = {}
         for predictor in predictors:
             report = report_by_name[predictor]
             if report.kind == "numeric":
-                encoded_row.append(float(row[predictor]))
+                numeric_value = float(row[predictor])
+                encoded_row.append(numeric_value)
+                encoded_main_effects[predictor] = [(predictor, numeric_value)]
                 continue
+            categorical_rows: list[tuple[str, float]] = []
             for encoded_name in report.encoded_columns or []:
                 level = encoded_name.removeprefix(f"{predictor}[").removesuffix("]")
-                encoded_row.append(1.0 if row[predictor] == level else 0.0)
+                value = 1.0 if row[predictor] == level else 0.0
+                categorical_rows.append((encoded_name, value))
+                encoded_row.append(value)
+            encoded_main_effects[predictor] = categorical_rows
+        for interaction in interaction_terms:
+            interaction_values = _interaction_values(
+                interaction,
+                encoded_main_effects,
+            )
+            encoded_row.extend(value for _, value in interaction_values)
         matrix.append(encoded_row)
     return matrix, encoded_columns
+
+
+def _resolve_formula_specification(
+    *,
+    response: str | None,
+    predictors: list[str] | None,
+    formula: str | None,
+) -> ComparativeFormulaSpecification:
+    if formula:
+        if response is not None or predictors:
+            raise ComparativeMethodError("provide either a formula or explicit response/predictors, not both")
+        return _parse_formula(formula)
+    if response is None:
+        raise ComparativeMethodError("PGLS requires a response column when no formula is provided")
+    requested_predictors = list(predictors or [])
+    if not requested_predictors:
+        raise ComparativeMethodError("PGLS requires at least one predictor column")
+    return ComparativeFormulaSpecification(
+        response=response,
+        formula=f"{response} ~ {' + '.join(requested_predictors)}",
+        predictors=requested_predictors,
+        interaction_terms=[],
+    )
+
+
+def _parse_formula(formula: str) -> ComparativeFormulaSpecification:
+    if "~" not in formula:
+        raise ComparativeMethodError("comparative formula must contain '~'")
+    response, right_hand_side = [part.strip() for part in formula.split("~", 1)]
+    if not response:
+        raise ComparativeMethodError("comparative formula requires a response on the left-hand side")
+    raw_terms = [term.strip() for term in right_hand_side.split("+") if term.strip()]
+    if not raw_terms:
+        raise ComparativeMethodError("comparative formula requires at least one predictor term")
+    predictors: list[str] = []
+    interaction_terms: list[str] = []
+    for raw_term in raw_terms:
+        if "*" in raw_term:
+            factors = [factor.strip() for factor in raw_term.split("*") if factor.strip()]
+            if len(factors) < 2:
+                raise ComparativeMethodError(f"invalid interaction expansion '{raw_term}'")
+            for factor in factors:
+                if factor not in predictors:
+                    predictors.append(factor)
+            interaction = ":".join(factors)
+            if interaction not in interaction_terms:
+                interaction_terms.append(interaction)
+            continue
+        if ":" in raw_term:
+            factors = [factor.strip() for factor in raw_term.split(":") if factor.strip()]
+            if len(factors) < 2:
+                raise ComparativeMethodError(f"invalid interaction term '{raw_term}'")
+            interaction = ":".join(factors)
+            if interaction not in interaction_terms:
+                interaction_terms.append(interaction)
+            continue
+        if raw_term not in predictors:
+            predictors.append(raw_term)
+    return ComparativeFormulaSpecification(
+        response=response,
+        formula=formula.strip(),
+        predictors=predictors,
+        interaction_terms=interaction_terms,
+    )
+
+
+def _interaction_column_names(
+    interaction: str,
+    predictor_reports: dict[str, PGLSPredictorClassification],
+) -> list[str]:
+    encoded_components: list[list[str]] = []
+    for factor in interaction.split(":"):
+        report = predictor_reports[factor]
+        if report.kind == "numeric":
+            encoded_components.append([factor])
+        else:
+            encoded_components.append(list(report.encoded_columns or []))
+    column_names = [""]
+    for component_names in encoded_components:
+        column_names = [
+            f"{left}:{right}".strip(":")
+            for left in column_names
+            for right in component_names
+        ]
+    return column_names
+
+
+def _interaction_values(
+    interaction: str,
+    encoded_main_effects: dict[str, list[tuple[str, float]]],
+) -> list[tuple[str, float]]:
+    values = [("", 1.0)]
+    for factor in interaction.split(":"):
+        expanded: list[tuple[str, float]] = []
+        for left_name, left_value in values:
+            for right_name, right_value in encoded_main_effects[factor]:
+                expanded.append((f"{left_name}:{right_name}".strip(":"), left_value * right_value))
+        values = expanded
+    return values
 
 
 def _fit_gls(

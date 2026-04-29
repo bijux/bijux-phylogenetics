@@ -89,3 +89,48 @@ def test_run_pgls_supports_categorical_predictors_with_dummy_encoding() -> None:
     assert math.isclose(coefficients["predictor_one"], 1.5, abs_tol=1e-6)
     assert math.isclose(coefficients["habitat[tundra]"], -2.0, abs_tol=1e-6)
     assert report.diagnostics.outlier_taxa == []
+
+
+def test_pgls_formula_expands_interactions() -> None:
+    report = inspect_pgls_inputs(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_interaction.tsv"),
+        formula="response ~ predictor_one * habitat",
+    )
+    assert report.response == "response"
+    assert report.formula.predictors == ["predictor_one", "habitat"]
+    assert report.formula.interaction_terms == ["predictor_one:habitat"]
+    assert report.encoded_columns == [
+        "intercept",
+        "predictor_one",
+        "habitat[tundra]",
+        "predictor_one:habitat[tundra]",
+    ]
+
+
+def test_run_pgls_supports_formula_interactions() -> None:
+    report = run_pgls(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_interaction.tsv"),
+        formula="response ~ predictor_one * habitat",
+        lambda_value=0.0,
+    )
+    coefficients = {coefficient.name: coefficient.estimate for coefficient in report.coefficients}
+    assert report.formula.formula == "response ~ predictor_one * habitat"
+    assert math.isclose(coefficients["intercept"], 1.0, abs_tol=1e-6)
+    assert math.isclose(coefficients["predictor_one"], 1.0, abs_tol=1e-6)
+    assert math.isclose(coefficients["habitat[tundra]"], 2.0, abs_tol=1e-6)
+    assert math.isclose(coefficients["predictor_one:habitat[tundra]"], 0.5, abs_tol=1e-6)
+
+
+def test_pgls_overfit_guard_blocks_saturated_interaction_model() -> None:
+    report = inspect_pgls_inputs(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        formula="response ~ predictor_one * habitat",
+    )
+    assert report.ready is False
+    assert (
+        "PGLS overfit guard requires at least one residual degree of freedom after predictor encoding"
+        in report.blockers
+    )
