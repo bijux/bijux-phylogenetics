@@ -221,6 +221,7 @@ def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_ta
     assert result.clade_frequency_plot_path.exists()
     assert result.unstable_taxa_table_path.exists()
     assert result.topology_clusters_table_path.exists()
+    assert result.uncertainty_conclusions_table_path.exists()
     assert result.conclusion_summary_path.exists()
     summary = result.conclusion_summary_path.read_text(encoding="utf-8")
     assert "Posterior Uncertainty Summary" in summary

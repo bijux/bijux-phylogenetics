@@ -639,6 +639,37 @@ def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> 
     return path
 
 
+def write_topology_cluster_table(path: Path, report: TreeTopologyClusterReport) -> Path:
+    """Write rooted topology clusters as a TSV table."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "rooted_topology_id",
+                "tree_indices",
+                "tree_count",
+                "frequency",
+                "representative_index",
+                "representative_newick",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.clusters:
+            writer.writerow(
+                {
+                    "rooted_topology_id": row.rooted_topology_id,
+                    "tree_indices": ",".join(str(index) for index in row.tree_indices),
+                    "tree_count": row.tree_count,
+                    "frequency": format(row.frequency, ".15g"),
+                    "representative_index": row.representative_index,
+                    "representative_newick": row.representative_newick,
+                }
+            )
+    return path
+
+
 def cluster_trees_by_topology(path: Path) -> TreeTopologyClusterReport:
     """Cluster trees by identical rooted topology signatures."""
     report = load_tree_set(path)
@@ -855,6 +886,29 @@ def summarize_clade_credibility_conflicts(
     )
 
 
+def write_clade_credibility_conflict_table(path: Path, report: CladeCredibilityConflictReport) -> Path:
+    """Write high-credibility clade conflicts as a TSV table."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["left_clade", "left_frequency", "right_clade", "right_frequency", "combined_frequency"],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.conflicts:
+            writer.writerow(
+                {
+                    "left_clade": row.left_clade,
+                    "left_frequency": format(row.left_frequency, ".15g"),
+                    "right_clade": row.right_clade,
+                    "right_frequency": format(row.right_frequency, ".15g"),
+                    "combined_frequency": format(row.combined_frequency, ".15g"),
+                }
+            )
+    return path
+
+
 def summarize_uncertainty_aware_conclusions(
     path: Path,
     *,
@@ -922,6 +976,33 @@ def summarize_uncertainty_aware_conclusions(
         uncertain_clades=uncertain_clades,
         conflicting_clades=conflicting_clades,
     )
+
+
+def write_uncertainty_conclusion_table(path: Path, report: UncertaintyAwareConclusionSummaryReport) -> Path:
+    """Write robust, uncertain, and conflict-prone clade conclusions as a TSV table."""
+    rows = [
+        *report.robust_clades,
+        *report.uncertain_clades,
+        *report.conflicting_clades,
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["clade", "frequency", "conclusion", "rationale"],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(
+                {
+                    "clade": row.clade,
+                    "frequency": format(row.frequency, ".15g"),
+                    "conclusion": row.conclusion,
+                    "rationale": row.rationale,
+                }
+            )
+    return path
 
 
 def compare_posterior_tree_sets(left_path: Path, right_path: Path) -> PosteriorTreeSetComparisonReport:

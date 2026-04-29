@@ -272,6 +272,9 @@ from bijux_phylogenetics.tree_set import (
     load_tree_set,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
+    write_clade_credibility_conflict_table,
+    write_topology_cluster_table,
+    write_uncertainty_conclusion_table,
 )
 
 
@@ -795,6 +798,26 @@ def test_summarize_uncertainty_aware_conclusions_separates_robust_uncertain_and_
     assert report.conflicting_clade_count == 3
     assert report.uncertain_clades[0].clade == "C|D"
     assert {row.conclusion for row in report.conflicting_clades} == {"conflict-prone"}
+
+
+def test_write_uncertainty_tables_emit_clusters_conflicts_and_conclusions(tmp_path: Path) -> None:
+    cluster_path = tmp_path / "topology-clusters.tsv"
+    conflict_path = tmp_path / "clade-conflicts.tsv"
+    conclusion_path = tmp_path / "uncertainty-conclusions.tsv"
+
+    write_topology_cluster_table(cluster_path, cluster_trees_by_topology(fixture("example_tree_set_left.nwk")))
+    write_clade_credibility_conflict_table(
+        conflict_path,
+        summarize_clade_credibility_conflicts(fixture("example_tree_set_left.nwk"), credibility_threshold=0.3),
+    )
+    write_uncertainty_conclusion_table(
+        conclusion_path,
+        summarize_uncertainty_aware_conclusions(fixture("example_tree_set_left.nwk"), robust_threshold=0.95, credibility_threshold=0.3),
+    )
+
+    assert "rooted_topology_id\ttree_indices" in cluster_path.read_text(encoding="utf-8")
+    assert "left_clade\tleft_frequency\tright_clade" in conflict_path.read_text(encoding="utf-8")
+    assert "clade\tfrequency\tconclusion" in conclusion_path.read_text(encoding="utf-8")
 
 
 def test_compare_posterior_tree_sets_reports_clade_deltas_and_cross_set_distance() -> None:

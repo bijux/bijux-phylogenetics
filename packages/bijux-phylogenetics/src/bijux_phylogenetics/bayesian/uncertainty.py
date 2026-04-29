@@ -20,6 +20,8 @@ from bijux_phylogenetics.tree_set import (
     detect_unstable_taxa,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
+    write_topology_cluster_table,
+    write_uncertainty_conclusion_table,
 )
 
 
@@ -31,6 +33,7 @@ class PosteriorUncertaintyFigurePackageResult:
     clade_frequency_plot_path: Path
     unstable_taxa_table_path: Path
     topology_clusters_table_path: Path
+    uncertainty_conclusions_table_path: Path
     conclusion_summary_path: Path
     manifest_path: Path
 
@@ -73,6 +76,7 @@ def build_posterior_uncertainty_figure_package(
     clade_frequency_plot_path = out_dir / "clade-frequency-plot.svg"
     unstable_taxa_table_path = out_dir / "unstable-taxa.tsv"
     topology_clusters_table_path = out_dir / "topology-clusters.tsv"
+    uncertainty_conclusions_table_path = out_dir / "uncertainty-conclusions.tsv"
     conclusion_summary_path = out_dir / "uncertainty-summary.md"
     manifest_path = out_dir / "uncertainty-package-manifest.json"
 
@@ -105,21 +109,8 @@ def build_posterior_uncertainty_figure_package(
             for row in unstable_taxa.taxa
         ],
     )
-    write_taxon_rows(
-        topology_clusters_table_path,
-        columns=["rooted_topology_id", "tree_indices", "tree_count", "frequency", "representative_index", "representative_newick"],
-        rows=[
-            {
-                "rooted_topology_id": row.rooted_topology_id,
-                "tree_indices": ",".join(str(index) for index in row.tree_indices),
-                "tree_count": str(row.tree_count),
-                "frequency": format(row.frequency, ".15g"),
-                "representative_index": str(row.representative_index),
-                "representative_newick": row.representative_newick,
-            }
-            for row in clusters.clusters
-        ],
-    )
+    write_topology_cluster_table(topology_clusters_table_path, clusters)
+    write_uncertainty_conclusion_table(uncertainty_conclusions_table_path, conclusions)
     conclusion_summary_path.write_text(
         _uncertainty_summary_markdown(
             consensus_newick=consensus.consensus_newick,
@@ -140,6 +131,7 @@ def build_posterior_uncertainty_figure_package(
                     "clade_frequency_plot": str(clade_frequency_plot_path),
                     "unstable_taxa_table": str(unstable_taxa_table_path),
                     "topology_clusters_table": str(topology_clusters_table_path),
+                    "uncertainty_conclusions_table": str(uncertainty_conclusions_table_path),
                     "uncertainty_summary": str(conclusion_summary_path),
                 },
                 "consensus": asdict(consensus),
@@ -161,6 +153,7 @@ def build_posterior_uncertainty_figure_package(
         clade_frequency_plot_path=clade_frequency_plot_path,
         unstable_taxa_table_path=unstable_taxa_table_path,
         topology_clusters_table_path=topology_clusters_table_path,
+        uncertainty_conclusions_table_path=uncertainty_conclusions_table_path,
         conclusion_summary_path=conclusion_summary_path,
         manifest_path=manifest_path,
     )
