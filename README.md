@@ -59,7 +59,10 @@ readiness-level reporting, alignment trimming, coding-sequence translation,
 identity-matrix export, DNA distance-matrix analysis, distance-tree
 construction, explicit rooting transforms, comparative trait readiness,
 phylogenetic independent contrasts, phylogenetic signal estimation,
-phylogenetic generalized least-squares, continuous and discrete
+standalone Brownian and OU trait-model fitting, comparative-model
+comparison, formula-driven phylogenetic generalized least-squares,
+comparative multiple-testing correction, comparative audit and influence
+reporting, continuous and discrete
 ancestral-state reconstruction, ancestral uncertainty reporting, ancestral tree
 rendering, discrete-state geographic transition modeling and reporting,
 governed external-engine orchestration for alignment, trimming, model
@@ -143,7 +146,16 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative contrasts tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json`
+- `uv run bijux-phylogenetics comparative brownian tree.nwk traits.tsv --trait height_cm --json`
+- `uv run bijux-phylogenetics comparative ou tree.nwk traits.tsv --trait height_cm --json`
+- `uv run bijux-phylogenetics comparative compare-models tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json`
+- `uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ body_mass * habitat" --json`
+- `uv run bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses height_cm range_km --predictors body_mass log_range --json`
+- `uv run bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json`
+- `uv run bijux-phylogenetics comparative influence tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json`
+- `uv run bijux-phylogenetics comparative compare-trees tree-a.nwk tree-b.nwk traits.tsv --response height_cm --predictors body_mass log_range --json`
+- `uv run bijux-phylogenetics comparative compare-pruning tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --drop-taxa OutlierTaxon --json`
 - `uv run bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json`
 - `uv run bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json`
 - `uv run bijux-phylogenetics ancestral compare tree.nwk traits.tsv --trait height_cm --left-model brownian --right-model ou --json`

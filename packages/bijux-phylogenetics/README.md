@@ -50,7 +50,9 @@ bijux-phylogenetics --help
 - validate trait and metadata linkage against tree tips
 - check comparative readiness for rooted trees and numeric traits
 - compute phylogenetic independent contrasts, Blomberg's K, Pagel's lambda, and permutation-based signal tests
-- fit phylogenetic generalized least-squares models with one or more numeric predictors
+- fit standalone Brownian or OU continuous-trait models with confidence intervals, residual diagnostics, model comparison, and leave-one-taxon-out sensitivity
+- fit phylogenetic generalized least-squares models with numeric, categorical, and interaction predictors through explicit formula auditing
+- adjust repeated comparative hypothesis tests with Benjamini-Hochberg correction and emit integrated comparative audit, influence, tree-comparison, pruning-comparison, and reviewer-facing report outputs
 - reconstruct continuous ancestral states under Brownian or OU-style trait models
 - reconstruct discrete ancestral states under Fitch parsimony with explicit ambiguity reporting
 - compare continuous ancestral reconstructions across two supported models and render annotated ancestral trees
@@ -113,7 +115,13 @@ bijux-phylogenetics taxonomy loss tree.nwk --metadata metadata.csv --traits trai
 bijux-phylogenetics taxonomy stability --run tree=tree.nwk --run alignment=alignment.fasta --run filtered=filtered.fasta --json
 bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json
+bijux-phylogenetics comparative brownian tree.nwk traits.tsv --trait height_cm --json
+bijux-phylogenetics comparative compare-models tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
+bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ body_mass * habitat" --json
+bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses height_cm range_km --predictors body_mass log_range --json
+bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json
+bijux-phylogenetics comparative compare-trees tree-a.nwk tree-b.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
 bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json
 bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json
 bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html
