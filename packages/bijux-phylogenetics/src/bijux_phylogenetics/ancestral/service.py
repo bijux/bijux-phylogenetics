@@ -75,6 +75,54 @@ class DiscreteAncestralModelComparisonReport:
 
 
 @dataclass(slots=True)
+class ContinuousAncestralTreeComparisonRow:
+    """Node-wise comparison of continuous ancestral estimates across two trees."""
+
+    node: str
+    descendant_taxa: list[str]
+    left_estimate: float
+    right_estimate: float
+    estimate_delta: float
+
+
+@dataclass(slots=True)
+class ContinuousAncestralTreeComparisonReport:
+    """Continuous ancestral reconstruction differences across alternative trees."""
+
+    left_tree_path: Path
+    right_tree_path: Path
+    traits_path: Path
+    trait: str
+    model: str
+    rows: list[ContinuousAncestralTreeComparisonRow]
+
+
+@dataclass(slots=True)
+class DiscreteAncestralTreeComparisonRow:
+    """Node-wise comparison of discrete ancestral states across two trees."""
+
+    node: str
+    descendant_taxa: list[str]
+    left_state: str
+    right_state: str
+    differs: bool
+    left_confidence: float
+    right_confidence: float
+
+
+@dataclass(slots=True)
+class DiscreteAncestralTreeComparisonReport:
+    """Discrete ancestral reconstruction differences across alternative trees."""
+
+    left_tree_path: Path
+    right_tree_path: Path
+    traits_path: Path
+    trait: str
+    model: str
+    rows: list[DiscreteAncestralTreeComparisonRow]
+
+
+@dataclass(slots=True)
 class AncestralStateReportBuildResult:
     """HTML report artifact for ancestral-state reconstruction."""
 
@@ -215,6 +263,103 @@ def compare_discrete_ancestral_models(
         selected_model=selected_model,
         rows=rows,
         node_differences=node_differences,
+    )
+
+
+def compare_continuous_ancestral_trees(
+    left_tree_path: Path,
+    right_tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    model: str = "brownian",
+    alpha: float = 1.0,
+) -> ContinuousAncestralTreeComparisonReport:
+    """Compare continuous ancestral estimates across two alternative trees."""
+    left = reconstruct_continuous_ancestral_states(
+        left_tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=model,
+        alpha=alpha,
+    )
+    right = reconstruct_continuous_ancestral_states(
+        right_tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=model,
+        alpha=alpha,
+    )
+    right_by_node = {estimate.node: estimate for estimate in right.estimates if not estimate.is_tip}
+    rows = [
+        ContinuousAncestralTreeComparisonRow(
+            node=estimate.node,
+            descendant_taxa=estimate.descendant_taxa,
+            left_estimate=estimate.estimate,
+            right_estimate=right_by_node[estimate.node].estimate,
+            estimate_delta=right_by_node[estimate.node].estimate - estimate.estimate,
+        )
+        for estimate in left.estimates
+        if not estimate.is_tip and estimate.node in right_by_node
+    ]
+    return ContinuousAncestralTreeComparisonReport(
+        left_tree_path=left_tree_path,
+        right_tree_path=right_tree_path,
+        traits_path=traits_path,
+        trait=trait,
+        model=model,
+        rows=rows,
+    )
+
+
+def compare_discrete_ancestral_trees(
+    left_tree_path: Path,
+    right_tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    model: str = "fitch",
+) -> DiscreteAncestralTreeComparisonReport:
+    """Compare discrete ancestral states across two alternative trees."""
+    left = reconstruct_discrete_ancestral_states(
+        left_tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=model,
+    )
+    right = reconstruct_discrete_ancestral_states(
+        right_tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=model,
+    )
+    right_by_node = {estimate.node: estimate for estimate in right.estimates if not estimate.is_tip}
+    rows = [
+        DiscreteAncestralTreeComparisonRow(
+            node=estimate.node,
+            descendant_taxa=estimate.descendant_taxa,
+            left_state=estimate.most_likely_state,
+            right_state=right_by_node[estimate.node].most_likely_state,
+            differs=estimate.most_likely_state != right_by_node[estimate.node].most_likely_state,
+            left_confidence=estimate.confidence,
+            right_confidence=right_by_node[estimate.node].confidence,
+        )
+        for estimate in left.estimates
+        if not estimate.is_tip and estimate.node in right_by_node
+    ]
+    return DiscreteAncestralTreeComparisonReport(
+        left_tree_path=left_tree_path,
+        right_tree_path=right_tree_path,
+        traits_path=traits_path,
+        trait=trait,
+        model=model,
+        rows=rows,
     )
 
 
