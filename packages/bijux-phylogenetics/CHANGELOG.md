@@ -24,3 +24,4 @@
 - add mixed coding versus noncoding detection, named alignment-filtering profiles, cleaned-alignment comparison, filtering risk warnings, transparent alignment quality scoring, alignment forensic reporting, and one-shot dataset audits
 - add dataset crosswalk tables, completeness matrices, exclusion tables, taxon-ordering drift audits, pruning step retention summaries, group-imbalance warnings, and named readiness levels
 - expand distance analysis with Kimura 2-parameter and amino-acid p-distance models, ambiguity policies, saturation and low-information diagnostics, bootstrap support summaries, reference checks, and reproducibility bundles
+- add pruning information-loss accounting, taxon synonym audits and reversible resolution, namespace-mixing diagnostics, workflow taxon loss and stability reports, and explicit UPGMA assumption validation surfaces

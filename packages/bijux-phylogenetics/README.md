@@ -44,6 +44,7 @@ bijux-phylogenetics --help
 - classify tree validity, biological safety, unsafe external labels, node-label conflicts, and downstream forensic readiness for topology, time-tree, comparative, visualization, and publication use
 - normalize unsafe taxon labels and audit normalization collisions
 - prune trees from explicit taxa, exclusions, traits, or metadata tables
+- quantify pruning information loss across taxa, clades, branch length, and metadata retention
 - classify internal node labels as support-like or name-like and detect suspicious or mixed support scales
 - compare shared clades, clade changes, and shared-split branch lengths between trees
 - validate trait and metadata linkage against tree tips
@@ -73,6 +74,7 @@ bijux-phylogenetics --help
 - audit saturated pairs, unusually divergent pairs, and low-information pairs before distance-based tree building
 - build Neighbor-Joining or UPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
 - validate imported long-form distance matrices, detect nonmetric violations, and build trees from imported distances
+- audit NJ and UPGMA method assumptions, including explicit UPGMA ultrametric-clock violations for computed or imported distance matrices
 - load posterior tree sets, compute consensus trees, and export clade-frequency or pairwise tree-distance summaries
 - cluster identical rooted topologies, detect unstable taxa or clades, and compare two posterior tree sets
 - simulate birth-death or coalescent trees, Brownian or OU continuous traits, discrete traits, and DNA or protein alignments
@@ -80,7 +82,7 @@ bijux-phylogenetics --help
 - root trees on explicit outgroups or reroot them by midpoint
 - audit rooting, ordering, clade extraction, and pruning transforms with before/after summaries and retained-versus-removed taxon reasoning
 - validate tree roundtrips across Newick, Nexus, and phyloXML formats with topology-preservation checks, support-label audits, and semantic-loss warnings
-- audit ambiguous taxon identities, whitespace or underscore collisions, and suspicious near-duplicate labels before downstream comparison or linkage
+- audit ambiguous taxon identities, synonym candidates, namespace mixing, workflow taxon loss, and cross-run taxon stability before downstream comparison or linkage
 - produce HTML reports and file-level evidence manifests
 
 ## Example CLI Runs
@@ -97,11 +99,18 @@ bijux-phylogenetics alignment compare alignment.fasta cleaned.fasta --json
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model kimura-2-parameter --ambiguity-policy partial-match --out distances.tsv
 bijux-phylogenetics alignment distance-quality alignment.fasta --model jukes-cantor --json
+bijux-phylogenetics alignment distance-assumptions alignment.fasta --model p-distance --json
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
 bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
 bijux-phylogenetics alignment distance-bundle alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json
 bijux-phylogenetics distance validate distances.tsv --json
+bijux-phylogenetics distance assumptions distances.tsv --json
 bijux-phylogenetics distance reference --json
+bijux-phylogenetics taxonomy synonyms tree.nwk --synonym-table synonyms.tsv --json
+bijux-phylogenetics taxonomy resolve-synonyms tree.nwk --synonym-table synonyms.tsv --out normalized-tree.nwk --mapping-out synonym-map.tsv --json
+bijux-phylogenetics taxonomy namespaces tree.nwk --json
+bijux-phylogenetics taxonomy loss tree.nwk --metadata metadata.csv --traits traits.csv --alignment alignment.fasta --filtered-alignment filtered.fasta --inference-tree inferred.nwk --reported-taxa reported.csv --json
+bijux-phylogenetics taxonomy stability --run tree=tree.nwk --run alignment=alignment.fasta --run filtered=filtered.fasta --json
 bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
