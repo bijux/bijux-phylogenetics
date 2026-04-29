@@ -135,6 +135,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("normalized-tree", "taxon-mapping"),
     ),
     CommandSpec(
+        name="taxonomy",
+        domain="taxa",
+        summary="Audit synonym, namespace, loss, and stability behavior for phylogenetic taxa.",
+        inputs=("tree", "taxon-table"),
+        outputs=("taxon-audit-report",),
+    ),
+    CommandSpec(
         name="topology",
         domain="tree-io",
         summary="Apply explicit rooting and ordering transforms to a tree.",

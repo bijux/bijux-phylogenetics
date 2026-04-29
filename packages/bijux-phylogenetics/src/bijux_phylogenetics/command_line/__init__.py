@@ -106,6 +106,8 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
 from bijux_phylogenetics.distance import (
+    assess_distance_method_assumptions,
+    assess_imported_distance_method_assumptions,
     bootstrap_distance_trees,
     build_distance_tree,
     build_tree_from_imported_distance_matrix,
@@ -155,7 +157,19 @@ from bijux_phylogenetics.engines import (
 )
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
-from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
+from bijux_phylogenetics.core.taxonomy import (
+    audit_tree_taxon_synonyms,
+    inspect_tree_taxon_namespaces,
+    normalize_tree_taxa,
+    resolve_tree_taxon_synonyms,
+    write_synonym_resolution_mapping,
+    write_taxon_mapping,
+)
+from bijux_phylogenetics.core.taxon_workflows import (
+    build_taxon_stability_report,
+    build_taxon_workflow_loss_report,
+    load_taxon_run_source,
+)
 from bijux_phylogenetics.core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -226,6 +240,15 @@ def _split_csv_values(raw: str | None) -> list[str]:
     if raw is None:
         return []
     return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def _parse_labelled_run(raw: str) -> tuple[str, Path]:
+    if "=" not in raw:
+        raise ValueError(f"run source must be in LABEL=PATH form, got '{raw}'")
+    label, raw_path = raw.split("=", 1)
+    if not label.strip() or not raw_path.strip():
+        raise ValueError(f"run source must include both LABEL and PATH, got '{raw}'")
+    return label.strip(), Path(raw_path.strip())
 
 
 def _build_annotation_strips(table, columns: list[str]) -> list[AnnotationStrip]:
@@ -716,6 +739,28 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_quality.add_argument("--json", action="store_true", help="Emit the diagnostics as JSON.")
     _add_manifest_argument(alignment_distance_quality)
+    alignment_distance_assumptions = alignment_subparsers.add_parser(
+        "distance-assumptions",
+        help="Audit NJ and UPGMA assumptions, including UPGMA ultrametric compatibility.",
+    )
+    alignment_distance_assumptions.add_argument("alignment", type=Path)
+    alignment_distance_assumptions.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        default="p-distance",
+    )
+    alignment_distance_assumptions.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_distance_assumptions.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch"),
+        default="ignore",
+    )
+    alignment_distance_assumptions.add_argument("--json", action="store_true", help="Emit the assumption audit as JSON.")
+    _add_manifest_argument(alignment_distance_assumptions)
     alignment_build_tree = alignment_subparsers.add_parser(
         "build-tree",
         help="Build a neighbor-joining or UPGMA tree from a DNA distance matrix.",
@@ -1166,6 +1211,13 @@ def build_parser() -> argparse.ArgumentParser:
     distance_validate.add_argument("matrix", type=Path)
     distance_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
     _add_manifest_argument(distance_validate)
+    distance_assumptions = distance_subparsers.add_parser(
+        "assumptions",
+        help="Audit NJ and UPGMA assumptions for an imported distance matrix.",
+    )
+    distance_assumptions.add_argument("matrix", type=Path)
+    distance_assumptions.add_argument("--json", action="store_true", help="Emit the assumption audit as JSON.")
+    _add_manifest_argument(distance_assumptions)
     distance_build_tree = distance_subparsers.add_parser(
         "build-tree",
         help="Build a Neighbor-Joining or UPGMA tree from an imported distance matrix.",
@@ -1412,6 +1464,64 @@ def build_parser() -> argparse.ArgumentParser:
     normalize_taxa.add_argument("--mapping-out", type=Path)
     normalize_taxa.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
     _add_manifest_argument(normalize_taxa)
+
+    taxonomy = subparsers.add_parser(get_command_spec("taxonomy").name, help=get_command_spec("taxonomy").summary)
+    taxonomy_subparsers = taxonomy.add_subparsers(dest="taxonomy_command", required=True)
+    taxonomy_synonyms = taxonomy_subparsers.add_parser(
+        "synonyms",
+        help="Audit a tree against a configurable taxon synonym table.",
+    )
+    taxonomy_synonyms.add_argument("tree", type=Path)
+    taxonomy_synonyms.add_argument("--synonym-table", required=True, type=Path)
+    taxonomy_synonyms.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
+    taxonomy_synonyms.add_argument("--json", action="store_true", help="Emit the audit as JSON.")
+    _add_manifest_argument(taxonomy_synonyms)
+    taxonomy_resolve = taxonomy_subparsers.add_parser(
+        "resolve-synonyms",
+        help="Resolve tree tip synonyms to accepted labels with a reversible mapping artifact.",
+    )
+    taxonomy_resolve.add_argument("tree", type=Path)
+    taxonomy_resolve.add_argument("--synonym-table", required=True, type=Path)
+    taxonomy_resolve.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
+    taxonomy_resolve.add_argument("--resolution-policy", choices=("reject-ambiguous",), default="reject-ambiguous")
+    taxonomy_resolve.add_argument("--out", required=True, type=Path)
+    taxonomy_resolve.add_argument("--mapping-out", type=Path)
+    taxonomy_resolve.add_argument("--json", action="store_true", help="Emit the resolution report as JSON.")
+    _add_manifest_argument(taxonomy_resolve)
+    taxonomy_namespaces = taxonomy_subparsers.add_parser(
+        "namespaces",
+        help="Classify tree tip labels into accession, species, sample, isolate, or user-defined namespaces.",
+    )
+    taxonomy_namespaces.add_argument("tree", type=Path)
+    taxonomy_namespaces.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
+    taxonomy_namespaces.add_argument("--json", action="store_true", help="Emit the namespace report as JSON.")
+    _add_manifest_argument(taxonomy_namespaces)
+    taxonomy_loss = taxonomy_subparsers.add_parser(
+        "loss",
+        help="Trace where taxa were lost across tree, alignment, metadata, traits, inference, and reporting stages.",
+    )
+    taxonomy_loss.add_argument("tree", type=Path)
+    taxonomy_loss.add_argument("--metadata", required=True, type=Path)
+    taxonomy_loss.add_argument("--traits", required=True, type=Path)
+    taxonomy_loss.add_argument("--alignment", type=Path)
+    taxonomy_loss.add_argument("--filtered-alignment", type=Path)
+    taxonomy_loss.add_argument("--inference-tree", type=Path)
+    taxonomy_loss.add_argument("--reported-taxa", type=Path)
+    taxonomy_loss.add_argument("--json", action="store_true", help="Emit the workflow loss report as JSON.")
+    _add_manifest_argument(taxonomy_loss)
+    taxonomy_stability = taxonomy_subparsers.add_parser(
+        "stability",
+        help="Compare taxon retention across multiple named workflow artifacts.",
+    )
+    taxonomy_stability.add_argument(
+        "--run",
+        action="append",
+        required=True,
+        metavar="LABEL=PATH",
+        help="Named run source in the form label=/path/to/tree_or_alignment_or_table",
+    )
+    taxonomy_stability.add_argument("--json", action="store_true", help="Emit the stability report as JSON.")
+    _add_manifest_argument(taxonomy_stability)
 
     topology = subparsers.add_parser(get_command_spec("topology").name, help=get_command_spec("topology").summary)
     topology_subparsers = topology.add_subparsers(dest="topology_command", required=True)
@@ -2404,6 +2514,34 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.alignment_command == "distance-assumptions":
+                report = assess_distance_method_assumptions(
+                    args.alignment,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                    ambiguity_policy=args.ambiguity_policy,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "ultrametric_compatible": report.ultrametric_compatible,
+                            "upgma_violation_count": len(report.upgma_ultrametric_violations),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "build-tree":
                 tree, report = build_distance_tree(
                     args.alignment,
@@ -3330,6 +3468,25 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.distance_command == "assumptions":
+                report = assess_imported_distance_method_assumptions(args.matrix)
+                outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+                _print_result(
+                    build_command_result(
+                        command="distance",
+                        inputs=[args.matrix],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "ultrametric_compatible": report.ultrametric_compatible,
+                            "upgma_violation_count": len(report.upgma_ultrametric_violations),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.distance_command == "validate":
                 report = validate_imported_distance_matrix(args.matrix)
                 outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
@@ -3820,6 +3977,128 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
             else:
                 print(output_path)
+            return 0
+        if args.command == "taxonomy":
+            if args.taxonomy_command == "synonyms":
+                tree = load_tree(args.tree, source_format=args.format)
+                report = audit_tree_taxon_synonyms(tree, args.synonym_table)
+                outputs = _finalize_outputs(args, command="taxonomy", inputs=[args.tree, args.synonym_table])
+                _print_result(
+                    build_command_result(
+                        command="taxonomy",
+                        inputs=[args.tree, args.synonym_table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "candidate_count": len(report.candidates),
+                            "ambiguous_mapping_count": len(report.ambiguous_mappings),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.taxonomy_command == "resolve-synonyms":
+                tree = load_tree(args.tree, source_format=args.format)
+                resolved_tree, report = resolve_tree_taxon_synonyms(
+                    tree,
+                    synonym_table_path=args.synonym_table,
+                    resolution_policy=args.resolution_policy,
+                )
+                output_path = write_newick(args.out, resolved_tree)
+                mapping_path = args.mapping_out or args.out.with_suffix(f"{args.out.suffix}.synonyms.tsv")
+                write_synonym_resolution_mapping(mapping_path, report)
+                outputs = _finalize_outputs(
+                    args,
+                    command="taxonomy",
+                    inputs=[args.tree, args.synonym_table],
+                    outputs=[output_path, mapping_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="taxonomy",
+                        inputs=[args.tree, args.synonym_table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "renamed_taxa": len(report.renamed_taxa),
+                            "ambiguous_mapping_count": len(report.ambiguous_mappings),
+                            "duplicate_resolved_label_count": len(report.duplicate_resolved_labels),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.taxonomy_command == "namespaces":
+                tree = load_tree(args.tree, source_format=args.format)
+                report = inspect_tree_taxon_namespaces(tree)
+                outputs = _finalize_outputs(args, command="taxonomy", inputs=[args.tree])
+                _print_result(
+                    build_command_result(
+                        command="taxonomy",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "namespace_count": len(report.namespace_counts),
+                            "mixed_namespaces": report.mixed_namespaces,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.taxonomy_command == "loss":
+                report = build_taxon_workflow_loss_report(
+                    args.tree,
+                    args.metadata,
+                    args.traits,
+                    alignment_path=args.alignment,
+                    filtered_alignment_path=args.filtered_alignment,
+                    inference_tree_path=args.inference_tree,
+                    reported_taxa_path=args.reported_taxa,
+                )
+                inputs = [args.tree, args.metadata, args.traits]
+                for optional_path in (args.alignment, args.filtered_alignment, args.inference_tree, args.reported_taxa):
+                    if optional_path is not None:
+                        inputs.append(optional_path)
+                outputs = _finalize_outputs(args, command="taxonomy", inputs=inputs)
+                _print_result(
+                    build_command_result(
+                        command="taxonomy",
+                        inputs=inputs,
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": len(report.rows),
+                            "loss_stage_count": len(report.loss_stage_counts),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            run_sources = [
+                load_taxon_run_source(label=label, path=path)
+                for label, path in (_parse_labelled_run(raw) for raw in args.run)
+            ]
+            report = build_taxon_stability_report(run_sources)
+            inputs = [source.path for source in run_sources]
+            outputs = _finalize_outputs(args, command="taxonomy", inputs=inputs)
+            _print_result(
+                build_command_result(
+                    command="taxonomy",
+                    inputs=inputs,
+                    outputs=outputs,
+                    metrics={
+                        "source_count": len(report.sources),
+                        "stable_taxa": len(report.stable_taxa),
+                        "unstable_taxa": len(report.unstable_taxa),
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
             return 0
         if args.command == "topology":
             if args.topology_command == "root-outgroup":
