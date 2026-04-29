@@ -17,6 +17,8 @@ class StandardizedSupportLabel:
     scale: str
     support_fraction: float | None
     support_percent: float | None
+    normalized_probability: float | None
+    confidence_of_inference: str
 
 
 @dataclass(slots=True)
@@ -66,17 +68,28 @@ def standardize_support_labels(tree_path: Path) -> list[StandardizedSupportLabel
     """Convert support-like internal labels into normalized support fields."""
     inspection = inspect_tree_path(tree_path)
     standardized: list[StandardizedSupportLabel] = []
+    support_values = [row.numeric_value for row in inspection.likely_support_labels if row.numeric_value is not None]
+    has_fraction_scale = any(0.0 <= value <= 1.0 for value in support_values)
+    has_percent_scale = any(1.0 < value <= 100.0 for value in support_values)
     for row in inspection.likely_support_labels:
         if row.numeric_value is None:
             continue
+        normalized_probability: float | None = None
+        confidence = "low"
         if 0.0 <= row.numeric_value <= 1.0:
             scale = "fraction"
             support_fraction = row.numeric_value
             support_percent = round(row.numeric_value * 100.0, 15)
+            normalized_probability = support_fraction
+            confidence = "medium" if has_percent_scale else "high"
+            if row.numeric_value in {0.0, 1.0}:
+                confidence = "medium" if not has_percent_scale else "low"
         elif 1.0 < row.numeric_value <= 100.0:
             scale = "percentage"
             support_fraction = round(row.numeric_value / 100.0, 15)
             support_percent = row.numeric_value
+            normalized_probability = support_fraction
+            confidence = "medium" if has_fraction_scale else "high"
         else:
             scale = "out-of-range"
             support_fraction = None
@@ -89,6 +102,8 @@ def standardize_support_labels(tree_path: Path) -> list[StandardizedSupportLabel
                 scale=scale,
                 support_fraction=support_fraction,
                 support_percent=support_percent,
+                normalized_probability=normalized_probability,
+                confidence_of_inference=confidence,
             )
         )
     return standardized
