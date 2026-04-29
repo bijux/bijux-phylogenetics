@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from statistics import mean, median
 
+from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import (
     DuplicateTaxonError,
@@ -18,12 +19,101 @@ from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)
+class TreeIntegrityIssue:
+    code: str
+    message: str
+    severity: str
+    affected_nodes: list[str]
+
+
+@dataclass(slots=True)
+class TreeFinding:
+    code: str
+    message: str
+    severity: str
+    affected_taxa: list[str]
+    affected_nodes: list[str]
+
+
+@dataclass(slots=True)
+class RootStateConfidenceReport:
+    classification: str
+    rationale: list[str]
+    suspicious_placement: bool
+    suspicious_reasons: list[str]
+
+
+@dataclass(slots=True)
+class BranchLengthContextAssessment:
+    context: str
+    allowed: bool
+    blocked_by: list[str]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class BranchLengthRepairSuggestion:
+    issue_code: str
+    summary: str
+    blocked_analyses: list[str]
+    suggested_action: str
+
+
+@dataclass(slots=True)
+class InternalNodeLabelConflict:
+    node_id: str
+    label: str
+    conflict_type: str
+    detail: str
+
+
+@dataclass(slots=True)
+class StableNodeIdentity:
+    node_id: str
+    descendant_taxa: list[str]
+
+
+@dataclass(slots=True)
+class UnsafeExternalLabel:
+    raw_label: str
+    normalized_label: str
+    engines: list[str]
+    reasons: list[str]
+
+
+@dataclass(slots=True)
+class TreeForensicReport:
+    path: Path
+    source_format: str
+    syntax_valid: bool
+    biologically_safe: bool
+    validity_decision: str
+    integrity_issues: list[TreeIntegrityIssue]
+    findings: list[TreeFinding]
+    root_state_confidence: RootStateConfidenceReport
+    branch_length_contexts: list[BranchLengthContextAssessment]
+    branch_length_repair_suggestions: list[BranchLengthRepairSuggestion]
+    internal_label_conflicts: list[InternalNodeLabelConflict]
+    stable_node_identities: list[StableNodeIdentity]
+    unsafe_external_labels: list[UnsafeExternalLabel]
+    safe_for_topology_comparison: bool
+    safe_for_time_tree_analysis: bool
+    safe_for_comparative_methods: bool
+    safe_for_visualization: bool
+    safe_for_publication: bool
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class TreeValidationReport:
     path: Path
     source_format: str
     tip_count: int
     internal_node_count: int
     rooted: bool
+    syntax_valid: bool
+    biologically_safe: bool
+    validity_decision: str
     has_complete_branch_lengths: bool
     branch_length_status: str
     total_branch_length: float
@@ -37,6 +127,14 @@ class TreeValidationReport:
     missing_taxa: int
     duplicate_taxa: list[str]
     ultrametric: bool | None
+    integrity_issues: list[TreeIntegrityIssue]
+    warning_details: list[TreeFinding]
+    root_state_confidence: RootStateConfidenceReport
+    branch_length_contexts: list[BranchLengthContextAssessment]
+    branch_length_repair_suggestions: list[BranchLengthRepairSuggestion]
+    internal_label_conflicts: list[InternalNodeLabelConflict]
+    stable_node_identities: list[StableNodeIdentity]
+    unsafe_external_labels: list[UnsafeExternalLabel]
     warnings: list[str]
 
 
@@ -76,6 +174,7 @@ class BranchLengthOutlier:
 @dataclass(slots=True)
 class InternalLabelInterpretation:
     node: str
+    node_id: str
     label: str
     interpretation: str
     numeric_value: float | None
@@ -91,6 +190,7 @@ class TreeInspectionReport:
     edge_count: int
     clade_count: int
     rooted: bool
+    root_state_confidence: RootStateConfidenceReport
     is_binary: bool
     internal_child_counts: list[InternalNodeChildCount]
     singleton_internal_nodes: list[str]
@@ -120,6 +220,9 @@ class TreeInspectionReport:
     mixed_support_scales: bool
     likely_support_labels: list[InternalLabelInterpretation]
     likely_named_internal_labels: list[InternalLabelInterpretation]
+    internal_label_conflicts: list[InternalNodeLabelConflict]
+    stable_node_identities: list[StableNodeIdentity]
+    unsafe_external_labels: list[UnsafeExternalLabel]
     star_like: bool
     comb_like: bool
     tree_quality_score: float
@@ -135,6 +238,7 @@ class TreeDiagnosticReport:
     path: Path
     inspection: TreeInspectionReport
     validation: TreeValidationReport
+    forensic: TreeForensicReport
 
 
 def _load_tree(path: Path, *, source_format: str | None = None) -> PhyloTree:
@@ -143,6 +247,87 @@ def _load_tree(path: Path, *, source_format: str | None = None) -> PhyloTree:
 
 def _count_polytomies(tree: PhyloTree) -> int:
     return sum(1 for node in tree.iter_nodes() if not node.is_leaf() and len(node.children) > 2)
+
+
+def _integrity_issues(tree: PhyloTree) -> list[TreeIntegrityIssue]:
+    issues: list[TreeIntegrityIssue] = []
+    seen: set[int] = set()
+    stack: set[int] = set()
+    parent_counts: Counter[int] = Counter()
+    node_ids: dict[int, str] = {}
+
+    def visit(node) -> None:
+        identifier = id(node)
+        node_ids.setdefault(identifier, _node_signature(node))
+        if identifier in stack:
+            issues.append(
+                TreeIntegrityIssue(
+                    code="cycle",
+                    message="tree contains a cycle in parent-child traversal",
+                    severity="fatal",
+                    affected_nodes=[node_ids[identifier]],
+                )
+            )
+            return
+        if identifier in seen:
+            parent_counts[identifier] += 1
+            return
+        seen.add(identifier)
+        stack.add(identifier)
+        for child in node.children:
+            if child is node:
+                issues.append(
+                    TreeIntegrityIssue(
+                        code="self_child",
+                        message="tree contains a node that references itself as a child",
+                        severity="fatal",
+                        affected_nodes=[_node_signature(node)],
+                    )
+                )
+                continue
+            parent_counts[id(child)] += 1
+            visit(child)
+        stack.remove(identifier)
+
+    visit(tree.root)
+    for identifier, count in sorted(parent_counts.items(), key=lambda item: (node_ids.get(item[0], ""), item[1])):
+        if count > 1:
+            issues.append(
+                TreeIntegrityIssue(
+                    code="duplicate_parentage",
+                    message="tree contains a node referenced by more than one parent",
+                    severity="fatal",
+                    affected_nodes=[node_ids.get(identifier, "<unknown>")],
+                )
+            )
+    if tree.tip_count == 0:
+        issues.append(
+            TreeIntegrityIssue(
+                code="no_tips",
+                message="tree does not contain any terminal taxa",
+                severity="fatal",
+                affected_nodes=[_node_signature(tree.root)],
+            )
+        )
+    if not tree.root.children and tree.root.name is None:
+        issues.append(
+            TreeIntegrityIssue(
+                code="empty_root",
+                message="tree root is empty and has no descendants",
+                severity="fatal",
+                affected_nodes=["<unnamed>"],
+            )
+        )
+    if len(tree.root.children) == 1:
+        issues.append(
+            TreeIntegrityIssue(
+                code="degenerate_root",
+                message="tree root has only one child and represents a degenerate rooted structure",
+                severity="blocker",
+                affected_nodes=[_node_signature(tree.root)],
+            )
+        )
+    return issues
 
 
 def _polytomy_nodes(tree: PhyloTree) -> list[str]:
@@ -176,6 +361,61 @@ def _node_signature(node) -> str:
     if taxa:
         return "|".join(taxa)
     return node.name or "<unnamed>"
+
+
+def _stable_node_identities(tree: PhyloTree) -> list[StableNodeIdentity]:
+    identities: list[StableNodeIdentity] = []
+    for node in tree.iter_nodes():
+        if node.is_leaf():
+            continue
+        descendant_taxa = _descendant_taxa(node)
+        identities.append(
+            StableNodeIdentity(
+                node_id=_node_signature(node),
+                descendant_taxa=descendant_taxa,
+            )
+        )
+    return sorted(identities, key=lambda row: (len(row.descendant_taxa), row.node_id))
+
+
+def _root_state_confidence(tree: PhyloTree) -> RootStateConfidenceReport:
+    rationale: list[str] = []
+    suspicious_reasons: list[str] = []
+    explicit_rooted = tree.rooted is True
+    apparent_rooted = len(tree.root.children) == 2
+    if explicit_rooted:
+        classification = "explicitly_rooted"
+        rationale.append("source parser preserved an explicit rooted flag")
+    elif apparent_rooted:
+        classification = "apparently_rooted"
+        rationale.append("root has exactly two child clades but no explicit rooted flag was preserved")
+    elif len(tree.root.children) > 2:
+        classification = "unrooted"
+        rationale.append("root has more than two child clades and behaves like an unrooted representation")
+    else:
+        classification = "ambiguous"
+        rationale.append("root structure is degenerate or not informative enough to classify confidently")
+
+    if apparent_rooted and tree.tip_count >= 4:
+        child_tip_counts = sorted(len(_descendant_taxa(child)) for child in tree.root.children)
+        if child_tip_counts and child_tip_counts[0] == 1 and child_tip_counts[-1] >= max(3, tree.tip_count - 1):
+            suspicious_reasons.append("root isolates a single tip against almost the entire tree")
+        child_lengths = [
+            float(child.branch_length)
+            for child in tree.root.children
+            if child.branch_length is not None and child.branch_length > 0
+        ]
+        if len(child_lengths) == 2:
+            shorter = min(child_lengths)
+            longer = max(child_lengths)
+            if shorter > 0 and longer / shorter >= 10.0:
+                suspicious_reasons.append("one basal branch is more than ten times longer than its sister branch")
+    return RootStateConfidenceReport(
+        classification=classification,
+        rationale=rationale,
+        suspicious_placement=bool(suspicious_reasons),
+        suspicious_reasons=suspicious_reasons,
+    )
 
 
 def _edge_count(tree: PhyloTree) -> int:
@@ -490,6 +730,7 @@ def _internal_label_diagnostics(
         numeric_value = _parse_internal_label_numeric(node.name.strip())
         interpretation = InternalLabelInterpretation(
             node=_node_signature(node),
+            node_id=_node_signature(node),
             label=node.name,
             interpretation="support" if numeric_value is not None else "name",
             numeric_value=None if numeric_value is None else round(numeric_value, 15),
@@ -518,6 +759,66 @@ def _internal_label_diagnostics(
         suspicious_ranges,
         mixed_scales,
     )
+
+
+def _internal_label_conflicts(
+    likely_support_labels: list[InternalLabelInterpretation],
+    likely_named_internal_labels: list[InternalLabelInterpretation],
+    suspicious_support_value_ranges: list[str],
+    mixed_support_scales: bool,
+) -> list[InternalNodeLabelConflict]:
+    conflicts: list[InternalNodeLabelConflict] = []
+    for row in likely_support_labels:
+        if row.numeric_value is None:
+            continue
+        if row.numeric_value < 0 or row.numeric_value > 100:
+            conflicts.append(
+                InternalNodeLabelConflict(
+                    node_id=row.node_id,
+                    label=row.label,
+                    conflict_type="support_out_of_range",
+                    detail="numeric internal label falls outside accepted support scales",
+                )
+            )
+        elif 0.0 <= row.numeric_value <= 1.0:
+            conflicts.append(
+                InternalNodeLabelConflict(
+                    node_id=row.node_id,
+                    label=row.label,
+                    conflict_type="ambiguous_fraction_support",
+                    detail="numeric internal label could be posterior support or a named code on a 0-1 scale",
+                )
+            )
+    for row in likely_named_internal_labels:
+        stripped = row.label.strip()
+        if any(character.isdigit() for character in stripped):
+            conflicts.append(
+                InternalNodeLabelConflict(
+                    node_id=row.node_id,
+                    label=row.label,
+                    conflict_type="alphanumeric_internal_label",
+                    detail="non-numeric internal label contains digits and may conflate clade naming with support annotation",
+                )
+            )
+    if mixed_support_scales:
+        conflicts.append(
+            InternalNodeLabelConflict(
+                node_id="<tree>",
+                label="mixed-scales",
+                conflict_type="mixed_support_scales",
+                detail="tree mixes fraction-like and percentage-like support labels",
+            )
+        )
+    if suspicious_support_value_ranges:
+        conflicts.append(
+            InternalNodeLabelConflict(
+                node_id="<tree>",
+                label="support-range",
+                conflict_type="support_range_summary",
+                detail="one or more internal support-like labels fall outside standard ranges",
+            )
+        )
+    return sorted(conflicts, key=lambda row: (row.node_id, row.conflict_type, row.label))
 
 
 def _tree_quality_warnings(
@@ -663,6 +964,257 @@ def _tree_quality_score(warnings: list[TreeQualityWarning]) -> float:
     return max(0.0, round(100.0 - sum(warning.penalty for warning in warnings), 15))
 
 
+def _unsafe_external_labels(tree: PhyloTree) -> list[UnsafeExternalLabel]:
+    report = inspect_tree_taxa_safety(tree, policy="spaces-to-underscores")
+    labels: list[UnsafeExternalLabel] = []
+    default_engines = ["iqtree", "raxml", "mrbayes", "beast", "r", "shell"]
+    for entry in report.unsafe_taxa:
+        engines = list(default_engines)
+        labels.append(
+            UnsafeExternalLabel(
+                raw_label=entry.raw_label,
+                normalized_label=entry.normalized_label,
+                engines=engines,
+                reasons=entry.reasons,
+            )
+        )
+    for collision in report.collisions:
+        for raw_label in collision.raw_labels:
+            if raw_label in {item.raw_label for item in labels}:
+                continue
+            labels.append(
+                UnsafeExternalLabel(
+                    raw_label=raw_label,
+                    normalized_label=collision.normalized_label,
+                    engines=list(default_engines),
+                    reasons=["collides with another label after normalization"],
+                )
+            )
+    return sorted(labels, key=lambda row: row.raw_label)
+
+
+def _branch_length_contexts(
+    inspection: TreeInspectionReport,
+) -> list[BranchLengthContextAssessment]:
+    contexts: list[BranchLengthContextAssessment] = []
+    zero_length = inspection.zero_length_branch_count > 0
+    negative = any(warning.code == "negative_branch_lengths" for warning in inspection.tree_quality_warnings)
+    long_outliers = bool(inspection.long_branch_outliers)
+
+    contexts.append(
+        BranchLengthContextAssessment(
+            context="topology_only",
+            allowed=True,
+            blocked_by=[],
+            warnings=[
+                "topology-only workflows ignore branch lengths, but unresolved splits still affect interpretation"
+                if inspection.polytomy_count
+                else ""
+            ],
+        )
+    )
+
+    substitution_blockers: list[str] = []
+    substitution_warnings: list[str] = []
+    if inspection.branch_length_status != "complete":
+        substitution_blockers.append("complete branch lengths are required")
+    if negative:
+        substitution_blockers.append("negative branch lengths violate substitution-distance assumptions")
+    if zero_length:
+        substitution_warnings.append("zero-length branches may represent collapsed or unresolved substitutions")
+    if long_outliers:
+        substitution_warnings.append("extreme branch-length outliers may indicate saturation or model mismatch")
+    contexts.append(
+        BranchLengthContextAssessment(
+            context="substitution_tree",
+            allowed=not substitution_blockers,
+            blocked_by=substitution_blockers,
+            warnings=substitution_warnings,
+        )
+    )
+
+    time_blockers = list(substitution_blockers)
+    time_warnings = list(substitution_warnings)
+    if inspection.is_ultrametric is not True:
+        time_blockers.append("time trees require ultrametric root-to-tip distances")
+    contexts.append(
+        BranchLengthContextAssessment(
+            context="time_tree",
+            allowed=not time_blockers,
+            blocked_by=time_blockers,
+            warnings=time_warnings,
+        )
+    )
+
+    comparative_blockers = list(substitution_blockers)
+    comparative_warnings = list(substitution_warnings)
+    if not inspection.rooted:
+        comparative_blockers.append("comparative methods require a rooted tree")
+    if inspection.polytomy_count:
+        comparative_warnings.append("polytomies reduce comparative-model identifiability")
+    contexts.append(
+        BranchLengthContextAssessment(
+            context="comparative_methods",
+            allowed=not comparative_blockers,
+            blocked_by=comparative_blockers,
+            warnings=comparative_warnings,
+        )
+    )
+    for context in contexts:
+        context.warnings = [warning for warning in context.warnings if warning]
+    return contexts
+
+
+def _branch_length_repair_suggestions(inspection: TreeInspectionReport) -> list[BranchLengthRepairSuggestion]:
+    suggestions: list[BranchLengthRepairSuggestion] = []
+    if inspection.branch_length_status == "absent":
+        suggestions.append(
+            BranchLengthRepairSuggestion(
+                issue_code="missing_branch_lengths",
+                summary="branch lengths are absent throughout the tree",
+                blocked_analyses=["substitution_tree", "time_tree", "comparative_methods"],
+                suggested_action="re-export the inference tree with branch lengths or estimate them before weighted analyses",
+            )
+        )
+    if inspection.branch_length_status == "partial":
+        suggestions.append(
+            BranchLengthRepairSuggestion(
+                issue_code="partial_branch_lengths",
+                summary="some branches are missing lengths",
+                blocked_analyses=["substitution_tree", "time_tree", "comparative_methods"],
+                suggested_action="fill or re-estimate missing branch lengths consistently; partial lengths are unsafe for weighted methods",
+            )
+        )
+    if inspection.zero_length_branch_count:
+        suggestions.append(
+            BranchLengthRepairSuggestion(
+                issue_code="zero_length_branches",
+                summary="tree contains zero-length branches",
+                blocked_analyses=["time_tree"],
+                suggested_action="confirm whether zero lengths indicate unresolved splits, then collapse or re-estimate those branches",
+            )
+        )
+    negative_nodes = [warning for warning in inspection.tree_quality_warnings if warning.code == "negative_branch_lengths"]
+    if negative_nodes:
+        suggestions.append(
+            BranchLengthRepairSuggestion(
+                issue_code="negative_branch_lengths",
+                summary="tree contains negative branch lengths",
+                blocked_analyses=["substitution_tree", "time_tree", "comparative_methods", "publication"],
+                suggested_action="recompute the tree or sanitize the source export; negative branch lengths should not be silently truncated",
+            )
+        )
+    if inspection.long_branch_outliers:
+        suggestions.append(
+            BranchLengthRepairSuggestion(
+                issue_code="extreme_branch_lengths",
+                summary="tree contains branch-length outliers",
+                blocked_analyses=[],
+                suggested_action="review alignment quality, saturation, and model fit before interpreting long-branch placement",
+            )
+        )
+    return suggestions
+
+
+def _findings_from_reports(
+    integrity_issues: list[TreeIntegrityIssue],
+    inspection: TreeInspectionReport,
+    duplicate_taxa: list[str],
+    missing_taxa: int,
+    root_state: RootStateConfidenceReport,
+    internal_label_conflicts: list[InternalNodeLabelConflict],
+    unsafe_labels: list[UnsafeExternalLabel],
+) -> list[TreeFinding]:
+    findings: list[TreeFinding] = [
+        TreeFinding(
+            code=issue.code,
+            message=issue.message,
+            severity=issue.severity,
+            affected_taxa=[],
+            affected_nodes=issue.affected_nodes,
+        )
+        for issue in integrity_issues
+    ]
+    if duplicate_taxa:
+        findings.append(
+            TreeFinding(
+                code="duplicate_taxa",
+                message="tree contains duplicate tip labels and is biologically unsafe until taxa are disambiguated",
+                severity="blocker",
+                affected_taxa=duplicate_taxa,
+                affected_nodes=[],
+            )
+        )
+    if missing_taxa:
+        findings.append(
+            TreeFinding(
+                code="unnamed_tips",
+                message="tree contains unnamed tips and cannot be safely reconciled to external data",
+                severity="blocker",
+                affected_taxa=[],
+                affected_nodes=[],
+            )
+        )
+    for warning in inspection.tree_quality_warnings:
+        severity = "warning"
+        if warning.code in {"negative_branch_lengths", "missing_branch_lengths", "partial_branch_lengths"}:
+            severity = "blocker"
+        findings.append(
+            TreeFinding(
+                code=warning.code,
+                message=warning.message,
+                severity=severity,
+                affected_taxa=warning.affected_taxa,
+                affected_nodes=warning.affected_nodes,
+            )
+        )
+    if root_state.suspicious_placement:
+        findings.append(
+            TreeFinding(
+                code="suspicious_root_placement",
+                message="root placement appears biologically suspicious",
+                severity="warning",
+                affected_taxa=[],
+                affected_nodes=["<root>"],
+            )
+        )
+    for conflict in internal_label_conflicts:
+        findings.append(
+            TreeFinding(
+                code=conflict.conflict_type,
+                message=conflict.detail,
+                severity="warning",
+                affected_taxa=[],
+                affected_nodes=[] if conflict.node_id == "<tree>" else [conflict.node_id],
+            )
+        )
+    if unsafe_labels:
+        findings.append(
+            TreeFinding(
+                code="unsafe_external_labels",
+                message="one or more taxon labels are unsafe across common phylogenetics engines or shell workflows",
+                severity="warning",
+                affected_taxa=[row.raw_label for row in unsafe_labels],
+                affected_nodes=[],
+            )
+        )
+    severity_order = {"fatal": 0, "blocker": 1, "warning": 2, "info": 3}
+    return sorted(findings, key=lambda row: (severity_order.get(row.severity, 99), row.code, row.message))
+
+
+def _validity_decision(findings: list[TreeFinding]) -> tuple[bool, bool, str]:
+    has_fatal = any(finding.severity == "fatal" for finding in findings)
+    has_blocker = any(finding.severity == "blocker" for finding in findings)
+    has_warning = any(finding.severity == "warning" for finding in findings)
+    syntax_valid = not has_fatal
+    biologically_safe = syntax_valid and not has_blocker
+    if not syntax_valid or has_blocker:
+        return syntax_valid, biologically_safe, "invalid"
+    if has_warning:
+        return syntax_valid, biologically_safe, "valid_with_warnings"
+    return syntax_valid, biologically_safe, "valid"
+
+
 def _imbalance_summary(tree: PhyloTree) -> str:
     def visit(node) -> tuple[int, int]:
         if node.is_leaf():
@@ -706,13 +1258,15 @@ def validate_tree_path(
 ) -> TreeValidationReport:
     """Validate a tree file and produce a diagnostic report."""
     tree = _load_tree(path, source_format=source_format)
-    rooted = len(tree.root.children) == 2
+    inspection = inspect_tree_path(path, source_format=source_format)
+    rooted = inspection.rooted
     has_complete, zero_count, negative_count = _branch_length_health(tree)
     branch_length_status = _branch_length_status(tree)
     missing_internal_branch_nodes = _missing_internal_branch_nodes(tree)
     missing_terminal_branch_taxa = _missing_terminal_branch_taxa(tree)
     singleton_internal_nodes = _singleton_internal_nodes(tree)
     missing_taxa, duplicate_taxa = _duplicate_taxa(tree)
+    integrity_issues = _integrity_issues(tree)
     if duplicate_taxa and not allow_duplicates:
         raise DuplicateTaxonError(f"duplicate tip labels found: {', '.join(duplicate_taxa)}")
     if missing_taxa and strict:
@@ -742,12 +1296,29 @@ def validate_tree_path(
         warnings.append("tree contains singleton internal nodes")
     if polytomy_nodes:
         warnings.append("tree contains one or more polytomies")
+    if inspection.root_state_confidence.suspicious_placement:
+        warnings.append("tree root placement appears biologically suspicious")
+    if inspection.unsafe_external_labels:
+        warnings.append("tree contains taxon labels unsafe across common external engines")
+    findings = _findings_from_reports(
+        integrity_issues,
+        inspection,
+        duplicate_taxa,
+        missing_taxa,
+        inspection.root_state_confidence,
+        inspection.internal_label_conflicts,
+        inspection.unsafe_external_labels,
+    )
+    syntax_valid, biologically_safe, validity_decision = _validity_decision(findings)
     return TreeValidationReport(
         path=path,
         source_format=tree.source_format,
         tip_count=tree.tip_count,
         internal_node_count=tree.internal_node_count,
         rooted=rooted,
+        syntax_valid=syntax_valid,
+        biologically_safe=biologically_safe,
+        validity_decision=validity_decision,
         has_complete_branch_lengths=has_complete,
         branch_length_status=branch_length_status,
         total_branch_length=tree.total_branch_length(),
@@ -761,6 +1332,14 @@ def validate_tree_path(
         missing_taxa=missing_taxa,
         duplicate_taxa=duplicate_taxa,
         ultrametric=ultrametric,
+        integrity_issues=integrity_issues,
+        warning_details=findings,
+        root_state_confidence=inspection.root_state_confidence,
+        branch_length_contexts=_branch_length_contexts(inspection),
+        branch_length_repair_suggestions=_branch_length_repair_suggestions(inspection),
+        internal_label_conflicts=inspection.internal_label_conflicts,
+        stable_node_identities=inspection.stable_node_identities,
+        unsafe_external_labels=inspection.unsafe_external_labels,
         warnings=warnings,
     )
 
@@ -788,6 +1367,15 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     likely_support_labels, likely_named_internal_labels, suspicious_support_value_ranges, mixed_support_scales = (
         _internal_label_diagnostics(tree)
     )
+    internal_label_conflicts = _internal_label_conflicts(
+        likely_support_labels,
+        likely_named_internal_labels,
+        suspicious_support_value_ranges,
+        mixed_support_scales,
+    )
+    root_state_confidence = _root_state_confidence(tree)
+    stable_node_identities = _stable_node_identities(tree)
+    unsafe_external_labels = _unsafe_external_labels(tree)
     star_like = _star_like(tree)
     comb_like = _comb_like(tree)
     _, _, negative_branch_count = _branch_length_health(tree)
@@ -828,7 +1416,8 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         internal_node_count=tree.internal_node_count,
         edge_count=_edge_count(tree),
         clade_count=tree.internal_node_count,
-        rooted=len(tree.root.children) == 2,
+        rooted=root_state_confidence.classification in {"explicitly_rooted", "apparently_rooted"},
+        root_state_confidence=root_state_confidence,
         is_binary=all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()),
         internal_child_counts=internal_child_counts,
         singleton_internal_nodes=singleton_internal_nodes,
@@ -858,6 +1447,9 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         mixed_support_scales=mixed_support_scales,
         likely_support_labels=likely_support_labels,
         likely_named_internal_labels=likely_named_internal_labels,
+        internal_label_conflicts=internal_label_conflicts,
+        stable_node_identities=stable_node_identities,
+        unsafe_external_labels=unsafe_external_labels,
         star_like=star_like,
         comb_like=comb_like,
         tree_quality_score=_tree_quality_score(tree_quality_warnings),
@@ -869,10 +1461,45 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     )
 
 
+def forensic_tree_path(path: Path, *, source_format: str | None = None) -> TreeForensicReport:
+    """Build a reviewer-facing forensic summary of whether a tree is safe for downstream use."""
+    inspection = inspect_tree_path(path, source_format=source_format)
+    validation = validate_tree_path(path, source_format=source_format)
+    context_lookup = {context.context: context for context in validation.branch_length_contexts}
+    safe_for_topology_comparison = validation.syntax_valid and not validation.duplicate_taxa and validation.missing_taxa == 0
+    safe_for_time_tree_analysis = context_lookup["time_tree"].allowed and validation.biologically_safe
+    safe_for_comparative_methods = context_lookup["comparative_methods"].allowed and validation.biologically_safe
+    safe_for_visualization = validation.syntax_valid
+    safe_for_publication = validation.biologically_safe and not inspection.internal_label_conflicts
+    warnings = list(dict.fromkeys([*validation.warnings, *inspection.warnings]))
+    return TreeForensicReport(
+        path=path,
+        source_format=validation.source_format,
+        syntax_valid=validation.syntax_valid,
+        biologically_safe=validation.biologically_safe,
+        validity_decision=validation.validity_decision,
+        integrity_issues=validation.integrity_issues,
+        findings=validation.warning_details,
+        root_state_confidence=validation.root_state_confidence,
+        branch_length_contexts=validation.branch_length_contexts,
+        branch_length_repair_suggestions=validation.branch_length_repair_suggestions,
+        internal_label_conflicts=validation.internal_label_conflicts,
+        stable_node_identities=validation.stable_node_identities,
+        unsafe_external_labels=validation.unsafe_external_labels,
+        safe_for_topology_comparison=safe_for_topology_comparison,
+        safe_for_time_tree_analysis=safe_for_time_tree_analysis,
+        safe_for_comparative_methods=safe_for_comparative_methods,
+        safe_for_visualization=safe_for_visualization,
+        safe_for_publication=safe_for_publication,
+        warnings=warnings,
+    )
+
+
 def diagnose_tree_path(path: Path, *, source_format: str | None = None) -> TreeDiagnosticReport:
     """Return a combined inspection and validation report for one tree."""
     return TreeDiagnosticReport(
         path=path,
         inspection=inspect_tree_path(path, source_format=source_format),
         validation=validate_tree_path(path, source_format=source_format),
+        forensic=forensic_tree_path(path, source_format=source_format),
     )
