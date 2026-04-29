@@ -74,6 +74,28 @@ def _copy_roots(*, roots: list[Path], section: str, bundle_root: Path) -> list[E
     return bundled_files
 
 
+def _copy_paths(*, paths: list[Path], section: str, bundle_root: Path) -> list[EvidenceFile]:
+    bundled_files: list[EvidenceFile] = []
+    for source in paths:
+        if not source.exists():
+            raise EvidenceContractError(f"{section} file not found: {source}")
+        if not source.is_file():
+            raise EvidenceContractError(f"{section} path is not a file: {source}")
+        relative_path = Path(*source.resolve().parts[1:])
+        destination = bundle_root / section / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        bundled_files.append(
+            EvidenceFile(
+                section=section,
+                relative_path=relative_path,
+                sha256=_sha256(source),
+                size_bytes=source.stat().st_size,
+            )
+        )
+    return bundled_files
+
+
 def _write_checksums_tsv(path: Path, files: list[EvidenceFile]) -> Path:
     lines = ["section\trelative_path\tsha256\tsize_bytes"]
     for file in files:
@@ -142,6 +164,60 @@ def bundle_directory(input_roots: list[Path], output_roots: list[Path], bundle_r
     manifest_payload = {
         "input_roots": [str(root) for root in normalized_inputs],
         "output_roots": [str(root) for root in normalized_outputs],
+        "bundle_root": str(bundle_root),
+        "file_count": len(bundled_files),
+        "files": [
+            {
+                "section": file.section,
+                "relative_path": file.relative_path.as_posix(),
+                "sha256": file.sha256,
+                "size_bytes": file.size_bytes,
+            }
+            for file in bundled_files
+        ],
+    }
+    (bundle_root / "manifest.json").write_text(json.dumps(manifest_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_checksums_tsv(bundle_root / "checksums.tsv", bundled_files)
+    _write_environment_json(bundle_root / "environment.json")
+    _write_bundle_readme(
+        bundle_root / "README.md",
+        input_roots=normalized_inputs,
+        output_roots=normalized_outputs,
+        file_count=len(bundled_files),
+    )
+
+    return EvidenceBundleReport(
+        input_roots=normalized_inputs,
+        output_roots=normalized_outputs,
+        output_root=bundle_root,
+        file_count=len(bundled_files),
+        input_file_count=len(input_files),
+        output_file_count=len(output_files),
+        files=bundled_files,
+    )
+
+
+def bundle_file_paths(input_paths: list[Path], output_paths: list[Path], bundle_root: Path) -> EvidenceBundleReport:
+    """Copy explicit input and output files into a checksummed evidence bundle."""
+    if not input_paths:
+        raise EvidenceContractError("evidence bundle requires at least one input file")
+    if not output_paths:
+        raise EvidenceContractError("evidence bundle requires at least one output file")
+
+    normalized_inputs = [Path(path) for path in input_paths]
+    normalized_outputs = [Path(path) for path in output_paths]
+    if bundle_root.exists():
+        shutil.rmtree(bundle_root)
+    (bundle_root / "inputs").mkdir(parents=True, exist_ok=True)
+    (bundle_root / "outputs").mkdir(parents=True, exist_ok=True)
+
+    input_files = _copy_paths(paths=normalized_inputs, section="inputs", bundle_root=bundle_root)
+    output_files = _copy_paths(paths=normalized_outputs, section="outputs", bundle_root=bundle_root)
+    bundled_files = input_files + output_files
+
+    manifest_payload = {
+        "input_roots": [str(path) for path in normalized_inputs],
+        "output_roots": [str(path) for path in normalized_outputs],
         "bundle_root": str(bundle_root),
         "file_count": len(bundled_files),
         "files": [

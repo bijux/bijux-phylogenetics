@@ -102,7 +102,7 @@ from bijux_phylogenetics.diagnostics.assumptions import (
     standardize_support_labels,
 )
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
-from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
+from bijux_phylogenetics.evidence.bundles import bundle_directory, bundle_file_paths, validate_bundle
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
     DuplicateTaxonError,
@@ -3381,6 +3381,22 @@ def test_validate_bundle_detects_checksum_drift(tmp_path: Path) -> None:
     report = validate_bundle(bundle_root)
     assert report.valid is False
     assert report.mismatches[0].reason in {"checksum_mismatch", "size_mismatch"}
+
+
+def test_bundle_file_paths_copies_explicit_input_and_output_files(tmp_path: Path) -> None:
+    input_path = tmp_path / "inputs" / "alignment.fasta"
+    output_path = tmp_path / "outputs" / "analysis.xml"
+    input_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    input_path.write_text(">A\nACTG\n", encoding="utf-8")
+    output_path.write_text("<beast />\n", encoding="utf-8")
+
+    report = bundle_file_paths([input_path], [output_path], tmp_path / "bundle")
+
+    assert report.file_count == 2
+    assert report.input_file_count == 1
+    assert report.output_file_count == 1
+    assert (report.output_root / "manifest.json").exists()
 
 
 def test_cli_validate_json_output(capsys) -> None:
