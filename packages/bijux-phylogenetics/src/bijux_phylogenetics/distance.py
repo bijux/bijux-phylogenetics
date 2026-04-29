@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from pathlib import Path
 
 from bijux_phylogenetics.core.alignment import AlignmentRecord
@@ -84,6 +85,16 @@ def _distance_over_positions(left: str, right: str, positions: list[int]) -> tup
     return round(mismatches / comparable_sites, 15), comparable_sites
 
 
+def _jukes_cantor_distance(p_distance: float | None) -> float | None:
+    if p_distance is None:
+        return None
+    if p_distance == 0.0:
+        return 0.0
+    if p_distance >= 0.75:
+        return None
+    return round((-3.0 / 4.0) * math.log(1.0 - (4.0 * p_distance / 3.0)), 15)
+
+
 def compute_pairwise_genetic_distance_matrix(
     path: Path,
     *,
@@ -91,7 +102,7 @@ def compute_pairwise_genetic_distance_matrix(
     gap_handling: GapHandlingMode = "pairwise-deletion",
 ) -> GeneticDistanceMatrix:
     """Compute a deterministic pairwise genetic distance matrix for a DNA alignment."""
-    if model != "p-distance":
+    if model not in {"p-distance", "jukes-cantor"}:
         raise ValueError(f"unsupported distance model: {model}")
     if gap_handling not in {"pairwise-deletion", "complete-deletion"}:
         raise ValueError(f"unsupported gap handling mode: {gap_handling}")
@@ -129,11 +140,12 @@ def compute_pairwise_genetic_distance_matrix(
                 )
             else:
                 distance, comparable_sites = _pairwise_distance(left.sequence, right.sequence)
+            transformed_distance = _jukes_cantor_distance(distance) if model == "jukes-cantor" else distance
             pairs.append(
                 PairwiseGeneticDistance(
                     left_identifier=left.identifier,
                     right_identifier=right.identifier,
-                    distance=distance,
+                    distance=transformed_distance,
                     comparable_sites=comparable_sites,
                 )
             )

@@ -964,6 +964,26 @@ def test_compute_pairwise_genetic_distance_matrix_supports_complete_deletion() -
     ]
 
 
+def test_compute_pairwise_genetic_distance_matrix_supports_jukes_cantor() -> None:
+    report = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance.fasta"),
+        model="jukes-cantor",
+    )
+    assert report.model == "jukes-cantor"
+    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+        ("A", "A", 0.0, 8),
+        ("A", "B", 0.136741167595466, 8),
+        ("A", "C", 0.823959216501082, 8),
+        ("A", "D", 1.343819601921041, 8),
+        ("B", "B", 0.0, 8),
+        ("B", "C", 1.343819601921041, 8),
+        ("B", "D", 0.823959216501082, 8),
+        ("C", "C", 0.0, 8),
+        ("C", "D", 0.136741167595466, 8),
+        ("D", "D", 0.0, 8),
+    ]
+
+
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
     exit_code = main(["alignment", "coding", str(fixture("example_alignment_coding.fasta")), "--json"])
     captured = capsys.readouterr()
