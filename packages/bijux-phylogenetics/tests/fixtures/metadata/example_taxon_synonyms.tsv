@@ -1,0 +1,4 @@
+raw_label	accepted_label	provenance	authority
+Felis_concolor	Puma_concolor	mammal_catalog	MammalDB
+Jaguar	Panthera_onca	common_name_catalog	CatAuthority
+Jaguar	Panthera_pardus	legacy_field_sheet	FieldNotes
