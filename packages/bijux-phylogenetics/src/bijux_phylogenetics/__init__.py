@@ -200,7 +200,19 @@ from .diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from .core.dataset import DatasetAuditReport, DatasetReadinessSummary, audit_dataset_inputs, summarize_dataset_readiness
+from .core.dataset import (
+    DatasetAuditReport,
+    DatasetCompletenessMatrix,
+    DatasetCrosswalkReport,
+    DatasetExclusionTable,
+    DatasetOrderingAudit,
+    DatasetReadinessSummary,
+    audit_dataset_inputs,
+    audit_dataset_taxon_ordering,
+    build_dataset_completeness_matrix,
+    build_dataset_crosswalk,
+    summarize_dataset_readiness,
+)
 from .evidence.bundles import EvidenceBundleReport, bundle_directory
 from .identity import CLI_NAME, IDENTITY, IMPORT_NAME, PACKAGE_NAME, PRODUCT_NAME, UMBRELLA_COMMAND
 from .io.fasta import (
@@ -306,6 +318,10 @@ __all__ = [
     "ContinuousAncestralEstimate",
     "ContinuousAncestralReport",
     "DatasetAuditReport",
+    "DatasetCompletenessMatrix",
+    "DatasetCrosswalkReport",
+    "DatasetExclusionTable",
+    "DatasetOrderingAudit",
     "DatasetReadinessSummary",
     "EvidenceBundleReport",
     "CLI_NAME",
@@ -421,6 +437,7 @@ __all__ = [
     "ValidatedTipDate",
     "__version__",
     "audit_dataset_inputs",
+    "audit_dataset_taxon_ordering",
     "assess_beast_convergence",
     "assess_mrbayes_convergence",
     "build_alignment_forensic_report",
@@ -431,6 +448,8 @@ __all__ = [
     "benchmark_alignment_diagnostics",
     "benchmark_tree_comparison",
     "benchmark_tree_validation",
+    "build_dataset_completeness_matrix",
+    "build_dataset_crosswalk",
     "bundle_directory",
     "cluster_trees_by_topology",
     "classify_alignment_sequences",
