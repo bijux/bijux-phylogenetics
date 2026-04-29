@@ -2365,7 +2365,7 @@ def test_cli_tree_set_report_writes_html(tmp_path: Path, capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert "unstable-taxa" in output_path.read_text(encoding="utf-8")
-    assert payload["metrics"]["section_count"] == 7
+    assert payload["metrics"]["section_count"] == 11
 
 
 def test_cli_simulate_birth_death_writes_tree_set(tmp_path: Path, capsys) -> None:
@@ -4390,6 +4390,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "validate",
         "normalize",
         "normalize-taxa",
+        "taxonomy",
         "topology",
         "compare",
         "annotate",
