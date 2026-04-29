@@ -59,6 +59,10 @@ class EngineUnavailableError(PhylogeneticsError):
     code = "engine_unavailable_error"
 
 
+class EngineWorkflowError(PhylogeneticsError):
+    code = "engine_workflow_error"
+
+
 class EvidenceContractError(PhylogeneticsError):
     code = "evidence_contract_error"
 
