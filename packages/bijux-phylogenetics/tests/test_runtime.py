@@ -82,6 +82,20 @@ from bijux_phylogenetics.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.command_line.registry import get_command_spec
+from bijux_phylogenetics.diversification import (
+    compare_diversification_models,
+    compute_lineage_through_time_curve,
+    detect_diversification_outlier_clades,
+    detect_incomplete_taxon_sampling_metadata,
+    estimate_diversification_rate,
+    inspect_diversification_time_tree,
+    render_diversification_report,
+    run_trait_dependent_diversification_analysis,
+    validate_time_tree_for_diversification,
+    write_clade_diversification_table,
+    write_lineage_through_time_table,
+    write_trait_dependent_diversification_table,
+)
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
     render_inference_workflow_report,
@@ -242,6 +256,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.write_discrete_model_comparison_table is write_discrete_model_comparison_table
     assert bijux_phylogenetics.write_node_state_probability_table is write_node_state_probability_table
     assert bijux_phylogenetics.write_transition_summary_table is write_transition_summary_table
+    assert bijux_phylogenetics.validate_time_tree_for_diversification is validate_time_tree_for_diversification
+    assert bijux_phylogenetics.inspect_diversification_time_tree is inspect_diversification_time_tree
+    assert bijux_phylogenetics.compute_lineage_through_time_curve is compute_lineage_through_time_curve
+    assert bijux_phylogenetics.detect_incomplete_taxon_sampling_metadata is detect_incomplete_taxon_sampling_metadata
+    assert bijux_phylogenetics.estimate_diversification_rate is estimate_diversification_rate
+    assert bijux_phylogenetics.compare_diversification_models is compare_diversification_models
+    assert bijux_phylogenetics.detect_diversification_outlier_clades is detect_diversification_outlier_clades
+    assert bijux_phylogenetics.run_trait_dependent_diversification_analysis is run_trait_dependent_diversification_analysis
+    assert bijux_phylogenetics.render_diversification_report is render_diversification_report
+    assert bijux_phylogenetics.write_lineage_through_time_table is write_lineage_through_time_table
+    assert bijux_phylogenetics.write_clade_diversification_table is write_clade_diversification_table
+    assert bijux_phylogenetics.write_trait_dependent_diversification_table is write_trait_dependent_diversification_table
     assert bijux_phylogenetics.render_tree_with_geographic_states is render_tree_with_geographic_states
     assert bijux_phylogenetics.render_discrete_state_evolution_report is render_discrete_state_evolution_report
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
@@ -270,6 +296,13 @@ def test_command_registry_exposes_discrete_evolution_surface() -> None:
 
     assert spec.domain == "discrete-state-evolution"
     assert spec.outputs == ("discrete-state-evolution-report",)
+
+
+def test_command_registry_exposes_diversification_surface() -> None:
+    spec = get_command_spec("diversification")
+
+    assert spec.domain == "diversification-analysis"
+    assert spec.outputs == ("diversification-report",)
 
 
 def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
