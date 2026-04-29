@@ -167,6 +167,7 @@ from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
     build_alignment_quality_report,
+    classify_alignment_sequences,
     compute_pairwise_sequence_identity_matrix,
     compute_amino_acid_composition,
     compute_nucleotide_composition,
@@ -174,10 +175,15 @@ from bijux_phylogenetics.io.fasta import (
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
+    detect_over_aligned_regions,
+    detect_sequence_length_outliers,
+    detect_under_aligned_regions,
     infer_alignment_alphabet,
     detect_sequences_with_excessive_missing_data,
     detect_sites_with_excessive_missing_data,
     inspect_coding_alignment,
+    summarize_alignment_readiness,
+    summarize_alignment_windows,
     remove_all_gap_columns,
     remove_all_missing_columns,
     remove_sequences_above_missingness_threshold,
@@ -249,6 +255,7 @@ def test_package_identity_matches_canonical_names() -> None:
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.summarise_fasta is summarise_fasta
     assert bijux_phylogenetics.build_alignment_quality_report is build_alignment_quality_report
+    assert bijux_phylogenetics.classify_alignment_sequences is classify_alignment_sequences
     assert bijux_phylogenetics.compute_pairwise_genetic_distance_matrix is compute_pairwise_genetic_distance_matrix
     assert bijux_phylogenetics.build_distance_tree is build_distance_tree
     assert bijux_phylogenetics.build_tree_from_imported_distance_matrix is build_tree_from_imported_distance_matrix
@@ -279,6 +286,11 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
     assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
+    assert bijux_phylogenetics.detect_sequence_length_outliers is detect_sequence_length_outliers
+    assert bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
+    assert bijux_phylogenetics.detect_under_aligned_regions is detect_under_aligned_regions
+    assert bijux_phylogenetics.summarize_alignment_windows is summarize_alignment_windows
+    assert bijux_phylogenetics.summarize_alignment_readiness is summarize_alignment_readiness
     assert bijux_phylogenetics.load_tree_set is load_tree_set
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
     assert bijux_phylogenetics.compute_clade_frequency_table is compute_clade_frequency_table
@@ -1178,6 +1190,7 @@ def test_alignment_detects_gc_composition_outliers() -> None:
         deviation_threshold=0.2,
     )
     assert [(row.identifier, row.deviation) for row in outliers] == [("C", 1.0)]
+    assert outliers[0].robust_z_score is None or outliers[0].robust_z_score > 0
 
 
 def test_alignment_detects_identical_and_near_duplicate_sequences() -> None:
@@ -1206,8 +1219,24 @@ def test_alignment_quality_report_collects_composition_duplicates_and_warnings()
     assert report.inferred_alphabet == "dna"
     assert report.invalid_characters == []
     assert report.duplicate_sequence_groups
+    assert report.sequence_length_outliers == []
     assert report.near_duplicate_pairs == []
     assert report.warnings == ["alignment contains identical duplicate sequences"]
+
+
+def test_alignment_classifies_raw_and_ambiguous_fastas() -> None:
+    raw = classify_alignment_sequences(fixture("example_sequences_raw.fasta"))
+    ambiguous = classify_alignment_sequences(fixture("example_alignment.fasta"))
+    assert raw.state == "raw_sequence_fasta"
+    assert ambiguous.state == "ambiguous_equal_length_fasta"
+
+
+def test_alignment_detects_sequence_length_outliers_before_alignment() -> None:
+    outliers = detect_sequence_length_outliers(fixture("example_sequences_raw.fasta"))
+    assert [(row.identifier, row.raw_length, row.note) for row in outliers] == [
+        ("B", 8, "shorter than baseline"),
+        ("C", 16, "longer than baseline"),
+    ]
 
 
 def test_alignment_inspect_reports_per_sequence_missingness() -> None:
@@ -1247,6 +1276,56 @@ def test_alignment_inspect_reports_site_missingness_and_empty_columns() -> None:
     ]
     assert report.all_gap_columns == [2]
     assert report.all_missing_columns == [3, 4]
+
+
+def test_alignment_inspect_separates_gaps_missingness_and_ambiguity() -> None:
+    report = summarise_fasta(fixture("example_alignment_ambiguity.fasta"))
+    assert report.missing_data_fraction == 5 / 18
+    assert report.gap_fraction == 1 / 18
+    assert report.ambiguity_fraction == 2 / 18
+    assert [(row.identifier, row.gap_fraction, row.missing_fraction, row.ambiguity_fraction) for row in report.per_sequence_uncertainty] == [
+        ("A", 0.0, 2 / 6, 1 / 6),
+        ("B", 0.0, 2 / 6, 1 / 6),
+        ("C", 1 / 6, 1 / 6, 0.0),
+    ]
+
+
+def test_alignment_windows_report_over_and_under_aligned_regions() -> None:
+    windows = summarize_alignment_windows(
+        fixture("example_alignment_regions.fasta"),
+        window_size=4,
+        step_size=4,
+    )
+    over_aligned = detect_over_aligned_regions(
+        fixture("example_alignment_regions.fasta"),
+        window_size=4,
+        step_size=4,
+    )
+    under_aligned = detect_under_aligned_regions(
+        fixture("example_alignment_regions.fasta"),
+        window_size=4,
+        step_size=4,
+    )
+    assert [(window.start, window.end, window.gap_fraction, window.missing_fraction, window.ambiguity_fraction) for window in windows] == [
+        (1, 4, 0.25, 0.5, 0.25),
+        (5, 8, 0.0, 0.0, 0.0),
+    ]
+    assert [(row.start, row.end, row.kind) for row in over_aligned] == [(1, 4, "over_aligned")]
+    assert [(row.start, row.end, row.kind) for row in under_aligned] == [(5, 8, "under_aligned")]
+
+
+def test_alignment_readiness_reports_method_specific_decisions() -> None:
+    raw = summarize_alignment_readiness(fixture("example_sequences_raw.fasta"))
+    coding = summarize_alignment_readiness(fixture("example_alignment_coding.fasta"))
+    raw_methods = {row.analysis: row for row in raw.methods}
+    coding_methods = {row.analysis: row for row in coding.methods}
+
+    assert raw_methods["distance"].ready is False
+    assert raw_methods["maximum_likelihood"].blockers == ["input sequences are not yet aligned"]
+    assert coding_methods["distance"].ready is True
+    assert coding_methods["coding"].ready is False
+    assert "one or more sequences contain premature stop codons" in coding_methods["coding"].blockers
+    assert "one or more sequences contain partial codons after gaps and missing data are removed" in coding_methods["coding"].blockers
 
 
 def test_alignment_inspect_rejects_unequal_lengths() -> None:
@@ -1402,7 +1481,11 @@ def test_alignment_identity_matrix_reports_pairs_and_comparable_sites() -> None:
 def test_coding_alignment_reports_frameshift_like_sequences_and_stop_codons() -> None:
     diagnostics = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
     assert diagnostics.sequence_count == 4
+    assert diagnostics.alignment_length_multiple_of_three is True
     assert [(row.identifier, row.comparable_length, row.remainder) for row in diagnostics.frameshift_like_sequences] == [
+        ("C", 8, 2)
+    ]
+    assert [(row.identifier, row.comparable_length, row.trailing_bases) for row in diagnostics.partial_codon_sequences] == [
         ("C", 8, 2)
     ]
     assert [(row.identifier, row.codon_index, row.nucleotide_start, row.codon, row.terminal) for row in diagnostics.stop_codons] == [
@@ -3134,8 +3217,58 @@ def test_cli_alignment_quality_json_output(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["duplicate_group_count"] == 1
+    assert payload["metrics"]["sequence_length_outlier_count"] == 0
     assert payload["metrics"]["near_duplicate_count"] == 0
     assert payload["warnings"] == ["alignment contains identical duplicate sequences"]
+
+
+def test_cli_alignment_classify_json_output(capsys) -> None:
+    exit_code = main(["alignment", "classify", str(fixture("example_sequences_raw.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["state"] == "raw_sequence_fasta"
+    assert payload["data"]["sequence_count"] == 4
+
+
+def test_cli_alignment_windows_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "windows",
+            str(fixture("example_alignment_regions.fasta")),
+            "--window-size",
+            "4",
+            "--step-size",
+            "4",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["window_count"] == 2
+    assert payload["metrics"]["over_aligned_region_count"] == 1
+    assert payload["metrics"]["under_aligned_region_count"] == 1
+
+
+def test_cli_alignment_readiness_json_output(capsys) -> None:
+    exit_code = main(["alignment", "readiness", str(fixture("example_alignment_coding.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["ready_method_count"] == 3
+    assert payload["metrics"]["blocked_method_count"] == 2
+    assert any(method["analysis"] == "coding" and method["ready"] is False for method in payload["data"]["methods"])
+
+
+def test_cli_alignment_length_outliers_json_output(capsys) -> None:
+    exit_code = main(["alignment", "length-outliers", str(fixture("example_sequences_raw.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["sequence_length_outlier_count"] == 2
+    assert [row["identifier"] for row in payload["data"]] == ["B", "C"]
 
 
 def test_cli_alignment_composition_json_output(capsys) -> None:
@@ -3223,7 +3356,7 @@ def test_cli_alignment_outliers_json_output(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["composition_outlier_count"] == 1
-    assert payload["data"] == [{"deviation": 1.0, "identifier": "C"}]
+    assert payload["data"] == [{"deviation": 1.0, "identifier": "C", "robust_z_score": None}]
 
 
 def test_cli_compare_support_json_output(capsys) -> None:
