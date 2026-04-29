@@ -55,6 +55,11 @@ from bijux_phylogenetics.core.traits import (
 )
 from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
 from bijux_phylogenetics.diagnostics.root_to_tip import diagnose_ultrametricity
+from bijux_phylogenetics.diagnostics.assumptions import (
+    assess_tree_assumptions,
+    inspect_branch_length_units,
+    standardize_support_labels,
+)
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import (
@@ -1554,6 +1559,57 @@ def test_inspect_tree_path_detects_suspicious_and_mixed_support_scales() -> None
     assert mixed.suspicious_support_value_ranges == []
     assert mixed.mixed_support_scales is True
     assert [warning.code for warning in mixed.tree_quality_warnings] == ["mixed_support_scales"]
+
+
+def test_standardize_support_labels_normalizes_fraction_and_percentage_scales() -> None:
+    rows = standardize_support_labels(fixture("example_tree_support_mixed.nwk"))
+    assert [(row.node, row.raw_value, row.scale, row.support_fraction, row.support_percent) for row in rows] == [
+        ("A|B", 0.95, "fraction", 0.95, 95.0),
+        ("A|B|C|D", 99.0, "percentage", 0.99, 99.0),
+        ("C|D", 88.0, "percentage", 0.88, 88.0),
+    ]
+
+
+def test_inspect_branch_length_units_reports_time_and_substitution_metadata() -> None:
+    time_report = inspect_branch_length_units(fixture("example_metadata_branch_units_time.tsv"))
+    substitution_report = inspect_branch_length_units(fixture("example_metadata_branch_units_substitution.tsv"))
+    conflict_report = inspect_branch_length_units(fixture("example_metadata_branch_units_conflict.tsv"))
+    assert (time_report.declared_unit, time_report.compatible_with_time_tree, time_report.compatible_with_substitution_tree) == (
+        "years",
+        True,
+        False,
+    )
+    assert (
+        substitution_report.declared_unit,
+        substitution_report.compatible_with_time_tree,
+        substitution_report.compatible_with_substitution_tree,
+    ) == (
+        "substitutions_per_site",
+        False,
+        True,
+    )
+    assert conflict_report.conflicting_values == ["substitutions_per_site", "years"]
+
+
+def test_assess_tree_assumptions_reports_time_and_substitution_compatibility() -> None:
+    time_report = assess_tree_assumptions(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_metadata_branch_units_time.tsv"),
+    )
+    substitution_report = assess_tree_assumptions(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_metadata_branch_units_substitution.tsv"),
+    )
+    partial_report = assess_tree_assumptions(
+        fixture("example_tree_partial_lengths.nwk"),
+        metadata_path=fixture("example_metadata_branch_units_substitution.tsv"),
+    )
+    assert time_report.time_tree_compatible is True
+    assert time_report.substitution_tree_compatible is False
+    assert substitution_report.time_tree_compatible is False
+    assert substitution_report.substitution_tree_compatible is True
+    assert partial_report.time_tree_compatible is False
+    assert "tree requires complete branch lengths" in partial_report.blockers
 
 
 def test_inspect_tree_path_detects_star_like_tree() -> None:

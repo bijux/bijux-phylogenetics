@@ -1,0 +1,5 @@
+taxon	species	branch_length_units
+A	Alpha species	substitutions_per_site
+B	Beta species	substitutions_per_site
+C	Gamma species	substitutions_per_site
+D	Delta species	substitutions_per_site
