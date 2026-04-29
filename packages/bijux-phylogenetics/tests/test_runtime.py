@@ -130,6 +130,9 @@ def test_package_identity_matches_canonical_names() -> None:
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.summarise_fasta is summarise_fasta
     assert bijux_phylogenetics.build_alignment_quality_report is build_alignment_quality_report
+    assert bijux_phylogenetics.compute_pairwise_genetic_distance_matrix is compute_pairwise_genetic_distance_matrix
+    assert bijux_phylogenetics.build_distance_tree is build_distance_tree
+    assert bijux_phylogenetics.compare_distance_tree_topologies is compare_distance_tree_topologies
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
     assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
     assert bijux_phylogenetics.trim_columns_above_missingness_threshold is trim_columns_above_missingness_threshold

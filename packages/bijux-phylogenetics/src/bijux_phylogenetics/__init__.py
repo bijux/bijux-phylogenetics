@@ -4,6 +4,15 @@ from importlib import metadata
 
 from .compare.topology import TreeComparisonReport, compare_tree_paths
 from .core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup, unroot_tree
+from .distance import (
+    DistanceTreeBuildReport,
+    DistanceTreeTopologyComparison,
+    GeneticDistanceMatrix,
+    build_distance_tree,
+    compare_distance_tree_topologies,
+    compute_pairwise_genetic_distance_matrix,
+    write_genetic_distance_matrix,
+)
 from .diagnostics.validation import (
     TreeDiagnosticReport,
     TreeInspectionReport,
@@ -34,8 +43,11 @@ except metadata.PackageNotFoundError:
 __all__ = [
     "EvidenceBundleReport",
     "CLI_NAME",
+    "DistanceTreeBuildReport",
+    "DistanceTreeTopologyComparison",
     "IDENTITY",
     "IMPORT_NAME",
+    "GeneticDistanceMatrix",
     "PACKAGE_NAME",
     "PRODUCT_NAME",
     "ReportBuildResult",
@@ -52,7 +64,9 @@ __all__ = [
     "build_tree_figure_package",
     "bundle_directory",
     "compare_tree_paths",
+    "compare_distance_tree_topologies",
     "compute_pairwise_sequence_identity_matrix",
+    "compute_pairwise_genetic_distance_matrix",
     "diagnose_tree_path",
     "inspect_coding_alignment",
     "inspect_tree_path",
@@ -62,9 +76,11 @@ __all__ = [
     "reroot_tree_by_midpoint",
     "root_tree_on_outgroup",
     "summarise_fasta",
+    "build_distance_tree",
     "trim_columns_above_missingness_threshold",
     "translate_coding_alignment",
     "trim_alignment",
     "unroot_tree",
     "validate_tree_path",
+    "write_genetic_distance_matrix",
 ]
