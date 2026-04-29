@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.topology import TreeTransformationSummary, _summarize_transformation
 from bijux_phylogenetics.errors import MetadataJoinError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
@@ -21,6 +22,9 @@ class TreePruningReport:
     original_tip_count: int
     kept_taxa: list[str]
     removed_taxa: list[str]
+    removed_taxa_with_reasons: list["RemovedTaxonReason"]
+    pruning_audit: "PruningArtifactAudit"
+    summary: TreeTransformationSummary
 
 
 @dataclass(slots=True)
@@ -33,6 +37,9 @@ class RequestedTaxaPruningReport:
     kept_taxa: list[str]
     removed_taxa: list[str]
     absent_requested_taxa: list[str]
+    removed_taxa_with_reasons: list["RemovedTaxonReason"]
+    pruning_audit: "PruningArtifactAudit"
+    summary: TreeTransformationSummary
 
 
 @dataclass(slots=True)
@@ -44,6 +51,29 @@ class AlignmentPruningReport:
     original_sequence_count: int
     kept_ids: list[str]
     removed_ids: list[str]
+    removed_ids_with_reasons: list["RemovedTaxonReason"]
+
+
+@dataclass(slots=True)
+class RemovedTaxonReason:
+    """One removed taxon and the explicit reason it was excluded."""
+
+    taxon: str
+    reason: str
+
+
+@dataclass(slots=True)
+class PruningArtifactAudit:
+    """Post-pruning structural audit for retained branch lengths and unary cleanup."""
+
+    rooted: bool | None
+    root_to_tip_complete: bool
+    min_root_to_tip: float | None
+    max_root_to_tip: float | None
+    unary_internal_nodes: list[str]
+    original_total_branch_length: float
+    pruned_total_branch_length: float
+    branch_length_delta: float
 
 
 def _merge_branch_lengths(left: float | None, right: float | None) -> float | None:
@@ -52,6 +82,45 @@ def _merge_branch_lengths(left: float | None, right: float | None) -> float | No
     if right is None:
         return left
     return left + right
+
+
+def _node_signature(node: TreeNode) -> str:
+    if node.is_leaf():
+        return node.name or "<unnamed>"
+    taxa: list[str] = []
+    for child in node.children:
+        signature = _node_signature(child)
+        if "|" in signature:
+            taxa.extend(signature.split("|"))
+        elif signature != "<unnamed>":
+            taxa.append(signature)
+    return "|".join(sorted(taxa)) if taxa else (node.name or "<unnamed>")
+
+
+def _singleton_internal_nodes(tree: PhyloTree) -> list[str]:
+    return sorted(
+        _node_signature(node)
+        for node in tree.iter_nodes()
+        if not node.is_leaf() and len(node.children) == 1
+    )
+
+
+def _pruning_artifact_audit(original: PhyloTree, pruned: PhyloTree) -> PruningArtifactAudit:
+    root_to_tip = pruned.root_to_tip_lengths()
+    numeric = [float(length) for length in root_to_tip if length is not None]
+    root_state = pruned.rooted if pruned.rooted is not None else (len(pruned.root.children) == 2)
+    original_total = round(original.total_branch_length(), 15)
+    pruned_total = round(pruned.total_branch_length(), 15)
+    return PruningArtifactAudit(
+        rooted=root_state,
+        root_to_tip_complete=all(length is not None for length in root_to_tip),
+        min_root_to_tip=min(numeric) if numeric else None,
+        max_root_to_tip=max(numeric) if numeric else None,
+        unary_internal_nodes=_singleton_internal_nodes(pruned),
+        original_total_branch_length=original_total,
+        pruned_total_branch_length=pruned_total,
+        branch_length_delta=round(pruned_total - original_total, 15),
+    )
 
 
 def _collapse_unary(node: TreeNode) -> TreeNode:
@@ -103,6 +172,7 @@ def prune_tree_to_taxa(
     tree = load_tree(tree_path)
     keep_table = load_taxon_table(keep_from_path, taxon_column=taxon_column)
     pruned_tree, retained_tips, removed_tips = _prune_tree_against_taxa(tree, set(keep_table.taxa))
+    summary = _summarize_transformation(tree, pruned_tree, transformation="prune-tree-to-table")
     return pruned_tree, TreePruningReport(
         tree_path=tree_path,
         keep_from_path=keep_from_path,
@@ -110,6 +180,12 @@ def prune_tree_to_taxa(
         original_tip_count=tree.tip_count,
         kept_taxa=retained_tips,
         removed_taxa=removed_tips,
+        removed_taxa_with_reasons=[
+            RemovedTaxonReason(taxon=taxon, reason="absent_from_keep_table")
+            for taxon in removed_tips
+        ],
+        pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        summary=summary,
     )
 
 
@@ -121,6 +197,7 @@ def prune_tree_to_requested_taxa(
     tree = load_tree(tree_path)
     requested_set = set(requested_taxa)
     pruned_tree, retained_tips, removed_tips = _prune_tree_against_taxa(tree, requested_set)
+    summary = _summarize_transformation(tree, pruned_tree, transformation="prune-tree-to-requested-taxa")
     return pruned_tree, RequestedTaxaPruningReport(
         tree_path=tree_path,
         original_tip_count=tree.tip_count,
@@ -128,6 +205,12 @@ def prune_tree_to_requested_taxa(
         kept_taxa=retained_tips,
         removed_taxa=removed_tips,
         absent_requested_taxa=sorted(requested_set - set(tree.tip_names)),
+        removed_taxa_with_reasons=[
+            RemovedTaxonReason(taxon=taxon, reason="not_requested")
+            for taxon in removed_tips
+        ],
+        pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        summary=summary,
     )
 
 
@@ -140,6 +223,7 @@ def drop_tree_taxa(
     excluded_set = set(excluded_taxa)
     retained_taxa = [name for name in tree.tip_names if name not in excluded_set]
     pruned_tree, retained_tips, removed_tips = _prune_tree_against_taxa(tree, set(retained_taxa))
+    summary = _summarize_transformation(tree, pruned_tree, transformation="drop-tree-taxa")
     return pruned_tree, RequestedTaxaPruningReport(
         tree_path=tree_path,
         original_tip_count=tree.tip_count,
@@ -147,6 +231,15 @@ def drop_tree_taxa(
         kept_taxa=retained_tips,
         removed_taxa=removed_tips,
         absent_requested_taxa=sorted(excluded_set - set(tree.tip_names)),
+        removed_taxa_with_reasons=[
+            RemovedTaxonReason(
+                taxon=taxon,
+                reason="excluded_explicitly" if taxon in excluded_set else "pruned_after_exclusion",
+            )
+            for taxon in removed_tips
+        ],
+        pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        summary=summary,
     )
 
 
@@ -179,6 +272,10 @@ def prune_alignment_to_tree(
         original_sequence_count=len(records),
         kept_ids=kept_ids,
         removed_ids=removed_ids,
+        removed_ids_with_reasons=[
+            RemovedTaxonReason(taxon=identifier, reason="absent_from_tree")
+            for identifier in removed_ids
+        ],
     )
 
 
@@ -193,6 +290,7 @@ def prune_tree_to_alignment(
         tree,
         {record.identifier for record in records},
     )
+    summary = _summarize_transformation(tree, pruned_tree, transformation="prune-tree-to-alignment")
     return pruned_tree, TreePruningReport(
         tree_path=tree_path,
         keep_from_path=alignment_path,
@@ -200,4 +298,10 @@ def prune_tree_to_alignment(
         original_tip_count=tree.tip_count,
         kept_taxa=retained_tips,
         removed_taxa=removed_tips,
+        removed_taxa_with_reasons=[
+            RemovedTaxonReason(taxon=taxon, reason="absent_from_alignment")
+            for taxon in removed_tips
+        ],
+        pruning_audit=_pruning_artifact_audit(tree, pruned_tree),
+        summary=summary,
     )
