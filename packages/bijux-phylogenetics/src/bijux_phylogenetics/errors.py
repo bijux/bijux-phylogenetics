@@ -61,3 +61,7 @@ class EngineUnavailableError(PhylogeneticsError):
 
 class EvidenceContractError(PhylogeneticsError):
     code = "evidence_contract_error"
+
+
+class ComparativeMethodError(PhylogeneticsError):
+    code = "comparative_method_error"
