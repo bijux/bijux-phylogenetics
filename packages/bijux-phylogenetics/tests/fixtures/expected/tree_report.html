@@ -72,14 +72,45 @@
   "report_kind": "tree",
   "sections": [
     "tree-validation",
-    "tree-inspection"
+    "tree-inspection",
+    "tree-forensic"
   ],
   "title": "Bijux Tree Report"
 }</script>
     <section><h2>tree-validation</h2><pre>{
+  &quot;biologically_safe&quot;: true,
+  &quot;branch_length_contexts&quot;: [
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;topology_only&quot;,
+      &quot;warnings&quot;: []
+    },
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;substitution_tree&quot;,
+      &quot;warnings&quot;: []
+    },
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;time_tree&quot;,
+      &quot;warnings&quot;: []
+    },
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;comparative_methods&quot;,
+      &quot;warnings&quot;: []
+    }
+  ],
+  &quot;branch_length_repair_suggestions&quot;: [],
   &quot;branch_length_status&quot;: &quot;complete&quot;,
   &quot;duplicate_taxa&quot;: [],
   &quot;has_complete_branch_lengths&quot;: true,
+  &quot;integrity_issues&quot;: [],
+  &quot;internal_label_conflicts&quot;: [],
   &quot;internal_node_count&quot;: 3,
   &quot;missing_internal_branch_nodes&quot;: [],
   &quot;missing_taxa&quot;: 0,
@@ -88,12 +119,49 @@
   &quot;path&quot;: &quot;tests/fixtures/trees/example_tree.nwk&quot;,
   &quot;polytomy_count&quot;: 0,
   &quot;polytomy_nodes&quot;: [],
+  &quot;root_state_confidence&quot;: {
+    &quot;classification&quot;: &quot;apparently_rooted&quot;,
+    &quot;rationale&quot;: [
+      &quot;root has exactly two child clades but no explicit rooted flag was preserved&quot;
+    ],
+    &quot;suspicious_placement&quot;: false,
+    &quot;suspicious_reasons&quot;: []
+  },
   &quot;rooted&quot;: true,
   &quot;singleton_internal_nodes&quot;: [],
   &quot;source_format&quot;: &quot;newick&quot;,
+  &quot;stable_node_identities&quot;: [
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;A&quot;,
+        &quot;B&quot;
+      ],
+      &quot;node_id&quot;: &quot;A|B&quot;
+    },
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;C&quot;,
+        &quot;D&quot;
+      ],
+      &quot;node_id&quot;: &quot;C|D&quot;
+    },
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;A&quot;,
+        &quot;B&quot;,
+        &quot;C&quot;,
+        &quot;D&quot;
+      ],
+      &quot;node_id&quot;: &quot;A|B|C|D&quot;
+    }
+  ],
+  &quot;syntax_valid&quot;: true,
   &quot;tip_count&quot;: 4,
-  &quot;total_branch_length&quot;: 0.8999999999999999,
+  &quot;total_branch_length&quot;: 0.9,
   &quot;ultrametric&quot;: true,
+  &quot;unsafe_external_labels&quot;: [],
+  &quot;validity_decision&quot;: &quot;valid&quot;,
+  &quot;warning_details&quot;: [],
   &quot;warnings&quot;: [],
   &quot;zero_length_branches&quot;: 0
 }</pre></section>
@@ -129,6 +197,7 @@
       &quot;node&quot;: &quot;C|D&quot;
     }
   ],
+  &quot;internal_label_conflicts&quot;: [],
   &quot;internal_node_count&quot;: 3,
   &quot;is_binary&quot;: true,
   &quot;is_ultrametric&quot;: true,
@@ -148,11 +217,44 @@
   &quot;path&quot;: &quot;tests/fixtures/trees/example_tree.nwk&quot;,
   &quot;polytomy_count&quot;: 0,
   &quot;polytomy_nodes&quot;: [],
+  &quot;root_state_confidence&quot;: {
+    &quot;classification&quot;: &quot;apparently_rooted&quot;,
+    &quot;rationale&quot;: [
+      &quot;root has exactly two child clades but no explicit rooted flag was preserved&quot;
+    ],
+    &quot;suspicious_placement&quot;: false,
+    &quot;suspicious_reasons&quot;: []
+  },
   &quot;rooted&quot;: true,
   &quot;sackin_imbalance_index&quot;: 8,
   &quot;short_branch_outliers&quot;: [],
   &quot;singleton_internal_nodes&quot;: [],
   &quot;source_format&quot;: &quot;newick&quot;,
+  &quot;stable_node_identities&quot;: [
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;A&quot;,
+        &quot;B&quot;
+      ],
+      &quot;node_id&quot;: &quot;A|B&quot;
+    },
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;C&quot;,
+        &quot;D&quot;
+      ],
+      &quot;node_id&quot;: &quot;C|D&quot;
+    },
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;A&quot;,
+        &quot;B&quot;,
+        &quot;C&quot;,
+        &quot;D&quot;
+      ],
+      &quot;node_id&quot;: &quot;A|B|C|D&quot;
+    }
+  ],
   &quot;star_like&quot;: false,
   &quot;suspicious_support_value_ranges&quot;: [],
   &quot;taxa&quot;: [
@@ -162,13 +264,91 @@
     &quot;D&quot;
   ],
   &quot;tip_count&quot;: 4,
-  &quot;total_branch_length&quot;: 0.8999999999999999,
+  &quot;total_branch_length&quot;: 0.9,
   &quot;tree_diameter&quot;: 0.6,
   &quot;tree_quality_score&quot;: 100.0,
   &quot;tree_quality_warnings&quot;: [],
+  &quot;unsafe_external_labels&quot;: [],
   &quot;unusually_imbalanced&quot;: false,
   &quot;warnings&quot;: [],
   &quot;zero_length_branch_count&quot;: 0
+}</pre></section>
+<section><h2>tree-forensic</h2><pre>{
+  &quot;biologically_safe&quot;: true,
+  &quot;branch_length_contexts&quot;: [
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;topology_only&quot;,
+      &quot;warnings&quot;: []
+    },
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;substitution_tree&quot;,
+      &quot;warnings&quot;: []
+    },
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;time_tree&quot;,
+      &quot;warnings&quot;: []
+    },
+    {
+      &quot;allowed&quot;: true,
+      &quot;blocked_by&quot;: [],
+      &quot;context&quot;: &quot;comparative_methods&quot;,
+      &quot;warnings&quot;: []
+    }
+  ],
+  &quot;branch_length_repair_suggestions&quot;: [],
+  &quot;findings&quot;: [],
+  &quot;integrity_issues&quot;: [],
+  &quot;internal_label_conflicts&quot;: [],
+  &quot;path&quot;: &quot;tests/fixtures/trees/example_tree.nwk&quot;,
+  &quot;root_state_confidence&quot;: {
+    &quot;classification&quot;: &quot;apparently_rooted&quot;,
+    &quot;rationale&quot;: [
+      &quot;root has exactly two child clades but no explicit rooted flag was preserved&quot;
+    ],
+    &quot;suspicious_placement&quot;: false,
+    &quot;suspicious_reasons&quot;: []
+  },
+  &quot;safe_for_comparative_methods&quot;: true,
+  &quot;safe_for_publication&quot;: true,
+  &quot;safe_for_time_tree_analysis&quot;: true,
+  &quot;safe_for_topology_comparison&quot;: true,
+  &quot;safe_for_visualization&quot;: true,
+  &quot;source_format&quot;: &quot;newick&quot;,
+  &quot;stable_node_identities&quot;: [
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;A&quot;,
+        &quot;B&quot;
+      ],
+      &quot;node_id&quot;: &quot;A|B&quot;
+    },
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;C&quot;,
+        &quot;D&quot;
+      ],
+      &quot;node_id&quot;: &quot;C|D&quot;
+    },
+    {
+      &quot;descendant_taxa&quot;: [
+        &quot;A&quot;,
+        &quot;B&quot;,
+        &quot;C&quot;,
+        &quot;D&quot;
+      ],
+      &quot;node_id&quot;: &quot;A|B|C|D&quot;
+    }
+  ],
+  &quot;syntax_valid&quot;: true,
+  &quot;unsafe_external_labels&quot;: [],
+  &quot;validity_decision&quot;: &quot;valid&quot;,
+  &quot;warnings&quot;: []
 }</pre></section>
   </main>
 </body>
