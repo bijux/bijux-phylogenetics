@@ -8,6 +8,13 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics import __version__
+from bijux_phylogenetics.bayesian import (
+    compute_mrbayes_effective_sample_sizes,
+    parse_mrbayes_parameter_traces,
+    prepare_mrbayes_analysis,
+    run_mrbayes_posterior_inference,
+    summarize_mrbayes_posterior_trees,
+)
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_tree_comparison,
@@ -83,6 +90,7 @@ from bijux_phylogenetics.distance import (
 )
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
+    render_inference_workflow_report,
     read_engine_version,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
@@ -401,6 +409,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "adapter":
         if args.adapter_command == "inspect":
             return [args.engine_name]
+        if args.adapter_command == "report":
+            return [args.manifest_path, args.out]
         if args.adapter_command == "compare":
             inputs = [args.fast_tree, args.ml_tree]
             if args.out is not None:
@@ -1114,10 +1124,15 @@ def build_parser() -> argparse.ArgumentParser:
     adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
     adapter_subparsers = adapter.add_subparsers(dest="adapter_command", required=True)
     adapter_inspect = adapter_subparsers.add_parser("inspect", help="Report external engine version metadata.")
-    adapter_inspect.add_argument("engine_name", choices=("mafft", "trimal", "iqtree", "FastTree"))
+    adapter_inspect.add_argument("engine_name", choices=("mafft", "trimal", "iqtree", "FastTree", "MrBayes"))
     adapter_inspect.add_argument("--executable", type=str)
     adapter_inspect.add_argument("--json", action="store_true", help="Emit the adapter report as JSON.")
     _add_manifest_argument(adapter_inspect)
+    adapter_report = adapter_subparsers.add_parser("report", help="Render an HTML report from an engine workflow manifest.")
+    adapter_report.add_argument("manifest_path", type=Path)
+    adapter_report.add_argument("--out", required=True, type=Path)
+    adapter_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(adapter_report)
     adapter_align = adapter_subparsers.add_parser("align", help="Run multiple-sequence alignment on unaligned FASTA.")
     adapter_align.add_argument("input_path", type=Path)
     adapter_align.add_argument("--out", required=True, type=Path)
@@ -1179,6 +1194,52 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_compare.add_argument("--out", required=True, type=Path)
     adapter_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
     _add_manifest_argument(adapter_compare)
+    adapter_mrbayes_prepare = adapter_subparsers.add_parser(
+        "mrbayes-prepare",
+        help="Prepare a MrBayes NEXUS analysis from an aligned FASTA file.",
+    )
+    adapter_mrbayes_prepare.add_argument("input_path", type=Path)
+    adapter_mrbayes_prepare.add_argument("--out", required=True, type=Path)
+    adapter_mrbayes_prepare.add_argument("--model", default="gtr")
+    adapter_mrbayes_prepare.add_argument("--rates", default="gamma")
+    adapter_mrbayes_prepare.add_argument("--ngen", type=int, default=10000)
+    adapter_mrbayes_prepare.add_argument("--nchains", type=int, default=4)
+    adapter_mrbayes_prepare.add_argument("--samplefreq", type=int, default=100)
+    adapter_mrbayes_prepare.add_argument("--printfreq", type=int, default=100)
+    adapter_mrbayes_prepare.add_argument("--burnin-fraction", type=float, default=0.25)
+    adapter_mrbayes_prepare.add_argument("--json", action="store_true", help="Emit the preparation report as JSON.")
+    _add_manifest_argument(adapter_mrbayes_prepare)
+    adapter_mrbayes_run = adapter_subparsers.add_parser(
+        "mrbayes-run",
+        help="Run a prepared MrBayes posterior inference workflow.",
+    )
+    adapter_mrbayes_run.add_argument("input_path", type=Path)
+    adapter_mrbayes_run.add_argument("--executable", type=str)
+    adapter_mrbayes_run.add_argument("--resume", action="store_true")
+    adapter_mrbayes_run.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    _add_manifest_argument(adapter_mrbayes_run)
+    adapter_mrbayes_summarize = adapter_subparsers.add_parser(
+        "mrbayes-summarize",
+        help="Summarize MrBayes posterior trees after burn-in removal.",
+    )
+    adapter_mrbayes_summarize.add_argument("input_path", type=Path)
+    adapter_mrbayes_summarize.add_argument("--burnin-fraction", type=float, default=0.25)
+    adapter_mrbayes_summarize.add_argument("--json", action="store_true", help="Emit the posterior summary as JSON.")
+    _add_manifest_argument(adapter_mrbayes_summarize)
+    adapter_mrbayes_traces = adapter_subparsers.add_parser(
+        "mrbayes-traces",
+        help="Parse a MrBayes parameter trace table.",
+    )
+    adapter_mrbayes_traces.add_argument("input_path", type=Path)
+    adapter_mrbayes_traces.add_argument("--json", action="store_true", help="Emit the trace report as JSON.")
+    _add_manifest_argument(adapter_mrbayes_traces)
+    adapter_mrbayes_ess = adapter_subparsers.add_parser(
+        "mrbayes-ess",
+        help="Compute effective sample sizes from a MrBayes trace table.",
+    )
+    adapter_mrbayes_ess.add_argument("input_path", type=Path)
+    adapter_mrbayes_ess.add_argument("--json", action="store_true", help="Emit the ESS report as JSON.")
+    _add_manifest_argument(adapter_mrbayes_ess)
 
     return parser
 
@@ -3127,6 +3188,25 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.adapter_command == "report":
+                report = render_inference_workflow_report(manifest_path=args.manifest_path, out_path=args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.manifest_path],
+                    outputs=[report.output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.manifest_path],
+                        outputs=outputs,
+                        metrics={"warning_count": report.warning_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.adapter_command == "align":
                 report = run_multiple_sequence_alignment(
                     args.input_path,
@@ -3303,6 +3383,113 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=report.run.warning_lines,
                         metrics={"warning_count": len(report.run.warning_lines)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-prepare":
+                report = prepare_mrbayes_analysis(
+                    args.input_path,
+                    args.out,
+                    model=args.model,
+                    rates=args.rates,
+                    ngen=args.ngen,
+                    nchains=args.nchains,
+                    samplefreq=args.samplefreq,
+                    printfreq=args.printfreq,
+                    burnin_fraction=args.burnin_fraction,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[args.out],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={"taxon_count": report.taxon_count, "character_count": report.character_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-run":
+                report = run_mrbayes_posterior_inference(
+                    args.input_path,
+                    executable=args.executable or "mb",
+                    resume=args.resume,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={"warning_count": len(report.run.warning_lines), "resumed": report.resumed},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-summarize":
+                consensus_tree, report = summarize_mrbayes_posterior_trees(
+                    args.input_path,
+                    burnin_fraction=args.burnin_fraction,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[report.filtered_tree_set_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "kept_tree_count": report.kept_tree_count,
+                            "rooted_topology_count": report.rooted_topology_count,
+                            "tip_count": consensus_tree.tip_count,
+                        },
+                        data={"summary": report, "consensus_newick": report.consensus_newick},
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-traces":
+                report = parse_mrbayes_parameter_traces(args.input_path)
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={"row_count": report.row_count, "column_count": len(report.columns)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-ess":
+                report = compute_mrbayes_effective_sample_sizes(args.input_path)
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={"parameter_count": len(report.effective_sample_sizes)},
                         data=report,
                     ),
                     json_output=args.json,
