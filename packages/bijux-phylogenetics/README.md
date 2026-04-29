@@ -69,8 +69,9 @@ bijux-phylogenetics --help
 - generate taxon crosswalk tables, completeness matrices, exclusion tables, ordering-drift audits, pruning-step retention summaries, and named readiness levels for reviewer-facing dataset inspection
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
-- compute p-distance or Jukes-Cantor DNA distance matrices with pairwise-deletion or complete-deletion gap handling
-- build Neighbor-Joining or UPGMA trees from computed DNA distance matrices and compare their topologies
+- compute p-distance, Jukes-Cantor, Kimura 2-parameter, or amino-acid p-distance matrices with explicit gap-handling and ambiguity policies
+- audit saturated pairs, unusually divergent pairs, and low-information pairs before distance-based tree building
+- build Neighbor-Joining or UPGMA trees from computed distance matrices, bootstrap site-resampled trees, summarize clade support, and write reproducibility bundles
 - validate imported long-form distance matrices, detect nonmetric violations, and build trees from imported distances
 - load posterior tree sets, compute consensus trees, and export clade-frequency or pairwise tree-distance summaries
 - cluster identical rooted topologies, detect unstable taxa or clades, and compare two posterior tree sets
@@ -94,9 +95,13 @@ bijux-phylogenetics alignment forensic alignment.fasta --json
 bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cleaned.fasta --json
 bijux-phylogenetics alignment compare alignment.fasta cleaned.fasta --json
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
-bijux-phylogenetics alignment distance-matrix alignment.fasta --model p-distance --out distances.tsv
+bijux-phylogenetics alignment distance-matrix alignment.fasta --model kimura-2-parameter --ambiguity-policy partial-match --out distances.tsv
+bijux-phylogenetics alignment distance-quality alignment.fasta --model jukes-cantor --json
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
+bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
+bijux-phylogenetics alignment distance-bundle alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json
 bijux-phylogenetics distance validate distances.tsv --json
+bijux-phylogenetics distance reference --json
 bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json
 bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json
