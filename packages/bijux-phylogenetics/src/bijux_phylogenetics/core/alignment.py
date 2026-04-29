@@ -188,6 +188,19 @@ class PartialCodonSequence:
 
 
 @dataclass(frozen=True, slots=True)
+class SequenceCodingBehavior:
+    """Coding-like versus noncoding-like behavior for one nucleotide sequence."""
+
+    identifier: str
+    coding_like: bool
+    comparable_length: int
+    divisible_by_three: bool
+    premature_stop_count: int
+    terminal_stop_count: int
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
 class StopCodonObservation:
     """Observed stop codon within an aligned coding sequence."""
 
@@ -208,6 +221,8 @@ class CodingAlignmentDiagnostics:
     alignment_length_multiple_of_three: bool
     frameshift_like_sequences: list[FrameshiftLikeSequence]
     partial_codon_sequences: list[PartialCodonSequence]
+    coding_behaviors: list[SequenceCodingBehavior]
+    mixed_coding_signals: bool
     stop_codons: list[StopCodonObservation]
 
 
@@ -241,6 +256,8 @@ class AlignmentQualityReport:
     sequence_length_outliers: list[SequenceLengthOutlier]
     duplicate_sequence_groups: list[DuplicateSequenceGroup]
     near_duplicate_pairs: list[NearDuplicateSequencePair]
+    quality_score: float
+    quality_components: dict[str, float]
     warnings: list[str]
 
 
@@ -291,6 +308,103 @@ class AlignmentReadinessReport:
     alignment_length: int | None
     methods: list[AlignmentMethodReadiness]
     warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentFilterProfile:
+    """Named alignment-cleaning policy with explicit thresholds."""
+
+    name: str
+    remove_all_gap_sites: bool
+    remove_all_missing_sites: bool
+    site_missingness_threshold: float | None
+    sequence_missingness_threshold: float | None
+    preserve_codon_structure: bool
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentCompositionShift:
+    """One composition component before-versus-after cleaning or comparison."""
+
+    component: str
+    before: float
+    after: float
+    delta: float
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentComparisonReport:
+    """Explicit comparison between two alignment versions."""
+
+    left_path: Path
+    right_path: Path
+    shared_taxa: list[str]
+    left_only_taxa: list[str]
+    right_only_taxa: list[str]
+    left_alignment_length: int
+    right_alignment_length: int
+    left_missing_data_fraction: float
+    right_missing_data_fraction: float
+    left_gap_fraction: float
+    right_gap_fraction: float
+    left_variable_site_count: int
+    right_variable_site_count: int
+    left_parsimony_informative_site_count: int
+    right_parsimony_informative_site_count: int
+    composition_shifts: list[AlignmentCompositionShift]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentSignalWarning:
+    """Warning about loss of phylogenetic signal after cleaning."""
+
+    code: str
+    message: str
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentGroupRetention:
+    """Retention summary for one metadata or trait group after cleaning."""
+
+    column: str
+    value: str
+    original_count: int
+    retained_count: int
+    removed_count: int
+    removed_fraction: float
+
+
+@dataclass(slots=True)
+class AlignmentCleaningReport:
+    """Profile-driven cleaning report with comparison and bias diagnostics."""
+
+    profile: AlignmentFilterProfile
+    trim: AlignmentTrimReport
+    comparison: AlignmentComparisonReport
+    signal_warnings: list[AlignmentSignalWarning]
+    group_retention: list[AlignmentGroupRetention]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class AlignmentForensicReport:
+    """Reviewer-facing summary of whether an alignment is safe for downstream use."""
+
+    path: Path
+    quality: AlignmentQualityReport
+    readiness: AlignmentReadinessReport
+    coding: CodingAlignmentDiagnostics | None
+    over_aligned_regions: list[AlignmentSuspiciousRegion]
+    under_aligned_regions: list[AlignmentSuspiciousRegion]
+    safe_for_distance_analysis: bool
+    safe_for_maximum_likelihood: bool
+    safe_for_bayesian_inference: bool
+    safe_for_coding_analysis: bool
+    safe_for_publication: bool
+    warnings: list[str]
+    limitations: list[str]
 
 
 @dataclass(slots=True)
