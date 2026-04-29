@@ -68,6 +68,22 @@ def _pairwise_distance(left: str, right: str) -> tuple[float | None, int]:
     return round(mismatches / comparable_sites, 15), comparable_sites
 
 
+def _complete_deletion_positions(records: list[AlignmentRecord]) -> list[int]:
+    return [
+        position
+        for position in range(len(records[0].sequence))
+        if all(_normalize_residue(record.sequence[position]) in _COMPARISON_NUCLEOTIDES for record in records)
+    ]
+
+
+def _distance_over_positions(left: str, right: str, positions: list[int]) -> tuple[float | None, int]:
+    if not positions:
+        return None, 0
+    mismatches = sum(1 for position in positions if _normalize_residue(left[position]) != _normalize_residue(right[position]))
+    comparable_sites = len(positions)
+    return round(mismatches / comparable_sites, 15), comparable_sites
+
+
 def compute_pairwise_genetic_distance_matrix(
     path: Path,
     *,
@@ -77,21 +93,25 @@ def compute_pairwise_genetic_distance_matrix(
     """Compute a deterministic pairwise genetic distance matrix for a DNA alignment."""
     if model != "p-distance":
         raise ValueError(f"unsupported distance model: {model}")
-    if gap_handling != "pairwise-deletion":
+    if gap_handling not in {"pairwise-deletion", "complete-deletion"}:
         raise ValueError(f"unsupported gap handling mode: {gap_handling}")
 
     records = _load_dna_alignment(path)
+    retained_positions = _complete_deletion_positions(records) if gap_handling == "complete-deletion" else None
     pairs: list[PairwiseGeneticDistance] = []
     for left_index, left in enumerate(records):
         for right_index, right in enumerate(records):
             if right_index < left_index:
                 continue
             if left_index == right_index:
-                comparable_sites = sum(
-                    1
-                    for residue in left.sequence
-                    if _normalize_residue(residue) in _COMPARISON_NUCLEOTIDES
-                )
+                if gap_handling == "complete-deletion":
+                    comparable_sites = len(retained_positions or [])
+                else:
+                    comparable_sites = sum(
+                        1
+                        for residue in left.sequence
+                        if _normalize_residue(residue) in _COMPARISON_NUCLEOTIDES
+                    )
                 pairs.append(
                     PairwiseGeneticDistance(
                         left_identifier=left.identifier,
@@ -101,7 +121,14 @@ def compute_pairwise_genetic_distance_matrix(
                     )
                 )
                 continue
-            distance, comparable_sites = _pairwise_distance(left.sequence, right.sequence)
+            if gap_handling == "complete-deletion":
+                distance, comparable_sites = _distance_over_positions(
+                    left.sequence,
+                    right.sequence,
+                    retained_positions or [],
+                )
+            else:
+                distance, comparable_sites = _pairwise_distance(left.sequence, right.sequence)
             pairs.append(
                 PairwiseGeneticDistance(
                     left_identifier=left.identifier,

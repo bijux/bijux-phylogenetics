@@ -933,13 +933,33 @@ def test_compute_pairwise_genetic_distance_matrix_uses_pairwise_deletion() -> No
     assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
         ("A", "A", 0.0, 6),
         ("A", "B", 0.166666666666667, 6),
-        ("A", "C", 0.333333333333333, 6),
+        ("A", "C", 0.5, 6),
         ("A", "D", 0.0, 4),
         ("B", "B", 0.0, 6),
-        ("B", "C", 0.166666666666667, 6),
+        ("B", "C", 0.5, 6),
         ("B", "D", 0.0, 4),
         ("C", "C", 0.0, 6),
-        ("C", "D", 0.0, 4),
+        ("C", "D", 0.25, 4),
+        ("D", "D", 0.0, 4),
+    ]
+
+
+def test_compute_pairwise_genetic_distance_matrix_supports_complete_deletion() -> None:
+    report = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance_gaps.fasta"),
+        gap_handling="complete-deletion",
+    )
+    assert report.gap_handling == "complete-deletion"
+    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+        ("A", "A", 0.0, 4),
+        ("A", "B", 0.0, 4),
+        ("A", "C", 0.25, 4),
+        ("A", "D", 0.0, 4),
+        ("B", "B", 0.0, 4),
+        ("B", "C", 0.25, 4),
+        ("B", "D", 0.0, 4),
+        ("C", "C", 0.0, 4),
+        ("C", "D", 0.25, 4),
         ("D", "D", 0.0, 4),
     ]
 
