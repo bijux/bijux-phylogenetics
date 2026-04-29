@@ -1848,6 +1848,25 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.alignment_command == "classify":
+                report = classify_alignment_sequences(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "sequence_count": report.sequence_count,
+                            "min_sequence_length": report.min_sequence_length,
+                            "max_sequence_length": report.max_sequence_length,
+                            "state": report.state,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "quality":
                 report = build_alignment_quality_report(args.alignment)
                 outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
@@ -1860,8 +1879,66 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "invalid_character_count": len(report.invalid_characters),
                             "composition_outlier_count": len(report.composition_outliers),
+                            "sequence_length_outlier_count": len(report.sequence_length_outliers),
                             "duplicate_group_count": len(report.duplicate_sequence_groups),
                             "near_duplicate_count": len(report.near_duplicate_pairs),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "windows":
+                windows = summarize_alignment_windows(
+                    args.alignment,
+                    window_size=args.window_size,
+                    step_size=args.step_size,
+                )
+                over_aligned = detect_over_aligned_regions(
+                    args.alignment,
+                    window_size=args.window_size,
+                    step_size=args.step_size,
+                )
+                under_aligned = detect_under_aligned_regions(
+                    args.alignment,
+                    window_size=args.window_size,
+                    step_size=args.step_size,
+                )
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=[region.note for region in over_aligned + under_aligned],
+                        metrics={
+                            "window_count": len(windows),
+                            "over_aligned_region_count": len(over_aligned),
+                            "under_aligned_region_count": len(under_aligned),
+                        },
+                        data={
+                            "windows": windows,
+                            "over_aligned_regions": over_aligned,
+                            "under_aligned_regions": under_aligned,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "readiness":
+                report = summarize_alignment_readiness(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "sequence_count": report.sequence_count,
+                            "alignment_length": report.alignment_length,
+                            "ready_method_count": sum(1 for method in report.methods if method.ready),
+                            "blocked_method_count": sum(1 for method in report.methods if not method.ready),
                         },
                         data=report,
                     ),
@@ -1947,6 +2024,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "composition_outlier_count": len(report),
                             "deviation_threshold": args.deviation_threshold,
                         },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "length-outliers":
+                report = detect_sequence_length_outliers(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={"sequence_length_outlier_count": len(report)},
                         data=report,
                     ),
                     json_output=args.json,
