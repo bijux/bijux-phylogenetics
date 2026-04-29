@@ -377,6 +377,7 @@ def test_inference_workflow_resume_and_html_report(tmp_path: Path) -> None:
     )
     assert html_report.output_path.exists()
     assert html_report.report_kind == "inference-workflow"
+    assert "workflow-consistency" in html_report.supplement_sections
 
 
 def test_compare_fast_and_ml_trees_builds_html_report(tmp_path: Path) -> None:
@@ -486,3 +487,22 @@ def test_inference_sensitivity_report_summarizes_filter_model_engine_and_bootstr
     assert report.weak_backbone is not None
     assert rendered.output_path.exists()
     assert rendered.machine_manifest["has_bootstrap_support"] is True
+
+
+def test_bootstrap_workflow_report_includes_support_and_backbone_sections(tmp_path: Path) -> None:
+    executable = _fake_iqtree(tmp_path / "bootstrap-iqtree")
+    workflow = run_bootstrap_support_estimation(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=executable,
+        prefix="bootstrap",
+    )
+
+    rendered = render_inference_workflow_report(
+        manifest_path=workflow.manifest_path,
+        out_path=tmp_path / "bootstrap-report.html",
+    )
+
+    assert "bootstrap-support-summary" in rendered.supplement_sections
+    assert "weak-backbone" in rendered.supplement_sections

@@ -9,10 +9,14 @@ from bijux_phylogenetics.render.html import write_html_report
 
 from .common import load_engine_manifest
 from .validation import (
+    classify_inference_workflow_failure,
     compare_inferred_trees_across_engines,
     compare_ml_trees_across_models,
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
+    validate_bootstrap_tree_set,
+    validate_inference_engine_outputs,
+    validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
 )
 
@@ -26,6 +30,7 @@ class InferenceWorkflowReportBuildResult:
     engine_name: str
     workflow: str
     warning_count: int
+    supplement_sections: list[str]
     machine_manifest: dict[str, object]
 
 
@@ -74,6 +79,15 @@ class InferenceSensitivityReportBuildResult:
 def render_inference_workflow_report(*, manifest_path: Path, out_path: Path) -> InferenceWorkflowReportBuildResult:
     """Render a deterministic HTML report for one engine workflow manifest."""
     manifest = load_engine_manifest(manifest_path)
+    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    input_paths = [Path(path) for path in manifest["input_paths"]]
+    failure = classify_inference_workflow_failure(
+        workflow=str(manifest["workflow"]),
+        input_paths=input_paths,
+        output_paths=output_paths,
+        run_exit_code=int(manifest["run"].get("exit_code", 0)),
+    )
+    consistency = validate_inference_engine_outputs(manifest_path)
     title = f"Bijux Inference Workflow Report: {manifest['workflow']}"
     sections = [
         ("workflow-summary", json.dumps(
@@ -87,6 +101,8 @@ def render_inference_workflow_report(*, manifest_path: Path, out_path: Path) -> 
             indent=2,
             sort_keys=True,
         )),
+        ("workflow-failure-taxonomy", json.dumps(asdict(failure), default=str, indent=2, sort_keys=True)),
+        ("workflow-consistency", json.dumps(asdict(consistency), default=str, indent=2, sort_keys=True)),
         ("inputs", json.dumps(
             {
                 "input_paths": manifest["input_paths"],
@@ -105,6 +121,55 @@ def render_inference_workflow_report(*, manifest_path: Path, out_path: Path) -> 
         )),
         ("engine-run", json.dumps(manifest["run"], indent=2, sort_keys=True)),
     ]
+    supplement_sections = [
+        "workflow-summary",
+        "workflow-failure-taxonomy",
+        "workflow-consistency",
+        "inputs",
+        "outputs",
+        "engine-run",
+    ]
+    if manifest["workflow"] == "model-selection":
+        sections.append(("model-selection-limitations", json.dumps(
+            asdict(build_model_selection_limitations_report(manifest_path)),
+            default=str,
+            indent=2,
+            sort_keys=True,
+        )))
+        supplement_sections.append("model-selection-limitations")
+    if manifest["workflow"] == "maximum-likelihood-tree":
+        sections.append(("ml-tree-validation", json.dumps(
+            asdict(validate_ml_tree_contains_expected_taxa(manifest_path)),
+            default=str,
+            indent=2,
+            sort_keys=True,
+        )))
+        supplement_sections.append("ml-tree-validation")
+    if manifest["workflow"] == "bootstrap-support":
+        bootstrap_path = output_paths.get("bootstrap_trees")
+        if bootstrap_path is not None:
+            sections.append(("bootstrap-tree-set-validation", json.dumps(
+                asdict(validate_bootstrap_tree_set(bootstrap_path)),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            )))
+            supplement_sections.append("bootstrap-tree-set-validation")
+        tree_path = output_paths.get("tree") or output_paths.get("support_tree")
+        if tree_path is not None:
+            sections.append(("bootstrap-support-summary", json.dumps(
+                asdict(summarize_bootstrap_support_distribution(tree_path)),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            )))
+            sections.append(("weak-backbone", json.dumps(
+                asdict(detect_weakly_supported_backbone(tree_path)),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            )))
+            supplement_sections.extend(["bootstrap-support-summary", "weak-backbone"])
     machine_manifest = {
         "report_kind": "inference-workflow",
         "title": title,
@@ -113,6 +178,7 @@ def render_inference_workflow_report(*, manifest_path: Path, out_path: Path) -> 
         "workflow": manifest["workflow"],
         "warning_count": len(manifest["run"].get("warning_lines", [])),
         "sections": [name for name, _ in sections],
+        "supplement_sections": supplement_sections,
     }
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return InferenceWorkflowReportBuildResult(
@@ -123,6 +189,7 @@ def render_inference_workflow_report(*, manifest_path: Path, out_path: Path) -> 
         engine_name=str(manifest["engine_name"]),
         workflow=str(manifest["workflow"]),
         warning_count=len(manifest["run"].get("warning_lines", [])),
+        supplement_sections=supplement_sections,
         machine_manifest=machine_manifest,
     )
 
