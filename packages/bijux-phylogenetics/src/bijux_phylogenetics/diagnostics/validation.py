@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 from statistics import mean, median
 
-from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety
+from bijux_phylogenetics.core.taxonomy import TaxonIdentityAudit, inspect_tree_taxa_safety, inspect_tree_taxon_identity
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import (
     DuplicateTaxonError,
@@ -96,6 +96,7 @@ class TreeForensicReport:
     internal_label_conflicts: list[InternalNodeLabelConflict]
     stable_node_identities: list[StableNodeIdentity]
     unsafe_external_labels: list[UnsafeExternalLabel]
+    taxon_identity_audit: TaxonIdentityAudit
     safe_for_topology_comparison: bool
     safe_for_time_tree_analysis: bool
     safe_for_comparative_methods: bool
@@ -135,6 +136,7 @@ class TreeValidationReport:
     internal_label_conflicts: list[InternalNodeLabelConflict]
     stable_node_identities: list[StableNodeIdentity]
     unsafe_external_labels: list[UnsafeExternalLabel]
+    taxon_identity_audit: TaxonIdentityAudit
     warnings: list[str]
 
 
@@ -223,6 +225,7 @@ class TreeInspectionReport:
     internal_label_conflicts: list[InternalNodeLabelConflict]
     stable_node_identities: list[StableNodeIdentity]
     unsafe_external_labels: list[UnsafeExternalLabel]
+    taxon_identity_audit: TaxonIdentityAudit
     star_like: bool
     comb_like: bool
     tree_quality_score: float
@@ -400,6 +403,10 @@ def _root_state_confidence(tree: PhyloTree) -> RootStateConfidenceReport:
         child_tip_counts = sorted(len(_descendant_taxa(child)) for child in tree.root.children)
         if child_tip_counts and child_tip_counts[0] == 1 and child_tip_counts[-1] >= max(3, tree.tip_count - 1):
             suspicious_reasons.append("root isolates a single tip against almost the entire tree")
+        if len(child_tip_counts) == 2 and child_tip_counts[1] > 0:
+            imbalance_ratio = child_tip_counts[0] / child_tip_counts[1]
+            if imbalance_ratio <= 0.1:
+                suspicious_reasons.append("root creates an extreme basal imbalance between its two child clades")
         child_lengths = [
             float(child.branch_length)
             for child in tree.root.children
@@ -1198,6 +1205,40 @@ def _findings_from_reports(
                 affected_nodes=[],
             )
         )
+    if (
+        inspection.taxon_identity_audit.whitespace_variants
+        or inspection.taxon_identity_audit.underscore_space_collisions
+        or inspection.taxon_identity_audit.case_collisions
+        or inspection.taxon_identity_audit.suspicious_near_duplicates
+    ):
+        findings.append(
+            TreeFinding(
+                code="taxon_identity_conflicts",
+                message="one or more taxon labels are suspiciously similar and may not represent distinct biological identities",
+                severity="warning",
+                affected_taxa=sorted(
+                    {
+                        pair.left_label
+                        for pair in (
+                            inspection.taxon_identity_audit.whitespace_variants
+                            + inspection.taxon_identity_audit.underscore_space_collisions
+                            + inspection.taxon_identity_audit.case_collisions
+                            + inspection.taxon_identity_audit.suspicious_near_duplicates
+                        )
+                    }
+                    | {
+                        pair.right_label
+                        for pair in (
+                            inspection.taxon_identity_audit.whitespace_variants
+                            + inspection.taxon_identity_audit.underscore_space_collisions
+                            + inspection.taxon_identity_audit.case_collisions
+                            + inspection.taxon_identity_audit.suspicious_near_duplicates
+                        )
+                    }
+                ),
+                affected_nodes=[],
+            )
+        )
     severity_order = {"fatal": 0, "blocker": 1, "warning": 2, "info": 3}
     return sorted(findings, key=lambda row: (severity_order.get(row.severity, 99), row.code, row.message))
 
@@ -1300,6 +1341,13 @@ def validate_tree_path(
         warnings.append("tree root placement appears biologically suspicious")
     if inspection.unsafe_external_labels:
         warnings.append("tree contains taxon labels unsafe across common external engines")
+    if (
+        inspection.taxon_identity_audit.whitespace_variants
+        or inspection.taxon_identity_audit.underscore_space_collisions
+        or inspection.taxon_identity_audit.case_collisions
+        or inspection.taxon_identity_audit.suspicious_near_duplicates
+    ):
+        warnings.append("tree contains potentially ambiguous taxon identity variants")
     findings = _findings_from_reports(
         integrity_issues,
         inspection,
@@ -1340,6 +1388,7 @@ def validate_tree_path(
         internal_label_conflicts=inspection.internal_label_conflicts,
         stable_node_identities=inspection.stable_node_identities,
         unsafe_external_labels=inspection.unsafe_external_labels,
+        taxon_identity_audit=inspection.taxon_identity_audit,
         warnings=warnings,
     )
 
@@ -1376,6 +1425,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
     root_state_confidence = _root_state_confidence(tree)
     stable_node_identities = _stable_node_identities(tree)
     unsafe_external_labels = _unsafe_external_labels(tree)
+    taxon_identity_audit = inspect_tree_taxon_identity(tree)
     star_like = _star_like(tree)
     comb_like = _comb_like(tree)
     _, _, negative_branch_count = _branch_length_health(tree)
@@ -1408,6 +1458,10 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         warnings.append("tree contains partial branch lengths")
     if branch_length_status == "absent":
         warnings.append("tree contains no branch lengths")
+    if taxon_identity_audit.whitespace_variants or taxon_identity_audit.underscore_space_collisions:
+        warnings.append("tree contains taxon labels with whitespace or underscore identity collisions")
+    if taxon_identity_audit.case_collisions or taxon_identity_audit.suspicious_near_duplicates:
+        warnings.append("tree contains potentially ambiguous near-duplicate taxon labels")
     return TreeInspectionReport(
         path=path,
         source_format=tree.source_format,
@@ -1450,6 +1504,7 @@ def inspect_tree_path(path: Path, *, source_format: str | None = None) -> TreeIn
         internal_label_conflicts=internal_label_conflicts,
         stable_node_identities=stable_node_identities,
         unsafe_external_labels=unsafe_external_labels,
+        taxon_identity_audit=taxon_identity_audit,
         star_like=star_like,
         comb_like=comb_like,
         tree_quality_score=_tree_quality_score(tree_quality_warnings),
@@ -1486,6 +1541,7 @@ def forensic_tree_path(path: Path, *, source_format: str | None = None) -> TreeF
         internal_label_conflicts=validation.internal_label_conflicts,
         stable_node_identities=validation.stable_node_identities,
         unsafe_external_labels=validation.unsafe_external_labels,
+        taxon_identity_audit=validation.taxon_identity_audit,
         safe_for_topology_comparison=safe_for_topology_comparison,
         safe_for_time_tree_analysis=safe_for_time_tree_analysis,
         safe_for_comparative_methods=safe_for_comparative_methods,
