@@ -81,12 +81,17 @@ from bijux_phylogenetics.discrete_evolution import (
     compare_discrete_state_models,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
+    load_stochastic_map_collection,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
+    simulate_discrete_stochastic_maps,
+    summarize_discrete_stochastic_maps,
     validate_discrete_state_coding,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
+    write_stochastic_map_collection,
+    write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
 from bijux_phylogenetics.command_line.registry import get_command_spec
@@ -285,6 +290,11 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.write_discrete_model_comparison_table is write_discrete_model_comparison_table
     assert bijux_phylogenetics.write_node_state_probability_table is write_node_state_probability_table
     assert bijux_phylogenetics.write_transition_summary_table is write_transition_summary_table
+    assert bijux_phylogenetics.simulate_discrete_stochastic_maps is simulate_discrete_stochastic_maps
+    assert bijux_phylogenetics.summarize_discrete_stochastic_maps is summarize_discrete_stochastic_maps
+    assert bijux_phylogenetics.write_stochastic_map_collection is write_stochastic_map_collection
+    assert bijux_phylogenetics.write_stochastic_map_summary_table is write_stochastic_map_summary_table
+    assert bijux_phylogenetics.load_stochastic_map_collection is load_stochastic_map_collection
     assert bijux_phylogenetics.validate_time_tree_for_diversification is validate_time_tree_for_diversification
     assert bijux_phylogenetics.inspect_diversification_time_tree is inspect_diversification_time_tree
     assert bijux_phylogenetics.compute_lineage_through_time_curve is compute_lineage_through_time_curve
