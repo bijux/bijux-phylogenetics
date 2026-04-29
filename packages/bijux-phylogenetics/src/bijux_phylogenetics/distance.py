@@ -4,9 +4,13 @@ from dataclasses import dataclass
 import math
 from pathlib import Path
 
+from Bio.Phylo.TreeConstruction import DistanceMatrix, DistanceTreeConstructor
+
 from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
+from bijux_phylogenetics.io.biopython import tree_from_biophylo
 
 DistanceModel = str
 GapHandlingMode = str
@@ -34,6 +38,35 @@ class GeneticDistanceMatrix:
     gap_handling: GapHandlingMode
     identifiers: list[str]
     pairs: list[PairwiseGeneticDistance]
+
+
+@dataclass(slots=True)
+class DistanceTreeBuildReport:
+    """Explicit report for a distance-based tree build."""
+
+    alignment_path: Path
+    model: DistanceModel
+    gap_handling: GapHandlingMode
+    method: str
+    taxon_count: int
+    pair_count: int
+
+
+@dataclass(slots=True)
+class DistanceTreeTopologyComparison:
+    """Topology comparison between NJ and UPGMA trees built from one alignment."""
+
+    alignment_path: Path
+    model: DistanceModel
+    gap_handling: GapHandlingMode
+    shared_taxa: list[str]
+    nj_informative_clades: int
+    upgma_informative_clades: int
+    robinson_foulds_distance: int
+    normalized_robinson_foulds: float
+    topology_equal: bool
+    same_unrooted_topology: bool
+    same_taxa_different_rooting: bool
 
 
 def _normalize_residue(residue: str) -> str:
@@ -93,6 +126,83 @@ def _jukes_cantor_distance(p_distance: float | None) -> float | None:
     if p_distance >= 0.75:
         return None
     return round((-3.0 / 4.0) * math.log(1.0 - (4.0 * p_distance / 3.0)), 15)
+
+
+def _bio_distance_matrix(report: GeneticDistanceMatrix) -> DistanceMatrix:
+    undefined_pairs = [
+        f"{pair.left_identifier}/{pair.right_identifier}"
+        for pair in report.pairs
+        if pair.distance is None
+    ]
+    if undefined_pairs:
+        raise InvalidAlignmentError(
+            "distance matrix contains undefined entries for: " + ", ".join(undefined_pairs)
+        )
+    rows: list[list[float]] = []
+    for row_index, left_identifier in enumerate(report.identifiers):
+        row: list[float] = []
+        for right_identifier in report.identifiers[: row_index + 1]:
+            if left_identifier == right_identifier:
+                row.append(0.0)
+                continue
+            pair = next(
+                pair
+                for pair in report.pairs
+                if {
+                    pair.left_identifier,
+                    pair.right_identifier,
+                } == {left_identifier, right_identifier}
+            )
+            row.append(float(pair.distance))
+        rows.append(row)
+    return DistanceMatrix(report.identifiers, rows)
+
+
+def _informative_clades(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
+    clades: set[frozenset[str]] = set()
+
+    def visit(node: TreeNode) -> set[str]:
+        if node.is_leaf():
+            return {node.name} if node.name in shared_taxa else set()
+
+        taxa: set[str] = set()
+        for child in node.children:
+            taxa.update(visit(child))
+
+        if 1 < len(taxa) < len(shared_taxa):
+            clades.add(frozenset(taxa))
+        return taxa
+
+    visit(tree.root)
+    return clades
+
+
+def _canonical_bipartition(taxa: set[str], universe: set[str]) -> frozenset[str]:
+    complement = universe - taxa
+    left = sorted(taxa)
+    right = sorted(complement)
+    if (len(left), left) <= (len(right), right):
+        return frozenset(taxa)
+    return frozenset(complement)
+
+
+def _unrooted_splits(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
+    splits: set[frozenset[str]] = set()
+
+    def visit(node: TreeNode) -> set[str]:
+        if node.is_leaf():
+            return {node.name} if node.name in shared_taxa else set()
+
+        taxa: set[str] = set()
+        for child in node.children:
+            taxa.update(visit(child))
+
+        if node is not tree.root and 1 < len(taxa) < len(shared_taxa) - 1:
+            splits.add(_canonical_bipartition(taxa, shared_taxa))
+        return taxa
+
+    visit(tree.root)
+    return splits
 
 
 def compute_pairwise_genetic_distance_matrix(
@@ -172,3 +282,79 @@ def write_genetic_distance_matrix(path: Path, report: GeneticDistanceMatrix) -> 
             lines.append(f"{left}\t{right}\t{distance}\t{pair.comparable_sites}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
+
+
+def build_distance_tree(
+    path: Path,
+    *,
+    method: str,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+) -> tuple[PhyloTree, DistanceTreeBuildReport]:
+    """Build a distance-based tree from an aligned DNA dataset."""
+    report = compute_pairwise_genetic_distance_matrix(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+    )
+    if len(report.identifiers) < 2:
+        raise InvalidAlignmentError("distance tree building requires at least two taxa")
+
+    constructor = DistanceTreeConstructor()
+    distance_matrix = _bio_distance_matrix(report)
+    if method == "neighbor-joining":
+        tree = constructor.nj(distance_matrix)
+    elif method == "upgma":
+        tree = constructor.upgma(distance_matrix)
+    else:
+        raise ValueError(f"unsupported tree-building method: {method}")
+
+    return tree_from_biophylo(tree, source_format="newick"), DistanceTreeBuildReport(
+        alignment_path=path,
+        model=model,
+        gap_handling=gap_handling,
+        method=method,
+        taxon_count=len(report.identifiers),
+        pair_count=len(report.pairs),
+    )
+
+
+def compare_distance_tree_topologies(
+    path: Path,
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+) -> DistanceTreeTopologyComparison:
+    """Compare NJ and UPGMA topologies built from the same alignment."""
+    nj_tree, _ = build_distance_tree(
+        path,
+        method="neighbor-joining",
+        model=model,
+        gap_handling=gap_handling,
+    )
+    upgma_tree, _ = build_distance_tree(
+        path,
+        method="upgma",
+        model=model,
+        gap_handling=gap_handling,
+    )
+    shared_taxa = set(nj_tree.tip_names) & set(upgma_tree.tip_names)
+    nj_clades = _informative_clades(nj_tree, shared_taxa)
+    upgma_clades = _informative_clades(upgma_tree, shared_taxa)
+    symmetric_difference = nj_clades.symmetric_difference(upgma_clades)
+    denominator = len(nj_clades) + len(upgma_clades)
+    topology_equal = len(symmetric_difference) == 0
+    same_unrooted_topology = _unrooted_splits(nj_tree, shared_taxa) == _unrooted_splits(upgma_tree, shared_taxa)
+    return DistanceTreeTopologyComparison(
+        alignment_path=path,
+        model=model,
+        gap_handling=gap_handling,
+        shared_taxa=sorted(shared_taxa),
+        nj_informative_clades=len(nj_clades),
+        upgma_informative_clades=len(upgma_clades),
+        robinson_foulds_distance=len(symmetric_difference),
+        normalized_robinson_foulds=0.0 if denominator == 0 else len(symmetric_difference) / denominator,
+        topology_equal=topology_equal,
+        same_unrooted_topology=same_unrooted_topology,
+        same_taxa_different_rooting=topology_equal is False and same_unrooted_topology,
+    )

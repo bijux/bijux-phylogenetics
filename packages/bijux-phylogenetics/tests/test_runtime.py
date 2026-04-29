@@ -21,7 +21,11 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
-from bijux_phylogenetics.distance import compute_pairwise_genetic_distance_matrix
+from bijux_phylogenetics.distance import (
+    build_distance_tree,
+    compare_distance_tree_topologies,
+    compute_pairwise_genetic_distance_matrix,
+)
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_alignment_to_tree,
@@ -982,6 +986,35 @@ def test_compute_pairwise_genetic_distance_matrix_supports_jukes_cantor() -> Non
         ("C", "D", 0.136741167595466, 8),
         ("D", "D", 0.0, 8),
     ]
+
+
+def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="neighbor-joining",
+    )
+    assert dumps_newick(tree) == "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;"
+    assert report.method == "neighbor-joining"
+    assert report.taxon_count == 4
+
+
+def test_build_distance_tree_constructs_upgma_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="upgma",
+    )
+    assert dumps_newick(tree) == "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;"
+    assert report.method == "upgma"
+    assert report.taxon_count == 4
+
+
+def test_compare_distance_tree_topologies_reports_rooting_difference() -> None:
+    report = compare_distance_tree_topologies(fixture("example_alignment_distance.fasta"))
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.topology_equal is False
+    assert report.same_unrooted_topology is True
+    assert report.same_taxa_different_rooting is True
+    assert report.robinson_foulds_distance == 1
 
 
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
