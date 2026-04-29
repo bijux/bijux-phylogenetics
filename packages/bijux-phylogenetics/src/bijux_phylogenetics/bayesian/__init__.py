@@ -72,9 +72,18 @@ from .reports import (
     render_bayesian_run_comparison_report,
     render_calibration_audit_report,
 )
+from .uncertainty import (
+    BayesianMethodsSummaryTextResult,
+    PosteriorUncertaintyFigurePackageResult,
+    SupplementaryBayesianDiagnosticsTableResult,
+    build_posterior_uncertainty_figure_package,
+    write_bayesian_methods_summary_text,
+    write_supplementary_bayesian_diagnostics_table,
+)
 
 __all__ = [
     "BayesianEvidencePackageReport",
+    "BayesianMethodsSummaryTextResult",
     "BayesianDiagnosticsReportBuildResult",
     "BayesianIndependentRunComparisonReport",
     "BayesianParameterDifference",
@@ -108,6 +117,8 @@ __all__ = [
     "PosteriorCladeAgeSummary",
     "PosteriorNodeAgeSummaryReport",
     "PosteriorTreeSetThinningReport",
+    "PosteriorUncertaintyFigurePackageResult",
+    "SupplementaryBayesianDiagnosticsTableResult",
     "assess_beast_burnin_sensitivity",
     "assess_beast_chain_mixing",
     "assess_mrbayes_convergence",
@@ -128,6 +139,7 @@ __all__ = [
     "render_bayesian_run_comparison_report",
     "render_calibration_audit_report",
     "run_mrbayes_posterior_inference",
+    "build_posterior_uncertainty_figure_package",
     "summarize_maximum_clade_credibility_tree",
     "summarize_mrbayes_posterior_trees",
     "summarize_posterior_node_ages",
@@ -139,4 +151,6 @@ __all__ = [
     "validate_beast_posterior_log",
     "validate_fossil_calibration_table",
     "validate_tip_dating_metadata",
+    "write_bayesian_methods_summary_text",
+    "write_supplementary_bayesian_diagnostics_table",
 ]

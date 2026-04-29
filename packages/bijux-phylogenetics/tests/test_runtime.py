@@ -19,6 +19,7 @@ from bijux_phylogenetics.bayesian import (
     assess_beast_chain_mixing,
     assess_beast_convergence,
     assess_mrbayes_convergence,
+    build_posterior_uncertainty_figure_package,
     build_bayesian_evidence_package,
     compare_bayesian_tree_sets,
     compare_independent_bayesian_runs,
@@ -42,6 +43,8 @@ from bijux_phylogenetics.bayesian import (
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
+    write_bayesian_methods_summary_text,
+    write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
@@ -356,6 +359,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.cluster_trees_by_topology is cluster_trees_by_topology
     assert bijux_phylogenetics.detect_unstable_taxa is detect_unstable_taxa
     assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
+    assert bijux_phylogenetics.compare_posterior_topological_diversity is compare_posterior_topological_diversity
+    assert bijux_phylogenetics.detect_posterior_topology_multimodality is detect_posterior_topology_multimodality
+    assert bijux_phylogenetics.summarize_clade_credibility_conflicts is summarize_clade_credibility_conflicts
+    assert bijux_phylogenetics.summarize_uncertainty_aware_conclusions is summarize_uncertainty_aware_conclusions
     assert bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
     assert bijux_phylogenetics.render_tree_uncertainty_report is render_tree_uncertainty_report
     assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
@@ -442,6 +449,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.compare_posterior_tree_sets_by_clock is compare_posterior_tree_sets_by_clock
     assert bijux_phylogenetics.render_bayesian_run_comparison_report is render_bayesian_run_comparison_report
     assert bijux_phylogenetics.render_bayesian_diagnostics_report is render_bayesian_diagnostics_report
+    assert bijux_phylogenetics.build_posterior_uncertainty_figure_package is build_posterior_uncertainty_figure_package
+    assert bijux_phylogenetics.write_supplementary_bayesian_diagnostics_table is write_supplementary_bayesian_diagnostics_table
+    assert bijux_phylogenetics.write_bayesian_methods_summary_text is write_bayesian_methods_summary_text
     assert bijux_phylogenetics.render_calibration_audit_report is render_calibration_audit_report
     assert bijux_phylogenetics.build_bayesian_evidence_package is build_bayesian_evidence_package
 
