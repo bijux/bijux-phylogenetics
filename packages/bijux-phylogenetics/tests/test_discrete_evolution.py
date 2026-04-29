@@ -70,6 +70,17 @@ def test_run_discrete_state_transition_model_returns_transition_matrix_and_event
     assert all(sum(row.target_rates.values()) > 0.99 for row in report.transition_model.transition_matrix)
 
 
+def test_run_discrete_state_transition_model_supports_symmetric_rates() -> None:
+    report = run_discrete_state_transition_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="symmetric",
+    )
+    assert report.transition_model.model == "symmetric"
+    assert report.transition_model.parameter_count == 3
+
+
 def test_estimate_ancestral_geographic_states_and_compare_models_return_node_differences() -> None:
     report = estimate_ancestral_geographic_states(
         fixture("example_tree.nwk"),

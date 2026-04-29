@@ -320,7 +320,11 @@ def _fit_transition_matrix(model: str, state_order: list[str], stationary: dict[
     }
     for event in er_events:
         if event.source_state != event.target_state:
-            counts[event.source_state][event.target_state] += 1.0
+            if model == "symmetric":
+                counts[event.source_state][event.target_state] += 1.0
+                counts[event.target_state][event.source_state] += 1.0
+            else:
+                counts[event.source_state][event.target_state] += 1.0
     rows: list[TransitionRateRow] = []
     for source in state_order:
         off_total = sum(counts[source].values())
@@ -556,7 +560,7 @@ def run_discrete_state_transition_model(
     allowed_states: list[str] | None = None,
 ) -> DiscreteStateEvolutionReport:
     """Run a deterministic discrete-state evolution workflow on one tree and trait."""
-    if model not in {"equal-rates", "all-rates-different"}:
+    if model not in {"equal-rates", "symmetric", "all-rates-different"}:
         raise ValueError(f"unsupported discrete-state model: {model}")
     coding = validate_discrete_state_coding(
         tree_path,
@@ -604,7 +608,15 @@ def run_discrete_state_transition_model(
         trait=trait,
         model=model,
         state_order=state_order,
-        parameter_count=1 if model == "equal-rates" else len(state_order) * max(len(state_order) - 1, 0),
+        parameter_count=(
+            1
+            if model == "equal-rates"
+            else (
+                len(state_order) * max(len(state_order) - 1, 0) // 2
+                if model == "symmetric"
+                else len(state_order) * max(len(state_order) - 1, 0)
+            )
+        ),
         pseudo_log_likelihood=0.0,
         aic=0.0,
         stationary_frequencies=stationary,
