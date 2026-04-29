@@ -19,6 +19,16 @@ from bijux_phylogenetics.compare.topology import (
     prune_trees_to_shared_taxa,
     write_tree_comparison_table,
 )
+from bijux_phylogenetics.comparative import (
+    compute_blombergs_k,
+    compute_phylogenetic_independent_contrasts,
+    compute_phylogenetic_signal_test,
+    estimate_pagels_lambda,
+    inspect_pgls_inputs,
+    run_pgls,
+    summarize_numeric_trait,
+    summarize_numeric_trait_readiness,
+)
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.dataset import summarize_dataset_readiness
@@ -197,6 +207,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.benchmark_tree_validation is benchmark_tree_validation
     assert bijux_phylogenetics.benchmark_tree_comparison is benchmark_tree_comparison
     assert bijux_phylogenetics.benchmark_alignment_diagnostics is benchmark_alignment_diagnostics
+    assert bijux_phylogenetics.summarize_numeric_trait_readiness is summarize_numeric_trait_readiness
+    assert bijux_phylogenetics.summarize_numeric_trait is summarize_numeric_trait
+    assert bijux_phylogenetics.compute_phylogenetic_independent_contrasts is compute_phylogenetic_independent_contrasts
+    assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
+    assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
+    assert bijux_phylogenetics.compute_phylogenetic_signal_test is compute_phylogenetic_signal_test
+    assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
+    assert bijux_phylogenetics.run_pgls is run_pgls
 
 
 def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(tmp_path: Path) -> None:
