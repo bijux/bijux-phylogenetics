@@ -8,6 +8,7 @@ from bijux_phylogenetics.bayesian.beast import (
     detect_impossible_calibration_constraints,
     parse_beast_log,
     prepare_beast_time_tree_analysis,
+    validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
@@ -113,6 +114,27 @@ def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> 
     assert log_report.rows[1].state == 1000
     assert convergence.converged is False
     assert {warning["code"] for warning in convergence.warnings} == {"low-ess", "mean-drift"}
+
+
+def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(tmp_path: Path) -> None:
+    broken_log = tmp_path / "broken-beast.log"
+    broken_log.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tclockRate\n"
+        "0\t-510.0\t0.0010\n"
+        "0\t-509.0\tbad\n",
+        encoding="utf-8",
+    )
+
+    report = validate_beast_posterior_log(broken_log)
+
+    assert report.valid is False
+    assert report.missing_columns == ["likelihood"]
+    assert {issue.code for issue in report.issues} >= {
+        "missing-required-column",
+        "nonmonotonic-state",
+        "invalid-parameter-value",
+    }
 
 
 def test_render_calibration_audit_report_includes_calibration_and_tip_date_sections(tmp_path: Path) -> None:

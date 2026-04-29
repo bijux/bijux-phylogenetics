@@ -114,6 +114,26 @@ class BeastLogReport:
 
 
 @dataclass(slots=True)
+class BeastLogValidationIssue:
+    code: str
+    message: str
+    row: int | None = None
+    column: str | None = None
+
+
+@dataclass(slots=True)
+class BeastPosteriorLogValidationReport:
+    path: Path
+    row_count: int
+    state_count: int
+    required_columns: list[str]
+    observed_columns: list[str]
+    missing_columns: list[str]
+    issues: list[BeastLogValidationIssue]
+    valid: bool
+
+
+@dataclass(slots=True)
 class BeastConvergenceReport:
     path: Path
     sample_count: int
@@ -517,6 +537,78 @@ def parse_beast_log(path: Path) -> BeastLogReport:
     if not rows:
         raise ValueError(f"BEAST log contains no sampled rows: {path}")
     return BeastLogReport(path=path, row_count=len(rows), columns=columns, rows=rows)
+
+
+def validate_beast_posterior_log(
+    path: Path,
+    *,
+    required_columns: tuple[str, ...] = ("posterior", "likelihood"),
+) -> BeastPosteriorLogValidationReport:
+    """Validate that a BEAST posterior log contains the required fields and monotonic sampled states."""
+    issues: list[BeastLogValidationIssue] = []
+    with path.open(encoding="utf-8", newline="") as handle:
+        filtered_lines = [line for line in handle if line.strip() and not line.lstrip().startswith("#")]
+    reader = csv.DictReader(filtered_lines, delimiter="\t")
+    if reader.fieldnames is None:
+        issues.append(BeastLogValidationIssue(code="missing-header", message="BEAST log contains no header row"))
+        return BeastPosteriorLogValidationReport(
+            path=path,
+            row_count=0,
+            state_count=0,
+            required_columns=list(required_columns),
+            observed_columns=[],
+            missing_columns=list(required_columns),
+            issues=issues,
+            valid=False,
+        )
+    state_field = "state" if "state" in reader.fieldnames else "State" if "State" in reader.fieldnames else None
+    observed_columns = [field for field in reader.fieldnames if field]
+    if state_field is None:
+        issues.append(BeastLogValidationIssue(code="missing-state-column", message="BEAST log lacks a state column"))
+    missing_columns = [column for column in required_columns if column not in observed_columns]
+    for column in missing_columns:
+        issues.append(BeastLogValidationIssue(code="missing-required-column", message=f"missing required BEAST log column '{column}'", column=column))
+    previous_state: int | None = None
+    row_count = 0
+    state_count = 0
+    for row_index, row in enumerate(reader, start=2):
+        row_count += 1
+        if state_field is not None:
+            raw_state = row.get(state_field, "")
+            if not raw_state:
+                issues.append(BeastLogValidationIssue(code="missing-state-value", message="row is missing a sampled state", row=row_index, column=state_field))
+            else:
+                try:
+                    state_value = int(float(raw_state))
+                    state_count += 1
+                    if previous_state is not None and state_value <= previous_state:
+                        issues.append(BeastLogValidationIssue(code="nonmonotonic-state", message="sampled states must increase strictly through the log", row=row_index, column=state_field))
+                    previous_state = state_value
+                except ValueError:
+                    issues.append(BeastLogValidationIssue(code="invalid-state-value", message="sampled state must be numeric", row=row_index, column=state_field))
+        for column in observed_columns:
+            if column == state_field:
+                continue
+            raw_value = row.get(column, "")
+            if raw_value in {None, ""}:
+                issues.append(BeastLogValidationIssue(code="missing-parameter-value", message=f"missing sampled value for '{column}'", row=row_index, column=column))
+                continue
+            try:
+                float(raw_value)
+            except ValueError:
+                issues.append(BeastLogValidationIssue(code="invalid-parameter-value", message=f"sampled value for '{column}' must be numeric", row=row_index, column=column))
+    if row_count == 0:
+        issues.append(BeastLogValidationIssue(code="missing-rows", message="BEAST log contains no sampled rows"))
+    return BeastPosteriorLogValidationReport(
+        path=path,
+        row_count=row_count,
+        state_count=state_count,
+        required_columns=list(required_columns),
+        observed_columns=observed_columns,
+        missing_columns=missing_columns,
+        issues=issues,
+        valid=not issues,
+    )
 
 
 def assess_beast_convergence(
