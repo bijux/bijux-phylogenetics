@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.bayesian.diagnostics import TraceConvergenceReport, summarize_trace_convergence
+from bijux_phylogenetics.bayesian.posterior import summarize_maximum_clade_credibility_tree
 from bijux_phylogenetics.comparative.common import descendant_taxa
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
@@ -131,6 +132,28 @@ class BeastPosteriorLogValidationReport:
     missing_columns: list[str]
     issues: list[BeastLogValidationIssue]
     valid: bool
+
+
+@dataclass(slots=True)
+class BeastBurninSensitivitySlice:
+    burnin_fraction: float
+    burnin_tree_count: int
+    kept_tree_count: int
+    rooted_topology_count: int
+    selected_tree_index: int
+    clade_credibility_score: float
+    posterior_mean: float | None
+    likelihood_mean: float | None
+    tree_height_mean: float | None
+
+
+@dataclass(slots=True)
+class BeastBurninSensitivityReport:
+    posterior_tree_path: Path
+    log_path: Path | None
+    slices: list[BeastBurninSensitivitySlice]
+    changed_mcc_count: int
+    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -611,6 +634,68 @@ def validate_beast_posterior_log(
     )
 
 
+def assess_beast_burnin_sensitivity(
+    posterior_tree_path: Path,
+    *,
+    log_path: Path | None = None,
+    burnin_fractions: tuple[float, ...] = (0.1, 0.25, 0.5),
+) -> BeastBurninSensitivityReport:
+    """Compare posterior summaries across multiple BEAST burn-in fractions."""
+    if not burnin_fractions:
+        raise ValueError("burnin_fractions must contain at least one value")
+    log_report = parse_beast_log(log_path) if log_path is not None else None
+    ordered_fractions = tuple(sorted(dict.fromkeys(burnin_fractions)))
+    slices: list[BeastBurninSensitivitySlice] = []
+    previous_newick: str | None = None
+    changed_mcc_count = 0
+    for fraction in ordered_fractions:
+        _, mcc_report = summarize_maximum_clade_credibility_tree(
+            posterior_tree_path,
+            burnin_fraction=fraction,
+        )
+        posterior_mean = None
+        likelihood_mean = None
+        tree_height_mean = None
+        if log_report is not None:
+            burnin_row_count = int(log_report.row_count * fraction)
+            kept_rows = log_report.rows[burnin_row_count:]
+            if kept_rows:
+                posterior_values = [row.values["posterior"] for row in kept_rows if "posterior" in row.values]
+                likelihood_values = [row.values["likelihood"] for row in kept_rows if "likelihood" in row.values]
+                tree_height_values = [row.values["treeHeight"] for row in kept_rows if "treeHeight" in row.values]
+                posterior_mean = _mean_or_none(posterior_values)
+                likelihood_mean = _mean_or_none(likelihood_values)
+                tree_height_mean = _mean_or_none(tree_height_values)
+        slices.append(
+            BeastBurninSensitivitySlice(
+                burnin_fraction=fraction,
+                burnin_tree_count=mcc_report.burnin_tree_count,
+                kept_tree_count=mcc_report.kept_tree_count,
+                rooted_topology_count=mcc_report.rooted_topology_count,
+                selected_tree_index=mcc_report.selected_tree_index,
+                clade_credibility_score=mcc_report.clade_credibility_score,
+                posterior_mean=posterior_mean,
+                likelihood_mean=likelihood_mean,
+                tree_height_mean=tree_height_mean,
+            )
+        )
+        if previous_newick is not None and previous_newick != mcc_report.mcc_newick:
+            changed_mcc_count += 1
+        previous_newick = mcc_report.mcc_newick
+    warnings: list[str] = []
+    if changed_mcc_count:
+        warnings.append("maximum clade credibility topology changes across tested burn-in fractions")
+    if len({row.rooted_topology_count for row in slices}) > 1:
+        warnings.append("rooted topology diversity changes across tested burn-in fractions")
+    return BeastBurninSensitivityReport(
+        posterior_tree_path=posterior_tree_path,
+        log_path=log_path,
+        slices=slices,
+        changed_mcc_count=changed_mcc_count,
+        warnings=warnings,
+    )
+
+
 def assess_beast_convergence(
     path: Path,
     *,
@@ -661,3 +746,9 @@ def _build_beast_convergence_report(convergence: TraceConvergenceReport) -> Beas
             for summary in convergence.series
         ],
     )
+
+
+def _mean_or_none(values: list[float]) -> float | None:
+    if not values:
+        return None
+    return round(sum(values) / len(values), 6)

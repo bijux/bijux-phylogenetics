@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 
 from bijux_phylogenetics.bayesian.beast import (
+    assess_beast_burnin_sensitivity,
     assess_beast_convergence,
     detect_impossible_calibration_constraints,
     parse_beast_log,
@@ -135,6 +136,19 @@ def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_s
         "nonmonotonic-state",
         "invalid-parameter-value",
     }
+
+
+def test_assess_beast_burnin_sensitivity_reports_tree_and_log_shifts() -> None:
+    report = assess_beast_burnin_sensitivity(
+        fixture("example_tree_set_left.nwk"),
+        log_path=fixture("example_beast.log"),
+        burnin_fractions=(0.0, 0.25, 0.5),
+    )
+
+    assert [row.burnin_fraction for row in report.slices] == [0.0, 0.25, 0.5]
+    assert report.slices[0].posterior_mean == -503.0
+    assert report.slices[1].posterior_mean == -500.666667
+    assert report.slices[2].tree_height_mean == 13.1
 
 
 def test_render_calibration_audit_report_includes_calibration_and_tip_date_sections(tmp_path: Path) -> None:
