@@ -21,16 +21,19 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_pgls_input_inspection_detects_categorical_predictors() -> None:
+def test_pgls_input_inspection_encodes_categorical_predictors() -> None:
     report = inspect_pgls_inputs(
         fixture("example_tree.nwk"),
         fixture("example_traits_comparative.tsv"),
         response="response",
         predictors=["predictor_one", "habitat"],
     )
-    assert report.ready is False
+    assert report.ready is True
     assert report.categorical_predictors == ["habitat"]
-    assert "PGLS predictors must be numeric; categorical predictors were detected" in report.blockers
+    habitat = next(row for row in report.predictors if row.name == "habitat")
+    assert habitat.reference_level == "forest"
+    assert habitat.encoded_columns == ["habitat[tundra]"]
+    assert report.encoded_columns == ["intercept", "predictor_one", "habitat[tundra]"]
 
 
 def test_pgls_input_inspection_rejects_missing_branch_lengths() -> None:
@@ -71,3 +74,18 @@ def test_run_pgls_supports_multiple_predictors() -> None:
     assert math.isclose(coefficients["intercept"], 1.0, abs_tol=1e-6)
     assert math.isclose(coefficients["predictor_one"], 0.5, abs_tol=1e-6)
     assert math.isclose(coefficients["predictor_two"], 1.0, abs_tol=1e-6)
+
+
+def test_run_pgls_supports_categorical_predictors_with_dummy_encoding() -> None:
+    report = run_pgls(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_comparative.tsv"),
+        response="response",
+        predictors=["predictor_one", "habitat"],
+        lambda_value=0.0,
+    )
+    coefficients = {coefficient.name: coefficient.estimate for coefficient in report.coefficients}
+    assert report.encoded_columns == ["intercept", "predictor_one", "habitat[tundra]"]
+    assert math.isclose(coefficients["predictor_one"], 1.5, abs_tol=1e-6)
+    assert math.isclose(coefficients["habitat[tundra]"], -2.0, abs_tol=1e-6)
+    assert report.diagnostics.outlier_taxa == []

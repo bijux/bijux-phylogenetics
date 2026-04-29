@@ -23,6 +23,8 @@ class PGLSPredictorClassification:
 
     name: str
     kind: str
+    reference_level: str | None = None
+    encoded_columns: list[str] | None = None
 
 
 @dataclass(slots=True)
@@ -35,6 +37,7 @@ class PGLSInputReport:
     response: str
     predictors: list[PGLSPredictorClassification]
     categorical_predictors: list[str]
+    encoded_columns: list[str]
     analysis_taxa: list[str]
     ready: bool
     blockers: list[str]
@@ -53,6 +56,44 @@ class PGLSCoefficient:
 
 
 @dataclass(slots=True)
+class PGLSFittedObservation:
+    """Observed-versus-fitted summary for one analyzed taxon."""
+
+    taxon: str
+    observed: float
+    fitted: float
+    residual: float
+
+
+@dataclass(slots=True)
+class PGLSLeverageRow:
+    """Influence summary for one analyzed taxon."""
+
+    taxon: str
+    leverage: float
+    standardized_residual: float
+
+
+@dataclass(slots=True)
+class PGLSResidualOutlier:
+    """One taxon with a large standardized residual."""
+
+    taxon: str
+    residual: float
+    standardized_residual: float
+
+
+@dataclass(slots=True)
+class PGLSDiagnosticsReport:
+    """Residual and leverage diagnostics for a fitted PGLS model."""
+
+    residual_mean: float
+    leverage_rows: list[PGLSLeverageRow]
+    outlier_taxa: list[PGLSResidualOutlier]
+    fitted_observed_rows: list[PGLSFittedObservation]
+
+
+@dataclass(slots=True)
 class PGLSResult:
     """Generalized least-squares regression result over a phylogenetic covariance model."""
 
@@ -60,6 +101,7 @@ class PGLSResult:
     traits_path: Path
     response: str
     predictors: list[str]
+    encoded_columns: list[str]
     taxon_count: int
     lambda_value: float
     log_likelihood: float
@@ -69,6 +111,7 @@ class PGLSResult:
     fitted_values: list[float]
     residuals: list[float]
     taxa: list[str]
+    diagnostics: PGLSDiagnosticsReport
 
 
 def inspect_pgls_inputs(
@@ -106,16 +149,50 @@ def inspect_pgls_inputs(
 
     predictor_reports: list[PGLSPredictorClassification] = []
     categorical_predictors: list[str] = []
+    encoded_columns = ["intercept"]
     for predictor in predictors:
         kind = column_kinds.get(predictor)
         if kind is None:
             blockers.append(f"trait table does not contain predictor column '{predictor}'")
             continue
-        predictor_reports.append(PGLSPredictorClassification(name=predictor, kind=kind))
-        if kind != "numeric":
-            categorical_predictors.append(predictor)
-    if categorical_predictors:
-        blockers.append("PGLS predictors must be numeric; categorical predictors were detected")
+        if kind == "numeric":
+            predictor_reports.append(PGLSPredictorClassification(name=predictor, kind=kind))
+            encoded_columns.append(predictor)
+            continue
+
+        categorical_predictors.append(predictor)
+        levels = sorted(
+            {
+                row[predictor]
+                for row in table.rows
+                if row[table.taxon_column] in tree.tip_names and row.get(predictor, "")
+            }
+        )
+        if len(levels) < 2:
+            blockers.append(f"categorical predictor '{predictor}' requires at least two observed levels")
+            predictor_reports.append(
+                PGLSPredictorClassification(
+                    name=predictor,
+                    kind=kind,
+                    reference_level=levels[0] if levels else None,
+                    encoded_columns=[],
+                )
+            )
+            continue
+        reference_level = levels[0]
+        dummy_columns = [f"{predictor}[{level}]" for level in levels[1:]]
+        encoded_columns.extend(dummy_columns)
+        warnings.append(
+            f"categorical predictor '{predictor}' will be dummy-encoded with reference level '{reference_level}'"
+        )
+        predictor_reports.append(
+            PGLSPredictorClassification(
+                name=predictor,
+                kind=kind,
+                reference_level=reference_level,
+                encoded_columns=dummy_columns,
+            )
+        )
 
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     analysis_taxa: list[str] = []
@@ -129,14 +206,17 @@ def inspect_pgls_inputs(
         if any(not row.get(column, "") for column in requested_columns):
             continue
         try:
-            [float(row[column]) for column in requested_columns]
+            float(row[response])
+            for predictor_report in predictor_reports:
+                if predictor_report.kind == "numeric":
+                    float(row[predictor_report.name])
         except ValueError:
             continue
         analysis_taxa.append(taxon)
     if missing_tree_taxa:
         blockers.append("PGLS requires all analyzed taxa to be resolved against the trait table")
-    if len(analysis_taxa) <= len(predictors) + 1:
-        blockers.append("PGLS requires more taxa than fitted parameters")
+    if len(analysis_taxa) <= len(encoded_columns):
+        blockers.append("PGLS requires more taxa than fitted parameters after predictor encoding")
 
     return PGLSInputReport(
         tree_path=tree_path,
@@ -145,6 +225,7 @@ def inspect_pgls_inputs(
         response=response,
         predictors=predictor_reports,
         categorical_predictors=categorical_predictors,
+        encoded_columns=encoded_columns,
         analysis_taxa=analysis_taxa,
         ready=not blockers,
         blockers=blockers,
@@ -177,7 +258,7 @@ def run_pgls(
         traits_path,
         trait=response,
         taxon_column=taxon_column,
-        minimum_taxa=len(predictors) + 2,
+        minimum_taxa=len(input_report.encoded_columns) + 1,
         require_rooted=True,
         require_binary=False,
     )
@@ -185,10 +266,12 @@ def run_pgls(
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     taxa = list(input_report.analysis_taxa)
     response_values = [float(rows_by_taxon[taxon][response]) for taxon in taxa]
-    design_matrix = [
-        [1.0, *[float(rows_by_taxon[taxon][predictor]) for predictor in predictors]]
-        for taxon in taxa
-    ]
+    design_matrix, encoded_columns = _build_design_matrix(
+        rows_by_taxon,
+        taxa,
+        predictors,
+        input_report.predictors,
+    )
     dataset = ComparativeDataset(
         tree_path=dataset.tree_path,
         traits_path=dataset.traits_path,
@@ -208,8 +291,7 @@ def run_pgls(
     degrees_of_freedom = len(response_values) - len(coefficients)
     residual_variance = _quadratic_form(residuals, inverse_covariance) / degrees_of_freedom
     coefficient_reports: list[PGLSCoefficient] = []
-    column_names = ["intercept", *predictors]
-    for index, name in enumerate(column_names):
+    for index, name in enumerate(encoded_columns):
         standard_error = math.sqrt(max(covariance_of_betas[index][index] * residual_variance, 0.0))
         z_score = coefficients[index] / standard_error if standard_error else 0.0
         p_value = 2.0 * (1.0 - _normal_cdf(abs(z_score)))
@@ -237,6 +319,7 @@ def run_pgls(
         traits_path=traits_path,
         response=response,
         predictors=list(predictors),
+        encoded_columns=encoded_columns,
         taxon_count=len(taxa),
         lambda_value=resolved_lambda,
         log_likelihood=log_likelihood,
@@ -246,7 +329,46 @@ def run_pgls(
         fitted_values=fitted_values,
         residuals=residuals,
         taxa=taxa,
+        diagnostics=_build_pgls_diagnostics(
+            taxa,
+            response_values,
+            fitted_values,
+            residuals,
+            residual_variance,
+            design_matrix,
+            inverse_covariance,
+        ),
     )
+
+
+def _build_design_matrix(
+    rows_by_taxon: dict[str, dict[str, str]],
+    taxa: list[str],
+    predictors: list[str],
+    predictor_reports: list[PGLSPredictorClassification],
+) -> tuple[list[list[float]], list[str]]:
+    encoded_columns = ["intercept"]
+    report_by_name = {report.name: report for report in predictor_reports}
+    for predictor in predictors:
+        report = report_by_name[predictor]
+        if report.kind == "numeric":
+            encoded_columns.append(predictor)
+        else:
+            encoded_columns.extend(report.encoded_columns or [])
+    matrix: list[list[float]] = []
+    for taxon in taxa:
+        row = rows_by_taxon[taxon]
+        encoded_row = [1.0]
+        for predictor in predictors:
+            report = report_by_name[predictor]
+            if report.kind == "numeric":
+                encoded_row.append(float(row[predictor]))
+                continue
+            for encoded_name in report.encoded_columns or []:
+                level = encoded_name.removeprefix(f"{predictor}[").removesuffix("]")
+                encoded_row.append(1.0 if row[predictor] == level else 0.0)
+        matrix.append(encoded_row)
+    return matrix, encoded_columns
 
 
 def _fit_gls(
@@ -268,6 +390,58 @@ def _fit_gls(
         for row in design_matrix
     ]
     return coefficients, xt_vinv_x_inverse, fitted_values
+
+
+def _build_pgls_diagnostics(
+    taxa: list[str],
+    observed_values: list[float],
+    fitted_values: list[float],
+    residuals: list[float],
+    residual_variance: float,
+    design_matrix: list[list[float]],
+    inverse_covariance: list[list[float]],
+) -> PGLSDiagnosticsReport:
+    x_transposed = transpose(design_matrix)
+    xt_vinv = matrix_multiply(x_transposed, inverse_covariance)
+    xt_vinv_x_inverse = invert_matrix(matrix_multiply(xt_vinv, design_matrix))
+    hat = matrix_multiply(design_matrix, matrix_multiply(xt_vinv_x_inverse, xt_vinv))
+    leverage_rows: list[PGLSLeverageRow] = []
+    outlier_taxa: list[PGLSResidualOutlier] = []
+    fitted_observed_rows: list[PGLSFittedObservation] = []
+    residual_mean = sum(residuals) / len(residuals)
+    for index, taxon in enumerate(taxa):
+        leverage = min(max(hat[index][index], 0.0), 0.999999)
+        denominator = math.sqrt(max(residual_variance * (1.0 - leverage), 1e-12))
+        standardized = residuals[index] / denominator
+        leverage_rows.append(
+            PGLSLeverageRow(
+                taxon=taxon,
+                leverage=leverage,
+                standardized_residual=standardized,
+            )
+        )
+        fitted_observed_rows.append(
+            PGLSFittedObservation(
+                taxon=taxon,
+                observed=observed_values[index],
+                fitted=fitted_values[index],
+                residual=residuals[index],
+            )
+        )
+        if abs(standardized) >= 2.0:
+            outlier_taxa.append(
+                PGLSResidualOutlier(
+                    taxon=taxon,
+                    residual=residuals[index],
+                    standardized_residual=standardized,
+                )
+            )
+    return PGLSDiagnosticsReport(
+        residual_mean=residual_mean,
+        leverage_rows=leverage_rows,
+        outlier_taxa=outlier_taxa,
+        fitted_observed_rows=fitted_observed_rows,
+    )
 
 
 def _resolve_lambda(

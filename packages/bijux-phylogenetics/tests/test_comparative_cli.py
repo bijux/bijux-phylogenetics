@@ -93,7 +93,7 @@ def test_comparative_pgls_cli_fits_multiple_predictors(capsys) -> None:
     assert math.isclose(coefficients["predictor_two"], 1.0)
 
 
-def test_comparative_pgls_cli_reports_categorical_predictor_error(capsys) -> None:
+def test_comparative_pgls_cli_encodes_categorical_predictor(capsys) -> None:
     exit_code = main(
         [
             "comparative",
@@ -110,5 +110,10 @@ def test_comparative_pgls_cli_reports_categorical_predictor_error(capsys) -> Non
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
-    assert exit_code == 2
-    assert payload["errors"][0]["code"] == "comparative_method_error"
+    assert exit_code == 0
+    assert payload["data"]["inputs"]["predictors"][1]["reference_level"] == "forest"
+    coefficients = {
+        coefficient["name"]: coefficient["estimate"]
+        for coefficient in payload["data"]["model"]["coefficients"]
+    }
+    assert math.isclose(coefficients["habitat[tundra]"], -2.0)
