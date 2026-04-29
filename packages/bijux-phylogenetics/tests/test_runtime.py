@@ -913,6 +913,35 @@ def test_cli_alignment_identity_matrix_writes_tsv(tmp_path: Path, capsys) -> Non
     assert payload["metrics"]["pair_count"] == 10
 
 
+def test_cli_alignment_distance_matrix_writes_tsv(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance.tsv"
+    exit_code = main(
+        [
+            "alignment",
+            "distance-matrix",
+            str(fixture("example_alignment_distance_gaps.fasta")),
+            "--model",
+            "jukes-cantor",
+            "--gap-handling",
+            "complete-deletion",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8").splitlines()[:4] == [
+        "left_identifier\tright_identifier\tdistance\tcomparable_sites",
+        "A\tA\t0\t4",
+        "A\tB\t0\t4",
+        "A\tC\t0.304098831081123\t4",
+    ]
+    assert payload["metrics"]["model"] == "jukes-cantor"
+    assert payload["metrics"]["gap_handling"] == "complete-deletion"
+
+
 def test_compute_pairwise_genetic_distance_matrix_reports_p_distance() -> None:
     report = compute_pairwise_genetic_distance_matrix(fixture("example_alignment_distance.fasta"))
     assert report.model == "p-distance"
@@ -1015,6 +1044,45 @@ def test_compare_distance_tree_topologies_reports_rooting_difference() -> None:
     assert report.same_unrooted_topology is True
     assert report.same_taxa_different_rooting is True
     assert report.robinson_foulds_distance == 1
+
+
+def test_cli_alignment_build_tree_writes_newick(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "upgma",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;\n"
+    )
+    assert payload["metrics"]["method"] == "upgma"
+
+
+def test_cli_alignment_compare_distance_trees_reports_rooting_difference(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "compare-distance-trees",
+            str(fixture("example_alignment_distance.fasta")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["robinson_foulds_distance"] == 1
+    assert payload["metrics"]["same_unrooted_topology"] is True
 
 
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:

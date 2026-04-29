@@ -51,6 +51,12 @@ from bijux_phylogenetics.compare.topology import (
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.distance import (
+    build_distance_tree,
+    compare_distance_tree_topologies,
+    compute_pairwise_genetic_distance_matrix,
+    write_genetic_distance_matrix,
+)
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
 from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_mapping
@@ -222,6 +228,15 @@ def _command_inputs(args: Any) -> list[Path | str]:
             if args.out is not None:
                 inputs.append(args.out)
             return inputs
+        if args.alignment_command == "distance-matrix":
+            inputs = [args.alignment]
+            if args.out is not None:
+                inputs.append(args.out)
+            return inputs
+        if args.alignment_command == "build-tree":
+            return [args.alignment, args.out]
+        if args.alignment_command == "compare-distance-trees":
+            return [args.alignment]
         if args.alignment_command == "coding":
             return [args.alignment]
         if args.alignment_command == "translate":
@@ -419,6 +434,52 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_identity.add_argument("--out", type=Path, help="Write the matrix as TSV.")
     alignment_identity.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_identity)
+    alignment_distance = alignment_subparsers.add_parser(
+        "distance-matrix",
+        help="Compute a pairwise DNA genetic distance matrix.",
+    )
+    alignment_distance.add_argument("alignment", type=Path)
+    alignment_distance.add_argument("--model", choices=("p-distance", "jukes-cantor"), default="p-distance")
+    alignment_distance.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_distance.add_argument("--out", type=Path, help="Write the matrix as TSV.")
+    alignment_distance.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_distance)
+    alignment_build_tree = alignment_subparsers.add_parser(
+        "build-tree",
+        help="Build a neighbor-joining or UPGMA tree from a DNA distance matrix.",
+    )
+    alignment_build_tree.add_argument("alignment", type=Path)
+    alignment_build_tree.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_build_tree.add_argument("--model", choices=("p-distance", "jukes-cantor"), default="p-distance")
+    alignment_build_tree.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_build_tree.add_argument("--out", required=True, type=Path)
+    alignment_build_tree.add_argument("--json", action="store_true", help="Emit the build report as JSON.")
+    _add_manifest_argument(alignment_build_tree)
+    alignment_compare_distance_trees = alignment_subparsers.add_parser(
+        "compare-distance-trees",
+        help="Compare NJ and UPGMA topologies built from the same DNA alignment.",
+    )
+    alignment_compare_distance_trees.add_argument("alignment", type=Path)
+    alignment_compare_distance_trees.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor"),
+        default="p-distance",
+    )
+    alignment_compare_distance_trees.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_compare_distance_trees.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    _add_manifest_argument(alignment_compare_distance_trees)
     alignment_coding = alignment_subparsers.add_parser(
         "coding",
         help="Inspect a nucleotide coding alignment for frameshift-like lengths and stop codons.",
@@ -993,6 +1054,92 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "sequence_count": len(report.identifiers),
                             "pair_count": len(report.pairs),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "distance-matrix":
+                report = compute_pairwise_genetic_distance_matrix(
+                    args.alignment,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                )
+                outputs: list[Path | str] = []
+                if args.out is not None:
+                    outputs.append(write_genetic_distance_matrix(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "sequence_count": len(report.identifiers),
+                            "pair_count": len(report.pairs),
+                            "model": report.model,
+                            "gap_handling": report.gap_handling,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "build-tree":
+                tree, report = build_distance_tree(
+                    args.alignment,
+                    method=args.method,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                )
+                output_path = write_newick(args.out, tree)
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "pair_count": report.pair_count,
+                            "method": report.method,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "compare-distance-trees":
+                report = compare_distance_tree_topologies(
+                    args.alignment,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        metrics={
+                            "shared_taxa": len(report.shared_taxa),
+                            "robinson_foulds_distance": report.robinson_foulds_distance,
+                            "same_unrooted_topology": report.same_unrooted_topology,
                         },
                         data=report,
                     ),
