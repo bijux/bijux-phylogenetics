@@ -22,6 +22,7 @@ class TreeRenderResult:
     rendered_continuous_trait_count: int
     rendered_metadata_strip_count: int
     rendered_heatmap_column_count: int
+    rendered_internal_annotation_count: int
     collapsed_clade_count: int
     missing_metadata_labels: list[str]
 
@@ -145,6 +146,24 @@ def _is_collapsed_node(node: TreeNode, collapsed_clades: set[str]) -> bool:
     return not node.is_leaf() and node.name is not None and node.name in collapsed_clades
 
 
+def _node_signature(node: TreeNode) -> str:
+    if node.is_leaf():
+        return node.name or "<unnamed>"
+    taxa: list[str] = []
+    for child in node.children:
+        taxa.extend(_node_signature_taxa(child))
+    return "|".join(sorted(taxa)) if taxa else node.name or "<unnamed>"
+
+
+def _node_signature_taxa(node: TreeNode) -> list[str]:
+    if node.is_leaf():
+        return [node.name] if node.name is not None else []
+    taxa: list[str] = []
+    for child in node.children:
+        taxa.extend(_node_signature_taxa(child))
+    return taxa
+
+
 def _count_visible_leaves(node: TreeNode, collapsed_clades: set[str]) -> int:
     if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
         return 1
@@ -176,6 +195,8 @@ def render_tree_svg(
     metadata_strips: list[AnnotationStrip] | None = None,
     heatmap_columns: list[AnnotationStrip] | None = None,
     collapsed_clades: list[str] | None = None,
+    internal_annotations: dict[str, str] | None = None,
+    internal_annotation_colors: dict[str, str] | None = None,
 ) -> TreeRenderResult:
     """Render a deterministic SVG tree as a cladogram, phylogram, or circular tree."""
     if layout not in {"cladogram", "phylogram", "circular"}:
@@ -221,6 +242,7 @@ def render_tree_svg(
     rendered_support_count = 0
     rendered_categorical_trait_count = 0
     rendered_continuous_trait_count = 0
+    rendered_internal_annotation_count = 0
     rendered_collapsed_clades = 0
     categorical_traits = categorical_traits or {}
     categorical_color_map = _categorical_color_map(categorical_traits)
@@ -231,6 +253,8 @@ def render_tree_svg(
     metadata_strips = metadata_strips or []
     metadata_strip_colors = [_categorical_color_map(strip.values) for strip in metadata_strips]
     heatmap_columns = heatmap_columns or []
+    internal_annotations = internal_annotations or {}
+    internal_annotation_colors = internal_annotation_colors or {}
     heatmap_specs: list[tuple[str, dict[str, str], float, float]] = []
     for column in heatmap_columns:
         observed_values = [value for value in column.values.values() if value]
@@ -250,6 +274,7 @@ def render_tree_svg(
         nonlocal rendered_support_count
         nonlocal rendered_categorical_trait_count
         nonlocal rendered_continuous_trait_count
+        nonlocal rendered_internal_annotation_count
         nonlocal rendered_collapsed_clades
         branch_distance = distance + float(node.branch_length or 0.0)
         x = node_x(depth, branch_distance if node is not tree.root else distance)
@@ -332,6 +357,16 @@ def render_tree_svg(
                 f'<text x="{x + 8:.1f}" y="{y - 8:.1f}" class="support-label">{escape(support_label)}</text>'
             )
             rendered_support_count += 1
+        annotation = internal_annotations.get(_node_signature(node))
+        if annotation and not node.is_leaf():
+            annotation_color = internal_annotation_colors.get(_node_signature(node), "#7c3aed")
+            overlays.append(
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{annotation_color}" class="internal-annotation-dot"/>'
+            )
+            texts.append(
+                f'<text x="{x + 10:.1f}" y="{y + 4:.1f}" class="internal-annotation-label">{escape(annotation)}</text>'
+            )
+            rendered_internal_annotation_count += 1
         return _Point(x=x, y=y)
 
     def visit_circular() -> None:
@@ -364,6 +399,7 @@ def render_tree_svg(
             nonlocal rendered_support_count
             nonlocal rendered_categorical_trait_count
             nonlocal rendered_continuous_trait_count
+            nonlocal rendered_internal_annotation_count
             nonlocal rendered_collapsed_clades
             branch_distance = distance + float(node.branch_length or 0.0)
             radial = radial_distance(depth, branch_distance if node is not tree.root else distance)
@@ -430,6 +466,18 @@ def render_tree_svg(
                     f'<text x="{support_point.x:.1f}" y="{support_point.y + 4:.1f}" class="support-label">{escape(support_label)}</text>'
                 )
                 rendered_support_count += 1
+            annotation = internal_annotations.get(_node_signature(node))
+            if annotation and not node.is_leaf():
+                node_angle = angle_cache[id(node)]
+                annotation_point = _polar_point(center_x, center_y, radial + 12, node_angle)
+                annotation_color = internal_annotation_colors.get(_node_signature(node), "#7c3aed")
+                overlays.append(
+                    f'<circle cx="{annotation_point.x:.1f}" cy="{annotation_point.y:.1f}" r="4.5" fill="{annotation_color}" class="internal-annotation-dot"/>'
+                )
+                texts.append(
+                    f'<text x="{annotation_point.x + 10:.1f}" y="{annotation_point.y + 4:.1f}" class="internal-annotation-label">{escape(annotation)}</text>'
+                )
+                rendered_internal_annotation_count += 1
             return angle_cache[id(node)], radial
 
         next_leaf_index = 0
@@ -520,6 +568,7 @@ def render_tree_svg(
     .heatmap-cell {{ stroke: #f8fafc; stroke-width: 1; }}
     .tip-label {{ fill: #0f172a; font: 16px "Avenir Next", "Segoe UI", sans-serif; }}
     .support-label {{ fill: #0f766e; font: 12px "Avenir Next", "Segoe UI", sans-serif; }}
+    .internal-annotation-label {{ fill: #6d28d9; font: 12px "Avenir Next", "Segoe UI", sans-serif; }}
     .legend-title {{ fill: #334155; font: 12px "Avenir Next", "Segoe UI", sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }}
     .legend-label {{ fill: #334155; font: 13px "Avenir Next", "Segoe UI", sans-serif; }}
     .scale-label {{ fill: #334155; text-anchor: middle; font: 13px "Avenir Next", "Segoe UI", sans-serif; }}
@@ -550,6 +599,7 @@ def render_tree_svg(
         rendered_continuous_trait_count=rendered_continuous_trait_count,
         rendered_metadata_strip_count=len(metadata_strips),
         rendered_heatmap_column_count=len(heatmap_columns),
+        rendered_internal_annotation_count=rendered_internal_annotation_count,
         collapsed_clade_count=rendered_collapsed_clades,
         missing_metadata_labels=sorted(set(missing_labels)),
     )
