@@ -9,9 +9,11 @@ from typing import Any
 
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.bayesian import (
+    assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
     parse_mrbayes_parameter_traces,
     prepare_mrbayes_analysis,
+    render_bayesian_posterior_report,
     run_mrbayes_posterior_inference,
     summarize_mrbayes_posterior_trees,
 )
@@ -1240,6 +1242,27 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_mrbayes_ess.add_argument("input_path", type=Path)
     adapter_mrbayes_ess.add_argument("--json", action="store_true", help="Emit the ESS report as JSON.")
     _add_manifest_argument(adapter_mrbayes_ess)
+    adapter_mrbayes_convergence = adapter_subparsers.add_parser(
+        "mrbayes-convergence",
+        help="Assess MrBayes trace convergence from ESS and trace drift.",
+    )
+    adapter_mrbayes_convergence.add_argument("input_path", type=Path)
+    adapter_mrbayes_convergence.add_argument("--ess-threshold", type=float, default=200.0)
+    adapter_mrbayes_convergence.add_argument("--mean-shift-threshold", type=float, default=0.5)
+    adapter_mrbayes_convergence.add_argument("--json", action="store_true", help="Emit the convergence report as JSON.")
+    _add_manifest_argument(adapter_mrbayes_convergence)
+    adapter_mrbayes_report = adapter_subparsers.add_parser(
+        "mrbayes-report",
+        help="Render an HTML Bayesian posterior report from posterior trees and traces.",
+    )
+    adapter_mrbayes_report.add_argument("posterior_trees", type=Path)
+    adapter_mrbayes_report.add_argument("--traces", required=True, type=Path)
+    adapter_mrbayes_report.add_argument("--out", required=True, type=Path)
+    adapter_mrbayes_report.add_argument("--burnin-fraction", type=float, default=0.25)
+    adapter_mrbayes_report.add_argument("--ess-threshold", type=float, default=200.0)
+    adapter_mrbayes_report.add_argument("--mean-shift-threshold", type=float, default=0.5)
+    adapter_mrbayes_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(adapter_mrbayes_report)
 
     return parser
 
@@ -3490,6 +3513,51 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.input_path],
                         outputs=outputs,
                         metrics={"parameter_count": len(report.effective_sample_sizes)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-convergence":
+                report = assess_mrbayes_convergence(
+                    args.input_path,
+                    ess_threshold=args.ess_threshold,
+                    mean_shift_threshold=args.mean_shift_threshold,
+                )
+                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=[warning["message"] for warning in report.warnings],
+                        metrics={"warning_count": len(report.warnings), "converged": report.converged},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-report":
+                report = render_bayesian_posterior_report(
+                    posterior_tree_path=args.posterior_trees,
+                    trace_path=args.traces,
+                    out_path=args.out,
+                    burnin_fraction=args.burnin_fraction,
+                    ess_threshold=args.ess_threshold,
+                    mean_shift_threshold=args.mean_shift_threshold,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.posterior_trees, args.traces],
+                    outputs=[report.output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.posterior_trees, args.traces],
+                        outputs=outputs,
+                        metrics={"kept_tree_count": report.kept_tree_count, "warning_count": report.warning_count},
                         data=report,
                     ),
                     json_output=args.json,

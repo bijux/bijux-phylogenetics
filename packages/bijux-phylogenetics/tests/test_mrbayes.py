@@ -7,6 +7,7 @@ from bijux_phylogenetics.bayesian import (
     compute_mrbayes_effective_sample_sizes,
     parse_mrbayes_parameter_traces,
     prepare_mrbayes_analysis,
+    render_bayesian_posterior_report,
     run_mrbayes_posterior_inference,
     summarize_mrbayes_posterior_trees,
 )
@@ -137,3 +138,28 @@ def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(tmp_path: Path)
     assert report.converged is False
     assert {warning["code"] for warning in report.warnings} == {"low-ess", "mean-drift"}
     assert [summary["parameter"] for summary in report.parameter_summaries] == ["LnL", "TL", "alpha"]
+
+
+def test_render_bayesian_posterior_report_writes_consensus_and_convergence_sections(tmp_path: Path) -> None:
+    executable = _fake_mrbayes(tmp_path / "mb-fixture")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+    run_report = run_mrbayes_posterior_inference(nexus_path, executable=executable, resume=False)
+    output_path = tmp_path / "posterior-report.html"
+
+    report = render_bayesian_posterior_report(
+        posterior_tree_path=run_report.output_paths["posterior_trees"],
+        trace_path=run_report.output_paths["parameter_traces"],
+        out_path=output_path,
+        burnin_fraction=0.25,
+        ess_threshold=5.0,
+        mean_shift_threshold=0.1,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.kept_tree_count == 3
+    assert report.warning_count >= 1
+    assert "posterior-summary" in html
+    assert "convergence" in html
+    assert "clade-frequencies" in html
