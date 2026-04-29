@@ -88,6 +88,48 @@ class DiversificationRateReport:
     warnings: list[str]
 
 
+@dataclass(slots=True)
+class DiversificationModelComparisonRow:
+    model: str
+    parameter_count: int
+    log_likelihood: float
+    aic: float
+    sampling_fraction: float
+    net_diversification_rate: float
+    relative_extinction: float
+
+
+@dataclass(slots=True)
+class DiversificationModelComparisonReport:
+    tree_path: Path
+    metadata_path: Path | None
+    better_model: str
+    rows: list[DiversificationModelComparisonRow]
+
+
+@dataclass(slots=True)
+class CladeDiversificationObservation:
+    node: str
+    node_name: str | None
+    descendant_taxa: list[str]
+    tip_count: int
+    crown_age: float
+    diversification_rate: float
+    z_score: float
+    classification: str
+
+
+@dataclass(slots=True)
+class CladeDiversificationScanReport:
+    tree_path: Path
+    model: str
+    global_rate: float
+    observations: list[CladeDiversificationObservation]
+    high_diversification_clades: list[CladeDiversificationObservation]
+    low_diversification_clades: list[CladeDiversificationObservation]
+    warnings: list[str]
+
+
 def _node_depths(tree: PhyloTree) -> dict[str, float]:
     depths: dict[str, float] = {node_signature(tree.root): 0.0}
 
@@ -107,6 +149,15 @@ def _root_age(tree: PhyloTree) -> float:
     if not distances:
         raise DiversificationAnalysisError("diversification analysis requires complete root-to-tip distances")
     return float(format(max(distances), ".15g"))
+
+
+def _descendant_taxa(node: TreeNode) -> list[str]:
+    if node.is_leaf():
+        return [node.name] if node.name is not None else []
+    taxa: list[str] = []
+    for child in node.children:
+        taxa.extend(_descendant_taxa(child))
+    return sorted(taxa)
 
 
 def _sampling_fraction_from_rows(rows: list[float]) -> float:
@@ -150,6 +201,10 @@ def _interval_log_likelihood(tree: PhyloTree, *, birth_rate: float, death_rate: 
         previous_age = event_age
     log_likelihood -= lineage_count * turnover * previous_age
     return float(format(log_likelihood, ".15g"))
+
+
+def _node_age(tree: PhyloTree, depths: dict[str, float], node: TreeNode) -> float:
+    return float(format(_root_age(tree) - depths[node_signature(node)], ".15g"))
 
 
 def validate_time_tree_for_diversification(tree_path: Path) -> TimeTreeValidationReport:
@@ -436,4 +491,119 @@ def estimate_diversification_rate(
         aic=aic,
         assumptions=assumptions,
         warnings=warnings,
+    )
+
+
+def compare_diversification_models(
+    tree_path: Path,
+    *,
+    metadata_path: Path | None = None,
+    taxon_column: str | None = None,
+    sampling_column: str | None = None,
+) -> DiversificationModelComparisonReport:
+    """Compare Yule and simple birth-death diversification fits on one time tree."""
+    yule = estimate_diversification_rate(
+        tree_path,
+        metadata_path=metadata_path,
+        taxon_column=taxon_column,
+        sampling_column=sampling_column,
+        model="yule",
+    )
+    birth_death = estimate_diversification_rate(
+        tree_path,
+        metadata_path=metadata_path,
+        taxon_column=taxon_column,
+        sampling_column=sampling_column,
+        model="birth-death",
+    )
+    rows = [
+        DiversificationModelComparisonRow(
+            model="yule",
+            parameter_count=1,
+            log_likelihood=yule.log_likelihood,
+            aic=yule.aic,
+            sampling_fraction=yule.sampling_fraction,
+            net_diversification_rate=yule.net_diversification_rate,
+            relative_extinction=yule.relative_extinction,
+        ),
+        DiversificationModelComparisonRow(
+            model="birth-death",
+            parameter_count=2,
+            log_likelihood=birth_death.log_likelihood,
+            aic=birth_death.aic,
+            sampling_fraction=birth_death.sampling_fraction,
+            net_diversification_rate=birth_death.net_diversification_rate,
+            relative_extinction=birth_death.relative_extinction,
+        ),
+    ]
+    better_model = min(rows, key=lambda row: row.aic).model
+    return DiversificationModelComparisonReport(
+        tree_path=tree_path,
+        metadata_path=metadata_path,
+        better_model=better_model,
+        rows=rows,
+    )
+
+
+def detect_diversification_outlier_clades(
+    tree_path: Path,
+    *,
+    min_tip_count: int = 2,
+    model: str = "birth-death",
+) -> CladeDiversificationScanReport:
+    """Flag clades whose diversification rate is high or low relative to the tree-wide baseline."""
+    global_report = estimate_diversification_rate(tree_path, model=model)
+    tree = load_tree(tree_path)
+    depths = _node_depths(tree)
+    observations: list[CladeDiversificationObservation] = []
+    raw_rows: list[tuple[TreeNode, list[str], float, float]] = []
+    for node in tree.iter_nodes():
+        if node.is_leaf():
+            continue
+        descendant_taxa = _descendant_taxa(node)
+        if len(descendant_taxa) < min_tip_count:
+            continue
+        crown_age = _node_age(tree, depths, node)
+        if crown_age <= 0.0:
+            continue
+        diversification_rate = float(format(math.log(len(descendant_taxa)) / crown_age, ".15g"))
+        raw_rows.append((node, descendant_taxa, crown_age, diversification_rate))
+    rates = [row[3] for row in raw_rows]
+    mean_rate = sum(rates) / max(len(rates), 1)
+    variance = sum((rate - mean_rate) ** 2 for rate in rates) / max(len(rates), 1)
+    standard_deviation = math.sqrt(variance)
+    for node, descendant_taxa, crown_age, diversification_rate in raw_rows:
+        z_score = (
+            float(format((diversification_rate - mean_rate) / standard_deviation, ".15g"))
+            if standard_deviation > 0.0
+            else 0.0
+        )
+        if z_score >= 1.0:
+            classification = "high"
+        elif z_score <= -1.0:
+            classification = "low"
+        else:
+            classification = "baseline"
+        observations.append(
+            CladeDiversificationObservation(
+                node=node_signature(node),
+                node_name=node.name,
+                descendant_taxa=descendant_taxa,
+                tip_count=len(descendant_taxa),
+                crown_age=crown_age,
+                diversification_rate=diversification_rate,
+                z_score=z_score,
+                classification=classification,
+            )
+        )
+    high = [row for row in observations if row.classification == "high"]
+    low = [row for row in observations if row.classification == "low"]
+    return CladeDiversificationScanReport(
+        tree_path=tree_path,
+        model=model,
+        global_rate=global_report.net_diversification_rate,
+        observations=observations,
+        high_diversification_clades=high,
+        low_diversification_clades=low,
+        warnings=list(global_report.warnings),
     )

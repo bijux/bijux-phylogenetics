@@ -5,8 +5,10 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.diversification import (
+    compare_diversification_models,
     compute_lineage_through_time_curve,
     detect_incomplete_taxon_sampling_metadata,
+    detect_diversification_outlier_clades,
     estimate_diversification_rate,
     inspect_diversification_time_tree,
     validate_time_tree_for_diversification,
@@ -103,3 +105,23 @@ def test_estimate_diversification_rate_applies_sampling_correction() -> None:
     assert report.corrected_tip_count == 5.33333333333333
     assert report.birth_rate >= report.net_diversification_rate
     assert report.aic > 0.0
+
+
+def test_compare_diversification_models_returns_aic_ranked_rows() -> None:
+    report = compare_diversification_models(
+        fixture("example_tree.nwk"),
+        metadata_path=fixture("example_sampling_fractions.tsv"),
+    )
+
+    assert report.better_model in {"yule", "birth-death"}
+    assert [row.model for row in report.rows] == ["yule", "birth-death"]
+    assert all(row.aic > 0.0 for row in report.rows)
+
+
+def test_detect_diversification_outlier_clades_flags_high_and_low_clades() -> None:
+    report = detect_diversification_outlier_clades(fixture("example_tree.nwk"))
+
+    assert report.global_rate > 0.0
+    assert {row.classification for row in report.observations} == {"baseline", "high", "low"}
+    assert [row.node for row in report.high_diversification_clades] == ["A|B"]
+    assert [row.node for row in report.low_diversification_clades] == ["C|D"]
