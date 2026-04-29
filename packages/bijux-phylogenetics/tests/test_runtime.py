@@ -114,6 +114,11 @@ from bijux_phylogenetics.reports.service import (
     render_tree_uncertainty_report,
     render_tree_report,
 )
+from bijux_phylogenetics.simulation import (
+    simulate_birth_death_trees,
+    simulate_coalescent_trees,
+    write_tree_set,
+)
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
     compare_posterior_tree_sets,
@@ -169,6 +174,36 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
     assert bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
     assert bijux_phylogenetics.render_tree_uncertainty_report is render_tree_uncertainty_report
+
+
+def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(tmp_path: Path) -> None:
+    trees, report = simulate_birth_death_trees(tree_count=2, tip_count=4, seed=7)
+    assert report.model == "birth-death"
+    assert report.tree_count == 2
+    assert report.tip_count == 4
+    assert [tree.tip_count for tree in trees] == [4, 4]
+    assert [row.newick for row in report.records] == [
+        "(((Taxon1:0,Taxon2:0):0.204697722139132,Taxon3:0.204697722139132):0.200894048820103,Taxon4:0.405591770959235);",
+        "((Taxon1:0.075806896024214,(Taxon2:0,Taxon3:0):0.075806896024214):0.054021431036002,Taxon4:0.129828327060217);",
+    ]
+    output_path = tmp_path / "birth-death.trees"
+    write_tree_set(output_path, trees)
+    assert output_path.read_text(encoding="utf-8") == (
+        "(((Taxon1:0,Taxon2:0):0.204697722139132,Taxon3:0.204697722139132):0.200894048820103,Taxon4:0.405591770959235);\n"
+        "((Taxon1:0.075806896024214,(Taxon2:0,Taxon3:0):0.075806896024214):0.054021431036002,Taxon4:0.129828327060217);\n"
+    )
+
+
+def test_simulate_coalescent_trees_returns_requested_sample_size() -> None:
+    trees, report = simulate_coalescent_trees(tree_count=1, tip_count=4, seed=7)
+    assert report.model == "coalescent"
+    assert report.tree_count == 1
+    assert report.tip_count == 4
+    assert sorted(trees[0].tip_names) == ["Taxon1", "Taxon2", "Taxon3", "Taxon4"]
+    assert report.records[0].newick == (
+        "((Taxon1:0.41605101339611,Taxon4:0.41605101339611):0.455215777552457,"
+        "(Taxon2:0.065219140705801,Taxon3:0.065219140705801):0.806047650242766);"
+    )
 
 
 def test_load_tree_set_reports_tree_count_and_topology_diversity() -> None:
