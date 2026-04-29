@@ -18,3 +18,4 @@
 - add explicit MrBayes convergence diagnostics, posterior HTML reports, BEAST-style XML preparation, fossil-calibration and tip-date validation, BEAST log parsing, calibration audit reports, and Bayesian evidence packages
 - embed coding diagnostics and identity matrices in phylo-input reports
 - add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
+- add tree integrity validation, validity decisions, rootedness confidence, node-stable forensic reporting, and external-label safety audits
