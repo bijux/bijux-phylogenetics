@@ -9,6 +9,7 @@ from bijux_phylogenetics.ancestral.common import (
     node_descendant_taxa,
     node_signature,
 )
+from bijux_phylogenetics.discrete_evolution import run_discrete_state_transition_model
 
 
 @dataclass(slots=True)
@@ -23,6 +24,9 @@ class DiscreteAncestralEstimate:
     most_likely_state: str
     state_probabilities: dict[str, float]
     ambiguous: bool
+    confidence: float
+    interpretation: str
+    unstable: bool
 
 
 @dataclass(slots=True)
@@ -41,6 +45,7 @@ class DiscreteAncestralReport:
     analysis_tree_newick: str
     dropped_missing_taxa: list[str]
     warnings: list[str]
+    unstable_nodes: list[str]
     estimates: list[DiscreteAncestralEstimate]
 
 
@@ -53,14 +58,52 @@ def reconstruct_discrete_ancestral_states(
     model: str = "fitch",
 ) -> DiscreteAncestralReport:
     """Reconstruct discrete ancestral states under Fitch parsimony."""
-    if model != "fitch":
-        raise ValueError(f"unsupported discrete ancestral model: {model}")
+    resolved_model = _resolve_discrete_model_name(model)
     dataset = load_discrete_dataset(
         tree_path,
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
     )
+    if resolved_model != "fitch":
+        likelihood_report = run_discrete_state_transition_model(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+            model=resolved_model,
+        )
+        estimates = [
+            _build_discrete_estimate(
+                node=estimate.node,
+                node_name=estimate.node_name,
+                is_tip=estimate.is_tip,
+                descendant_taxa=estimate.descendant_taxa,
+                most_likely_state=estimate.most_likely_state,
+                state_probabilities=estimate.state_probabilities,
+            )
+            for estimate in likelihood_report.estimates
+        ]
+        unstable_nodes = [estimate.node for estimate in estimates if estimate.unstable and not estimate.is_tip]
+        warnings = list(dataset.warnings)
+        if unstable_nodes:
+            warnings.append("one or more discrete ancestral nodes remain unstable across candidate states")
+        return DiscreteAncestralReport(
+            tree_path=tree_path,
+            traits_path=traits_path,
+            taxon_column=dataset.taxon_column,
+            trait=trait,
+            model=resolved_model,
+            taxon_count=len(dataset.taxa),
+            observed_states=dataset.observed_states,
+            state_counts=dataset.state_counts,
+            sparse_states=dataset.sparse_states,
+            analysis_tree_newick=dump_pruned_tree(dataset.tree),
+            dropped_missing_taxa=dataset.dropped_missing_taxa,
+            warnings=warnings,
+            unstable_nodes=unstable_nodes,
+            estimates=estimates,
+        )
     estimates: list[DiscreteAncestralEstimate] = []
 
     def downpass(node) -> set[str]:
@@ -93,30 +136,86 @@ def reconstruct_discrete_ancestral_states(
             probabilities = {state: 1.0 / len(state_set) for state in state_set}
             resolved_state = state_set[0]
         estimates.append(
-            DiscreteAncestralEstimate(
+            _build_discrete_estimate(
                 node=signature,
                 node_name=node.name,
                 is_tip=node.is_leaf(),
                 descendant_taxa=node_descendant_taxa(node),
-                state_set=state_set,
                 most_likely_state=resolved_state,
                 state_probabilities=probabilities,
-                ambiguous=len(state_set) > 1,
             )
         )
+    unstable_nodes = [estimate.node for estimate in estimates if estimate.unstable and not estimate.is_tip]
+    warnings = list(dataset.warnings)
+    if unstable_nodes:
+        warnings.append("one or more discrete ancestral nodes remain unstable across candidate states")
 
     return DiscreteAncestralReport(
         tree_path=tree_path,
         traits_path=traits_path,
         taxon_column=dataset.taxon_column,
         trait=trait,
-        model=model,
+        model=resolved_model,
         taxon_count=len(dataset.taxa),
         observed_states=dataset.observed_states,
         state_counts=dataset.state_counts,
         sparse_states=dataset.sparse_states,
         analysis_tree_newick=dump_pruned_tree(dataset.tree),
         dropped_missing_taxa=dataset.dropped_missing_taxa,
-        warnings=list(dataset.warnings),
+        warnings=warnings,
+        unstable_nodes=unstable_nodes,
         estimates=estimates,
+    )
+
+
+def _resolve_discrete_model_name(model: str) -> str:
+    aliases = {
+        "fitch": "fitch",
+        "equal-rates": "equal-rates",
+        "er": "equal-rates",
+        "symmetric": "symmetric",
+        "sym": "symmetric",
+        "all-rates-different": "all-rates-different",
+        "ard": "all-rates-different",
+    }
+    resolved = aliases.get(model)
+    if resolved is None:
+        raise ValueError(f"unsupported discrete ancestral model: {model}")
+    return resolved
+
+
+def _build_discrete_estimate(
+    *,
+    node: str,
+    node_name: str | None,
+    is_tip: bool,
+    descendant_taxa: list[str],
+    most_likely_state: str,
+    state_probabilities: dict[str, float],
+) -> DiscreteAncestralEstimate:
+    state_set = sorted(state_probabilities)
+    ordered_probabilities = sorted(state_probabilities.values(), reverse=True)
+    confidence = ordered_probabilities[0] if ordered_probabilities else 0.0
+    runner_up = ordered_probabilities[1] if len(ordered_probabilities) > 1 else 0.0
+    unstable = not is_tip and ((confidence - runner_up) < 0.15 or confidence < 0.7)
+    if is_tip:
+        interpretation = "observed tip state"
+    elif unstable:
+        interpretation = "unstable node state"
+    elif confidence >= 0.9:
+        interpretation = "strongly supported node state"
+    else:
+        interpretation = "moderately supported node state"
+    return DiscreteAncestralEstimate(
+        node=node,
+        node_name=node_name,
+        is_tip=is_tip,
+        descendant_taxa=descendant_taxa,
+        state_set=state_set,
+        most_likely_state=most_likely_state,
+        state_probabilities=state_probabilities,
+        ambiguous=len(state_set) > 1,
+        confidence=confidence,
+        interpretation=interpretation,
+        unstable=unstable,
     )

@@ -26,6 +26,8 @@ class ContinuousAncestralEstimate:
     standard_error: float
     lower_95_interval: float
     upper_95_interval: float
+    uncertainty_width: float
+    interpretation: str
 
 
 @dataclass(slots=True)
@@ -43,6 +45,7 @@ class ContinuousAncestralReport:
     dropped_missing_taxa: list[str]
     dropped_non_numeric_taxa: list[str]
     warnings: list[str]
+    unstable_nodes: list[str]
     estimates: list[ContinuousAncestralEstimate]
 
 
@@ -68,6 +71,7 @@ def reconstruct_continuous_ancestral_states(
     )
     global_mean = sum(dataset.values_by_taxon[taxon] for taxon in dataset.taxa) / len(dataset.taxa)
     sigma = _sample_standard_deviation([dataset.values_by_taxon[taxon] for taxon in dataset.taxa])
+    trait_range = max(dataset.values_by_taxon.values()) - min(dataset.values_by_taxon.values()) if dataset.values_by_taxon else 0.0
     estimates: list[ContinuousAncestralEstimate] = []
 
     def visit(node) -> tuple[float, float]:
@@ -84,6 +88,8 @@ def reconstruct_continuous_ancestral_states(
                     standard_error=0.0,
                     lower_95_interval=stable_value(estimate),
                     upper_95_interval=stable_value(estimate),
+                    uncertainty_width=0.0,
+                    interpretation="observed tip value",
                 )
             )
             return estimate, standard_error**2
@@ -108,6 +114,7 @@ def reconstruct_continuous_ancestral_states(
         standard_error = math.sqrt(variance)
         lower = estimate - 1.96 * standard_error
         upper = estimate + 1.96 * standard_error
+        uncertainty_width = max(0.0, upper - lower)
         estimates.append(
             ContinuousAncestralEstimate(
                 node=node_signature(node),
@@ -118,12 +125,22 @@ def reconstruct_continuous_ancestral_states(
                 standard_error=stable_value(standard_error),
                 lower_95_interval=stable_value(lower),
                 upper_95_interval=stable_value(upper),
+                uncertainty_width=stable_value(uncertainty_width),
+                interpretation=_continuous_interpretation(uncertainty_width, trait_range),
             )
         )
         return estimate, variance
 
     visit(dataset.tree.root)
     ordered_estimates = _ordered_estimates(dataset, estimates)
+    unstable_nodes = [
+        estimate.node
+        for estimate in ordered_estimates
+        if not estimate.is_tip and estimate.interpretation == "broad uncertainty"
+    ]
+    warnings = list(dataset.warnings)
+    if unstable_nodes:
+        warnings.append("one or more continuous ancestral estimates have broad uncertainty intervals")
     return ContinuousAncestralReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -135,7 +152,8 @@ def reconstruct_continuous_ancestral_states(
         analysis_tree_newick=dump_pruned_tree(dataset.tree),
         dropped_missing_taxa=dataset.dropped_missing_taxa,
         dropped_non_numeric_taxa=dataset.dropped_non_numeric_taxa,
-        warnings=list(dataset.warnings),
+        warnings=warnings,
+        unstable_nodes=unstable_nodes,
         estimates=ordered_estimates,
     )
 
@@ -157,3 +175,15 @@ def _ordered_estimates(
         for index, node in enumerate(dataset.tree.iter_nodes())
     }
     return sorted(estimates, key=lambda estimate: node_order[estimate.node])
+
+
+def _continuous_interpretation(uncertainty_width: float, trait_range: float) -> str:
+    if uncertainty_width == 0.0:
+        return "observed tip value"
+    scale = max(trait_range, 1e-12)
+    relative_width = uncertainty_width / scale
+    if relative_width <= 0.25:
+        return "narrow uncertainty"
+    if relative_width <= 0.6:
+        return "moderate uncertainty"
+    return "broad uncertainty"
