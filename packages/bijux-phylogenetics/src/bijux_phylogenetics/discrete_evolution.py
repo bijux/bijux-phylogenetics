@@ -10,6 +10,7 @@ import tempfile
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset, node_descendant_taxa, node_signature
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.traits import load_tsv_summary
+from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -109,6 +110,23 @@ class DominantStateBiasReport:
     dominant_fraction: float
     biased: bool
     message: str | None
+
+
+@dataclass(slots=True)
+class GeographicAnalysisReadinessReport:
+    tree_path: Path
+    traits_path: Path
+    taxon_column: str
+    trait: str
+    valid: bool
+    blockers: list[str]
+    warnings: list[str]
+    state_ordering: str
+    ordered_states: list[str]
+    coding_validation: StateCodingValidationReport
+    imbalance: StateImbalanceReport
+    dominant_state_bias: DominantStateBiasReport
+    tree_validation_decision: str
 
 
 @dataclass(slots=True)
@@ -801,6 +819,73 @@ def _summarize_dominant_state_bias(state_counts: dict[str, int]) -> DominantStat
     )
 
 
+def assess_geographic_state_analysis_readiness(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    allowed_states: list[str] | None = None,
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+) -> GeographicAnalysisReadinessReport:
+    """Decide whether one geographic discrete-state analysis is credible enough to run."""
+    tree_validation = validate_tree_path(tree_path)
+    coding = validate_discrete_state_coding(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    imbalance = detect_state_imbalance_problems(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+    )
+    dominant_state_bias = _summarize_dominant_state_bias(imbalance.state_counts)
+    blockers: list[str] = []
+    warnings: list[str] = []
+
+    if not tree_validation.syntax_valid or not tree_validation.biologically_safe:
+        blockers.append("tree validation failed and the geographic analysis is not safe to interpret")
+    if not tree_validation.rooted:
+        blockers.append("geographic ancestral-state analysis requires a rooted tree")
+    if not coding.valid:
+        blockers.append("discrete geographic states contain unsupported labels or coding patterns")
+    if any(warning.code == "single-state-dataset" for warning in imbalance.warnings):
+        blockers.append("geographic analysis requires at least two observed states after matching taxa to the tree")
+    rare_state_count = sum(1 for count in imbalance.state_counts.values() if count < 2)
+    if imbalance.state_counts and rare_state_count == len(imbalance.state_counts):
+        blockers.append("one or more geographic states are too sparse to estimate transitions credibly")
+    if dominant_state_bias.biased:
+        blockers.append("observed geographic states are dominated by one state and the sampling is too biased for credible transition inference")
+
+    warnings.extend(tree_validation.warnings)
+    warnings.extend(warning.message for warning in imbalance.warnings)
+    if dominant_state_bias.message is not None and dominant_state_bias.message not in warnings:
+        warnings.append(dominant_state_bias.message)
+
+    return GeographicAnalysisReadinessReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        taxon_column=coding.taxon_column,
+        trait=trait,
+        valid=not blockers,
+        blockers=blockers,
+        warnings=warnings,
+        state_ordering=state_ordering,
+        ordered_states=list(ordered_states or []),
+        coding_validation=coding,
+        imbalance=imbalance,
+        dominant_state_bias=dominant_state_bias,
+        tree_validation_decision=tree_validation.validity_decision,
+    )
+
+
 def _estimate_transition_support_rows(
     *,
     estimates: list[NodeStateEstimate],
@@ -1300,6 +1385,19 @@ def estimate_ancestral_geographic_states(
     ordered_states: list[str] | None = None,
 ) -> DiscreteStateEvolutionReport:
     """Estimate ancestral geographic states over a rooted tree."""
+    readiness = assess_geographic_state_analysis_readiness(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        allowed_states=allowed_states,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    if not readiness.valid:
+        raise AncestralReconstructionError(
+            "geographic state analysis is inappropriate: " + "; ".join(readiness.blockers)
+        )
     return run_discrete_state_transition_model(
         tree_path,
         traits_path,

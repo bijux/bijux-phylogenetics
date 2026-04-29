@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import pytest
 
 from bijux_phylogenetics.discrete_evolution import (
+    assess_geographic_state_analysis_readiness,
     compare_discrete_state_models,
     detect_state_imbalance_problems,
     estimate_ancestral_geographic_states,
@@ -20,6 +22,7 @@ from bijux_phylogenetics.discrete_evolution import (
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
+from bijux_phylogenetics.errors import AncestralReconstructionError
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -139,6 +142,38 @@ def test_run_discrete_state_transition_model_supports_ordered_states() -> None:
     assert report.state_ordering == "ordered"
     assert report.ordered_states == ["north", "south", "island"]
     assert report.transition_model.ordered_states == ["north", "south", "island"]
+
+
+def test_assess_geographic_state_analysis_readiness_allows_balanced_example() -> None:
+    report = assess_geographic_state_analysis_readiness(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+    )
+    assert report.valid is True
+    assert report.blockers == []
+
+
+def test_assess_geographic_state_analysis_readiness_blocks_sparse_or_single_state_inputs(tmp_path: Path) -> None:
+    sparse_traits = tmp_path / "sparse-geography.tsv"
+    sparse_traits.write_text(
+        "taxon\tregion\nA\tnorth\nB\tsouth\nC\teast\nD\twest\n",
+        encoding="utf-8",
+    )
+    sparse_report = assess_geographic_state_analysis_readiness(
+        fixture("example_tree.nwk"),
+        sparse_traits,
+        trait="region",
+    )
+    assert sparse_report.valid is False
+    assert any("too sparse" in blocker for blocker in sparse_report.blockers)
+
+    with pytest.raises(AncestralReconstructionError):
+        estimate_ancestral_geographic_states(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_geography_single_state.tsv"),
+            trait="region",
+        )
 
 
 def test_estimate_ancestral_geographic_states_and_compare_models_return_node_differences() -> None:
