@@ -11,8 +11,9 @@ last_reviewed: 2026-04-29
 
 `bijux-phylogenetics` provides a governed Python surface for tree validation,
 inspection, comparison, metadata linkage, alignment trimming, coding-sequence
-translation, explicit rooting transforms, deterministic tree rendering,
-publication figure packaging, evidence bundles, and HTML report generation.
+translation, explicit rooting transforms, comparative trait analysis,
+deterministic tree rendering, publication figure packaging, evidence bundles,
+and HTML report generation.
 
 The repository intentionally does not reimplement inference engines. Its
 current product surface is the reproducible orchestration and evidence layer
@@ -30,6 +31,10 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4`
 - `bijux-phylogenetics alignment coding coding.fasta --json`
 - `bijux-phylogenetics alignment translate coding.fasta --out translated.fasta`
+- `bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json`
+- `bijux-phylogenetics comparative contrasts tree.nwk traits.tsv --trait height_cm --json`
+- `bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json`
+- `bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json`
 - `bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
@@ -52,3 +57,10 @@ around trees, alignments, and trait tables.
 - tip annotations can combine categorical markers, continuous bars, metadata strips, and aligned heatmap columns
 - named clades can be collapsed into figure summaries without mutating the input tree
 - figure bundles can be emitted as a reusable package containing `figure.svg`, a JSON manifest, a caption draft, and aligned tip-annotation tables
+
+## Comparative Analysis Highlights
+
+- rooted trees and numeric traits can be checked explicitly for comparative readiness before modeling
+- phylogenetic independent contrasts are available as one deterministic internal-node table per trait
+- trait signal can be summarized with Blomberg's K, Pagel's lambda, and a permutation-based significance surface
+- phylogenetic generalized least-squares accepts one or more numeric predictors and rejects categorical predictors or branch-length-incomplete trees explicitly
