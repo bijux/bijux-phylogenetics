@@ -2,8 +2,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.engines import (
+    build_inference_sensitivity_report,
     build_model_selection_limitations_report,
     compare_fast_and_ml_trees,
+    render_inference_sensitivity_report,
     render_model_selection_limitations_report,
     render_inference_workflow_report,
     run_alignment_trimming,
@@ -216,6 +218,27 @@ print("warning: fasttree fixture approximate support only", file=sys.stderr)
     )
 
 
+def _fake_iqtree_tree_variant(path: Path, *, tree_newick: str) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1])
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".treefile").write_text({tree_newick!r} + "\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+print("warning: iqtree fixture tree inference", file=sys.stderr)
+""",
+    )
+
+
 def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(tmp_path: Path) -> None:
     executable = _fake_mafft(tmp_path / "mafft-fixture")
     input_path = tmp_path / "unaligned.fasta"
@@ -388,3 +411,78 @@ def test_model_selection_limitations_report_records_interpretation_boundaries(tm
     assert report.interpretation_limits
     assert rendered.output_path.exists()
     assert rendered.report_kind == "model-selection-limitations"
+
+
+def test_inference_sensitivity_report_summarizes_filter_model_engine_and_bootstrap_changes(tmp_path: Path) -> None:
+    baseline_exec = _fake_iqtree_tree_variant(
+        tmp_path / "baseline-iqtree",
+        tree_newick="((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);",
+    )
+    filtered_exec = _fake_iqtree_tree_variant(
+        tmp_path / "filtered-iqtree",
+        tree_newick="((A:0.1,C:0.1):0.25,(B:0.1,D:0.1):0.25);",
+    )
+    model_exec = _fake_iqtree_tree_variant(
+        tmp_path / "model-iqtree",
+        tree_newick="((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);",
+    )
+    fast_exec = _fake_fasttree(tmp_path / "fasttree-fixture")
+    bootstrap_exec = _fake_iqtree(tmp_path / "bootstrap-iqtree")
+
+    baseline = run_maximum_likelihood_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "baseline",
+        model="GTR+G",
+        executable=baseline_exec,
+        prefix="baseline",
+    )
+    filtered = run_maximum_likelihood_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "filtered",
+        model="GTR+G",
+        executable=filtered_exec,
+        prefix="filtered",
+    )
+    compared_model = run_maximum_likelihood_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        model="HKY+G",
+        executable=model_exec,
+        prefix="model",
+    )
+    fast = run_fast_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=fast_exec,
+    )
+    bootstrap = run_bootstrap_support_estimation(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=bootstrap_exec,
+        prefix="bootstrap",
+    )
+
+    report = build_inference_sensitivity_report(
+        baseline.manifest_path,
+        filtered_manifest_path=filtered.manifest_path,
+        compare_model_manifest_path=compared_model.manifest_path,
+        compare_engine_manifest_path=fast.manifest_path,
+        bootstrap_manifest_path=bootstrap.manifest_path,
+    )
+    rendered = render_inference_sensitivity_report(
+        baseline_manifest_path=baseline.manifest_path,
+        filtered_manifest_path=filtered.manifest_path,
+        compare_model_manifest_path=compared_model.manifest_path,
+        compare_engine_manifest_path=fast.manifest_path,
+        bootstrap_manifest_path=bootstrap.manifest_path,
+        out_path=tmp_path / "inference-sensitivity.html",
+    )
+
+    assert report.alignment_filtering_sensitivity is not None
+    assert report.model_sensitivity is not None
+    assert report.engine_sensitivity is not None
+    assert report.bootstrap_support is not None
+    assert report.weak_backbone is not None
+    assert rendered.output_path.exists()
+    assert rendered.machine_manifest["has_bootstrap_support"] is True
