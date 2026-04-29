@@ -1,3 +1,4 @@
+from .evidence import BayesianEvidencePackageReport, build_bayesian_evidence_package
 from .beast import (
     BeastConvergenceReport,
     BeastLogReport,
@@ -40,6 +41,7 @@ from .reports import (
 )
 
 __all__ = [
+    "BayesianEvidencePackageReport",
     "BayesianPosteriorReportBuildResult",
     "CalibrationAuditReportBuildResult",
     "BeastConvergenceReport",
@@ -57,6 +59,7 @@ __all__ = [
     "MrBayesTraceReport",
     "MrBayesTraceRow",
     "assess_mrbayes_convergence",
+    "build_bayesian_evidence_package",
     "compute_mrbayes_effective_sample_sizes",
     "assess_beast_convergence",
     "detect_impossible_calibration_constraints",

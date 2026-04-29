@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_convergence,
@@ -10,6 +11,7 @@ from bijux_phylogenetics.bayesian.beast import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
+from bijux_phylogenetics.bayesian.evidence import build_bayesian_evidence_package
 from bijux_phylogenetics.bayesian.reports import render_calibration_audit_report
 
 
@@ -130,3 +132,41 @@ def test_render_calibration_audit_report_includes_calibration_and_tip_date_secti
     assert "fossil-calibrations" in html
     assert "impossible-constraints" in html
     assert "tip-dates" in html
+
+
+def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(tmp_path: Path) -> None:
+    config_path = tmp_path / "analysis.xml"
+    report_path = tmp_path / "calibration-audit.html"
+    diagnostic_path = tmp_path / "diagnostics.json"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        config_path,
+        tree_path=fixture("example_tree_named_clades.nwk"),
+        calibration_path=fixture("example_calibrations.tsv"),
+        tip_dates_path=fixture("example_tip_dates.tsv"),
+    )
+    render_calibration_audit_report(
+        tree_path=fixture("example_tree_named_clades.nwk"),
+        calibration_path=fixture("example_calibrations.tsv"),
+        tip_dates_path=fixture("example_tip_dates.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        out_path=report_path,
+    )
+    diagnostic_path.write_text(json.dumps({"warning_count": 0}, indent=2) + "\n", encoding="utf-8")
+
+    bundle = build_bayesian_evidence_package(
+        bundle_root=tmp_path / "bayesian-bundle",
+        input_paths=[fixture("example_alignment.fasta"), fixture("example_calibrations.tsv"), fixture("example_tip_dates.tsv")],
+        config_paths=[config_path],
+        tree_paths=[fixture("example_tree_named_clades.nwk")],
+        log_paths=[fixture("example_beast.log")],
+        diagnostic_paths=[diagnostic_path],
+        report_paths=[report_path],
+    )
+
+    assert bundle.valid is True
+    assert bundle.file_count == 8
+    assert bundle.config_count == 1
+    assert bundle.tree_count == 1
+    assert bundle.log_count == 1
+    assert bundle.report_count == 1
