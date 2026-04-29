@@ -62,6 +62,10 @@ bijux-phylogenetics --help
 - export joined metadata rows and missing trait-value diagnostics
 - inspect alignment alphabets, composition, GC content, duplicates, raw-sequence length outliers, sliding-window quality, suspicious alignment regions, coding stop codons, and frameshift-like sequence lengths
 - classify FASTA inputs as aligned, raw-sequence, or equal-length-but-shape-ambiguous and report method-specific alignment readiness
+- detect mixed coding versus noncoding behavior inside the same nucleotide dataset
+- define named alignment-filtering profiles, generate cleaned alignments, compare original versus cleaned versions, and warn when filtering removes signal or biases taxon groups
+- score alignment quality with transparent components and emit one-shot alignment forensic reports
+- audit tree, metadata, traits, alignment, tip dates, and calibrations together through one-shot dataset readiness decisions
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
 - compute p-distance or Jukes-Cantor DNA distance matrices with pairwise-deletion or complete-deletion gap handling
@@ -81,9 +85,13 @@ bijux-phylogenetics --help
 
 ```bash
 bijux-phylogenetics alignment classify sequences.fasta --json
+bijux-phylogenetics alignment profiles --json
 bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json
 bijux-phylogenetics alignment readiness alignment.fasta --json
 bijux-phylogenetics alignment length-outliers sequences.fasta --json
+bijux-phylogenetics alignment forensic alignment.fasta --json
+bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cleaned.fasta --json
+bijux-phylogenetics alignment compare alignment.fasta cleaned.fasta --json
 bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4
 bijux-phylogenetics alignment distance-matrix alignment.fasta --model p-distance --out distances.tsv
 bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out upgma-tree.nwk
@@ -119,6 +127,7 @@ bijux-phylogenetics simulate alignment-dna tree.nwk --sequence-length 500 --out 
 bijux-phylogenetics benchmark tree-comparison --replicates 3 --json
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
+bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
 
