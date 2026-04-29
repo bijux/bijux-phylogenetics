@@ -13,6 +13,14 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
+from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
+from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.service import (
+    compare_continuous_ancestral_models,
+    render_ancestral_state_report,
+    render_ancestral_state_tree,
+    write_ancestral_state_table,
+)
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait, summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls
 from bijux_phylogenetics.comparative.signal import (
@@ -297,6 +305,13 @@ def _command_inputs(args: Any) -> list[Path | str]:
         return [args.matrix]
     if args.command == "comparative":
         return [args.tree, args.table]
+    if args.command == "ancestral":
+        inputs = [args.tree, args.table]
+        if getattr(args, "out", None) is not None:
+            inputs.append(args.out)
+        if getattr(args, "table_out", None) is not None:
+            inputs.append(args.table_out)
+        return inputs
     if args.command == "tree-set":
         if args.tree_set_command == "compare":
             return [args.left, args.right]
@@ -633,6 +648,81 @@ def build_parser() -> argparse.ArgumentParser:
     )
     comparative_pgls.add_argument("--json", action="store_true", help="Emit the model result as JSON.")
     _add_manifest_argument(comparative_pgls)
+
+    ancestral = subparsers.add_parser(
+        get_command_spec("ancestral").name,
+        help=get_command_spec("ancestral").summary,
+    )
+    ancestral_subparsers = ancestral.add_subparsers(dest="ancestral_command", required=True)
+    ancestral_continuous = ancestral_subparsers.add_parser(
+        "continuous",
+        help="Reconstruct ancestral states for a continuous trait.",
+    )
+    ancestral_continuous.add_argument("tree", type=Path)
+    ancestral_continuous.add_argument("table", type=Path)
+    ancestral_continuous.add_argument("--trait", required=True)
+    ancestral_continuous.add_argument("--taxon-column")
+    ancestral_continuous.add_argument("--model", choices=("brownian", "ou"), default="brownian")
+    ancestral_continuous.add_argument("--alpha", type=float, default=1.0)
+    ancestral_continuous.add_argument("--table-out", type=Path)
+    ancestral_continuous.add_argument("--json", action="store_true", help="Emit the reconstruction as JSON.")
+    _add_manifest_argument(ancestral_continuous)
+    ancestral_discrete = ancestral_subparsers.add_parser(
+        "discrete",
+        help="Reconstruct ancestral states for a discrete trait.",
+    )
+    ancestral_discrete.add_argument("tree", type=Path)
+    ancestral_discrete.add_argument("table", type=Path)
+    ancestral_discrete.add_argument("--trait", required=True)
+    ancestral_discrete.add_argument("--taxon-column")
+    ancestral_discrete.add_argument("--model", choices=("fitch",), default="fitch")
+    ancestral_discrete.add_argument("--table-out", type=Path)
+    ancestral_discrete.add_argument("--json", action="store_true", help="Emit the reconstruction as JSON.")
+    _add_manifest_argument(ancestral_discrete)
+    ancestral_compare = ancestral_subparsers.add_parser(
+        "compare",
+        help="Compare two continuous ancestral-state models node by node.",
+    )
+    ancestral_compare.add_argument("tree", type=Path)
+    ancestral_compare.add_argument("table", type=Path)
+    ancestral_compare.add_argument("--trait", required=True)
+    ancestral_compare.add_argument("--taxon-column")
+    ancestral_compare.add_argument("--left-model", choices=("brownian", "ou"), default="brownian")
+    ancestral_compare.add_argument("--right-model", choices=("brownian", "ou"), default="ou")
+    ancestral_compare.add_argument("--left-alpha", type=float, default=1.0)
+    ancestral_compare.add_argument("--right-alpha", type=float, default=1.0)
+    ancestral_compare.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    _add_manifest_argument(ancestral_compare)
+    ancestral_render = ancestral_subparsers.add_parser(
+        "render",
+        help="Render a tree annotated with reconstructed ancestral states.",
+    )
+    ancestral_render.add_argument("tree", type=Path)
+    ancestral_render.add_argument("table", type=Path)
+    ancestral_render.add_argument("--trait", required=True)
+    ancestral_render.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_render.add_argument("--taxon-column")
+    ancestral_render.add_argument("--model")
+    ancestral_render.add_argument("--alpha", type=float, default=1.0)
+    ancestral_render.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
+    ancestral_render.add_argument("--out", required=True, type=Path)
+    ancestral_render.add_argument("--json", action="store_true", help="Emit the render result as JSON.")
+    _add_manifest_argument(ancestral_render)
+    ancestral_report = ancestral_subparsers.add_parser(
+        "report",
+        help="Render an HTML report for ancestral-state reconstruction.",
+    )
+    ancestral_report.add_argument("tree", type=Path)
+    ancestral_report.add_argument("table", type=Path)
+    ancestral_report.add_argument("--trait", required=True)
+    ancestral_report.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_report.add_argument("--taxon-column")
+    ancestral_report.add_argument("--model")
+    ancestral_report.add_argument("--alpha", type=float, default=1.0)
+    ancestral_report.add_argument("--compare-model")
+    ancestral_report.add_argument("--out", required=True, type=Path)
+    ancestral_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(ancestral_report)
 
     distance = subparsers.add_parser(get_command_spec("distance").name, help=get_command_spec("distance").summary)
     distance_subparsers = distance.add_subparsers(dest="distance_command", required=True)
@@ -1698,6 +1788,183 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "inputs": input_report,
                         "model": report,
                     },
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "ancestral":
+            if args.ancestral_command == "continuous":
+                report = reconstruct_continuous_ancestral_states(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    alpha=args.alpha,
+                )
+                outputs: list[Path | str] = []
+                if args.table_out is not None:
+                    outputs.append(write_ancestral_state_table(args.table_out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "estimate_count": len(report.estimates),
+                            "model": report.model,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "discrete":
+                report = reconstruct_discrete_ancestral_states(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                )
+                outputs: list[Path | str] = []
+                if args.table_out is not None:
+                    outputs.append(write_ancestral_state_table(args.table_out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "estimate_count": len(report.estimates),
+                            "state_count": len(report.observed_states),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "compare":
+                report = compare_continuous_ancestral_models(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    left_model=args.left_model,
+                    right_model=args.right_model,
+                    left_alpha=args.left_alpha,
+                    right_alpha=args.right_alpha,
+                )
+                outputs = _finalize_outputs(args, command="ancestral", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "compared_node_count": len(report.rows),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "render":
+                if args.kind == "continuous":
+                    resolved_model = args.model or "brownian"
+                    reconstruction = reconstruct_continuous_ancestral_states(
+                        args.tree,
+                        args.table,
+                        trait=args.trait,
+                        taxon_column=args.taxon_column,
+                        model=resolved_model,
+                        alpha=args.alpha,
+                    )
+                else:
+                    resolved_model = args.model or "fitch"
+                    reconstruction = reconstruct_discrete_ancestral_states(
+                        args.tree,
+                        args.table,
+                        trait=args.trait,
+                        taxon_column=args.taxon_column,
+                        model=resolved_model,
+                    )
+                result = render_ancestral_state_tree(
+                    args.tree,
+                    reconstruction,
+                    out_path=args.out,
+                    layout=args.layout,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=[result.output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=getattr(reconstruction, "warnings", []),
+                        metrics={
+                            "tip_count": result.tip_count,
+                            "rendered_internal_annotation_count": result.rendered_internal_annotation_count,
+                            "layout": result.layout,
+                        },
+                        data={
+                            "reconstruction": reconstruction,
+                            "render": result,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            resolved_model = args.model or ("brownian" if args.kind == "continuous" else "fitch")
+            result = render_ancestral_state_report(
+                tree_path=args.tree,
+                traits_path=args.table,
+                trait=args.trait,
+                reconstruction_kind=args.kind,
+                out_path=args.out,
+                taxon_column=args.taxon_column,
+                model=resolved_model,
+                alpha=args.alpha,
+                compare_model=args.compare_model,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="ancestral",
+                inputs=[args.tree, args.table],
+                outputs=[result.output_path, args.out.with_suffix(".svg")],
+            )
+            _print_result(
+                build_command_result(
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                    metrics={
+                        "report_kind": result.report_kind,
+                        "reconstruction_kind": result.reconstruction_kind,
+                    },
+                    data=result,
                 ),
                 json_output=args.json,
             )

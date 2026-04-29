@@ -58,6 +58,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("comparative-report",),
     ),
     CommandSpec(
+        name="ancestral",
+        domain="ancestral-state",
+        summary="Reconstruct, compare, render, and report ancestral trait states.",
+        inputs=("tree", "traits-table"),
+        outputs=("ancestral-state-report",),
+    ),
+    CommandSpec(
         name="distance",
         domain="distance-analysis",
         summary="Validate, build, and report on explicit distance matrices.",
