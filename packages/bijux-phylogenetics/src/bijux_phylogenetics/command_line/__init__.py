@@ -46,6 +46,13 @@ from bijux_phylogenetics.comparative.models import (
     validate_comparative_reference_examples,
 )
 from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls, run_pgls_multiple_testing
+from bijux_phylogenetics.comparative.reporting import (
+    build_comparative_method_report,
+    build_trait_influence_report,
+    compare_comparative_results_across_pruning,
+    compare_comparative_results_across_trees,
+    write_comparative_method_report,
+)
 from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
@@ -1016,6 +1023,78 @@ def build_parser() -> argparse.ArgumentParser:
     )
     comparative_multiple_testing.add_argument("--json", action="store_true", help="Emit the correction report as JSON.")
     _add_manifest_argument(comparative_multiple_testing)
+    comparative_report = comparative_subparsers.add_parser(
+        "report",
+        help="Build an integrated comparative-method report.",
+    )
+    comparative_report.add_argument("tree", type=Path)
+    comparative_report.add_argument("table", type=Path)
+    comparative_report.add_argument("--response")
+    comparative_report.add_argument("--predictors", nargs="+")
+    comparative_report.add_argument("--formula")
+    comparative_report.add_argument("--taxon-column")
+    comparative_report.add_argument("--out", type=Path)
+    comparative_report.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_report.add_argument("--json", action="store_true", help="Emit the comparative report as JSON.")
+    _add_manifest_argument(comparative_report)
+    comparative_influence = comparative_subparsers.add_parser(
+        "influence",
+        help="Identify predictor terms and taxa driving one comparative result.",
+    )
+    comparative_influence.add_argument("tree", type=Path)
+    comparative_influence.add_argument("table", type=Path)
+    comparative_influence.add_argument("--response")
+    comparative_influence.add_argument("--predictors", nargs="+")
+    comparative_influence.add_argument("--formula")
+    comparative_influence.add_argument("--taxon-column")
+    comparative_influence.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_influence.add_argument("--json", action="store_true", help="Emit the influence report as JSON.")
+    _add_manifest_argument(comparative_influence)
+    comparative_compare_trees = comparative_subparsers.add_parser(
+        "compare-trees",
+        help="Compare comparative results across two alternative trees.",
+    )
+    comparative_compare_trees.add_argument("left_tree", type=Path)
+    comparative_compare_trees.add_argument("right_tree", type=Path)
+    comparative_compare_trees.add_argument("table", type=Path)
+    comparative_compare_trees.add_argument("--response")
+    comparative_compare_trees.add_argument("--predictors", nargs="+")
+    comparative_compare_trees.add_argument("--formula")
+    comparative_compare_trees.add_argument("--taxon-column")
+    comparative_compare_trees.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_compare_trees.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    _add_manifest_argument(comparative_compare_trees)
+    comparative_compare_pruning = comparative_subparsers.add_parser(
+        "compare-pruning",
+        help="Compare comparative results before and after explicit pruning.",
+    )
+    comparative_compare_pruning.add_argument("tree", type=Path)
+    comparative_compare_pruning.add_argument("table", type=Path)
+    comparative_compare_pruning.add_argument("--response")
+    comparative_compare_pruning.add_argument("--predictors", nargs="+")
+    comparative_compare_pruning.add_argument("--formula")
+    comparative_compare_pruning.add_argument("--drop-taxa", nargs="+")
+    comparative_compare_pruning.add_argument("--keep-taxa", nargs="+")
+    comparative_compare_pruning.add_argument("--taxon-column")
+    comparative_compare_pruning.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_compare_pruning.add_argument("--json", action="store_true", help="Emit the pruning comparison as JSON.")
+    _add_manifest_argument(comparative_compare_pruning)
 
     ancestral = subparsers.add_parser(
         get_command_spec("ancestral").name,
@@ -3051,6 +3130,121 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "response_count": len(report.responses),
                             "test_count": len(report.rows),
                             "significant_count": sum(1 for row in report.rows if row.significant),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "report":
+                report = build_comparative_method_report(
+                    args.tree,
+                    args.table,
+                    response=args.response,
+                    predictors=list(args.predictors or []),
+                    formula=args.formula,
+                    taxon_column=args.taxon_column,
+                    lambda_value=lambda_value,
+                )
+                if args.out is not None:
+                    write_comparative_method_report(args.out, report)
+                outputs = _finalize_outputs(
+                    args,
+                    command="comparative",
+                    inputs=[args.tree, args.table],
+                    outputs=[args.out] if args.out else [],
+                )
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": report.snapshot.pgls_model.taxon_count,
+                            "selected_model": report.snapshot.model_comparison.better_model,
+                            "audit_row_count": len(report.snapshot.audit_rows),
+                            "limitation_count": len(report.snapshot.limitations),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "influence":
+                report = build_trait_influence_report(
+                    args.tree,
+                    args.table,
+                    response=args.response,
+                    predictors=list(args.predictors or []),
+                    formula=args.formula,
+                    taxon_column=args.taxon_column,
+                    lambda_value=lambda_value,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "predictor_count": len(report.predictor_rows),
+                            "taxon_count": len(report.taxon_rows),
+                            "selected_model": report.selected_model,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "compare-trees":
+                report = compare_comparative_results_across_trees(
+                    args.left_tree,
+                    args.right_tree,
+                    args.table,
+                    response=args.response,
+                    predictors=list(args.predictors or []),
+                    formula=args.formula,
+                    taxon_column=args.taxon_column,
+                    lambda_value=lambda_value,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.left_tree, args.right_tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.left_tree, args.right_tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "coefficient_delta_count": len(report.coefficient_deltas),
+                            "left_selected_model": report.left_selected_model,
+                            "right_selected_model": report.right_selected_model,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "compare-pruning":
+                report = compare_comparative_results_across_pruning(
+                    args.tree,
+                    args.table,
+                    response=args.response,
+                    predictors=list(args.predictors or []),
+                    formula=args.formula,
+                    drop_taxa=list(args.drop_taxa or []),
+                    keep_taxa=list(args.keep_taxa or []),
+                    taxon_column=args.taxon_column,
+                    lambda_value=lambda_value,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "baseline_taxa": len(report.baseline_taxa),
+                            "pruned_taxa": len(report.pruned_taxa),
+                            "dropped_taxa": len(report.dropped_taxa),
                         },
                         data=report,
                     ),

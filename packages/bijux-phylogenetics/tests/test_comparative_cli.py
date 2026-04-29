@@ -167,3 +167,93 @@ def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> Non
     assert exit_code == 0
     assert payload["metrics"]["response_count"] == 2
     assert payload["metrics"]["test_count"] == 4
+
+
+def test_comparative_report_cli_reports_audit_and_limitations(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "report",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["audit_row_count"] == 3
+    assert payload["metrics"]["limitation_count"] >= 2
+
+
+def test_comparative_influence_cli_reports_taxa(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "influence",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+
+
+def test_comparative_compare_trees_cli_reports_deltas(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "compare-trees",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_topology_diff.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["coefficient_delta_count"] >= 1
+
+
+def test_comparative_compare_pruning_cli_reports_dropped_taxa(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "compare-pruning",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_interaction.tsv")),
+            "--formula",
+            "response ~ predictor_one + habitat",
+            "--drop-taxa",
+            "F",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["dropped_taxa"] == 1
