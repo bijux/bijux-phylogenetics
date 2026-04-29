@@ -4,7 +4,11 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics
-from bijux_phylogenetics.benchmark import benchmark_tree_validation
+from bijux_phylogenetics.benchmark import (
+    benchmark_alignment_diagnostics,
+    benchmark_tree_comparison,
+    benchmark_tree_validation,
+)
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
@@ -327,6 +331,30 @@ def test_benchmark_tree_validation_reports_runtime_and_memory_by_size_class() ->
         ("small", 4),
         ("medium", 8),
         ("large", 16),
+    ]
+    assert all(row.runtime_seconds >= 0.0 for row in report.observations)
+    assert all(row.peak_memory_bytes >= 0 for row in report.observations)
+
+
+def test_benchmark_tree_comparison_reports_scaling_curve() -> None:
+    report = benchmark_tree_comparison(replicates=1, taxon_counts=[4, 8, 16])
+    assert report.replicates == 1
+    assert [(row.label, row.item_count) for row in report.observations] == [
+        ("taxa-4", 4),
+        ("taxa-8", 8),
+        ("taxa-16", 16),
+    ]
+    assert all(row.runtime_seconds >= 0.0 for row in report.observations)
+    assert all(row.peak_memory_bytes >= 0 for row in report.observations)
+
+
+def test_benchmark_alignment_diagnostics_reports_runtime_and_memory() -> None:
+    report = benchmark_alignment_diagnostics(replicates=1, sequence_counts=[4, 8, 16], sequence_length=24)
+    assert report.replicates == 1
+    assert [(row.label, row.item_count) for row in report.observations] == [
+        ("sequences-4", 4),
+        ("sequences-8", 8),
+        ("sequences-16", 16),
     ]
     assert all(row.runtime_seconds >= 0.0 for row in report.observations)
     assert all(row.peak_memory_bytes >= 0 for row in report.observations)

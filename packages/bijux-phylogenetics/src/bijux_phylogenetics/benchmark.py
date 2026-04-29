@@ -6,9 +6,12 @@ import tracemalloc
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.io.fasta import build_alignment_quality_report
 from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.simulation import simulate_dna_alignment, write_simulated_alignment
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +24,18 @@ class BenchmarkObservation:
 
 @dataclass(slots=True)
 class TreeValidationBenchmarkReport:
+    replicates: int
+    observations: list[BenchmarkObservation]
+
+
+@dataclass(slots=True)
+class TreeComparisonBenchmarkReport:
+    replicates: int
+    observations: list[BenchmarkObservation]
+
+
+@dataclass(slots=True)
+class AlignmentDiagnosticsBenchmarkReport:
     replicates: int
     observations: list[BenchmarkObservation]
 
@@ -65,6 +80,19 @@ def _build_balanced_tree(tip_count: int, *, branch_length: float = 0.1, prefix: 
     return PhyloTree(root=root, source_format="newick")
 
 
+def _build_caterpillar_tree(tip_count: int, *, branch_length: float = 0.1, prefix: str = "Taxon") -> PhyloTree:
+    if tip_count < 2:
+        raise ValueError(f"tip_count must be at least 2, got {tip_count}")
+    root = TreeNode(children=[TreeNode(name=f"{prefix}1", branch_length=branch_length), TreeNode(name=f"{prefix}2", branch_length=branch_length)])
+    current = root
+    for index in range(3, tip_count + 1):
+        new_internal = TreeNode(branch_length=branch_length, children=[current.children.pop(), TreeNode(name=f"{prefix}{index}", branch_length=branch_length)])
+        current.children.append(new_internal)
+        current = new_internal
+    root.branch_length = None
+    return PhyloTree(root=root, source_format="newick")
+
+
 def benchmark_tree_validation(
     *,
     replicates: int = 3,
@@ -88,3 +116,68 @@ def benchmark_tree_validation(
                 )
             )
     return TreeValidationBenchmarkReport(replicates=replicates, observations=observations)
+
+
+def benchmark_tree_comparison(
+    *,
+    replicates: int = 3,
+    taxon_counts: list[int] | None = None,
+) -> TreeComparisonBenchmarkReport:
+    """Benchmark shared-taxon tree comparison across increasing taxon counts."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    counts = taxon_counts or [8, 16, 32, 64, 128]
+    observations: list[BenchmarkObservation] = []
+    with tempfile.TemporaryDirectory(prefix="bijux-tree-comparison-") as tmpdir:
+        tmp_path = Path(tmpdir)
+        for tip_count in counts:
+            left_path = write_newick(tmp_path / f"compare-left-{tip_count}.nwk", _build_balanced_tree(tip_count))
+            right_path = write_newick(tmp_path / f"compare-right-{tip_count}.nwk", _build_caterpillar_tree(tip_count))
+            observations.append(
+                _measure(
+                    f"taxa-{tip_count}",
+                    tip_count,
+                    replicates=replicates,
+                    callback=lambda left=left_path, right=right_path: compare_tree_paths(left, right),
+                )
+            )
+    return TreeComparisonBenchmarkReport(replicates=replicates, observations=observations)
+
+
+def benchmark_alignment_diagnostics(
+    *,
+    replicates: int = 3,
+    sequence_counts: list[int] | None = None,
+    sequence_length: int = 128,
+) -> AlignmentDiagnosticsBenchmarkReport:
+    """Benchmark alignment-quality diagnostics across increasing sequence counts."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    counts = sequence_counts or [8, 16, 32, 64, 128]
+    observations: list[BenchmarkObservation] = []
+    with tempfile.TemporaryDirectory(prefix="bijux-alignment-diagnostics-") as tmpdir:
+        tmp_path = Path(tmpdir)
+        for sequence_count in counts:
+            tree_path = write_newick(
+                tmp_path / f"alignment-tree-{sequence_count}.nwk",
+                _build_balanced_tree(sequence_count),
+            )
+            alignment_report = simulate_dna_alignment(
+                tree_path,
+                sequence_length=sequence_length,
+                substitution_rate=1.0,
+                seed=sequence_count,
+            )
+            alignment_path = write_simulated_alignment(
+                tmp_path / f"alignment-{sequence_count}.fasta",
+                alignment_report,
+            )
+            observations.append(
+                _measure(
+                    f"sequences-{sequence_count}",
+                    sequence_count,
+                    replicates=replicates,
+                    callback=lambda path=alignment_path: build_alignment_quality_report(path),
+                )
+            )
+    return AlignmentDiagnosticsBenchmarkReport(replicates=replicates, observations=observations)
