@@ -66,6 +66,7 @@ bijux-phylogenetics --help
 - define named alignment-filtering profiles, generate cleaned alignments, compare original versus cleaned versions, and warn when filtering removes signal or biases taxon groups
 - score alignment quality with transparent components and emit one-shot alignment forensic reports
 - audit tree, metadata, traits, alignment, tip dates, and calibrations together through one-shot dataset readiness decisions
+- generate taxon crosswalk tables, completeness matrices, exclusion tables, ordering-drift audits, pruning-step retention summaries, and named readiness levels for reviewer-facing dataset inspection
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
 - compute p-distance or Jukes-Cantor DNA distance matrices with pairwise-deletion or complete-deletion gap handling
