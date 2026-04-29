@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from math import exp, sqrt
 from pathlib import Path
 
+from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
 from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -34,6 +35,15 @@ class SimulatedContinuousTrait:
     value: float
 
 
+@dataclass(frozen=True, slots=True)
+class SimulatedContinuousNode:
+    node: str
+    node_name: str | None
+    is_tip: bool
+    descendant_taxa: list[str]
+    value: float
+
+
 @dataclass(slots=True)
 class ContinuousTraitSimulationReport:
     model: str
@@ -45,11 +55,21 @@ class ContinuousTraitSimulationReport:
     alpha: float | None
     theta: float | None
     traits: list[SimulatedContinuousTrait]
+    node_values: list[SimulatedContinuousNode]
 
 
 @dataclass(frozen=True, slots=True)
 class SimulatedDiscreteTrait:
     taxon: str
+    state: str
+
+
+@dataclass(frozen=True, slots=True)
+class SimulatedDiscreteNode:
+    node: str
+    node_name: str | None
+    is_tip: bool
+    descendant_taxa: list[str]
     state: str
 
 
@@ -63,6 +83,7 @@ class DiscreteTraitSimulationReport:
     transition_rate: float
     root_state: str
     traits: list[SimulatedDiscreteTrait]
+    node_states: list[SimulatedDiscreteNode]
 
 
 @dataclass(slots=True)
@@ -243,6 +264,38 @@ def _iter_tip_trait_values(
     return values
 
 
+def _iter_node_trait_values(
+    tree: PhyloTree,
+    *,
+    root_state,
+    propagate,
+) -> dict[str, object]:
+    values: dict[str, object] = {}
+
+    def visit(node: TreeNode, state) -> None:
+        values[node_signature(node)] = state
+        if node.is_leaf():
+            return
+        for child in node.children:
+            branch_length = max(child.branch_length or 0.0, 0.0)
+            visit(child, propagate(state, branch_length))
+
+    visit(tree.root, root_state)
+    return values
+
+
+def _tip_values_from_node_map(tree: PhyloTree, node_values: dict[str, object]) -> dict[str, object]:
+    return {
+        node.name: (
+            round(float(node_values[node_signature(node)]), 15)
+            if isinstance(node_values[node_signature(node)], float)
+            else node_values[node_signature(node)]
+        )
+        for node in tree.iter_leaves()
+        if node.name is not None
+    }
+
+
 def _poisson_count(expected_changes: float, rng: random.Random) -> int:
     if expected_changes <= 0.0:
         return 0
@@ -351,11 +404,12 @@ def simulate_brownian_traits(
         raise ValueError(f"sigma must be nonnegative, got {sigma}")
     tree = load_tree(tree_path)
     rng = random.Random(seed)
-    values = _iter_tip_trait_values(
+    node_values = _iter_node_trait_values(
         tree,
         root_state=root_state,
         propagate=lambda state, branch_length: state + rng.gauss(0.0, sigma * sqrt(branch_length)),
     )
+    values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
         model="brownian-motion",
         tree_path=tree_path,
@@ -368,6 +422,16 @@ def simulate_brownian_traits(
         traits=[
             SimulatedContinuousTrait(taxon=taxon, value=value)
             for taxon, value in sorted(values.items())
+        ],
+        node_values=[
+            SimulatedContinuousNode(
+                node=node_signature(node),
+                node_name=node.name,
+                is_tip=node.is_leaf(),
+                descendant_taxa=node_descendant_taxa(node),
+                value=float(format(node_values[node_signature(node)], ".15g")),
+            )
+            for node in tree.iter_nodes()
         ],
     )
 
@@ -398,7 +462,8 @@ def simulate_ou_traits(
         variance = (sigma ** 2) * (1.0 - exp(-2.0 * alpha * branch_length)) / (2.0 * alpha)
         return mean + rng.gauss(0.0, sqrt(max(variance, 0.0)))
 
-    values = _iter_tip_trait_values(tree, root_state=root_state, propagate=propagate)
+    node_values = _iter_node_trait_values(tree, root_state=root_state, propagate=propagate)
+    values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
         model="ornstein-uhlenbeck",
         tree_path=tree_path,
@@ -411,6 +476,16 @@ def simulate_ou_traits(
         traits=[
             SimulatedContinuousTrait(taxon=taxon, value=value)
             for taxon, value in sorted(values.items())
+        ],
+        node_values=[
+            SimulatedContinuousNode(
+                node=node_signature(node),
+                node_name=node.name,
+                is_tip=node.is_leaf(),
+                descendant_taxa=node_descendant_taxa(node),
+                value=float(format(node_values[node_signature(node)], ".15g")),
+            )
+            for node in tree.iter_nodes()
         ],
     )
 
@@ -434,7 +509,7 @@ def simulate_discrete_traits(
     starting_state = root_state or unique_states[0]
     if starting_state not in unique_states:
         raise ValueError(f"root_state '{starting_state}' is not present in states")
-    values = _iter_tip_trait_values(
+    node_values = _iter_node_trait_values(
         tree,
         root_state=starting_state,
         propagate=lambda state, branch_length: _simulate_symmetric_state_trajectory(
@@ -445,6 +520,7 @@ def simulate_discrete_traits(
             rng=rng,
         ),
     )
+    values = _tip_values_from_node_map(tree, node_values)
     return DiscreteTraitSimulationReport(
         model="symmetric-discrete",
         tree_path=tree_path,
@@ -456,6 +532,16 @@ def simulate_discrete_traits(
         traits=[
             SimulatedDiscreteTrait(taxon=taxon, state=state)
             for taxon, state in sorted(values.items())
+        ],
+        node_states=[
+            SimulatedDiscreteNode(
+                node=node_signature(node),
+                node_name=node.name,
+                is_tip=node.is_leaf(),
+                descendant_taxa=node_descendant_taxa(node),
+                state=str(node_values[node_signature(node)]),
+            )
+            for node in tree.iter_nodes()
         ],
     )
 

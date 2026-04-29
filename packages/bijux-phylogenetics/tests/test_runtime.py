@@ -437,6 +437,7 @@ def test_simulate_brownian_traits_generates_one_value_per_tip(tmp_path: Path) ->
         "C\t0.742224918944575\n"
         "D\t0.90248754291519\n"
     )
+    assert [row.node for row in report.node_values if not row.is_tip] == ["A|B|C|D", "A|B", "C|D"]
 
 
 def test_simulate_ou_traits_uses_declared_parameters() -> None:
@@ -484,6 +485,7 @@ def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -
         "C\twet\n"
         "D\tmixed\n"
     )
+    assert [row.node for row in report.node_states if not row.is_tip] == ["A|B|C|D", "A|B", "C|D"]
 
 
 def test_simulate_dna_alignment_returns_requested_taxa_and_length(tmp_path: Path) -> None:
