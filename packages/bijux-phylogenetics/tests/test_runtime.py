@@ -69,6 +69,16 @@ from bijux_phylogenetics.distance import (
     load_imported_distance_matrix,
     validate_imported_distance_matrix,
 )
+from bijux_phylogenetics.discrete_evolution import (
+    compare_discrete_state_models,
+    detect_state_imbalance_problems,
+    estimate_ancestral_geographic_states,
+    render_discrete_state_evolution_report,
+    render_tree_with_geographic_states,
+    run_discrete_state_transition_model,
+    validate_discrete_state_coding,
+    write_node_state_probability_table,
+)
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
     render_inference_workflow_report,
@@ -221,6 +231,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.build_tree_from_imported_distance_matrix is build_tree_from_imported_distance_matrix
     assert bijux_phylogenetics.compare_distance_tree_topologies is compare_distance_tree_topologies
     assert bijux_phylogenetics.validate_imported_distance_matrix is validate_imported_distance_matrix
+    assert bijux_phylogenetics.validate_discrete_state_coding is validate_discrete_state_coding
+    assert bijux_phylogenetics.detect_state_imbalance_problems is detect_state_imbalance_problems
+    assert bijux_phylogenetics.run_discrete_state_transition_model is run_discrete_state_transition_model
+    assert bijux_phylogenetics.estimate_ancestral_geographic_states is estimate_ancestral_geographic_states
+    assert bijux_phylogenetics.compare_discrete_state_models is compare_discrete_state_models
+    assert bijux_phylogenetics.write_node_state_probability_table is write_node_state_probability_table
+    assert bijux_phylogenetics.render_tree_with_geographic_states is render_tree_with_geographic_states
+    assert bijux_phylogenetics.render_discrete_state_evolution_report is render_discrete_state_evolution_report
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
     assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
