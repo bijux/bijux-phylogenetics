@@ -2212,7 +2212,7 @@ def test_cli_render_with_metadata_labels_reports_missing_taxa(tmp_path: Path, ca
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["data"]["missing_metadata_labels"] == []
+    assert payload["data"]["render"]["missing_metadata_labels"] == []
     assert "Alpha species" in output.read_text(encoding="utf-8")
 
 
@@ -2235,6 +2235,50 @@ def test_cli_render_with_partial_metadata_warns_for_missing_labels(tmp_path: Pat
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["warnings"] == ["D"]
+    assert payload["data"]["render"]["missing_metadata_labels"] == ["D"]
+
+
+def test_cli_render_can_build_annotated_figure_package(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "annotated.svg"
+    package_dir = tmp_path / "figure-package"
+    exit_code = main(
+        [
+            "render",
+            str(fixture("example_tree_support_left.nwk")),
+            "--metadata",
+            str(fixture("example_metadata.tsv")),
+            "--label-column",
+            "species",
+            "--metadata-strip-columns",
+            "location",
+            "--traits",
+            str(fixture("example_traits_validate.tsv")),
+            "--layout",
+            "phylogram",
+            "--support-labels",
+            "--categorical-column",
+            "habitat",
+            "--continuous-column",
+            "height_cm",
+            "--heatmap-columns",
+            "height_cm,status",
+            "--package-dir",
+            str(package_dir),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["rendered_support_count"] == 2
+    assert payload["metrics"]["rendered_metadata_strip_count"] == 1
+    assert payload["metrics"]["rendered_heatmap_column_count"] == 2
+    assert payload["data"]["render"]["layout"] == "phylogram"
+    assert payload["data"]["figure_package_dir"] == str(package_dir)
+    assert (package_dir / "figure.svg").exists()
+    assert "Alpha species" in output.read_text(encoding="utf-8")
 
 
 def test_render_phylogenetics_report_writes_html(tmp_path: Path) -> None:

@@ -57,7 +57,8 @@ from bijux_phylogenetics.core.taxonomy import normalize_tree_taxa, write_taxon_m
 from bijux_phylogenetics.core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.render.svg import render_tree_svg
+from bijux_phylogenetics.render.package import build_tree_figure_package
+from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     render_dataset_report,
@@ -88,6 +89,46 @@ def _print_result(result: Any, *, json_output: bool) -> None:
         print(result)
         return
     print(json.dumps(_json_ready(result), indent=2, sort_keys=True))
+
+
+def _split_csv_values(raw: str | None) -> list[str]:
+    if raw is None:
+        return []
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def _build_annotation_strips(table, columns: list[str]) -> list[AnnotationStrip]:
+    missing_columns = [column for column in columns if column not in table.columns]
+    if missing_columns:
+        raise MetadataJoinError(f"table does not contain columns: {', '.join(missing_columns)}")
+    return [
+        AnnotationStrip(
+            name=column,
+            values={row[table.taxon_column]: row[column] for row in table.rows if row[column]},
+        )
+        for column in columns
+    ]
+
+
+def _build_numeric_trait_map(table, column: str) -> dict[str, float]:
+    if column not in table.columns:
+        raise MetadataJoinError(f"table does not contain column '{column}'")
+    values: dict[str, float] = {}
+    for row in table.rows:
+        raw = row[column]
+        if not raw:
+            continue
+        try:
+            values[row[table.taxon_column]] = float(raw)
+        except ValueError as error:
+            raise MetadataJoinError(f"column '{column}' contains a non-numeric value for taxon '{row[table.taxon_column]}'") from error
+    return values
+
+
+def _build_string_trait_map(table, column: str) -> dict[str, str]:
+    if column not in table.columns:
+        raise MetadataJoinError(f"table does not contain column '{column}'")
+    return {row[table.taxon_column]: row[column] for row in table.rows if row[column]}
 
 
 def _print_commands(*, output_format: str) -> None:
@@ -483,8 +524,17 @@ def build_parser() -> argparse.ArgumentParser:
     render = subparsers.add_parser(get_command_spec("render").name, help=get_command_spec("render").summary)
     render.add_argument("tree", type=Path)
     render.add_argument("--metadata", type=Path)
+    render.add_argument("--traits", type=Path)
     render.add_argument("--taxon-column")
     render.add_argument("--label-column")
+    render.add_argument("--layout", choices=["cladogram", "phylogram", "circular"], default="cladogram")
+    render.add_argument("--support-labels", action="store_true")
+    render.add_argument("--categorical-column")
+    render.add_argument("--continuous-column")
+    render.add_argument("--metadata-strip-columns")
+    render.add_argument("--heatmap-columns")
+    render.add_argument("--collapse-clades")
+    render.add_argument("--package-dir", type=Path)
     render.add_argument("--out", required=True, type=Path)
     render.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(render)
@@ -1385,17 +1435,72 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "render":
+            metadata_table = load_taxon_table(args.metadata, taxon_column=args.taxon_column) if args.metadata is not None else None
+            traits_table = load_taxon_table(args.traits, taxon_column=args.taxon_column) if args.traits is not None else None
             labels: dict[str, str] | None = None
-            if args.metadata is not None and args.label_column is not None:
-                table = load_taxon_table(args.metadata, taxon_column=args.taxon_column)
-                if args.label_column not in table.columns:
+            if metadata_table is not None and args.label_column is not None:
+                if args.label_column not in metadata_table.columns:
                     raise MetadataJoinError(f"metadata table does not contain label column '{args.label_column}'")
-                labels = {row[table.taxon_column]: row[args.label_column] for row in table.rows if row[args.label_column]}
-            result = render_tree_svg(args.tree, out_path=args.out, labels=labels)
+                labels = {
+                    row[metadata_table.taxon_column]: row[args.label_column]
+                    for row in metadata_table.rows
+                    if row[args.label_column]
+                }
+            categorical_traits = (
+                _build_string_trait_map(traits_table, args.categorical_column)
+                if traits_table is not None and args.categorical_column is not None
+                else None
+            )
+            continuous_traits = (
+                _build_numeric_trait_map(traits_table, args.continuous_column)
+                if traits_table is not None and args.continuous_column is not None
+                else None
+            )
+            metadata_strips = (
+                _build_annotation_strips(metadata_table, _split_csv_values(args.metadata_strip_columns))
+                if metadata_table is not None
+                else []
+            )
+            heatmap_columns = (
+                _build_annotation_strips(traits_table, _split_csv_values(args.heatmap_columns))
+                if traits_table is not None
+                else []
+            )
+            collapsed_clades = _split_csv_values(args.collapse_clades)
+            result = render_tree_svg(
+                args.tree,
+                out_path=args.out,
+                labels=labels,
+                layout=args.layout,
+                show_support_values=args.support_labels,
+                categorical_traits=categorical_traits,
+                continuous_traits=continuous_traits,
+                metadata_strips=metadata_strips,
+                heatmap_columns=heatmap_columns,
+                collapsed_clades=collapsed_clades,
+            )
             inputs = [args.tree]
             if args.metadata is not None:
                 inputs.append(args.metadata)
-            outputs = _finalize_outputs(args, command="render", inputs=inputs, outputs=[result.output_path])
+            if args.traits is not None:
+                inputs.append(args.traits)
+            outputs = [result.output_path]
+            package_result = None
+            if args.package_dir is not None:
+                package_result = build_tree_figure_package(
+                    args.tree,
+                    out_dir=args.package_dir,
+                    labels=labels,
+                    layout=args.layout,
+                    show_support_values=args.support_labels,
+                    categorical_traits=categorical_traits,
+                    continuous_traits=continuous_traits,
+                    metadata_strips=metadata_strips,
+                    heatmap_columns=heatmap_columns,
+                    collapsed_clades=collapsed_clades,
+                )
+                outputs.append(package_result.output_dir)
+            outputs = _finalize_outputs(args, command="render", inputs=inputs, outputs=outputs)
             if args.json:
                 _print_result(
                     build_command_result(
@@ -1403,8 +1508,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=inputs,
                         outputs=outputs,
                         warnings=result.missing_metadata_labels,
-                        metrics={"tip_count": result.tip_count, "label_count": result.label_count},
-                        data=result,
+                        metrics={
+                            "tip_count": result.tip_count,
+                            "label_count": result.label_count,
+                            "rendered_support_count": result.rendered_support_count,
+                            "rendered_categorical_trait_count": result.rendered_categorical_trait_count,
+                            "rendered_continuous_trait_count": result.rendered_continuous_trait_count,
+                            "rendered_metadata_strip_count": result.rendered_metadata_strip_count,
+                            "rendered_heatmap_column_count": result.rendered_heatmap_column_count,
+                            "collapsed_clade_count": result.collapsed_clade_count,
+                        },
+                        data={
+                            "render": result,
+                            "figure_package_dir": package_result.output_dir if package_result is not None else None,
+                        },
                     ),
                     json_output=True,
                 )
