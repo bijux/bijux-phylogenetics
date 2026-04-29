@@ -17,6 +17,8 @@ from bijux_phylogenetics.core.dataset import DatasetAuditReport, DatasetReadines
 from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_taxa, load_taxon_table
 from bijux_phylogenetics.core.traits import TraitMissingValueReport, detect_missing_trait_values
 from bijux_phylogenetics.distance import (
+    assess_distance_method_assumptions,
+    assess_imported_distance_method_assumptions,
     build_distance_tree,
     build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
@@ -408,6 +410,7 @@ def render_distance_report(
     if alignment_path is not None:
         matrix = compute_pairwise_genetic_distance_matrix(alignment_path)
         quality = inspect_distance_matrix_quality(alignment_path)
+        assumptions = assess_distance_method_assumptions(alignment_path)
         reference_validation = validate_distance_reference_examples()
         nj_tree, _ = build_distance_tree(alignment_path, method="neighbor-joining")
         upgma_tree, _ = build_distance_tree(alignment_path, method="upgma")
@@ -416,6 +419,7 @@ def render_distance_report(
         sections = [
             _section("computed-distance-matrix", asdict(matrix)),
             _section("distance-quality", asdict(quality)),
+            _section("distance-method-assumptions", asdict(assumptions)),
             _section("distance-reference-validation", asdict(reference_validation)),
             _section("neighbor-joining-tree", {"newick": dumps_newick(nj_tree)}),
             _section("upgma-tree", {"newick": dumps_newick(upgma_tree)}),
@@ -441,9 +445,11 @@ def render_distance_report(
         )
 
     validation = validate_imported_distance_matrix(matrix_path)
+    assumptions = assess_imported_distance_method_assumptions(matrix_path)
     title = "Bijux Imported Distance Report"
     sections = [
         _section("imported-distance-matrix-validation", asdict(validation)),
+        _section("distance-method-assumptions", asdict(assumptions)),
         _section("distance-method-limitations", method_limitations),
     ]
     if validation.complete and validation.symmetric and validation.zero_diagonal and validation.nonnegative:
