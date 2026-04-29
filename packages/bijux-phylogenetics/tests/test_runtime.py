@@ -123,7 +123,6 @@ from bijux_phylogenetics.tree_set import (
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
-    write_clade_frequency_table,
 )
 
 

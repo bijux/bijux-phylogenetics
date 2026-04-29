@@ -7,7 +7,7 @@ from pathlib import Path
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Tree as BioTree
 
-from bijux_phylogenetics.compare.topology import _canonical_bipartition, _informative_clades, _unrooted_splits
+from bijux_phylogenetics.compare.topology import _informative_clades, _unrooted_splits
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo

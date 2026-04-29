@@ -57,7 +57,6 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
-    load_imported_distance_matrix,
     validate_imported_distance_matrix,
     write_genetic_distance_matrix,
 )
