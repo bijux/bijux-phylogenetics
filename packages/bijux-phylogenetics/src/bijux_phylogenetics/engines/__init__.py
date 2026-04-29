@@ -1,5 +1,12 @@
 from .common import EngineRunReport, EngineVersionInfo, execute_engine_command, read_engine_version, resolve_engine_executable
-from .reports import InferenceWorkflowReportBuildResult, render_inference_workflow_report
+from .reports import (
+    InferenceWorkflowReportBuildResult,
+    ModelSelectionLimitationsReport,
+    ModelSelectionLimitationsReportBuildResult,
+    build_model_selection_limitations_report,
+    render_inference_workflow_report,
+    render_model_selection_limitations_report,
+)
 from .validation import (
     classify_inference_workflow_failure,
     compare_inferred_tree_to_taxon_metadata,
@@ -46,8 +53,11 @@ __all__ = [
     "MetadataClusterObservation",
     "ModelSelectionValidationReport",
     "InferenceWorkflowReportBuildResult",
+    "ModelSelectionLimitationsReport",
+    "ModelSelectionLimitationsReportBuildResult",
     "audit_alignment_inference_readiness",
     "BootstrapTreeSetValidationReport",
+    "build_model_selection_limitations_report",
     "InferenceOutputConsistencyReport",
     "validate_ml_tree_contains_expected_taxa",
     "validate_bootstrap_tree_set",
@@ -57,6 +67,7 @@ __all__ = [
     "execute_engine_command",
     "read_engine_version",
     "render_inference_workflow_report",
+    "render_model_selection_limitations_report",
     "resolve_engine_executable",
     "run_alignment_trimming",
     "run_bootstrap_consensus_tree",

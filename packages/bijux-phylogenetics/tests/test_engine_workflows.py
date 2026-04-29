@@ -2,7 +2,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.engines import (
+    build_model_selection_limitations_report,
     compare_fast_and_ml_trees,
+    render_model_selection_limitations_report,
     render_inference_workflow_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
@@ -364,3 +366,25 @@ def test_compare_fast_and_ml_trees_builds_html_report(tmp_path: Path) -> None:
 
     assert comparison.comparison_report.output_path.exists()
     assert comparison.comparison_report.topology.shared_taxa == ["A", "B", "C", "D"]
+
+
+def test_model_selection_limitations_report_records_interpretation_boundaries(tmp_path: Path) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    workflow = run_model_selection(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="example",
+    )
+
+    report = build_model_selection_limitations_report(workflow.manifest_path)
+    rendered = render_model_selection_limitations_report(
+        manifest_path=workflow.manifest_path,
+        out_path=tmp_path / "model-limitations.html",
+    )
+
+    assert report.selected_model == "GTR+G"
+    assert report.limitations
+    assert report.interpretation_limits
+    assert rendered.output_path.exists()
+    assert rendered.report_kind == "model-selection-limitations"
