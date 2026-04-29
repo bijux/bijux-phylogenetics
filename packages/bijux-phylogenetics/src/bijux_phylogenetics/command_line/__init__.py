@@ -13,6 +13,14 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
+from bijux_phylogenetics.comparative.common import summarize_numeric_trait, summarize_numeric_trait_readiness
+from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls
+from bijux_phylogenetics.comparative.signal import (
+    compute_blombergs_k,
+    compute_phylogenetic_independent_contrasts,
+    compute_phylogenetic_signal_test,
+    estimate_pagels_lambda,
+)
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
@@ -287,6 +295,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.distance_command == "report":
             return [args.matrix, args.out]
         return [args.matrix]
+    if args.command == "comparative":
+        return [args.tree, args.table]
     if args.command == "tree-set":
         if args.tree_set_command == "compare":
             return [args.left, args.right]
@@ -559,6 +569,70 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_link.add_argument("--strict", action="store_true")
     alignment_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_link)
+
+    comparative = subparsers.add_parser(
+        get_command_spec("comparative").name,
+        help=get_command_spec("comparative").summary,
+    )
+    comparative_subparsers = comparative.add_subparsers(dest="comparative_command", required=True)
+    comparative_readiness = comparative_subparsers.add_parser(
+        "readiness",
+        help="Check whether a rooted tree and numeric trait are ready for comparative analysis.",
+    )
+    comparative_readiness.add_argument("tree", type=Path)
+    comparative_readiness.add_argument("table", type=Path)
+    comparative_readiness.add_argument("--trait", required=True)
+    comparative_readiness.add_argument("--taxon-column")
+    comparative_readiness.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(comparative_readiness)
+    comparative_summarize = comparative_subparsers.add_parser(
+        "summarize",
+        help="Summarize a numeric trait after pruning to overlapping phylogenetic taxa.",
+    )
+    comparative_summarize.add_argument("tree", type=Path)
+    comparative_summarize.add_argument("table", type=Path)
+    comparative_summarize.add_argument("--trait", required=True)
+    comparative_summarize.add_argument("--taxon-column")
+    comparative_summarize.add_argument("--json", action="store_true", help="Emit the summary as JSON.")
+    _add_manifest_argument(comparative_summarize)
+    comparative_contrasts = comparative_subparsers.add_parser(
+        "contrasts",
+        help="Compute phylogenetic independent contrasts for one numeric trait.",
+    )
+    comparative_contrasts.add_argument("tree", type=Path)
+    comparative_contrasts.add_argument("table", type=Path)
+    comparative_contrasts.add_argument("--trait", required=True)
+    comparative_contrasts.add_argument("--taxon-column")
+    comparative_contrasts.add_argument("--json", action="store_true", help="Emit the contrast report as JSON.")
+    _add_manifest_argument(comparative_contrasts)
+    comparative_signal = comparative_subparsers.add_parser(
+        "signal",
+        help="Estimate phylogenetic signal metrics for one numeric trait.",
+    )
+    comparative_signal.add_argument("tree", type=Path)
+    comparative_signal.add_argument("table", type=Path)
+    comparative_signal.add_argument("--trait", required=True)
+    comparative_signal.add_argument("--taxon-column")
+    comparative_signal.add_argument("--permutations", type=int, default=199)
+    comparative_signal.add_argument("--seed", type=int, default=1)
+    comparative_signal.add_argument("--json", action="store_true", help="Emit the signal report as JSON.")
+    _add_manifest_argument(comparative_signal)
+    comparative_pgls = comparative_subparsers.add_parser(
+        "pgls",
+        help="Fit a phylogenetic generalized least-squares model.",
+    )
+    comparative_pgls.add_argument("tree", type=Path)
+    comparative_pgls.add_argument("table", type=Path)
+    comparative_pgls.add_argument("--response", required=True)
+    comparative_pgls.add_argument("--predictors", nargs="+", required=True)
+    comparative_pgls.add_argument("--taxon-column")
+    comparative_pgls.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_pgls.add_argument("--json", action="store_true", help="Emit the model result as JSON.")
+    _add_manifest_argument(comparative_pgls)
 
     distance = subparsers.add_parser(get_command_spec("distance").name, help=get_command_spec("distance").summary)
     distance_subparsers = distance.add_subparsers(dest="distance_command", required=True)
@@ -1471,6 +1545,159 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "linked_taxa": report.linked_taxa,
                     },
                     data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "comparative":
+            if args.comparative_command == "readiness":
+                report = summarize_numeric_trait_readiness(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tree_taxa": report.tree_taxa,
+                            "analysis_taxa": len(report.analysis_taxa),
+                            "ready": report.ready,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "summarize":
+                report = summarize_numeric_trait(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "mean": report.mean,
+                            "variance": report.variance,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "contrasts":
+                report = compute_phylogenetic_independent_contrasts(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "contrast_count": len(report.contrasts),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "signal":
+                blomberg = compute_blombergs_k(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                lambda_report = estimate_pagels_lambda(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                test_report = compute_phylogenetic_signal_test(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    permutations=args.permutations,
+                    seed=args.seed,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "taxon_count": blomberg.taxon_count,
+                            "blombergs_k": blomberg.k,
+                            "pagels_lambda": lambda_report.lambda_value,
+                            "signal_p_value": test_report.p_value,
+                        },
+                        data={
+                            "blombergs_k": blomberg,
+                            "pagels_lambda": lambda_report,
+                            "signal_test": test_report,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            lambda_value: float | str
+            if args.lambda_value == "estimate":
+                lambda_value = "estimate"
+            else:
+                lambda_value = float(args.lambda_value)
+            input_report = inspect_pgls_inputs(
+                args.tree,
+                args.table,
+                response=args.response,
+                predictors=list(args.predictors),
+                taxon_column=args.taxon_column,
+            )
+            report = run_pgls(
+                args.tree,
+                args.table,
+                response=args.response,
+                predictors=list(args.predictors),
+                taxon_column=args.taxon_column,
+                lambda_value=lambda_value,
+            )
+            outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+            _print_result(
+                build_command_result(
+                    command="comparative",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                    warnings=input_report.warnings,
+                    metrics={
+                        "taxon_count": report.taxon_count,
+                        "predictor_count": len(report.predictors),
+                        "lambda_value": report.lambda_value,
+                        "r_squared": report.r_squared,
+                    },
+                    data={
+                        "inputs": input_report,
+                        "model": report,
+                    },
                 ),
                 json_output=args.json,
             )

@@ -51,6 +51,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("alignment-report",),
     ),
     CommandSpec(
+        name="comparative",
+        domain="comparative-analysis",
+        summary="Assess, summarize, and model numeric traits on a phylogeny.",
+        inputs=("tree", "traits-table"),
+        outputs=("comparative-report",),
+    ),
+    CommandSpec(
         name="distance",
         domain="distance-analysis",
         summary="Validate, build, and report on explicit distance matrices.",
