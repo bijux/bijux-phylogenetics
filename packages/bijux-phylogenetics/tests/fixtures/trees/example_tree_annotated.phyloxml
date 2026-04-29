@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org">
+  <phylogeny rooted="true">
+    <name>annotated-tree</name>
+    <clade>
+      <clade>
+        <name>A</name>
+        <branch_length>0.1</branch_length>
+        <taxonomy>
+          <scientific_name>Alpha species</scientific_name>
+        </taxonomy>
+      </clade>
+      <clade>
+        <name>B</name>
+        <branch_length>0.2</branch_length>
+        <property ref="bijux:note">important</property>
+      </clade>
+    </clade>
+  </phylogeny>
+</phyloxml>

@@ -87,7 +87,17 @@ from .benchmark import (
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
-from .core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup, unroot_tree
+from .core.topology import (
+    TreeTransformationSummary,
+    collapse_branches_below_length,
+    extract_named_clade,
+    ladderize_tree,
+    reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
+    sort_tree_tips_alphabetically,
+    unroot_tree,
+)
+from .core.taxonomy import inspect_tree_taxon_identity
 from .diagnostics.assumptions import (
     BranchLengthUnitReport,
     StandardizedSupportLabel,
@@ -201,6 +211,7 @@ from .io.fasta import (
     translate_coding_alignment,
     trim_alignment,
 )
+from .io.roundtrip import TreeRoundtripValidationReport, validate_tree_roundtrip
 from .render import AnnotationStrip, TreeFigurePackageResult, TreeRenderResult, build_tree_figure_package, render_tree_svg
 from .reports.service import ReportBuildResult, render_phylo_inputs_report, render_phylogenetics_report
 from .reports.service import (
@@ -377,8 +388,10 @@ __all__ = [
     "TreeSimulationReport",
     "TreeTopologyCluster",
     "TreeTopologyClusterReport",
+    "TreeTransformationSummary",
     "TreeValidationBenchmarkReport",
     "TreeValidationReport",
+    "TreeRoundtripValidationReport",
     "TraitDependentDiversificationReport",
     "TraitDependentDiversificationState",
     "TransitionEvent",
@@ -404,6 +417,7 @@ __all__ = [
     "benchmark_tree_validation",
     "bundle_directory",
     "cluster_trees_by_topology",
+    "collapse_branches_below_length",
     "compare_diversification_models",
     "compare_fast_and_ml_trees",
     "compare_continuous_ancestral_models",
@@ -433,10 +447,13 @@ __all__ = [
     "estimate_ancestral_geographic_states",
     "estimate_diversification_rate",
     "estimate_pagels_lambda",
+    "extract_named_clade",
     "inspect_branch_length_units",
     "inspect_coding_alignment",
     "inspect_diversification_time_tree",
     "inspect_pgls_inputs",
+    "inspect_tree_taxon_identity",
+    "ladderize_tree",
     "parse_beast_log",
     "parse_mrbayes_parameter_traces",
     "prepare_beast_time_tree_analysis",
@@ -484,6 +501,7 @@ __all__ = [
     "summarize_mrbayes_posterior_trees",
     "summarize_numeric_trait",
     "summarize_numeric_trait_readiness",
+    "sort_tree_tips_alphabetically",
     "validate_discrete_state_coding",
     "validate_time_tree_for_diversification",
     "validate_fossil_calibration_table",
@@ -495,6 +513,7 @@ __all__ = [
     "trim_alignment",
     "unroot_tree",
     "validate_imported_distance_matrix",
+    "validate_tree_roundtrip",
     "validate_tree_path",
     "write_ancestral_state_table",
     "write_clade_diversification_table",

@@ -123,7 +123,12 @@ from bijux_phylogenetics.core.topology import (
     sort_tree_tips_alphabetically,
     unroot_tree,
 )
-from bijux_phylogenetics.core.taxonomy import inspect_tree_taxa_safety, normalize_tree_taxa, write_taxon_mapping
+from bijux_phylogenetics.core.taxonomy import (
+    inspect_tree_taxa_safety,
+    inspect_tree_taxon_identity,
+    normalize_tree_taxa,
+    write_taxon_mapping,
+)
 from bijux_phylogenetics.core.traits import (
     detect_missing_trait_values,
     detect_unusable_trait_columns,
@@ -157,6 +162,7 @@ from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
+from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
@@ -898,6 +904,8 @@ def test_prune_tree_to_taxa_writes_expected_tip_set() -> None:
     assert dumps_newick(tree) == "((A:0.1,B:0.1):0.2,C:0.3);"
     assert report.kept_taxa == ["A", "B", "C"]
     assert report.removed_taxa == ["D"]
+    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [("D", "absent_from_keep_table")]
+    assert report.summary.removed_taxa == ["D"]
 
 
 def test_prune_tree_to_requested_taxa_reports_absent_requests() -> None:
@@ -911,6 +919,12 @@ def test_prune_tree_to_requested_taxa_reports_absent_requests() -> None:
     assert report.kept_taxa == ["A", "C"]
     assert report.removed_taxa == ["B", "D"]
     assert report.absent_requested_taxa == ["Z"]
+    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [
+        ("B", "not_requested"),
+        ("D", "not_requested"),
+    ]
+    assert report.pruning_audit.root_to_tip_complete is True
+    assert report.pruning_audit.unary_internal_nodes == []
 
 
 def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
@@ -924,6 +938,10 @@ def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
     assert report.kept_taxa == ["A", "C"]
     assert report.removed_taxa == ["B", "D"]
     assert report.absent_requested_taxa == ["Z"]
+    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [
+        ("B", "excluded_explicitly"),
+        ("D", "excluded_explicitly"),
+    ]
 
 
 def test_prune_cli_accepts_explicit_taxon_keep_lists(tmp_path: Path, capsys) -> None:
@@ -990,6 +1008,10 @@ def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
     assert report.clade_name == "Mammals"
     assert report.tip_count == 2
     assert report.taxa == ["A", "B"]
+    assert report.retained_all_requested_descendants is True
+    assert report.missing_requested_descendants == []
+    assert report.unexpected_retained_taxa == []
+    assert report.summary.removed_taxa == ["C", "D"]
 
 
 def test_collapse_branches_below_length_turns_short_internal_edges_into_polytomies() -> None:
@@ -1001,6 +1023,8 @@ def test_collapse_branches_below_length_turns_short_internal_edges_into_polytomi
     assert dumps_newick(tree) == "((A:0.1,B:0.1,C:0.2):0.3,D:0.4);"
     assert report.threshold == 0.05
     assert report.collapsed_clades == ["A|B"]
+    assert report.topology_preserved is False
+    assert report.summary.branch_lengths_affected == ["A|B"]
 
 
 def test_ladderize_tree_orders_larger_subtrees_first() -> None:
@@ -1009,6 +1033,8 @@ def test_ladderize_tree_orders_larger_subtrees_first() -> None:
     assert [len(child.children) if child.children else 1 for child in tree.root.children] == [3, 2]
     assert report.strategy == "ladderize"
     assert report.tip_order == ["X", "Y", "Z", "A", "B"]
+    assert report.rooted_topology_preserved is True
+    assert report.unrooted_topology_preserved is True
 
 
 def test_sort_tree_tips_alphabetically_preserves_topology_with_stable_tip_order() -> None:
@@ -1017,6 +1043,8 @@ def test_sort_tree_tips_alphabetically_preserves_topology_with_stable_tip_order(
     assert [len(child.children) if child.children else 1 for child in tree.root.children] == [2, 3]
     assert report.strategy == "alphabetical"
     assert report.tip_order == ["A", "B", "X", "Y", "Z"]
+    assert report.rooted_topology_preserved is True
+    assert report.unrooted_topology_preserved is True
 
 
 def test_root_tree_on_outgroup_reports_absent_taxa_and_roots_tree() -> None:
@@ -1031,6 +1059,8 @@ def test_root_tree_on_outgroup_reports_absent_taxa_and_roots_tree() -> None:
     assert report.matched_taxa == ["D"]
     assert report.absent_taxa == ["Z"]
     assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);"
+    assert report.summary.retained_taxa == ["A", "B", "C", "D"]
+    assert report.summary.removed_taxa == []
 
 
 def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
@@ -1039,6 +1069,7 @@ def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
     assert report.strategy == "midpoint"
     assert report.tip_order == ["C", "D", "B", "A"]
     assert dumps_newick(tree) == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);"
+    assert report.summary.branch_lengths_affected != []
 
 
 def test_unroot_tree_converts_rooted_binary_tree_into_trifurcation() -> None:
@@ -1047,6 +1078,7 @@ def test_unroot_tree_converts_rooted_binary_tree_into_trifurcation() -> None:
     assert len(tree.root.children) == 3
     assert report.strategy == "unroot"
     assert dumps_newick(tree) == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);"
+    assert report.summary.nodes_changed != []
 
 
 def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
@@ -1058,6 +1090,7 @@ def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
     assert report.original_sequence_count == 5
     assert report.kept_ids == ["A", "B", "C", "D"]
     assert report.removed_ids == ["E"]
+    assert [(row.taxon, row.reason) for row in report.removed_ids_with_reasons] == [("E", "absent_from_tree")]
 
 
 def test_prune_tree_to_alignment_keeps_exact_alignment_taxa() -> None:
@@ -1070,6 +1103,7 @@ def test_prune_tree_to_alignment_keeps_exact_alignment_taxa() -> None:
     assert report.kept_taxa == ["A", "B", "C"]
     assert report.removed_taxa == ["D"]
     assert report.taxon_column == "identifier"
+    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [("D", "absent_from_alignment")]
 
 
 def test_alignment_inspect_reports_core_diagnostics() -> None:
@@ -2281,6 +2315,58 @@ def test_standardize_support_labels_normalizes_fraction_and_percentage_scales() 
         ("A|B", 0.95, "fraction", 0.95, 95.0),
         ("A|B|C|D", 99.0, "percentage", 0.99, 99.0),
         ("C|D", 88.0, "percentage", 0.88, 88.0),
+    ]
+    assert [(row.node, row.normalized_probability, row.confidence_of_inference) for row in rows] == [
+        ("A|B", 0.95, "medium"),
+        ("A|B|C|D", 0.99, "medium"),
+        ("C|D", 0.88, "medium"),
+    ]
+
+
+def test_validate_tree_roundtrip_preserves_tree_structure_across_formats() -> None:
+    nexus_report = validate_tree_roundtrip(fixture("example_tree.nwk"), target_format="nexus")
+    phyloxml_report = validate_tree_roundtrip(fixture("example_tree.nwk"), target_format="phyloxml")
+    assert nexus_report.preserved_taxa is True
+    assert nexus_report.preserved_topology is True
+    assert nexus_report.preserved_branch_lengths is True
+    assert nexus_report.preserved_support_labels is True
+    assert phyloxml_report.preserved_taxa is True
+    assert phyloxml_report.preserved_topology is True
+
+
+def test_validate_tree_roundtrip_reports_semantic_loss_for_nexus_and_phyloxml() -> None:
+    nexus_report = validate_tree_roundtrip(fixture("example_tree.nex"), target_format="newick")
+    phyloxml_report = validate_tree_roundtrip(fixture("example_tree_annotated.phyloxml"), target_format="newick")
+    assert [item.feature for item in nexus_report.semantic_loss] == [
+        "nexus-metadata-blocks",
+        "nexus-translate",
+        "target-newick-structure",
+    ]
+    assert sorted(item.feature for item in phyloxml_report.semantic_loss) == [
+        "property",
+        "target-newick-structure",
+        "taxonomy",
+    ]
+
+
+def test_taxon_identity_audit_reports_collisions_and_near_duplicates() -> None:
+    report = inspect_tree_taxon_identity(load_nexus(fixture("example_tree.nex")))
+    assert report.spelling_variants == []
+    assert report.whitespace_variants == []
+    identity_report = inspect_tree_taxon_identity(load_phyloxml(fixture("example_tree_annotated.phyloxml")))
+    assert identity_report.case_collisions == []
+
+    ambiguous = inspect_tree_taxon_identity(loads_newick(fixture("example_tree_identity.nwk").read_text(encoding="utf-8")))
+    assert {(row.left_label, row.right_label) for row in ambiguous.underscore_space_collisions} == {
+        ("Homo sapiens", "Homo_sapiens"),
+        ("Homo sapiens", "homo sapiens"),
+        ("Homo_sapiens", "homo sapiens"),
+    }
+    assert [(row.left_label, row.right_label) for row in ambiguous.case_collisions] == [
+        ("Homo sapiens", "homo sapiens"),
+    ]
+    assert ("Homo sapiens", "Hoomo sapiens") in [
+        (row.left_label, row.right_label) for row in ambiguous.suspicious_near_duplicates
     ]
 
 
@@ -3650,6 +3736,8 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "alignment",
         "comparative",
         "ancestral",
+        "discrete-evolution",
+        "diversification",
         "distance",
         "tree-set",
         "simulate",
