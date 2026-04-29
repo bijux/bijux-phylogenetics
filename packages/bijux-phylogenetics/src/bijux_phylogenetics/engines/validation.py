@@ -12,6 +12,7 @@ from bijux_phylogenetics.ancestral.common import node_descendant_taxa
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.fasta import summarize_alignment_readiness
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.tree_set import load_tree_set
 
 _BEST_MODEL_PATTERN = re.compile(
     r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
@@ -85,6 +86,15 @@ class MetadataClusteringReport:
 class InferenceFailureTaxonomyReport:
     workflow: str
     failure_category: str
+    valid: bool
+    issues: list[str]
+
+
+@dataclass(slots=True)
+class BootstrapTreeSetValidationReport:
+    tree_set_path: Path
+    tree_count: int
+    expected_taxa: list[str]
     valid: bool
     issues: list[str]
 
@@ -358,5 +368,30 @@ def classify_inference_workflow_failure(
         workflow=workflow,
         failure_category=failure_category,
         valid=failure_category == "no_failure",
+        issues=issues,
+    )
+
+
+def validate_bootstrap_tree_set(path: Path) -> BootstrapTreeSetValidationReport:
+    """Validate that every bootstrap tree parses and shares the same taxon set."""
+    issues: list[str] = []
+    try:
+        report = load_tree_set(path)
+    except Exception as error:
+        return BootstrapTreeSetValidationReport(
+            tree_set_path=path,
+            tree_count=0,
+            expected_taxa=[],
+            valid=False,
+            issues=[f"bootstrap tree set could not be parsed: {error}"],
+        )
+    taxa_sets = {tuple(record.taxa) for record in report.records}
+    if len(taxa_sets) != 1:
+        issues.append("bootstrap trees do not all contain the exact same taxon set")
+    return BootstrapTreeSetValidationReport(
+        tree_set_path=path,
+        tree_count=report.tree_count,
+        expected_taxa=report.shared_taxa,
+        valid=not issues,
         issues=issues,
     )

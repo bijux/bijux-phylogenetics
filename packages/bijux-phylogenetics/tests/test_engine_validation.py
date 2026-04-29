@@ -8,6 +8,7 @@ from bijux_phylogenetics.engines.validation import (
     classify_inference_workflow_failure,
     compare_inferred_tree_to_taxon_metadata,
     validate_ml_tree_contains_expected_taxa,
+    validate_bootstrap_tree_set,
     validate_model_selection_against_engine_outputs,
 )
 
@@ -175,3 +176,23 @@ def test_classify_inference_workflow_failure_detects_input_failures(tmp_path: Pa
         output_paths={},
     )
     assert report.failure_category == "input_failure"
+
+
+def test_validate_bootstrap_tree_set_requires_consistent_taxa(tmp_path: Path) -> None:
+    valid_path = tmp_path / "valid.ufboot"
+    valid_path.write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n",
+        encoding="utf-8",
+    )
+    valid_report = validate_bootstrap_tree_set(valid_path)
+    assert valid_report.valid is True
+    assert valid_report.tree_count == 2
+
+    invalid_path = tmp_path / "invalid.ufboot"
+    invalid_path.write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n((A:0.1,B:0.1):0.2,(C:0.1,E:0.1):0.2);\n",
+        encoding="utf-8",
+    )
+    invalid_report = validate_bootstrap_tree_set(invalid_path)
+    assert invalid_report.valid is False
+    assert any("same taxon set" in issue for issue in invalid_report.issues)
