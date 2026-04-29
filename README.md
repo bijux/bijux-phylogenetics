@@ -51,18 +51,21 @@ reproducible tree hygiene, taxon normalization, tree and trait pruning,
 metadata linkage, shared-clade comparison, alignment-quality diagnostics,
 alignment readiness classification, raw-versus-aligned FASTA detection,
 sliding-window region diagnostics, ambiguity-aware uncertainty accounting,
-alignment trimming, coding-sequence translation, identity-matrix export,
-DNA distance-matrix analysis, distance-tree construction, explicit rooting
-transforms, comparative trait readiness, phylogenetic independent contrasts,
-phylogenetic signal estimation, phylogenetic generalized least-squares,
-continuous and discrete ancestral-state reconstruction, ancestral uncertainty
-reporting, ancestral tree rendering, discrete-state geographic transition
-modeling and reporting, governed external-engine orchestration for alignment,
-trimming, model selection, tree inference, and initial MrBayes posterior
-analysis, tree-set consensus and posterior uncertainty analysis, tree and
-alignment simulation, scientific benchmarking, deterministic SVG tree
-rendering, publication figure packaging, evidence manifests, and HTML report
-generation rather than full likelihood or Bayesian inference engines.
+alignment filtering profiles, cleaned-alignment comparison, transparent
+alignment quality scoring, alignment forensic reporting, one-shot dataset
+readiness audits, alignment trimming, coding-sequence translation,
+identity-matrix export, DNA distance-matrix analysis, distance-tree
+construction, explicit rooting transforms, comparative trait readiness,
+phylogenetic independent contrasts, phylogenetic signal estimation,
+phylogenetic generalized least-squares, continuous and discrete
+ancestral-state reconstruction, ancestral uncertainty reporting, ancestral tree
+rendering, discrete-state geographic transition modeling and reporting,
+governed external-engine orchestration for alignment, trimming, model
+selection, tree inference, and initial MrBayes posterior analysis, tree-set
+consensus and posterior uncertainty analysis, tree and alignment simulation,
+scientific benchmarking, deterministic SVG tree rendering, publication figure
+packaging, evidence manifests, and HTML report generation rather than full
+likelihood or Bayesian inference engines.
 Diversification and macroevolution workflows now also estimate lineage-through-time
 curves, simple Yule or birth-death rates, sampling-aware corrections, clade
 outlier summaries, and trait-linked diversification tables for rooted
@@ -106,9 +109,13 @@ Today, the checked-in repository produces these durable outcomes:
 ## Example Commands
 
 - `uv run bijux-phylogenetics alignment classify sequences.fasta --json`
+- `uv run bijux-phylogenetics alignment profiles --json`
 - `uv run bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json`
 - `uv run bijux-phylogenetics alignment readiness alignment.fasta --json`
 - `uv run bijux-phylogenetics alignment length-outliers sequences.fasta --json`
+- `uv run bijux-phylogenetics alignment forensic alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment filter alignment.fasta --profile coding-safe --out cleaned.fasta --json`
+- `uv run bijux-phylogenetics alignment compare original.fasta cleaned.fasta --json`
 - `uv run bijux-phylogenetics alignment trim alignment.fasta --out trimmed.fasta --sequence-missingness-threshold 0.4`
 - `uv run bijux-phylogenetics alignment coding coding-alignment.fasta --json`
 - `uv run bijux-phylogenetics alignment translate coding-alignment.fasta --out translated.fasta`
@@ -119,6 +126,7 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics distance validate exported-distances.tsv --json`
 - `uv run bijux-phylogenetics distance build-tree exported-distances.tsv --method upgma --out imported-upgma.nwk`
 - `uv run bijux-phylogenetics distance report exported-distances.tsv --out artifacts/distance-report.html`
+- `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json`
 - `uv run bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative contrasts tree.nwk traits.tsv --trait height_cm --json`
 - `uv run bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json`
