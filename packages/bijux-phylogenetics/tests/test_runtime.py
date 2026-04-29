@@ -113,6 +113,12 @@ from bijux_phylogenetics.reports.service import (
     render_phylogenetics_report,
     render_tree_report,
 )
+from bijux_phylogenetics.tree_set import (
+    compute_clade_frequency_table,
+    compute_consensus_tree,
+    load_tree_set,
+    write_clade_frequency_table,
+)
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -149,6 +155,34 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
     assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
+
+
+def test_load_tree_set_reports_tree_count_and_topology_diversity() -> None:
+    report = load_tree_set(fixture("example_tree_set_left.nwk"))
+    assert report.tree_count == 3
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.rooted_topology_count == 2
+    assert report.unrooted_topology_count == 2
+    assert [(row.index, row.tip_count) for row in report.records] == [(1, 4), (2, 4), (3, 4)]
+
+
+def test_compute_clade_frequency_table_counts_informative_clades() -> None:
+    report = compute_clade_frequency_table(fixture("example_tree_set_left.nwk"))
+    assert [(row.clade, row.tree_count, row.frequency) for row in report.clade_frequencies] == [
+        ("A|B", 2, 0.666666666666667),
+        ("A|C", 1, 0.333333333333333),
+        ("B|D", 1, 0.333333333333333),
+        ("C|D", 2, 0.666666666666667),
+    ]
+
+
+def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
+    tree, report = compute_consensus_tree(fixture("example_tree_set_left.nwk"))
+    assert dumps_newick(tree) == (
+        "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);"
+    )
+    assert report.tree_count == 3
+    assert report.shared_taxa == ["A", "B", "C", "D"]
     assert bijux_phylogenetics.trim_columns_above_missingness_threshold is trim_columns_above_missingness_threshold
     assert bijux_phylogenetics.trim_alignment is trim_alignment
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
