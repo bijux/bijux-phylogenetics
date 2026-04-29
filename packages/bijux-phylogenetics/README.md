@@ -57,6 +57,7 @@ bijux-phylogenetics --help
 - reconstruct discrete ancestral states under Fitch parsimony or likelihood-style ER, SYM, and ARD models with explicit ambiguity and low-confidence reporting
 - compare continuous ancestral reconstructions across two supported models, summarize ancestral sensitivity across model, tree, pruning, or coding choices, and package publication-ready ancestral figures
 - validate discrete geographic state coding, detect incomplete ordered vocabularies, estimate ancestral node states under ordered or unordered assumptions, compare equal-rates, symmetric, and all-rates-different models, export node and transition tables, highlight model-sensitive ancestral regions, simulate approximate stochastic maps, and render discrete-state HTML reports
+- audit alignment inference readiness, validate model-selection outputs against engine artifacts, verify inferred-tree taxa against the alignment, inspect metadata-group clustering, classify inference failures, and validate bootstrap tree sets before interpreting engine outputs
 - estimate lineage-through-time curves, simple Yule or birth-death diversification rates, sampling-aware corrections, clade outlier summaries, and trait-linked diversification tables for rooted ultrametric trees
 - run governed MAFFT-, trimAl-, IQ-TREE-, and FastTree-style external workflows with captured commands, versions, logs, and warning summaries
 - prepare and run deterministic MrBayes analyses, summarize posterior trees after burn-in filtering, parse parameter traces, and compute per-parameter ESS values

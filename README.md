@@ -69,7 +69,9 @@ rendering, ordered versus unordered discrete-state modeling, discrete-state geog
 stochastic-map approximation and uncertainty summarization for discrete-state
 transitions, model-sensitive ancestral-region comparison,
 governed external-engine orchestration for alignment, trimming, model
-selection, tree inference, and initial MrBayes posterior analysis, tree-set
+selection, tree inference, bootstrap retention, inference-readiness auditing,
+model-selection validation, inferred-tree taxon validation, metadata-group
+clustering audits, and initial MrBayes posterior analysis, tree-set
 consensus and posterior uncertainty analysis, tree and alignment simulation,
 scientific benchmarking, deterministic SVG tree rendering, publication figure
 packaging, evidence manifests, and HTML report generation rather than full
