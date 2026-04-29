@@ -68,6 +68,11 @@ consensus and posterior uncertainty analysis, tree and alignment simulation,
 scientific benchmarking, deterministic SVG tree rendering, publication figure
 packaging, evidence manifests, and HTML report generation rather than full
 likelihood or Bayesian inference engines.
+Distance workflows now also validate built-in reference examples, support
+Kimura 2-parameter and amino-acid p-distance models, handle ambiguity codes
+through explicit policies, report saturation and low-information diagnostics,
+bootstrap site-resampled distance trees, summarize clade support, and write
+reproducibility bundles.
 Diversification and macroevolution workflows now also estimate lineage-through-time
 curves, simple Yule or birth-death rates, sampling-aware corrections, clade
 outlier summaries, and trait-linked diversification tables for rooted
@@ -123,11 +128,16 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment translate coding-alignment.fasta --out translated.fasta`
 - `uv run bijux-phylogenetics alignment identity-matrix alignment.fasta --out identity.tsv`
 - `uv run bijux-phylogenetics alignment distance-matrix alignment.fasta --model jukes-cantor --gap-handling complete-deletion --out distances.tsv`
+- `uv run bijux-phylogenetics alignment distance-matrix proteins.fasta --model amino-acid-p-distance --ambiguity-policy partial-match --out protein-distances.tsv`
+- `uv run bijux-phylogenetics alignment distance-quality alignment.fasta --model kimura-2-parameter --json`
 - `uv run bijux-phylogenetics alignment build-tree alignment.fasta --method neighbor-joining --out nj-tree.nwk`
 - `uv run bijux-phylogenetics alignment compare-distance-trees alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json`
+- `uv run bijux-phylogenetics alignment distance-bundle alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json`
 - `uv run bijux-phylogenetics distance validate exported-distances.tsv --json`
 - `uv run bijux-phylogenetics distance build-tree exported-distances.tsv --method upgma --out imported-upgma.nwk`
 - `uv run bijux-phylogenetics distance report exported-distances.tsv --out artifacts/distance-report.html`
+- `uv run bijux-phylogenetics distance reference --json`
 - `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json`
 - `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --out artifacts/dataset-review.html --json`
 - `uv run bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json`
