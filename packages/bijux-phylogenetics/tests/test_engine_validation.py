@@ -5,6 +5,7 @@ from pathlib import Path
 from bijux_phylogenetics.engines import run_model_selection
 from bijux_phylogenetics.engines.validation import (
     audit_alignment_inference_readiness,
+    compare_inferred_tree_to_taxon_metadata,
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
 )
@@ -117,3 +118,29 @@ def test_validate_ml_tree_contains_expected_taxa_matches_alignment_ids(tmp_path:
     assert report.valid is True
     assert report.expected_taxa == ["A", "B", "C", "D"]
     assert report.observed_taxa == ["A", "B", "C", "D"]
+
+
+def test_compare_inferred_tree_to_taxon_metadata_reports_monophyly_and_splits(tmp_path: Path) -> None:
+    metadata_path = tmp_path / "metadata.tsv"
+    metadata_path.write_text(
+        "taxon\tgroup\nA\tleft\nB\tleft\nC\tright\nD\tright\n",
+        encoding="utf-8",
+    )
+    report = compare_inferred_tree_to_taxon_metadata(
+        fixture("example_tree.nwk"),
+        metadata_path,
+        group_column="group",
+    )
+    assert report.monophyletic_group_count == 2
+
+    metadata_path.write_text(
+        "taxon\tgroup\nA\tmixed\nC\tmixed\nB\tother\nD\tother\n",
+        encoding="utf-8",
+    )
+    split_report = compare_inferred_tree_to_taxon_metadata(
+        fixture("example_tree.nwk"),
+        metadata_path,
+        group_column="group",
+    )
+    assert split_report.split_group_count >= 1
+    assert any(row.status == "split_unexpectedly" for row in split_report.observations)

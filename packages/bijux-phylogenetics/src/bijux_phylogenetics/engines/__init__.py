@@ -1,9 +1,12 @@
 from .common import EngineRunReport, EngineVersionInfo, execute_engine_command, read_engine_version, resolve_engine_executable
 from .reports import InferenceWorkflowReportBuildResult, render_inference_workflow_report
 from .validation import (
+    compare_inferred_tree_to_taxon_metadata,
     InferenceReadinessAuditReport,
     InferenceReadinessDecision,
     MLTreeTaxonValidationReport,
+    MetadataClusteringReport,
+    MetadataClusterObservation,
     ModelSelectionValidationReport,
     audit_alignment_inference_readiness,
     validate_ml_tree_contains_expected_taxa,
@@ -23,6 +26,7 @@ from .workflows import (
 )
 
 __all__ = [
+    "compare_inferred_tree_to_taxon_metadata",
     "EngineRunReport",
     "EngineVersionInfo",
     "EngineWorkflowReport",
@@ -30,6 +34,8 @@ __all__ = [
     "InferenceReadinessAuditReport",
     "InferenceReadinessDecision",
     "MLTreeTaxonValidationReport",
+    "MetadataClusteringReport",
+    "MetadataClusterObservation",
     "ModelSelectionValidationReport",
     "InferenceWorkflowReportBuildResult",
     "audit_alignment_inference_readiness",
