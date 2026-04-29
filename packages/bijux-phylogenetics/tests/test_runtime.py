@@ -12,6 +12,13 @@ from bijux_phylogenetics.ancestral import (
     render_ancestral_state_tree,
     write_ancestral_state_table,
 )
+from bijux_phylogenetics.bayesian import (
+    compute_mrbayes_effective_sample_sizes,
+    parse_mrbayes_parameter_traces,
+    prepare_mrbayes_analysis,
+    run_mrbayes_posterior_inference,
+    summarize_mrbayes_posterior_trees,
+)
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_tree_comparison,
@@ -54,6 +61,7 @@ from bijux_phylogenetics.distance import (
 )
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
+    render_inference_workflow_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -247,6 +255,12 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
     assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
     assert bijux_phylogenetics.compare_fast_and_ml_trees is compare_fast_and_ml_trees
+    assert bijux_phylogenetics.render_inference_workflow_report is render_inference_workflow_report
+    assert bijux_phylogenetics.prepare_mrbayes_analysis is prepare_mrbayes_analysis
+    assert bijux_phylogenetics.run_mrbayes_posterior_inference is run_mrbayes_posterior_inference
+    assert bijux_phylogenetics.summarize_mrbayes_posterior_trees is summarize_mrbayes_posterior_trees
+    assert bijux_phylogenetics.parse_mrbayes_parameter_traces is parse_mrbayes_parameter_traces
+    assert bijux_phylogenetics.compute_mrbayes_effective_sample_sizes is compute_mrbayes_effective_sample_sizes
 
 
 def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(tmp_path: Path) -> None:
