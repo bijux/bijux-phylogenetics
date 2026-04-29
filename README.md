@@ -52,9 +52,9 @@ metadata linkage, shared-clade comparison, alignment-quality diagnostics,
 alignment trimming, coding-sequence translation, identity-matrix export,
 DNA distance-matrix analysis, distance-tree construction, explicit rooting
 transforms, tree-set consensus and posterior uncertainty analysis,
-deterministic SVG tree rendering, publication figure packaging, evidence
-manifests, and HTML report generation rather than likelihood or Bayesian tree
-inference.
+tree and alignment simulation, scientific benchmarking, deterministic SVG tree
+rendering, publication figure packaging, evidence manifests, and HTML report
+generation rather than likelihood or Bayesian tree inference.
 
 Recent tree diagnostics now also classify internal-node child counts, missing
 internal versus terminal branch lengths, singleton internal nodes, branch-length
@@ -107,6 +107,10 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk`
 - `uv run bijux-phylogenetics tree-set compare posterior-a.trees posterior-b.trees --json`
 - `uv run bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html`
+- `uv run bijux-phylogenetics simulate tree-birth-death --tree-count 10 --tip-count 32 --out simulated.trees`
+- `uv run bijux-phylogenetics simulate traits-brownian tree.nwk --sigma 0.5 --out simulated-traits.tsv`
+- `uv run bijux-phylogenetics simulate alignment-dna tree.nwk --sequence-length 500 --out simulated-alignment.fasta`
+- `uv run bijux-phylogenetics benchmark tree-validation --replicates 3 --json`
 - `uv run bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json`
 - `uv run bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk`
 - `uv run bijux-phylogenetics topology reroot-midpoint tree.nwk --out midpoint-rooted.nwk`
