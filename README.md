@@ -55,11 +55,11 @@ transforms, comparative trait readiness, phylogenetic independent contrasts,
 phylogenetic signal estimation, phylogenetic generalized least-squares,
 continuous and discrete ancestral-state reconstruction, ancestral uncertainty
 reporting, ancestral tree rendering, governed external-engine orchestration for
-alignment, trimming, model selection, and tree inference, tree-set consensus
-and posterior uncertainty analysis, tree and alignment simulation, scientific
-benchmarking, deterministic SVG tree rendering, publication figure packaging,
-evidence manifests, and HTML report generation rather than likelihood or
-Bayesian tree inference.
+alignment, trimming, model selection, tree inference, and initial MrBayes
+posterior analysis, tree-set consensus and posterior uncertainty analysis,
+tree and alignment simulation, scientific benchmarking, deterministic SVG tree
+rendering, publication figure packaging, evidence manifests, and HTML report
+generation rather than full likelihood or Bayesian inference engines.
 
 Recent tree diagnostics now also classify internal-node child counts, missing
 internal versus terminal branch lengths, singleton internal nodes, branch-length
@@ -123,6 +123,12 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics adapter consensus artifacts/bootstrap/mammals.ufboot --out-dir artifacts/consensus --prefix mammals --json`
 - `uv run bijux-phylogenetics adapter infer-fast alignment.fasta --out artifacts/fasttree.nwk --json`
 - `uv run bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --json`
+- `uv run bijux-phylogenetics adapter mrbayes-prepare alignment.fasta --out artifacts/mrbayes/analysis.nex --ngen 20000 --samplefreq 100 --json`
+- `uv run bijux-phylogenetics adapter mrbayes-run artifacts/mrbayes/analysis.nex --resume --json`
+- `uv run bijux-phylogenetics adapter mrbayes-summarize artifacts/mrbayes/analysis.run1.t --burnin-fraction 0.25 --json`
+- `uv run bijux-phylogenetics adapter mrbayes-traces artifacts/mrbayes/analysis.run1.p --json`
+- `uv run bijux-phylogenetics adapter mrbayes-ess artifacts/mrbayes/analysis.run1.p --json`
+- `uv run bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --out artifacts/mrbayes/inference-report.html --json`
 - `uv run bijux-phylogenetics tree-set inspect posterior.trees --json`
 - `uv run bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk`
 - `uv run bijux-phylogenetics tree-set compare posterior-a.trees posterior-b.trees --json`
