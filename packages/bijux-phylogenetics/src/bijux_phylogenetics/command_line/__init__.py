@@ -854,6 +854,40 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_compare.add_argument("--table-out", type=Path, help="Write node-wise model differences as TSV.")
     discrete_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
     _add_manifest_argument(discrete_compare)
+    discrete_render = discrete_evolution_subparsers.add_parser(
+        "render",
+        help="Render a tree annotated with reconstructed geographic or other discrete states.",
+    )
+    discrete_render.add_argument("tree", type=Path)
+    discrete_render.add_argument("table", type=Path)
+    discrete_render.add_argument("--trait", required=True)
+    discrete_render.add_argument("--taxon-column")
+    discrete_render.add_argument("--model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_render.add_argument(
+        "--allowed-states",
+        help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
+    )
+    discrete_render.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
+    discrete_render.add_argument("--out", required=True, type=Path)
+    discrete_render.add_argument("--json", action="store_true", help="Emit the render result as JSON.")
+    _add_manifest_argument(discrete_render)
+    discrete_report = discrete_evolution_subparsers.add_parser(
+        "report",
+        help="Render an HTML report for one discrete-state evolution analysis.",
+    )
+    discrete_report.add_argument("tree", type=Path)
+    discrete_report.add_argument("table", type=Path)
+    discrete_report.add_argument("--trait", required=True)
+    discrete_report.add_argument("--taxon-column")
+    discrete_report.add_argument("--model", choices=("equal-rates", "all-rates-different"), default="equal-rates")
+    discrete_report.add_argument(
+        "--allowed-states",
+        help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
+    )
+    discrete_report.add_argument("--compare-model", choices=("equal-rates", "all-rates-different"))
+    discrete_report.add_argument("--out", required=True, type=Path)
+    discrete_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(discrete_report)
 
     distance = subparsers.add_parser(get_command_spec("distance").name, help=get_command_spec("distance").summary)
     distance_subparsers = distance.add_subparsers(dest="distance_command", required=True)
@@ -2394,6 +2428,78 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "model": report.model,
                         },
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "render":
+                report = estimate_ancestral_geographic_states(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    allowed_states=allowed_states or None,
+                )
+                result = render_tree_with_geographic_states(
+                    args.tree,
+                    report,
+                    out_path=args.out,
+                    layout=args.layout,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="discrete-evolution",
+                    inputs=[args.tree, args.table],
+                    outputs=[result.output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tip_count": result.tip_count,
+                            "rendered_internal_annotation_count": result.rendered_internal_annotation_count,
+                            "layout": result.layout,
+                            "model": report.model,
+                        },
+                        data={
+                            "reconstruction": report,
+                            "render": result,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.discrete_evolution_command == "report":
+                result = render_discrete_state_evolution_report(
+                    tree_path=args.tree,
+                    traits_path=args.table,
+                    trait=args.trait,
+                    out_path=args.out,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    allowed_states=allowed_states or None,
+                    compare_model=args.compare_model,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="discrete-evolution",
+                    inputs=[args.tree, args.table],
+                    outputs=[result.output_path, args.out.with_suffix(".svg")],
+                )
+                _print_result(
+                    build_command_result(
+                        command="discrete-evolution",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "report_kind": result.report_kind,
+                            "model": result.model,
+                        },
+                        data=result,
                     ),
                     json_output=args.json,
                 )
