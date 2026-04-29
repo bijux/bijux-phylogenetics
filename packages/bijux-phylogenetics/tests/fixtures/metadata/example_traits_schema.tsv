@@ -1,0 +1,5 @@
+taxon	height_cm	presence	comment	habitat
+A	12.5	yes	northern forest edge	forest
+B	14.0	no	wetland margin	forest
+C	9.5	yes	alpine ridge outcrop	tundra
+D	8.0	no	coastal meadow patch	tundra

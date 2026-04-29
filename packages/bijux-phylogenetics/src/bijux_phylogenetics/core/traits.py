@@ -88,6 +88,28 @@ def _is_numeric(values: list[str]) -> bool:
     return True
 
 
+def _is_binary(values: list[str]) -> bool:
+    normalized = {value.strip().lower() for value in values}
+    binary_tokens = {
+        "0",
+        "1",
+        "false",
+        "true",
+        "no",
+        "yes",
+        "absent",
+        "present",
+    }
+    return bool(normalized) and normalized <= binary_tokens and len(normalized) <= 2
+
+
+def _is_text(values: list[str], *, row_count: int) -> bool:
+    distinct_values = len(set(values))
+    if any(" " in value for value in values):
+        return True
+    return distinct_values > max(3, row_count // 2)
+
+
 def _summarize_trait_column(table: TaxonTable, column: str) -> TraitColumnSummary:
     values = [row[column] for row in table.rows]
     observed_values = [value for value in values if value]
@@ -95,6 +117,10 @@ def _summarize_trait_column(table: TaxonTable, column: str) -> TraitColumnSummar
         kind = "empty"
     elif _is_numeric(observed_values):
         kind = "numeric"
+    elif _is_binary(observed_values):
+        kind = "binary"
+    elif _is_text(observed_values, row_count=len(table.rows)):
+        kind = "text"
     else:
         kind = "categorical"
     return TraitColumnSummary(

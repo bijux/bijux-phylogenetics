@@ -259,6 +259,16 @@ def test_traits_validate_infers_numeric_and_categorical_schema() -> None:
     ]
 
 
+def test_traits_validate_can_distinguish_binary_and_text_columns() -> None:
+    report = validate_traits_table(fixture("example_traits_schema.tsv"))
+    assert [(column.name, column.kind) for column in report.trait_columns] == [
+        ("height_cm", "numeric"),
+        ("presence", "binary"),
+        ("comment", "text"),
+        ("habitat", "categorical"),
+    ]
+
+
 def test_traits_detect_unusable_columns_by_missingness() -> None:
     columns = detect_unusable_trait_columns(
         fixture("example_traits_validate.tsv"),
