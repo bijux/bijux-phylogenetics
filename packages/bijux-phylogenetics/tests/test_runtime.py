@@ -23,6 +23,7 @@ from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_mani
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
 from bijux_phylogenetics.distance import (
     build_distance_tree,
+    build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
     load_imported_distance_matrix,
@@ -62,6 +63,7 @@ from bijux_phylogenetics.errors import (
     EngineUnavailableError,
     InvalidBranchLengthError,
     InvalidAlignmentError,
+    InvalidDistanceMatrixError,
     MetadataJoinError,
     NonUltrametricTreeError,
     UnnamedTipError,
@@ -1083,6 +1085,28 @@ def test_validate_imported_distance_matrix_detects_asymmetry() -> None:
     assert [(row.left_identifier, row.right_identifier, row.left_to_right_distance, row.right_to_left_distance) for row in report.asymmetric_pairs] == [
         ("A", "B", 1.0, 2.0),
     ]
+
+
+def test_build_tree_from_imported_distance_matrix_constructs_neighbor_joining_tree() -> None:
+    tree, report = build_tree_from_imported_distance_matrix(
+        fixture("example_distance_matrix.tsv"),
+        method="neighbor-joining",
+    )
+    assert dumps_newick(tree) == "(A:0,B:0.125,C:0.5)Inner1;"
+    assert report.method == "neighbor-joining"
+    assert report.taxon_count == 3
+
+
+def test_build_tree_from_imported_distance_matrix_rejects_asymmetric_input() -> None:
+    try:
+        build_tree_from_imported_distance_matrix(
+            fixture("example_distance_matrix_asymmetric.tsv"),
+            method="upgma",
+        )
+    except InvalidDistanceMatrixError as error:
+        assert error.code == "invalid_distance_matrix_error"
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected InvalidDistanceMatrixError")
 
 
 def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:

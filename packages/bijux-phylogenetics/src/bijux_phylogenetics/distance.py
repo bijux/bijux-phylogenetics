@@ -120,6 +120,16 @@ class ImportedDistanceMatrixReport:
     warnings: list[str]
 
 
+@dataclass(slots=True)
+class ImportedDistanceTreeBuildReport:
+    """Explicit report for building a tree from an imported distance matrix."""
+
+    matrix_path: Path
+    method: str
+    taxon_count: int
+    pair_count: int
+
+
 def _normalize_residue(residue: str) -> str:
     upper = residue.upper()
     if upper == "U":
@@ -402,6 +412,29 @@ def _bio_distance_matrix(report: GeneticDistanceMatrix) -> DistanceMatrix:
     return DistanceMatrix(report.identifiers, rows)
 
 
+def _bio_distance_matrix_from_imported(report: ImportedDistanceMatrixReport, entries: list[ImportedDistanceEntry]) -> DistanceMatrix:
+    if not report.complete:
+        raise InvalidDistanceMatrixError("distance matrix is incomplete")
+    if not report.zero_diagonal:
+        raise InvalidDistanceMatrixError("distance matrix has nonzero diagonal entries")
+    if not report.symmetric:
+        raise InvalidDistanceMatrixError("distance matrix contains asymmetric directional entries")
+    if not report.nonnegative:
+        raise InvalidDistanceMatrixError("distance matrix contains negative distances")
+
+    symmetric_distances = _symmetric_distances(entries)
+    rows: list[list[float]] = []
+    for row_index, left_identifier in enumerate(report.identifiers):
+        row: list[float] = []
+        for right_identifier in report.identifiers[: row_index + 1]:
+            pair_distance = symmetric_distances.get(_pair_key(left_identifier, right_identifier))
+            if pair_distance is None:
+                raise InvalidDistanceMatrixError(f"distance matrix is missing pair {left_identifier}/{right_identifier}")
+            row.append(pair_distance)
+        rows.append(row)
+    return DistanceMatrix(report.identifiers, rows)
+
+
 def _informative_clades(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
     clades: set[frozenset[str]] = set()
 
@@ -601,4 +634,28 @@ def compare_distance_tree_topologies(
         topology_equal=topology_equal,
         same_unrooted_topology=same_unrooted_topology,
         same_taxa_different_rooting=topology_equal is False and same_unrooted_topology,
+    )
+
+
+def build_tree_from_imported_distance_matrix(
+    path: Path,
+    *,
+    method: str,
+) -> tuple[PhyloTree, ImportedDistanceTreeBuildReport]:
+    """Build a distance-based tree from an imported long-form distance matrix."""
+    entries = load_imported_distance_matrix(path)
+    validation = validate_imported_distance_matrix(path)
+    constructor = DistanceTreeConstructor()
+    distance_matrix = _bio_distance_matrix_from_imported(validation, entries)
+    if method == "neighbor-joining":
+        tree = constructor.nj(distance_matrix)
+    elif method == "upgma":
+        tree = constructor.upgma(distance_matrix)
+    else:
+        raise ValueError(f"unsupported tree-building method: {method}")
+    return tree_from_biophylo(tree, source_format="newick"), ImportedDistanceTreeBuildReport(
+        matrix_path=path,
+        method=method,
+        taxon_count=len(validation.identifiers),
+        pair_count=validation.pair_count,
     )
