@@ -43,9 +43,11 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses height_cm range_km --predictors body_mass log_range --json`
 - `bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json`
 - `bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json`
-- `bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json`
+- `bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --model symmetric --state-ordering ordered --ordered-states low,medium,high --json`
 - `bijux-phylogenetics ancestral compare tree.nwk traits.tsv --trait height_cm --left-model brownian --right-model ou --json`
-- `bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html`
+- `bijux-phylogenetics ancestral sensitivity tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --json`
+- `bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --compare-tree tree-alt.nwk --out artifacts/ancestral-report.html`
+- `bijux-phylogenetics ancestral package tree.nwk traits.tsv --trait habitat --kind discrete --model symmetric --state-ordering ordered --ordered-states low,medium,high --out-dir artifacts/ancestral-package --json`
 - `bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json`
 - `bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json`
 - `bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json`
@@ -110,9 +112,9 @@ around trees, alignments, and trait tables.
 ## Ancestral-State Highlights
 
 - continuous ancestral-state reconstruction supports Brownian and OU-style trait models over a rooted pruned analysis tree
-- discrete ancestral-state reconstruction supports Fitch parsimony with explicit ambiguous state sets and node-level probability summaries
-- uncertainty is surfaced directly through continuous confidence intervals and discrete state-probability tables instead of hidden heuristics
-- ancestral trees can be rendered with internal-node labels, exported as deterministic tables, compared across supported continuous models, and bundled into standalone HTML reports
+- discrete ancestral-state reconstruction supports Fitch parsimony plus likelihood-style ER, SYM, and ARD models with explicit ordered versus unordered state assumptions
+- uncertainty is surfaced directly through continuous confidence intervals, low-confidence node warnings, discrete state-probability tables, and reviewer-facing downstream-risk summaries
+- ancestral workflows can now emit sensitivity summaries, supplement-style reports, and publication-ready figure bundles in addition to annotated trees and deterministic node tables
 
 ## External Engine Highlights
 
