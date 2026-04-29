@@ -36,7 +36,12 @@ around trees, alignments, and trait tables.
 - `bijux-phylogenetics comparative readiness tree.nwk traits.tsv --trait height_cm --json`
 - `bijux-phylogenetics comparative contrasts tree.nwk traits.tsv --trait height_cm --json`
 - `bijux-phylogenetics comparative signal tree.nwk traits.tsv --trait height_cm --json`
+- `bijux-phylogenetics comparative brownian tree.nwk traits.tsv --trait height_cm --json`
+- `bijux-phylogenetics comparative compare-models tree.nwk traits.tsv --trait height_cm --json`
 - `bijux-phylogenetics comparative pgls tree.nwk traits.tsv --response height_cm --predictors body_mass log_range --json`
+- `bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ body_mass * habitat" --json`
+- `bijux-phylogenetics comparative multiple-testing tree.nwk traits.tsv --responses height_cm range_km --predictors body_mass log_range --json`
+- `bijux-phylogenetics comparative report tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json`
 - `bijux-phylogenetics ancestral continuous tree.nwk traits.tsv --trait height_cm --model brownian --json`
 - `bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json`
 - `bijux-phylogenetics ancestral compare tree.nwk traits.tsv --trait height_cm --left-model brownian --right-model ou --json`
@@ -91,7 +96,9 @@ around trees, alignments, and trait tables.
 - rooted trees and numeric traits can be checked explicitly for comparative readiness before modeling
 - phylogenetic independent contrasts are available as one deterministic internal-node table per trait
 - trait signal can be summarized with Blomberg's K, Pagel's lambda, and a permutation-based significance surface
-- phylogenetic generalized least-squares accepts one or more numeric predictors and rejects categorical predictors or branch-length-incomplete trees explicitly
+- standalone Brownian and OU fits now report likelihoods, confidence intervals, identifiability warnings, residual structure, and leave-one-taxon-out sensitivity
+- phylogenetic generalized least-squares now supports formula-audited categorical and interaction terms with explicit encoded-column tracking
+- comparative workflows can emit multiple-testing summaries, integrated audit tables, influence reports, alternative-tree comparisons, pruning comparisons, and reviewer-facing limitations text
 
 ## Dataset Audit Highlights
 
