@@ -66,6 +66,8 @@ reporting, continuous and discrete
 ancestral-state reconstruction, ancestral uncertainty reporting, ancestral sensitivity
 summaries, supplement-style ancestral reporting, ancestral tree
 rendering, ordered versus unordered discrete-state modeling, discrete-state geographic transition modeling and reporting,
+stochastic-map approximation and uncertainty summarization for discrete-state
+transitions, model-sensitive ancestral-region comparison,
 governed external-engine orchestration for alignment, trimming, model
 selection, tree inference, and initial MrBayes posterior analysis, tree-set
 consensus and posterior uncertainty analysis, tree and alignment simulation,
@@ -165,6 +167,8 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics ancestral package tree.nwk traits.tsv --trait habitat --kind discrete --model symmetric --state-ordering ordered --ordered-states low,medium,high --out-dir artifacts/ancestral-package --json`
 - `uv run bijux-phylogenetics discrete-evolution validate-coding tree.nwk geography.tsv --trait region --allowed-states north,south,island --json`
 - `uv run bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --model symmetric --state-ordering ordered --ordered-states north,south,island --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json`
+- `uv run bijux-phylogenetics discrete-evolution stochastic-map tree.nwk geography.tsv --trait region --model symmetric --replicates 200 --collection-out artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --json`
+- `uv run bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.json --summary-out artifacts/geography-stochastic-summary.tsv --json`
 - `uv run bijux-phylogenetics discrete-evolution render tree.nwk geography.tsv --trait region --out artifacts/geography.svg --json`
 - `uv run bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model all-rates-different --out artifacts/geography-report.html --json`
 - `uv run bijux-phylogenetics diversification ltt tree.nwk --out artifacts/ltt.tsv --json`
