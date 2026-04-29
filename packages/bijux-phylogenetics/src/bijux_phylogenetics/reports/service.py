@@ -33,6 +33,15 @@ from bijux_phylogenetics.io.fasta import (
 )
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.tree_set import (
+    cluster_trees_by_topology,
+    compute_clade_frequency_table,
+    compute_consensus_tree,
+    compute_tree_distance_matrix,
+    detect_unstable_clades,
+    detect_unstable_taxa,
+    load_tree_set,
+)
 
 
 @dataclass(slots=True)
@@ -76,6 +85,17 @@ class DistanceReportBuildResult:
     source_path: Path
     source_kind: str
     method_limitations: list[str]
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class TreeUncertaintyReportBuildResult:
+    output_path: Path
+    report_kind: str
+    title: str
+    source_path: Path
+    tree_count: int
+    rooted_topology_count: int
     machine_manifest: dict[str, object]
 
 
@@ -383,6 +403,46 @@ def render_distance_report(
         source_path=matrix_path,
         source_kind="imported-distance-matrix",
         method_limitations=method_limitations,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> TreeUncertaintyReportBuildResult:
+    """Build a deterministic HTML report for consensus and uncertainty across a tree set."""
+    summary = load_tree_set(tree_set_path)
+    consensus_tree, consensus = compute_consensus_tree(tree_set_path)
+    clade_frequencies = compute_clade_frequency_table(tree_set_path)
+    distances = compute_tree_distance_matrix(tree_set_path)
+    clusters = cluster_trees_by_topology(tree_set_path)
+    unstable_taxa = detect_unstable_taxa(tree_set_path)
+    unstable_clades = detect_unstable_clades(tree_set_path)
+    title = "Bijux Tree Uncertainty Report"
+    sections = [
+        _section("tree-set-summary", asdict(summary)),
+        _section("consensus-tree", {"newick": dumps_newick(consensus_tree), "report": asdict(consensus)}),
+        _section("clade-frequencies", asdict(clade_frequencies)),
+        _section("pairwise-tree-distances", asdict(distances)),
+        _section("topology-clusters", asdict(clusters)),
+        _section("unstable-taxa", asdict(unstable_taxa)),
+        _section("unstable-clades", asdict(unstable_clades)),
+    ]
+    machine_manifest = {
+        "report_kind": "tree-uncertainty",
+        "title": title,
+        "source_path": str(tree_set_path),
+        "input_checksum": _sha256(tree_set_path),
+        "tree_count": summary.tree_count,
+        "rooted_topology_count": summary.rooted_topology_count,
+        "sections": [name for name, _ in sections],
+    }
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return TreeUncertaintyReportBuildResult(
+        output_path=out_path,
+        report_kind="tree-uncertainty",
+        title=title,
+        source_path=tree_set_path,
+        tree_count=summary.tree_count,
+        rooted_topology_count=summary.rooted_topology_count,
         machine_manifest=machine_manifest,
     )
 

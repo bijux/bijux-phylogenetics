@@ -111,6 +111,7 @@ from bijux_phylogenetics.reports.service import (
     render_distance_report,
     render_phylo_inputs_report,
     render_phylogenetics_report,
+    render_tree_uncertainty_report,
     render_tree_report,
 )
 from bijux_phylogenetics.tree_set import (
@@ -1278,6 +1279,22 @@ def test_render_distance_report_embeds_limitations_and_validation(tmp_path: Path
     assert "distance-method-limitations" in html
     assert "imported-distance-matrix-validation" in html
     assert "neighbor-joining-tree" in html
+
+
+def test_render_tree_uncertainty_report_embeds_consensus_and_instability_sections(tmp_path: Path) -> None:
+    output_path = tmp_path / "tree-uncertainty-report.html"
+    result = render_tree_uncertainty_report(
+        tree_set_path=fixture("example_tree_set_left.nwk"),
+        out_path=output_path,
+    )
+    html = output_path.read_text(encoding="utf-8")
+    assert result.report_kind == "tree-uncertainty"
+    assert result.tree_count == 3
+    assert result.rooted_topology_count == 2
+    assert result.machine_manifest["report_kind"] == "tree-uncertainty"
+    assert "consensus-tree" in html
+    assert "pairwise-tree-distances" in html
+    assert "unstable-clades" in html
 
 
 def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
