@@ -9,8 +9,10 @@ from bijux_phylogenetics.discrete_evolution import (
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
+    write_discrete_model_comparison_table,
     validate_discrete_state_coding,
     write_node_state_probability_table,
+    write_transition_summary_table,
 )
 
 
@@ -117,3 +119,34 @@ def test_write_node_probability_table_and_render_report_outputs_files(tmp_path: 
     assert render_result.rendered_internal_annotation_count == 3
     assert "discrete-state-evolution" in html_path.read_text(encoding="utf-8")
     assert report_result.report_kind == "discrete-state-evolution"
+
+
+def test_write_transition_summary_table_exports_branch_state_changes(tmp_path: Path) -> None:
+    report = run_discrete_state_transition_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model="equal-rates",
+    )
+    table_path = tmp_path / "transitions.tsv"
+
+    write_transition_summary_table(table_path, report)
+
+    contents = table_path.read_text(encoding="utf-8")
+    assert "parent_node\tchild_node\tsource_state\ttarget_state\tchanged" in contents
+    assert "false" in contents or "true" in contents
+
+
+def test_write_discrete_model_comparison_table_exports_node_probabilities(tmp_path: Path) -> None:
+    comparison = compare_discrete_state_models(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+    )
+    table_path = tmp_path / "model-comparison.tsv"
+
+    write_discrete_model_comparison_table(table_path, comparison)
+
+    contents = table_path.read_text(encoding="utf-8")
+    assert "left_probabilities" in contents
+    assert "right_probabilities" in contents

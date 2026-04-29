@@ -766,6 +766,60 @@ def write_node_state_probability_table(path: Path, report: DiscreteStateEvolutio
     )
 
 
+def write_transition_summary_table(path: Path, report: DiscreteStateEvolutionReport) -> Path:
+    """Export one branch-by-branch transition summary table."""
+    rows = [
+        {
+            "parent_node": event.parent_node,
+            "child_node": event.child_node,
+            "source_state": event.source_state,
+            "target_state": event.target_state,
+            "changed": str(event.changed).lower(),
+        }
+        for event in report.transition_summary.events
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "parent_node",
+            "child_node",
+            "source_state",
+            "target_state",
+            "changed",
+        ],
+        rows=rows,
+    )
+
+
+def write_discrete_model_comparison_table(path: Path, report: DiscreteModelComparisonReport) -> Path:
+    """Export one node-wise comparison table across two discrete-state models."""
+    rows = [
+        {
+            "node": difference.node,
+            "descendant_taxa": ",".join(difference.descendant_taxa),
+            "left_state": difference.left_state,
+            "right_state": difference.right_state,
+            "differs": str(difference.differs).lower(),
+            "left_probabilities": json.dumps(difference.left_probabilities, sort_keys=True),
+            "right_probabilities": json.dumps(difference.right_probabilities, sort_keys=True),
+        }
+        for difference in report.node_differences
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "node",
+            "descendant_taxa",
+            "left_state",
+            "right_state",
+            "differs",
+            "left_probabilities",
+            "right_probabilities",
+        ],
+        rows=rows,
+    )
+
+
 def render_tree_with_geographic_states(
     tree_path: Path,
     report: DiscreteStateEvolutionReport,
