@@ -23,8 +23,8 @@ Runtime package for the bijux-phylogenetics repository.
 
 This package provides the Python API and CLI for tree validation, inspection,
 comparison, metadata linkage, comparative trait analysis, ancestral-state
-reconstruction, external engine orchestration, evidence bundle creation, and
-HTML report generation.
+reconstruction, external engine orchestration, Bayesian posterior summarization,
+evidence bundle creation, and HTML report generation.
 
 ## Install
 
@@ -52,7 +52,9 @@ bijux-phylogenetics --help
 - reconstruct discrete ancestral states under Fitch parsimony with explicit ambiguity reporting
 - compare continuous ancestral reconstructions across two supported models and render annotated ancestral trees
 - run governed MAFFT-, trimAl-, IQ-TREE-, and FastTree-style external workflows with captured commands, versions, logs, and warning summaries
+- prepare and run deterministic MrBayes analyses, summarize posterior trees after burn-in filtering, parse parameter traces, and compute per-parameter ESS values
 - compare fast approximate and maximum-likelihood trees through the same deterministic tree-comparison report surface
+- resume inference only when saved manifests, inputs, and outputs still match, and render standalone HTML inference workflow reports from those manifests
 - export joined metadata rows and missing trait-value diagnostics
 - inspect alignment alphabets, composition, GC content, duplicates, composition outliers, coding stop codons, and frameshift-like sequence lengths
 - trim all-gap or all-missing columns and remove high-missingness sequences
@@ -87,6 +89,12 @@ bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootst
 bijux-phylogenetics adapter consensus artifacts/bootstrap/mammals.ufboot --out-dir artifacts/consensus --prefix mammals --json
 bijux-phylogenetics adapter infer-fast alignment.fasta --out artifacts/fasttree.nwk --json
 bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --json
+bijux-phylogenetics adapter mrbayes-prepare alignment.fasta --out artifacts/mrbayes/analysis.nex --ngen 20000 --samplefreq 100 --json
+bijux-phylogenetics adapter mrbayes-run artifacts/mrbayes/analysis.nex --resume --json
+bijux-phylogenetics adapter mrbayes-summarize artifacts/mrbayes/analysis.run1.t --burnin-fraction 0.25 --json
+bijux-phylogenetics adapter mrbayes-traces artifacts/mrbayes/analysis.run1.p --json
+bijux-phylogenetics adapter mrbayes-ess artifacts/mrbayes/analysis.run1.p --json
+bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --out artifacts/mrbayes/inference-report.html --json
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
