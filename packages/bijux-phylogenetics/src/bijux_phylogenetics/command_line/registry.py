@@ -58,6 +58,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("distance-analysis-report",),
     ),
     CommandSpec(
+        name="tree-set",
+        domain="tree-uncertainty",
+        summary="Summarize consensus, topology diversity, and instability across a tree set.",
+        inputs=("tree-set",),
+        outputs=("tree-set-report",),
+    ),
+    CommandSpec(
         name="inspect",
         domain="tree-io",
         summary="Inspect a tree and report high-level summary metrics.",

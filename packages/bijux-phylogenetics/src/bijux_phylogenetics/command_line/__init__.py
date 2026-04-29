@@ -75,8 +75,22 @@ from bijux_phylogenetics.reports.service import (
     render_dataset_report,
     render_distance_report,
     render_phylo_inputs_report,
+    render_tree_uncertainty_report,
     render_tree_report,
     write_annotation_report,
+)
+from bijux_phylogenetics.tree_set import (
+    cluster_trees_by_topology,
+    compare_posterior_tree_sets,
+    compute_clade_frequency_table,
+    compute_consensus_tree,
+    compute_tree_distance_matrix,
+    detect_unstable_clades,
+    detect_unstable_taxa,
+    load_tree_set,
+    write_clade_frequency_table,
+    write_consensus_tree,
+    write_tree_distance_matrix,
 )
 from bijux_phylogenetics.results import build_command_result, build_error_result
 
@@ -256,6 +270,13 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if args.distance_command == "report":
             return [args.matrix, args.out]
         return [args.matrix]
+    if args.command == "tree-set":
+        if args.tree_set_command == "compare":
+            return [args.left, args.right]
+        inputs = [args.tree_set]
+        if getattr(args, "out", None) is not None:
+            inputs.append(args.out)
+        return inputs
     if args.command in {"validate", "inspect"}:
         return [args.tree]
     if args.command == "diagnose":
@@ -546,6 +567,77 @@ def build_parser() -> argparse.ArgumentParser:
     distance_explain.add_argument("matrix", type=Path)
     distance_explain.add_argument("--json", action="store_true", help="Emit the explanation as JSON.")
     _add_manifest_argument(distance_explain)
+
+    tree_set = subparsers.add_parser(get_command_spec("tree-set").name, help=get_command_spec("tree-set").summary)
+    tree_set_subparsers = tree_set.add_subparsers(dest="tree_set_command", required=True)
+    tree_set_inspect = tree_set_subparsers.add_parser(
+        "inspect",
+        help="Inspect a tree set for tree count and topology diversity.",
+    )
+    tree_set_inspect.add_argument("tree_set", type=Path)
+    tree_set_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(tree_set_inspect)
+    tree_set_consensus = tree_set_subparsers.add_parser(
+        "consensus",
+        help="Build a majority-rule consensus tree from a tree set.",
+    )
+    tree_set_consensus.add_argument("tree_set", type=Path)
+    tree_set_consensus.add_argument("--out", required=True, type=Path)
+    tree_set_consensus.add_argument("--json", action="store_true", help="Emit the consensus report as JSON.")
+    _add_manifest_argument(tree_set_consensus)
+    tree_set_clades = tree_set_subparsers.add_parser(
+        "clade-frequencies",
+        help="Compute clade support frequencies across a tree set.",
+    )
+    tree_set_clades.add_argument("tree_set", type=Path)
+    tree_set_clades.add_argument("--out", type=Path, help="Write the clade-frequency table as TSV.")
+    tree_set_clades.add_argument("--json", action="store_true", help="Emit the clade-frequency report as JSON.")
+    _add_manifest_argument(tree_set_clades)
+    tree_set_distances = tree_set_subparsers.add_parser(
+        "distance-matrix",
+        help="Compute pairwise RF distances across a tree set.",
+    )
+    tree_set_distances.add_argument("tree_set", type=Path)
+    tree_set_distances.add_argument("--out", type=Path, help="Write the pairwise distance table as TSV.")
+    tree_set_distances.add_argument("--json", action="store_true", help="Emit the distance report as JSON.")
+    _add_manifest_argument(tree_set_distances)
+    tree_set_clusters = tree_set_subparsers.add_parser(
+        "cluster",
+        help="Cluster trees by identical rooted topology signatures.",
+    )
+    tree_set_clusters.add_argument("tree_set", type=Path)
+    tree_set_clusters.add_argument("--json", action="store_true", help="Emit the cluster report as JSON.")
+    _add_manifest_argument(tree_set_clusters)
+    tree_set_unstable_taxa = tree_set_subparsers.add_parser(
+        "unstable-taxa",
+        help="Detect taxa with inconsistent placements across a tree set.",
+    )
+    tree_set_unstable_taxa.add_argument("tree_set", type=Path)
+    tree_set_unstable_taxa.add_argument("--json", action="store_true", help="Emit the instability report as JSON.")
+    _add_manifest_argument(tree_set_unstable_taxa)
+    tree_set_unstable_clades = tree_set_subparsers.add_parser(
+        "unstable-clades",
+        help="Detect non-unanimous and conflicting clades across a tree set.",
+    )
+    tree_set_unstable_clades.add_argument("tree_set", type=Path)
+    tree_set_unstable_clades.add_argument("--json", action="store_true", help="Emit the instability report as JSON.")
+    _add_manifest_argument(tree_set_unstable_clades)
+    tree_set_compare = tree_set_subparsers.add_parser(
+        "compare",
+        help="Compare two posterior tree sets over clade support and topology distance.",
+    )
+    tree_set_compare.add_argument("left", type=Path)
+    tree_set_compare.add_argument("right", type=Path)
+    tree_set_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    _add_manifest_argument(tree_set_compare)
+    tree_set_report = tree_set_subparsers.add_parser(
+        "report",
+        help="Render an HTML uncertainty report for a tree set.",
+    )
+    tree_set_report.add_argument("tree_set", type=Path)
+    tree_set_report.add_argument("--out", required=True, type=Path)
+    tree_set_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(tree_set_report)
 
     validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
     validate.add_argument("tree", type=Path)
@@ -1325,6 +1417,168 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     outputs=outputs,
                     metrics={"limitation_count": len(limitations)},
                     data={"limitations": limitations},
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "tree-set":
+            if args.tree_set_command == "inspect":
+                report = load_tree_set(args.tree_set)
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "shared_taxon_count": len(report.shared_taxa),
+                            "rooted_topology_count": report.rooted_topology_count,
+                            "unrooted_topology_count": report.unrooted_topology_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "consensus":
+                tree, report = compute_consensus_tree(args.tree_set)
+                output_path = write_consensus_tree(args.out, tree)
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "shared_taxon_count": len(report.shared_taxa)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "clade-frequencies":
+                report = compute_clade_frequency_table(args.tree_set)
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_clade_frequency_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "clade_count": len(report.clade_frequencies)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "distance-matrix":
+                report = compute_tree_distance_matrix(args.tree_set)
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_tree_distance_matrix(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "pair_count": len(report.pairs)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "cluster":
+                report = cluster_trees_by_topology(args.tree_set)
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "cluster_count": len(report.clusters)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "unstable-taxa":
+                report = detect_unstable_taxa(args.tree_set)
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "unstable_taxon_count": len(report.taxa)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "unstable-clades":
+                report = detect_unstable_clades(args.tree_set)
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={"tree_count": report.tree_count, "unstable_clade_count": len(report.clades)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "compare":
+                report = compare_posterior_tree_sets(args.left, args.right)
+                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.left, args.right])
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.left, args.right],
+                        outputs=outputs,
+                        metrics={
+                            "left_tree_count": report.left_tree_count,
+                            "right_tree_count": report.right_tree_count,
+                            "shared_rooted_topology_count": report.shared_rooted_topology_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            report = render_tree_uncertainty_report(tree_set_path=args.tree_set, out_path=args.out)
+            outputs = _finalize_outputs(
+                args,
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=[args.out],
+            )
+            _print_result(
+                build_command_result(
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=outputs,
+                    metrics={"tree_count": report.tree_count, "section_count": len(report.machine_manifest["sections"])},
+                    data=report,
                 ),
                 json_output=args.json,
             )

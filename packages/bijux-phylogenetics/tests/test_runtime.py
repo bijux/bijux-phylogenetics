@@ -1437,6 +1437,63 @@ def test_cli_distance_explain_reports_limitations(capsys) -> None:
     assert payload["metrics"]["limitation_count"] == 4
 
 
+def test_cli_tree_set_consensus_writes_newick(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "consensus.nwk"
+    exit_code = main(
+        [
+            "tree-set",
+            "consensus",
+            str(fixture("example_tree_set_left.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);\n"
+    )
+    assert payload["metrics"]["tree_count"] == 3
+
+
+def test_cli_tree_set_compare_reports_shared_topologies(capsys) -> None:
+    exit_code = main(
+        [
+            "tree-set",
+            "compare",
+            str(fixture("example_tree_set_left.nwk")),
+            str(fixture("example_tree_set_right.nwk")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["shared_rooted_topology_count"] == 1
+    assert payload["data"]["mean_between_set_normalized_robinson_foulds"] == 0.777777777777778
+
+
+def test_cli_tree_set_report_writes_html(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "tree-set-report.html"
+    exit_code = main(
+        [
+            "tree-set",
+            "report",
+            str(fixture("example_tree_set_left.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert "unstable-taxa" in output_path.read_text(encoding="utf-8")
+    assert payload["metrics"]["section_count"] == 7
+
+
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
     exit_code = main(["alignment", "coding", str(fixture("example_alignment_coding.fasta")), "--json"])
     captured = capsys.readouterr()
@@ -3133,6 +3190,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "prune",
         "alignment",
         "distance",
+        "tree-set",
         "inspect",
         "validate",
         "normalize",
