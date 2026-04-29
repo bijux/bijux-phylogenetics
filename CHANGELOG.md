@@ -13,6 +13,7 @@
 - add outgroup rooting and midpoint rerooting transforms
 - add comparative readiness checks, phylogenetic independent contrasts, phylogenetic signal estimation, and phylogenetic generalized least-squares workflows
 - add continuous and discrete ancestral-state reconstruction, uncertainty reporting, model comparison, annotated ancestral-tree rendering, table export, and HTML ancestral-state reports
+- add governed external-engine workflows for alignment, trimming, model selection, ML inference, bootstrap consensus, fast-tree comparison, and engine provenance capture
 - embed coding diagnostics and identity matrices in phylo-input reports
 - add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
 - add deterministic tree figure rendering with phylogram, circular, support-label, trait-annotation, metadata-strip, heatmap, collapsed-clade, and publication-bundle workflows
