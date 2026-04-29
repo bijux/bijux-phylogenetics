@@ -133,7 +133,9 @@ from .discrete_evolution import (
     render_tree_with_geographic_states,
     run_discrete_state_transition_model,
     validate_discrete_state_coding,
+    write_discrete_model_comparison_table,
     write_node_state_probability_table,
+    write_transition_summary_table,
 )
 from .engines import (
     EngineRunReport,
@@ -447,8 +449,10 @@ __all__ = [
     "write_consensus_tree",
     "write_genetic_distance_matrix",
     "write_discrete_trait_table",
+    "write_discrete_model_comparison_table",
     "write_node_state_probability_table",
     "write_simulated_alignment",
+    "write_transition_summary_table",
     "write_tree_set",
     "write_tree_distance_matrix",
 ]
