@@ -4,6 +4,7 @@
 
 - initialize the Bijux-standard phylogenetics workspace scaffold
 - add alignment trimming, coding diagnostics, coding translation, and pairwise identity-matrix workflows
+- add DNA distance matrices with p-distance and Jukes-Cantor models, pairwise-deletion and complete-deletion gap handling, and NJ/UPGMA tree building
 - add outgroup rooting and midpoint rerooting transforms
 - embed coding diagnostics and identity matrices in phylo-input reports
 - add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
