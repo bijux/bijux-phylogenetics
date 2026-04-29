@@ -14,6 +14,11 @@ from bijux_phylogenetics.bayesian.posterior import (
     thin_posterior_tree_set,
 )
 from bijux_phylogenetics.bayesian.reports import render_bayesian_run_comparison_report
+from bijux_phylogenetics.bayesian.uncertainty import (
+    build_posterior_uncertainty_figure_package,
+    write_bayesian_methods_summary_text,
+    write_supplementary_bayesian_diagnostics_table,
+)
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -203,3 +208,88 @@ def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(tm
     assert "run-comparison" in html
     assert "tree-comparison" in html
     assert "parameter-differences" in html
+
+
+def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_tables(tmp_path: Path) -> None:
+    result = build_posterior_uncertainty_figure_package(
+        fixture("trees/example_tree_set_left.nwk"),
+        out_dir=tmp_path / "posterior-uncertainty-package",
+    )
+
+    assert result.consensus_tree_path.exists()
+    assert result.consensus_figure_path.exists()
+    assert result.clade_frequency_plot_path.exists()
+    assert result.unstable_taxa_table_path.exists()
+    assert result.topology_clusters_table_path.exists()
+    assert result.conclusion_summary_path.exists()
+    summary = result.conclusion_summary_path.read_text(encoding="utf-8")
+    assert "Posterior Uncertainty Summary" in summary
+    assert "Conflict-prone clades" in summary
+
+
+def test_write_supplementary_bayesian_diagnostics_table_writes_burnin_and_chain_rows(tmp_path: Path) -> None:
+    second_chain = tmp_path / "chain-2.log"
+    second_chain.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tclockRate\ttreeHeight\n"
+        "0\t-501.0\t-481.0\t0.0010\t13.0\n"
+        "1000\t-500.8\t-480.8\t0.0011\t13.1\n"
+        "2000\t-500.6\t-480.6\t0.0012\t13.1\n"
+        "3000\t-500.5\t-480.5\t0.0011\t13.2\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "bayesian-diagnostics-table.tsv"
+
+    report = write_supplementary_bayesian_diagnostics_table(
+        output_path,
+        posterior_tree_path=fixture("trees/example_tree_set_left.nwk"),
+        primary_log_path=fixture("metadata/example_beast.log"),
+        additional_log_paths=[second_chain],
+        burnin_fractions=(0.0, 0.25),
+        ess_threshold=2.0,
+        mean_shift_threshold=1.0,
+        cross_chain_mean_shift_threshold=5.0,
+    )
+
+    text = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.chain_count == 2
+    assert "row_kind\tchain\tparameter" in text
+    assert "burnin-summary\tprimary" in text
+    assert "chain-parameter\tchain_1\tposterior" in text
+
+
+def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnostics(tmp_path: Path) -> None:
+    second_chain = tmp_path / "chain-2.log"
+    second_chain.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tclockRate\ttreeHeight\n"
+        "0\t-501.0\t-481.0\t0.0010\t13.0\n"
+        "1000\t-500.8\t-480.8\t0.0011\t13.1\n"
+        "2000\t-500.6\t-480.6\t0.0012\t13.1\n"
+        "3000\t-500.5\t-480.5\t0.0011\t13.2\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "bayesian-methods-summary.md"
+
+    report = write_bayesian_methods_summary_text(
+        output_path,
+        posterior_tree_path=fixture("trees/example_tree_set_left.nwk"),
+        primary_log_path=fixture("metadata/example_beast.log"),
+        additional_log_paths=[second_chain],
+        tree_prior="birth-death",
+        clock_model="relaxed-lognormal",
+        calibration_path=fixture("metadata/example_calibrations.tsv"),
+        tip_dates_path=fixture("metadata/example_tip_dates.tsv"),
+        burnin_fractions=(0.0, 0.25),
+        ess_threshold=2.0,
+        mean_shift_threshold=1.0,
+        cross_chain_mean_shift_threshold=5.0,
+    )
+
+    text = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert "relaxed-lognormal" in text
+    assert "birth-death" in text
+    assert "example_calibrations.tsv" in text
+    assert "effective sample size" in text
