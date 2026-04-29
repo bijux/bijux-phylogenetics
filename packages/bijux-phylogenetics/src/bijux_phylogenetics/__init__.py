@@ -23,6 +23,7 @@ from .io.fasta import (
     translate_coding_alignment,
     trim_alignment,
 )
+from .render import AnnotationStrip, TreeFigurePackageResult, TreeRenderResult, build_tree_figure_package, render_tree_svg
 from .reports.service import ReportBuildResult, render_phylo_inputs_report, render_phylogenetics_report
 
 try:
@@ -38,13 +39,17 @@ __all__ = [
     "PACKAGE_NAME",
     "PRODUCT_NAME",
     "ReportBuildResult",
+    "AnnotationStrip",
     "TreeDiagnosticReport",
+    "TreeFigurePackageResult",
     "TreeComparisonReport",
     "TreeInspectionReport",
+    "TreeRenderResult",
     "TreeValidationReport",
     "UMBRELLA_COMMAND",
     "__version__",
     "build_alignment_quality_report",
+    "build_tree_figure_package",
     "bundle_directory",
     "compare_tree_paths",
     "compute_pairwise_sequence_identity_matrix",
@@ -53,6 +58,7 @@ __all__ = [
     "inspect_tree_path",
     "render_phylo_inputs_report",
     "render_phylogenetics_report",
+    "render_tree_svg",
     "reroot_tree_by_midpoint",
     "root_tree_on_outgroup",
     "summarise_fasta",
