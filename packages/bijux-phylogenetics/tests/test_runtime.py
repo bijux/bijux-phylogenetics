@@ -56,7 +56,13 @@ from bijux_phylogenetics.comparative import (
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.alignment import AlignmentSummary
-from bijux_phylogenetics.core.dataset import audit_dataset_inputs, summarize_dataset_readiness
+from bijux_phylogenetics.core.dataset import (
+    audit_dataset_inputs,
+    audit_dataset_taxon_ordering,
+    build_dataset_completeness_matrix,
+    build_dataset_crosswalk,
+    summarize_dataset_readiness,
+)
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
@@ -302,6 +308,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.summarize_alignment_windows is summarize_alignment_windows
     assert bijux_phylogenetics.summarize_alignment_readiness is summarize_alignment_readiness
     assert bijux_phylogenetics.audit_dataset_inputs is audit_dataset_inputs
+    assert bijux_phylogenetics.audit_dataset_taxon_ordering is audit_dataset_taxon_ordering
+    assert bijux_phylogenetics.build_dataset_completeness_matrix is build_dataset_completeness_matrix
+    assert bijux_phylogenetics.build_dataset_crosswalk is build_dataset_crosswalk
     assert bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
     assert bijux_phylogenetics.load_tree_set is load_tree_set
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
@@ -1435,6 +1444,9 @@ def test_dataset_audit_integrates_alignment_and_time_tree_surfaces() -> None:
     assert report.alignment_forensic is not None
     assert report.tip_dates is not None
     assert report.calibrations is not None
+    assert "alignment" in report.warning_categories
+    assert any(row.analysis == "distance" and row.decision == "risky" for row in report.analysis_decisions)
+    assert any(level.level == "publication_ready" and level.decision == "risky" for level in report.readiness_levels)
 
 
 def test_dataset_audit_blocks_invalid_time_tree_inputs() -> None:
@@ -1448,6 +1460,68 @@ def test_dataset_audit_blocks_invalid_time_tree_inputs() -> None:
     )
     assert report.readiness_decision == "blocked"
     assert "time_tree" in report.blocked_analyses
+    assert set(report.blocker_categories) >= {"calibration", "tip_dates"}
+
+
+def test_dataset_crosswalk_and_completeness_matrix_report_surface_presence() -> None:
+    crosswalk = build_dataset_crosswalk(
+        fixture("example_tree_named_clades.nwk"),
+        fixture("example_metadata.tsv"),
+        fixture("example_traits_validate.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        tip_dates_path=fixture("example_tip_dates.tsv"),
+        calibration_path=fixture("example_calibrations.tsv"),
+    )
+    matrix = build_dataset_completeness_matrix(
+        fixture("example_tree_named_clades.nwk"),
+        fixture("example_metadata.tsv"),
+        fixture("example_traits_validate.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        tip_dates_path=fixture("example_tip_dates.tsv"),
+        calibration_path=fixture("example_calibrations.tsv"),
+    )
+    crosswalk_by_taxon = {row.taxon: row for row in crosswalk.rows}
+    matrix_by_taxon = {row.taxon: row for row in matrix.rows}
+
+    assert crosswalk_by_taxon["A"].tree_tip == "A"
+    assert crosswalk_by_taxon["A"].alignment_id == "A"
+    assert crosswalk_by_taxon["A"].metadata_id == "A"
+    assert crosswalk_by_taxon["A"].trait_id == "A"
+    assert crosswalk_by_taxon["A"].tip_date_id == "A"
+    assert crosswalk_by_taxon["A"].calibration_targets == ["cal-mammals"]
+    assert crosswalk_by_taxon["C"].calibration_targets == ["cal-birds"]
+    assert matrix_by_taxon["A"].in_geography is True
+    assert matrix.surface_counts["calibrations"] == 4
+
+
+def test_dataset_ordering_audit_detects_reordered_metadata_rows() -> None:
+    report = audit_dataset_taxon_ordering(
+        fixture("example_tree.nwk"),
+        fixture("example_metadata_reordered.tsv"),
+        fixture("example_traits_validate.tsv"),
+    )
+    assert report.consistent is False
+    assert report.drifted_surfaces == ["metadata"]
+    assert any(
+        row.surface == "metadata" and row.taxon == "C" and row.expected_index == 3 and row.observed_index == 1
+        for row in report.conflicts
+    )
+
+
+def test_dataset_audit_reports_group_imbalance_and_exclusion_rows() -> None:
+    report = audit_dataset_inputs(
+        fixture("example_tree.nwk"),
+        fixture("example_alignment_groups.tsv"),
+        fixture("example_traits.tsv"),
+        alignment_path=fixture("example_alignment_filtering_cleaned_moderate.fasta"),
+    )
+    assert any(
+        row.surface == "metadata" and row.group_column == "region" and row.group == "island" and row.removed_fraction == 1.0
+        for row in report.group_imbalance_warnings
+    )
+    exclusion_by_taxon = {row.taxon: row for row in report.exclusion_table.rows}
+    assert exclusion_by_taxon["D"].causes == ["absent_from_alignment", "absent_from_traits"]
+    assert exclusion_by_taxon["D"].first_failed_surface == "alignment"
 
 
 def test_alignment_inspect_rejects_unequal_lengths() -> None:
@@ -3473,6 +3547,8 @@ def test_cli_report_dataset_json_output_includes_audit(capsys, tmp_path: Path) -
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["readiness_decision"] == "ready_with_warnings"
+    assert payload["metrics"]["excluded_taxa"] == 0
+    assert payload["metrics"]["risky_analysis_count"] >= 1
     assert payload["data"]["dataset_audit"]["alignment_forensic"] is not None
 
 
@@ -3852,6 +3928,15 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
         "trait-missing-values",
         "dataset-readiness",
         "dataset-audit",
+        "dataset-findings",
+        "dataset-analysis-decisions",
+        "dataset-readiness-levels",
+        "dataset-crosswalk",
+        "dataset-completeness",
+        "dataset-exclusions",
+        "dataset-ordering",
+        "dataset-pruning",
+        "dataset-group-imbalance",
     ]
     assert result.trait_missing_values is not None
     assert result.trait_missing_values.missing_values == []
