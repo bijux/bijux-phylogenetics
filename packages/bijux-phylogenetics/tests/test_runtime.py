@@ -258,13 +258,17 @@ from bijux_phylogenetics.simulation import (
 from bijux_phylogenetics.tree_set import (
     cluster_trees_by_topology,
     compare_bootstrap_and_posterior_uncertainty,
+    compare_posterior_topological_diversity,
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_tree_distance_matrix,
+    detect_posterior_topology_multimodality,
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
+    summarize_clade_credibility_conflicts,
+    summarize_uncertainty_aware_conclusions,
 )
 
 
@@ -681,12 +685,14 @@ def test_cluster_trees_by_topology_groups_identical_rooted_signatures() -> None:
             cluster.rooted_topology_id,
             cluster.tree_indices,
             cluster.tree_count,
+            cluster.frequency,
             cluster.representative_index,
+            cluster.representative_newick,
         )
         for cluster in report.clusters
     ] == [
-        ("A|B||C|D", [1, 2], 2, 1),
-        ("A|C||B|D", [3], 1, 3),
+        ("A|B||C|D", [1, 2], 2, 0.666666666666667, 1, "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);"),
+        ("A|C||B|D", [3], 1, 0.333333333333333, 3, "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);"),
     ]
 
 
@@ -697,14 +703,15 @@ def test_detect_unstable_taxa_reports_inconsistent_placements() -> None:
             row.taxon,
             row.unique_placements,
             row.dominant_frequency,
+            row.instability_score,
             [(placement.signature, placement.tree_count, placement.frequency) for placement in row.placements],
         )
         for row in report.taxa
     ] == [
-        ("A", 2, 0.666666666666667, [("A|B", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
-        ("B", 2, 0.666666666666667, [("A|B", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
-        ("C", 2, 0.666666666666667, [("C|D", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
-        ("D", 2, 0.666666666666667, [("C|D", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
+        ("A", 2, 0.666666666666667, 0.333333333333333, [("A|B", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
+        ("B", 2, 0.666666666666667, 0.333333333333333, [("A|B", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
+        ("C", 2, 0.666666666666667, 0.333333333333333, [("C|D", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
+        ("D", 2, 0.666666666666667, 0.333333333333333, [("C|D", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
     ]
 
 
@@ -716,15 +723,68 @@ def test_detect_unstable_clades_reports_frequencies_and_conflicts() -> None:
             row.tree_count,
             row.frequency,
             row.conflict_count,
+            row.instability_score,
+            row.support_classification,
             row.conflicting_clades,
         )
         for row in report.clades
     ] == [
-        ("A|B", 2, 0.666666666666667, 2, ["A|C", "B|D"]),
-        ("C|D", 2, 0.666666666666667, 2, ["A|C", "B|D"]),
-        ("A|C", 1, 0.333333333333333, 2, ["A|B", "C|D"]),
-        ("B|D", 1, 0.333333333333333, 2, ["A|B", "C|D"]),
+        ("A|B", 2, 0.666666666666667, 2, 0.333333333333333, "intermediate-support", ["A|C", "B|D"]),
+        ("A|C", 1, 0.333333333333333, 2, 0.333333333333333, "intermediate-support", ["A|B", "C|D"]),
+        ("B|D", 1, 0.333333333333333, 2, 0.333333333333333, "intermediate-support", ["A|B", "C|D"]),
+        ("C|D", 2, 0.666666666666667, 2, 0.333333333333333, "intermediate-support", ["A|C", "B|D"]),
     ]
+
+
+def test_compare_posterior_topological_diversity_reports_relative_dispersion() -> None:
+    report = compare_posterior_topological_diversity(
+        fixture("example_tree_set_left.nwk"),
+        fixture("example_tree_set_right.nwk"),
+    )
+
+    assert report.left_summary.rooted_topology_count == 2
+    assert report.right_summary.rooted_topology_count == 2
+    assert report.left_summary.dominant_topology_frequency == 0.666666666666667
+    assert report.right_summary.effective_topology_count == 1.889881574842309
+    assert report.left_summary.mean_within_set_normalized_robinson_foulds == 0.666666666666667
+    assert report.warnings == []
+
+
+def test_detect_posterior_topology_multimodality_reports_multiple_modes() -> None:
+    report = detect_posterior_topology_multimodality(
+        fixture("example_tree_set_left.nwk"),
+        min_mode_frequency=0.3,
+    )
+
+    assert report.multimodal is True
+    assert report.mode_count == 2
+    assert report.dominant_mode_frequency == 0.666666666666667
+    assert [mode.tree_indices for mode in report.modes] == [[1, 2], [3]]
+
+
+def test_summarize_clade_credibility_conflicts_reports_incompatible_high_frequency_clades() -> None:
+    report = summarize_clade_credibility_conflicts(
+        fixture("example_tree_set_left.nwk"),
+        credibility_threshold=0.3,
+    )
+
+    assert report.high_credibility_clade_count == 4
+    assert report.conflict_count == 2
+    assert report.conflicts[0].combined_frequency == 1.0
+
+
+def test_summarize_uncertainty_aware_conclusions_separates_robust_uncertain_and_conflicting_clades() -> None:
+    report = summarize_uncertainty_aware_conclusions(
+        fixture("example_tree_set_left.nwk"),
+        robust_threshold=0.95,
+        credibility_threshold=0.3,
+    )
+
+    assert report.robust_clade_count == 0
+    assert report.uncertain_clade_count == 1
+    assert report.conflicting_clade_count == 3
+    assert report.uncertain_clades[0].clade == "C|D"
+    assert {row.conclusion for row in report.conflicting_clades} == {"conflict-prone"}
 
 
 def test_compare_posterior_tree_sets_reports_clade_deltas_and_cross_set_distance() -> None:
