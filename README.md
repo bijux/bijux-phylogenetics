@@ -54,10 +54,11 @@ DNA distance-matrix analysis, distance-tree construction, explicit rooting
 transforms, comparative trait readiness, phylogenetic independent contrasts,
 phylogenetic signal estimation, phylogenetic generalized least-squares,
 continuous and discrete ancestral-state reconstruction, ancestral uncertainty
-reporting, ancestral tree rendering, governed external-engine orchestration for
-alignment, trimming, model selection, tree inference, and initial MrBayes
-posterior analysis, tree-set consensus and posterior uncertainty analysis,
-tree and alignment simulation, scientific benchmarking, deterministic SVG tree
+reporting, ancestral tree rendering, discrete-state geographic transition
+modeling and reporting, governed external-engine orchestration for alignment,
+trimming, model selection, tree inference, and initial MrBayes posterior
+analysis, tree-set consensus and posterior uncertainty analysis, tree and
+alignment simulation, scientific benchmarking, deterministic SVG tree
 rendering, publication figure packaging, evidence manifests, and HTML report
 generation rather than full likelihood or Bayesian inference engines.
 
@@ -116,6 +117,10 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics ancestral discrete tree.nwk traits.tsv --trait habitat --json`
 - `uv run bijux-phylogenetics ancestral compare tree.nwk traits.tsv --trait height_cm --left-model brownian --right-model ou --json`
 - `uv run bijux-phylogenetics ancestral report tree.nwk traits.tsv --trait height_cm --kind continuous --compare-model ou --out artifacts/ancestral-report.html`
+- `uv run bijux-phylogenetics discrete-evolution validate-coding tree.nwk geography.tsv --trait region --allowed-states north,south,island --json`
+- `uv run bijux-phylogenetics discrete-evolution model tree.nwk geography.tsv --trait region --model all-rates-different --node-table-out artifacts/node-states.tsv --transitions-out artifacts/transitions.tsv --json`
+- `uv run bijux-phylogenetics discrete-evolution render tree.nwk geography.tsv --trait region --out artifacts/geography.svg --json`
+- `uv run bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model all-rates-different --out artifacts/geography-report.html --json`
 - `uv run bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json`
 - `uv run bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json`
 - `uv run bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json`
