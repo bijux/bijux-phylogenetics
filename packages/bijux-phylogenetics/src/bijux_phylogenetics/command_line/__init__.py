@@ -103,7 +103,6 @@ from bijux_phylogenetics.discrete_evolution import (
     estimate_ancestral_geographic_states,
     render_discrete_state_evolution_report,
     render_tree_with_geographic_states,
-    run_discrete_state_transition_model,
     validate_discrete_state_coding,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
