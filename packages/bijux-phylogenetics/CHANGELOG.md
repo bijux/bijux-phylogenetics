@@ -28,3 +28,4 @@
 - add pruning information-loss accounting, taxon synonym audits and reversible resolution, namespace-mixing diagnostics, workflow taxon loss and stability reports, and explicit UPGMA assumption validation surfaces
 - expand ancestral-state workflows with node-level low-confidence warnings, sensitivity summaries, supplement-style reports, publication figure bundles, ordered discrete-state modeling, and ER/SYM/ARD discrete-state reporting
 - expand discrete-state evolution workflows with transition reference validation, rate-uncertainty diagnostics, dominant-state and sparse-state warnings, model-sensitive ancestral-region comparison, stochastic-map summaries, and richer report caveats
+- add geographic-analysis readiness gates, state-coding audits, biogeographic interpretation reports, alignment inference-readiness audits, engine-output validation, metadata clustering checks, inference-failure taxonomy, and bootstrap tree-set validation
