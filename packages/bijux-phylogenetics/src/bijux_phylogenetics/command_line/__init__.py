@@ -4127,6 +4127,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "tip_count": result.inspection.tip_count,
                                 "linked_taxa": result.metadata_linkage.linked_taxa,
                                 "readiness_decision": None if result.dataset_audit is None else result.dataset_audit.readiness_decision,
+                                "excluded_taxa": 0 if result.dataset_audit is None else len(result.dataset_audit.exclusion_table.rows),
+                                "blocked_analysis_count": 0 if result.dataset_audit is None else len(result.dataset_audit.blocked_analyses),
+                                "risky_analysis_count": 0 if result.dataset_audit is None else sum(
+                                    1
+                                    for row in result.dataset_audit.analysis_decisions
+                                    if row.decision == "risky"
+                                ),
                             },
                             data=result,
                         ),
