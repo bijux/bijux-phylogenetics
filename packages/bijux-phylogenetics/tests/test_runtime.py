@@ -161,6 +161,15 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
     assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
+    assert bijux_phylogenetics.load_tree_set is load_tree_set
+    assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
+    assert bijux_phylogenetics.compute_clade_frequency_table is compute_clade_frequency_table
+    assert bijux_phylogenetics.compute_tree_distance_matrix is compute_tree_distance_matrix
+    assert bijux_phylogenetics.cluster_trees_by_topology is cluster_trees_by_topology
+    assert bijux_phylogenetics.detect_unstable_taxa is detect_unstable_taxa
+    assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
+    assert bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
+    assert bijux_phylogenetics.render_tree_uncertainty_report is render_tree_uncertainty_report
 
 
 def test_load_tree_set_reports_tree_count_and_topology_diversity() -> None:
