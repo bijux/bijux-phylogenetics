@@ -27,6 +27,7 @@ class DiscreteAncestralEstimate:
     confidence: float
     interpretation: str
     unstable: bool
+    downstream_risks: list[str]
 
 
 @dataclass(slots=True)
@@ -46,6 +47,7 @@ class DiscreteAncestralReport:
     dropped_missing_taxa: list[str]
     warnings: list[str]
     unstable_nodes: list[str]
+    weak_support_nodes: list[str]
     estimates: list[DiscreteAncestralEstimate]
 
 
@@ -85,9 +87,16 @@ def reconstruct_discrete_ancestral_states(
             for estimate in likelihood_report.estimates
         ]
         unstable_nodes = [estimate.node for estimate in estimates if estimate.unstable and not estimate.is_tip]
+        weak_support_nodes = [
+            estimate.node
+            for estimate in estimates
+            if not estimate.is_tip and estimate.confidence < 0.75
+        ]
         warnings = list(dataset.warnings)
         if unstable_nodes:
             warnings.append("one or more discrete ancestral nodes remain unstable across candidate states")
+        if weak_support_nodes:
+            warnings.append("low-confidence ancestral state assignments should not be overinterpreted as definitive transitions")
         return DiscreteAncestralReport(
             tree_path=tree_path,
             traits_path=traits_path,
@@ -102,6 +111,7 @@ def reconstruct_discrete_ancestral_states(
             dropped_missing_taxa=dataset.dropped_missing_taxa,
             warnings=warnings,
             unstable_nodes=unstable_nodes,
+            weak_support_nodes=weak_support_nodes,
             estimates=estimates,
         )
     estimates: list[DiscreteAncestralEstimate] = []
@@ -146,9 +156,16 @@ def reconstruct_discrete_ancestral_states(
             )
         )
     unstable_nodes = [estimate.node for estimate in estimates if estimate.unstable and not estimate.is_tip]
+    weak_support_nodes = [
+        estimate.node
+        for estimate in estimates
+        if not estimate.is_tip and estimate.confidence < 0.75
+    ]
     warnings = list(dataset.warnings)
     if unstable_nodes:
         warnings.append("one or more discrete ancestral nodes remain unstable across candidate states")
+    if weak_support_nodes:
+        warnings.append("low-confidence ancestral state assignments should not be overinterpreted as definitive transitions")
 
     return DiscreteAncestralReport(
         tree_path=tree_path,
@@ -164,6 +181,7 @@ def reconstruct_discrete_ancestral_states(
         dropped_missing_taxa=dataset.dropped_missing_taxa,
         warnings=warnings,
         unstable_nodes=unstable_nodes,
+        weak_support_nodes=weak_support_nodes,
         estimates=estimates,
     )
 
@@ -218,4 +236,14 @@ def _build_discrete_estimate(
         confidence=confidence,
         interpretation=interpretation,
         unstable=unstable,
+        downstream_risks=_discrete_downstream_risks(unstable),
     )
+
+
+def _discrete_downstream_risks(unstable: bool) -> list[str]:
+    if not unstable:
+        return []
+    return [
+        "transition counts and inferred ancestral geography may change under alternative state models",
+        "biological narratives about ancestral states should be treated as provisional for this node",
+    ]

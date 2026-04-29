@@ -27,7 +27,10 @@ class ContinuousAncestralEstimate:
     lower_95_interval: float
     upper_95_interval: float
     uncertainty_width: float
+    confidence: float
     interpretation: str
+    unstable: bool
+    downstream_risks: list[str]
 
 
 @dataclass(slots=True)
@@ -46,6 +49,7 @@ class ContinuousAncestralReport:
     dropped_non_numeric_taxa: list[str]
     warnings: list[str]
     unstable_nodes: list[str]
+    weak_support_nodes: list[str]
     estimates: list[ContinuousAncestralEstimate]
 
 
@@ -89,7 +93,10 @@ def reconstruct_continuous_ancestral_states(
                     lower_95_interval=stable_value(estimate),
                     upper_95_interval=stable_value(estimate),
                     uncertainty_width=0.0,
+                    confidence=1.0,
                     interpretation="observed tip value",
+                    unstable=False,
+                    downstream_risks=[],
                 )
             )
             return estimate, standard_error**2
@@ -115,6 +122,8 @@ def reconstruct_continuous_ancestral_states(
         lower = estimate - 1.96 * standard_error
         upper = estimate + 1.96 * standard_error
         uncertainty_width = max(0.0, upper - lower)
+        confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
+        interpretation = _continuous_interpretation(uncertainty_width, trait_range, unstable=unstable)
         estimates.append(
             ContinuousAncestralEstimate(
                 node=node_signature(node),
@@ -126,7 +135,10 @@ def reconstruct_continuous_ancestral_states(
                 lower_95_interval=stable_value(lower),
                 upper_95_interval=stable_value(upper),
                 uncertainty_width=stable_value(uncertainty_width),
-                interpretation=_continuous_interpretation(uncertainty_width, trait_range),
+                confidence=stable_value(confidence),
+                interpretation=interpretation,
+                unstable=unstable,
+                downstream_risks=_continuous_downstream_risks(unstable),
             )
         )
         return estimate, variance
@@ -136,11 +148,18 @@ def reconstruct_continuous_ancestral_states(
     unstable_nodes = [
         estimate.node
         for estimate in ordered_estimates
-        if not estimate.is_tip and estimate.interpretation == "broad uncertainty"
+        if not estimate.is_tip and estimate.unstable
+    ]
+    weak_support_nodes = [
+        estimate.node
+        for estimate in ordered_estimates
+        if not estimate.is_tip and estimate.confidence < 0.75
     ]
     warnings = list(dataset.warnings)
     if unstable_nodes:
         warnings.append("one or more continuous ancestral estimates have broad uncertainty intervals")
+    if weak_support_nodes:
+        warnings.append("low-confidence ancestral estimates should not be overinterpreted for evolutionary timing or trait polarity")
     return ContinuousAncestralReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -154,6 +173,7 @@ def reconstruct_continuous_ancestral_states(
         dropped_non_numeric_taxa=dataset.dropped_non_numeric_taxa,
         warnings=warnings,
         unstable_nodes=unstable_nodes,
+        weak_support_nodes=weak_support_nodes,
         estimates=ordered_estimates,
     )
 
@@ -177,13 +197,33 @@ def _ordered_estimates(
     return sorted(estimates, key=lambda estimate: node_order[estimate.node])
 
 
-def _continuous_interpretation(uncertainty_width: float, trait_range: float) -> str:
+def _continuous_confidence(uncertainty_width: float, trait_range: float) -> tuple[float, bool]:
+    if uncertainty_width == 0.0:
+        return 1.0, False
+    scale = max(trait_range, 1e-12)
+    relative_width = uncertainty_width / scale
+    confidence = max(0.0, min(1.0, 1.0 - min(relative_width, 1.0)))
+    return stable_value(confidence), relative_width > 0.6 or confidence < 0.55
+
+
+def _continuous_interpretation(uncertainty_width: float, trait_range: float, *, unstable: bool) -> str:
     if uncertainty_width == 0.0:
         return "observed tip value"
     scale = max(trait_range, 1e-12)
     relative_width = uncertainty_width / scale
+    if unstable:
+        return "unstable node estimate"
     if relative_width <= 0.25:
         return "narrow uncertainty"
     if relative_width <= 0.6:
         return "moderate uncertainty"
     return "broad uncertainty"
+
+
+def _continuous_downstream_risks(unstable: bool) -> list[str]:
+    if not unstable:
+        return []
+    return [
+        "node ordering and trait-polarity interpretations may change across alternative trees or models",
+        "publication claims about deep ancestral values should be treated as provisional",
+    ]

@@ -56,7 +56,9 @@ def test_continuous_reconstruction_reports_internal_estimates_and_intervals() ->
     assert math.isclose(internal_estimates["A|B|C|D"].estimate, 2.8055555555555554)
     assert internal_estimates["A|B|C|D"].lower_95_interval < internal_estimates["A|B|C|D"].estimate
     assert internal_estimates["A|B|C|D"].upper_95_interval > internal_estimates["A|B|C|D"].estimate
-    assert internal_estimates["A|B|C|D"].interpretation in {"moderate uncertainty", "narrow uncertainty", "broad uncertainty"}
+    assert internal_estimates["A|B|C|D"].interpretation in {"moderate uncertainty", "narrow uncertainty", "broad uncertainty", "unstable node estimate"}
+    assert 0.0 <= internal_estimates["A|B|C|D"].confidence <= 1.0
+    assert isinstance(internal_estimates["A|B|C|D"].downstream_risks, list)
 
 
 def test_continuous_reconstruction_supports_ou_model() -> None:
@@ -107,6 +109,8 @@ def test_discrete_reconstruction_reports_ambiguous_root_probabilities() -> None:
     assert estimates["A|B|C|D"].state_probabilities == {"forest": 0.5, "tundra": 0.5}
     assert estimates["A|B|C|D"].unstable is True
     assert estimates["A|B|C|D"].interpretation == "unstable node state"
+    assert estimates["A|B|C|D"].downstream_risks
+    assert report.weak_support_nodes == ["A|B|C|D"]
 
 
 def test_discrete_reconstruction_supports_likelihood_models() -> None:
