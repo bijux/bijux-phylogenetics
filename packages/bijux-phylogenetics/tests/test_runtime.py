@@ -187,6 +187,16 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
     assert bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
     assert bijux_phylogenetics.render_tree_uncertainty_report is render_tree_uncertainty_report
+    assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
+    assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
+    assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
+    assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
+    assert bijux_phylogenetics.simulate_discrete_traits is simulate_discrete_traits
+    assert bijux_phylogenetics.simulate_dna_alignment is simulate_dna_alignment
+    assert bijux_phylogenetics.simulate_protein_alignment is simulate_protein_alignment
+    assert bijux_phylogenetics.benchmark_tree_validation is benchmark_tree_validation
+    assert bijux_phylogenetics.benchmark_tree_comparison is benchmark_tree_comparison
+    assert bijux_phylogenetics.benchmark_alignment_diagnostics is benchmark_alignment_diagnostics
 
 
 def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(tmp_path: Path) -> None:
