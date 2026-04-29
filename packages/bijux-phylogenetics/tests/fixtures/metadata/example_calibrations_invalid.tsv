@@ -1,0 +1,4 @@
+calibration_id	clade_name	taxa	minimum_age	maximum_age	distribution
+bad-clade	Unknown		10.0	20.0	uniform
+bad-order		A|C	25.0	20.0	lognormal
+bad-empty				uniform

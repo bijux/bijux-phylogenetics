@@ -1,0 +1,3 @@
+calibration_id	clade_name	taxa	minimum_age	maximum_age	distribution
+cal-mammals	Mammals		12.0	18.0	lognormal
+cal-birds		C|D	8.0		uniform
