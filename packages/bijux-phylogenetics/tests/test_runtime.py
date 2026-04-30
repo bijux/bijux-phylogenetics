@@ -2254,7 +2254,7 @@ def test_render_distance_report_embeds_limitations_and_validation(tmp_path: Path
     html = output_path.read_text(encoding="utf-8")
     assert result.source_kind == "imported-distance-matrix"
     assert "distance-method-limitations" in html
-    assert "imported-distance-matrix-validation" in html
+    assert "imported-distance-matrix-quality" in html
     assert "neighbor-joining-tree" in html
 
 

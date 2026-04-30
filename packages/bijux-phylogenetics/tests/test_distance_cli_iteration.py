@@ -86,7 +86,7 @@ def test_cli_distance_reference_json_output(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["all_passed"] is True
-    assert payload["metrics"]["case_count"] == 3
+    assert payload["metrics"]["case_count"] == 9
 
 
 def test_cli_distance_assumptions_json_output(capsys) -> None:
@@ -95,3 +95,11 @@ def test_cli_distance_assumptions_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["ultrametric_compatible"] is False
     assert payload["metrics"]["upgma_violation_count"] > 0
+
+
+def test_cli_distance_quality_json_output(capsys) -> None:
+    exit_code = main(["distance", "quality", str(fixture("example_distance_matrix.tsv")), "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["saturation_audit_scale"] == "unit-interval-like"
+    assert payload["metrics"]["low_information_pair_count"] == 3
