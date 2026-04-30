@@ -5,6 +5,8 @@ from html import escape
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.diagnostics.assumptions import standardize_support_labels
+from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import TreeNode
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 
@@ -15,9 +17,14 @@ class TreeRenderResult:
     format: str
     layout: str
     tip_count: int
+    visible_tip_count: int
     label_count: int
     has_scale_bar: bool
+    scale_bar_length: float | None
+    max_branch_distance: float | None
     rendered_support_count: int
+    support_labels_validated: bool
+    support_validation_warnings: list[str]
     rendered_categorical_trait_count: int
     rendered_continuous_trait_count: int
     rendered_metadata_strip_count: int
@@ -37,6 +44,15 @@ class _Point:
 class AnnotationStrip:
     name: str
     values: dict[str, str]
+
+
+@dataclass(frozen=True, slots=True)
+class SupportLabelRenderAudit:
+    """Decision about whether support labels are safe to render."""
+
+    validated: bool
+    labels_by_node: dict[str, str]
+    warnings: list[str]
 
 
 _CATEGORICAL_PALETTE = (
@@ -164,6 +180,34 @@ def _node_signature_taxa(node: TreeNode) -> list[str]:
     return taxa
 
 
+def audit_support_label_rendering(tree_path: Path) -> SupportLabelRenderAudit:
+    """Audit whether support labels can be rendered safely for reviewer-facing figures."""
+    inspection = inspect_tree_path(tree_path)
+    if inspection.suspicious_support_value_ranges:
+        return SupportLabelRenderAudit(
+            validated=False,
+            labels_by_node={},
+            warnings=[
+                "support labels were withheld because one or more values fall outside interpretable support ranges",
+                *inspection.suspicious_support_value_ranges,
+            ],
+        )
+
+    standardized = standardize_support_labels(tree_path)
+    labels_by_node = {
+        row.node: _format_branch_value(row.support_percent)
+        for row in standardized
+    }
+    warnings: list[str] = []
+    if inspection.mixed_support_scales:
+        warnings.append("support labels were standardized from mixed input scales before rendering")
+    return SupportLabelRenderAudit(
+        validated=True,
+        labels_by_node=labels_by_node,
+        warnings=warnings,
+    )
+
+
 def _count_visible_leaves(node: TreeNode, collapsed_clades: set[str]) -> int:
     if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
         return 1
@@ -197,6 +241,8 @@ def render_tree_svg(
     collapsed_clades: list[str] | None = None,
     internal_annotations: dict[str, str] | None = None,
     internal_annotation_colors: dict[str, str] | None = None,
+    validated_support_labels: dict[str, str] | None = None,
+    support_validation_warnings: list[str] | None = None,
 ) -> TreeRenderResult:
     """Render a deterministic SVG tree as a cladogram, phylogram, or circular tree."""
     if layout not in {"cladogram", "phylogram", "circular"}:
@@ -244,6 +290,8 @@ def render_tree_svg(
     rendered_continuous_trait_count = 0
     rendered_internal_annotation_count = 0
     rendered_collapsed_clades = 0
+    validated_support_labels = validated_support_labels or {}
+    support_validation_warnings = support_validation_warnings or []
     categorical_traits = categorical_traits or {}
     categorical_color_map = _categorical_color_map(categorical_traits)
     continuous_traits = continuous_traits or {}
@@ -351,7 +399,11 @@ def render_tree_svg(
             lines.append(
                 f'<line x1="{x:.1f}" y1="{child_point.y:.1f}" x2="{child_point.x:.1f}" y2="{child_point.y:.1f}" class="branch"/>'
             )
-        support_label = _coerce_support_label(node.name) if show_support_values else None
+        support_label = None
+        if show_support_values:
+            support_label = validated_support_labels.get(_node_signature(node))
+            if support_label is None:
+                support_label = _coerce_support_label(node.name)
         if support_label is not None and node is not tree.root:
             texts.append(
                 f'<text x="{x + 8:.1f}" y="{y - 8:.1f}" class="support-label">{escape(support_label)}</text>'
@@ -458,7 +510,11 @@ def render_tree_svg(
                 lines.append(
                     f'<line x1="{radial_start.x:.1f}" y1="{radial_start.y:.1f}" x2="{radial_end.x:.1f}" y2="{radial_end.y:.1f}" class="branch"/>'
                 )
-            support_label = _coerce_support_label(node.name) if show_support_values else None
+            support_label = None
+            if show_support_values:
+                support_label = validated_support_labels.get(_node_signature(node))
+                if support_label is None:
+                    support_label = _coerce_support_label(node.name)
             if support_label is not None and node is not tree.root:
                 node_angle = angle_cache[id(node)]
                 support_point = _polar_point(center_x, center_y, radial + 14, node_angle)
@@ -491,8 +547,10 @@ def render_tree_svg(
 
     scale_bar = ""
     has_scale_bar = layout == "phylogram" and max_distance > 0
+    scale_bar_length: float | None = None
     if has_scale_bar:
         scale_length = _nice_scale_bar_length(max_distance)
+        scale_bar_length = scale_length
         scale_start = left_margin
         scale_end = left_margin + (scale_length / max_distance) * tree_width
         scale_y = height - 28
@@ -592,9 +650,14 @@ def render_tree_svg(
         format="svg",
         layout=layout,
         tip_count=tree.tip_count,
+        visible_tip_count=leaf_count,
         label_count=len(texts),
         has_scale_bar=has_scale_bar,
+        scale_bar_length=scale_bar_length,
+        max_branch_distance=max_distance if layout in {"phylogram", "circular"} else None,
         rendered_support_count=rendered_support_count,
+        support_labels_validated=bool(validated_support_labels),
+        support_validation_warnings=list(support_validation_warnings),
         rendered_categorical_trait_count=rendered_categorical_trait_count,
         rendered_continuous_trait_count=rendered_continuous_trait_count,
         rendered_metadata_strip_count=len(metadata_strips),
