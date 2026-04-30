@@ -69,7 +69,9 @@ bijux-phylogenetics --help
 - detect mixed coding versus noncoding behavior inside the same nucleotide dataset
 - define named alignment-filtering profiles, generate cleaned alignments, compare original versus cleaned versions, and warn when filtering removes signal or biases taxon groups
 - score alignment quality with transparent components and emit one-shot alignment forensic reports
+- detect low-information alignments, ambiguity-heavy columns, duplicate-handling policy needs, and per-sequence quality rankings before inference
 - audit tree, metadata, traits, alignment, tip dates, and calibrations together through one-shot dataset readiness decisions
+- render dedicated reviewer-facing alignment, dataset, phylo-input, and taxonomy HTML reports with machine-readable sidecars
 - generate taxon crosswalk tables, completeness matrices, exclusion tables, ordering-drift audits, pruning-step retention summaries, and named readiness levels for reviewer-facing dataset inspection
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
@@ -95,6 +97,10 @@ bijux-phylogenetics alignment classify sequences.fasta --json
 bijux-phylogenetics alignment profiles --json
 bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json
 bijux-phylogenetics alignment readiness alignment.fasta --json
+bijux-phylogenetics alignment low-information alignment.fasta --json
+bijux-phylogenetics alignment duplicate-policy alignment.fasta --identity-threshold 0.99 --json
+bijux-phylogenetics alignment ambiguous-columns alignment.fasta --threshold 0.5 --json
+bijux-phylogenetics alignment sequence-ranking alignment.fasta --json
 bijux-phylogenetics alignment length-outliers sequences.fasta --json
 bijux-phylogenetics alignment forensic alignment.fasta --json
 bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cleaned.fasta --json
@@ -109,6 +115,8 @@ bijux-phylogenetics alignment distance-bundle alignment.fasta --method neighbor-
 bijux-phylogenetics distance validate distances.tsv --json
 bijux-phylogenetics distance assumptions distances.tsv --json
 bijux-phylogenetics distance reference --json
+bijux-phylogenetics report alignment --alignment alignment.fasta --out artifacts/alignment-report.html --json
+bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
 bijux-phylogenetics taxonomy synonyms tree.nwk --synonym-table synonyms.tsv --json
 bijux-phylogenetics taxonomy resolve-synonyms tree.nwk --synonym-table synonyms.tsv --out normalized-tree.nwk --mapping-out synonym-map.tsv --json
 bijux-phylogenetics taxonomy namespaces tree.nwk --json
