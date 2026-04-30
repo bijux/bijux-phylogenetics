@@ -79,6 +79,7 @@ class TableLinkageReport:
 @dataclass(slots=True)
 class ReportBuildResult:
     output_path: Path
+    machine_manifest_path: Path
     report_kind: str
     title: str
     validation: TreeValidationReport
@@ -180,6 +181,12 @@ def _section(name: str, payload: object) -> tuple[str, str]:
     return name, json.dumps(payload, default=str, indent=2, sort_keys=True)
 
 
+def _write_machine_manifest(path: Path, payload: dict[str, object]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
 def _build_machine_manifest(
     *,
     report_kind: str,
@@ -202,6 +209,55 @@ def _build_machine_manifest(
     }
 
 
+def _report_sidecar_path(out_path: Path) -> Path:
+    return out_path.with_suffix(".json")
+
+
+def _report_summary_and_limitations(
+    *,
+    report_kind: str,
+    validation: TreeValidationReport,
+    inspection: TreeInspectionReport,
+    forensic: TreeForensicReport,
+    dataset_audit: DatasetAuditReport | None = None,
+    alignment_forensic: AlignmentForensicReport | None = None,
+) -> tuple[list[str], list[str]]:
+    summary = [
+        f"tree validity decision: {validation.validity_decision}",
+        f"tree quality score: {inspection.tree_quality_score}",
+        (
+            "tree is currently safe for publication-oriented use"
+            if forensic.safe_for_publication
+            else "tree still carries publication-facing risks that should be reviewed"
+        ),
+    ]
+    limitations = list(forensic.warnings)
+    if report_kind == "dataset" and dataset_audit is not None:
+        summary.append(f"dataset readiness decision: {dataset_audit.readiness_decision}")
+        summary.append(
+            f"blocked analyses: {len(dataset_audit.blocked_analyses)}, risky analyses: "
+            f"{sum(1 for row in dataset_audit.analysis_decisions if row.decision == 'risky')}"
+        )
+        limitations.extend(finding.message for finding in dataset_audit.findings if finding.severity in {"warning", "blocker"})
+    if report_kind == "phylo-inputs" and alignment_forensic is not None:
+        safe_methods = sum(
+            1
+            for flag in (
+                alignment_forensic.safe_for_distance_analysis,
+                alignment_forensic.safe_for_maximum_likelihood,
+                alignment_forensic.safe_for_bayesian_inference,
+                alignment_forensic.safe_for_coding_analysis,
+                alignment_forensic.safe_for_publication,
+            )
+            if flag
+        )
+        summary.append(f"alignment safe-for flags passed: {safe_methods}/5")
+        limitations.extend(alignment_forensic.limitations)
+    if inspection.mixed_support_scales:
+        limitations.append("support labels originate from mixed scales and should be interpreted only after normalization audit")
+    return summary, sorted(set(limitations))
+
+
 def distance_method_limitations() -> list[str]:
     """Explain why distance-based tree building is approximate."""
     return [
@@ -218,10 +274,18 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
     inspection = inspect_tree_path(tree_path)
     forensic = forensic_tree_path(tree_path)
     title = "Bijux Tree Report"
+    reviewer_summary, limitations = _report_summary_and_limitations(
+        report_kind="tree",
+        validation=validation,
+        inspection=inspection,
+        forensic=forensic,
+    )
     sections = [
+        _section("reviewer-summary", reviewer_summary),
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
         _section("tree-forensic", asdict(forensic)),
+        _section("limitations", limitations),
     ]
     machine_manifest = _build_machine_manifest(
         report_kind="tree",
@@ -230,9 +294,13 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
         sections=sections,
         inspection=inspection,
     )
+    machine_manifest["reviewer_summary"] = reviewer_summary
+    machine_manifest["limitations"] = limitations
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
         output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
         report_kind="tree",
         title=title,
         validation=validation,
@@ -288,7 +356,15 @@ def render_dataset_report(
         else None
     )
     title = "Bijux Dataset Report"
+    reviewer_summary, limitations = _report_summary_and_limitations(
+        report_kind="dataset",
+        validation=validation,
+        inspection=inspection,
+        forensic=forensic,
+        dataset_audit=dataset_audit,
+    )
     sections = [
+        _section("reviewer-summary", reviewer_summary),
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
         _section("tree-forensic", asdict(forensic)),
@@ -315,6 +391,7 @@ def render_dataset_report(
         sections.append(_section("dataset-ordering", asdict(dataset_audit.ordering_audit)))
         sections.append(_section("dataset-pruning", [asdict(row) for row in dataset_audit.pruning_steps]))
         sections.append(_section("dataset-group-imbalance", [asdict(row) for row in dataset_audit.group_imbalance_warnings]))
+    sections.append(_section("limitations", limitations))
     input_paths = [tree_path, metadata_path]
     if traits_path is not None:
         input_paths.append(traits_path)
@@ -331,9 +408,13 @@ def render_dataset_report(
         sections=sections,
         inspection=inspection,
     )
+    machine_manifest["reviewer_summary"] = reviewer_summary
+    machine_manifest["limitations"] = limitations
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
         output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
         report_kind="dataset",
         title=title,
         validation=validation,
@@ -375,7 +456,15 @@ def render_phylo_inputs_report(
     alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(alignment_path)
     alignment_linkage = link_alignment_to_tree(tree_path, alignment_path)
     title = "Bijux Phylo Inputs Report"
+    reviewer_summary, limitations = _report_summary_and_limitations(
+        report_kind="phylo-inputs",
+        validation=validation,
+        inspection=inspection,
+        forensic=forensic,
+        alignment_forensic=alignment_forensic,
+    )
     sections = [
+        _section("reviewer-summary", reviewer_summary),
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
         _section("tree-forensic", asdict(forensic)),
@@ -385,6 +474,7 @@ def render_phylo_inputs_report(
         *([_section("alignment-coding", asdict(alignment_coding))] if alignment_coding is not None else []),
         _section("alignment-identity-matrix", asdict(alignment_identity_matrix)),
         _section("alignment-linkage", asdict(alignment_linkage)),
+        _section("limitations", limitations),
     ]
     machine_manifest = _build_machine_manifest(
         report_kind="phylo-inputs",
@@ -393,9 +483,13 @@ def render_phylo_inputs_report(
         sections=sections,
         inspection=inspection,
     )
+    machine_manifest["reviewer_summary"] = reviewer_summary
+    machine_manifest["limitations"] = limitations
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
         output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
         report_kind="phylo-inputs",
         title=title,
         validation=validation,
@@ -653,8 +747,17 @@ def render_phylogenetics_report(
         if traits_path and metadata_path
         else None
     )
+    reviewer_summary, limitations = _report_summary_and_limitations(
+        report_kind="dataset" if dataset_audit is not None else "tree",
+        validation=validation,
+        inspection=inspection,
+        forensic=forensic,
+        dataset_audit=dataset_audit,
+        alignment_forensic=alignment_forensic,
+    )
 
     sections = [
+        _section("reviewer-summary", reviewer_summary),
         _section("tree-validation", asdict(validation)),
         _section("tree-inspection", asdict(inspection)),
         _section("tree-forensic", asdict(forensic)),
@@ -681,6 +784,7 @@ def render_phylogenetics_report(
         sections.append(_section("dataset-audit", asdict(dataset_audit)))
         sections.append(_section("dataset-crosswalk", asdict(dataset_audit.crosswalk)))
         sections.append(_section("dataset-completeness", asdict(dataset_audit.completeness_matrix)))
+    sections.append(_section("limitations", limitations))
 
     title = "Bijux Phylogenetics Report"
     input_paths = [tree_path]
@@ -697,9 +801,13 @@ def render_phylogenetics_report(
         sections=sections,
         inspection=inspection,
     )
+    machine_manifest["reviewer_summary"] = reviewer_summary
+    machine_manifest["limitations"] = limitations
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
         output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
         report_kind="phylogenetics",
         title=title,
         validation=validation,
