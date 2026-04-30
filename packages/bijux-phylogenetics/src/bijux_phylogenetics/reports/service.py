@@ -37,7 +37,9 @@ from bijux_phylogenetics.reference_validation import (
 )
 from bijux_phylogenetics.distance import (
     assess_distance_method_assumptions,
+    assess_distance_method_maturity,
     assess_imported_distance_method_assumptions,
+    build_distance_method_report,
     build_distance_tree,
     build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
@@ -908,22 +910,20 @@ def render_distance_report(
 
     method_limitations = distance_method_limitations()
     if alignment_path is not None:
-        matrix = compute_pairwise_genetic_distance_matrix(alignment_path)
-        quality = inspect_distance_matrix_quality(alignment_path)
-        assumptions = assess_distance_method_assumptions(alignment_path)
-        reference_validation = validate_distance_reference_examples()
-        nj_tree, _ = build_distance_tree(alignment_path, method="neighbor-joining")
-        upgma_tree, _ = build_distance_tree(alignment_path, method="upgma")
-        comparison = compare_distance_tree_topologies(alignment_path)
+        report = build_distance_method_report(alignment_path)
         title = "Bijux Distance Analysis Report"
         sections = [
-            _section("computed-distance-matrix", asdict(matrix)),
-            _section("distance-quality", asdict(quality)),
-            _section("distance-method-assumptions", asdict(assumptions)),
-            _section("distance-reference-validation", asdict(reference_validation)),
-            _section("neighbor-joining-tree", {"newick": dumps_newick(nj_tree)}),
-            _section("upgma-tree", {"newick": dumps_newick(upgma_tree)}),
-            _section("distance-tree-comparison", asdict(comparison)),
+            _section("computed-distance-matrix", asdict(report.matrix)),
+            _section("distance-quality", asdict(report.quality)),
+            _section("distance-method-assumptions", asdict(report.assumptions)),
+            _section("distance-reference-validation", asdict(report.reference_validation)),
+            _section("neighbor-joining-tree", {"newick": report.built_tree_newick}),
+            _section("upgma-tree", {"newick": report.alternative_tree_newick}),
+            _section("distance-tree-comparison", asdict(report.topology_comparison)),
+            _section("distance-bootstrap-summary", asdict(report.bootstrap_summary)),
+            _section("distance-model-comparison", asdict(report.model_comparison)),
+            _section("distance-gap-policy-sensitivity", asdict(report.gap_policy_sensitivity)),
+            _section("distance-maturity-gate", asdict(report.maturity_gate)),
             _section("distance-method-limitations", method_limitations),
         ]
         machine_manifest = {
