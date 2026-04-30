@@ -136,6 +136,7 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
+    inspect_imported_distance_matrix_quality,
     inspect_distance_matrix_quality,
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
@@ -1546,6 +1547,13 @@ def build_parser() -> argparse.ArgumentParser:
     distance_validate.add_argument("matrix", type=Path)
     distance_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
     _add_manifest_argument(distance_validate)
+    distance_quality = distance_subparsers.add_parser(
+        "quality",
+        help="Audit structural, saturation, and low-information risks for an imported distance matrix.",
+    )
+    distance_quality.add_argument("matrix", type=Path)
+    distance_quality.add_argument("--json", action="store_true", help="Emit the quality report as JSON.")
+    _add_manifest_argument(distance_quality)
     distance_assumptions = distance_subparsers.add_parser(
         "assumptions",
         help="Audit NJ and UPGMA assumptions for an imported distance matrix.",
@@ -4508,6 +4516,27 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "complete": report.complete,
                             "symmetric": report.symmetric,
                             "nonmetric_observation_count": len(report.nonmetric_observations),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.distance_command == "quality":
+                report = inspect_imported_distance_matrix_quality(args.matrix)
+                outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+                _print_result(
+                    build_command_result(
+                        command="distance",
+                        inputs=[args.matrix],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": len(report.validation.identifiers),
+                            "missing_pair_count": len(report.validation.missing_pairs),
+                            "saturated_pair_count": len(report.saturated_pairs),
+                            "low_information_pair_count": len(report.low_information_pairs),
+                            "saturation_audit_scale": report.saturation_audit_scale,
                         },
                         data=report,
                     ),
