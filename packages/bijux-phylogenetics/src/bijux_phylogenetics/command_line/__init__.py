@@ -129,15 +129,21 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
 from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
 from bijux_phylogenetics.distance import (
+    assess_distance_method_maturity,
     assess_distance_method_assumptions,
     assess_imported_distance_method_assumptions,
     bootstrap_distance_trees,
+    build_distance_method_report,
     build_distance_tree,
     build_tree_from_imported_distance_matrix,
+    compare_distance_gap_policies,
+    compare_distance_models,
+    compare_distance_tree_to_reference_tree,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
     inspect_imported_distance_matrix_quality,
     inspect_distance_matrix_quality,
+    summarize_distance_bootstrap_support,
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
     write_distance_bootstrap_support,
@@ -821,7 +827,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance.add_argument(
         "--ambiguity-policy",
-        choices=("ignore", "partial-match", "strict-mismatch"),
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
     alignment_distance.add_argument("--out", type=Path, help="Write the matrix as TSV.")
@@ -844,7 +850,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_quality.add_argument(
         "--ambiguity-policy",
-        choices=("ignore", "partial-match", "strict-mismatch"),
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
     alignment_distance_quality.add_argument("--json", action="store_true", help="Emit the diagnostics as JSON.")
@@ -866,7 +872,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_assumptions.add_argument(
         "--ambiguity-policy",
-        choices=("ignore", "partial-match", "strict-mismatch"),
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
     alignment_distance_assumptions.add_argument("--json", action="store_true", help="Emit the assumption audit as JSON.")
@@ -889,7 +895,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_build_tree.add_argument(
         "--ambiguity-policy",
-        choices=("ignore", "partial-match", "strict-mismatch"),
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
     alignment_build_tree.add_argument("--out", required=True, type=Path)
@@ -912,11 +918,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_compare_distance_trees.add_argument(
         "--ambiguity-policy",
-        choices=("ignore", "partial-match", "strict-mismatch"),
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
     alignment_compare_distance_trees.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
     _add_manifest_argument(alignment_compare_distance_trees)
+    alignment_compare_distance_reference = alignment_subparsers.add_parser(
+        "compare-distance-to-tree",
+        help="Compare one built distance tree against an external inferred or reviewer reference tree.",
+    )
+    alignment_compare_distance_reference.add_argument("alignment", type=Path)
+    alignment_compare_distance_reference.add_argument("reference_tree", type=Path)
+    alignment_compare_distance_reference.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_compare_distance_reference.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        default="p-distance",
+    )
+    alignment_compare_distance_reference.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_compare_distance_reference.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
+        default="ignore",
+    )
+    alignment_compare_distance_reference.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    _add_manifest_argument(alignment_compare_distance_reference)
     alignment_bootstrap_tree = alignment_subparsers.add_parser(
         "bootstrap-tree",
         help="Bootstrap a distance tree by resampling alignment sites with replacement.",
@@ -935,7 +965,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_bootstrap_tree.add_argument(
         "--ambiguity-policy",
-        choices=("ignore", "partial-match", "strict-mismatch"),
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
     alignment_bootstrap_tree.add_argument("--replicates", type=int, default=100)
@@ -944,6 +974,137 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_bootstrap_tree.add_argument("--tree-set-out", type=Path, help="Write bootstrap replicate trees as Newick.")
     alignment_bootstrap_tree.add_argument("--json", action="store_true", help="Emit the bootstrap report as JSON.")
     _add_manifest_argument(alignment_bootstrap_tree)
+    alignment_bootstrap_summary = alignment_subparsers.add_parser(
+        "distance-support-summary",
+        help="Summarize consensus clade support across distance-bootstrap replicates.",
+    )
+    alignment_bootstrap_summary.add_argument("alignment", type=Path)
+    alignment_bootstrap_summary.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_bootstrap_summary.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        default="p-distance",
+    )
+    alignment_bootstrap_summary.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_bootstrap_summary.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
+        default="ignore",
+    )
+    alignment_bootstrap_summary.add_argument("--replicates", type=int, default=25)
+    alignment_bootstrap_summary.add_argument("--seed", type=int, default=1)
+    alignment_bootstrap_summary.add_argument("--json", action="store_true", help="Emit the support summary as JSON.")
+    _add_manifest_argument(alignment_bootstrap_summary)
+    alignment_distance_models = alignment_subparsers.add_parser(
+        "distance-models",
+        help="Compare all supported distance models on the same alignment.",
+    )
+    alignment_distance_models.add_argument("alignment", type=Path)
+    alignment_distance_models.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_distance_models.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
+        default="ignore",
+    )
+    alignment_distance_models.add_argument("--json", action="store_true", help="Emit the model comparison as JSON.")
+    _add_manifest_argument(alignment_distance_models)
+    alignment_distance_gap = alignment_subparsers.add_parser(
+        "distance-gap-sensitivity",
+        help="Compare pairwise versus complete deletion for the same distance workflow.",
+    )
+    alignment_distance_gap.add_argument("alignment", type=Path)
+    alignment_distance_gap.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        default="p-distance",
+    )
+    alignment_distance_gap.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
+        default="ignore",
+    )
+    alignment_distance_gap.add_argument("--json", action="store_true", help="Emit the gap-policy sensitivity as JSON.")
+    _add_manifest_argument(alignment_distance_gap)
+    alignment_distance_suitability = alignment_subparsers.add_parser(
+        "distance-suitability",
+        help="Emit the explicit suitability decision for distance-method use on one alignment.",
+    )
+    alignment_distance_suitability.add_argument("alignment", type=Path)
+    alignment_distance_suitability.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        default="p-distance",
+    )
+    alignment_distance_suitability.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_distance_suitability.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
+        default="ignore",
+    )
+    alignment_distance_suitability.add_argument("--json", action="store_true", help="Emit the suitability decision as JSON.")
+    _add_manifest_argument(alignment_distance_suitability)
+    alignment_distance_method_report = alignment_subparsers.add_parser(
+        "distance-method-report",
+        help="Build a structured distance-method report with support, model, and gap-sensitivity sections.",
+    )
+    alignment_distance_method_report.add_argument("alignment", type=Path)
+    alignment_distance_method_report.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_distance_method_report.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        default="p-distance",
+    )
+    alignment_distance_method_report.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_distance_method_report.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
+        default="ignore",
+    )
+    alignment_distance_method_report.add_argument("--replicates", type=int, default=25)
+    alignment_distance_method_report.add_argument("--seed", type=int, default=1)
+    alignment_distance_method_report.add_argument("--json", action="store_true", help="Emit the structured report as JSON.")
+    _add_manifest_argument(alignment_distance_method_report)
+    alignment_distance_maturity = alignment_subparsers.add_parser(
+        "distance-maturity",
+        help="Run the distance-method maturity gate for one alignment.",
+    )
+    alignment_distance_maturity.add_argument("alignment", type=Path)
+    alignment_distance_maturity.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_distance_maturity.add_argument(
+        "--model",
+        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        default="p-distance",
+    )
+    alignment_distance_maturity.add_argument(
+        "--gap-handling",
+        choices=("pairwise-deletion", "complete-deletion"),
+        default="pairwise-deletion",
+    )
+    alignment_distance_maturity.add_argument(
+        "--ambiguity-policy",
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
+        default="ignore",
+    )
+    alignment_distance_maturity.add_argument("--replicates", type=int, default=25)
+    alignment_distance_maturity.add_argument("--seed", type=int, default=1)
+    alignment_distance_maturity.add_argument("--json", action="store_true", help="Emit the maturity gate as JSON.")
+    _add_manifest_argument(alignment_distance_maturity)
     alignment_distance_bundle = alignment_subparsers.add_parser(
         "distance-bundle",
         help="Write a reproducibility bundle for one distance-analysis workflow.",
@@ -962,7 +1123,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_bundle.add_argument(
         "--ambiguity-policy",
-        choices=("ignore", "partial-match", "strict-mismatch"),
+        choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
     alignment_distance_bundle.add_argument("--replicates", type=int, default=100)
@@ -3075,6 +3236,33 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.alignment_command == "distance-suitability":
+                report = inspect_distance_matrix_quality(
+                    args.alignment,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                    ambiguity_policy=args.ambiguity_policy,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.method_assessment.reasons,
+                        metrics={
+                            "decision": report.method_assessment.decision,
+                            "reason_count": len(report.method_assessment.reasons),
+                        },
+                        data=report.method_assessment,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "distance-assumptions":
                 report = assess_distance_method_assumptions(
                     args.alignment,
@@ -3162,6 +3350,36 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.alignment_command == "compare-distance-to-tree":
+                report = compare_distance_tree_to_reference_tree(
+                    args.alignment,
+                    args.reference_tree,
+                    method=args.method,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                    ambiguity_policy=args.ambiguity_policy,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment, args.reference_tree],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment, args.reference_tree],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "topology_equal": report.topology.topology_equal,
+                            "same_unrooted_topology": report.topology.same_unrooted_topology,
+                            "shared_taxa": len(report.topology.shared_taxa),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "bootstrap-tree":
                 trees, report = bootstrap_distance_trees(
                     args.alignment,
@@ -3192,6 +3410,153 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "replicate_count": report.tree_count,
                             "support_row_count": len(report.support),
                             "method": report.method,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "distance-support-summary":
+                report = summarize_distance_bootstrap_support(
+                    bootstrap_distance_trees(
+                        args.alignment,
+                        method=args.method,
+                        model=args.model,
+                        gap_handling=args.gap_handling,
+                        ambiguity_policy=args.ambiguity_policy,
+                        replicates=args.replicates,
+                        seed=args.seed,
+                    )[1]
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "clade_count": report.clade_count,
+                            "weak_clade_count": report.weak_clade_count,
+                            "replicates": report.replicates,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "distance-models":
+                report = compare_distance_models(
+                    args.alignment,
+                    gap_handling=args.gap_handling,
+                    ambiguity_policy=args.ambiguity_policy,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model_count": len(report.rows),
+                            "alphabet": report.inferred_alphabet,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "distance-gap-sensitivity":
+                report = compare_distance_gap_policies(
+                    args.alignment,
+                    model=args.model,
+                    ambiguity_policy=args.ambiguity_policy,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "changed_pair_count": report.changed_pair_count,
+                            "pair_count": report.pair_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "distance-method-report":
+                report = build_distance_method_report(
+                    args.alignment,
+                    method=args.method,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                    ambiguity_policy=args.ambiguity_policy,
+                    bootstrap_replicates=args.replicates,
+                    bootstrap_seed=args.seed,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.maturity_gate.warnings,
+                        metrics={
+                            "method": report.method,
+                            "decision": report.maturity_gate.decision,
+                            "bootstrap_clade_count": report.bootstrap_summary.clade_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "distance-maturity":
+                report = assess_distance_method_maturity(
+                    args.alignment,
+                    method=args.method,
+                    model=args.model,
+                    gap_handling=args.gap_handling,
+                    ambiguity_policy=args.ambiguity_policy,
+                    bootstrap_replicates=args.replicates,
+                    bootstrap_seed=args.seed,
+                    validate_bundle=True,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "decision": report.decision,
+                            "check_count": len(report.checks),
                         },
                         data=report,
                     ),
