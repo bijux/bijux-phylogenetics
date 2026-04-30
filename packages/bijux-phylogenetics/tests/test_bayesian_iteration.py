@@ -3,19 +3,22 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.bayesian.comparison import (
+    compare_ml_tree_to_bayesian_posterior,
     compare_independent_bayesian_runs,
     compare_posterior_tree_sets_by_clock,
     compare_posterior_tree_sets_by_prior,
 )
+from bijux_phylogenetics.bayesian.beast import assess_calibration_dominance, assess_time_tree_readiness
 from bijux_phylogenetics.bayesian.posterior import (
     compare_bayesian_tree_sets,
     summarize_posterior_node_ages,
     summarize_maximum_clade_credibility_tree,
     thin_posterior_tree_set,
 )
-from bijux_phylogenetics.bayesian.reports import render_bayesian_run_comparison_report
+from bijux_phylogenetics.bayesian.reports import render_bayesian_run_comparison_report, render_time_tree_readiness_report
 from bijux_phylogenetics.bayesian.uncertainty import (
     build_posterior_uncertainty_figure_package,
+    write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
 )
@@ -88,7 +91,66 @@ def test_summarize_posterior_node_ages_reports_clade_heights() -> None:
     rows = {row.clade: row for row in report.rows}
     assert report.kept_tree_count == 3
     assert rows["A|B"].mean_height == 0.2
+    assert rows["A|B"].median_height == 0.2
+    assert rows["A|B"].lower_95_credible_interval == 0.2
+    assert rows["A|B"].upper_95_credible_interval == 0.2
     assert rows["C|D"].maximum_height == 0.2
+
+
+def test_compare_ml_tree_to_bayesian_posterior_reports_topology_and_branch_length_differences() -> None:
+    report = compare_ml_tree_to_bayesian_posterior(
+        fixture("trees/example_tree.nwk"),
+        fixture("trees/example_tree_set_right.nwk"),
+        burnin_fraction=0.0,
+    )
+
+    assert report.mcc_tree_index == 2
+    assert report.topology.topology_equal is False
+    assert any("maximum-likelihood and Bayesian" in warning for warning in report.warnings)
+
+
+def test_assess_calibration_dominance_flags_single_dominant_calibration(tmp_path: Path) -> None:
+    calibration_path = tmp_path / "dominant-calibration.tsv"
+    calibration_path.write_text(
+        "calibration_id\tclade_name\tminimum_age\tmaximum_age\tdistribution\n"
+        "cal-1\tMammals\t0.0\t0.3\tuniform\n",
+        encoding="utf-8",
+    )
+
+    report = assess_calibration_dominance(
+        fixture("trees/example_tree_named_clades.nwk"),
+        calibration_path,
+    )
+
+    assert report.valid_calibration_count == 1
+    assert report.dominant_calibration_ids == ["cal-1"]
+    assert report.warnings
+
+
+def test_assess_time_tree_readiness_blocks_invalid_tip_dates() -> None:
+    report = assess_time_tree_readiness(
+        fixture("trees/example_tree.nwk"),
+        tip_dates_path=fixture("metadata/example_tip_dates_invalid.tsv"),
+    )
+
+    assert report.decision == "blocked"
+    assert "tip-date table contains missing, invalid, or mismatched dated taxa" in report.blockers
+
+
+def test_render_time_tree_readiness_report_writes_sections(tmp_path: Path) -> None:
+    output_path = tmp_path / "time-tree-readiness.html"
+    report = render_time_tree_readiness_report(
+        tree_path=fixture("trees/example_tree.nwk"),
+        calibration_path=fixture("metadata/example_calibrations.tsv"),
+        tip_dates_path=fixture("metadata/example_tip_dates.tsv"),
+        out_path=output_path,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert "readiness" in html
+    assert "calibration-dominance" in html
+    assert "limitations" in html
 
 
 def test_compare_independent_bayesian_runs_reports_parameter_shifts_and_topology_conflict(tmp_path: Path) -> None:
@@ -294,3 +356,19 @@ def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnosti
     assert "birth-death" in text
     assert "example_calibrations.tsv" in text
     assert "effective sample size" in text
+
+
+def test_write_bayesian_limitations_text_includes_diagnostics_and_dating_risks(tmp_path: Path) -> None:
+    output_path = tmp_path / "bayesian-limitations.md"
+    report = write_bayesian_limitations_text(
+        output_path,
+        posterior_tree_path=fixture("trees/example_tree_set_left.nwk"),
+        primary_log_path=fixture("metadata/example_beast.log"),
+        tree_path=fixture("trees/example_tree.nwk"),
+        tip_dates_path=fixture("metadata/example_tip_dates_invalid.tsv"),
+    )
+
+    text = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert "Bayesian Analysis Limitations" in text
+    assert "tip-date" in text.lower()
