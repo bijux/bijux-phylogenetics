@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import bijux_phylogenetics
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_site_scaling,
     benchmark_tree_set_consensus,
@@ -131,3 +132,9 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
     assert report.passed is True
     assert len(report.cases) == 6
     assert all(case.digest for case in report.cases)
+
+
+def test_package_root_exports_validation_corpus_surfaces() -> None:
+    assert bijux_phylogenetics.build_clean_benchmark_corpus is build_clean_benchmark_corpus
+    assert bijux_phylogenetics.build_method_limitation_registry is build_method_limitation_registry
+    assert bijux_phylogenetics.validate_simulation_reproducibility is validate_simulation_reproducibility
