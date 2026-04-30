@@ -8,12 +8,14 @@ import tempfile
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
+    assess_calibration_dominance,
+    assess_time_tree_readiness,
     detect_impossible_calibration_constraints,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
-from bijux_phylogenetics.bayesian.comparison import compare_independent_bayesian_runs
+from bijux_phylogenetics.bayesian.comparison import compare_independent_bayesian_runs, compare_ml_tree_to_bayesian_posterior
 from bijux_phylogenetics.bayesian.mrbayes import (
     assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
@@ -21,6 +23,7 @@ from bijux_phylogenetics.bayesian.mrbayes import (
     summarize_mrbayes_posterior_trees,
 )
 from bijux_phylogenetics.bayesian.uncertainty import (
+    write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
 )
@@ -75,6 +78,27 @@ class BayesianDiagnosticsReportBuildResult:
     posterior_tree_path: Path
     primary_log_path: Path
     chain_count: int
+    warning_count: int
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class BayesianMlComparisonReportBuildResult:
+    output_path: Path
+    report_kind: str
+    title: str
+    ml_tree_path: Path
+    posterior_tree_path: Path
+    warning_count: int
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class TimeTreeReadinessReportBuildResult:
+    output_path: Path
+    report_kind: str
+    title: str
+    tree_path: Path
     warning_count: int
     machine_manifest: dict[str, object]
 
@@ -316,6 +340,21 @@ def render_bayesian_diagnostics_report(
         calibration_path=calibration_path,
         tip_dates_path=tip_dates_path,
     )
+    limitations_text_path = Path(tempfile.mkstemp(prefix="bijux-bayesian-limitations-", suffix=".md")[1])
+    limitations_summary = write_bayesian_limitations_text(
+        limitations_text_path,
+        posterior_tree_path=posterior_tree_path,
+        primary_log_path=primary_log_path,
+        additional_log_paths=additional_log_paths,
+        tree_path=tree_path,
+        calibration_path=calibration_path,
+        tip_dates_path=tip_dates_path,
+        alignment_path=alignment_path,
+        burnin_fractions=burnin_fractions,
+        ess_threshold=ess_threshold,
+        mean_shift_threshold=mean_shift_threshold,
+        cross_chain_mean_shift_threshold=cross_chain_mean_shift_threshold,
+    )
     title = "Bijux Bayesian Diagnostics Report"
     sections = [
         ("posterior-log-validation", json.dumps(asdict(validation), default=str, indent=2, sort_keys=True)),
@@ -323,6 +362,7 @@ def render_bayesian_diagnostics_report(
         ("chain-mixing", json.dumps(asdict(mixing), default=str, indent=2, sort_keys=True)),
         ("supplementary-diagnostics-table", supplementary_table.output_path.read_text(encoding="utf-8")),
         ("methods-summary-text", methods_summary.text),
+        ("limitations-text", limitations_summary.text),
     ]
     warning_count = len(validation.issues) + len(burnin.warnings) + len(mixing.issues)
     if calibration_report is not None:
@@ -346,6 +386,7 @@ def render_bayesian_diagnostics_report(
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     supplementary_table_path.unlink(missing_ok=True)
     methods_text_path.unlink(missing_ok=True)
+    limitations_text_path.unlink(missing_ok=True)
     return BayesianDiagnosticsReportBuildResult(
         output_path=out_path,
         report_kind="bayesian-diagnostics",
@@ -353,6 +394,100 @@ def render_bayesian_diagnostics_report(
         posterior_tree_path=posterior_tree_path,
         primary_log_path=primary_log_path,
         chain_count=len(log_paths),
+        warning_count=warning_count,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_ml_vs_bayesian_tree_report(
+    *,
+    ml_tree_path: Path,
+    posterior_tree_path: Path,
+    out_path: Path,
+    burnin_fraction: float = 0.25,
+) -> BayesianMlComparisonReportBuildResult:
+    """Render a reviewer-facing comparison between one ML tree and one Bayesian MCC summary."""
+    comparison = compare_ml_tree_to_bayesian_posterior(
+        ml_tree_path,
+        posterior_tree_path,
+        burnin_fraction=burnin_fraction,
+    )
+    title = "Bijux ML Versus Bayesian Tree Report"
+    sections = [
+        ("ml-versus-bayesian-summary", json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True)),
+        ("topology-comparison", json.dumps(asdict(comparison.topology), default=str, indent=2, sort_keys=True)),
+        ("branch-length-comparison", json.dumps(asdict(comparison.branch_lengths), default=str, indent=2, sort_keys=True)),
+    ]
+    machine_manifest = {
+        "report_kind": "ml-vs-bayesian-tree",
+        "title": title,
+        "ml_tree_path": str(ml_tree_path),
+        "posterior_tree_path": str(posterior_tree_path),
+        "warning_count": len(comparison.warnings),
+        "sections": [name for name, _ in sections],
+    }
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return BayesianMlComparisonReportBuildResult(
+        output_path=out_path,
+        report_kind="ml-vs-bayesian-tree",
+        title=title,
+        ml_tree_path=ml_tree_path,
+        posterior_tree_path=posterior_tree_path,
+        warning_count=len(comparison.warnings),
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_time_tree_readiness_report(
+    *,
+    tree_path: Path,
+    out_path: Path,
+    calibration_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    alignment_path: Path | None = None,
+    taxon_column: str | None = None,
+    date_column: str = "date",
+) -> TimeTreeReadinessReportBuildResult:
+    """Render an HTML readiness decision for dated phylogenetics."""
+    readiness = assess_time_tree_readiness(
+        tree_path,
+        calibration_path=calibration_path,
+        tip_dates_path=tip_dates_path,
+        alignment_path=alignment_path,
+        taxon_column=taxon_column,
+        date_column=date_column,
+    )
+    limitations: list[str] = []
+    if readiness.calibration_dominance is not None:
+        limitations.extend(readiness.calibration_dominance.warnings)
+    if readiness.tip_date_report is not None and readiness.tip_date_report.invalid_tip_count:
+        limitations.append("tip-date metadata requires correction before the dated-tree workflow can be trusted")
+    title = "Bijux Time-Tree Readiness Report"
+    sections = [
+        ("readiness", json.dumps(asdict(readiness), default=str, indent=2, sort_keys=True)),
+    ]
+    if readiness.calibration_report is not None:
+        sections.append(("fossil-calibrations", json.dumps(asdict(readiness.calibration_report), default=str, indent=2, sort_keys=True)))
+    if readiness.calibration_dominance is not None:
+        sections.append(("calibration-dominance", json.dumps(asdict(readiness.calibration_dominance), default=str, indent=2, sort_keys=True)))
+    if readiness.tip_date_report is not None:
+        sections.append(("tip-dates", json.dumps(asdict(readiness.tip_date_report), default=str, indent=2, sort_keys=True)))
+    sections.append(("limitations", json.dumps(sorted(dict.fromkeys(limitations)), indent=2)))
+    warning_count = len(readiness.blockers) + len(readiness.warnings)
+    machine_manifest = {
+        "report_kind": "time-tree-readiness",
+        "title": title,
+        "tree_path": str(tree_path),
+        "decision": readiness.decision,
+        "warning_count": warning_count,
+        "sections": [name for name, _ in sections],
+    }
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return TimeTreeReadinessReportBuildResult(
+        output_path=out_path,
+        report_kind="time-tree-readiness",
+        title=title,
+        tree_path=tree_path,
         warning_count=warning_count,
         machine_manifest=machine_manifest,
     )
