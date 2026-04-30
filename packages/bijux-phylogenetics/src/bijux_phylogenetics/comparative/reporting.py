@@ -8,9 +8,11 @@ import tempfile
 from bijux_phylogenetics.comparative.common import ComparativeReadinessReport, NumericTraitSummary, summarize_numeric_trait, summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.models import (
     BrownianMotionFitReport,
+    ComparativeMethodMaturityReport,
     ComparativeModelComparisonReport,
     ComparativeSensitivityReport,
     OUTraitModelReport,
+    assess_comparative_method_maturity,
     compare_brownian_and_ou_models,
     fit_brownian_motion_model,
     fit_ornstein_uhlenbeck_model,
@@ -90,6 +92,7 @@ class ComparativeModelSnapshot:
     pgls_inputs: PGLSInputReport
     pgls_model: PGLSResult
     sensitivity: ComparativeSensitivityReport
+    maturity: ComparativeMethodMaturityReport
     audit_rows: list[ComparativeAuditRow]
     limitations: list[str]
 
@@ -191,6 +194,7 @@ def write_comparative_method_report(path: Path, report: ComparativeMethodReport)
         ("model-comparison", str(asdict(report.snapshot.model_comparison))),
         ("pgls-inputs", str(asdict(report.snapshot.pgls_inputs))),
         ("pgls-model", str(asdict(report.snapshot.pgls_model))),
+        ("maturity", str(asdict(report.snapshot.maturity))),
         ("audit-table", str([asdict(row) for row in report.snapshot.audit_rows])),
         ("limitations", str(report.snapshot.limitations)),
         ("influence", str(asdict(report.influence))),
@@ -430,6 +434,15 @@ def _build_snapshot(
         model=model_comparison.better_model,
         taxon_column=taxon_column,
     )
+    maturity = assess_comparative_method_maturity(
+        tree_path,
+        traits_path,
+        response=response,
+        predictors=predictors,
+        formula=formula,
+        taxon_column=taxon_column,
+        lambda_value=lambda_value,
+    )
     limitations = _build_limitations(readiness, pgls_inputs, pgls_model, brownian, ou)
     return ComparativeModelSnapshot(
         tree_path=tree_path,
@@ -447,6 +460,7 @@ def _build_snapshot(
         pgls_inputs=pgls_inputs,
         pgls_model=pgls_model,
         sensitivity=sensitivity,
+        maturity=maturity,
         audit_rows=_build_audit_rows(readiness, pgls_inputs, pgls_model, brownian, ou),
         limitations=limitations,
     )
