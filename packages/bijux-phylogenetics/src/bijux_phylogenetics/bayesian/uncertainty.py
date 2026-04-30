@@ -7,6 +7,8 @@ from pathlib import Path
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
+    assess_calibration_dominance,
+    assess_time_tree_readiness,
     validate_beast_posterior_log,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
@@ -48,6 +50,14 @@ class SupplementaryBayesianDiagnosticsTableResult:
 
 @dataclass(slots=True)
 class BayesianMethodsSummaryTextResult:
+    output_path: Path
+    title: str
+    warning_count: int
+    text: str
+
+
+@dataclass(slots=True)
+class BayesianLimitationsTextResult:
     output_path: Path
     title: str
     warning_count: int
@@ -331,6 +341,76 @@ def write_bayesian_methods_summary_text(
         output_path=path,
         title="Bayesian Analysis Methods Summary",
         warning_count=warning_count,
+        text=text,
+    )
+
+
+def write_bayesian_limitations_text(
+    path: Path,
+    *,
+    posterior_tree_path: Path,
+    primary_log_path: Path,
+    additional_log_paths: list[Path] | None = None,
+    tree_path: Path | None = None,
+    calibration_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    alignment_path: Path | None = None,
+    burnin_fractions: tuple[float, ...] = (0.1, 0.25, 0.5),
+    ess_threshold: float = 200.0,
+    mean_shift_threshold: float = 0.5,
+    cross_chain_mean_shift_threshold: float = 0.75,
+) -> BayesianLimitationsTextResult:
+    """Write reviewer-facing Bayesian limitations text from current diagnostics surfaces."""
+    burnin = assess_beast_burnin_sensitivity(
+        posterior_tree_path,
+        log_path=primary_log_path,
+        burnin_fractions=burnin_fractions,
+    )
+    mixing = assess_beast_chain_mixing(
+        [primary_log_path, *(additional_log_paths or [])],
+        ess_threshold=ess_threshold,
+        mean_shift_threshold=mean_shift_threshold,
+        cross_chain_mean_shift_threshold=cross_chain_mean_shift_threshold,
+    )
+    readiness = (
+        assess_time_tree_readiness(
+            tree_path,
+            calibration_path=calibration_path,
+            tip_dates_path=tip_dates_path,
+            alignment_path=alignment_path,
+        )
+        if tree_path is not None
+        else None
+    )
+    dominance = (
+        assess_calibration_dominance(tree_path, calibration_path)
+        if tree_path is not None and calibration_path is not None
+        else None
+    )
+    limitations: list[str] = [
+        "posterior clade support reflects the supplied model, priors, and sampled trees rather than direct biological truth",
+        "burn-in choice can change retained topologies and parameter means, so posterior interpretation should be checked against burn-in sensitivity",
+    ]
+    if burnin.warnings:
+        limitations.extend(burnin.warnings)
+    if mixing.issues:
+        limitations.append("one or more chains show ESS, drift, or cross-chain mixing concerns that limit confidence in posterior summaries")
+    if dominance is not None and dominance.warnings:
+        limitations.extend(dominance.warnings)
+    if readiness is not None:
+        if readiness.blockers:
+            limitations.extend(readiness.blockers)
+        if readiness.warnings:
+            limitations.extend(readiness.warnings)
+    text = "# Bayesian Analysis Limitations\n\n" + "\n".join(
+        f"- {line}" for line in sorted(dict.fromkeys(limitations))
+    ) + "\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return BayesianLimitationsTextResult(
+        output_path=path,
+        title="Bayesian Analysis Limitations",
+        warning_count=len(sorted(dict.fromkeys(limitations))),
         text=text,
     )
 
