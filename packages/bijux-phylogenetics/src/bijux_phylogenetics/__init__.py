@@ -406,8 +406,12 @@ from .core.dataset import (
 from .evidence.bundles import EvidenceBundleReport, bundle_directory
 from .identity import CLI_NAME, IDENTITY, IMPORT_NAME, PACKAGE_NAME, PRODUCT_NAME, UMBRELLA_COMMAND
 from .io.fasta import (
+    assess_alignment_low_information,
+    build_ambiguous_alignment_column_report,
     build_alignment_forensic_report,
     build_alignment_quality_report,
+    build_duplicate_sequence_policy_report,
+    build_sequence_quality_ranking,
     clean_alignment_with_profile,
     classify_alignment_sequences,
     compare_alignment_versions,
@@ -427,7 +431,15 @@ from .io.fasta import (
 )
 from .io.roundtrip import TreeRoundtripValidationReport, validate_tree_roundtrip
 from .render import AnnotationStrip, TreeFigurePackageResult, TreeRenderResult, build_tree_figure_package, render_tree_svg
-from .reports.service import ReportBuildResult, render_phylo_inputs_report, render_phylogenetics_report
+from .reports.service import (
+    AlignmentReportBuildResult,
+    ReportBuildResult,
+    TaxonReportBuildResult,
+    render_alignment_report,
+    render_phylo_inputs_report,
+    render_phylogenetics_report,
+    render_taxon_report,
+)
 from .reports.service import (
     DistanceReportBuildResult,
     TreeSetComparisonReportBuildResult,
