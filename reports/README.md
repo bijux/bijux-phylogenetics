@@ -12,3 +12,7 @@ workflow maturity, and retained-versus-excluded taxon traceability.
 
 Distance-analysis artifacts now also include imported-matrix quality sections
 and bundle provenance that records input or output checksums for reviewer audit.
+
+Distance workflow bundles now carry a machine-readable `distance-summary.json`
+surface that combines support summaries, model comparisons, gap-policy
+sensitivity, and maturity-gate evidence.
