@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import hashlib
 import json
 import math
@@ -13,6 +13,12 @@ import tempfile
 
 from Bio.Phylo.TreeConstruction import DistanceMatrix, DistanceTreeConstructor
 
+from bijux_phylogenetics.compare.topology import (
+    BranchLengthComparisonReport,
+    TreeComparisonReport,
+    compare_branch_lengths,
+    compare_tree_paths,
+)
 from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidDistanceMatrixError
@@ -354,6 +360,137 @@ class DistanceBootstrapReport:
 
 
 @dataclass(slots=True)
+class DistanceBootstrapSupportSummary:
+    """Reviewer-facing summary over bootstrap clade support frequencies."""
+
+    alignment_path: Path
+    method: str
+    model: DistanceModel
+    gap_handling: GapHandlingMode
+    ambiguity_policy: AmbiguityPolicy
+    replicates: int
+    clade_count: int
+    minimum_frequency: float | None
+    maximum_frequency: float | None
+    median_frequency: float | None
+    weak_clade_count: int
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class DistanceTreeReferenceComparisonReport:
+    """Compare one built distance tree against a reviewer-supplied reference tree."""
+
+    alignment_path: Path
+    reference_tree_path: Path
+    method: str
+    model: DistanceModel
+    gap_handling: GapHandlingMode
+    ambiguity_policy: AmbiguityPolicy
+    topology: TreeComparisonReport
+    branch_lengths: BranchLengthComparisonReport
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class DistanceModelComparisonRow:
+    """One supported distance model summarized over the same alignment."""
+
+    model: DistanceModel
+    defined_pair_count: int
+    saturated_pair_count: int
+    low_information_pair_count: int
+    mean_distance: float | None
+    maximum_distance: float | None
+    decision: str
+    reasons: list[str]
+
+
+@dataclass(slots=True)
+class DistanceModelComparisonReport:
+    """Comparison of all supported distance models for one alignment."""
+
+    alignment_path: Path
+    inferred_alphabet: str
+    gap_handling: GapHandlingMode
+    ambiguity_policy: AmbiguityPolicy
+    rows: list[DistanceModelComparisonRow]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class DistanceGapPolicyDeltaRow:
+    """One taxon pair whose distance changed across gap-handling policies."""
+
+    left_identifier: str
+    right_identifier: str
+    pairwise_distance: float | None
+    complete_distance: float | None
+    pairwise_comparable_sites: int
+    complete_comparable_sites: int
+    distance_delta: float | None
+    comparable_site_delta: int
+
+
+@dataclass(slots=True)
+class DistanceGapPolicySensitivityReport:
+    """Summarize how pairwise versus complete deletion changes the same analysis."""
+
+    alignment_path: Path
+    model: DistanceModel
+    ambiguity_policy: AmbiguityPolicy
+    changed_pair_count: int
+    pair_count: int
+    rows: list[DistanceGapPolicyDeltaRow]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class DistanceMethodMaturityCheck:
+    """One explicit maturity criterion for distance-analysis surfaces."""
+
+    name: str
+    satisfied: bool
+    details: str
+
+
+@dataclass(slots=True)
+class DistanceMethodMaturityGateReport:
+    """High-level maturity gate over one distance-analysis workflow."""
+
+    alignment_path: Path
+    method: str
+    model: DistanceModel
+    gap_handling: GapHandlingMode
+    ambiguity_policy: AmbiguityPolicy
+    decision: str
+    checks: list[DistanceMethodMaturityCheck]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class DistanceMethodReport:
+    """Structured machine-readable report for one distance-analysis workflow."""
+
+    alignment_path: Path
+    method: str
+    model: DistanceModel
+    gap_handling: GapHandlingMode
+    ambiguity_policy: AmbiguityPolicy
+    matrix: GeneticDistanceMatrix
+    quality: DistanceMatrixQualityReport
+    assumptions: DistanceMethodAssumptionReport
+    reference_validation: DistanceReferenceValidationReport
+    built_tree_newick: str
+    alternative_tree_newick: str
+    topology_comparison: DistanceTreeTopologyComparison
+    bootstrap_summary: DistanceBootstrapSupportSummary
+    model_comparison: DistanceModelComparisonReport
+    gap_policy_sensitivity: DistanceGapPolicySensitivityReport
+    maturity_gate: DistanceMethodMaturityGateReport
+
+
+@dataclass(slots=True)
 class DistanceReproducibilityBundleReport:
     """Reproducibility bundle written for one distance-analysis run."""
 
@@ -690,6 +827,15 @@ def _file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _unique_genetic_distance_pairs(report: GeneticDistanceMatrix) -> list[PairwiseGeneticDistance]:
+    unique: dict[tuple[str, str], PairwiseGeneticDistance] = {}
+    for pair in report.pairs:
+        if pair.left_identifier == pair.right_identifier:
+            continue
+        unique.setdefault(_pair_key(pair.left_identifier, pair.right_identifier), pair)
+    return [unique[key] for key in sorted(unique)]
 
 
 def load_imported_distance_matrix(path: Path) -> list[ImportedDistanceEntry]:
@@ -1725,6 +1871,417 @@ def write_distance_bootstrap_support(path: Path, report: DistanceBootstrapReport
     return path
 
 
+def summarize_distance_bootstrap_support(
+    report: DistanceBootstrapReport,
+    *,
+    weak_frequency_threshold: float = 0.5,
+) -> DistanceBootstrapSupportSummary:
+    """Summarize bootstrap clade frequencies for reviewer-facing reporting."""
+    frequencies = sorted(row.frequency for row in report.support)
+    weak_clade_count = sum(1 for row in report.support if row.frequency < weak_frequency_threshold)
+    warnings: list[str] = []
+    if weak_clade_count:
+        warnings.append("one or more consensus clades remain weakly supported across bootstrap replicates")
+    if not frequencies:
+        warnings.append("bootstrap replicates did not yield any informative internal clades")
+    return DistanceBootstrapSupportSummary(
+        alignment_path=report.alignment_path,
+        method=report.method,
+        model=report.model,
+        gap_handling=report.gap_handling,
+        ambiguity_policy=report.ambiguity_policy,
+        replicates=report.replicates,
+        clade_count=len(report.support),
+        minimum_frequency=None if not frequencies else min(frequencies),
+        maximum_frequency=None if not frequencies else max(frequencies),
+        median_frequency=None if not frequencies else median(frequencies),
+        weak_clade_count=weak_clade_count,
+        warnings=warnings,
+    )
+
+
+def compare_distance_tree_to_reference_tree(
+    path: Path,
+    reference_tree_path: Path,
+    *,
+    method: str,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> DistanceTreeReferenceComparisonReport:
+    """Compare one built distance tree to an external ML or reviewer-supplied reference tree."""
+    tree, _ = build_distance_tree(
+        path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    temp_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-reference-"))
+    built_tree_path = write_newick(temp_dir / "distance-tree.nwk", tree)
+    topology = compare_tree_paths(built_tree_path, reference_tree_path)
+    branch_lengths = compare_branch_lengths(built_tree_path, reference_tree_path)
+    warnings: list[str] = []
+    if not topology.topology_equal:
+        warnings.append("distance tree disagrees topologically with the supplied reference tree")
+    if topology.same_unrooted_topology and not topology.topology_equal:
+        warnings.append("distance tree matches the reference on unrooted splits but differs in rooting")
+    if topology.same_topology_different_branch_lengths:
+        warnings.append("distance tree preserves topology but shifts branch-length interpretation relative to the reference")
+    return DistanceTreeReferenceComparisonReport(
+        alignment_path=path,
+        reference_tree_path=reference_tree_path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        topology=topology,
+        branch_lengths=branch_lengths,
+        warnings=warnings,
+    )
+
+
+def compare_distance_models(
+    path: Path,
+    *,
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> DistanceModelComparisonReport:
+    """Compare all supported distance models for one alignment without overclaiming a winner."""
+    records = load_fasta_alignment(path)
+    inferred_alphabet = infer_alignment_alphabet(records)
+    models = sorted(_allowed_models_for_alphabet(inferred_alphabet))
+    rows: list[DistanceModelComparisonRow] = []
+    for model in models:
+        quality = inspect_distance_matrix_quality(
+            path,
+            model=model,
+            gap_handling=gap_handling,
+            ambiguity_policy=ambiguity_policy,
+        )
+        matrix = compute_pairwise_genetic_distance_matrix(
+            path,
+            model=model,
+            gap_handling=gap_handling,
+            ambiguity_policy=ambiguity_policy,
+        )
+        unique_pairs = _unique_genetic_distance_pairs(matrix)
+        defined_distances = sorted(
+            float(pair.distance)
+            for pair in unique_pairs
+            if pair.distance is not None
+        )
+        rows.append(
+            DistanceModelComparisonRow(
+                model=model,
+                defined_pair_count=len(defined_distances),
+                saturated_pair_count=len(quality.saturated_pairs),
+                low_information_pair_count=len(quality.low_information_pairs),
+                mean_distance=None if not defined_distances else round(sum(defined_distances) / len(defined_distances), 15),
+                maximum_distance=None if not defined_distances else max(defined_distances),
+                decision=quality.method_assessment.decision,
+                reasons=quality.method_assessment.reasons,
+            )
+        )
+    warnings: list[str] = []
+    if any(row.saturated_pair_count > 0 for row in rows):
+        warnings.append("one or more supported models enter a saturation regime on this alignment")
+    if len(rows) < 2:
+        warnings.append("the inferred alphabet supports only one distance model, so cross-model sensitivity is limited")
+    return DistanceModelComparisonReport(
+        alignment_path=path,
+        inferred_alphabet=inferred_alphabet,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        rows=rows,
+        warnings=warnings,
+    )
+
+
+def compare_distance_gap_policies(
+    path: Path,
+    *,
+    model: DistanceModel = "p-distance",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> DistanceGapPolicySensitivityReport:
+    """Summarize how pairwise versus complete deletion changes distance estimates."""
+    pairwise = compute_pairwise_genetic_distance_matrix(
+        path,
+        model=model,
+        gap_handling="pairwise-deletion",
+        ambiguity_policy=ambiguity_policy,
+    )
+    complete = compute_pairwise_genetic_distance_matrix(
+        path,
+        model=model,
+        gap_handling="complete-deletion",
+        ambiguity_policy=ambiguity_policy,
+    )
+    pairwise_by_key = {_pair_key(pair.left_identifier, pair.right_identifier): pair for pair in _unique_genetic_distance_pairs(pairwise)}
+    complete_by_key = {_pair_key(pair.left_identifier, pair.right_identifier): pair for pair in _unique_genetic_distance_pairs(complete)}
+    rows: list[DistanceGapPolicyDeltaRow] = []
+    for pair_key in sorted(set(pairwise_by_key) | set(complete_by_key)):
+        pairwise_pair = pairwise_by_key.get(pair_key)
+        complete_pair = complete_by_key.get(pair_key)
+        if pairwise_pair is None or complete_pair is None:
+            continue
+        distance_delta = None
+        if pairwise_pair.distance is not None and complete_pair.distance is not None:
+            distance_delta = round(complete_pair.distance - pairwise_pair.distance, 15)
+        if (
+            pairwise_pair.distance != complete_pair.distance
+            or pairwise_pair.comparable_sites != complete_pair.comparable_sites
+        ):
+            rows.append(
+                DistanceGapPolicyDeltaRow(
+                    left_identifier=pairwise_pair.left_identifier,
+                    right_identifier=pairwise_pair.right_identifier,
+                    pairwise_distance=pairwise_pair.distance,
+                    complete_distance=complete_pair.distance,
+                    pairwise_comparable_sites=pairwise_pair.comparable_sites,
+                    complete_comparable_sites=complete_pair.comparable_sites,
+                    distance_delta=distance_delta,
+                    comparable_site_delta=complete_pair.comparable_sites - pairwise_pair.comparable_sites,
+                )
+            )
+    warnings: list[str] = []
+    if rows:
+        warnings.append("distance estimates change when gap handling switches between pairwise and complete deletion")
+    if any(row.complete_comparable_sites == 0 for row in rows):
+        warnings.append("complete deletion removes all comparable sites for one or more taxon pairs")
+    return DistanceGapPolicySensitivityReport(
+        alignment_path=path,
+        model=model,
+        ambiguity_policy=ambiguity_policy,
+        changed_pair_count=len(rows),
+        pair_count=len(pairwise_by_key),
+        rows=rows,
+        warnings=warnings,
+    )
+
+
+def assess_distance_method_maturity(
+    path: Path,
+    *,
+    method: str = "neighbor-joining",
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+    bootstrap_replicates: int = 25,
+    bootstrap_seed: int = 1,
+    validate_bundle: bool = False,
+) -> DistanceMethodMaturityGateReport:
+    """Evaluate whether distance-analysis surfaces are available and validated for one alignment."""
+    reference_validation = validate_distance_reference_examples()
+    quality = inspect_distance_matrix_quality(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    assumptions = assess_distance_method_assumptions(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    bootstrap_summary = summarize_distance_bootstrap_support(
+        bootstrap_distance_trees(
+            path,
+            method=method,
+            model=model,
+            gap_handling=gap_handling,
+            ambiguity_policy=ambiguity_policy,
+            replicates=bootstrap_replicates,
+            seed=bootstrap_seed,
+        )[1]
+    )
+    model_comparison = compare_distance_models(
+        path,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    gap_sensitivity = compare_distance_gap_policies(
+        path,
+        model=model,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+    bundle_satisfied = False
+    bundle_details = "bundle validation was skipped"
+    if validate_bundle:
+        bundle_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-maturity-")) / "bundle"
+        bundle = write_distance_reproducibility_bundle(
+            bundle_dir,
+            alignment_path=path,
+            method=method,
+            model=model,
+            gap_handling=gap_handling,
+            ambiguity_policy=ambiguity_policy,
+            replicates=min(bootstrap_replicates, 10),
+            seed=bootstrap_seed,
+        )
+        manifest = json.loads((bundle.out_dir / "distance-analysis.manifest.json").read_text(encoding="utf-8"))
+        bundle_satisfied = "output_checksums" in manifest and "input_checksums" in manifest
+        bundle_details = "bundle manifest includes input and output checksums" if bundle_satisfied else "bundle manifest is missing checksum provenance"
+
+    checks = [
+        DistanceMethodMaturityCheck(
+            name="reference_validation",
+            satisfied=reference_validation.all_passed,
+            details="built-in p-distance, JC69, K2P, protein, NJ, and UPGMA reference cases all pass" if reference_validation.all_passed else "one or more built-in distance reference cases failed",
+        ),
+        DistanceMethodMaturityCheck(
+            name="upgma_assumption_visibility",
+            satisfied=bool(assumptions.upgma_assumptions) and assumptions.ultrametric_tolerance > 0.0,
+            details="UPGMA assumptions and ultrametric violations are surfaced explicitly",
+        ),
+        DistanceMethodMaturityCheck(
+            name="suitability_decision",
+            satisfied=quality.method_assessment.decision in {"allowed", "risky", "blocked"},
+            details=f"distance workflow received explicit decision '{quality.method_assessment.decision}'",
+        ),
+        DistanceMethodMaturityCheck(
+            name="bootstrap_support_summary",
+            satisfied=bootstrap_summary.clade_count >= 0,
+            details="bootstrap support frequencies are summarized over site-resampled replicate trees",
+        ),
+        DistanceMethodMaturityCheck(
+            name="model_comparison",
+            satisfied=bool(model_comparison.rows),
+            details="all supported distance models were compared on the same alignment",
+        ),
+        DistanceMethodMaturityCheck(
+            name="gap_policy_sensitivity",
+            satisfied=True,
+            details=f"{gap_sensitivity.changed_pair_count} taxon pairs changed across pairwise versus complete deletion",
+        ),
+        DistanceMethodMaturityCheck(
+            name="bundle_provenance",
+            satisfied=bundle_satisfied if validate_bundle else True,
+            details=bundle_details,
+        ),
+    ]
+    if not all(check.satisfied for check in checks):
+        decision = "blocked"
+    elif quality.method_assessment.decision == "allowed":
+        decision = "production_candidate"
+    else:
+        decision = "validated_with_limits"
+    return DistanceMethodMaturityGateReport(
+        alignment_path=path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        decision=decision,
+        checks=checks,
+        warnings=quality.warnings + bootstrap_summary.warnings + model_comparison.warnings + gap_sensitivity.warnings,
+    )
+
+
+def build_distance_method_report(
+    path: Path,
+    *,
+    method: str = "neighbor-joining",
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+    bootstrap_replicates: int = 25,
+    bootstrap_seed: int = 1,
+) -> DistanceMethodReport:
+    """Build a structured distance-method report that can back JSON or HTML renderers."""
+    matrix = compute_pairwise_genetic_distance_matrix(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    quality = inspect_distance_matrix_quality(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    assumptions = assess_distance_method_assumptions(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    reference_validation = validate_distance_reference_examples()
+    tree, _ = build_distance_tree(
+        path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    alternative_method = "upgma" if method == "neighbor-joining" else "neighbor-joining"
+    alternative_tree, _ = build_distance_tree(
+        path,
+        method=alternative_method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    topology_comparison = compare_distance_tree_topologies(
+        path,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    bootstrap_summary = summarize_distance_bootstrap_support(
+        bootstrap_distance_trees(
+            path,
+            method=method,
+            model=model,
+            gap_handling=gap_handling,
+            ambiguity_policy=ambiguity_policy,
+            replicates=bootstrap_replicates,
+            seed=bootstrap_seed,
+        )[1]
+    )
+    model_comparison = compare_distance_models(
+        path,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+    gap_policy_sensitivity = compare_distance_gap_policies(
+        path,
+        model=model,
+        ambiguity_policy=ambiguity_policy,
+    )
+    maturity_gate = assess_distance_method_maturity(
+        path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        bootstrap_replicates=bootstrap_replicates,
+        bootstrap_seed=bootstrap_seed,
+        validate_bundle=False,
+    )
+    return DistanceMethodReport(
+        alignment_path=path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        matrix=matrix,
+        quality=quality,
+        assumptions=assumptions,
+        reference_validation=reference_validation,
+        built_tree_newick=dumps_newick(tree),
+        alternative_tree_newick=dumps_newick(alternative_tree),
+        topology_comparison=topology_comparison,
+        bootstrap_summary=bootstrap_summary,
+        model_comparison=model_comparison,
+        gap_policy_sensitivity=gap_policy_sensitivity,
+        maturity_gate=maturity_gate,
+    )
+
+
 def write_distance_reproducibility_bundle(
     out_dir: Path,
     *,
@@ -1778,6 +2335,17 @@ def write_distance_reproducibility_bundle(
         out_dir / "bootstrap-clades.tsv",
         compute_clade_frequency_table(tree_set_path),
     )
+    summary = build_distance_method_report(
+        alignment_path,
+        method=method,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+        bootstrap_replicates=min(replicates, 25),
+        bootstrap_seed=seed,
+    )
+    summary_path = out_dir / "distance-summary.json"
+    summary_path.write_text(json.dumps(asdict(summary), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     manifest_path = out_dir / "distance-analysis.manifest.json"
     manifest_path.write_text(
         json.dumps(
@@ -1799,6 +2367,7 @@ def write_distance_reproducibility_bundle(
                     "bootstrap-replicates.trees",
                     "bootstrap-consensus.nwk",
                     "bootstrap-clades.tsv",
+                    "distance-summary.json",
                 ],
                 "input_checksums": {
                     str(alignment_path): _file_sha256(alignment_path),
@@ -1811,6 +2380,7 @@ def write_distance_reproducibility_bundle(
                     "bootstrap-replicates.trees": _file_sha256(tree_set_path),
                     "bootstrap-consensus.nwk": _file_sha256(consensus_path),
                     "bootstrap-clades.tsv": _file_sha256(clade_frequency_path),
+                    "distance-summary.json": _file_sha256(summary_path),
                 },
                 "reference_validation_passed": validate_distance_reference_examples().all_passed,
                 "caveats": [
@@ -1833,6 +2403,7 @@ def write_distance_reproducibility_bundle(
         tree_set_path,
         consensus_path,
         clade_frequency_path,
+        summary_path,
         manifest_path,
     ]
     return DistanceReproducibilityBundleReport(
