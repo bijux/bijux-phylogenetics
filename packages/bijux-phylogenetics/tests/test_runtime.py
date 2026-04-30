@@ -209,8 +209,12 @@ from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
+    assess_alignment_low_information,
+    build_ambiguous_alignment_column_report,
     build_alignment_forensic_report,
     build_alignment_quality_report,
+    build_duplicate_sequence_policy_report,
+    build_sequence_quality_ranking,
     clean_alignment_with_profile,
     classify_alignment_sequences,
     compare_alignment_versions,
@@ -245,9 +249,11 @@ from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     distance_method_limitations,
+    render_alignment_report,
     render_dataset_report,
     render_distance_report,
     render_phylo_inputs_report,
+    render_taxon_report,
     render_phylogenetics_report,
     render_tree_set_comparison_report,
     render_tree_uncertainty_report,
@@ -1618,11 +1624,68 @@ def test_alignment_quality_report_includes_transparent_score_components() -> Non
     assert 0.0 <= report.quality_score <= 100.0
 
 
+def test_alignment_low_information_detection_blocks_sparse_inference_inputs() -> None:
+    report = assess_alignment_low_information(fixture("example_alignment_missingness.fasta"))
+    readiness = summarize_alignment_readiness(fixture("example_alignment_missingness.fasta"))
+    methods = {row.analysis: row for row in readiness.methods}
+
+    assert report.low_information is True
+    assert report.parsimony_informative_site_count == 0
+    assert any("parsimony-informative sites" in reason for reason in report.reasons)
+    assert "alignment has too few parsimony-informative sites for defensible inference" in methods["distance"].blockers
+    assert "alignment has too few parsimony-informative sites for defensible inference" in methods["maximum_likelihood"].blockers
+    assert "alignment has too few parsimony-informative sites for defensible inference" in methods["bayesian"].blockers
+
+
+def test_duplicate_sequence_policy_report_recommends_collapse_and_review() -> None:
+    report = build_duplicate_sequence_policy_report(
+        fixture("example_alignment_duplicates.fasta"),
+        near_duplicate_threshold=0.875,
+    )
+
+    assert [(group.identifiers, group.sequence) for group in report.exact_duplicate_groups] == [
+        (["A", "B"], "ACTGACTG")
+    ]
+    assert any(action.action == "collapse_exact_duplicates" and action.affected_identifiers == ["A", "B"] for action in report.policy_actions)
+    assert any(action.action == "review_near_duplicates" and action.affected_identifiers == ["A", "C"] for action in report.policy_actions)
+    assert any("deduplicated" in warning for warning in report.warnings)
+
+
+def test_ambiguous_alignment_column_report_lists_uncertainty_heavy_sites() -> None:
+    report = build_ambiguous_alignment_column_report(
+        fixture("example_alignment_site_missingness.fasta"),
+        threshold=0.5,
+    )
+
+    assert [(row.position, row.gap_fraction, row.missing_fraction) for row in report.rows] == [
+        (2, 1.0, 0.0),
+        (3, 0.0, 1.0),
+        (4, 0.0, 1.0),
+        (5, 0.0, 0.5),
+    ]
+    assert report.warnings == ["alignment contains ambiguity-heavy columns that may be unsuitable for inference without masking"]
+
+
+def test_sequence_quality_ranking_orders_sequences_by_burden() -> None:
+    report = build_sequence_quality_ranking(fixture("example_alignment_ambiguity.fasta"))
+
+    assert [(row.identifier, row.rank, row.score) for row in report.rows] == [
+        ("A", 1, 78.333),
+        ("B", 2, 78.333),
+        ("C", 3, 84.167),
+    ]
+    assert report.warnings == ["lower-ranked sequences should be reviewed before publication or inference"]
+
+
 def test_alignment_forensic_report_integrates_alignment_risks() -> None:
     report = build_alignment_forensic_report(fixture("example_alignment_coding.fasta"))
     assert report.safe_for_distance_analysis is True
     assert report.safe_for_coding_analysis is False
     assert "alignment mixes coding-like and noncoding-like sequence behavior" in report.warnings
+    assert report.low_information.low_information is False
+    assert any("near-duplicate sequences" in warning for warning in report.duplicate_policy.warnings)
+    assert report.ambiguous_columns.rows == []
+    assert report.sequence_ranking.rows
 
 
 def test_dataset_audit_integrates_alignment_and_time_tree_surfaces() -> None:
@@ -3734,6 +3797,59 @@ def test_cli_alignment_forensic_json_output(capsys) -> None:
     assert payload["data"]["coding"]["mixed_coding_signals"] is True
 
 
+def test_cli_alignment_low_information_json_output(capsys) -> None:
+    exit_code = main(["alignment", "low-information", str(fixture("example_alignment_missingness.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["low_information"] is True
+    assert payload["metrics"]["parsimony_informative_site_count"] == 0
+
+
+def test_cli_alignment_duplicate_policy_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "duplicate-policy",
+            str(fixture("example_alignment_duplicates.fasta")),
+            "--identity-threshold",
+            "0.875",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["exact_duplicate_group_count"] == 1
+    assert payload["metrics"]["policy_action_count"] >= 2
+
+
+def test_cli_alignment_ambiguous_columns_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "ambiguous-columns",
+            str(fixture("example_alignment_site_missingness.fasta")),
+            "--threshold",
+            "0.5",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["ambiguous_column_count"] == 4
+
+
+def test_cli_alignment_sequence_ranking_json_output(capsys) -> None:
+    exit_code = main(["alignment", "sequence-ranking", str(fixture("example_alignment_ambiguity.fasta")), "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["sequence_count"] == 3
+    assert payload["data"]["rows"][0]["identifier"] == "A"
+
+
 def test_cli_alignment_filter_json_output(tmp_path: Path, capsys) -> None:
     output = tmp_path / "cleaned.fasta"
     exit_code = main(
@@ -4202,12 +4318,15 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
         "dataset-ordering",
         "dataset-pruning",
         "dataset-group-imbalance",
+        "dataset-input-ledger",
         "limitations",
     ]
     assert result.trait_missing_values is not None
     assert result.trait_missing_values.missing_values == []
     assert result.machine_manifest_path.exists()
     assert "Bijux Dataset Report" in text
+    assert len(result.input_ledger) == 3
+    assert result.input_ledger[0].role == "tree"
 
 
 def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) -> None:
@@ -4232,6 +4351,10 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
         "tree-forensic",
         "alignment-summary",
         "alignment-quality",
+        "alignment-low-information",
+        "alignment-duplicate-policy",
+        "alignment-ambiguous-columns",
+        "alignment-sequence-ranking",
         "alignment-forensic",
         "alignment-coding",
         "alignment-identity-matrix",
@@ -4240,6 +4363,66 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     ]
     assert result.machine_manifest_path.exists()
     assert "Bijux Phylo Inputs Report" in text
+    assert result.alignment_low_information is not None
+    assert result.alignment_duplicate_policy is not None
+    assert result.alignment_ambiguous_columns is not None
+    assert result.alignment_sequence_ranking is not None
+
+
+def test_render_alignment_report_writes_alignment_sections(tmp_path: Path) -> None:
+    output = tmp_path / "alignment-report.html"
+    result = render_alignment_report(
+        alignment_path=fixture("example_alignment_coding.fasta"),
+        out_path=output,
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "alignment"
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "alignment-summary",
+        "alignment-quality",
+        "alignment-readiness",
+        "alignment-low-information",
+        "alignment-duplicate-policy",
+        "alignment-ambiguous-columns",
+        "alignment-sequence-ranking",
+        "alignment-filter-profiles",
+        "alignment-suspicious-windows",
+        "alignment-forensic",
+        "alignment-coding",
+        "alignment-identity-matrix",
+        "limitations",
+    ]
+    assert result.machine_manifest_path.exists()
+    assert "Bijux Alignment Report" in text
+
+
+def test_render_taxon_report_writes_taxon_sections(tmp_path: Path) -> None:
+    output = tmp_path / "taxonomy-report.html"
+    result = render_taxon_report(
+        tree_path=fixture("example_taxonomy_tree.nwk"),
+        synonym_table_path=fixture("example_taxon_synonyms.tsv"),
+        out_path=output,
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "taxonomy"
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "taxon-audit",
+        "taxon-identity",
+        "taxon-safety",
+        "taxon-namespaces",
+        "taxon-rank-consistency",
+        "taxon-synonyms",
+        "taxon-duplicate-identities",
+        "taxon-mapping-conflicts",
+        "taxon-accepted-names",
+        "limitations",
+    ]
+    assert result.machine_manifest_path.exists()
+    assert "Bijux Taxon Audit Report" in text
 
 
 def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tmp_path: Path) -> None:
@@ -4264,6 +4447,7 @@ def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tm
     phylo_sidecar = json.loads(phylo_result.machine_manifest_path.read_text(encoding="utf-8"))
     assert tree_sidecar["reviewer_summary"][0] == "tree validity decision: valid_with_warnings"
     assert "limitations" in dataset_sidecar
+    assert dataset_sidecar["input_ledger"][0]["role"] == "tree"
     assert "reviewer-summary" in dataset_result.machine_manifest["sections"]
     assert len(phylo_sidecar["limitations"]) >= 1
 
@@ -4595,6 +4779,7 @@ def test_cli_report_dataset_json_output_uses_dataset_contract(tmp_path: Path, ca
     assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
     assert payload["data"]["report_kind"] == "dataset"
     assert payload["metrics"]["linked_taxa"] == 4
+    assert payload["data"]["input_ledger"][0]["role"] == "tree"
 
 
 def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(tmp_path: Path, capsys) -> None:
@@ -4620,6 +4805,52 @@ def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(tmp_path: P
     assert payload["data"]["report_kind"] == "phylo-inputs"
     assert payload["metrics"]["alignment_length"] == 8
     assert payload["metrics"]["linked_taxa"] == 4
+
+
+def test_cli_report_alignment_json_output_uses_alignment_contract(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "alignment-report.html"
+    exit_code = main(
+        [
+            "report",
+            "alignment",
+            "--alignment",
+            str(fixture("example_alignment_coding.fasta")),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
+    assert payload["data"]["report_kind"] == "alignment"
+    assert payload["metrics"]["sequence_count"] == 4
+
+
+def test_cli_report_taxonomy_json_output_uses_taxon_contract(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "taxonomy-report.html"
+    exit_code = main(
+        [
+            "report",
+            "taxonomy",
+            "--tree",
+            str(fixture("example_taxonomy_tree.nwk")),
+            "--synonym-table",
+            str(fixture("example_taxon_synonyms.tsv")),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
+    assert payload["data"]["report_kind"] == "taxonomy"
+    assert payload["metrics"]["tree_tip_count"] == 6
 
 
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
