@@ -27,3 +27,11 @@ uv run bijux-phylogenetics alignment distance-maturity path/to/alignment.fasta -
 uv run bijux-phylogenetics alignment distance-bundle path/to/alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json
 uv run bijux-phylogenetics distance quality path/to/exported-distances.tsv --json
 ```
+
+Comparative iteration example:
+
+```bash
+uv run bijux-phylogenetics comparative validate-reference --json
+uv run bijux-phylogenetics comparative maturity path/to/tree.nwk path/to/traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
+uv run bijux-phylogenetics comparative report path/to/tree.nwk path/to/traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json
+```
