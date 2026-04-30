@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -52,6 +53,31 @@ class BenchmarkCorpusReport:
     passed_case_count: int
     failed_case_count: int
     cases: list[CorpusDatasetCaseResult]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class RegressionDatasetCaseResult:
+    """Observed-versus-expected summary for one regression dataset case."""
+
+    name: str
+    passed: bool
+    expected: dict[str, object]
+    observed: dict[str, object]
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class RegressionDatasetCorpusReport:
+    """Stable biological summary snapshots tracked across releases."""
+
+    goal_id: int
+    corpus: str
+    passed: bool
+    case_count: int
+    passed_case_count: int
+    failed_case_count: int
+    cases: list[RegressionDatasetCaseResult]
     limitations: list[str]
 
 
@@ -317,5 +343,78 @@ def build_messy_benchmark_corpus(*, fixtures_root: Path | None = None) -> Benchm
         cases=results,
         limitations=[
             "the messy corpus currently emphasizes warning-rich integration failures rather than every possible domain-specific artifact",
+        ],
+    )
+
+
+def _regression_summary(report: DatasetAuditReport) -> dict[str, object]:
+    return {
+        "readiness_decision": report.readiness_decision,
+        "analysis_taxa": report.analysis_taxa,
+        "allowed_analyses": report.allowed_analyses,
+        "blocked_analyses": report.blocked_analyses,
+        "blocker_count": len(report.blockers),
+        "warning_count": len(report.warnings),
+        "risk_level": report.risk_score.risk_level,
+        "risk_score": round(report.risk_score.total_score, 15),
+    }
+
+
+def build_regression_dataset_corpus(
+    *,
+    fixtures_root: Path | None = None,
+    expected_path: Path | None = None,
+) -> RegressionDatasetCorpusReport:
+    """Compare current benchmark summaries against checked-in regression expectations."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    expectation_path = (
+        _fixture(root, "expected", "benchmark_regression_dataset_corpus.json")
+        if expected_path is None
+        else expected_path
+    )
+    expected_payload = json.loads(expectation_path.read_text(encoding="utf-8"))
+    current_reports = {
+        "core_inference_ready_dataset": audit_dataset_inputs(
+            _fixture(root, "trees", "example_tree.nwk"),
+            _fixture(root, "metadata", "example_metadata.tsv"),
+            _fixture(root, "metadata", "example_traits_validate.tsv"),
+            alignment_path=_fixture(root, "alignments", "example_alignment.fasta"),
+        ),
+        "warning_rich_dataset": audit_dataset_inputs(
+            _fixture(root, "trees", "example_tree.nwk"),
+            _fixture(root, "metadata", "example_metadata_reordered.tsv"),
+            _fixture(root, "metadata", "example_traits_validate.tsv"),
+            alignment_path=_fixture(root, "alignments", "example_alignment_extra_taxon.fasta"),
+            tip_dates_path=_fixture(root, "metadata", "example_tip_dates_invalid.tsv"),
+            calibration_path=_fixture(root, "metadata", "example_calibrations_invalid.tsv"),
+        ),
+    }
+
+    results: list[RegressionDatasetCaseResult] = []
+    for name, expected in expected_payload.items():
+        observed = _regression_summary(current_reports[name])
+        passed = expected == observed
+        notes = [] if passed else ["observed regression summary drifted from the checked-in expectation"]
+        results.append(
+            RegressionDatasetCaseResult(
+                name=name,
+                passed=passed,
+                expected=expected,
+                observed=observed,
+                notes=notes,
+            )
+        )
+
+    passed_case_count = sum(1 for case in results if case.passed)
+    return RegressionDatasetCorpusReport(
+        goal_id=245,
+        corpus="regression-dataset-corpus",
+        passed=passed_case_count == len(results),
+        case_count=len(results),
+        passed_case_count=passed_case_count,
+        failed_case_count=len(results) - passed_case_count,
+        cases=results,
+        limitations=[
+            "the regression corpus currently tracks stable summary fields rather than every nested report detail",
         ],
     )

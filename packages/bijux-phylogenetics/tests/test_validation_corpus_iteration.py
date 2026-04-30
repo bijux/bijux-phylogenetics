@@ -6,6 +6,7 @@ from bijux_phylogenetics.validation_corpus import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
     build_messy_benchmark_corpus,
+    build_regression_dataset_corpus,
 )
 
 
@@ -49,3 +50,14 @@ def test_build_messy_benchmark_corpus_captures_multi_surface_warning_cases() -> 
     second = observed["low_information_alignment_with_trait_mismatch"]
     assert "alignment is not currently safe for core inference workflows" in second.blockers
     assert "alignment contains near-duplicate sequences" in second.warnings
+
+
+def test_build_regression_dataset_corpus_matches_checked_in_summaries() -> None:
+    report = build_regression_dataset_corpus(fixtures_root=FIXTURES)
+
+    assert report.goal_id == 245
+    assert report.passed is True
+    assert report.passed_case_count == 2
+    observed = {case.name: case for case in report.cases}
+    assert observed["core_inference_ready_dataset"].observed["risk_level"] == "low"
+    assert observed["warning_rich_dataset"].observed["warning_count"] == 12

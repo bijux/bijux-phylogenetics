@@ -1,0 +1,50 @@
+{
+  "core_inference_ready_dataset": {
+    "readiness_decision": "ready_with_warnings",
+    "analysis_taxa": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "allowed_analyses": [
+      "bayesian",
+      "coding",
+      "comparative",
+      "distance",
+      "inspection",
+      "maximum_likelihood",
+      "publication"
+    ],
+    "blocked_analyses": [
+      "time_tree"
+    ],
+    "blocker_count": 0,
+    "warning_count": 1,
+    "risk_level": "low",
+    "risk_score": 1.666666666666667
+  },
+  "warning_rich_dataset": {
+    "readiness_decision": "blocked",
+    "analysis_taxa": [
+      "A",
+      "C"
+    ],
+    "allowed_analyses": [
+      "bayesian",
+      "coding",
+      "comparative",
+      "distance",
+      "inspection",
+      "maximum_likelihood"
+    ],
+    "blocked_analyses": [
+      "publication",
+      "time_tree"
+    ],
+    "blocker_count": 2,
+    "warning_count": 12,
+    "risk_level": "moderate",
+    "risk_score": 28.333333333333332
+  }
+}
