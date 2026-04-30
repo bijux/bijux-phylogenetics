@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
+from bijux_phylogenetics.errors import PhylogeneticsError
+from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.io.fasta import summarise_fasta
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,6 +38,7 @@ class CorpusDatasetCaseResult:
     blockers: list[str]
     warnings: list[str]
     notes: list[str]
+    observed_code: str | None = None
 
 
 @dataclass(slots=True)
@@ -144,5 +148,88 @@ def build_clean_benchmark_corpus(*, fixtures_root: Path | None = None) -> Benchm
         cases=results,
         limitations=[
             "the clean corpus currently focuses on core inference and publication readiness rather than time-tree readiness",
+        ],
+    )
+
+
+def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> BenchmarkCorpusReport:
+    """Validate that intentionally broken fixtures still fail for the expected reason."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    results: list[CorpusDatasetCaseResult] = []
+
+    def record_error_case(name: str, callback, expected_code: str) -> None:
+        observed_code: str | None = None
+        notes: list[str] = []
+        try:
+            callback()
+            notes.append(f"expected error code {expected_code} but the fixture completed successfully")
+        except PhylogeneticsError as error:
+            observed_code = error.code
+            if observed_code != expected_code:
+                notes.append(f"expected error code {expected_code} but observed {observed_code}")
+        results.append(
+            CorpusDatasetCaseResult(
+                name=name,
+                passed=not notes,
+                readiness_decision="error" if observed_code is not None else "unexpected_success",
+                analysis_taxa=[],
+                allowed_analyses=[],
+                blocked_analyses=[],
+                blockers=[],
+                warnings=[],
+                notes=notes,
+                observed_code=observed_code,
+            )
+        )
+
+    record_error_case(
+        "duplicate_tip_tree",
+        lambda: validate_tree_path(_fixture(root, "trees", "example_tree_duplicate.nwk")),
+        "duplicate_taxon_error",
+    )
+    record_error_case(
+        "invalid_alignment_lengths",
+        lambda: summarise_fasta(_fixture(root, "alignments", "example_alignment_invalid_lengths.fasta")),
+        "invalid_alignment_error",
+    )
+
+    broken_dataset = CorpusDatasetCase(
+        name="dataset_missing_metadata_taxon",
+        tree_path=_fixture(root, "trees", "example_tree.nwk"),
+        metadata_path=_fixture(root, "metadata", "example_metadata_missing_taxon.csv"),
+        traits_path=_fixture(root, "metadata", "example_traits_validate.tsv"),
+        alignment_path=_fixture(root, "alignments", "example_alignment.fasta"),
+    )
+    report, notes = _evaluate_dataset_case(broken_dataset)
+    if report.readiness_decision != "blocked":
+        notes.append(f"expected blocked readiness but observed {report.readiness_decision}")
+    if "metadata table is missing one or more tree taxa" not in report.blockers:
+        notes.append("expected metadata-missing blocker was not observed")
+    results.append(
+        CorpusDatasetCaseResult(
+            name=broken_dataset.name,
+            passed=not notes,
+            readiness_decision=report.readiness_decision,
+            analysis_taxa=report.analysis_taxa,
+            allowed_analyses=report.allowed_analyses,
+            blocked_analyses=report.blocked_analyses,
+            blockers=report.blockers,
+            warnings=report.warnings,
+            notes=notes,
+            observed_code="dataset_blocked" if report.readiness_decision == "blocked" else None,
+        )
+    )
+
+    passed_case_count = sum(1 for case in results if case.passed)
+    return BenchmarkCorpusReport(
+        goal_id=243,
+        corpus="broken-benchmark-corpus",
+        passed=passed_case_count == len(results),
+        case_count=len(results),
+        passed_case_count=passed_case_count,
+        failed_case_count=len(results) - passed_case_count,
+        cases=results,
+        limitations=[
+            "the broken corpus emphasizes stable failure signatures rather than every possible malformed input surface",
         ],
     )
