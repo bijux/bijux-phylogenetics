@@ -11,7 +11,13 @@ from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.io.fasta import build_alignment_quality_report
 from bijux_phylogenetics.io.newick import write_newick
-from bijux_phylogenetics.simulation import simulate_dna_alignment, write_simulated_alignment
+from bijux_phylogenetics.simulation import (
+    simulate_birth_death_trees,
+    simulate_dna_alignment,
+    write_simulated_alignment,
+    write_tree_set,
+)
+from bijux_phylogenetics.tree_set import compute_consensus_tree
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +43,20 @@ class TreeComparisonBenchmarkReport:
 @dataclass(slots=True)
 class AlignmentDiagnosticsBenchmarkReport:
     replicates: int
+    observations: list[BenchmarkObservation]
+
+
+@dataclass(slots=True)
+class AlignmentSiteBenchmarkReport:
+    replicates: int
+    sequence_count: int
+    observations: list[BenchmarkObservation]
+
+
+@dataclass(slots=True)
+class TreeSetConsensusBenchmarkReport:
+    replicates: int
+    tip_count: int
     observations: list[BenchmarkObservation]
 
 
@@ -181,3 +201,81 @@ def benchmark_alignment_diagnostics(
                 )
             )
     return AlignmentDiagnosticsBenchmarkReport(replicates=replicates, observations=observations)
+
+
+def benchmark_alignment_site_scaling(
+    *,
+    replicates: int = 3,
+    site_counts: list[int] | None = None,
+    sequence_count: int = 16,
+) -> AlignmentSiteBenchmarkReport:
+    """Benchmark alignment diagnostics as alignment length increases."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    counts = site_counts or [64, 128, 256, 512]
+    observations: list[BenchmarkObservation] = []
+    with tempfile.TemporaryDirectory(prefix="bijux-alignment-sites-") as tmpdir:
+        tmp_path = Path(tmpdir)
+        tree_path = write_newick(
+            tmp_path / "alignment-sites-tree.nwk",
+            _build_balanced_tree(sequence_count),
+        )
+        for site_count in counts:
+            alignment_report = simulate_dna_alignment(
+                tree_path,
+                sequence_length=site_count,
+                substitution_rate=1.0,
+                seed=site_count,
+            )
+            alignment_path = write_simulated_alignment(
+                tmp_path / f"alignment-sites-{site_count}.fasta",
+                alignment_report,
+            )
+            observations.append(
+                _measure(
+                    f"sites-{site_count}",
+                    site_count,
+                    replicates=replicates,
+                    callback=lambda path=alignment_path: build_alignment_quality_report(path),
+                )
+            )
+    return AlignmentSiteBenchmarkReport(
+        replicates=replicates,
+        sequence_count=sequence_count,
+        observations=observations,
+    )
+
+
+def benchmark_tree_set_consensus(
+    *,
+    replicates: int = 3,
+    tree_counts: list[int] | None = None,
+    tip_count: int = 16,
+) -> TreeSetConsensusBenchmarkReport:
+    """Benchmark consensus-tree computation as posterior/bootstrap sample counts grow."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    counts = tree_counts or [8, 32, 128, 256]
+    observations: list[BenchmarkObservation] = []
+    with tempfile.TemporaryDirectory(prefix="bijux-tree-set-consensus-") as tmpdir:
+        tmp_path = Path(tmpdir)
+        for tree_count in counts:
+            trees, _ = simulate_birth_death_trees(
+                tree_count=tree_count,
+                tip_count=tip_count,
+                seed=tree_count,
+            )
+            tree_set_path = write_tree_set(tmp_path / f"tree-set-{tree_count}.trees", trees)
+            observations.append(
+                _measure(
+                    f"trees-{tree_count}",
+                    tree_count,
+                    replicates=replicates,
+                    callback=lambda path=tree_set_path: compute_consensus_tree(path),
+                )
+            )
+    return TreeSetConsensusBenchmarkReport(
+        replicates=replicates,
+        tip_count=tip_count,
+        observations=observations,
+    )

@@ -4,10 +4,18 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.benchmark import (
+    BenchmarkObservation,
+    benchmark_alignment_site_scaling,
+    benchmark_tree_comparison,
+    benchmark_tree_set_consensus,
+    benchmark_tree_validation,
+)
 from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_inputs
-from bijux_phylogenetics.errors import PhylogeneticsError
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.errors import PhylogeneticsError
 from bijux_phylogenetics.io.fasta import summarise_fasta
+from bijux_phylogenetics.reference_validation import build_core_workflow_validation_report
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +86,55 @@ class RegressionDatasetCorpusReport:
     passed_case_count: int
     failed_case_count: int
     cases: list[RegressionDatasetCaseResult]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class MethodAccuracyRow:
+    """One validation surface summarized for accuracy, error, and coverage."""
+
+    surface: str
+    accuracy: float
+    passed_count: int
+    failed_count: int
+    coverage_count: int
+    bias_notes: list[str]
+    error_notes: list[str]
+
+
+@dataclass(slots=True)
+class MethodAccuracyDashboard:
+    """Goal 246 dashboard across the main checked-in validation surfaces."""
+
+    goal_id: int
+    rows: list[MethodAccuracyRow]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class BenchmarkDashboardRow:
+    """One workflow scaling curve in runtime or memory dashboards."""
+
+    workflow: str
+    scaling_axis: str
+    observations: list[BenchmarkObservation]
+
+
+@dataclass(slots=True)
+class RuntimeBenchmarkDashboard:
+    """Goal 247 runtime scaling summary across major benchmark axes."""
+
+    goal_id: int
+    rows: list[BenchmarkDashboardRow]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class MemoryBenchmarkDashboard:
+    """Goal 248 memory scaling summary across major benchmark axes."""
+
+    goal_id: int
+    rows: list[BenchmarkDashboardRow]
     limitations: list[str]
 
 
@@ -416,5 +473,150 @@ def build_regression_dataset_corpus(
         cases=results,
         limitations=[
             "the regression corpus currently tracks stable summary fields rather than every nested report detail",
+        ],
+    )
+
+
+def build_method_accuracy_dashboard(*, fixtures_root: Path | None = None) -> MethodAccuracyDashboard:
+    """Summarize validation accuracy, error counts, and coverage across benchmark surfaces."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    core = build_core_workflow_validation_report(fixtures_root=root)
+    clean = build_clean_benchmark_corpus(fixtures_root=root)
+    broken = build_broken_benchmark_corpus(fixtures_root=root)
+    messy = build_messy_benchmark_corpus(fixtures_root=root)
+    regression = build_regression_dataset_corpus(fixtures_root=root)
+
+    def row(
+        surface: str,
+        passed_count: int,
+        failed_count: int,
+        coverage_count: int,
+        bias_notes: list[str],
+        error_notes: list[str],
+    ) -> MethodAccuracyRow:
+        total = max(coverage_count, 1)
+        return MethodAccuracyRow(
+            surface=surface,
+            accuracy=round(passed_count / total, 15),
+            passed_count=passed_count,
+            failed_count=failed_count,
+            coverage_count=coverage_count,
+            bias_notes=bias_notes,
+            error_notes=error_notes,
+        )
+
+    rows = [
+        row(
+            "level1-reference-validation",
+            core.passed_fixture_count,
+            core.failed_fixture_count,
+            core.total_fixture_count,
+            core.limitations,
+            [case.fixture_name for case in core.failure_gallery if not case.passed],
+        ),
+        row(
+            "clean-benchmark-corpus",
+            clean.passed_case_count,
+            clean.failed_case_count,
+            clean.case_count,
+            clean.limitations,
+            [case.name for case in clean.cases if not case.passed],
+        ),
+        row(
+            "broken-benchmark-corpus",
+            broken.passed_case_count,
+            broken.failed_case_count,
+            broken.case_count,
+            broken.limitations,
+            [case.name for case in broken.cases if not case.passed],
+        ),
+        row(
+            "messy-benchmark-corpus",
+            messy.passed_case_count,
+            messy.failed_case_count,
+            messy.case_count,
+            messy.limitations,
+            [case.name for case in messy.cases if not case.passed],
+        ),
+        row(
+            "regression-dataset-corpus",
+            regression.passed_case_count,
+            regression.failed_case_count,
+            regression.case_count,
+            regression.limitations,
+            [case.name for case in regression.cases if not case.passed],
+        ),
+    ]
+    return MethodAccuracyDashboard(
+        goal_id=246,
+        rows=rows,
+        limitations=[
+            "accuracy currently summarizes checked-in fixture and corpus pass rates; it does not yet replace external software comparison studies",
+        ],
+    )
+
+
+def build_runtime_benchmark_dashboard(*, replicates: int = 1) -> RuntimeBenchmarkDashboard:
+    """Summarize runtime scaling across taxa, sites, tree counts, and posterior-like samples."""
+    rows = [
+        BenchmarkDashboardRow(
+            workflow="tree-validation",
+            scaling_axis="taxa",
+            observations=benchmark_tree_validation(replicates=replicates).observations,
+        ),
+        BenchmarkDashboardRow(
+            workflow="tree-comparison",
+            scaling_axis="taxa",
+            observations=benchmark_tree_comparison(replicates=replicates).observations,
+        ),
+        BenchmarkDashboardRow(
+            workflow="alignment-diagnostics",
+            scaling_axis="sites",
+            observations=benchmark_alignment_site_scaling(replicates=replicates).observations,
+        ),
+        BenchmarkDashboardRow(
+            workflow="tree-set-consensus",
+            scaling_axis="posterior_samples",
+            observations=benchmark_tree_set_consensus(replicates=replicates).observations,
+        ),
+    ]
+    return RuntimeBenchmarkDashboard(
+        goal_id=247,
+        rows=rows,
+        limitations=[
+            "runtime summaries measure local benchmark fixtures and should be re-run on target hardware before operational promises are made",
+        ],
+    )
+
+
+def build_memory_benchmark_dashboard(*, replicates: int = 1) -> MemoryBenchmarkDashboard:
+    """Summarize peak memory scaling across the main benchmark axes."""
+    rows = [
+        BenchmarkDashboardRow(
+            workflow="tree-validation",
+            scaling_axis="taxa",
+            observations=benchmark_tree_validation(replicates=replicates).observations,
+        ),
+        BenchmarkDashboardRow(
+            workflow="tree-comparison",
+            scaling_axis="taxa",
+            observations=benchmark_tree_comparison(replicates=replicates).observations,
+        ),
+        BenchmarkDashboardRow(
+            workflow="alignment-diagnostics",
+            scaling_axis="sites",
+            observations=benchmark_alignment_site_scaling(replicates=replicates).observations,
+        ),
+        BenchmarkDashboardRow(
+            workflow="tree-set-consensus",
+            scaling_axis="posterior_samples",
+            observations=benchmark_tree_set_consensus(replicates=replicates).observations,
+        ),
+    ]
+    return MemoryBenchmarkDashboard(
+        goal_id=248,
+        rows=rows,
+        limitations=[
+            "memory summaries capture Python-side peak allocations during benchmark runs and do not model every external-engine workflow",
         ],
     )

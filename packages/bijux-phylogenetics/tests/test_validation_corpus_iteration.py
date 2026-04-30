@@ -2,11 +2,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.benchmark import (
+    benchmark_alignment_site_scaling,
+    benchmark_tree_set_consensus,
+)
 from bijux_phylogenetics.validation_corpus import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
+    build_memory_benchmark_dashboard,
+    build_method_accuracy_dashboard,
     build_messy_benchmark_corpus,
     build_regression_dataset_corpus,
+    build_runtime_benchmark_dashboard,
 )
 
 
@@ -61,3 +68,37 @@ def test_build_regression_dataset_corpus_matches_checked_in_summaries() -> None:
     observed = {case.name: case for case in report.cases}
     assert observed["core_inference_ready_dataset"].observed["risk_level"] == "low"
     assert observed["warning_rich_dataset"].observed["warning_count"] == 12
+
+
+def test_benchmark_alignment_site_scaling_reports_site_axis_observations() -> None:
+    report = benchmark_alignment_site_scaling(replicates=1, site_counts=[24, 48], sequence_count=4)
+
+    assert report.sequence_count == 4
+    assert [row.item_count for row in report.observations] == [24, 48]
+
+
+def test_benchmark_tree_set_consensus_reports_tree_count_scaling() -> None:
+    report = benchmark_tree_set_consensus(replicates=1, tree_counts=[4, 8], tip_count=4)
+
+    assert report.tip_count == 4
+    assert [row.item_count for row in report.observations] == [4, 8]
+
+
+def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> None:
+    report = build_method_accuracy_dashboard(fixtures_root=FIXTURES)
+
+    assert report.goal_id == 246
+    surfaces = {row.surface: row for row in report.rows}
+    assert surfaces["level1-reference-validation"].coverage_count > 0
+    assert surfaces["clean-benchmark-corpus"].accuracy == 1.0
+    assert surfaces["regression-dataset-corpus"].failed_count == 0
+
+
+def test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples() -> None:
+    runtime = build_runtime_benchmark_dashboard(replicates=1)
+    memory = build_memory_benchmark_dashboard(replicates=1)
+
+    assert runtime.goal_id == 247
+    assert memory.goal_id == 248
+    assert {row.scaling_axis for row in runtime.rows} >= {"sites", "posterior_samples", "taxa"}
+    assert {row.scaling_axis for row in memory.rows} >= {"sites", "posterior_samples", "taxa"}
