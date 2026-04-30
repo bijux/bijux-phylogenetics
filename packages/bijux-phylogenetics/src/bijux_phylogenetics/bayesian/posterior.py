@@ -35,8 +35,11 @@ class MaximumCladeCredibilityTreeReport:
 class PosteriorCladeAgeSummary:
     clade: str
     mean_height: float
+    median_height: float
     minimum_height: float
     maximum_height: float
+    lower_95_credible_interval: float
+    upper_95_credible_interval: float
     tree_count: int
 
 
@@ -245,6 +248,13 @@ def _select_mcc_tree(
     return best_tree, best_index, best_score
 
 
+def _quantile(sorted_values: list[float], fraction: float) -> float:
+    if len(sorted_values) == 1:
+        return round(sorted_values[0], 15)
+    position = max(0, min(len(sorted_values) - 1, int(round(fraction * (len(sorted_values) - 1)))))
+    return round(sorted_values[position], 15)
+
+
 def _summarize_clade_heights(trees: list[PhyloTree]) -> list[PosteriorCladeAgeSummary]:
     taxa_sets = {frozenset(tree.tip_names) for tree in trees}
     if len(taxa_sets) != 1:
@@ -256,10 +266,13 @@ def _summarize_clade_heights(trees: list[PhyloTree]) -> list[PosteriorCladeAgeSu
     rows = [
         PosteriorCladeAgeSummary(
             clade="|".join(sorted(clade)),
-            mean_height=round(sum(heights) / len(heights), 15),
-            minimum_height=round(min(heights), 15),
-            maximum_height=round(max(heights), 15),
-            tree_count=len(heights),
+            mean_height=round(sum(ordered := sorted(heights)) / len(ordered), 15),
+            median_height=_quantile(ordered, 0.5),
+            minimum_height=round(min(ordered), 15),
+            maximum_height=round(max(ordered), 15),
+            lower_95_credible_interval=_quantile(ordered, 0.025),
+            upper_95_credible_interval=_quantile(ordered, 0.975),
+            tree_count=len(ordered),
         )
         for clade, heights in sorted(clade_heights.items(), key=lambda item: (len(item[0]), sorted(item[0])))
     ]
