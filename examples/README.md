@@ -32,6 +32,8 @@ Comparative iteration example:
 
 ```bash
 uv run bijux-phylogenetics comparative validate-reference --json
+uv run bijux-phylogenetics comparative pgls path/to/tree.nwk path/to/traits.tsv --formula "height_cm ~ log(body_mass) + habitat" --json
 uv run bijux-phylogenetics comparative maturity path/to/tree.nwk path/to/traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
 uv run bijux-phylogenetics comparative report path/to/tree.nwk path/to/traits.tsv --formula "height_cm ~ body_mass + habitat" --out artifacts/comparative-report.html --json
+uv run bijux-phylogenetics comparative compare-trees path/to/tree-a.nwk path/to/tree-b.nwk path/to/traits.tsv --formula "height_cm ~ body_mass + habitat" --json
 ```
