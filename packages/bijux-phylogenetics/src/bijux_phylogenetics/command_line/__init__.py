@@ -44,6 +44,9 @@ from bijux_phylogenetics.ancestral.service import (
 )
 from bijux_phylogenetics.comparative.common import summarize_numeric_trait, summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.models import (
+    assess_comparative_method_maturity,
+    audit_comparative_parameter_uncertainty,
+    audit_ou_identifiability_reference_examples,
     compare_brownian_and_ou_models,
     fit_brownian_motion_model,
     fit_ornstein_uhlenbeck_model,
@@ -1247,6 +1250,23 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_sensitivity.add_argument("--taxon-column")
     comparative_sensitivity.add_argument("--json", action="store_true", help="Emit the sensitivity report as JSON.")
     _add_manifest_argument(comparative_sensitivity)
+    comparative_maturity = comparative_subparsers.add_parser(
+        "maturity",
+        help="Audit comparative residual diagnostics and sensitivity for one response trait workflow.",
+    )
+    comparative_maturity.add_argument("tree", type=Path)
+    comparative_maturity.add_argument("table", type=Path)
+    comparative_maturity.add_argument("--response")
+    comparative_maturity.add_argument("--predictors", nargs="+")
+    comparative_maturity.add_argument("--formula", help="Formula-style specification such as 'response ~ body_mass * habitat'.")
+    comparative_maturity.add_argument("--taxon-column")
+    comparative_maturity.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_maturity.add_argument("--json", action="store_true", help="Emit the maturity audit as JSON.")
+    _add_manifest_argument(comparative_maturity)
     comparative_pgls = comparative_subparsers.add_parser(
         "pgls",
         help="Fit a phylogenetic generalized least-squares model.",
@@ -3843,6 +3863,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.comparative_command == "validate-reference":
                 report = validate_comparative_reference_examples()
+                uncertainty_audit = audit_comparative_parameter_uncertainty()
+                identifiability_audit = audit_ou_identifiability_reference_examples()
                 outputs = _finalize_outputs(args, command="comparative", inputs=[])
                 _print_result(
                     build_command_result(
@@ -3852,8 +3874,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "case_count": len(report.observations),
                             "all_passed": report.all_passed,
+                            "interval_audit_passed": uncertainty_audit.all_reference_estimates_covered,
+                            "identifiability_audit_passed": identifiability_audit.all_expected_warning_kinds_detected,
                         },
-                        data=report,
+                        warnings=[
+                            *uncertainty_audit.warnings,
+                            *(
+                                []
+                                if identifiability_audit.all_expected_warning_kinds_detected
+                                else ["one or more expected OU warning modes were not detected on the reference fixtures"]
+                            ),
+                        ],
+                        data={
+                            "reference_validation": report,
+                            "parameter_uncertainty_audit": uncertainty_audit,
+                            "ou_identifiability_audit": identifiability_audit,
+                        },
                     ),
                     json_output=args.json,
                 )
@@ -3883,10 +3919,41 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             lambda_value: float | str
-            if args.lambda_value == "estimate":
-                lambda_value = "estimate"
+            if hasattr(args, "lambda_value"):
+                if args.lambda_value == "estimate":
+                    lambda_value = "estimate"
+                else:
+                    lambda_value = float(args.lambda_value)
             else:
-                lambda_value = float(args.lambda_value)
+                lambda_value = "estimate"
+            if args.comparative_command == "maturity":
+                report = assess_comparative_method_maturity(
+                    args.tree,
+                    args.table,
+                    response=args.response,
+                    predictors=list(args.predictors or []),
+                    formula=args.formula,
+                    taxon_column=args.taxon_column,
+                    lambda_value=lambda_value,
+                )
+                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "selected_model": report.selected_model,
+                            "residual_surface_count": len(report.residual_diagnostics),
+                            "influential_taxa": len(report.sensitivity.influential_taxa),
+                            "reference_validation_passed": report.reference_validation_passed,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.comparative_command == "multiple-testing":
                 report = run_pgls_multiple_testing(
                     args.tree,
