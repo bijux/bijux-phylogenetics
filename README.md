@@ -155,9 +155,16 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment distance-matrix alignment.fasta --model jukes-cantor --gap-handling complete-deletion --out distances.tsv`
 - `uv run bijux-phylogenetics alignment distance-matrix proteins.fasta --model amino-acid-p-distance --ambiguity-policy partial-match --out protein-distances.tsv`
 - `uv run bijux-phylogenetics alignment distance-quality alignment.fasta --model kimura-2-parameter --json`
+- `uv run bijux-phylogenetics alignment distance-suitability alignment.fasta --model kimura-2-parameter --json`
 - `uv run bijux-phylogenetics alignment build-tree alignment.fasta --method neighbor-joining --out nj-tree.nwk`
 - `uv run bijux-phylogenetics alignment compare-distance-trees alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment compare-distance-to-tree alignment.fasta inferred-tree.nwk --method neighbor-joining --json`
 - `uv run bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json`
+- `uv run bijux-phylogenetics alignment distance-support-summary alignment.fasta --method neighbor-joining --replicates 50 --json`
+- `uv run bijux-phylogenetics alignment distance-models alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment distance-gap-sensitivity alignment.fasta --model p-distance --json`
+- `uv run bijux-phylogenetics alignment distance-method-report alignment.fasta --method neighbor-joining --replicates 50 --json`
+- `uv run bijux-phylogenetics alignment distance-maturity alignment.fasta --method neighbor-joining --replicates 50 --json`
 - `uv run bijux-phylogenetics alignment distance-bundle alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json`
 - `uv run bijux-phylogenetics distance validate exported-distances.tsv --json`
 - `uv run bijux-phylogenetics distance quality exported-distances.tsv --json`
