@@ -114,6 +114,7 @@ bijux-phylogenetics alignment build-tree alignment.fasta --method upgma --out up
 bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json
 bijux-phylogenetics alignment distance-bundle alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json
 bijux-phylogenetics distance validate distances.tsv --json
+bijux-phylogenetics distance quality distances.tsv --json
 bijux-phylogenetics distance assumptions distances.tsv --json
 bijux-phylogenetics distance reference --json
 bijux-phylogenetics report alignment --alignment alignment.fasta --out artifacts/alignment-report.html --json
