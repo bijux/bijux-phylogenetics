@@ -72,6 +72,7 @@ bijux-phylogenetics --help
 - detect low-information alignments, ambiguity-heavy columns, duplicate-handling policy needs, and per-sequence quality rankings before inference
 - audit tree, metadata, traits, alignment, tip dates, and calibrations together through one-shot dataset readiness decisions
 - render dedicated reviewer-facing alignment, dataset, phylo-input, and taxonomy HTML reports with machine-readable sidecars
+- validate checked-in Level 1 reference fixtures, aggregate workflow coverage, document known failure cases, classify workflow maturity, and render reviewer-facing workflow-validation or release-gate reports
 - generate taxon crosswalk tables, completeness matrices, exclusion tables, ordering-drift audits, pruning-step retention summaries, and named readiness levels for reviewer-facing dataset inspection
 - trim all-gap or all-missing columns and remove high-missingness sequences
 - translate coding nucleotide alignments to amino-acid alignments and export pairwise identity matrices
@@ -116,6 +117,8 @@ bijux-phylogenetics distance validate distances.tsv --json
 bijux-phylogenetics distance assumptions distances.tsv --json
 bijux-phylogenetics distance reference --json
 bijux-phylogenetics report alignment --alignment alignment.fasta --out artifacts/alignment-report.html --json
+bijux-phylogenetics report workflow-validation --out artifacts/workflow-validation-report.html --json
+bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.html --json
 bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json
 bijux-phylogenetics taxonomy synonyms tree.nwk --synonym-table synonyms.tsv --json
 bijux-phylogenetics taxonomy resolve-synonyms tree.nwk --synonym-table synonyms.tsv --out normalized-tree.nwk --mapping-out synonym-map.tsv --json
