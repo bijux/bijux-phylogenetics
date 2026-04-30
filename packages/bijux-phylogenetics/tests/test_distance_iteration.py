@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.distance import (
@@ -7,6 +8,7 @@ from bijux_phylogenetics.distance import (
     assess_imported_distance_method_assumptions,
     bootstrap_distance_trees,
     compute_pairwise_genetic_distance_matrix,
+    inspect_imported_distance_matrix_quality,
     inspect_distance_matrix_quality,
     validate_distance_reference_examples,
     write_distance_reproducibility_bundle,
@@ -32,8 +34,8 @@ def fixture(name: str) -> Path:
 def test_validate_distance_reference_examples_passes() -> None:
     report = validate_distance_reference_examples()
     assert report.all_passed is True
-    assert len(report.observations) == 3
-    assert len(report.tree_observations) == 1
+    assert len(report.observations) == 9
+    assert len(report.tree_observations) == 2
 
 
 def test_compute_pairwise_genetic_distance_matrix_supports_kimura_two_parameter() -> None:
@@ -76,6 +78,18 @@ def test_compute_pairwise_genetic_distance_matrix_honors_partial_match_ambiguity
     assert ignore_pair.comparable_sites == 4
 
 
+def test_compute_pairwise_genetic_distance_matrix_supports_report_only_ambiguity_policy() -> None:
+    report_only = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_ambiguity.fasta"),
+        model="p-distance",
+        ambiguity_policy="report-only",
+    )
+    pair = next(row for row in report_only.pairs if row.left_identifier == "A" and row.right_identifier == "B")
+    assert pair.distance == 0.0
+    assert pair.comparable_sites == 4
+    assert pair.ambiguity_sites == 1
+
+
 def test_inspect_distance_matrix_quality_reports_saturation_risk() -> None:
     report = inspect_distance_matrix_quality(
         fixture("example_alignment_distance_saturated.fasta"),
@@ -95,6 +109,15 @@ def test_assess_imported_distance_method_assumptions_accepts_ultrametric_matrix(
     report = assess_imported_distance_method_assumptions(fixture("example_distance_matrix_ultrametric.tsv"))
     assert report.ultrametric_compatible is True
     assert report.upgma_ultrametric_violations == []
+
+
+def test_inspect_imported_distance_matrix_quality_reports_structural_and_site_risks() -> None:
+    report = inspect_imported_distance_matrix_quality(fixture("example_distance_matrix_nonultrametric.tsv"))
+    assert report.validation.complete is True
+    assert report.saturation_audit_scale == "unknown"
+    assert report.low_information_pair_cutoff == 50
+    assert report.low_information_pairs == []
+    assert "saturation heuristics were skipped" in report.warnings[-1]
 
 
 def test_bootstrap_distance_trees_returns_consensus_and_support() -> None:
@@ -127,7 +150,11 @@ def test_write_distance_reproducibility_bundle_writes_expected_files(tmp_path: P
         "distance-analysis.manifest.json",
         "distance-matrix.tsv",
         "distance-tree.nwk",
+        "input-alignment.fasta",
     ]
+    manifest = json.loads((tmp_path / "bundle" / "distance-analysis.manifest.json").read_text(encoding="utf-8"))
+    assert manifest["reference_validation_passed"] is True
+    assert "input-alignment.fasta" in manifest["output_checksums"]
 
 
 def test_render_distance_report_for_alignment_embeds_quality_sections(tmp_path: Path) -> None:
