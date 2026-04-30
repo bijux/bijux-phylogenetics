@@ -62,6 +62,9 @@ from bijux_phylogenetics.compare.topology import (
     write_tree_comparison_table,
 )
 from bijux_phylogenetics.comparative import (
+    assess_comparative_method_maturity,
+    audit_comparative_parameter_uncertainty,
+    audit_ou_identifiability_reference_examples,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_signal_test,
@@ -462,6 +465,12 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
     assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
     assert bijux_phylogenetics.compute_phylogenetic_signal_test is compute_phylogenetic_signal_test
+    assert bijux_phylogenetics.assess_comparative_method_maturity is assess_comparative_method_maturity
+    assert bijux_phylogenetics.audit_comparative_parameter_uncertainty is audit_comparative_parameter_uncertainty
+    assert (
+        bijux_phylogenetics.audit_ou_identifiability_reference_examples
+        is audit_ou_identifiability_reference_examples
+    )
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
     assert bijux_phylogenetics.reconstruct_continuous_ancestral_states is reconstruct_continuous_ancestral_states
