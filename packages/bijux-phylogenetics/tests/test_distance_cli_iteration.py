@@ -81,6 +81,69 @@ def test_cli_alignment_bootstrap_tree_writes_outputs(tmp_path: Path, capsys) -> 
     assert payload["metrics"]["replicate_count"] == 5
 
 
+def test_cli_alignment_distance_support_summary_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "distance-support-summary",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "neighbor-joining",
+            "--replicates",
+            "5",
+            "--seed",
+            "3",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["replicates"] == 5
+    assert payload["metrics"]["clade_count"] > 0
+
+
+def test_cli_alignment_distance_models_json_output(capsys) -> None:
+    exit_code = main(["alignment", "distance-models", str(fixture("example_alignment_distance.fasta")), "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["model_count"] == 3
+
+
+def test_cli_alignment_distance_gap_sensitivity_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "distance-gap-sensitivity",
+            str(fixture("example_alignment_distance_gaps.fasta")),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["changed_pair_count"] > 0
+
+
+def test_cli_alignment_distance_maturity_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "distance-maturity",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "neighbor-joining",
+            "--replicates",
+            "5",
+            "--seed",
+            "3",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["check_count"] > 0
+    assert payload["metrics"]["decision"] in {"production_candidate", "validated_with_limits"}
+
+
 def test_cli_distance_reference_json_output(capsys) -> None:
     exit_code = main(["distance", "reference", "--json"])
     payload = json.loads(capsys.readouterr().out)
