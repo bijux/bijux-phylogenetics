@@ -14,6 +14,7 @@
 - add comparative readiness checks, phylogenetic independent contrasts, phylogenetic signal estimation, and phylogenetic generalized least-squares workflows
 - add standalone Brownian and OU comparative model fitting, formula-driven PGLS interactions, multiple-testing correction, comparative audit and influence reports, and comparative comparisons across trees or pruning policies
 - deepen comparative validation with checked-in ape, phytools, geiger, and nlme reference expectations plus parameter-uncertainty, OU identifiability, residual-diagnostic, and leave-one-taxon-out maturity audits
+- expand comparative PGLS auditing with transformed predictor terms, explicit categorical and interaction audit tables, overfit margins, multiple-testing summaries, tree or pruning sensitivity flags, and stronger reviewer limitation text
 - add continuous and discrete ancestral-state reconstruction, uncertainty reporting, model comparison, annotated ancestral-tree rendering, table export, and HTML ancestral-state reports
 - add governed external-engine workflows for alignment, trimming, model selection, ML inference, bootstrap consensus, fast-tree comparison, and engine provenance capture
 - add inference resume safeguards, HTML inference workflow reports, and initial MrBayes preparation, posterior-tree summary, trace parsing, and ESS workflows
