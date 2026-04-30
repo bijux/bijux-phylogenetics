@@ -62,6 +62,8 @@ def test_comparative_validate_reference_cli_reports_pass(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["all_passed"] is True
+    assert payload["metrics"]["interval_audit_passed"] is True
+    assert payload["metrics"]["identifiability_audit_passed"] is True
 
 
 def test_comparative_sensitivity_cli_reports_influential_taxa(capsys) -> None:
@@ -81,3 +83,25 @@ def test_comparative_sensitivity_cli_reports_influential_taxa(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["influential_taxa"] == 3
+
+
+def test_comparative_maturity_cli_reports_residual_surfaces(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "maturity",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "1.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["residual_surface_count"] == 3
+    assert payload["metrics"]["reference_validation_passed"] is True
