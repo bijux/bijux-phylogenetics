@@ -86,10 +86,16 @@ from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
 from bijux_phylogenetics.distance import (
+    assess_distance_method_maturity,
+    build_distance_method_report,
     build_distance_tree,
     build_tree_from_imported_distance_matrix,
+    compare_distance_gap_policies,
+    compare_distance_models,
+    compare_distance_tree_to_reference_tree,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
+    summarize_distance_bootstrap_support,
     load_imported_distance_matrix,
     validate_imported_distance_matrix,
 )
@@ -337,9 +343,15 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.clean_alignment_with_profile is clean_alignment_with_profile
     assert bijux_phylogenetics.compare_alignment_versions is compare_alignment_versions
     assert bijux_phylogenetics.compute_pairwise_genetic_distance_matrix is compute_pairwise_genetic_distance_matrix
+    assert bijux_phylogenetics.build_distance_method_report is build_distance_method_report
     assert bijux_phylogenetics.build_distance_tree is build_distance_tree
     assert bijux_phylogenetics.build_tree_from_imported_distance_matrix is build_tree_from_imported_distance_matrix
+    assert bijux_phylogenetics.compare_distance_gap_policies is compare_distance_gap_policies
+    assert bijux_phylogenetics.compare_distance_models is compare_distance_models
+    assert bijux_phylogenetics.compare_distance_tree_to_reference_tree is compare_distance_tree_to_reference_tree
     assert bijux_phylogenetics.compare_distance_tree_topologies is compare_distance_tree_topologies
+    assert bijux_phylogenetics.assess_distance_method_maturity is assess_distance_method_maturity
+    assert bijux_phylogenetics.summarize_distance_bootstrap_support is summarize_distance_bootstrap_support
     assert bijux_phylogenetics.validate_imported_distance_matrix is validate_imported_distance_matrix
     assert bijux_phylogenetics.validate_discrete_state_coding is validate_discrete_state_coding
     assert bijux_phylogenetics.detect_state_imbalance_problems is detect_state_imbalance_problems
