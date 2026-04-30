@@ -183,6 +183,15 @@ bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB -
 The built-in alignment filtering profiles are `conservative`, `moderate`,
 `aggressive`, `coding-safe`, and `phylogenomics-scale`.
 
+Comparative workflows now include checked-in external reference validation and
+a dedicated maturity audit for BM, OU, PGLS, residual diagnostics, and
+leave-one-taxon-out sensitivity:
+
+```bash
+uv run bijux-phylogenetics comparative validate-reference --json
+uv run bijux-phylogenetics comparative maturity tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
+```
+
 ## Read this next
 
 - package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
