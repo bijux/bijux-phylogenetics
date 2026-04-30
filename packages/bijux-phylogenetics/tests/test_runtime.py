@@ -4556,3 +4556,40 @@ def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
     assert payload["errors"][0]["code"] == EngineUnavailableError.code
     assert result.scale_bar_length == 0.1
     assert result.max_branch_distance == 0.30000000000000004
+    assert manifest["audit"]["scale_bar_valid"] is True
+    assert manifest["audit"]["support_audit"]["validated"] is True
+    caption = result.caption_path.read_text(encoding="utf-8")
+    assert "## Reviewer Summary" in caption
+    assert "## Legend" in caption
+    assert "## Limitations" in caption
+
+
+def test_build_tree_figure_package_records_collapsed_clade_and_annotation_audits(tmp_path: Path) -> None:
+    output_dir = tmp_path / "tree-figure"
+    result = build_tree_figure_package(
+        fixture("example_tree_named_clades.nwk"),
+        out_dir=output_dir,
+        labels={"A": "Alpha", "B": "Beta", "C": "Gamma", "D": "Delta"},
+        layout="phylogram",
+        metadata_strips=[AnnotationStrip("location", {"A": "Sweden", "B": "Sweden", "C": "Denmark", "D": "Finland"})],
+        collapsed_clades=["Mammals"],
+    )
+    assert result.audit.collapsed_clades[0].clade_name == "Mammals"
+    assert result.audit.collapsed_clades[0].descendant_count == 2
+    assert result.audit.collapsed_clades[0].metadata_summaries == ["location: Sweden=2"]
+    assert result.audit.annotation_coverage[0].aligned is False
+    assert result.audit.annotation_coverage[0].missing_taxa == ["Mammals"]
+    assert result.audit.table_consistency.consistent is True
+
+
+def test_build_tree_figure_package_withholds_unvalidated_support_labels(tmp_path: Path) -> None:
+    output_dir = tmp_path / "tree-figure"
+    result = build_tree_figure_package(
+        fixture("example_tree_support_invalid.nwk"),
+        out_dir=output_dir,
+        layout="phylogram",
+        show_support_values=True,
+    )
+    assert result.render.rendered_support_count == 0
+    assert result.audit.support_audit.validated is False
+    assert "support labels were withheld" in result.audit.reviewer_summary[1]
