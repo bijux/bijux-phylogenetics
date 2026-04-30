@@ -4601,3 +4601,29 @@ def test_build_tree_figure_package_withholds_unvalidated_support_labels(tmp_path
         "reviewer-summary",
         "limitations",
     assert result.machine_manifest_path.exists()
+def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tmp_path: Path) -> None:
+    tree_output = tmp_path / "tree-report.html"
+    dataset_output = tmp_path / "dataset-report.html"
+    phylo_output = tmp_path / "phylo-report.html"
+    tree_result = render_tree_report(tree_path=fixture("example_tree_support_invalid.nwk"), out_path=tree_output)
+    dataset_result = render_dataset_report(
+        tree_path=fixture("example_tree.nwk"),
+        metadata_path=fixture("example_metadata.tsv"),
+        traits_path=fixture("example_traits.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        out_path=dataset_output,
+    )
+    phylo_result = render_phylo_inputs_report(
+        tree_path=fixture("example_tree.nwk"),
+        alignment_path=fixture("example_alignment_coding.fasta"),
+        out_path=phylo_output,
+    )
+    tree_sidecar = json.loads(tree_result.machine_manifest_path.read_text(encoding="utf-8"))
+    dataset_sidecar = json.loads(dataset_result.machine_manifest_path.read_text(encoding="utf-8"))
+    phylo_sidecar = json.loads(phylo_result.machine_manifest_path.read_text(encoding="utf-8"))
+    assert tree_sidecar["reviewer_summary"][0] == "tree validity decision: valid_with_warnings"
+    assert "limitations" in dataset_sidecar
+    assert "reviewer-summary" in dataset_result.machine_manifest["sections"]
+    assert len(phylo_sidecar["limitations"]) >= 1
+
+
