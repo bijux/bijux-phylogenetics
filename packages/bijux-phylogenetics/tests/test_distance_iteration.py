@@ -4,15 +4,23 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.distance import (
+    assess_distance_method_maturity,
     assess_distance_method_assumptions,
     assess_imported_distance_method_assumptions,
     bootstrap_distance_trees,
+    build_distance_method_report,
+    build_distance_tree,
+    compare_distance_gap_policies,
+    compare_distance_models,
+    compare_distance_tree_to_reference_tree,
     compute_pairwise_genetic_distance_matrix,
     inspect_imported_distance_matrix_quality,
     inspect_distance_matrix_quality,
+    summarize_distance_bootstrap_support,
     validate_distance_reference_examples,
     write_distance_reproducibility_bundle,
 )
+from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.reports.service import render_distance_report
 
 
@@ -133,6 +141,69 @@ def test_bootstrap_distance_trees_returns_consensus_and_support() -> None:
     assert len(report.support) > 0
 
 
+def test_summarize_distance_bootstrap_support_reports_weak_clade_counts() -> None:
+    report = summarize_distance_bootstrap_support(
+        bootstrap_distance_trees(
+            fixture("example_alignment_distance.fasta"),
+            method="neighbor-joining",
+            replicates=5,
+            seed=7,
+        )[1]
+    )
+    assert report.clade_count > 0
+    assert report.replicates == 5
+
+
+def test_compare_distance_tree_to_reference_tree_reports_matching_topology(tmp_path: Path) -> None:
+    tree, _ = build_distance_tree(fixture("example_alignment_distance.fasta"), method="neighbor-joining")
+    reference_path = tmp_path / "reference.nwk"
+    write_newick(reference_path, tree)
+    report = compare_distance_tree_to_reference_tree(
+        fixture("example_alignment_distance.fasta"),
+        reference_path,
+        method="neighbor-joining",
+    )
+    assert report.topology.topology_equal is True
+
+
+def test_compare_distance_models_reports_supported_dna_models() -> None:
+    report = compare_distance_models(fixture("example_alignment_distance.fasta"))
+    assert [row.model for row in report.rows] == ["jukes-cantor", "kimura-2-parameter", "p-distance"]
+
+
+def test_compare_distance_gap_policies_reports_changed_pairs() -> None:
+    report = compare_distance_gap_policies(
+        fixture("example_alignment_distance_gaps.fasta"),
+        model="p-distance",
+    )
+    assert report.changed_pair_count > 0
+    assert any(row.comparable_site_delta != 0 for row in report.rows)
+
+
+def test_build_distance_method_report_combines_support_models_and_gap_sensitivity() -> None:
+    report = build_distance_method_report(
+        fixture("example_alignment_distance.fasta"),
+        method="neighbor-joining",
+        bootstrap_replicates=5,
+        bootstrap_seed=3,
+    )
+    assert report.bootstrap_summary.clade_count > 0
+    assert report.model_comparison.rows
+    assert report.gap_policy_sensitivity.pair_count > 0
+
+
+def test_assess_distance_method_maturity_validates_bundle_provenance() -> None:
+    report = assess_distance_method_maturity(
+        fixture("example_alignment_distance.fasta"),
+        method="neighbor-joining",
+        bootstrap_replicates=5,
+        bootstrap_seed=3,
+        validate_bundle=True,
+    )
+    assert report.decision in {"production_candidate", "validated_with_limits"}
+    assert any(check.name == "bundle_provenance" and check.satisfied for check in report.checks)
+
+
 def test_write_distance_reproducibility_bundle_writes_expected_files(tmp_path: Path) -> None:
     report = write_distance_reproducibility_bundle(
         tmp_path / "bundle",
@@ -149,6 +220,7 @@ def test_write_distance_reproducibility_bundle_writes_expected_files(tmp_path: P
         "bootstrap-support.tsv",
         "distance-analysis.manifest.json",
         "distance-matrix.tsv",
+        "distance-summary.json",
         "distance-tree.nwk",
         "input-alignment.fasta",
     ]
@@ -167,3 +239,7 @@ def test_render_distance_report_for_alignment_embeds_quality_sections(tmp_path: 
     assert "distance-quality" in html
     assert "distance-method-assumptions" in html
     assert "distance-reference-validation" in html
+    assert "distance-bootstrap-summary" in html
+    assert "distance-model-comparison" in html
+    assert "distance-gap-policy-sensitivity" in html
+    assert "distance-maturity-gate" in html
