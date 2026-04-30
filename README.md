@@ -136,6 +136,10 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment profiles --json`
 - `uv run bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json`
 - `uv run bijux-phylogenetics alignment readiness alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment low-information alignment.fasta --json`
+- `uv run bijux-phylogenetics alignment duplicate-policy alignment.fasta --identity-threshold 0.99 --json`
+- `uv run bijux-phylogenetics alignment ambiguous-columns alignment.fasta --threshold 0.5 --json`
+- `uv run bijux-phylogenetics alignment sequence-ranking alignment.fasta --json`
 - `uv run bijux-phylogenetics alignment length-outliers sequences.fasta --json`
 - `uv run bijux-phylogenetics alignment forensic alignment.fasta --json`
 - `uv run bijux-phylogenetics alignment filter alignment.fasta --profile coding-safe --out cleaned.fasta --json`
@@ -155,8 +159,10 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics distance build-tree exported-distances.tsv --method upgma --out imported-upgma.nwk`
 - `uv run bijux-phylogenetics distance report exported-distances.tsv --out artifacts/distance-report.html`
 - `uv run bijux-phylogenetics distance reference --json`
+- `uv run bijux-phylogenetics report alignment --alignment alignment.fasta --out artifacts/alignment-report.html --json`
 - `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json`
 - `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --out artifacts/dataset-review.html --json`
+- `uv run bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json`
 - `uv run bijux-phylogenetics taxonomy rank-consistency tree.nwk --json`
 - `uv run bijux-phylogenetics taxonomy accepted-names tree.nwk --synonym-table taxonomy.tsv --out accepted-names.tsv --json`
 - `uv run bijux-phylogenetics taxonomy audit tree.nwk --synonym-table taxonomy.tsv --json`
