@@ -11,9 +11,11 @@ from bijux_phylogenetics.validation_corpus import (
     build_clean_benchmark_corpus,
     build_memory_benchmark_dashboard,
     build_method_accuracy_dashboard,
+    build_method_limitation_registry,
     build_messy_benchmark_corpus,
     build_regression_dataset_corpus,
     build_runtime_benchmark_dashboard,
+    build_scientific_validation_report,
 )
 
 
@@ -102,3 +104,20 @@ def test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples()
     assert memory.goal_id == 248
     assert {row.scaling_axis for row in runtime.rows} >= {"sites", "posterior_samples", "taxa"}
     assert {row.scaling_axis for row in memory.rows} >= {"sites", "posterior_samples", "taxa"}
+
+
+def test_build_method_limitation_registry_marks_experimental_and_validated_surfaces() -> None:
+    report = build_method_limitation_registry()
+
+    assert report.goal_id == 250
+    statuses = {entry.method: entry.status for entry in report.entries}
+    assert statuses["tree-validation"] == "validated"
+    assert statuses["bayesian-time-tree"] == "experimental"
+
+
+def test_build_scientific_validation_report_separates_claim_statuses() -> None:
+    report = build_scientific_validation_report(fixtures_root=FIXTURES)
+
+    assert report.goal_id == 249
+    statuses = {claim.status for claim in report.claims}
+    assert statuses >= {"validated", "experimental", "unvalidated", "unsafe"}
