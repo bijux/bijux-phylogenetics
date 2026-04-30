@@ -112,6 +112,7 @@ def test_comparative_pgls_cli_encodes_categorical_predictor(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["data"]["inputs"]["predictors"][1]["reference_level"] == "forest"
+    assert payload["data"]["inputs"]["formula_audit"]["parameter_count"] == 3
     coefficients = {
         coefficient["name"]: coefficient["estimate"]
         for coefficient in payload["data"]["model"]["coefficients"]
@@ -141,7 +142,30 @@ def test_comparative_pgls_cli_accepts_formula_interactions(capsys) -> None:
     }
     assert exit_code == 0
     assert payload["data"]["inputs"]["formula"]["interaction_terms"] == ["predictor_one:habitat"]
+    assert payload["data"]["inputs"]["formula_audit"]["interaction_terms"][0]["encoded_columns"] == [
+        "predictor_one:habitat[tundra]"
+    ]
     assert math.isclose(coefficients["predictor_one:habitat[tundra]"], 0.5)
+
+
+def test_comparative_pgls_cli_reports_transformed_terms(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "pgls",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--formula",
+            "response ~ log(predictor_one) + habitat",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["transformed_term_count"] == 1
+    assert payload["data"]["inputs"]["formula_audit"]["transformed_terms"] == ["log(predictor_one)"]
 
 
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
@@ -167,6 +191,8 @@ def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> Non
     assert exit_code == 0
     assert payload["metrics"]["response_count"] == 2
     assert payload["metrics"]["test_count"] == 4
+    assert payload["metrics"]["family_size"] == 4
+    assert payload["metrics"]["raw_significant_count"] >= payload["metrics"]["significant_count"]
 
 
 def test_comparative_report_cli_reports_audit_and_limitations(capsys) -> None:
@@ -189,6 +215,7 @@ def test_comparative_report_cli_reports_audit_and_limitations(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["audit_row_count"] == 3
+    assert "formula_audit" in payload["data"]["snapshot"]["pgls_inputs"]
     assert payload["metrics"]["limitation_count"] >= 2
 
 
@@ -212,6 +239,7 @@ def test_comparative_influence_cli_reports_taxa(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["taxon_count"] == 4
+    assert payload["metrics"]["top_taxa"] == 3
 
 
 def test_comparative_compare_trees_cli_reports_deltas(capsys) -> None:
@@ -235,6 +263,7 @@ def test_comparative_compare_trees_cli_reports_deltas(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["coefficient_delta_count"] >= 1
+    assert "conclusion_changed" in payload["metrics"]
 
 
 def test_comparative_compare_pruning_cli_reports_dropped_taxa(capsys) -> None:
@@ -257,3 +286,4 @@ def test_comparative_compare_pruning_cli_reports_dropped_taxa(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["dropped_taxa"] == 1
+    assert "conclusion_changed" in payload["metrics"]
