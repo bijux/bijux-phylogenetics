@@ -4,6 +4,7 @@ import hashlib
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+import csv
 
 from bijux_phylogenetics.core.alignment import (
     AlignmentForensicReport,
@@ -73,7 +74,12 @@ from bijux_phylogenetics.io.fasta import (
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.tree_set import (
+    assess_tree_set_maturity,
+    assess_tree_set_storage_risk,
+    assess_tree_set_thinning_sensitivity,
+    benchmark_tree_set_uncertainty,
     cluster_trees_by_topology,
+    compare_consensus_thresholds,
     compare_posterior_topological_diversity,
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
@@ -236,8 +242,13 @@ def _dataset_surface_taxa_count(path: Path, role: str) -> int:
         return _load_tree(path).tip_count
     if role == "alignment":
         return summarise_fasta(path).sequence_count
-    if role in {"metadata", "traits", "tip_dates", "calibrations"}:
+    if role in {"metadata", "traits", "tip_dates"}:
         return load_taxon_table(path).row_count
+    if role == "calibrations":
+        delimiter = "," if path.suffix.lower() == ".csv" else "\t"
+        with path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, delimiter=delimiter)
+            return sum(1 for _ in reader)
     raise ValueError(f"unsupported dataset ledger role: {role}")
 
 
@@ -994,6 +1005,14 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
     unstable_clades = detect_unstable_clades(tree_set_path)
     clade_conflicts = summarize_clade_credibility_conflicts(tree_set_path)
     conclusion_summary = summarize_uncertainty_aware_conclusions(tree_set_path)
+    storage_risk = assess_tree_set_storage_risk(tree_set_path)
+    thinning_sensitivity = assess_tree_set_thinning_sensitivity(tree_set_path)
+    consensus_sensitivity = compare_consensus_thresholds(tree_set_path)
+    maturity = assess_tree_set_maturity(tree_set_path)
+    benchmark = benchmark_tree_set_uncertainty(
+        tree_counts=[summary.tree_count],
+        taxon_counts=[max(len(summary.shared_taxa), 2)],
+    )
     title = "Bijux Tree Uncertainty Report"
     sections = [
         _section("tree-set-summary", asdict(summary)),
@@ -1007,7 +1026,14 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
         _section("unstable-clades", asdict(unstable_clades)),
         _section("clade-credibility-conflicts", asdict(clade_conflicts)),
         _section("uncertainty-aware-conclusions", asdict(conclusion_summary)),
+        _section("storage-risk", asdict(storage_risk)),
+        _section("thinning-sensitivity", asdict(thinning_sensitivity)),
+        _section("consensus-threshold-sensitivity", asdict(consensus_sensitivity)),
+        _section("tree-set-benchmark", asdict(benchmark)),
+        _section("maturity-gate", asdict(maturity)),
     ]
+    core_sections = sections[:11]
+    supplemental_sections = sections[11:]
     machine_manifest = {
         "report_kind": "tree-uncertainty",
         "title": title,
@@ -1015,7 +1041,8 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
         "input_checksum": _sha256(tree_set_path),
         "tree_count": summary.tree_count,
         "rooted_topology_count": summary.rooted_topology_count,
-        "sections": [name for name, _ in sections],
+        "sections": [name for name, _ in core_sections],
+        "supplemental_sections": [name for name, _ in supplemental_sections],
     }
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return TreeUncertaintyReportBuildResult(
