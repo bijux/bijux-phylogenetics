@@ -376,6 +376,86 @@ class AlignmentGroupRetention:
     removed_fraction: float
 
 
+@dataclass(frozen=True, slots=True)
+class AlignmentLowInformationReport:
+    """Assessment of whether an alignment contains enough phylogenetic signal for inference."""
+
+    sequence_count: int
+    alignment_length: int
+    parsimony_informative_site_count: int
+    parsimony_informative_fraction: float
+    threshold_site_count: int
+    threshold_fraction: float
+    low_information: bool
+    reasons: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class DuplicateSequencePolicyAction:
+    """One reviewer-facing recommendation for handling duplicate or near-duplicate sequences."""
+
+    action: str
+    rationale: str
+    affected_identifiers: list[str]
+
+
+@dataclass(slots=True)
+class DuplicateSequencePolicyReport:
+    """Policy report describing how duplicate sequences should be handled before inference."""
+
+    path: Path
+    exact_duplicate_groups: list[DuplicateSequenceGroup]
+    near_duplicate_pairs: list[NearDuplicateSequencePair]
+    policy_actions: list[DuplicateSequencePolicyAction]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class AmbiguousAlignmentColumn:
+    """One alignment column dominated by ambiguity or missing-like states."""
+
+    position: int
+    ambiguity_fraction: float
+    missing_fraction: float
+    gap_fraction: float
+    comparable_fraction: float
+    note: str
+
+
+@dataclass(slots=True)
+class AlignmentAmbiguousColumnReport:
+    """Report of ambiguity-heavy columns that deserve masking or reviewer inspection."""
+
+    path: Path
+    threshold: float
+    rows: list[AmbiguousAlignmentColumn]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class SequenceQualityRankingRow:
+    """One ranked sequence with explicit quality burden components."""
+
+    identifier: str
+    rank: int
+    score: float
+    missing_fraction: float
+    gap_fraction: float
+    ambiguity_fraction: float
+    composition_outlier: bool
+    duplicate_status: str
+    note: str
+
+
+@dataclass(slots=True)
+class SequenceQualityRankingReport:
+    """Reviewer-facing ranking of sequence quality across one alignment."""
+
+    path: Path
+    rows: list[SequenceQualityRankingRow]
+    warnings: list[str]
+
+
 @dataclass(slots=True)
 class AlignmentCleaningReport:
     """Profile-driven cleaning report with comparison and bias diagnostics."""
@@ -395,7 +475,11 @@ class AlignmentForensicReport:
     path: Path
     quality: AlignmentQualityReport
     readiness: AlignmentReadinessReport
+    low_information: AlignmentLowInformationReport
     coding: CodingAlignmentDiagnostics | None
+    duplicate_policy: DuplicateSequencePolicyReport
+    ambiguous_columns: AlignmentAmbiguousColumnReport
+    sequence_ranking: SequenceQualityRankingReport
     over_aligned_regions: list[AlignmentSuspiciousRegion]
     under_aligned_regions: list[AlignmentSuspiciousRegion]
     safe_for_distance_analysis: bool
