@@ -8,6 +8,7 @@ from bijux_phylogenetics.bayesian.diagnostics import TraceConvergenceReport, sum
 from bijux_phylogenetics.bayesian.posterior import summarize_maximum_clade_credibility_tree
 from bijux_phylogenetics.comparative.common import descendant_taxa
 from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.engines.workflows import _ensure_inference_ready_alignment
@@ -80,6 +81,42 @@ class TipDatingValidationReport:
     extra_alignment_taxa: list[str]
     tip_dates: list[ValidatedTipDate]
     issues: list[TipDatingValidationIssue]
+
+
+@dataclass(slots=True)
+class CalibrationDominanceObservation:
+    calibration_id: str
+    target_label: str
+    bounded_span_fraction: float | None
+    dominates_root_age: bool
+    warning: str | None
+
+
+@dataclass(slots=True)
+class CalibrationDominanceReport:
+    tree_path: Path
+    calibration_path: Path
+    root_age: float
+    valid_calibration_count: int
+    dominant_calibration_ids: list[str]
+    observations: list[CalibrationDominanceObservation]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class TimeTreeReadinessReport:
+    tree_path: Path
+    calibration_path: Path | None
+    tip_dates_path: Path | None
+    decision: str
+    rooted: bool
+    ultrametric: bool
+    branch_length_status: str
+    blockers: list[str]
+    warnings: list[str]
+    calibration_report: FossilCalibrationValidationReport | None
+    tip_date_report: TipDatingValidationReport | None
+    calibration_dominance: CalibrationDominanceReport | None
 
 
 @dataclass(slots=True)
@@ -394,6 +431,67 @@ def detect_impossible_calibration_constraints(tree_path: Path, calibration_path:
     )
 
 
+def _tree_root_age(tree_path: Path) -> float:
+    tree = load_tree(tree_path)
+    lengths = [length for length in tree.root_to_tip_lengths() if length is not None]
+    if not lengths:
+        return 0.0
+    return round(max(float(length) for length in lengths), 15)
+
+
+def assess_calibration_dominance(tree_path: Path, calibration_path: Path) -> CalibrationDominanceReport:
+    """Flag cases where one calibration contributes a disproportionate share of the dated-tree age range."""
+    report = validate_fossil_calibration_table(tree_path, calibration_path)
+    root_age = _tree_root_age(tree_path)
+    observations: list[CalibrationDominanceObservation] = []
+    dominant_calibration_ids: list[str] = []
+    warnings: list[str] = []
+    for calibration in report.calibrations:
+        if not calibration.valid:
+            continue
+        span_fraction: float | None = None
+        dominates_root_age = False
+        warning: str | None = None
+        if calibration.minimum_age is not None and calibration.maximum_age is not None and root_age > 0.0:
+            span_fraction = round((calibration.maximum_age - calibration.minimum_age) / root_age, 15)
+            dominates_root_age = span_fraction >= 0.5
+            if dominates_root_age:
+                warning = "calibration age span covers at least half of the current root-age scale"
+        elif root_age > 0.0 and (
+            (calibration.minimum_age is not None and calibration.minimum_age / root_age >= 0.8)
+            or (calibration.maximum_age is not None and calibration.maximum_age / root_age >= 0.8)
+        ):
+            dominates_root_age = True
+            warning = "single-sided calibration bound lies close to the current root-age scale"
+        if dominates_root_age:
+            dominant_calibration_ids.append(calibration.calibration_id)
+            if warning is not None:
+                warnings.append(f"{calibration.calibration_id}: {warning}")
+        observations.append(
+            CalibrationDominanceObservation(
+                calibration_id=calibration.calibration_id,
+                target_label=calibration.target_label,
+                bounded_span_fraction=span_fraction,
+                dominates_root_age=dominates_root_age,
+                warning=warning,
+            )
+        )
+    if report.valid_calibration_count == 1 and report.calibrations:
+        only_calibration = next((calibration for calibration in report.calibrations if calibration.valid), None)
+        if only_calibration is not None and only_calibration.calibration_id not in dominant_calibration_ids:
+            dominant_calibration_ids.append(only_calibration.calibration_id)
+        warnings.append("only one valid calibration remains, so time estimates are effectively driven by a single calibration target")
+    return CalibrationDominanceReport(
+        tree_path=tree_path,
+        calibration_path=calibration_path,
+        root_age=root_age,
+        valid_calibration_count=report.valid_calibration_count,
+        dominant_calibration_ids=sorted(dominant_calibration_ids),
+        observations=sorted(observations, key=lambda row: row.calibration_id),
+        warnings=sorted(dict.fromkeys(warnings)),
+    )
+
+
 def validate_tip_dating_metadata(
     tree_path: Path,
     tip_dates_path: Path,
@@ -454,6 +552,67 @@ def validate_tip_dating_metadata(
         extra_alignment_taxa=extra_alignment_taxa,
         tip_dates=tip_dates,
         issues=issues,
+    )
+
+
+def assess_time_tree_readiness(
+    tree_path: Path,
+    *,
+    calibration_path: Path | None = None,
+    tip_dates_path: Path | None = None,
+    alignment_path: Path | None = None,
+    taxon_column: str | None = None,
+    date_column: str = "date",
+) -> TimeTreeReadinessReport:
+    """Decide whether a dataset is suitable for dated phylogenetics."""
+    validation = validate_tree_path(tree_path)
+    blockers: list[str] = []
+    warnings: list[str] = []
+    if not validation.rooted:
+        blockers.append("time-tree analysis requires a rooted tree")
+    if validation.ultrametric is not True:
+        blockers.append("time-tree analysis requires ultrametric branch lengths")
+    if validation.branch_length_status != "complete":
+        blockers.append("time-tree analysis requires complete branch lengths")
+    calibration_report = None
+    calibration_dominance = None
+    if calibration_path is not None:
+        calibration_report = validate_fossil_calibration_table(tree_path, calibration_path)
+        if calibration_report.invalid_calibration_count:
+            blockers.append("calibration table contains invalid fossil calibration targets or ages")
+        calibration_dominance = assess_calibration_dominance(tree_path, calibration_path)
+        warnings.extend(calibration_dominance.warnings)
+    tip_date_report = None
+    if tip_dates_path is not None:
+        tip_date_report = validate_tip_dating_metadata(
+            tree_path,
+            tip_dates_path,
+            alignment_path=alignment_path,
+            taxon_column=taxon_column,
+            date_column=date_column,
+        )
+        if tip_date_report.invalid_tip_count:
+            blockers.append("tip-date table contains missing, invalid, or mismatched dated taxa")
+    if calibration_path is None and tip_dates_path is None:
+        warnings.append("no calibrations or tip dates were supplied, so the tree cannot be dated by the current workflow")
+    decision = "ready"
+    if blockers:
+        decision = "blocked"
+    elif warnings:
+        decision = "risky"
+    return TimeTreeReadinessReport(
+        tree_path=tree_path,
+        calibration_path=calibration_path,
+        tip_dates_path=tip_dates_path,
+        decision=decision,
+        rooted=validation.rooted,
+        ultrametric=validation.ultrametric is True,
+        branch_length_status=validation.branch_length_status,
+        blockers=sorted(dict.fromkeys(blockers)),
+        warnings=sorted(dict.fromkeys([*warnings, *validation.warnings])),
+        calibration_report=calibration_report,
+        tip_date_report=tip_date_report,
+        calibration_dominance=calibration_dominance,
     )
 
 
