@@ -4594,3 +4594,4 @@ def test_build_tree_figure_package_withholds_unvalidated_support_labels(tmp_path
     assert result.audit.support_audit.validated is False
     assert "support labels were withheld" in result.audit.reviewer_summary[1]
     assert payload["data"]["figure_package_audit"]["scale_bar_valid"] is True
+    assert result.machine_manifest_path.exists()
