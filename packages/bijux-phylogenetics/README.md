@@ -190,6 +190,7 @@ leave-one-taxon-out sensitivity:
 ```bash
 uv run bijux-phylogenetics comparative validate-reference --json
 uv run bijux-phylogenetics comparative maturity tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
+uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ log(body_mass) + habitat" --json
 ```
 
 ## Read this next
