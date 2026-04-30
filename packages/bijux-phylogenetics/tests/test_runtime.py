@@ -3270,6 +3270,8 @@ def test_render_tree_svg_can_render_phylogram_with_scale_bar(tmp_path: Path) -> 
     svg = output.read_text(encoding="utf-8")
     assert result.layout == "phylogram"
     assert result.has_scale_bar is True
+    assert result.scale_bar_length == 0.1
+    assert result.max_branch_distance == 0.30000000000000004
     assert 'class="scale-bar"' in svg
     assert 'class="scale-label"' in svg
 
@@ -3392,7 +3394,44 @@ def test_build_tree_figure_package_writes_publication_bundle(tmp_path: Path) -> 
     assert result.annotations_path.exists()
     assert manifest["layout"] == "phylogram"
     assert manifest["render"]["rendered_support_count"] == 2
+    assert manifest["audit"]["scale_bar_valid"] is True
+    assert manifest["audit"]["support_audit"]["validated"] is True
     assert "taxon\tlabel\tcategorical_trait\tcontinuous_trait\tlocation\ttemperature" in result.annotations_path.read_text(encoding="utf-8")
+    caption = result.caption_path.read_text(encoding="utf-8")
+    assert "## Reviewer Summary" in caption
+    assert "## Legend" in caption
+    assert "## Limitations" in caption
+
+
+def test_build_tree_figure_package_records_collapsed_clade_and_annotation_audits(tmp_path: Path) -> None:
+    output_dir = tmp_path / "tree-figure"
+    result = build_tree_figure_package(
+        fixture("example_tree_named_clades.nwk"),
+        out_dir=output_dir,
+        labels={"A": "Alpha", "B": "Beta", "C": "Gamma", "D": "Delta"},
+        layout="phylogram",
+        metadata_strips=[AnnotationStrip("location", {"A": "Sweden", "B": "Sweden", "C": "Denmark", "D": "Finland"})],
+        collapsed_clades=["Mammals"],
+    )
+    assert result.audit.collapsed_clades[0].clade_name == "Mammals"
+    assert result.audit.collapsed_clades[0].descendant_count == 2
+    assert result.audit.collapsed_clades[0].metadata_summaries == ["location: Sweden=2"]
+    assert result.audit.annotation_coverage[0].aligned is False
+    assert result.audit.annotation_coverage[0].missing_taxa == ["Mammals"]
+    assert result.audit.table_consistency.consistent is True
+
+
+def test_build_tree_figure_package_withholds_unvalidated_support_labels(tmp_path: Path) -> None:
+    output_dir = tmp_path / "tree-figure"
+    result = build_tree_figure_package(
+        fixture("example_tree_support_invalid.nwk"),
+        out_dir=output_dir,
+        layout="phylogram",
+        show_support_values=True,
+    )
+    assert result.render.rendered_support_count == 0
+    assert result.audit.support_audit.validated is False
+    assert "support labels were withheld" in result.audit.reviewer_summary[1]
 
 
 def test_render_tree_svg_can_use_metadata_labels(tmp_path: Path) -> None:
@@ -4083,6 +4122,7 @@ def test_cli_render_can_build_annotated_figure_package(tmp_path: Path, capsys) -
     assert payload["metrics"]["rendered_heatmap_column_count"] == 2
     assert payload["data"]["render"]["layout"] == "phylogram"
     assert payload["data"]["figure_package_dir"] == str(package_dir)
+    assert payload["data"]["figure_package_audit"]["scale_bar_valid"] is True
     assert (package_dir / "figure.svg").exists()
     assert "Alpha species" in output.read_text(encoding="utf-8")
 
@@ -4108,6 +4148,7 @@ def test_render_tree_report_writes_embedded_manifest(tmp_path: Path) -> None:
     assert result.report_kind == "tree"
     assert result.machine_manifest["report_kind"] == "tree"
     assert result.machine_manifest["input_paths"] == [str(fixture("example_tree.nwk"))]
+    assert result.machine_manifest_path.exists()
     assert 'id="bijux-report-manifest"' in text
     assert "Bijux Tree Report" in text
 
@@ -4139,6 +4180,7 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
     assert result.dataset_readiness is not None
     assert result.dataset_audit is not None
     assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
         "tree-validation",
         "tree-inspection",
         "tree-forensic",
@@ -4160,9 +4202,11 @@ def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
         "dataset-ordering",
         "dataset-pruning",
         "dataset-group-imbalance",
+        "limitations",
     ]
     assert result.trait_missing_values is not None
     assert result.trait_missing_values.missing_values == []
+    assert result.machine_manifest_path.exists()
     assert "Bijux Dataset Report" in text
 
 
@@ -4182,6 +4226,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     assert result.alignment_identity_matrix is not None
     assert result.alignment_linkage is not None
     assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
         "tree-validation",
         "tree-inspection",
         "tree-forensic",
@@ -4191,8 +4236,36 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
         "alignment-coding",
         "alignment-identity-matrix",
         "alignment-linkage",
+        "limitations",
     ]
+    assert result.machine_manifest_path.exists()
     assert "Bijux Phylo Inputs Report" in text
+
+
+def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tmp_path: Path) -> None:
+    tree_output = tmp_path / "tree-report.html"
+    dataset_output = tmp_path / "dataset-report.html"
+    phylo_output = tmp_path / "phylo-report.html"
+    tree_result = render_tree_report(tree_path=fixture("example_tree_support_invalid.nwk"), out_path=tree_output)
+    dataset_result = render_dataset_report(
+        tree_path=fixture("example_tree.nwk"),
+        metadata_path=fixture("example_metadata.tsv"),
+        traits_path=fixture("example_traits.tsv"),
+        alignment_path=fixture("example_alignment.fasta"),
+        out_path=dataset_output,
+    )
+    phylo_result = render_phylo_inputs_report(
+        tree_path=fixture("example_tree.nwk"),
+        alignment_path=fixture("example_alignment_coding.fasta"),
+        out_path=phylo_output,
+    )
+    tree_sidecar = json.loads(tree_result.machine_manifest_path.read_text(encoding="utf-8"))
+    dataset_sidecar = json.loads(dataset_result.machine_manifest_path.read_text(encoding="utf-8"))
+    phylo_sidecar = json.loads(phylo_result.machine_manifest_path.read_text(encoding="utf-8"))
+    assert tree_sidecar["reviewer_summary"][0] == "tree validity decision: valid_with_warnings"
+    assert "limitations" in dataset_sidecar
+    assert "reviewer-summary" in dataset_result.machine_manifest["sections"]
+    assert len(phylo_sidecar["limitations"]) >= 1
 
 
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
@@ -4494,7 +4567,7 @@ def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> 
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["command"] == "report"
-    assert payload["outputs"] == [str(output)]
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
     assert payload["data"]["report_kind"] == "tree"
 
 
@@ -4519,6 +4592,7 @@ def test_cli_report_dataset_json_output_uses_dataset_contract(tmp_path: Path, ca
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
     assert payload["data"]["report_kind"] == "dataset"
     assert payload["metrics"]["linked_taxa"] == 4
 
@@ -4542,6 +4616,7 @@ def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(tmp_path: P
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
     assert payload["data"]["report_kind"] == "phylo-inputs"
     assert payload["metrics"]["alignment_length"] == 8
     assert payload["metrics"]["linked_taxa"] == 4
@@ -4554,76 +4629,3 @@ def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == EngineUnavailableError.code
-    assert result.scale_bar_length == 0.1
-    assert result.max_branch_distance == 0.30000000000000004
-    assert manifest["audit"]["scale_bar_valid"] is True
-    assert manifest["audit"]["support_audit"]["validated"] is True
-    caption = result.caption_path.read_text(encoding="utf-8")
-    assert "## Reviewer Summary" in caption
-    assert "## Legend" in caption
-    assert "## Limitations" in caption
-
-
-def test_build_tree_figure_package_records_collapsed_clade_and_annotation_audits(tmp_path: Path) -> None:
-    output_dir = tmp_path / "tree-figure"
-    result = build_tree_figure_package(
-        fixture("example_tree_named_clades.nwk"),
-        out_dir=output_dir,
-        labels={"A": "Alpha", "B": "Beta", "C": "Gamma", "D": "Delta"},
-        layout="phylogram",
-        metadata_strips=[AnnotationStrip("location", {"A": "Sweden", "B": "Sweden", "C": "Denmark", "D": "Finland"})],
-        collapsed_clades=["Mammals"],
-    )
-    assert result.audit.collapsed_clades[0].clade_name == "Mammals"
-    assert result.audit.collapsed_clades[0].descendant_count == 2
-    assert result.audit.collapsed_clades[0].metadata_summaries == ["location: Sweden=2"]
-    assert result.audit.annotation_coverage[0].aligned is False
-    assert result.audit.annotation_coverage[0].missing_taxa == ["Mammals"]
-    assert result.audit.table_consistency.consistent is True
-
-
-def test_build_tree_figure_package_withholds_unvalidated_support_labels(tmp_path: Path) -> None:
-    output_dir = tmp_path / "tree-figure"
-    result = build_tree_figure_package(
-        fixture("example_tree_support_invalid.nwk"),
-        out_dir=output_dir,
-        layout="phylogram",
-        show_support_values=True,
-    )
-    assert result.render.rendered_support_count == 0
-    assert result.audit.support_audit.validated is False
-    assert "support labels were withheld" in result.audit.reviewer_summary[1]
-    assert payload["data"]["figure_package_audit"]["scale_bar_valid"] is True
-    assert result.machine_manifest_path.exists()
-        "reviewer-summary",
-        "limitations",
-    assert result.machine_manifest_path.exists()
-        "reviewer-summary",
-        "limitations",
-    assert result.machine_manifest_path.exists()
-def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tmp_path: Path) -> None:
-    tree_output = tmp_path / "tree-report.html"
-    dataset_output = tmp_path / "dataset-report.html"
-    phylo_output = tmp_path / "phylo-report.html"
-    tree_result = render_tree_report(tree_path=fixture("example_tree_support_invalid.nwk"), out_path=tree_output)
-    dataset_result = render_dataset_report(
-        tree_path=fixture("example_tree.nwk"),
-        metadata_path=fixture("example_metadata.tsv"),
-        traits_path=fixture("example_traits.tsv"),
-        alignment_path=fixture("example_alignment.fasta"),
-        out_path=dataset_output,
-    )
-    phylo_result = render_phylo_inputs_report(
-        tree_path=fixture("example_tree.nwk"),
-        alignment_path=fixture("example_alignment_coding.fasta"),
-        out_path=phylo_output,
-    )
-    tree_sidecar = json.loads(tree_result.machine_manifest_path.read_text(encoding="utf-8"))
-    dataset_sidecar = json.loads(dataset_result.machine_manifest_path.read_text(encoding="utf-8"))
-    phylo_sidecar = json.loads(phylo_result.machine_manifest_path.read_text(encoding="utf-8"))
-    assert tree_sidecar["reviewer_summary"][0] == "tree validity decision: valid_with_warnings"
-    assert "limitations" in dataset_sidecar
-    assert "reviewer-summary" in dataset_result.machine_manifest["sections"]
-    assert len(phylo_sidecar["limitations"]) >= 1
-
-
