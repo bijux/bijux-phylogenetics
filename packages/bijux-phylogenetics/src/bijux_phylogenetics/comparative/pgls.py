@@ -23,8 +23,13 @@ class PGLSPredictorClassification:
 
     name: str
     kind: str
+    raw_term: str | None = None
+    source_column: str | None = None
+    transformation: str | None = None
     reference_level: str | None = None
     encoded_columns: list[str] | None = None
+    observed_levels: list[str] | None = None
+    level_counts: dict[str, int] | None = None
 
 
 @dataclass(slots=True)
@@ -38,6 +43,43 @@ class ComparativeFormulaSpecification:
 
 
 @dataclass(slots=True)
+class PGLSInteractionAudit:
+    """Explicit expansion of one interaction term into encoded columns."""
+
+    term: str
+    component_terms: list[str]
+    encoded_columns: list[str]
+
+
+@dataclass(slots=True)
+class PGLSTaxonExclusion:
+    """One taxon excluded from comparative fitting and why."""
+
+    taxon: str
+    reason: str
+    details: str
+
+
+@dataclass(slots=True)
+class PGLSFormulaAudit:
+    """Reviewer-facing audit of the requested PGLS formula and exclusions."""
+
+    response_term: str
+    response_column: str
+    predictor_terms: list[PGLSPredictorClassification]
+    interaction_terms: list[PGLSInteractionAudit]
+    transformed_terms: list[str]
+    excluded_taxa: list[PGLSTaxonExclusion]
+    encoded_columns: list[str]
+    analysis_taxa: list[str]
+    parameter_count: int
+    minimum_required_taxa: int
+    residual_degrees_of_freedom: int
+    overfit_guard_triggered: bool
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class PGLSInputReport:
     """Method-specific readiness summary for a PGLS request."""
 
@@ -47,6 +89,7 @@ class PGLSInputReport:
     response: str
     formula: ComparativeFormulaSpecification
     predictors: list[PGLSPredictorClassification]
+    formula_audit: PGLSFormulaAudit
     categorical_predictors: list[str]
     encoded_columns: list[str]
     analysis_taxa: list[str]
@@ -149,7 +192,17 @@ class ComparativeMultipleTestingReport:
     responses: list[str]
     predictors: list[str]
     adjustment_method: str
+    family_size: int
+    raw_significant_count: int
+    adjusted_significant_count: int
     rows: list[ComparativeHypothesisTestRow]
+
+
+@dataclass(frozen=True, slots=True)
+class _FormulaTermDescriptor:
+    raw_term: str
+    source_column: str
+    transformation: str | None
 
 
 def inspect_pgls_inputs(
@@ -167,10 +220,13 @@ def inspect_pgls_inputs(
         predictors=predictors,
         formula=formula,
     )
+    response_descriptor = _parse_term_descriptor(specification.response)
+    if response_descriptor.transformation is not None:
+        raise ComparativeMethodError("transformed response terms are not supported for PGLS")
     readiness = summarize_numeric_trait_readiness(
         tree_path,
         traits_path,
-        trait=specification.response,
+        trait=response_descriptor.source_column,
         taxon_column=taxon_column,
     )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
@@ -184,40 +240,70 @@ def inspect_pgls_inputs(
         blockers.append("PGLS requires a rooted tree")
     if not readiness.complete_branch_lengths:
         blockers.append("PGLS requires complete tree branch lengths")
-    if specification.response not in column_kinds:
-        blockers.append(f"trait table does not contain response column '{specification.response}'")
-    elif column_kinds[specification.response] != "numeric":
-        blockers.append(f"response column '{specification.response}' must be numeric for PGLS")
+    if response_descriptor.source_column not in column_kinds:
+        blockers.append(f"trait table does not contain response column '{response_descriptor.source_column}'")
+    elif column_kinds[response_descriptor.source_column] != "numeric":
+        blockers.append(f"response column '{response_descriptor.source_column}' must be numeric for PGLS")
 
     predictor_reports: list[PGLSPredictorClassification] = []
     categorical_predictors: list[str] = []
     encoded_columns = ["intercept"]
     for predictor in specification.predictors:
-        kind = column_kinds.get(predictor)
+        term_descriptor = _parse_term_descriptor(predictor)
+        kind = column_kinds.get(term_descriptor.source_column)
         if kind is None:
-            blockers.append(f"trait table does not contain predictor column '{predictor}'")
+            blockers.append(f"trait table does not contain predictor column '{term_descriptor.source_column}'")
+            continue
+        if kind != "numeric" and term_descriptor.transformation is not None:
+            blockers.append(
+                f"transformation '{term_descriptor.transformation}' requires numeric predictor column '{term_descriptor.source_column}'"
+            )
             continue
         if kind == "numeric":
-            predictor_reports.append(PGLSPredictorClassification(name=predictor, kind=kind))
+            if term_descriptor.transformation is not None:
+                warnings.append(
+                    f"predictor term '{predictor}' applies {term_descriptor.transformation} transformation to column '{term_descriptor.source_column}'"
+                )
+            predictor_reports.append(
+                PGLSPredictorClassification(
+                    name=predictor,
+                    kind=kind,
+                    raw_term=predictor,
+                    source_column=term_descriptor.source_column,
+                    transformation=term_descriptor.transformation,
+                )
+            )
             encoded_columns.append(predictor)
             continue
 
         categorical_predictors.append(predictor)
         levels = sorted(
             {
-                row[predictor]
+                row[term_descriptor.source_column]
                 for row in table.rows
-                if row[table.taxon_column] in tree.tip_names and row.get(predictor, "")
+                if row[table.taxon_column] in tree.tip_names and row.get(term_descriptor.source_column, "")
             }
         )
+        level_counts = {
+            level: sum(
+                1
+                for row in table.rows
+                if row[table.taxon_column] in tree.tip_names and row.get(term_descriptor.source_column, "") == level
+            )
+            for level in levels
+        }
         if len(levels) < 2:
-            blockers.append(f"categorical predictor '{predictor}' requires at least two observed levels")
+            blockers.append(f"categorical predictor '{term_descriptor.source_column}' requires at least two observed levels")
             predictor_reports.append(
                 PGLSPredictorClassification(
                     name=predictor,
                     kind=kind,
+                    raw_term=predictor,
+                    source_column=term_descriptor.source_column,
                     reference_level=levels[0] if levels else None,
                     encoded_columns=[],
+                    observed_levels=levels,
+                    level_counts=level_counts,
                 )
             )
             continue
@@ -231,12 +317,17 @@ def inspect_pgls_inputs(
             PGLSPredictorClassification(
                 name=predictor,
                 kind=kind,
+                raw_term=predictor,
+                source_column=term_descriptor.source_column,
                 reference_level=reference_level,
                 encoded_columns=dummy_columns,
-                )
+                observed_levels=levels,
+                level_counts=level_counts,
+            )
             )
 
     report_by_name = {report.name: report for report in predictor_reports}
+    interaction_audits: list[PGLSInteractionAudit] = []
     for interaction in specification.interaction_terms:
         factor_names = interaction.split(":")
         missing_factors = [name for name in factor_names if name not in report_by_name]
@@ -245,25 +336,63 @@ def inspect_pgls_inputs(
                 f"interaction term '{interaction}' references unknown predictor(s): {', '.join(missing_factors)}"
             )
             continue
-        encoded_columns.extend(_interaction_column_names(interaction, report_by_name))
+        interaction_columns = _interaction_column_names(interaction, report_by_name)
+        encoded_columns.extend(interaction_columns)
+        interaction_audits.append(
+            PGLSInteractionAudit(
+                term=interaction,
+                component_terms=factor_names,
+                encoded_columns=interaction_columns,
+            )
+        )
 
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     analysis_taxa: list[str] = []
     missing_tree_taxa: list[str] = []
+    excluded_taxa: list[PGLSTaxonExclusion] = []
     for taxon in tree.tip_names:
         row = rows_by_taxon.get(taxon)
         if row is None:
             missing_tree_taxa.append(taxon)
+            excluded_taxa.append(
+                PGLSTaxonExclusion(
+                    taxon=taxon,
+                    reason="missing_from_trait_table",
+                    details="taxon is present in the tree but absent from the trait table",
+                )
+            )
             continue
-        requested_columns = [specification.response, *specification.predictors]
-        if any(not row.get(column, "") for column in requested_columns):
+        required_columns = [response_descriptor.source_column] + [
+            report.source_column or report.name
+            for report in predictor_reports
+        ]
+        missing_columns = [column for column in required_columns if not row.get(column, "")]
+        if missing_columns:
+            excluded_taxa.append(
+                PGLSTaxonExclusion(
+                    taxon=taxon,
+                    reason="missing_value",
+                    details=f"taxon is missing required value(s): {', '.join(sorted(set(missing_columns)))}",
+                )
+            )
             continue
         try:
-            float(row[specification.response])
+            _coerce_numeric_value(row[response_descriptor.source_column], descriptor=response_descriptor)
             for predictor_report in predictor_reports:
                 if predictor_report.kind == "numeric":
-                    float(row[predictor_report.name])
+                    source_column = predictor_report.source_column or predictor_report.name
+                    _coerce_numeric_value(
+                        row[source_column],
+                        descriptor=_parse_term_descriptor(predictor_report.raw_term or predictor_report.name),
+                    )
         except ValueError:
+            excluded_taxa.append(
+                PGLSTaxonExclusion(
+                    taxon=taxon,
+                    reason="non_numeric_or_invalid_value",
+                    details="taxon has non-numeric or transformation-invalid value(s) required by the model",
+                )
+            )
             continue
         analysis_taxa.append(taxon)
     if missing_tree_taxa:
@@ -275,6 +404,28 @@ def inspect_pgls_inputs(
         )
     elif residual_degrees_of_freedom == 1:
         warnings.append("PGLS has only one residual degree of freedom after predictor encoding")
+    transformed_terms = sorted(
+        [
+            predictor_report.name
+            for predictor_report in predictor_reports
+            if predictor_report.transformation is not None
+        ]
+    )
+    formula_audit = PGLSFormulaAudit(
+        response_term=specification.response,
+        response_column=response_descriptor.source_column,
+        predictor_terms=predictor_reports,
+        interaction_terms=interaction_audits,
+        transformed_terms=transformed_terms,
+        excluded_taxa=excluded_taxa,
+        encoded_columns=encoded_columns,
+        analysis_taxa=analysis_taxa,
+        parameter_count=len(encoded_columns),
+        minimum_required_taxa=len(encoded_columns) + 1,
+        residual_degrees_of_freedom=residual_degrees_of_freedom,
+        overfit_guard_triggered=residual_degrees_of_freedom <= 0,
+        warnings=warnings,
+    )
 
     return PGLSInputReport(
         tree_path=tree_path,
@@ -283,6 +434,7 @@ def inspect_pgls_inputs(
         response=specification.response,
         formula=specification,
         predictors=predictor_reports,
+        formula_audit=formula_audit,
         categorical_predictors=categorical_predictors,
         encoded_columns=encoded_columns,
         analysis_taxa=analysis_taxa,
@@ -318,7 +470,7 @@ def run_pgls(
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
-        trait=input_report.response,
+        trait=input_report.formula_audit.response_column,
         taxon_column=taxon_column,
         minimum_taxa=len(input_report.encoded_columns) + 1,
         require_rooted=True,
@@ -327,7 +479,11 @@ def run_pgls(
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     taxa = list(input_report.analysis_taxa)
-    response_values = [float(rows_by_taxon[taxon][input_report.response]) for taxon in taxa]
+    response_descriptor = _parse_term_descriptor(input_report.formula_audit.response_term)
+    response_values = [
+        _coerce_numeric_value(rows_by_taxon[taxon][input_report.formula_audit.response_column], descriptor=response_descriptor)
+        for taxon in taxa
+    ]
     design_matrix, encoded_columns = _build_design_matrix(
         rows_by_taxon,
         taxa,
@@ -448,12 +604,17 @@ def run_pgls_multiple_testing(
     for row, adjusted_p_value in zip(rows, adjusted, strict=True):
         row.adjusted_p_value = adjusted_p_value
         row.significant = adjusted_p_value <= 0.05
+    raw_significant_count = sum(1 for row in rows if row.p_value <= 0.05)
+    adjusted_significant_count = sum(1 for row in rows if row.significant)
     return ComparativeMultipleTestingReport(
         tree_path=tree_path,
         traits_path=traits_path,
         responses=list(responses),
         predictors=list(predictors),
         adjustment_method=adjustment_method,
+        family_size=len(rows),
+        raw_significant_count=raw_significant_count,
+        adjusted_significant_count=adjusted_significant_count,
         rows=rows,
     )
 
@@ -487,14 +648,19 @@ def _build_design_matrix(
         for predictor in predictors:
             report = report_by_name[predictor]
             if report.kind == "numeric":
-                numeric_value = float(row[predictor])
+                source_column = report.source_column or predictor
+                numeric_value = _coerce_numeric_value(
+                    row[source_column],
+                    descriptor=_parse_term_descriptor(report.raw_term or predictor),
+                )
                 encoded_row.append(numeric_value)
                 encoded_main_effects[predictor] = [(predictor, numeric_value)]
                 continue
             categorical_rows: list[tuple[str, float]] = []
             for encoded_name in report.encoded_columns or []:
                 level = encoded_name.removeprefix(f"{predictor}[").removesuffix("]")
-                value = 1.0 if row[predictor] == level else 0.0
+                source_column = report.source_column or predictor
+                value = 1.0 if row[source_column] == level else 0.0
                 categorical_rows.append((encoded_name, value))
                 encoded_row.append(value)
             encoded_main_effects[predictor] = categorical_rows
@@ -506,6 +672,51 @@ def _build_design_matrix(
             encoded_row.extend(value for _, value in interaction_values)
         matrix.append(encoded_row)
     return matrix, encoded_columns
+
+
+def _parse_term_descriptor(raw_term: str) -> _FormulaTermDescriptor:
+    raw_term = raw_term.strip()
+    if "(" not in raw_term:
+        return _FormulaTermDescriptor(
+            raw_term=raw_term,
+            source_column=raw_term,
+            transformation=None,
+        )
+    if not raw_term.endswith(")") or raw_term.count("(") != 1:
+        raise ComparativeMethodError(f"unsupported comparative term syntax '{raw_term}'")
+    transformation, inner = raw_term.split("(", 1)
+    transformation = transformation.strip()
+    source_column = inner[:-1].strip()
+    if transformation not in {"log", "log10", "sqrt"}:
+        raise ComparativeMethodError(
+            f"unsupported comparative transformation '{transformation}' in term '{raw_term}'"
+        )
+    if not source_column:
+        raise ComparativeMethodError(f"comparative transformation term '{raw_term}' is missing a source column")
+    return _FormulaTermDescriptor(
+        raw_term=raw_term,
+        source_column=source_column,
+        transformation=transformation,
+    )
+
+
+def _coerce_numeric_value(raw_value: str, *, descriptor: _FormulaTermDescriptor) -> float:
+    value = float(raw_value)
+    if descriptor.transformation is None:
+        return value
+    if descriptor.transformation == "log":
+        if value <= 0.0:
+            raise ValueError("log transformation requires strictly positive values")
+        return math.log(value)
+    if descriptor.transformation == "log10":
+        if value <= 0.0:
+            raise ValueError("log10 transformation requires strictly positive values")
+        return math.log10(value)
+    if descriptor.transformation == "sqrt":
+        if value < 0.0:
+            raise ValueError("sqrt transformation requires non-negative values")
+        return math.sqrt(value)
+    raise ComparativeMethodError(f"unsupported transformation '{descriptor.transformation}'")
 
 
 def _resolve_formula_specification(
