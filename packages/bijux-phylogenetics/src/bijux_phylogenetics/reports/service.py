@@ -29,6 +29,12 @@ from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_tax
 from bijux_phylogenetics.core.taxonomy import TaxonAuditReport, build_taxon_audit_report
 from bijux_phylogenetics.core.taxon_workflows import TaxonWorkflowLossReport, build_taxon_workflow_loss_report
 from bijux_phylogenetics.core.traits import TraitMissingValueReport, detect_missing_trait_values
+from bijux_phylogenetics.reference_validation import (
+    CoreWorkflowValidationReport,
+    LevelOneReleaseGateReport,
+    build_core_workflow_validation_report,
+    build_level_one_release_gate_report,
+)
 from bijux_phylogenetics.distance import (
     assess_distance_method_assumptions,
     assess_imported_distance_method_assumptions,
@@ -183,6 +189,26 @@ class TaxonReportBuildResult:
     taxon_audit: TaxonAuditReport
     taxon_crosswalk: DatasetCrosswalkReport | None
     taxon_workflow_loss: TaxonWorkflowLossReport | None
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class WorkflowValidationReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    validation: CoreWorkflowValidationReport
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class ReleaseGateReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    release_gate: LevelOneReleaseGateReport
     machine_manifest: dict[str, object]
 
 
@@ -1060,6 +1086,137 @@ def render_tree_set_comparison_report(
         left_path=left_tree_set_path,
         right_path=right_tree_set_path,
         shared_rooted_topology_count=comparison.shared_rooted_topology_count,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_workflow_validation_report(
+    *,
+    out_path: Path,
+    fixtures_root: Path | None = None,
+) -> WorkflowValidationReportBuildResult:
+    """Render the Level 1 workflow validation fixture report."""
+    validation = build_core_workflow_validation_report(fixtures_root=fixtures_root)
+    title = "Bijux Core Workflow Validation Report"
+    reviewer_summary = [
+        f"fixture checks passed: {validation.passed_fixture_count}/{validation.total_fixture_count}",
+        f"validated workflow surfaces: {len(validation.workflows)}",
+        f"known failure-gallery cases: {len(validation.failure_gallery)}",
+    ]
+    sections = [
+        _section("reviewer-summary", reviewer_summary),
+        _section(
+            "validation-overview",
+            {
+                "total_fixture_count": validation.total_fixture_count,
+                "passed_fixture_count": validation.passed_fixture_count,
+                "failed_fixture_count": validation.failed_fixture_count,
+            },
+        ),
+        _section("validation-suites", [asdict(suite) for suite in validation.suites]),
+        _section("workflow-coverage", [asdict(row) for row in validation.workflows]),
+        _section("failure-gallery", [asdict(row) for row in validation.failure_gallery]),
+        _section("maturity-classification", [asdict(row) for row in validation.maturity_classifications]),
+        _section("limitations", validation.limitations),
+    ]
+    fixture_paths = sorted(
+        {
+            path
+            for suite in validation.suites
+            for fixture in suite.fixtures
+            for path in fixture.fixture_paths
+        }
+    )
+    machine_manifest = {
+        "report_kind": "workflow-validation",
+        "title": title,
+        "input_paths": [str(path) for path in fixture_paths],
+        "input_checksums": {str(path): _sha256(path) for path in fixture_paths if path.exists()},
+        "sections": [name for name, _ in sections],
+        "metrics": {
+            "total_fixture_count": validation.total_fixture_count,
+            "passed_fixture_count": validation.passed_fixture_count,
+            "workflow_count": len(validation.workflows),
+        },
+        "reviewer_summary": reviewer_summary,
+        "limitations": validation.limitations,
+    }
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return WorkflowValidationReportBuildResult(
+        output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
+        report_kind="workflow-validation",
+        title=title,
+        validation=validation,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_level_one_release_gate_report(
+    *,
+    out_path: Path,
+    fixtures_root: Path | None = None,
+) -> ReleaseGateReportBuildResult:
+    """Render the Level 1 release gate for the checked-in workflow fixtures."""
+    release_gate = build_level_one_release_gate_report(fixtures_root=fixtures_root)
+    title = "Bijux Level 1 Release Gate Report"
+    reviewer_summary = [
+        f"gate decision: {release_gate.gate.decision}",
+        f"dataset readiness: {release_gate.dataset_readiness_decision}",
+        f"retained taxa: {len(release_gate.gate.retained_taxa)}, excluded taxa: {len(release_gate.gate.excluded_taxa)}",
+    ]
+    sections = [
+        _section("reviewer-summary", reviewer_summary),
+        _section("gate-decision", asdict(release_gate.gate)),
+        _section(
+            "dataset-readiness",
+            {
+                "decision": release_gate.dataset_readiness_decision,
+                "blockers": release_gate.dataset_blockers,
+                "warnings": release_gate.dataset_warnings,
+            },
+        ),
+        _section(
+            "taxon-loss-traceability",
+            {
+                "first_loss_stage": release_gate.taxon_first_loss_stage,
+                "exclusion_causes": release_gate.exclusion_causes,
+            },
+        ),
+        _section("workflow-validation", asdict(release_gate.validation)),
+        _section("limitations", release_gate.validation.limitations),
+    ]
+    fixture_paths = sorted(
+        {
+            path
+            for suite in release_gate.validation.suites
+            for fixture in suite.fixtures
+            for path in fixture.fixture_paths
+        }
+    )
+    machine_manifest = {
+        "report_kind": "release-gate",
+        "title": title,
+        "input_paths": [str(path) for path in fixture_paths],
+        "input_checksums": {str(path): _sha256(path) for path in fixture_paths if path.exists()},
+        "sections": [name for name, _ in sections],
+        "metrics": {
+            "retained_taxa": len(release_gate.gate.retained_taxa),
+            "excluded_taxa": len(release_gate.gate.excluded_taxa),
+            "blocked_analysis_count": len(release_gate.gate.blocked_analyses),
+        },
+        "reviewer_summary": reviewer_summary,
+        "limitations": release_gate.validation.limitations,
+    }
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return ReleaseGateReportBuildResult(
+        output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
+        report_kind="release-gate",
+        title=title,
+        release_gate=release_gate,
         machine_manifest=machine_manifest,
     )
 
