@@ -42,9 +42,9 @@ from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
+    inspect_imported_distance_matrix_quality,
     inspect_distance_matrix_quality,
     validate_distance_reference_examples,
-    validate_imported_distance_matrix,
 )
 from bijux_phylogenetics.diagnostics.validation import (
     TreeForensicReport,
@@ -944,14 +944,15 @@ def render_distance_report(
             machine_manifest=machine_manifest,
         )
 
-    validation = validate_imported_distance_matrix(matrix_path)
+    quality = inspect_imported_distance_matrix_quality(matrix_path)
     assumptions = assess_imported_distance_method_assumptions(matrix_path)
     title = "Bijux Imported Distance Report"
     sections = [
-        _section("imported-distance-matrix-validation", asdict(validation)),
+        _section("imported-distance-matrix-quality", asdict(quality)),
         _section("distance-method-assumptions", asdict(assumptions)),
         _section("distance-method-limitations", method_limitations),
     ]
+    validation = quality.validation
     if validation.complete and validation.symmetric and validation.zero_diagonal and validation.nonnegative:
         nj_tree, _ = build_tree_from_imported_distance_matrix(matrix_path, method="neighbor-joining")
         upgma_tree, _ = build_tree_from_imported_distance_matrix(matrix_path, method="upgma")
