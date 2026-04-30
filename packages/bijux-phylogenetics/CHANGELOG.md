@@ -33,3 +33,4 @@
 - add bootstrap-versus-posterior support comparison and HTML tree-set comparison reports for cross-analysis uncertainty review
 - add Bayesian posterior-tree thinning, maximum clade credibility and node-age summaries, BEAST posterior-log diagnostics, posterior run or scenario comparison reports, and reviewer-facing Bayesian diagnostics outputs
 - deepen posterior uncertainty workflows with topology diversity and multimodality analysis, clade-conflict and uncertainty-conclusion tables, posterior figure packages, supplementary diagnostics tables, and Bayesian methods summaries
+- add low-information, duplicate-policy, ambiguity-column, and sequence-ranking alignment diagnostics with dedicated alignment and taxonomy report contracts plus dataset input ledgers
