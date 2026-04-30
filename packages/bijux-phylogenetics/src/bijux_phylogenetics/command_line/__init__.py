@@ -74,8 +74,12 @@ from bijux_phylogenetics.diagnostics.root_to_tip import (
     write_root_to_tip_tsv,
 )
 from bijux_phylogenetics.io.fasta import (
+    assess_alignment_low_information,
+    build_ambiguous_alignment_column_report,
     build_alignment_forensic_report,
     build_alignment_quality_report,
+    build_duplicate_sequence_policy_report,
+    build_sequence_quality_ranking,
     clean_alignment_with_profile,
     classify_alignment_sequences,
     compare_alignment_versions,
@@ -207,9 +211,11 @@ from bijux_phylogenetics.render.svg import AnnotationStrip, audit_support_label_
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     distance_method_limitations,
+    render_alignment_report,
     render_dataset_report,
     render_distance_report,
     render_phylo_inputs_report,
+    render_taxon_report,
     render_tree_uncertainty_report,
     render_tree_report,
     write_annotation_report,
@@ -519,6 +525,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "report":
         if args.report_command == "tree":
             return [args.tree, args.out]
+        if args.report_command == "alignment":
+            return [args.alignment, args.out]
         if args.report_command == "dataset":
             inputs = [args.tree, args.metadata, args.out]
             if args.traits is not None:
@@ -526,6 +534,23 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return inputs
         if args.report_command == "phylo-inputs":
             return [args.tree, args.alignment, args.out]
+        if args.report_command == "taxonomy":
+            inputs = [args.tree, args.out]
+            if args.synonym_table is not None:
+                inputs.append(args.synonym_table)
+            if args.metadata is not None:
+                inputs.append(args.metadata)
+            if args.traits is not None:
+                inputs.append(args.traits)
+            if args.alignment is not None:
+                inputs.append(args.alignment)
+            if args.filtered_alignment is not None:
+                inputs.append(args.filtered_alignment)
+            if args.inference_tree is not None:
+                inputs.append(args.inference_tree)
+            if args.reported_taxa is not None:
+                inputs.append(args.reported_taxa)
+            return inputs
         inputs = [args.tree, args.out]
         if getattr(args, "alignment", None) is not None:
             inputs.append(args.alignment)
@@ -692,6 +717,14 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_duplicates.add_argument("--identity-threshold", type=float, default=0.95)
     alignment_duplicates.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_duplicates)
+    alignment_duplicate_policy = alignment_subparsers.add_parser(
+        "duplicate-policy",
+        help="Recommend how exact and near-duplicate sequences should be handled before inference.",
+    )
+    alignment_duplicate_policy.add_argument("alignment", type=Path)
+    alignment_duplicate_policy.add_argument("--identity-threshold", type=float, default=0.99)
+    alignment_duplicate_policy.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_duplicate_policy)
     alignment_outliers = alignment_subparsers.add_parser(
         "outliers",
         help="Report composition outlier sequences from an alignment.",
@@ -707,6 +740,28 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_length_outliers.add_argument("alignment", type=Path)
     alignment_length_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(alignment_length_outliers)
+    alignment_low_information = alignment_subparsers.add_parser(
+        "low-information",
+        help="Report whether an alignment has enough informative sites for defensible inference.",
+    )
+    alignment_low_information.add_argument("alignment", type=Path)
+    alignment_low_information.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_low_information)
+    alignment_ambiguous_columns = alignment_subparsers.add_parser(
+        "ambiguous-columns",
+        help="List columns dominated by ambiguity, missing data, or gaps.",
+    )
+    alignment_ambiguous_columns.add_argument("alignment", type=Path)
+    alignment_ambiguous_columns.add_argument("--threshold", type=float, default=0.5)
+    alignment_ambiguous_columns.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_ambiguous_columns)
+    alignment_sequence_ranking = alignment_subparsers.add_parser(
+        "sequence-ranking",
+        help="Rank sequences by missingness, ambiguity, gap burden, composition, and duplicate status.",
+    )
+    alignment_sequence_ranking.add_argument("alignment", type=Path)
+    alignment_sequence_ranking.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    _add_manifest_argument(alignment_sequence_ranking)
     alignment_filter = alignment_subparsers.add_parser(
         "filter",
         help="Clean an alignment through one named profile and report what changed.",
@@ -1960,6 +2015,11 @@ def build_parser() -> argparse.ArgumentParser:
     report_tree.add_argument("--out", required=True, type=Path)
     report_tree.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(report_tree)
+    report_alignment = report_subparsers.add_parser("alignment", help="Render an alignment-only HTML diagnostic report.")
+    report_alignment.add_argument("--alignment", required=True, type=Path)
+    report_alignment.add_argument("--out", required=True, type=Path)
+    report_alignment.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report_alignment)
     report_dataset = report_subparsers.add_parser("dataset", help="Render a tree plus table dataset HTML report.")
     report_dataset.add_argument("--tree", required=True, type=Path)
     report_dataset.add_argument("--metadata", required=True, type=Path)
@@ -1979,6 +2039,18 @@ def build_parser() -> argparse.ArgumentParser:
     report_phylo_inputs.add_argument("--out", required=True, type=Path)
     report_phylo_inputs.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(report_phylo_inputs)
+    report_taxonomy = report_subparsers.add_parser("taxonomy", help="Render a reviewer-facing taxon audit HTML report.")
+    report_taxonomy.add_argument("--tree", required=True, type=Path)
+    report_taxonomy.add_argument("--synonym-table", type=Path)
+    report_taxonomy.add_argument("--metadata", type=Path)
+    report_taxonomy.add_argument("--traits", type=Path)
+    report_taxonomy.add_argument("--alignment", type=Path)
+    report_taxonomy.add_argument("--filtered-alignment", type=Path)
+    report_taxonomy.add_argument("--inference-tree", type=Path)
+    report_taxonomy.add_argument("--reported-taxa", type=Path)
+    report_taxonomy.add_argument("--out", required=True, type=Path)
+    report_taxonomy.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report_taxonomy)
 
     demo = subparsers.add_parser(get_command_spec("demo").name, help=get_command_spec("demo").summary)
     demo_subparsers = demo.add_subparsers(dest="demo_command", required=True)
@@ -2685,6 +2757,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.alignment_command == "duplicate-policy":
+                report = build_duplicate_sequence_policy_report(
+                    args.alignment,
+                    near_duplicate_threshold=args.identity_threshold,
+                )
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "exact_duplicate_group_count": len(report.exact_duplicate_groups),
+                            "near_duplicate_pair_count": len(report.near_duplicate_pairs),
+                            "policy_action_count": len(report.policy_actions),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.alignment_command == "outliers":
                 report = detect_composition_outlier_sequences(
                     args.alignment,
@@ -2714,6 +2808,65 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.alignment],
                         outputs=outputs,
                         metrics={"sequence_length_outlier_count": len(report)},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "low-information":
+                report = assess_alignment_low_information(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.reasons,
+                        metrics={
+                            "low_information": report.low_information,
+                            "parsimony_informative_site_count": report.parsimony_informative_site_count,
+                            "alignment_length": report.alignment_length,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "ambiguous-columns":
+                report = build_ambiguous_alignment_column_report(
+                    args.alignment,
+                    threshold=args.threshold,
+                )
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "ambiguous_column_count": len(report.rows),
+                            "threshold": report.threshold,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "sequence-ranking":
+                report = build_sequence_quality_ranking(args.alignment)
+                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "sequence_count": len(report.rows),
+                            "lowest_score": None if not report.rows else report.rows[0].score,
+                            "highest_score": None if not report.rows else report.rows[-1].score,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5630,6 +5783,34 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     return 0
                 print(result.output_path)
                 return 0
+            if args.report_command == "alignment":
+                result = render_alignment_report(alignment_path=args.alignment, out_path=args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=[args.alignment],
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=[args.alignment],
+                            outputs=outputs,
+                            warnings=result.alignment_forensic.warnings,
+                            metrics={
+                                "sequence_count": result.alignment.sequence_count,
+                                "alignment_length": result.alignment.alignment_length,
+                                "quality_score": result.alignment_quality.quality_score,
+                                "warning_count": len(result.alignment_forensic.warnings),
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
+                return 0
             if args.report_command == "dataset":
                 result = render_dataset_report(
                     tree_path=args.tree,
@@ -5705,6 +5886,56 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "tip_count": result.inspection.tip_count,
                                 "alignment_length": result.alignment.alignment_length,
                                 "linked_taxa": result.alignment_linkage.linked_taxa,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
+                return 0
+            if args.report_command == "taxonomy":
+                result = render_taxon_report(
+                    tree_path=args.tree,
+                    synonym_table_path=args.synonym_table,
+                    metadata_path=args.metadata,
+                    traits_path=args.traits,
+                    alignment_path=args.alignment,
+                    filtered_alignment_path=args.filtered_alignment,
+                    inference_tree_path=args.inference_tree,
+                    reported_taxa_path=args.reported_taxa,
+                    out_path=args.out,
+                )
+                inputs = [args.tree, *([args.synonym_table] if args.synonym_table is not None else [])]
+                if args.metadata is not None:
+                    inputs.append(args.metadata)
+                if args.traits is not None:
+                    inputs.append(args.traits)
+                if args.alignment is not None:
+                    inputs.append(args.alignment)
+                if args.filtered_alignment is not None:
+                    inputs.append(args.filtered_alignment)
+                if args.inference_tree is not None:
+                    inputs.append(args.inference_tree)
+                if args.reported_taxa is not None:
+                    inputs.append(args.reported_taxa)
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=inputs,
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=inputs,
+                            outputs=outputs,
+                            warnings=result.taxon_audit.warnings,
+                            metrics={
+                                "tree_tip_count": result.taxon_audit.tree_tip_count,
+                                "status": result.taxon_audit.status,
+                                "conflict_count": len(result.taxon_audit.mapping_conflicts.rows),
                             },
                             data=result,
                         ),
