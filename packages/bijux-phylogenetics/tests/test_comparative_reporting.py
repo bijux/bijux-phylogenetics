@@ -35,6 +35,7 @@ def test_build_comparative_method_report_returns_audit_rows_and_limitations() ->
         lambda_value=0.0,
     )
     assert len(report.snapshot.audit_rows) == 3
+    assert report.snapshot.maturity.reference_validation_passed is True
     assert "causal interpretation is not warranted from comparative association alone" in report.snapshot.limitations
 
 
@@ -89,3 +90,4 @@ def test_write_comparative_method_report_writes_html(tmp_path: Path) -> None:
     write_comparative_method_report(out_path, report)
     assert out_path.exists()
     assert "Bijux Comparative Method Report" in out_path.read_text(encoding="utf-8")
+    assert "maturity" in out_path.read_text(encoding="utf-8")
