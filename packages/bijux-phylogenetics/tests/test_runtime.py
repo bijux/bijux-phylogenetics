@@ -245,6 +245,18 @@ from bijux_phylogenetics.io.fasta import (
     write_fasta_alignment,
 )
 from bijux_phylogenetics.render.package import build_tree_figure_package
+from bijux_phylogenetics.reference_validation import (
+    build_core_workflow_failure_gallery,
+    build_core_workflow_validation_report,
+    build_level_one_release_gate_report,
+    classify_core_workflow_maturity,
+    validate_alignment_quality_reference_fixtures,
+    validate_dataset_audit_reference_fixtures,
+    validate_figure_reference_fixtures,
+    validate_report_regression_fixtures,
+    validate_taxon_naming_reference_fixtures,
+    validate_tree_reference_fixtures,
+)
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
@@ -252,12 +264,14 @@ from bijux_phylogenetics.reports.service import (
     render_alignment_report,
     render_dataset_report,
     render_distance_report,
+    render_level_one_release_gate_report,
     render_phylo_inputs_report,
     render_taxon_report,
     render_phylogenetics_report,
     render_tree_set_comparison_report,
     render_tree_uncertainty_report,
     render_tree_report,
+    render_workflow_validation_report,
 )
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
@@ -390,6 +404,19 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.summarize_uncertainty_aware_conclusions is summarize_uncertainty_aware_conclusions
     assert bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
     assert bijux_phylogenetics.render_tree_uncertainty_report is render_tree_uncertainty_report
+    assert bijux_phylogenetics.validate_tree_reference_fixtures is validate_tree_reference_fixtures
+    assert bijux_phylogenetics.validate_taxon_naming_reference_fixtures is validate_taxon_naming_reference_fixtures
+    assert bijux_phylogenetics.validate_alignment_quality_reference_fixtures is validate_alignment_quality_reference_fixtures
+    assert bijux_phylogenetics.validate_dataset_audit_reference_fixtures is validate_dataset_audit_reference_fixtures
+    assert bijux_phylogenetics.validate_figure_reference_fixtures is validate_figure_reference_fixtures
+    assert bijux_phylogenetics.validate_report_regression_fixtures is validate_report_regression_fixtures
+    assert bijux_phylogenetics.build_core_workflow_validation_report is build_core_workflow_validation_report
+    assert bijux_phylogenetics.build_core_workflow_failure_gallery is build_core_workflow_failure_gallery
+    assert bijux_phylogenetics.classify_core_workflow_maturity is classify_core_workflow_maturity
+    assert bijux_phylogenetics.build_level_one_release_gate_report is build_level_one_release_gate_report
+    assert bijux_phylogenetics.render_tree_report is render_tree_report
+    assert bijux_phylogenetics.render_workflow_validation_report is render_workflow_validation_report
+    assert bijux_phylogenetics.render_level_one_release_gate_report is render_level_one_release_gate_report
     assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
     assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
@@ -4452,6 +4479,97 @@ def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tm
     assert len(phylo_sidecar["limitations"]) >= 1
 
 
+def test_reference_validation_suites_cover_goals_91_through_96() -> None:
+    suites = [
+        validate_tree_reference_fixtures(),
+        validate_taxon_naming_reference_fixtures(),
+        validate_alignment_quality_reference_fixtures(),
+        validate_dataset_audit_reference_fixtures(),
+        validate_figure_reference_fixtures(),
+        validate_report_regression_fixtures(),
+    ]
+
+    assert [suite.goal_id for suite in suites] == [91, 92, 93, 94, 95, 96]
+    assert all(suite.passed for suite in suites)
+    assert sum(suite.fixture_count for suite in suites) >= 18
+
+
+def test_build_core_workflow_validation_report_aggregates_suites_failures_and_maturity() -> None:
+    report = build_core_workflow_validation_report()
+
+    assert report.total_fixture_count == 18
+    assert report.passed_fixture_count == 18
+    assert report.failed_fixture_count == 0
+    assert [suite.goal_id for suite in report.suites] == [91, 92, 93, 94, 95, 96]
+    assert len(report.workflows) == 6
+    assert len(report.failure_gallery) == 4
+    assert all(case.passed for case in report.failure_gallery)
+    assert {row.workflow for row in report.maturity_classifications} == {
+        "tree-review",
+        "taxon-audit",
+        "alignment-review",
+        "dataset-audit",
+        "figure-package",
+        "phylo-inputs-review",
+    }
+
+
+def test_render_workflow_validation_report_writes_fixture_sections(tmp_path: Path) -> None:
+    output = tmp_path / "workflow-validation.html"
+    result = render_workflow_validation_report(out_path=output)
+
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "workflow-validation"
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "validation-overview",
+        "validation-suites",
+        "workflow-coverage",
+        "failure-gallery",
+        "maturity-classification",
+        "limitations",
+    ]
+    assert result.machine_manifest["metrics"]["passed_fixture_count"] == 18
+    assert result.machine_manifest_path.exists()
+    assert "Bijux Core Workflow Validation Report" in text
+
+
+def test_build_level_one_release_gate_report_tracks_taxon_loss_and_blocked_analysis() -> None:
+    report = build_level_one_release_gate_report()
+
+    assert report.gate.decision == "blocked"
+    assert report.dataset_readiness_decision == "blocked"
+    assert report.gate.retained_taxa == ["A"]
+    assert report.gate.excluded_taxa == ["B", "C", "D"]
+    assert report.taxon_first_loss_stage == {
+        "A": None,
+        "B": "alignment_filtering",
+        "C": "trait_missingness",
+        "D": "alignment",
+    }
+    assert report.exclusion_causes["B"][0] == "alignment_filtering"
+    assert "maximum_likelihood" in report.gate.blocked_analyses
+
+
+def test_render_level_one_release_gate_report_writes_traceability_sections(tmp_path: Path) -> None:
+    output = tmp_path / "release-gate.html"
+    result = render_level_one_release_gate_report(out_path=output)
+
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "release-gate"
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "gate-decision",
+        "dataset-readiness",
+        "taxon-loss-traceability",
+        "workflow-validation",
+        "limitations",
+    ]
+    assert result.machine_manifest["metrics"]["excluded_taxa"] == 3
+    assert result.machine_manifest_path.exists()
+    assert "Bijux Level 1 Release Gate Report" in text
+
+
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
     inputs_root = tmp_path / "inputs"
     outputs_root = tmp_path / "outputs"
@@ -4851,6 +4969,47 @@ def test_cli_report_taxonomy_json_output_uses_taxon_contract(tmp_path: Path, cap
     assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
     assert payload["data"]["report_kind"] == "taxonomy"
     assert payload["metrics"]["tree_tip_count"] == 6
+
+
+def test_cli_report_workflow_validation_json_output_uses_reference_contract(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "workflow-validation.html"
+    exit_code = main(
+        [
+            "report",
+            "workflow-validation",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
+    assert payload["data"]["report_kind"] == "workflow-validation"
+    assert payload["metrics"]["passed_fixture_count"] == 18
+
+
+def test_cli_report_release_gate_json_output_uses_gate_contract(tmp_path: Path, capsys) -> None:
+    output = tmp_path / "release-gate.html"
+    exit_code = main(
+        [
+            "report",
+            "release-gate",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
+    assert payload["data"]["report_kind"] == "release-gate"
+    assert payload["metrics"]["decision"] == "blocked"
+    assert payload["metrics"]["excluded_taxa"] == 3
 
 
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
