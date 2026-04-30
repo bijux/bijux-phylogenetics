@@ -16,6 +16,7 @@ from bijux_phylogenetics.validation_corpus import (
     build_regression_dataset_corpus,
     build_runtime_benchmark_dashboard,
     build_scientific_validation_report,
+    validate_simulation_reproducibility,
 )
 
 
@@ -121,3 +122,12 @@ def test_build_scientific_validation_report_separates_claim_statuses() -> None:
     assert report.goal_id == 249
     statuses = {claim.status for claim in report.claims}
     assert statuses >= {"validated", "experimental", "unvalidated", "unsafe"}
+
+
+def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() -> None:
+    report = validate_simulation_reproducibility(fixtures_root=FIXTURES)
+
+    assert report.goal_id == 251
+    assert report.passed is True
+    assert len(report.cases) == 6
+    assert all(case.digest for case in report.cases)
