@@ -203,7 +203,7 @@ from bijux_phylogenetics.core.topology import reroot_tree_by_midpoint, root_tree
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.package import build_tree_figure_package
-from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
+from bijux_phylogenetics.render.svg import AnnotationStrip, audit_support_label_rendering, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     distance_method_limitations,
@@ -5473,17 +5473,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 else []
             )
             collapsed_clades = _split_csv_values(args.collapse_clades)
+            support_audit = audit_support_label_rendering(args.tree) if args.support_labels else None
             result = render_tree_svg(
                 args.tree,
                 out_path=args.out,
                 labels=labels,
                 layout=args.layout,
-                show_support_values=args.support_labels,
+                show_support_values=args.support_labels and (support_audit.validated if support_audit is not None else False),
                 categorical_traits=categorical_traits,
                 continuous_traits=continuous_traits,
                 metadata_strips=metadata_strips,
                 heatmap_columns=heatmap_columns,
                 collapsed_clades=collapsed_clades,
+                validated_support_labels={} if support_audit is None else support_audit.labels_by_node,
+                support_validation_warnings=[] if support_audit is None else support_audit.warnings,
             )
             inputs = [args.tree]
             if args.metadata is not None:
@@ -5513,9 +5516,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="render",
                         inputs=inputs,
                         outputs=outputs,
-                        warnings=result.missing_metadata_labels,
+                        warnings=result.missing_metadata_labels + ([] if support_audit is None else support_audit.warnings),
                         metrics={
                             "tip_count": result.tip_count,
+                            "visible_tip_count": result.visible_tip_count,
                             "label_count": result.label_count,
                             "rendered_support_count": result.rendered_support_count,
                             "rendered_categorical_trait_count": result.rendered_categorical_trait_count,
@@ -5527,6 +5531,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         data={
                             "render": result,
                             "figure_package_dir": package_result.output_dir if package_result is not None else None,
+                            "figure_package_audit": None if package_result is None else package_result.audit,
+                            "support_audit": support_audit,
                         },
                     ),
                     json_output=True,
@@ -5603,7 +5609,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "report":
             if args.report_command == "tree":
                 result = render_tree_report(tree_path=args.tree, out_path=args.out)
-                outputs = _finalize_outputs(args, command="report", inputs=[args.tree], outputs=[result.output_path])
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=[args.tree],
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
                 if args.json:
                     _print_result(
                         build_command_result(
@@ -5638,7 +5649,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     inputs.append(args.tip_dates)
                 if args.calibrations is not None:
                     inputs.append(args.calibrations)
-                outputs = _finalize_outputs(args, command="report", inputs=inputs, outputs=[result.output_path])
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=inputs,
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
                 if args.json:
                     _print_result(
                         build_command_result(
@@ -5672,7 +5688,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     out_path=args.out,
                 )
                 inputs = [args.tree, args.alignment]
-                outputs = _finalize_outputs(args, command="report", inputs=inputs, outputs=[result.output_path])
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=inputs,
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
                 if args.json:
                     _print_result(
                         build_command_result(
