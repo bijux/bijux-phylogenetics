@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import tempfile
 
+from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_tree_paths
 from bijux_phylogenetics.bayesian.beast import assess_beast_convergence
 from bijux_phylogenetics.bayesian.mrbayes import assess_mrbayes_convergence
 from bijux_phylogenetics.bayesian.posterior import (
     BayesianRunTreeComparison,
     compare_bayesian_tree_sets,
+    summarize_maximum_clade_credibility_tree,
     summarize_posterior_node_ages,
 )
 
@@ -55,6 +58,18 @@ class BayesianPosteriorScenarioComparisonReport:
     burnin_fraction: float
     tree_comparison: BayesianRunTreeComparison
     age_differences: list[BayesianScenarioAgeDifference]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class BayesianMlTreeComparisonReport:
+    ml_tree_path: Path
+    posterior_tree_set_path: Path
+    burnin_fraction: float
+    mcc_tree_newick: str
+    mcc_tree_index: int
+    topology: object
+    branch_lengths: object
     warnings: list[str]
 
 
@@ -206,6 +221,43 @@ def _compare_posterior_tree_sets_by_scenario(
         age_differences=age_differences,
         warnings=warnings,
     )
+
+
+def compare_ml_tree_to_bayesian_posterior(
+    ml_tree_path: Path,
+    posterior_tree_set_path: Path,
+    *,
+    burnin_fraction: float = 0.25,
+) -> BayesianMlTreeComparisonReport:
+    """Compare one ML summary tree against the MCC tree from a Bayesian posterior tree set."""
+    _mcc_tree, mcc = summarize_maximum_clade_credibility_tree(
+        posterior_tree_set_path,
+        burnin_fraction=burnin_fraction,
+    )
+    mcc_tree_path = Path(tempfile.mkstemp(prefix=f"{posterior_tree_set_path.stem}.mcc-", suffix=".nwk")[1])
+    mcc_tree_path.write_text(mcc.mcc_newick + "\n", encoding="utf-8")
+    try:
+        topology = compare_tree_paths(ml_tree_path, mcc_tree_path)
+        branch_lengths = compare_branch_lengths(ml_tree_path, mcc_tree_path)
+        warnings: list[str] = []
+        if not topology.topology_equal:
+            warnings.append("maximum-likelihood and Bayesian maximum clade credibility trees disagree in rooted topology")
+        if any(pair.delta not in {None, 0.0} for pair in branch_lengths.shared_splits):
+            warnings.append("shared clades differ in branch lengths between ML and Bayesian summaries")
+        if topology.same_taxa_different_rooting:
+            warnings.append("ML and Bayesian summaries share taxa and unrooted topology but disagree in rooting")
+        return BayesianMlTreeComparisonReport(
+            ml_tree_path=ml_tree_path,
+            posterior_tree_set_path=posterior_tree_set_path,
+            burnin_fraction=burnin_fraction,
+            mcc_tree_newick=mcc.mcc_newick,
+            mcc_tree_index=mcc.selected_tree_index,
+            topology=topology,
+            branch_lengths=branch_lengths,
+            warnings=warnings,
+        )
+    finally:
+        mcc_tree_path.unlink(missing_ok=True)
 
 
 def _assess_trace_convergence(
