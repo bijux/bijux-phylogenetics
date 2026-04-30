@@ -5,6 +5,7 @@ from pathlib import Path
 from bijux_phylogenetics.validation_corpus import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
+    build_messy_benchmark_corpus,
 )
 
 
@@ -34,3 +35,17 @@ def test_build_broken_benchmark_corpus_preserves_expected_failure_signatures() -
     assert observed["invalid_alignment_lengths"].observed_code == "invalid_alignment_error"
     assert observed["dataset_missing_metadata_taxon"].readiness_decision == "blocked"
     assert "metadata table is missing one or more tree taxa" in observed["dataset_missing_metadata_taxon"].blockers
+
+
+def test_build_messy_benchmark_corpus_captures_multi_surface_warning_cases() -> None:
+    report = build_messy_benchmark_corpus(fixtures_root=FIXTURES)
+
+    assert report.goal_id == 244
+    assert report.passed is True
+    observed = {case.name: case for case in report.cases}
+    first = observed["reordered_alignment_extra_taxa_invalid_dates_and_calibrations"]
+    assert "calibration table contains invalid fossil calibration targets or ages" in first.blockers
+    assert "one or more dataset surfaces silently reorder shared taxa relative to the tree" in first.warnings
+    second = observed["low_information_alignment_with_trait_mismatch"]
+    assert "alignment is not currently safe for core inference workflows" in second.blockers
+    assert "alignment contains near-duplicate sequences" in second.warnings

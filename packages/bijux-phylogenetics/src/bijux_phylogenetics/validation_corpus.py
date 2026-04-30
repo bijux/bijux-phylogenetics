@@ -233,3 +233,89 @@ def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> Bench
             "the broken corpus emphasizes stable failure signatures rather than every possible malformed input surface",
         ],
     )
+
+
+def build_messy_benchmark_corpus(*, fixtures_root: Path | None = None) -> BenchmarkCorpusReport:
+    """Validate that realistic multi-problem datasets surface the expected warning mix."""
+    root = _default_fixtures_root() if fixtures_root is None else fixtures_root
+    cases: list[tuple[CorpusDatasetCase, tuple[str, ...], tuple[str, ...]]] = [
+        (
+            CorpusDatasetCase(
+                name="reordered_alignment_extra_taxa_invalid_dates_and_calibrations",
+                tree_path=_fixture(root, "trees", "example_tree.nwk"),
+                metadata_path=_fixture(root, "metadata", "example_metadata_reordered.tsv"),
+                traits_path=_fixture(root, "metadata", "example_traits_validate.tsv"),
+                alignment_path=_fixture(root, "alignments", "example_alignment_extra_taxon.fasta"),
+                tip_dates_path=_fixture(root, "metadata", "example_tip_dates_invalid.tsv"),
+                calibration_path=_fixture(root, "metadata", "example_calibrations_invalid.tsv"),
+            ),
+            (
+                "calibration table contains invalid fossil calibration targets or ages",
+                "tip-date metadata contains invalid or missing tree-tip dates",
+            ),
+            (
+                "alignment contains taxa absent from the tree",
+                "one or more dataset surfaces silently reorder shared taxa relative to the tree",
+                "tip-date metadata contains taxa absent from the tree or alignment",
+            ),
+        ),
+        (
+            CorpusDatasetCase(
+                name="low_information_alignment_with_trait_mismatch",
+                tree_path=_fixture(root, "trees", "example_tree.nwk"),
+                metadata_path=_fixture(root, "metadata", "example_metadata.tsv"),
+                traits_path=_fixture(root, "metadata", "example_traits.tsv"),
+                alignment_path=_fixture(root, "alignments", "example_alignment_ambiguity.fasta"),
+            ),
+            (
+                "alignment is missing one or more tree taxa",
+                "alignment is not currently safe for core inference workflows",
+                "trait table is missing one or more tree taxa",
+            ),
+            (
+                "alignment contains near-duplicate sequences",
+                "alignment has fewer parsimony-informative sites than the minimum threshold for defensible inference",
+                "trait table contains taxa absent from the tree",
+            ),
+        ),
+    ]
+
+    results: list[CorpusDatasetCaseResult] = []
+    for case, expected_blockers, expected_warnings in cases:
+        report, notes = _evaluate_dataset_case(case)
+        missing_blockers = [message for message in expected_blockers if message not in report.blockers]
+        if missing_blockers:
+            notes.append(f"missing expected blockers: {', '.join(missing_blockers)}")
+        missing_warnings = [message for message in expected_warnings if message not in report.warnings]
+        if missing_warnings:
+            notes.append(f"missing expected warnings: {', '.join(missing_warnings)}")
+        if report.readiness_decision != "blocked":
+            notes.append(f"expected blocked readiness but observed {report.readiness_decision}")
+        results.append(
+            CorpusDatasetCaseResult(
+                name=case.name,
+                passed=not notes,
+                readiness_decision=report.readiness_decision,
+                analysis_taxa=report.analysis_taxa,
+                allowed_analyses=report.allowed_analyses,
+                blocked_analyses=report.blocked_analyses,
+                blockers=report.blockers,
+                warnings=report.warnings,
+                notes=notes,
+                observed_code="dataset_blocked",
+            )
+        )
+
+    passed_case_count = sum(1 for case in results if case.passed)
+    return BenchmarkCorpusReport(
+        goal_id=244,
+        corpus="messy-benchmark-corpus",
+        passed=passed_case_count == len(results),
+        case_count=len(results),
+        passed_case_count=passed_case_count,
+        failed_case_count=len(results) - passed_case_count,
+        cases=results,
+        limitations=[
+            "the messy corpus currently emphasizes warning-rich integration failures rather than every possible domain-specific artifact",
+        ],
+    )
