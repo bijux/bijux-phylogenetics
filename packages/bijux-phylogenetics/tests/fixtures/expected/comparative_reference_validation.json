@@ -1,0 +1,84 @@
+{
+  "generated_on": "2026-04-30",
+  "source_packages": {
+    "ape": "5.8.1",
+    "geiger": "2.0.11",
+    "nlme": "3.1.168",
+    "phytools": "2.5.2"
+  },
+  "observations": [
+    {
+      "case": "brownian-example-tree",
+      "model": "brownian",
+      "trait": "response",
+      "source": "geiger::fitContinuous(model='BM')",
+      "tolerance": 1e-06,
+      "expected_parameters": {
+        "log_likelihood": -6.04152073381702,
+        "rate": 4.774305542457443,
+        "root_state": 2.805555555555556
+      }
+    },
+    {
+      "case": "ou-example-tree-grid",
+      "model": "ou",
+      "trait": "response",
+      "source": "ape::corMartins fixed-alpha grid via nlme::gls",
+      "tolerance": 1e-06,
+      "expected_parameters": {
+        "alpha": 33.333333,
+        "log_likelihood": -5.260966005446836,
+        "theta": 2.750317551253208
+      }
+    },
+    {
+      "case": "pic-example-tree",
+      "model": "independent-contrasts",
+      "trait": "response",
+      "source": "ape::pic",
+      "tolerance": 1e-06,
+      "expected_parameters": {
+        "A|B": -3.354101966249685,
+        "A|B|C|D": -1.49071198499986,
+        "C|D": -2.371708245126285
+      }
+    },
+    {
+      "case": "pgls-example-tree-brownian",
+      "model": "pgls",
+      "trait": "response",
+      "source": "ape::corBrownian fixed covariance via nlme::gls",
+      "tolerance": 1e-06,
+      "expected_parameters": {
+        "intercept": 0.305084745762712,
+        "log_likelihood": -2.948637910520331,
+        "predictor_one": 0.957627118644068,
+        "residual_A": 0.23728813559322,
+        "residual_B": 0.779661016949153,
+        "residual_C": -0.677966101694915,
+        "residual_D": -0.135593220338983
+      }
+    },
+    {
+      "case": "blomberg-k-example-tree",
+      "model": "blombergs-k",
+      "trait": "response",
+      "source": "phytools::phylosig(method='K')",
+      "tolerance": 1e-06,
+      "expected_parameters": {
+        "k": 0.678288770053476
+      }
+    },
+    {
+      "case": "pagel-lambda-example-tree",
+      "model": "pagels-lambda",
+      "trait": "response",
+      "source": "phytools::phylosig(method='lambda')",
+      "tolerance": 1e-04,
+      "expected_parameters": {
+        "lambda_value": 0.00006796558,
+        "log_likelihood": -5.260501868278937
+      }
+    }
+  ]
+}
