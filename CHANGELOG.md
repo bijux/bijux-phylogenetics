@@ -28,3 +28,4 @@
 - add Bayesian posterior-tree thinning, MCC and node-age summaries, BEAST log validation and chain diagnostics, cross-run or scenario posterior comparisons, and reviewer-facing Bayesian diagnostics reports
 - deepen posterior uncertainty analysis with topology diversity and multimodality summaries, high-credibility clade conflicts, figure packages, supplementary diagnostics tables, and Bayesian methods text
 - add low-information, duplicate-policy, ambiguity-column, and sequence-ranking alignment diagnostics with dedicated alignment and taxonomy HTML reports plus dataset input ledgers
+- add checked-in Level 1 reference validation suites, workflow failure galleries, maturity classification, workflow-validation reports, and an end-to-end release gate
