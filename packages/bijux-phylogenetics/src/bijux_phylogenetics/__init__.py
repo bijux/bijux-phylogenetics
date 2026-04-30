@@ -210,6 +210,7 @@ from .validation_corpus import (
     build_runtime_benchmark_dashboard,
     build_scientific_validation_report,
     validate_simulation_reproducibility,
+    write_validation_corpus_json,
 )
 from .core.topology import (
     TreeTransformationSummary,
@@ -1098,6 +1099,7 @@ __all__ = [
     "validate_taxon_naming_reference_fixtures",
     "validate_tree_reference_fixtures",
     "validate_tree_roundtrip",
+    "write_validation_corpus_json",
     "write_core_workflow_validation_json",
     "write_level_one_release_gate_json",
     "validate_tree_path",

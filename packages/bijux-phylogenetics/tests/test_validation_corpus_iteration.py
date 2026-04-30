@@ -18,6 +18,7 @@ from bijux_phylogenetics.validation_corpus import (
     build_runtime_benchmark_dashboard,
     build_scientific_validation_report,
     validate_simulation_reproducibility,
+    write_validation_corpus_json,
 )
 
 
@@ -138,3 +139,14 @@ def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert bijux_phylogenetics.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert bijux_phylogenetics.build_method_limitation_registry is build_method_limitation_registry
     assert bijux_phylogenetics.validate_simulation_reproducibility is validate_simulation_reproducibility
+
+
+def test_write_validation_corpus_json_serializes_report_payloads(tmp_path: Path) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "validation.json",
+        build_clean_benchmark_corpus(fixtures_root=FIXTURES),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert "\"goal_id\": 242" in text
+    assert "\"corpus\": \"clean-benchmark-corpus\"" in text

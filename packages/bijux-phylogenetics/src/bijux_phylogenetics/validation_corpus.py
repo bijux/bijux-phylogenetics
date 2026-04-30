@@ -824,6 +824,14 @@ def _normalize_jsonable(value: object) -> object:
     return value
 
 
+def write_validation_corpus_json(path: Path, report: object) -> Path:
+    """Write a validation-corpus or dashboard report as deterministic JSON."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = _normalize_jsonable(report)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
 def validate_simulation_reproducibility(*, fixtures_root: Path | None = None) -> SimulationReproducibilityReport:
     """Verify that repeated simulations with the same seed produce identical structured results."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
