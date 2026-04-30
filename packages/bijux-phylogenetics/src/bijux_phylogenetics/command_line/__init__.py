@@ -214,10 +214,12 @@ from bijux_phylogenetics.reports.service import (
     render_alignment_report,
     render_dataset_report,
     render_distance_report,
+    render_level_one_release_gate_report,
     render_phylo_inputs_report,
     render_taxon_report,
     render_tree_uncertainty_report,
     render_tree_report,
+    render_workflow_validation_report,
     write_annotation_report,
 )
 from bijux_phylogenetics.simulation import (
@@ -2051,6 +2053,22 @@ def build_parser() -> argparse.ArgumentParser:
     report_taxonomy.add_argument("--out", required=True, type=Path)
     report_taxonomy.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
     _add_manifest_argument(report_taxonomy)
+    report_workflow_validation = report_subparsers.add_parser(
+        "workflow-validation",
+        help="Render the Level 1 workflow validation fixture report.",
+    )
+    report_workflow_validation.add_argument("--fixtures-root", type=Path)
+    report_workflow_validation.add_argument("--out", required=True, type=Path)
+    report_workflow_validation.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report_workflow_validation)
+    report_release_gate = report_subparsers.add_parser(
+        "release-gate",
+        help="Render the Level 1 release gate for the checked-in workflow fixtures.",
+    )
+    report_release_gate.add_argument("--fixtures-root", type=Path)
+    report_release_gate.add_argument("--out", required=True, type=Path)
+    report_release_gate.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    _add_manifest_argument(report_release_gate)
 
     demo = subparsers.add_parser(get_command_spec("demo").name, help=get_command_spec("demo").summary)
     demo_subparsers = demo.add_subparsers(dest="demo_command", required=True)
@@ -5936,6 +5954,68 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "tree_tip_count": result.taxon_audit.tree_tip_count,
                                 "status": result.taxon_audit.status,
                                 "conflict_count": len(result.taxon_audit.mapping_conflicts.rows),
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
+                return 0
+            if args.report_command == "workflow-validation":
+                result = render_workflow_validation_report(
+                    out_path=args.out,
+                    fixtures_root=args.fixtures_root,
+                )
+                inputs = [] if args.fixtures_root is None else [args.fixtures_root]
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=inputs,
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=inputs,
+                            outputs=outputs,
+                            metrics={
+                                "total_fixture_count": result.validation.total_fixture_count,
+                                "passed_fixture_count": result.validation.passed_fixture_count,
+                                "workflow_count": len(result.validation.workflows),
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_path)
+                return 0
+            if args.report_command == "release-gate":
+                result = render_level_one_release_gate_report(
+                    out_path=args.out,
+                    fixtures_root=args.fixtures_root,
+                )
+                inputs = [] if args.fixtures_root is None else [args.fixtures_root]
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=inputs,
+                    outputs=[result.output_path, result.machine_manifest_path],
+                )
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=inputs,
+                            outputs=outputs,
+                            warnings=result.release_gate.dataset_warnings,
+                            metrics={
+                                "decision": result.release_gate.gate.decision,
+                                "retained_taxa": len(result.release_gate.gate.retained_taxa),
+                                "excluded_taxa": len(result.release_gate.gate.excluded_taxa),
+                                "blocked_analysis_count": len(result.release_gate.gate.blocked_analyses),
                             },
                             data=result,
                         ),
