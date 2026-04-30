@@ -8,13 +8,26 @@ from pathlib import Path
 from bijux_phylogenetics.core.alignment import (
     AlignmentForensicReport,
     AlignmentLinkageReport,
+    AlignmentLowInformationReport,
     AlignmentQualityReport,
     AlignmentSummary,
+    AlignmentAmbiguousColumnReport,
     CodingAlignmentDiagnostics,
+    DuplicateSequencePolicyReport,
     SequenceIdentityMatrix,
+    SequenceQualityRankingReport,
 )
-from bijux_phylogenetics.core.dataset import DatasetAuditReport, DatasetReadinessSummary, audit_dataset_inputs, summarize_dataset_readiness
+from bijux_phylogenetics.core.dataset import (
+    DatasetAuditReport,
+    DatasetCrosswalkReport,
+    DatasetReadinessSummary,
+    audit_dataset_inputs,
+    build_dataset_crosswalk,
+    summarize_dataset_readiness,
+)
 from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_taxa, load_taxon_table
+from bijux_phylogenetics.core.taxonomy import TaxonAuditReport, build_taxon_audit_report
+from bijux_phylogenetics.core.taxon_workflows import TaxonWorkflowLossReport, build_taxon_workflow_loss_report
 from bijux_phylogenetics.core.traits import TraitMissingValueReport, detect_missing_trait_values
 from bijux_phylogenetics.distance import (
     assess_distance_method_assumptions,
@@ -37,10 +50,15 @@ from bijux_phylogenetics.diagnostics.validation import (
 )
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.fasta import (
+    assess_alignment_low_information,
+    build_ambiguous_alignment_column_report,
     build_alignment_forensic_report,
     build_alignment_quality_report,
+    build_duplicate_sequence_policy_report,
+    build_sequence_quality_ranking,
     compute_pairwise_sequence_identity_matrix,
     inspect_coding_alignment,
+    list_alignment_filter_profiles,
     link_alignment_to_tree,
     summarise_fasta,
 )
@@ -91,11 +109,16 @@ class ReportBuildResult:
     alignment: AlignmentSummary | None
     alignment_quality: AlignmentQualityReport | None
     alignment_forensic: AlignmentForensicReport | None
+    alignment_low_information: AlignmentLowInformationReport | None
+    alignment_duplicate_policy: DuplicateSequencePolicyReport | None
+    alignment_ambiguous_columns: AlignmentAmbiguousColumnReport | None
+    alignment_sequence_ranking: SequenceQualityRankingReport | None
     alignment_coding: CodingAlignmentDiagnostics | None
     alignment_identity_matrix: SequenceIdentityMatrix | None
     alignment_linkage: AlignmentLinkageReport | None
     dataset_readiness: DatasetReadinessSummary | None
     dataset_audit: DatasetAuditReport | None
+    input_ledger: list["ReportInputLedgerEntry"]
     machine_manifest: dict[str, object]
 
 
@@ -132,12 +155,88 @@ class TreeSetComparisonReportBuildResult:
     machine_manifest: dict[str, object]
 
 
+@dataclass(slots=True)
+class AlignmentReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    alignment: AlignmentSummary
+    alignment_quality: AlignmentQualityReport
+    alignment_forensic: AlignmentForensicReport
+    alignment_low_information: AlignmentLowInformationReport
+    alignment_duplicate_policy: DuplicateSequencePolicyReport
+    alignment_ambiguous_columns: AlignmentAmbiguousColumnReport
+    alignment_sequence_ranking: SequenceQualityRankingReport
+    alignment_coding: CodingAlignmentDiagnostics | None
+    alignment_identity_matrix: SequenceIdentityMatrix
+    machine_manifest: dict[str, object]
+
+
+@dataclass(slots=True)
+class TaxonReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    tree_path: Path
+    taxon_audit: TaxonAuditReport
+    taxon_crosswalk: DatasetCrosswalkReport | None
+    taxon_workflow_loss: TaxonWorkflowLossReport | None
+    machine_manifest: dict[str, object]
+
+
+@dataclass(frozen=True, slots=True)
+class ReportInputLedgerEntry:
+    path: Path
+    role: str
+    checksum: str
+    taxa_count: int
+    usage: list[str]
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _dataset_surface_taxa_count(path: Path, role: str) -> int:
+    if role == "tree":
+        return _load_tree(path).tip_count
+    if role == "alignment":
+        return summarise_fasta(path).sequence_count
+    if role in {"metadata", "traits", "tip_dates", "calibrations"}:
+        return load_taxon_table(path).row_count
+    raise ValueError(f"unsupported dataset ledger role: {role}")
+
+
+def _build_input_ledger(entries: list[tuple[Path, str, list[str]]]) -> list[ReportInputLedgerEntry]:
+    return [
+        ReportInputLedgerEntry(
+            path=path,
+            role=role,
+            checksum=_sha256(path),
+            taxa_count=_dataset_surface_taxa_count(path, role),
+            usage=usage,
+        )
+        for path, role, usage in entries
+    ]
+
+
+def _serialize_input_ledger(entries: list[ReportInputLedgerEntry]) -> list[dict[str, object]]:
+    return [
+        {
+            "path": str(entry.path),
+            "role": entry.role,
+            "checksum": entry.checksum,
+            "taxa_count": entry.taxa_count,
+            "usage": entry.usage,
+        }
+        for entry in entries
+    ]
 
 
 def summarise_alignment_path(path: Path) -> AlignmentSummary:
@@ -296,6 +395,8 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
     )
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
+    input_ledger = _build_input_ledger([(tree_path, "tree", ["tree_validation", "tree_inspection", "tree_forensic"])])
+    machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
     machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
@@ -312,11 +413,16 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
         alignment=None,
         alignment_quality=None,
         alignment_forensic=None,
+        alignment_low_information=None,
+        alignment_duplicate_policy=None,
+        alignment_ambiguous_columns=None,
+        alignment_sequence_ranking=None,
         alignment_coding=None,
         alignment_identity_matrix=None,
         alignment_linkage=None,
         dataset_readiness=None,
         dataset_audit=None,
+        input_ledger=input_ledger,
         machine_manifest=machine_manifest,
     )
 
@@ -391,6 +497,20 @@ def render_dataset_report(
         sections.append(_section("dataset-ordering", asdict(dataset_audit.ordering_audit)))
         sections.append(_section("dataset-pruning", [asdict(row) for row in dataset_audit.pruning_steps]))
         sections.append(_section("dataset-group-imbalance", [asdict(row) for row in dataset_audit.group_imbalance_warnings]))
+    input_ledger_entries: list[tuple[Path, str, list[str]]] = [
+        (tree_path, "tree", ["tree_validation", "tree_inspection", "tree_forensic", "dataset_audit"]),
+        (metadata_path, "metadata", ["metadata_linkage", "dataset_audit"]),
+    ]
+    if traits_path is not None:
+        input_ledger_entries.append((traits_path, "traits", ["traits_linkage", "trait_missing_values", "dataset_audit"]))
+    if alignment_path is not None:
+        input_ledger_entries.append((alignment_path, "alignment", ["alignment_forensic", "dataset_audit"]))
+    if tip_dates_path is not None:
+        input_ledger_entries.append((tip_dates_path, "tip_dates", ["dataset_audit"]))
+    if calibration_path is not None:
+        input_ledger_entries.append((calibration_path, "calibrations", ["dataset_audit"]))
+    input_ledger = _build_input_ledger(input_ledger_entries)
+    sections.append(_section("dataset-input-ledger", _serialize_input_ledger(input_ledger)))
     sections.append(_section("limitations", limitations))
     input_paths = [tree_path, metadata_path]
     if traits_path is not None:
@@ -410,6 +530,7 @@ def render_dataset_report(
     )
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
+    machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
     machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
@@ -426,11 +547,16 @@ def render_dataset_report(
         alignment=None,
         alignment_quality=None,
         alignment_forensic=None,
+        alignment_low_information=None,
+        alignment_duplicate_policy=None,
+        alignment_ambiguous_columns=None,
+        alignment_sequence_ranking=None,
         alignment_coding=None,
         alignment_identity_matrix=None,
         alignment_linkage=None,
         dataset_readiness=dataset_readiness,
         dataset_audit=dataset_audit,
+        input_ledger=input_ledger,
         machine_manifest=machine_manifest,
     )
 
@@ -448,6 +574,10 @@ def render_phylo_inputs_report(
     alignment = summarise_fasta(alignment_path)
     alignment_quality = build_alignment_quality_report(alignment_path)
     alignment_forensic = build_alignment_forensic_report(alignment_path)
+    alignment_low_information = assess_alignment_low_information(alignment_path)
+    alignment_duplicate_policy = build_duplicate_sequence_policy_report(alignment_path)
+    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(alignment_path)
+    alignment_sequence_ranking = build_sequence_quality_ranking(alignment_path)
     alignment_coding = (
         inspect_coding_alignment(alignment_path)
         if alignment.inferred_alphabet in {"dna", "rna"}
@@ -470,12 +600,30 @@ def render_phylo_inputs_report(
         _section("tree-forensic", asdict(forensic)),
         _section("alignment-summary", asdict(alignment)),
         _section("alignment-quality", asdict(alignment_quality)),
+        _section("alignment-low-information", asdict(alignment_low_information)),
+        _section("alignment-duplicate-policy", asdict(alignment_duplicate_policy)),
+        _section("alignment-ambiguous-columns", asdict(alignment_ambiguous_columns)),
+        _section("alignment-sequence-ranking", asdict(alignment_sequence_ranking)),
         _section("alignment-forensic", asdict(alignment_forensic)),
         *([_section("alignment-coding", asdict(alignment_coding))] if alignment_coding is not None else []),
         _section("alignment-identity-matrix", asdict(alignment_identity_matrix)),
         _section("alignment-linkage", asdict(alignment_linkage)),
         _section("limitations", limitations),
     ]
+    input_ledger = _build_input_ledger([
+        (tree_path, "tree", ["tree_validation", "tree_inspection", "tree_forensic", "alignment_linkage"]),
+        (alignment_path, "alignment", [
+            "alignment_summary",
+            "alignment_quality",
+            "alignment_low_information",
+            "alignment_duplicate_policy",
+            "alignment_ambiguous_columns",
+            "alignment_sequence_ranking",
+            "alignment_forensic",
+            "alignment_identity_matrix",
+            "alignment_linkage",
+        ]),
+    ])
     machine_manifest = _build_machine_manifest(
         report_kind="phylo-inputs",
         title=title,
@@ -485,6 +633,7 @@ def render_phylo_inputs_report(
     )
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
+    machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
     machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
@@ -501,11 +650,222 @@ def render_phylo_inputs_report(
         alignment=alignment,
         alignment_quality=alignment_quality,
         alignment_forensic=alignment_forensic,
+        alignment_low_information=alignment_low_information,
+        alignment_duplicate_policy=alignment_duplicate_policy,
+        alignment_ambiguous_columns=alignment_ambiguous_columns,
+        alignment_sequence_ranking=alignment_sequence_ranking,
         alignment_coding=alignment_coding,
         alignment_identity_matrix=alignment_identity_matrix,
         alignment_linkage=alignment_linkage,
         dataset_readiness=None,
         dataset_audit=None,
+        input_ledger=input_ledger,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_alignment_report(*, alignment_path: Path, out_path: Path) -> AlignmentReportBuildResult:
+    """Build a reviewer-facing alignment-only report."""
+    alignment = summarise_fasta(alignment_path)
+    alignment_quality = build_alignment_quality_report(alignment_path)
+    alignment_low_information = assess_alignment_low_information(alignment_path)
+    alignment_duplicate_policy = build_duplicate_sequence_policy_report(alignment_path)
+    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(alignment_path)
+    alignment_sequence_ranking = build_sequence_quality_ranking(alignment_path)
+    alignment_forensic = build_alignment_forensic_report(alignment_path)
+    alignment_coding = inspect_coding_alignment(alignment_path) if alignment.inferred_alphabet in {"dna", "rna"} else None
+    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(alignment_path)
+    title = "Bijux Alignment Report"
+    reviewer_summary = [
+        f"alignment quality score: {alignment_quality.quality_score}",
+        (
+            "alignment remains suitable for at least one inference family"
+            if any(
+                (
+                    alignment_forensic.safe_for_distance_analysis,
+                    alignment_forensic.safe_for_maximum_likelihood,
+                    alignment_forensic.safe_for_bayesian_inference,
+                    alignment_forensic.safe_for_coding_analysis,
+                )
+            )
+            else "alignment is currently blocked for the main inference families reviewed here"
+        ),
+        f"reviewer-facing warnings: {len(alignment_forensic.warnings)}",
+    ]
+    limitations = sorted(
+        dict.fromkeys(
+            [
+                *alignment_forensic.limitations,
+                *alignment_forensic.warnings,
+            ]
+        )
+    )
+    sections = [
+        _section("reviewer-summary", reviewer_summary),
+        _section("alignment-summary", asdict(alignment)),
+        _section("alignment-quality", asdict(alignment_quality)),
+        _section("alignment-readiness", asdict(alignment_forensic.readiness)),
+        _section("alignment-low-information", asdict(alignment_low_information)),
+        _section("alignment-duplicate-policy", asdict(alignment_duplicate_policy)),
+        _section("alignment-ambiguous-columns", asdict(alignment_ambiguous_columns)),
+        _section("alignment-sequence-ranking", asdict(alignment_sequence_ranking)),
+        _section("alignment-filter-profiles", [asdict(profile) for profile in list_alignment_filter_profiles()]),
+        _section("alignment-suspicious-windows", {
+            "over_aligned_regions": [asdict(row) for row in alignment_forensic.over_aligned_regions],
+            "under_aligned_regions": [asdict(row) for row in alignment_forensic.under_aligned_regions],
+        }),
+        _section("alignment-forensic", asdict(alignment_forensic)),
+        *([_section("alignment-coding", asdict(alignment_coding))] if alignment_coding is not None else []),
+        _section("alignment-identity-matrix", asdict(alignment_identity_matrix)),
+        _section("limitations", limitations),
+    ]
+    machine_manifest = {
+        "report_kind": "alignment",
+        "title": title,
+        "input_paths": [str(alignment_path)],
+        "input_checksums": {str(alignment_path): _sha256(alignment_path)},
+        "sections": [name for name, _ in sections],
+        "metrics": {
+            "sequence_count": alignment.sequence_count,
+            "alignment_length": alignment.alignment_length,
+            "quality_score": alignment_quality.quality_score,
+        },
+        "reviewer_summary": reviewer_summary,
+        "limitations": limitations,
+    }
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return AlignmentReportBuildResult(
+        output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
+        report_kind="alignment",
+        title=title,
+        alignment=alignment,
+        alignment_quality=alignment_quality,
+        alignment_forensic=alignment_forensic,
+        alignment_low_information=alignment_low_information,
+        alignment_duplicate_policy=alignment_duplicate_policy,
+        alignment_ambiguous_columns=alignment_ambiguous_columns,
+        alignment_sequence_ranking=alignment_sequence_ranking,
+        alignment_coding=alignment_coding,
+        alignment_identity_matrix=alignment_identity_matrix,
+        machine_manifest=machine_manifest,
+    )
+
+
+def render_taxon_report(
+    *,
+    tree_path: Path,
+    out_path: Path,
+    synonym_table_path: Path | None = None,
+    metadata_path: Path | None = None,
+    traits_path: Path | None = None,
+    alignment_path: Path | None = None,
+    filtered_alignment_path: Path | None = None,
+    inference_tree_path: Path | None = None,
+    reported_taxa_path: Path | None = None,
+) -> TaxonReportBuildResult:
+    """Build a reviewer-facing taxon audit report."""
+    tree = _load_tree(tree_path)
+    audit = build_taxon_audit_report(tree, synonym_table_path=synonym_table_path)
+    taxon_crosswalk = (
+        None
+        if metadata_path is None or traits_path is None
+        else build_dataset_crosswalk(
+            tree_path,
+            metadata_path,
+            traits_path,
+            alignment_path=alignment_path,
+        )
+    )
+    taxon_workflow_loss = (
+        None
+        if metadata_path is None or traits_path is None
+        else build_taxon_workflow_loss_report(
+            tree_path,
+            metadata_path,
+            traits_path,
+            alignment_path=alignment_path,
+            filtered_alignment_path=filtered_alignment_path,
+            inference_tree_path=inference_tree_path,
+            reported_taxa_path=reported_taxa_path,
+        )
+    )
+    title = "Bijux Taxon Audit Report"
+    reviewer_summary = [
+        f"taxon audit status: {audit.status}",
+        f"tree tip count: {audit.tree_tip_count}",
+        *audit.summary,
+    ]
+    limitations = sorted(dict.fromkeys(audit.warnings))
+    sections = [
+        _section("reviewer-summary", reviewer_summary),
+        _section("taxon-audit", asdict(audit)),
+        _section("taxon-identity", asdict(audit.identity_audit)),
+        _section("taxon-safety", asdict(audit.safety_report)),
+        _section("taxon-namespaces", asdict(audit.namespace_report)),
+        _section("taxon-rank-consistency", asdict(audit.rank_consistency)),
+        *([_section("taxon-synonyms", asdict(audit.synonym_audit))] if audit.synonym_audit is not None else []),
+        _section("taxon-duplicate-identities", asdict(audit.duplicate_identities)),
+        _section("taxon-mapping-conflicts", asdict(audit.mapping_conflicts)),
+        *([_section("taxon-accepted-names", asdict(audit.accepted_name_export))] if audit.accepted_name_export is not None else []),
+        *([_section("taxon-crosswalk", asdict(taxon_crosswalk))] if taxon_crosswalk is not None else []),
+        *([_section("taxon-loss", asdict(taxon_workflow_loss))] if taxon_workflow_loss is not None else []),
+        *(
+            [
+                _section(
+                    "taxon-exclusions",
+                    [
+                        {
+                            "taxon": row.taxon,
+                            "first_loss_stage": row.first_loss_stage,
+                            "loss_events": [asdict(event) for event in row.loss_events],
+                        }
+                        for row in taxon_workflow_loss.rows
+                        if row.loss_events
+                    ],
+                )
+            ]
+            if taxon_workflow_loss is not None
+            else []
+        ),
+        _section("limitations", limitations),
+    ]
+    input_paths = [
+        tree_path,
+        *([synonym_table_path] if synonym_table_path is not None else []),
+        *([metadata_path] if metadata_path is not None else []),
+        *([traits_path] if traits_path is not None else []),
+        *([alignment_path] if alignment_path is not None else []),
+        *([filtered_alignment_path] if filtered_alignment_path is not None else []),
+        *([inference_tree_path] if inference_tree_path is not None else []),
+        *([reported_taxa_path] if reported_taxa_path is not None else []),
+    ]
+    machine_manifest = {
+        "report_kind": "taxonomy",
+        "title": title,
+        "input_paths": [str(path) for path in input_paths],
+        "input_checksums": {str(path): _sha256(path) for path in input_paths},
+        "sections": [name for name, _ in sections],
+        "metrics": {
+            "tree_tip_count": audit.tree_tip_count,
+            "warning_count": len(audit.warnings),
+            "conflict_count": len(audit.mapping_conflicts.rows),
+        },
+        "reviewer_summary": reviewer_summary,
+        "limitations": limitations,
+    }
+    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
+    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    return TaxonReportBuildResult(
+        output_path=out_path,
+        machine_manifest_path=machine_manifest_path,
+        report_kind="taxonomy",
+        title=title,
+        tree_path=tree_path,
+        taxon_audit=audit,
+        taxon_crosswalk=taxon_crosswalk,
+        taxon_workflow_loss=taxon_workflow_loss,
         machine_manifest=machine_manifest,
     )
 
@@ -803,6 +1163,8 @@ def render_phylogenetics_report(
     )
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
+    input_ledger: list[ReportInputLedgerEntry] = []
+    machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
     machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
     write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
     return ReportBuildResult(
@@ -819,10 +1181,15 @@ def render_phylogenetics_report(
         alignment=alignment,
         alignment_quality=alignment_quality,
         alignment_forensic=alignment_forensic,
+        alignment_low_information=None,
+        alignment_duplicate_policy=None,
+        alignment_ambiguous_columns=None,
+        alignment_sequence_ranking=None,
         alignment_coding=alignment_coding,
         alignment_identity_matrix=alignment_identity_matrix,
         alignment_linkage=None,
         dataset_readiness=dataset_readiness,
         dataset_audit=dataset_audit,
+        input_ledger=input_ledger,
         machine_manifest=machine_manifest,
     )
