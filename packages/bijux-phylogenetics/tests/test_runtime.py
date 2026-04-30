@@ -4554,3 +4554,5 @@ def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == EngineUnavailableError.code
+    assert result.scale_bar_length == 0.1
+    assert result.max_branch_distance == 0.30000000000000004
