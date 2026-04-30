@@ -160,6 +160,7 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics alignment bootstrap-tree alignment.fasta --method neighbor-joining --replicates 200 --support-out artifacts/distance-support.tsv --tree-set-out artifacts/distance-bootstrap.trees --json`
 - `uv run bijux-phylogenetics alignment distance-bundle alignment.fasta --method neighbor-joining --replicates 200 --out-dir artifacts/distance-bundle --json`
 - `uv run bijux-phylogenetics distance validate exported-distances.tsv --json`
+- `uv run bijux-phylogenetics distance quality exported-distances.tsv --json`
 - `uv run bijux-phylogenetics distance build-tree exported-distances.tsv --method upgma --out imported-upgma.nwk`
 - `uv run bijux-phylogenetics distance report exported-distances.tsv --out artifacts/distance-report.html`
 - `uv run bijux-phylogenetics distance reference --json`
