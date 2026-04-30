@@ -101,6 +101,10 @@ Dataset auditing now also writes cross-surface mismatch tables, transparent
 risk components, minimal-fix plans, and reviewer checklists that summarize what
 still blocks downstream analyses.
 
+Level 1 trust validation now also includes checked-in reference fixture suites,
+workflow validation reports, failure-gallery summaries, maturity labels, and
+an end-to-end release gate for the repository's reviewer-facing core surfaces.
+
 Tree rendering now supports rectangular cladograms, rectangular phylograms with
 scale bars, circular trees, support-value labels, categorical and continuous tip
 traits, collapsed named clades, metadata strips, trait heatmaps, and
@@ -160,6 +164,8 @@ Today, the checked-in repository produces these durable outcomes:
 - `uv run bijux-phylogenetics distance report exported-distances.tsv --out artifacts/distance-report.html`
 - `uv run bijux-phylogenetics distance reference --json`
 - `uv run bijux-phylogenetics report alignment --alignment alignment.fasta --out artifacts/alignment-report.html --json`
+- `uv run bijux-phylogenetics report workflow-validation --out artifacts/workflow-validation-report.html --json`
+- `uv run bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.html --json`
 - `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json`
 - `uv run bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --out artifacts/dataset-review.html --json`
 - `uv run bijux-phylogenetics report taxonomy --tree tree.nwk --synonym-table taxonomy.tsv --metadata metadata.tsv --traits traits.tsv --alignment alignment.fasta --reported-taxa reviewer-table.tsv --out artifacts/taxonomy-report.html --json`
