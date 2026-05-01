@@ -72,6 +72,8 @@ raw-options = { git_describe_command = "git describe --dirty --tags --long --mat
 include = [
     "README.md",
     "CHANGELOG.md",
+    "LICENSE",
+    "NOTICE",
     "src/bijux_phylogenetics/**",
 ]
 force-include = { "LICENSE" = "LICENSE", "NOTICE" = "NOTICE" }

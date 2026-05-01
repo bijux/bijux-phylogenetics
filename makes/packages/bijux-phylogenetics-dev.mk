@@ -18,7 +18,8 @@ sync-license-assets-package:
 	@for file_name in LICENSE NOTICE; do \
 	  source_path="$(MONOREPO_ROOT)/$$file_name"; \
 	  target_path="$(PROJECT_DIR)/$$file_name"; \
-	  if [ ! -f "$$target_path" ] || ! cmp -s "$$source_path" "$$target_path"; then \
+	  if [ -L "$$target_path" ] || [ ! -f "$$target_path" ] || ! cmp -s "$$source_path" "$$target_path"; then \
+	    rm -f "$$target_path"; \
 	    cp "$$source_path" "$$target_path"; \
 	  fi; \
 	done

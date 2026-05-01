@@ -66,7 +66,9 @@ def _remove_existing_target(target: Path) -> None:
         target.unlink()
         return
     if target.exists():
-        raise IsADirectoryError(f"managed legal asset is unexpectedly a directory: {target}")
+        raise IsADirectoryError(
+            f"managed legal asset is unexpectedly a directory: {target}"
+        )
 
 
 def synchronize_license_assets(*, check: bool = False) -> list[Path]:
