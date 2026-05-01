@@ -1,13 +1,20 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
+import tempfile
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs
 from bijux_phylogenetics.core.taxon_workflows import build_taxon_workflow_loss_report
-from bijux_phylogenetics.core.taxonomy import build_taxon_audit_report, build_taxon_mapping_conflict_report
-from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.core.taxonomy import (
+    build_taxon_audit_report,
+    build_taxon_mapping_conflict_report,
+)
+from bijux_phylogenetics.diagnostics.validation import (
+    inspect_tree_path,
+    validate_tree_path,
+)
 from bijux_phylogenetics.io.fasta import (
     assess_alignment_low_information,
     build_alignment_forensic_report,
@@ -202,7 +209,9 @@ def _error_observation(error: Exception) -> dict[str, object]:
     }
 
 
-def validate_tree_reference_fixtures(*, fixtures_root: Path | None = None) -> ReferenceValidationSuiteReport:
+def validate_tree_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
     """Validate the core tree-diagnostic fixture corpus."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     valid_tree = _fixture(root, "trees", "example_tree.nwk")
@@ -247,7 +256,10 @@ def validate_tree_reference_fixtures(*, fixtures_root: Path | None = None) -> Re
                 "error_code": "duplicate_taxon_error",
                 "message": "duplicate tip labels found: A",
             },
-            observed={} if duplicate_error is None else _error_observation(duplicate_error) | {"message": str(duplicate_error)},
+            observed={}
+            if duplicate_error is None
+            else _error_observation(duplicate_error)
+            | {"message": str(duplicate_error)},
         ),
         _check(
             goal_id=91,
@@ -259,7 +271,9 @@ def validate_tree_reference_fixtures(*, fixtures_root: Path | None = None) -> Re
                 "error_code": "invalid_branch_length_error",
                 "message": "tree contains 1 negative branch lengths",
             },
-            observed={} if negative_error is None else _error_observation(negative_error) | {"message": str(negative_error)},
+            observed={}
+            if negative_error is None
+            else _error_observation(negative_error) | {"message": str(negative_error)},
         ),
         _check(
             goal_id=91,
@@ -288,15 +302,21 @@ def validate_tree_reference_fixtures(*, fixtures_root: Path | None = None) -> Re
     )
 
 
-def validate_taxon_naming_reference_fixtures(*, fixtures_root: Path | None = None) -> ReferenceValidationSuiteReport:
+def validate_taxon_naming_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
     """Validate tree-taxon naming, rank, namespace, and synonym fixtures."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     synonym_table = _fixture(root, "metadata", "example_taxon_synonyms.tsv")
     mixed_rank_tree = _fixture(root, "trees", "example_taxonomy_rank_mixed.nwk")
     taxonomy_tree = _fixture(root, "trees", "example_taxonomy_tree.nwk")
 
-    mixed_audit = build_taxon_audit_report(load_tree(mixed_rank_tree), synonym_table_path=synonym_table)
-    conflict_report = build_taxon_mapping_conflict_report(load_tree(taxonomy_tree), synonym_table_path=synonym_table)
+    mixed_audit = build_taxon_audit_report(
+        load_tree(mixed_rank_tree), synonym_table_path=synonym_table
+    )
+    conflict_report = build_taxon_mapping_conflict_report(
+        load_tree(taxonomy_tree), synonym_table_path=synonym_table
+    )
 
     fixtures = [
         _check(
@@ -327,7 +347,9 @@ def validate_taxon_naming_reference_fixtures(*, fixtures_root: Path | None = Non
                 "warning_count": 3,
             },
             observed={
-                "conflict_types": sorted({row.conflict_type for row in conflict_report.rows}),
+                "conflict_types": sorted(
+                    {row.conflict_type for row in conflict_report.rows}
+                ),
                 "warning_count": len(conflict_report.warnings),
             },
         ),
@@ -347,13 +369,21 @@ def validate_taxon_naming_reference_fixtures(*, fixtures_root: Path | None = Non
     )
 
 
-def validate_alignment_quality_reference_fixtures(*, fixtures_root: Path | None = None) -> ReferenceValidationSuiteReport:
+def validate_alignment_quality_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
     """Validate alignment-quality diagnostics against checked-in FASTA examples."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     clean_alignment = _fixture(root, "alignments", "example_alignment.fasta")
-    duplicate_alignment = _fixture(root, "alignments", "example_alignment_duplicates.fasta")
-    ambiguity_alignment = _fixture(root, "alignments", "example_alignment_ambiguity.fasta")
-    missing_alignment = _fixture(root, "alignments", "example_alignment_missingness.fasta")
+    duplicate_alignment = _fixture(
+        root, "alignments", "example_alignment_duplicates.fasta"
+    )
+    ambiguity_alignment = _fixture(
+        root, "alignments", "example_alignment_ambiguity.fasta"
+    )
+    missing_alignment = _fixture(
+        root, "alignments", "example_alignment_missingness.fasta"
+    )
 
     def observe_alignment(path: Path) -> dict[str, object]:
         summary = summarise_fasta(path)
@@ -464,13 +494,17 @@ def validate_alignment_quality_reference_fixtures(*, fixtures_root: Path | None 
     )
 
 
-def validate_dataset_audit_reference_fixtures(*, fixtures_root: Path | None = None) -> ReferenceValidationSuiteReport:
+def validate_dataset_audit_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
     """Validate dataset-audit mismatch fixtures across multiple evidence surfaces."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     tree_path = _fixture(root, "trees", "example_taxon_workflow_tree.nwk")
     metadata_path = _fixture(root, "metadata", "example_taxon_workflow_metadata.csv")
     traits_path = _fixture(root, "metadata", "example_taxon_workflow_traits.csv")
-    alignment_path = _fixture(root, "alignments", "example_taxon_workflow_alignment.fasta")
+    alignment_path = _fixture(
+        root, "alignments", "example_taxon_workflow_alignment.fasta"
+    )
 
     report = audit_dataset_inputs(
         tree_path,
@@ -497,7 +531,12 @@ def validate_dataset_audit_reference_fixtures(*, fixtures_root: Path | None = No
                     "time_tree",
                 ],
                 "exclusion_count": 2,
-                "mismatch_counts": {"alignment": 1, "metadata": 1, "traits": 0, "tree": 0},
+                "mismatch_counts": {
+                    "alignment": 1,
+                    "metadata": 1,
+                    "traits": 0,
+                    "tree": 0,
+                },
                 "ordering_consistent": True,
                 "risk_level": "low",
             },
@@ -527,14 +566,24 @@ def validate_dataset_audit_reference_fixtures(*, fixtures_root: Path | None = No
     )
 
 
-def validate_figure_reference_fixtures(*, fixtures_root: Path | None = None) -> ReferenceValidationSuiteReport:
+def validate_figure_reference_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
     """Validate figure correctness fixtures for topology and support-label auditing."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     valid_support_tree = _fixture(root, "trees", "example_tree_support_right.nwk")
     invalid_support_tree = _fixture(root, "trees", "example_tree_support_invalid.nwk")
 
-    valid_figure = build_tree_figure_package(valid_support_tree, out_dir=Path("/tmp/bijux-valid-figure-reference"), show_support_values=True)
-    invalid_figure = build_tree_figure_package(invalid_support_tree, out_dir=Path("/tmp/bijux-invalid-figure-reference"), show_support_values=True)
+    valid_figure = build_tree_figure_package(
+        valid_support_tree,
+        out_dir=_temp_reference_dir("bijux-valid-figure-reference"),
+        show_support_values=True,
+    )
+    invalid_figure = build_tree_figure_package(
+        invalid_support_tree,
+        out_dir=_temp_reference_dir("bijux-invalid-figure-reference"),
+        show_support_values=True,
+    )
     fixtures = [
         _check(
             goal_id=95,
@@ -567,7 +616,9 @@ def validate_figure_reference_fixtures(*, fixtures_root: Path | None = None) -> 
             observed={
                 "support_validated": invalid_figure.audit.support_audit.validated,
                 "rendered_support_count": invalid_figure.render.rendered_support_count,
-                "support_warning_count": len(invalid_figure.audit.support_audit.warnings),
+                "support_warning_count": len(
+                    invalid_figure.audit.support_audit.warnings
+                ),
             },
         ),
     ]
@@ -586,7 +637,9 @@ def validate_figure_reference_fixtures(*, fixtures_root: Path | None = None) -> 
     )
 
 
-def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) -> ReferenceValidationSuiteReport:
+def validate_report_regression_fixtures(
+    *, fixtures_root: Path | None = None
+) -> ReferenceValidationSuiteReport:
     """Validate report outputs against checked-in golden artifacts and stable section contracts."""
     from bijux_phylogenetics.reports.service import (
         render_alignment_report,
@@ -597,7 +650,7 @@ def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) ->
     )
 
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
-    temp_root = Path("/tmp/bijux-report-regression-reference")
+    temp_root = _temp_reference_dir("bijux-report-regression-reference")
     temp_root.mkdir(parents=True, exist_ok=True)
 
     tree_path = _fixture(root, "trees", "example_tree.nwk")
@@ -607,8 +660,12 @@ def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) ->
     synonym_table = _fixture(root, "metadata", "example_taxon_synonyms.tsv")
     taxonomy_tree = _fixture(root, "trees", "example_taxonomy_tree.nwk")
 
-    tree_report = render_tree_report(tree_path=tree_path, out_path=temp_root / "tree.html")
-    alignment_report = render_alignment_report(alignment_path=alignment_path, out_path=temp_root / "alignment.html")
+    tree_report = render_tree_report(
+        tree_path=tree_path, out_path=temp_root / "tree.html"
+    )
+    alignment_report = render_alignment_report(
+        alignment_path=alignment_path, out_path=temp_root / "alignment.html"
+    )
     dataset_report = render_dataset_report(
         tree_path=tree_path,
         metadata_path=metadata_path,
@@ -646,7 +703,9 @@ def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) ->
             observed={
                 "report_kind": tree_report.machine_manifest["report_kind"],
                 "sections": tree_report.machine_manifest["sections"],
-                "reviewer_summary_count": len(tree_report.machine_manifest["reviewer_summary"]),
+                "reviewer_summary_count": len(
+                    tree_report.machine_manifest["reviewer_summary"]
+                ),
             },
         ),
         _check(
@@ -681,7 +740,9 @@ def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) ->
             fixture_paths=[tree_path, metadata_path, traits_path],
             expected={"sections": dataset_report.machine_manifest["sections"]},
             observed={"sections": dataset_report.machine_manifest["sections"]},
-            notes=["dataset section order is currently treated as a stable contract by this suite"],
+            notes=[
+                "dataset section order is currently treated as a stable contract by this suite"
+            ],
         ),
         _check(
             goal_id=96,
@@ -690,7 +751,9 @@ def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) ->
             fixture_paths=[tree_path, alignment_path],
             expected={"sections": phylo_report.machine_manifest["sections"]},
             observed={"sections": phylo_report.machine_manifest["sections"]},
-            notes=["phylo-inputs section order is currently treated as a stable contract by this suite"],
+            notes=[
+                "phylo-inputs section order is currently treated as a stable contract by this suite"
+            ],
         ),
         _check(
             goal_id=96,
@@ -699,7 +762,9 @@ def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) ->
             fixture_paths=[taxonomy_tree, synonym_table],
             expected={"sections": taxon_report.machine_manifest["sections"]},
             observed={"sections": taxon_report.machine_manifest["sections"]},
-            notes=["taxonomy section order is currently treated as a stable contract by this suite"],
+            notes=[
+                "taxonomy section order is currently treated as a stable contract by this suite"
+            ],
         ),
     ]
     return _suite_report(
@@ -717,7 +782,9 @@ def validate_report_regression_fixtures(*, fixtures_root: Path | None = None) ->
     )
 
 
-def _core_workflow_validation_rows(suites: list[ReferenceValidationSuiteReport]) -> list[CoreWorkflowValidationRow]:
+def _core_workflow_validation_rows(
+    suites: list[ReferenceValidationSuiteReport],
+) -> list[CoreWorkflowValidationRow]:
     suite_map = {suite.suite: suite for suite in suites}
     definitions = [
         (
@@ -729,32 +796,62 @@ def _core_workflow_validation_rows(suites: list[ReferenceValidationSuiteReport])
         (
             "taxon-audit",
             ["taxon-naming-reference", "report-regression-reference"],
-            ["taxon audit report", "mapping conflict audit", "taxonomy html section contract"],
-            ["naming audits still rely on the supplied synonym table and cannot infer authority completeness"],
+            [
+                "taxon audit report",
+                "mapping conflict audit",
+                "taxonomy html section contract",
+            ],
+            [
+                "naming audits still rely on the supplied synonym table and cannot infer authority completeness"
+            ],
         ),
         (
             "alignment-review",
             ["alignment-quality-reference", "report-regression-reference"],
-            ["alignment quality report", "duplicate policy report", "alignment html section contract"],
-            ["alignment quality signals are deterministic heuristics, not biological truth"],
+            [
+                "alignment quality report",
+                "duplicate policy report",
+                "alignment html section contract",
+            ],
+            [
+                "alignment quality signals are deterministic heuristics, not biological truth"
+            ],
         ),
         (
             "dataset-audit",
             ["dataset-audit-reference", "report-regression-reference"],
-            ["dataset audit report", "exclusion table", "dataset html section contract"],
-            ["dataset fixture coverage is strongest for mismatch traceability rather than for large cohorts"],
+            [
+                "dataset audit report",
+                "exclusion table",
+                "dataset html section contract",
+            ],
+            [
+                "dataset fixture coverage is strongest for mismatch traceability rather than for large cohorts"
+            ],
         ),
         (
             "figure-package",
             ["figure-correctness-reference"],
             ["support-label render audit", "topology-preserving figure metadata"],
-            ["figure correctness is validated through render metadata rather than screenshot diffs"],
+            [
+                "figure correctness is validated through render metadata rather than screenshot diffs"
+            ],
         ),
         (
             "phylo-inputs-review",
-            ["tree-validation-reference", "alignment-quality-reference", "report-regression-reference"],
-            ["phylo-inputs report", "alignment linkage report", "phylo html section contract"],
-            ["tree and alignment fixtures are validated separately before they are linked together"],
+            [
+                "tree-validation-reference",
+                "alignment-quality-reference",
+                "report-regression-reference",
+            ],
+            [
+                "phylo-inputs report",
+                "alignment linkage report",
+                "phylo html section contract",
+            ],
+            [
+                "tree and alignment fixtures are validated separately before they are linked together"
+            ],
         ),
     ]
     rows: list[CoreWorkflowValidationRow] = []
@@ -778,7 +875,9 @@ def _core_workflow_validation_rows(suites: list[ReferenceValidationSuiteReport])
     return rows
 
 
-def build_core_workflow_failure_gallery(*, fixtures_root: Path | None = None) -> list[CoreWorkflowFailureCase]:
+def build_core_workflow_failure_gallery(
+    *, fixtures_root: Path | None = None
+) -> list[CoreWorkflowFailureCase]:
     """Document known failure and warning cases for core workflows."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     cases: list[CoreWorkflowFailureCase] = []
@@ -798,7 +897,9 @@ def build_core_workflow_failure_gallery(*, fixtures_root: Path | None = None) ->
             )
         )
 
-    invalid_alignment = _fixture(root, "alignments", "example_alignment_invalid_lengths.fasta")
+    invalid_alignment = _fixture(
+        root, "alignments", "example_alignment_invalid_lengths.fasta"
+    )
     try:
         summarise_fasta(invalid_alignment)
     except Exception as error:
@@ -817,7 +918,9 @@ def build_core_workflow_failure_gallery(*, fixtures_root: Path | None = None) ->
         _fixture(root, "trees", "example_taxon_workflow_tree.nwk"),
         _fixture(root, "metadata", "example_taxon_workflow_metadata.csv"),
         _fixture(root, "metadata", "example_taxon_workflow_traits.csv"),
-        alignment_path=_fixture(root, "alignments", "example_taxon_workflow_alignment.fasta"),
+        alignment_path=_fixture(
+            root, "alignments", "example_taxon_workflow_alignment.fasta"
+        ),
     )
     cases.append(
         CoreWorkflowFailureCase(
@@ -826,13 +929,14 @@ def build_core_workflow_failure_gallery(*, fixtures_root: Path | None = None) ->
             outcome_kind="blocked",
             observed_code=dataset_report.readiness_decision,
             observed_summary="; ".join(dataset_report.blockers),
-            passed=dataset_report.readiness_decision == "blocked" and len(dataset_report.blockers) >= 2,
+            passed=dataset_report.readiness_decision == "blocked"
+            and len(dataset_report.blockers) >= 2,
         )
     )
 
     figure_report = build_tree_figure_package(
         _fixture(root, "trees", "example_tree_support_invalid.nwk"),
-        out_dir=Path("/tmp/bijux-failure-gallery-figure"),
+        out_dir=_temp_reference_dir("bijux-failure-gallery-figure"),
         show_support_values=True,
     )
     cases.append(
@@ -842,13 +946,16 @@ def build_core_workflow_failure_gallery(*, fixtures_root: Path | None = None) ->
             outcome_kind="warning",
             observed_code="support_withheld",
             observed_summary="; ".join(figure_report.audit.support_audit.warnings),
-            passed=figure_report.audit.support_audit.validated is False and figure_report.render.rendered_support_count == 0,
+            passed=figure_report.audit.support_audit.validated is False
+            and figure_report.render.rendered_support_count == 0,
         )
     )
     return cases
 
 
-def classify_core_workflow_maturity(*, fixtures_root: Path | None = None) -> list[WorkflowMaturityClassification]:
+def classify_core_workflow_maturity(
+    *, fixtures_root: Path | None = None
+) -> list[WorkflowMaturityClassification]:
     """Assign a maturity label to each Level 1 workflow."""
     _ = fixtures_root
     return [
@@ -859,7 +966,9 @@ def classify_core_workflow_maturity(*, fixtures_root: Path | None = None) -> lis
                 "tree validation and regression fixtures cover stable success and failure cases",
                 "reviewer-facing HTML and machine manifests are deterministic",
             ],
-            outstanding_risks=["multi-tree or posterior uncertainty remains a separate review surface"],
+            outstanding_risks=[
+                "multi-tree or posterior uncertainty remains a separate review surface"
+            ],
         ),
         WorkflowMaturityClassification(
             workflow="taxon-audit",
@@ -868,7 +977,9 @@ def classify_core_workflow_maturity(*, fixtures_root: Path | None = None) -> lis
                 "taxon naming, rank, namespace, and synonym conflicts are fixture-backed",
                 "taxonomy reports expose explicit reviewer warnings and conflict rows",
             ],
-            outstanding_risks=["taxonomy completeness still depends on the supplied synonym authority tables"],
+            outstanding_risks=[
+                "taxonomy completeness still depends on the supplied synonym authority tables"
+            ],
         ),
         WorkflowMaturityClassification(
             workflow="alignment-review",
@@ -877,7 +988,9 @@ def classify_core_workflow_maturity(*, fixtures_root: Path | None = None) -> lis
                 "alignment diagnostics are validated across clean, duplicate-heavy, ambiguity-heavy, and missingness-heavy fixtures",
                 "reviewer-facing diagnostics are bundled in stable report contracts",
             ],
-            outstanding_risks=["quality scores remain heuristic and should be interpreted with domain context"],
+            outstanding_risks=[
+                "quality scores remain heuristic and should be interpreted with domain context"
+            ],
         ),
         WorkflowMaturityClassification(
             workflow="dataset-audit",
@@ -886,7 +999,9 @@ def classify_core_workflow_maturity(*, fixtures_root: Path | None = None) -> lis
                 "dataset mismatch, exclusion, and blocked-analysis logic are pinned to a checked-in workflow example",
                 "dataset reports expose ledgers, findings, exclusions, and reviewer checklists",
             ],
-            outstanding_risks=["fixture coverage currently emphasizes traceability over broad real-world dataset diversity"],
+            outstanding_risks=[
+                "fixture coverage currently emphasizes traceability over broad real-world dataset diversity"
+            ],
         ),
         WorkflowMaturityClassification(
             workflow="figure-package",
@@ -895,7 +1010,9 @@ def classify_core_workflow_maturity(*, fixtures_root: Path | None = None) -> lis
                 "figure packages preserve render metadata and support-label audits across safe and unsafe fixtures",
                 "invalid support labels are explicitly withheld instead of silently rendered",
             ],
-            outstanding_risks=["visual regression is validated through render metadata rather than screenshot goldens"],
+            outstanding_risks=[
+                "visual regression is validated through render metadata rather than screenshot goldens"
+            ],
         ),
         WorkflowMaturityClassification(
             workflow="phylo-inputs-review",
@@ -904,12 +1021,16 @@ def classify_core_workflow_maturity(*, fixtures_root: Path | None = None) -> lis
                 "tree and alignment fixtures are independently validated and then surfaced together in a reviewer report",
                 "stable section contracts keep combined-input reports reviewable across releases",
             ],
-            outstanding_risks=["combined tree-alignment trust still inherits the limitations of the underlying tree and alignment heuristics"],
+            outstanding_risks=[
+                "combined tree-alignment trust still inherits the limitations of the underlying tree and alignment heuristics"
+            ],
         ),
     ]
 
 
-def build_core_workflow_validation_report(*, fixtures_root: Path | None = None) -> CoreWorkflowValidationReport:
+def build_core_workflow_validation_report(
+    *, fixtures_root: Path | None = None
+) -> CoreWorkflowValidationReport:
     """Build the Level 1 workflow validation report across goals 91 to 99."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     suites = [
@@ -927,11 +1048,7 @@ def build_core_workflow_validation_report(*, fixtures_root: Path | None = None) 
     passed_fixture_count = sum(suite.passed_fixture_count for suite in suites)
     failed_fixture_count = total_fixture_count - passed_fixture_count
     limitations = sorted(
-        {
-            limitation
-            for suite in suites
-            for limitation in suite.limitations
-        }
+        {limitation for suite in suites for limitation in suite.limitations}
     )
     return CoreWorkflowValidationReport(
         suites=suites,
@@ -945,17 +1062,27 @@ def build_core_workflow_validation_report(*, fixtures_root: Path | None = None) 
     )
 
 
-def build_level_one_release_gate_report(*, fixtures_root: Path | None = None) -> LevelOneReleaseGateReport:
+def build_level_one_release_gate_report(
+    *, fixtures_root: Path | None = None
+) -> LevelOneReleaseGateReport:
     """Audit the checked-in Level 1 workflow end to end for reviewer traceability."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     validation = build_core_workflow_validation_report(fixtures_root=root)
     tree_path = _fixture(root, "trees", "example_taxon_workflow_tree.nwk")
     metadata_path = _fixture(root, "metadata", "example_taxon_workflow_metadata.csv")
     traits_path = _fixture(root, "metadata", "example_taxon_workflow_traits.csv")
-    alignment_path = _fixture(root, "alignments", "example_taxon_workflow_alignment.fasta")
-    filtered_alignment_path = _fixture(root, "alignments", "example_taxon_workflow_filtered_alignment.fasta")
-    inference_tree_path = _fixture(root, "trees", "example_taxon_workflow_inference.nwk")
-    reported_taxa_path = _fixture(root, "metadata", "example_taxon_workflow_reported.csv")
+    alignment_path = _fixture(
+        root, "alignments", "example_taxon_workflow_alignment.fasta"
+    )
+    filtered_alignment_path = _fixture(
+        root, "alignments", "example_taxon_workflow_filtered_alignment.fasta"
+    )
+    inference_tree_path = _fixture(
+        root, "trees", "example_taxon_workflow_inference.nwk"
+    )
+    reported_taxa_path = _fixture(
+        root, "metadata", "example_taxon_workflow_reported.csv"
+    )
 
     dataset = audit_dataset_inputs(
         tree_path,
@@ -973,14 +1100,20 @@ def build_level_one_release_gate_report(*, fixtures_root: Path | None = None) ->
         reported_taxa_path=reported_taxa_path,
     )
 
-    retained_taxa = sorted(row.taxon for row in taxon_loss.rows if row.first_loss_stage is None)
-    excluded_taxa = sorted(row.taxon for row in taxon_loss.rows if row.first_loss_stage is not None)
+    retained_taxa = sorted(
+        row.taxon for row in taxon_loss.rows if row.first_loss_stage is None
+    )
+    excluded_taxa = sorted(
+        row.taxon for row in taxon_loss.rows if row.first_loss_stage is not None
+    )
     exclusion_causes = {
         row.taxon: [event.stage for event in row.loss_events]
         for row in taxon_loss.rows
         if row.loss_events
     }
-    taxon_first_loss_stage = {row.taxon: row.first_loss_stage for row in taxon_loss.rows}
+    taxon_first_loss_stage = {
+        row.taxon: row.first_loss_stage for row in taxon_loss.rows
+    }
     decision = "blocked"
     rationale = [
         f"dataset readiness is {dataset.readiness_decision}",
@@ -1020,8 +1153,16 @@ def write_core_workflow_validation_json(
     """Write the aggregate workflow validation report as deterministic JSON."""
     report = build_core_workflow_validation_report(fixtures_root=fixtures_root)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return path
+
+
+def _temp_reference_dir(name: str) -> Path:
+    """Return a deterministic temporary directory for reference checks."""
+    return Path(tempfile.gettempdir()) / name
 
 
 def write_level_one_release_gate_json(
@@ -1032,5 +1173,8 @@ def write_level_one_release_gate_json(
     """Write the Level 1 release gate report as deterministic JSON."""
     report = build_level_one_release_gate_report(fixtures_root=fixtures_root)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return path

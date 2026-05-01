@@ -4,13 +4,17 @@ import csv
 from dataclasses import dataclass
 import math
 from pathlib import Path
-from time import perf_counter
 import tempfile
+from time import perf_counter
 
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Tree as BioTree
 
-from bijux_phylogenetics.compare.topology import _informative_clade_nodes, _informative_clades, _unrooted_splits
+from bijux_phylogenetics.compare.topology import (
+    _informative_clade_nodes,
+    _informative_clades,
+    _unrooted_splits,
+)
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
@@ -370,7 +374,9 @@ def _require_tree_set(path: Path) -> tuple[str, list[BioTree], list[PhyloTree]]:
     bio_trees = list(Phylo.parse(path, source_format))
     if not bio_trees:
         raise InvalidAlignmentError(f"tree set contains no trees: {path}")
-    trees = [tree_from_biophylo(tree, source_format=source_format) for tree in bio_trees]
+    trees = [
+        tree_from_biophylo(tree, source_format=source_format) for tree in bio_trees
+    ]
     return source_format, bio_trees, trees
 
 
@@ -379,18 +385,24 @@ def _format_clade(clade: frozenset[str]) -> str:
 
 
 def _rooted_topology_id(tree: PhyloTree, shared_taxa: set[str]) -> str:
-    return "||".join(sorted(_format_clade(clade) for clade in _informative_clades(tree, shared_taxa)))
+    return "||".join(
+        sorted(_format_clade(clade) for clade in _informative_clades(tree, shared_taxa))
+    )
 
 
 def _unrooted_topology_id(tree: PhyloTree, shared_taxa: set[str]) -> str:
-    return "||".join(sorted(_format_clade(clade) for clade in _unrooted_splits(tree, shared_taxa)))
+    return "||".join(
+        sorted(_format_clade(clade) for clade in _unrooted_splits(tree, shared_taxa))
+    )
 
 
 def _validate_same_taxa(trees: list[PhyloTree]) -> list[str]:
     first = sorted(trees[0].tip_names)
     for tree in trees[1:]:
         if sorted(tree.tip_names) != first:
-            raise InvalidAlignmentError("tree-set analysis requires all trees to share the exact same taxon set")
+            raise InvalidAlignmentError(
+                "tree-set analysis requires all trees to share the exact same taxon set"
+            )
     return first
 
 
@@ -405,7 +417,9 @@ def _clade_signature(tree: PhyloTree, shared_taxa: set[str], taxon: str) -> str:
     return "||".join(containing_clades)
 
 
-def _clade_counts(trees: list[PhyloTree], shared_taxa: set[str]) -> dict[frozenset[str], int]:
+def _clade_counts(
+    trees: list[PhyloTree], shared_taxa: set[str]
+) -> dict[frozenset[str], int]:
     counts: dict[frozenset[str], int] = {}
     for tree in trees:
         for clade in _informative_clades(tree, shared_taxa):
@@ -417,12 +431,18 @@ def _clades_conflict(left: frozenset[str], right: frozenset[str]) -> bool:
     return bool(left & right) and not (left <= right or right <= left)
 
 
-def _clade_branch_lengths(tree: PhyloTree, shared_taxa: set[str]) -> dict[frozenset[str], float | None]:
+def _clade_branch_lengths(
+    tree: PhyloTree, shared_taxa: set[str]
+) -> dict[frozenset[str], float | None]:
     lengths: dict[frozenset[str], float | None] = {}
 
     def visit(node: TreeNode) -> set[str]:
         if node.is_leaf():
-            return {node.name} if node.name is not None and node.name in shared_taxa else set()
+            return (
+                {node.name}
+                if node.name is not None and node.name in shared_taxa
+                else set()
+            )
         taxa: set[str] = set()
         for child in node.children:
             taxa.update(visit(child))
@@ -435,10 +455,16 @@ def _clade_branch_lengths(tree: PhyloTree, shared_taxa: set[str]) -> dict[frozen
 
 
 def _terminal_branch_lengths(tree: PhyloTree) -> dict[str, float | None]:
-    return {name: length for name, length in tree.terminal_branch_lengths() if name is not None}
+    return {
+        name: length
+        for name, length in tree.terminal_branch_lengths()
+        if name is not None
+    }
 
 
-def _maximal_nested_clades(parent: frozenset[str], clades: set[frozenset[str]]) -> list[frozenset[str]]:
+def _maximal_nested_clades(
+    parent: frozenset[str], clades: set[frozenset[str]]
+) -> list[frozenset[str]]:
     nested = [clade for clade in clades if clade < parent]
     return sorted(
         [
@@ -457,10 +483,21 @@ def _mean(values: list[float]) -> float:
 def _shannon_effective_count(frequencies: list[float]) -> float:
     if not frequencies:
         return 0.0
-    return round(math.exp(-sum(frequency * math.log(frequency) for frequency in frequencies if frequency > 0.0)), 15)
+    return round(
+        math.exp(
+            -sum(
+                frequency * math.log(frequency)
+                for frequency in frequencies
+                if frequency > 0.0
+            )
+        ),
+        15,
+    )
 
 
-def _mean_pairwise_distance(trees: list[PhyloTree], shared_taxa: set[str]) -> tuple[float, float]:
+def _mean_pairwise_distance(
+    trees: list[PhyloTree], shared_taxa: set[str]
+) -> tuple[float, float]:
     comparisons: list[tuple[int, float]] = []
     for left_index, left in enumerate(trees):
         for right in trees[left_index + 1 :]:
@@ -483,7 +520,9 @@ def _support_classification(frequency: float, conflict_count: int) -> str:
     return "weak-support"
 
 
-def _representative_tree_by_indices(trees: list[PhyloTree], indices: list[int]) -> tuple[int, str]:
+def _representative_tree_by_indices(
+    trees: list[PhyloTree], indices: list[int]
+) -> tuple[int, str]:
     representative_index = indices[0]
     representative_tree = trees[representative_index - 1]
     return representative_index, dumps_newick(representative_tree)
@@ -544,7 +583,9 @@ def _build_consensus_node(
     )
 
 
-def _tree_distance(left: PhyloTree, right: PhyloTree, shared_taxa: set[str]) -> tuple[int, float]:
+def _tree_distance(
+    left: PhyloTree, right: PhyloTree, shared_taxa: set[str]
+) -> tuple[int, float]:
     left_clades = _informative_clades(left, shared_taxa)
     right_clades = _informative_clades(right, shared_taxa)
     symmetric_difference = left_clades.symmetric_difference(right_clades)
@@ -575,7 +616,9 @@ def load_tree_set(path: Path) -> TreeSetReport:
         shared_taxa=shared_taxa,
         taxa_union=taxa_union,
         rooted_topology_count=len({record.rooted_topology_id for record in records}),
-        unrooted_topology_count=len({record.unrooted_topology_id for record in records}),
+        unrooted_topology_count=len(
+            {record.unrooted_topology_id for record in records}
+        ),
         records=records,
     )
 
@@ -608,7 +651,9 @@ def write_clade_frequency_table(path: Path, report: CladeFrequencyReport) -> Pat
     """Write a clade-frequency table as TSV."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["clade", "tree_count", "frequency"], delimiter="\t")
+        writer = csv.DictWriter(
+            handle, fieldnames=["clade", "tree_count", "frequency"], delimiter="\t"
+        )
         writer.writeheader()
         for row in report.clade_frequencies:
             writer.writerow(
@@ -633,7 +678,9 @@ def compute_consensus_tree_with_threshold(
 ) -> tuple[PhyloTree, ConsensusTreeReport]:
     """Compute a deterministic consensus tree at a caller-supplied clade frequency threshold."""
     if not 0.0 < threshold < 1.0:
-        raise ValueError(f"consensus threshold must be between 0 and 1, got {threshold}")
+        raise ValueError(
+            f"consensus threshold must be between 0 and 1, got {threshold}"
+        )
     source_format, _, trees = _require_tree_set(path)
     shared_taxa = _validate_same_taxa(trees)
     universe = frozenset(shared_taxa)
@@ -649,9 +696,7 @@ def compute_consensus_tree_with_threshold(
             if length is not None:
                 terminal_lengths.setdefault(taxon, []).append(float(length))
     majority_clades = {
-        clade
-        for clade, count in counts.items()
-        if count / len(trees) >= threshold
+        clade for clade, count in counts.items() if count / len(trees) >= threshold
     }
     clade_support = {
         clade: round((counts[clade] / len(trees)) * 100.0, 15)
@@ -663,9 +708,7 @@ def compute_consensus_tree_with_threshold(
         if clade in majority_clades and lengths
     }
     terminal_length_means = {
-        taxon: _mean(lengths)
-        for taxon, lengths in terminal_lengths.items()
-        if lengths
+        taxon: _mean(lengths) for taxon, lengths in terminal_lengths.items() if lengths
     }
     tree = PhyloTree(
         root=_build_consensus_node(
@@ -736,7 +779,9 @@ def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> 
                     "left_index": row.left_index,
                     "right_index": row.right_index,
                     "robinson_foulds_distance": row.robinson_foulds_distance,
-                    "normalized_robinson_foulds": format(row.normalized_robinson_foulds, ".15g"),
+                    "normalized_robinson_foulds": format(
+                        row.normalized_robinson_foulds, ".15g"
+                    ),
                 }
             )
     return path
@@ -785,7 +830,9 @@ def cluster_trees_by_topology(path: Path) -> TreeTopologyClusterReport:
         clusters_by_id.items(),
         key=lambda item: (-len(item[1]), item[1][0]),
     ):
-        representative_index, representative_newick = _representative_tree_by_indices(trees, indices)
+        representative_index, representative_newick = _representative_tree_by_indices(
+            trees, indices
+        )
         clusters.append(
             TreeTopologyCluster(
                 rooted_topology_id=topology_id,
@@ -836,7 +883,9 @@ def detect_unstable_taxa(path: Path) -> UnstableTaxaReport:
                 placements=placements,
             )
         )
-    taxa.sort(key=lambda row: (-row.instability_score, -row.unique_placements, row.taxon))
+    taxa.sort(
+        key=lambda row: (-row.instability_score, -row.unique_placements, row.taxon)
+    )
     return UnstableTaxaReport(path=path, tree_count=len(trees), taxa=taxa)
 
 
@@ -851,18 +900,30 @@ def detect_unstable_clades(path: Path) -> UnstableCladeReport:
             clade=_format_clade(clade),
             tree_count=count,
             frequency=round(count / len(trees), 15),
-            conflict_count=len(conflicts := sorted(_format_clade(other) for other in all_clades if _clades_conflict(clade, other))),
-            instability_score=round(min(count / len(trees), 1.0 - (count / len(trees))), 15),
-            support_classification=_support_classification(round(count / len(trees), 15), len(conflicts)),
+            conflict_count=len(
+                conflicts := sorted(
+                    _format_clade(other)
+                    for other in all_clades
+                    if _clades_conflict(clade, other)
+                )
+            ),
+            instability_score=round(
+                min(count / len(trees), 1.0 - (count / len(trees))), 15
+            ),
+            support_classification=_support_classification(
+                round(count / len(trees), 15), len(conflicts)
+            ),
             conflicting_clades=conflicts,
         )
         for clade, count in sorted(
             counts.items(),
-            key=lambda item: (_format_clade(item[0])),
+            key=lambda item: _format_clade(item[0]),
         )
         if count < len(trees)
     ]
-    unstable_clades.sort(key=lambda row: (-row.instability_score, -row.conflict_count, row.clade))
+    unstable_clades.sort(
+        key=lambda row: (-row.instability_score, -row.conflict_count, row.clade)
+    )
     return UnstableCladeReport(path=path, tree_count=len(trees), clades=unstable_clades)
 
 
@@ -878,14 +939,20 @@ def compare_posterior_topological_diversity(
     left_taxa = set(_validate_same_taxa(left_trees))
     right_taxa = set(_validate_same_taxa(right_trees))
     if left_taxa != right_taxa:
-        raise InvalidAlignmentError("posterior diversity comparison requires identical taxon sets across both inputs")
+        raise InvalidAlignmentError(
+            "posterior diversity comparison requires identical taxon sets across both inputs"
+        )
     left_mean_rf, left_mean_normalized = _mean_pairwise_distance(left_trees, left_taxa)
-    right_mean_rf, right_mean_normalized = _mean_pairwise_distance(right_trees, right_taxa)
+    right_mean_rf, right_mean_normalized = _mean_pairwise_distance(
+        right_trees, right_taxa
+    )
     left_summary = PosteriorTopologicalDiversitySummary(
         tree_count=len(left_trees),
         rooted_topology_count=left_clusters.rooted_topology_count,
         dominant_topology_frequency=left_clusters.clusters[0].frequency,
-        effective_topology_count=_shannon_effective_count([cluster.frequency for cluster in left_clusters.clusters]),
+        effective_topology_count=_shannon_effective_count(
+            [cluster.frequency for cluster in left_clusters.clusters]
+        ),
         mean_within_set_robinson_foulds=left_mean_rf,
         mean_within_set_normalized_robinson_foulds=left_mean_normalized,
     )
@@ -893,16 +960,33 @@ def compare_posterior_topological_diversity(
         tree_count=len(right_trees),
         rooted_topology_count=right_clusters.rooted_topology_count,
         dominant_topology_frequency=right_clusters.clusters[0].frequency,
-        effective_topology_count=_shannon_effective_count([cluster.frequency for cluster in right_clusters.clusters]),
+        effective_topology_count=_shannon_effective_count(
+            [cluster.frequency for cluster in right_clusters.clusters]
+        ),
         mean_within_set_robinson_foulds=right_mean_rf,
         mean_within_set_normalized_robinson_foulds=right_mean_normalized,
     )
     warnings: list[str] = []
     if left_summary.effective_topology_count != right_summary.effective_topology_count:
-        richer = "left" if left_summary.effective_topology_count > right_summary.effective_topology_count else "right"
-        warnings.append(f"{richer} analysis spans a broader effective topology spectrum")
-    if abs(left_summary.mean_within_set_normalized_robinson_foulds - right_summary.mean_within_set_normalized_robinson_foulds) >= 0.15:
-        warnings.append("posterior analyses differ materially in within-set topological dispersion")
+        richer = (
+            "left"
+            if left_summary.effective_topology_count
+            > right_summary.effective_topology_count
+            else "right"
+        )
+        warnings.append(
+            f"{richer} analysis spans a broader effective topology spectrum"
+        )
+    if (
+        abs(
+            left_summary.mean_within_set_normalized_robinson_foulds
+            - right_summary.mean_within_set_normalized_robinson_foulds
+        )
+        >= 0.15
+    ):
+        warnings.append(
+            "posterior analyses differ materially in within-set topological dispersion"
+        )
     return PosteriorTopologicalDiversityComparisonReport(
         left_path=left_path,
         right_path=right_path,
@@ -920,23 +1004,31 @@ def detect_posterior_topology_multimodality(
 ) -> PosteriorTopologyMultimodalityReport:
     """Report whether a posterior tree set contains multiple high-frequency topology modes."""
     if not 0.0 < min_mode_frequency <= 1.0:
-        raise ValueError(f"min_mode_frequency must be between 0 and 1, got {min_mode_frequency}")
+        raise ValueError(
+            f"min_mode_frequency must be between 0 and 1, got {min_mode_frequency}"
+        )
     if min_mode_count < 2:
         raise ValueError(f"min_mode_count must be at least 2, got {min_mode_count}")
     clusters = cluster_trees_by_topology(path)
     _, _, trees = _require_tree_set(path)
-    modes = _topology_modes_from_clusters(trees, clusters.clusters, min_mode_frequency=min_mode_frequency)
+    modes = _topology_modes_from_clusters(
+        trees, clusters.clusters, min_mode_frequency=min_mode_frequency
+    )
     multimodal = len(modes) >= min_mode_count
     warnings: list[str] = []
     if multimodal:
-        warnings.append("posterior topology distribution contains multiple high-frequency modes")
+        warnings.append(
+            "posterior topology distribution contains multiple high-frequency modes"
+        )
     if clusters.clusters and clusters.clusters[0].frequency < 0.75:
         warnings.append("no single topology dominates the posterior tree set")
     return PosteriorTopologyMultimodalityReport(
         path=path,
         tree_count=clusters.tree_count,
         rooted_topology_count=clusters.rooted_topology_count,
-        dominant_mode_frequency=0.0 if not clusters.clusters else clusters.clusters[0].frequency,
+        dominant_mode_frequency=0.0
+        if not clusters.clusters
+        else clusters.clusters[0].frequency,
         mode_count=len(modes),
         multimodal=multimodal,
         modes=modes,
@@ -951,13 +1043,14 @@ def summarize_clade_credibility_conflicts(
 ) -> CladeCredibilityConflictReport:
     """Identify mutually incompatible clades that both achieve high posterior credibility."""
     if not 0.0 < credibility_threshold < 1.0:
-        raise ValueError(f"credibility_threshold must be between 0 and 1, got {credibility_threshold}")
+        raise ValueError(
+            f"credibility_threshold must be between 0 and 1, got {credibility_threshold}"
+        )
     _, _, trees = _require_tree_set(path)
     shared_taxa = set(_validate_same_taxa(trees))
     counts = _clade_counts(trees, shared_taxa)
     frequencies = {
-        clade: round(count / len(trees), 15)
-        for clade, count in counts.items()
+        clade: round(count / len(trees), 15) for clade, count in counts.items()
     }
     high_credibility = [
         clade
@@ -975,10 +1068,14 @@ def summarize_clade_credibility_conflicts(
                     left_frequency=frequencies[left_clade],
                     right_clade=_format_clade(right_clade),
                     right_frequency=frequencies[right_clade],
-                    combined_frequency=round(frequencies[left_clade] + frequencies[right_clade], 15),
+                    combined_frequency=round(
+                        frequencies[left_clade] + frequencies[right_clade], 15
+                    ),
                 )
             )
-    conflicts.sort(key=lambda row: (-row.combined_frequency, row.left_clade, row.right_clade))
+    conflicts.sort(
+        key=lambda row: (-row.combined_frequency, row.left_clade, row.right_clade)
+    )
     return CladeCredibilityConflictReport(
         path=path,
         tree_count=len(trees),
@@ -989,13 +1086,21 @@ def summarize_clade_credibility_conflicts(
     )
 
 
-def write_clade_credibility_conflict_table(path: Path, report: CladeCredibilityConflictReport) -> Path:
+def write_clade_credibility_conflict_table(
+    path: Path, report: CladeCredibilityConflictReport
+) -> Path:
     """Write high-credibility clade conflicts as a TSV table."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
             handle,
-            fieldnames=["left_clade", "left_frequency", "right_clade", "right_frequency", "combined_frequency"],
+            fieldnames=[
+                "left_clade",
+                "left_frequency",
+                "right_clade",
+                "right_frequency",
+                "combined_frequency",
+            ],
             delimiter="\t",
         )
         writer.writeheader()
@@ -1022,15 +1127,15 @@ def summarize_uncertainty_aware_conclusions(
 ) -> UncertaintyAwareConclusionSummaryReport:
     """Classify clade-level conclusions as robust, uncertain, or conflict-prone."""
     if not 0.0 < robust_threshold <= 1.0:
-        raise ValueError(f"robust_threshold must be between 0 and 1, got {robust_threshold}")
-    unstable = detect_unstable_clades(path)
-    conflict_report = summarize_clade_credibility_conflicts(path, credibility_threshold=credibility_threshold)
-    conflict_clades = {
-        row.left_clade
-        for row in conflict_report.conflicts
-    } | {
-        row.right_clade
-        for row in conflict_report.conflicts
+        raise ValueError(
+            f"robust_threshold must be between 0 and 1, got {robust_threshold}"
+        )
+    detect_unstable_clades(path)
+    conflict_report = summarize_clade_credibility_conflicts(
+        path, credibility_threshold=credibility_threshold
+    )
+    conflict_clades = {row.left_clade for row in conflict_report.conflicts} | {
+        row.right_clade for row in conflict_report.conflicts
     }
     frequency_report = compute_clade_frequency_table(path)
     robust_clades: list[UncertaintyAwareCladeConclusion] = []
@@ -1081,7 +1186,9 @@ def summarize_uncertainty_aware_conclusions(
     )
 
 
-def write_uncertainty_conclusion_table(path: Path, report: UncertaintyAwareConclusionSummaryReport) -> Path:
+def write_uncertainty_conclusion_table(
+    path: Path, report: UncertaintyAwareConclusionSummaryReport
+) -> Path:
     """Write robust, uncertain, and conflict-prone clade conclusions as a TSV table."""
     rows = [
         *report.robust_clades,
@@ -1108,14 +1215,18 @@ def write_uncertainty_conclusion_table(path: Path, report: UncertaintyAwareConcl
     return path
 
 
-def compare_posterior_tree_sets(left_path: Path, right_path: Path) -> PosteriorTreeSetComparisonReport:
+def compare_posterior_tree_sets(
+    left_path: Path, right_path: Path
+) -> PosteriorTreeSetComparisonReport:
     """Compare two tree sets over shared taxa, clade support, and cross-set topology distance."""
     _, _, left_trees = _require_tree_set(left_path)
     _, _, right_trees = _require_tree_set(right_path)
     left_taxa = _validate_same_taxa(left_trees)
     right_taxa = _validate_same_taxa(right_trees)
     if left_taxa != right_taxa:
-        raise InvalidAlignmentError("posterior tree-set comparison requires identical taxon sets across both inputs")
+        raise InvalidAlignmentError(
+            "posterior tree-set comparison requires identical taxon sets across both inputs"
+        )
 
     shared_taxa = set(left_taxa)
     left_counts = _clade_counts(left_trees, shared_taxa)
@@ -1126,11 +1237,19 @@ def compare_posterior_tree_sets(left_path: Path, right_path: Path) -> PosteriorT
             clade=_format_clade(clade),
             left_frequency=round(left_counts.get(clade, 0) / len(left_trees), 15),
             right_frequency=round(right_counts.get(clade, 0) / len(right_trees), 15),
-            delta=round((right_counts.get(clade, 0) / len(right_trees)) - (left_counts.get(clade, 0) / len(left_trees)), 15),
+            delta=round(
+                (right_counts.get(clade, 0) / len(right_trees))
+                - (left_counts.get(clade, 0) / len(left_trees)),
+                15,
+            ),
         )
         for clade in sorted(all_clades, key=_format_clade)
     ]
-    comparisons = [_tree_distance(left, right, shared_taxa) for left in left_trees for right in right_trees]
+    comparisons = [
+        _tree_distance(left, right, shared_taxa)
+        for left in left_trees
+        for right in right_trees
+    ]
     left_topologies = {_rooted_topology_id(tree, shared_taxa) for tree in left_trees}
     right_topologies = {_rooted_topology_id(tree, shared_taxa) for tree in right_trees}
     return PosteriorTreeSetComparisonReport(
@@ -1142,7 +1261,9 @@ def compare_posterior_tree_sets(left_path: Path, right_path: Path) -> PosteriorT
         left_rooted_topology_count=len(left_topologies),
         right_rooted_topology_count=len(right_topologies),
         shared_rooted_topology_count=len(left_topologies & right_topologies),
-        mean_between_set_robinson_foulds=round(sum(distance for distance, _ in comparisons) / len(comparisons), 15),
+        mean_between_set_robinson_foulds=round(
+            sum(distance for distance, _ in comparisons) / len(comparisons), 15
+        ),
         mean_between_set_normalized_robinson_foulds=round(
             sum(normalized for _, normalized in comparisons) / len(comparisons),
             15,
@@ -1161,17 +1282,20 @@ def compare_bootstrap_and_posterior_uncertainty(
     shared_taxa = set(bootstrap_tree.tip_names)
     posterior_taxa = set(posterior_report.shared_taxa)
     if shared_taxa != posterior_taxa:
-        raise InvalidAlignmentError("bootstrap versus posterior comparison requires identical taxon sets")
+        raise InvalidAlignmentError(
+            "bootstrap versus posterior comparison requires identical taxon sets"
+        )
     bootstrap_nodes = _informative_clade_nodes(bootstrap_tree, shared_taxa)
     bootstrap_support_by_clade = {
         _format_clade(clade): _parse_support_label(node.name)
         for clade, node in bootstrap_nodes.items()
     }
     posterior_frequency_by_clade = {
-        row.clade: row.frequency
-        for row in posterior_report.clade_frequencies
+        row.clade: row.frequency for row in posterior_report.clade_frequencies
     }
-    all_clades = sorted(set(bootstrap_support_by_clade) | set(posterior_frequency_by_clade))
+    all_clades = sorted(
+        set(bootstrap_support_by_clade) | set(posterior_frequency_by_clade)
+    )
     rows: list[BootstrapPosteriorCladeComparison] = []
     for clade in all_clades:
         bootstrap_support = bootstrap_support_by_clade.get(clade)
@@ -1179,7 +1303,9 @@ def compare_bootstrap_and_posterior_uncertainty(
         absolute_delta = None
         if bootstrap_support is not None and posterior_frequency is not None:
             absolute_delta = abs(bootstrap_support - posterior_frequency)
-        agreement = _support_agreement_label(bootstrap_support, posterior_frequency, absolute_delta)
+        agreement = _support_agreement_label(
+            bootstrap_support, posterior_frequency, absolute_delta
+        )
         rows.append(
             BootstrapPosteriorCladeComparison(
                 clade=clade,
@@ -1194,7 +1320,9 @@ def compare_bootstrap_and_posterior_uncertainty(
         posterior_tree_set_path=posterior_tree_set_path,
         posterior_tree_count=posterior_report.tree_count,
         shared_taxa=posterior_report.shared_taxa,
-        high_conflict_clade_count=sum(1 for row in rows if row.agreement == "strong_conflict"),
+        high_conflict_clade_count=sum(
+            1 for row in rows if row.agreement == "strong_conflict"
+        ),
         rows=rows,
     )
 
@@ -1223,7 +1351,8 @@ def benchmark_tree_set_uncertainty(
                         seed=seed + len(rows),
                     )
                     tree_set_path = write_tree_set(
-                        temp_root / f"trees-{tree_count}-taxa-{taxon_count}-replicate-{replicate}.nwk",
+                        temp_root
+                        / f"trees-{tree_count}-taxa-{taxon_count}-replicate-{replicate}.nwk",
                         trees,
                     )
                     started = perf_counter()
@@ -1268,12 +1397,18 @@ def assess_tree_set_storage_risk(path: Path) -> TreeSetStorageRiskReport:
     risk_level = "low"
     if summary.tree_count >= 1000 or file_size_megabytes >= 10.0:
         risk_level = "high"
-        warnings.append("tree set is large enough to merit explicit storage and review planning")
+        warnings.append(
+            "tree set is large enough to merit explicit storage and review planning"
+        )
     elif summary.tree_count >= 250 or file_size_megabytes >= 1.0:
         risk_level = "moderate"
-        warnings.append("tree set is large enough that reviewer-facing summaries should be preferred over raw browsing")
+        warnings.append(
+            "tree set is large enough that reviewer-facing summaries should be preferred over raw browsing"
+        )
     if summary.rooted_topology_count >= 100:
-        warnings.append("high topology diversity increases the cost of manually inspecting individual trees")
+        warnings.append(
+            "high topology diversity increases the cost of manually inspecting individual trees"
+        )
     return TreeSetStorageRiskReport(
         path=path,
         file_size_bytes=file_size_bytes,
@@ -1298,8 +1433,12 @@ def assess_tree_set_thinning_sensitivity(
         raise ValueError("all thinning intervals must be at least 1")
     baseline_summary = load_tree_set(path)
     baseline_clusters = cluster_trees_by_topology(path)
-    baseline_conclusions = summarize_uncertainty_aware_conclusions(path)
-    baseline_dominant = 0.0 if not baseline_clusters.clusters else baseline_clusters.clusters[0].frequency
+    summarize_uncertainty_aware_conclusions(path)
+    baseline_dominant = (
+        0.0
+        if not baseline_clusters.clusters
+        else baseline_clusters.clusters[0].frequency
+    )
     rows: list[TreeSetThinningSensitivityRow] = []
     warnings: list[str] = []
     temp_root = Path(tempfile.mkdtemp(prefix="bijux-tree-set-thinning-"))
@@ -1307,21 +1446,32 @@ def assess_tree_set_thinning_sensitivity(
         _, _, trees = _require_tree_set(path)
         for interval in sorted(set(intervals)):
             retained = trees[::interval]
-            retained_path = write_tree_set(temp_root / f"thinned-{interval}.nwk", retained)
+            retained_path = write_tree_set(
+                temp_root / f"thinned-{interval}.nwk", retained
+            )
             summary = load_tree_set(retained_path)
             clusters = cluster_trees_by_topology(retained_path)
             conclusions = summarize_uncertainty_aware_conclusions(retained_path)
             comparison = compare_posterior_tree_sets(path, retained_path)
             dominant = 0.0 if not clusters.clusters else clusters.clusters[0].frequency
             row_warnings: list[str] = []
-            if comparison.shared_rooted_topology_count < baseline_summary.rooted_topology_count:
-                row_warnings.append("thinning drops one or more rooted topology modes observed in the full tree set")
+            if (
+                comparison.shared_rooted_topology_count
+                < baseline_summary.rooted_topology_count
+            ):
+                row_warnings.append(
+                    "thinning drops one or more rooted topology modes observed in the full tree set"
+                )
             if abs(dominant - baseline_dominant) >= 0.2:
-                row_warnings.append("thinning changes the dominant topology frequency materially")
+                row_warnings.append(
+                    "thinning changes the dominant topology frequency materially"
+                )
             row = TreeSetThinningSensitivityRow(
                 thinning_interval=interval,
                 retained_tree_count=summary.tree_count,
-                retained_fraction=round(summary.tree_count / baseline_summary.tree_count, 15),
+                retained_fraction=round(
+                    summary.tree_count / baseline_summary.tree_count, 15
+                ),
                 rooted_topology_count=summary.rooted_topology_count,
                 shared_rooted_topology_count=comparison.shared_rooted_topology_count,
                 dominant_topology_frequency=dominant,
@@ -1363,10 +1513,14 @@ def compare_consensus_thresholds(
     for threshold in sorted(set(threshold_values)):
         tree, report = compute_consensus_tree_with_threshold(path, threshold=threshold)
         topology_id = _rooted_topology_id(tree, set(summary.shared_taxa))
-        informative_clade_count = len(_informative_clades(tree, set(summary.shared_taxa)))
+        informative_clade_count = len(
+            _informative_clades(tree, set(summary.shared_taxa))
+        )
         row_warnings: list[str] = []
         if informative_clade_count == 0:
-            row_warnings.append("threshold collapses all informative internal clades from the consensus summary")
+            row_warnings.append(
+                "threshold collapses all informative internal clades from the consensus summary"
+            )
         rows.append(
             ConsensusThresholdSensitivityRow(
                 threshold=threshold,
@@ -1396,13 +1550,17 @@ def assess_tree_set_maturity(
     """Classify whether a tree-set uncertainty workflow is merely exploratory or reviewer-capable."""
     summary = load_tree_set(path)
     storage = assess_tree_set_storage_risk(path)
-    thinning = assess_tree_set_thinning_sensitivity(path, thinning_intervals=thinning_intervals)
+    thinning = assess_tree_set_thinning_sensitivity(
+        path, thinning_intervals=thinning_intervals
+    )
     consensus = compare_consensus_thresholds(path, thresholds=consensus_thresholds)
     conclusions = summarize_uncertainty_aware_conclusions(path)
     checks = [
         TreeSetMaturityGateCheck(
             name="shared_taxa",
-            satisfied=all(record.taxa == summary.records[0].taxa for record in summary.records),
+            satisfied=all(
+                record.taxa == summary.records[0].taxa for record in summary.records
+            ),
             details="all trees in the set share the exact same taxon inventory",
         ),
         TreeSetMaturityGateCheck(
@@ -1413,16 +1571,26 @@ def assess_tree_set_maturity(
         TreeSetMaturityGateCheck(
             name="thinning_stability",
             satisfied=not thinning.warnings,
-            details="tested thinning intervals preserve the dominant conclusions" if not thinning.warnings else "; ".join(thinning.warnings),
+            details="tested thinning intervals preserve the dominant conclusions"
+            if not thinning.warnings
+            else "; ".join(thinning.warnings),
         ),
         TreeSetMaturityGateCheck(
             name="consensus_stability",
             satisfied=not consensus.warnings,
-            details="tested consensus thresholds preserve one topology summary" if not consensus.warnings else "; ".join(consensus.warnings),
+            details="tested consensus thresholds preserve one topology summary"
+            if not consensus.warnings
+            else "; ".join(consensus.warnings),
         ),
         TreeSetMaturityGateCheck(
             name="uncertainty_summary",
-            satisfied=summary.tree_count >= 2 and (conclusions.robust_clade_count + conclusions.uncertain_clade_count + conclusions.conflicting_clade_count) >= 1,
+            satisfied=summary.tree_count >= 2
+            and (
+                conclusions.robust_clade_count
+                + conclusions.uncertain_clade_count
+                + conclusions.conflicting_clade_count
+            )
+            >= 1,
             details="uncertainty-aware clade conclusions are available for reviewer-facing interpretation",
         ),
     ]
@@ -1433,7 +1601,9 @@ def assess_tree_set_maturity(
         decision = "usable"
     else:
         decision = "experimental"
-    warnings = sorted(dict.fromkeys(storage.warnings + thinning.warnings + consensus.warnings))
+    warnings = sorted(
+        dict.fromkeys(storage.warnings + thinning.warnings + consensus.warnings)
+    )
     return TreeSetMaturityGateReport(
         path=path,
         decision=decision,

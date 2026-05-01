@@ -1,21 +1,28 @@
 from __future__ import annotations
 
-import gzip
-import re
 from dataclasses import dataclass, field
+import gzip
 from pathlib import Path
+import re
 
-from bijux_phylogenetics.compare.reports import ComparisonReportBuildResult, build_tree_comparison_report
+from bijux_phylogenetics.compare.reports import (
+    ComparisonReportBuildResult,
+    build_tree_comparison_report,
+)
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import EngineWorkflowError
-from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment, summarise_fasta
+from bijux_phylogenetics.io.fasta import (
+    infer_alignment_alphabet,
+    load_fasta_alignment,
+    summarise_fasta,
+)
 from bijux_phylogenetics.io.newick import loads_newick
 
 from .common import (
-    build_file_checksums,
     EngineRunReport,
     EngineVersionInfo,
+    build_file_checksums,
     execute_engine_command,
     load_engine_manifest,
     load_unaligned_fasta,
@@ -68,7 +75,9 @@ def _manifest_path_from_output(path: Path) -> Path:
 def _validate_alignment_output(path: Path) -> None:
     records = load_fasta_alignment(path)
     if not records or len(records[0].sequence) < 1:
-        raise EngineWorkflowError(f"inference alignment is empty after filtering: {path}")
+        raise EngineWorkflowError(
+            f"inference alignment is empty after filtering: {path}"
+        )
     summarise_fasta(path)
 
 
@@ -80,7 +89,9 @@ def _validate_tree_output(path: Path) -> None:
 def _ensure_inference_ready_alignment(path: Path) -> None:
     records = load_fasta_alignment(path)
     if not records or len(records[0].sequence) < 1:
-        raise EngineWorkflowError(f"inference alignment is empty after filtering: {path}")
+        raise EngineWorkflowError(
+            f"inference alignment is empty after filtering: {path}"
+        )
     summarise_fasta(path)
 
 
@@ -107,19 +118,33 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
         exit_code=int(run_payload["exit_code"]),
         stdout_path=Path(run_payload["stdout_path"]),
         stderr_path=Path(run_payload["stderr_path"]),
-        output_paths={str(key): Path(value) for key, value in dict(run_payload["output_paths"]).items()},
+        output_paths={
+            str(key): Path(value)
+            for key, value in dict(run_payload["output_paths"]).items()
+        },
         warning_lines=[str(item) for item in run_payload["warning_lines"]],
     )
     return EngineWorkflowReport(
         workflow=str(payload["workflow"]),
         engine_name=str(payload["engine_name"]),
         input_paths=[Path(item) for item in payload["input_paths"]],
-        output_paths={str(key): Path(value) for key, value in dict(payload["output_paths"]).items()},
+        output_paths={
+            str(key): Path(value)
+            for key, value in dict(payload["output_paths"]).items()
+        },
         run=run,
         manifest_path=Path(payload["manifest_path"]),
-        input_checksums={str(key): str(value) for key, value in dict(payload.get("input_checksums", {})).items()},
-        output_checksums={str(key): str(value) for key, value in dict(payload.get("output_checksums", {})).items()},
-        selected_model=None if payload.get("selected_model") is None else str(payload["selected_model"]),
+        input_checksums={
+            str(key): str(value)
+            for key, value in dict(payload.get("input_checksums", {})).items()
+        },
+        output_checksums={
+            str(key): str(value)
+            for key, value in dict(payload.get("output_checksums", {})).items()
+        },
+        selected_model=None
+        if payload.get("selected_model") is None
+        else str(payload["selected_model"]),
         resumed=bool(payload.get("resumed", False)),
         notes=[str(item) for item in payload.get("notes", [])],
     )
@@ -155,7 +180,9 @@ def _persist_workflow_report(report: EngineWorkflowReport) -> EngineWorkflowRepo
     return report
 
 
-def _iqtree_sequence_type_flag(path: Path, sequence_type: AlignmentAlphabet | None) -> list[str]:
+def _iqtree_sequence_type_flag(
+    path: Path, sequence_type: AlignmentAlphabet | None
+) -> list[str]:
     detected = sequence_type
     if detected is None:
         detected = infer_alignment_alphabet(load_fasta_alignment(path))
@@ -187,13 +214,18 @@ def _parse_best_model(iqtree_report_path: Path) -> str | None:
 
 
 def _parse_best_model_artifact(prefix_path: Path) -> str | None:
-    for candidate in (prefix_path.with_suffix(".iqtree"), prefix_path.with_suffix(".model")):
+    for candidate in (
+        prefix_path.with_suffix(".iqtree"),
+        prefix_path.with_suffix(".model"),
+    ):
         model = _parse_best_model(candidate)
         if model is not None:
             return model
     gz_candidate = prefix_path.with_suffix(".model.gz")
     if gz_candidate.exists():
-        text = gzip.decompress(gz_candidate.read_bytes()).decode("utf-8", errors="replace")
+        text = gzip.decompress(gz_candidate.read_bytes()).decode(
+            "utf-8", errors="replace"
+        )
         match = _BEST_MODEL_PATTERN.search(text)
         if match is not None:
             return match.group("model")
@@ -320,7 +352,9 @@ def run_model_selection(
     )
     selected_model = _parse_best_model_artifact(prefix_path)
     if selected_model is None:
-        raise EngineWorkflowError(f"iqtree model-selection did not expose a parsable best-fit model in {iqtree_report_path}")
+        raise EngineWorkflowError(
+            f"iqtree model-selection did not expose a parsable best-fit model in {iqtree_report_path}"
+        )
     selected_model_path = prefix_path.with_suffix(".selected-model.txt")
     selected_model_path.write_text(selected_model + "\n", encoding="utf-8")
     manifest_path = prefix_path.with_suffix(".manifest.json")
@@ -501,7 +535,9 @@ def run_bootstrap_consensus_tree(
 ) -> EngineWorkflowReport:
     """Construct a consensus tree from bootstrap trees."""
     if not 0.0 <= minimum_support <= 1.0:
-        raise ValueError(f"minimum_support must be between 0 and 1 inclusive, got {minimum_support}")
+        raise ValueError(
+            f"minimum_support must be between 0 and 1 inclusive, got {minimum_support}"
+        )
     if not bootstrap_trees_path.exists():
         raise FileNotFoundError(bootstrap_trees_path)
     prefix_path = _prefix_path(out_dir, prefix)
@@ -599,7 +635,9 @@ def compare_fast_and_ml_trees(
     out_path: Path,
 ) -> ExternalTreeComparisonReport:
     """Compare a fast approximate tree against a maximum-likelihood tree."""
-    comparison_report = build_tree_comparison_report(fast_tree_path, ml_tree_path, out_path=out_path)
+    comparison_report = build_tree_comparison_report(
+        fast_tree_path, ml_tree_path, out_path=out_path
+    )
     return ExternalTreeComparisonReport(
         fast_tree_path=fast_tree_path,
         ml_tree_path=ml_tree_path,

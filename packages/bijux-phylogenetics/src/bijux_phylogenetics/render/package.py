@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
 import hashlib
 import json
-from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import write_taxon_rows
@@ -195,7 +195,9 @@ def _collapsed_clade_summaries(
                 if value:
                     counts[value] = counts.get(value, 0) + 1
             if counts:
-                summary = ", ".join(f"{value}={counts[value]}" for value in sorted(counts))
+                summary = ", ".join(
+                    f"{value}={counts[value]}" for value in sorted(counts)
+                )
                 metadata_summaries.append(f"{strip.name}: {summary}")
         summaries.append(
             FigureCollapsedCladeSummary(
@@ -216,7 +218,9 @@ def _table_consistency(
 ) -> FigureTableConsistencyReport:
     rows_by_taxon = {row["taxon"]: row for row in annotation_rows}
     visible_taxa_set = set(visible_taxa)
-    missing_from_table = sorted(taxon for taxon in visible_taxa if taxon not in rows_by_taxon)
+    missing_from_table = sorted(
+        taxon for taxon in visible_taxa if taxon not in rows_by_taxon
+    )
     extra_in_table = sorted(set(rows_by_taxon) - visible_taxa_set)
     label_mismatches: list[str] = []
     for taxon in visible_taxa:
@@ -225,9 +229,13 @@ def _table_consistency(
             continue
         expected_label = labels.get(taxon, taxon)
         if row.get("label") != expected_label:
-            label_mismatches.append(f"{taxon}: expected '{expected_label}' but found '{row.get('label', '')}'")
+            label_mismatches.append(
+                f"{taxon}: expected '{expected_label}' but found '{row.get('label', '')}'"
+            )
     return FigureTableConsistencyReport(
-        consistent=not missing_from_table and not extra_in_table and not label_mismatches,
+        consistent=not missing_from_table
+        and not extra_in_table
+        and not label_mismatches,
         missing_from_table=missing_from_table,
         extra_in_table=extra_in_table,
         label_mismatches=label_mismatches,
@@ -256,10 +264,14 @@ def build_tree_figure_package(
     annotations_path = out_dir / "tip-annotations.tsv"
     collapsed_clades = collapsed_clades or []
     collapsed_clade_names = {name for name in collapsed_clades if name}
-    support_audit = audit_support_label_rendering(tree_path) if show_support_values else SupportLabelRenderAudit(
-        validated=False,
-        labels_by_node={},
-        warnings=[],
+    support_audit = (
+        audit_support_label_rendering(tree_path)
+        if show_support_values
+        else SupportLabelRenderAudit(
+            validated=False,
+            labels_by_node={},
+            warnings=[],
+        )
     )
 
     render = render_tree_svg(
@@ -294,7 +306,9 @@ def build_tree_figure_package(
             "taxon": taxon,
             "label": labels.get(taxon, taxon),
             "categorical_trait": categorical_traits.get(taxon, ""),
-            "continuous_trait": str(continuous_traits[taxon]) if taxon in continuous_traits else "",
+            "continuous_trait": str(continuous_traits[taxon])
+            if taxon in continuous_traits
+            else "",
         }
         for strip in metadata_strips:
             row[strip.name] = strip.values.get(taxon, "")
@@ -315,7 +329,9 @@ def build_tree_figure_package(
             _surface_coverage(
                 surface="categorical traits",
                 visible_taxa=visible_taxa,
-                observed_taxa={taxon for taxon, value in categorical_traits.items() if value},
+                observed_taxa={
+                    taxon for taxon, value in categorical_traits.items() if value
+                },
             )
         )
     if continuous_traits:
@@ -339,7 +355,9 @@ def build_tree_figure_package(
             _surface_coverage(
                 surface=f"heatmap column: {column.name}",
                 visible_taxa=visible_taxa,
-                observed_taxa={taxon for taxon, value in column.values.items() if value},
+                observed_taxa={
+                    taxon for taxon, value in column.values.items() if value
+                },
             )
         )
 
@@ -380,17 +398,24 @@ def build_tree_figure_package(
         if show_support_values and support_audit.validated
         else "support labels were withheld or omitted when no validated support audit was available",
         "all figure annotation surfaces align with the exported annotation table"
-        if table_consistency.consistent and all(row.aligned for row in annotation_coverage)
+        if table_consistency.consistent
+        and all(row.aligned for row in annotation_coverage)
         else "one or more figure annotation surfaces require reviewer attention",
     ]
     limitations = []
     if collapsed_summaries:
-        limitations.append("collapsed clades summarize hidden descendants and should not be read as individual tip-level evidence")
+        limitations.append(
+            "collapsed clades summarize hidden descendants and should not be read as individual tip-level evidence"
+        )
     for row in annotation_coverage:
         if not row.aligned:
-            limitations.append(f"{row.surface} is missing values for one or more visible taxa")
+            limitations.append(
+                f"{row.surface} is missing values for one or more visible taxa"
+            )
     if not scale_bar_valid:
-        limitations.append("branch-length scale metadata needs manual review before publication use")
+        limitations.append(
+            "branch-length scale metadata needs manual review before publication use"
+        )
     limitations.extend(support_audit.warnings)
     audit = TreeFigureAuditReport(
         support_audit=support_audit,
@@ -418,7 +443,10 @@ def build_tree_figure_package(
         "render": asdict(render),
         "audit": asdict(audit),
     }
-    manifest_path.write_text(json.dumps(manifest, default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     caption = (
         f"# {title}\n\n"
@@ -433,7 +461,10 @@ def build_tree_figure_package(
         + "\n\n## Legend\n\n"
         + "\n".join(f"- {entry}" for entry in audit.legend_audit.entries)
         + "\n\n## Limitations\n\n"
-        + "\n".join(f"- {line}" for line in (audit.limitations or ["no additional limitations recorded"]))
+        + "\n".join(
+            f"- {line}"
+            for line in (audit.limitations or ["no additional limitations recorded"])
+        )
         + "\n"
     )
     caption_path.write_text(caption, encoding="utf-8")

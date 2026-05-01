@@ -127,14 +127,29 @@ def build_taxon_workflow_loss_report(
     metadata_taxa = set(load_taxon_table(metadata_path).taxa)
     trait_taxa = set(load_taxon_table(traits_path).taxa)
     trait_missingness_taxa = _missing_trait_taxa(traits_path)
-    alignment_taxa = set() if alignment_path is None else {record.identifier for record in load_fasta_alignment(alignment_path)}
+    alignment_taxa = (
+        set()
+        if alignment_path is None
+        else {record.identifier for record in load_fasta_alignment(alignment_path)}
+    )
     filtered_alignment_taxa = (
         set()
         if filtered_alignment_path is None
-        else {record.identifier for record in load_fasta_alignment(filtered_alignment_path)}
+        else {
+            record.identifier
+            for record in load_fasta_alignment(filtered_alignment_path)
+        }
     )
-    inference_tree_taxa = set() if inference_tree_path is None else set(load_tree(inference_tree_path).tip_names)
-    reported_taxa = set() if reported_taxa_path is None else set(_load_taxa_from_any_path(reported_taxa_path)[1])
+    inference_tree_taxa = (
+        set()
+        if inference_tree_path is None
+        else set(load_tree(inference_tree_path).tip_names)
+    )
+    reported_taxa = (
+        set()
+        if reported_taxa_path is None
+        else set(_load_taxa_from_any_path(reported_taxa_path)[1])
+    )
     union_taxa = sorted(
         tree_taxa
         | metadata_taxa
@@ -149,18 +164,36 @@ def build_taxon_workflow_loss_report(
     for taxon in union_taxa:
         events: list[TaxonWorkflowLossEvent] = []
         if taxon not in tree_taxa:
-            events.append(TaxonWorkflowLossEvent(stage="tree", reason="absent_from_tree"))
-        if alignment_path is not None and taxon in tree_taxa and taxon not in alignment_taxa:
-            events.append(TaxonWorkflowLossEvent(stage="alignment", reason="absent_from_alignment"))
+            events.append(
+                TaxonWorkflowLossEvent(stage="tree", reason="absent_from_tree")
+            )
+        if (
+            alignment_path is not None
+            and taxon in tree_taxa
+            and taxon not in alignment_taxa
+        ):
+            events.append(
+                TaxonWorkflowLossEvent(
+                    stage="alignment", reason="absent_from_alignment"
+                )
+            )
         if filtered_alignment_path is not None:
-            if alignment_path is not None and taxon in alignment_taxa and taxon not in filtered_alignment_taxa:
+            if (
+                alignment_path is not None
+                and taxon in alignment_taxa
+                and taxon not in filtered_alignment_taxa
+            ):
                 events.append(
                     TaxonWorkflowLossEvent(
                         stage="alignment_filtering",
                         reason="removed_during_alignment_filtering",
                     )
                 )
-            elif alignment_path is None and taxon in tree_taxa and taxon not in filtered_alignment_taxa:
+            elif (
+                alignment_path is None
+                and taxon in tree_taxa
+                and taxon not in filtered_alignment_taxa
+            ):
                 events.append(
                     TaxonWorkflowLossEvent(
                         stage="alignment_filtering",
@@ -168,26 +201,54 @@ def build_taxon_workflow_loss_report(
                     )
                 )
         if taxon not in metadata_taxa:
-            events.append(TaxonWorkflowLossEvent(stage="metadata", reason="absent_from_metadata"))
+            events.append(
+                TaxonWorkflowLossEvent(stage="metadata", reason="absent_from_metadata")
+            )
         if taxon not in trait_taxa:
-            events.append(TaxonWorkflowLossEvent(stage="traits", reason="absent_from_trait_table"))
+            events.append(
+                TaxonWorkflowLossEvent(stage="traits", reason="absent_from_trait_table")
+            )
         elif taxon in trait_missingness_taxa:
-            events.append(TaxonWorkflowLossEvent(stage="trait_missingness", reason="one_or_more_trait_values_missing"))
-        if inference_tree_path is not None and taxon in tree_taxa and taxon not in inference_tree_taxa:
-            events.append(TaxonWorkflowLossEvent(stage="inference", reason="absent_from_inference_tree"))
-        if reported_taxa_path is not None and taxon in tree_taxa and taxon not in reported_taxa:
-            events.append(TaxonWorkflowLossEvent(stage="reporting", reason="absent_from_report_output"))
+            events.append(
+                TaxonWorkflowLossEvent(
+                    stage="trait_missingness", reason="one_or_more_trait_values_missing"
+                )
+            )
+        if (
+            inference_tree_path is not None
+            and taxon in tree_taxa
+            and taxon not in inference_tree_taxa
+        ):
+            events.append(
+                TaxonWorkflowLossEvent(
+                    stage="inference", reason="absent_from_inference_tree"
+                )
+            )
+        if (
+            reported_taxa_path is not None
+            and taxon in tree_taxa
+            and taxon not in reported_taxa
+        ):
+            events.append(
+                TaxonWorkflowLossEvent(
+                    stage="reporting", reason="absent_from_report_output"
+                )
+            )
         first_loss_stage = None if not events else events[0].stage
         if first_loss_stage is not None:
             stage_counts[first_loss_stage] = stage_counts.get(first_loss_stage, 0) + 1
-        retained_for_reporting = bool(taxon in tree_taxa and (reported_taxa_path is None or taxon in reported_taxa))
+        retained_for_reporting = bool(
+            taxon in tree_taxa
+            and (reported_taxa_path is None or taxon in reported_taxa)
+        )
         rows.append(
             TaxonWorkflowLossRow(
                 taxon=taxon,
                 present_in_tree=taxon in tree_taxa,
                 loss_events=events,
                 first_loss_stage=first_loss_stage,
-                retained_for_reporting=retained_for_reporting and not any(event.stage == "trait_missingness" for event in events),
+                retained_for_reporting=retained_for_reporting
+                and not any(event.stage == "trait_missingness" for event in events),
             )
         )
     return TaxonWorkflowLossReport(
@@ -212,13 +273,17 @@ def load_taxon_run_source(*, label: str, path: Path) -> TaxonRunSource:
 def build_taxon_stability_report(sources: list[TaxonRunSource]) -> TaxonStabilityReport:
     """Compare taxon retention across repeated workflows or outputs."""
     if len(sources) < 2:
-        raise ValueError("taxon stability reporting requires at least two named sources")
+        raise ValueError(
+            "taxon stability reporting requires at least two named sources"
+        )
     union_taxa = sorted({taxon for source in sources for taxon in source.taxa})
     shared_taxa = sorted(set.intersection(*(set(source.taxa) for source in sources)))
     rows: list[TaxonStabilityRow] = []
     for taxon in union_taxa:
         present_in_runs = [source.label for source in sources if taxon in source.taxa]
-        absent_from_runs = [source.label for source in sources if taxon not in source.taxa]
+        absent_from_runs = [
+            source.label for source in sources if taxon not in source.taxa
+        ]
         retention_fraction = len(present_in_runs) / len(sources)
         stable = len(present_in_runs) in {0, len(sources)}
         rows.append(

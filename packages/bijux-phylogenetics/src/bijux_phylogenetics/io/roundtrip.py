@@ -6,7 +6,10 @@ import tempfile
 
 from Bio import Phylo
 
-from bijux_phylogenetics.compare.topology import _compare_branch_lengths_for_trees, _compare_tree_objects
+from bijux_phylogenetics.compare.topology import (
+    _compare_branch_lengths_for_trees,
+    _compare_tree_objects,
+)
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.biopython import tree_to_biophylo
 from bijux_phylogenetics.io.trees import TreeFormat, detect_tree_format, load_tree
@@ -118,13 +121,19 @@ def _write_tree(path: Path, tree: PhyloTree, *, target_format: TreeFormat) -> Pa
     return path
 
 
-def _semantic_loss(path: Path, *, source_format: str, target_format: str) -> list[SemanticLossObservation]:
+def _semantic_loss(
+    path: Path, *, source_format: str, target_format: str
+) -> list[SemanticLossObservation]:
     text = path.read_text(encoding="utf-8")
     lowered = text.lower()
     observations: list[SemanticLossObservation] = []
 
     if source_format == "nexus":
-        if "begin taxa" in lowered or "begin data" in lowered or "begin characters" in lowered:
+        if (
+            "begin taxa" in lowered
+            or "begin data" in lowered
+            or "begin characters" in lowered
+        ):
             observations.append(
                 SemanticLossObservation(
                     feature="nexus-metadata-blocks",
@@ -180,7 +189,9 @@ def validate_tree_roundtrip(
     original = load_tree(source_path, source_format=source_format)
     target_path = out_path
     if target_path is None:
-        suffix = {"newick": ".nwk", "nexus": ".nex", "phyloxml": ".phyloxml"}[target_format]
+        suffix = {"newick": ".nwk", "nexus": ".nex", "phyloxml": ".phyloxml"}[
+            target_format
+        ]
         temp_dir = Path(tempfile.mkdtemp(prefix="bijux-tree-roundtrip-"))
         target_path = temp_dir / f"roundtrip{suffix}"
     _write_tree(target_path, original, target_format=target_format)
@@ -196,8 +207,7 @@ def validate_tree_roundtrip(
         preserved_taxa=original.tip_names == reloaded.tip_names,
         preserved_topology=topology.same_unrooted_topology,
         preserved_branch_lengths=all(
-            row.left_length == row.right_length
-            for row in branch_lengths.shared_splits
+            row.left_length == row.right_length for row in branch_lengths.shared_splits
         ),
         preserved_support_labels=[
             (row.node, row.raw_value, row.inferred_scale, row.normalized_probability)
@@ -208,6 +218,8 @@ def validate_tree_roundtrip(
             for row in reloaded_support
         ],
         rooted_topology_preserved=topology.topology_equal,
-        semantic_loss=_semantic_loss(source_path, source_format=source_format, target_format=target_format),
+        semantic_loss=_semantic_loss(
+            source_path, source_format=source_format, target_format=target_format
+        ),
         support_audit=original_support,
     )

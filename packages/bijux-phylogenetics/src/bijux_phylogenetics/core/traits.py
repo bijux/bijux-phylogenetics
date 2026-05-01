@@ -132,7 +132,9 @@ def _summarize_trait_column(table: TaxonTable, column: str) -> TraitColumnSummar
     )
 
 
-def validate_traits_table(path: Path, *, taxon_column: str | None = None) -> TraitValidationReport:
+def validate_traits_table(
+    path: Path, *, taxon_column: str | None = None
+) -> TraitValidationReport:
     """Validate a trait table and infer deterministic column kinds."""
     table = load_taxon_table(path, taxon_column=taxon_column)
     trait_columns = [
@@ -214,9 +216,13 @@ def prune_traits_to_tree(
     tree = load_tree(tree_path)
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
-    kept_rows = [dict(rows_by_taxon[taxon]) for taxon in tree.tip_names if taxon in rows_by_taxon]
+    kept_rows = [
+        dict(rows_by_taxon[taxon]) for taxon in tree.tip_names if taxon in rows_by_taxon
+    ]
     if not kept_rows:
-        raise MetadataJoinError("no overlapping taxa remain after trait pruning request")
+        raise MetadataJoinError(
+            "no overlapping taxa remain after trait pruning request"
+        )
 
     kept_taxa = [row[table.taxon_column] for row in kept_rows]
     removed_taxa = sorted(set(table.taxa) - set(kept_taxa))

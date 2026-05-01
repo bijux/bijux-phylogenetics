@@ -10,10 +10,22 @@ from bijux_phylogenetics.bayesian.beast import (
     validate_tip_dating_metadata,
 )
 from bijux_phylogenetics.core.alignment import AlignmentForensicReport
-from bijux_phylogenetics.core.metadata import MetadataColumnCompleteness, TaxonTable, inspect_metadata_table, load_taxon_table
-from bijux_phylogenetics.core.traits import detect_unusable_trait_columns, link_tree_to_traits
+from bijux_phylogenetics.core.metadata import (
+    MetadataColumnCompleteness,
+    TaxonTable,
+    inspect_metadata_table,
+    load_taxon_table,
+)
+from bijux_phylogenetics.core.traits import (
+    detect_unusable_trait_columns,
+    link_tree_to_traits,
+)
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.io.fasta import build_alignment_forensic_report, link_alignment_to_tree, load_fasta_alignment
+from bijux_phylogenetics.io.fasta import (
+    build_alignment_forensic_report,
+    link_alignment_to_tree,
+    load_fasta_alignment,
+)
 from bijux_phylogenetics.io.trees import load_tree
 
 _GEOGRAPHY_COLUMN_HINTS = (
@@ -238,10 +250,10 @@ class DatasetAuditReport:
     alignment_forensic: AlignmentForensicReport | None
     tip_dates: TipDatingValidationReport | None
     calibrations: FossilCalibrationValidationReport | None
-    mismatch_report: "DatasetMismatchReport"
-    risk_score: "DatasetRiskScoreReport"
-    minimal_fix_plan: "DatasetMinimalFixPlan"
-    reviewer_checklist: "DatasetReviewerChecklist"
+    mismatch_report: DatasetMismatchReport
+    risk_score: DatasetRiskScoreReport
+    minimal_fix_plan: DatasetMinimalFixPlan
+    reviewer_checklist: DatasetReviewerChecklist
 
 
 @dataclass(frozen=True, slots=True)
@@ -386,7 +398,9 @@ def _infer_group_columns(table: TaxonTable) -> list[str]:
     return columns
 
 
-def _calibration_taxa_to_targets(calibrations: FossilCalibrationValidationReport | None) -> dict[str, list[str]]:
+def _calibration_taxa_to_targets(
+    calibrations: FossilCalibrationValidationReport | None,
+) -> dict[str, list[str]]:
     if calibrations is None:
         return {}
     mapping: dict[str, list[str]] = {}
@@ -438,18 +452,29 @@ def _load_dataset_context(
         if alignment_path is not None
         else []
     )
-    tip_dates_table = load_taxon_table(tip_dates_path) if tip_dates_path is not None else None
-    geography_columns = sorted(
-        set(_detect_geography_columns(metadata_table)) | set(_detect_geography_columns(traits_table))
+    tip_dates_table = (
+        load_taxon_table(tip_dates_path) if tip_dates_path is not None else None
     )
-    geography_taxa = _non_empty_taxa_for_columns(metadata_table, _detect_geography_columns(metadata_table))
-    geography_taxa.update(_non_empty_taxa_for_columns(traits_table, _detect_geography_columns(traits_table)))
+    geography_columns = sorted(
+        set(_detect_geography_columns(metadata_table))
+        | set(_detect_geography_columns(traits_table))
+    )
+    geography_taxa = _non_empty_taxa_for_columns(
+        metadata_table, _detect_geography_columns(metadata_table)
+    )
+    geography_taxa.update(
+        _non_empty_taxa_for_columns(
+            traits_table, _detect_geography_columns(traits_table)
+        )
+    )
     calibrations = calibration_report
     if calibration_path is not None and calibrations is None:
         calibrations = validate_fossil_calibration_table(tree_path, calibration_path)
     tip_dates = tip_dates_report
     if tip_dates_path is not None and tip_dates is None:
-        tip_dates = validate_tip_dating_metadata(tree_path, tip_dates_path, alignment_path=alignment_path)
+        tip_dates = validate_tip_dating_metadata(
+            tree_path, tip_dates_path, alignment_path=alignment_path
+        )
     alignment_report = alignment_forensic
     if alignment_path is not None and alignment_report is None:
         alignment_report = build_alignment_forensic_report(alignment_path)
@@ -497,7 +522,9 @@ def build_dataset_crosswalk(
     alignment_taxa = set(context.alignment_ids)
     tip_date_taxa = set(context.tip_date_taxa)
     tree_taxa = set(context.tree_taxa)
-    union_taxa = sorted(tree_taxa | metadata_taxa | trait_taxa | alignment_taxa | tip_date_taxa)
+    union_taxa = sorted(
+        tree_taxa | metadata_taxa | trait_taxa | alignment_taxa | tip_date_taxa
+    )
     rows = [
         DatasetCrosswalkRow(
             taxon=taxon,
@@ -615,7 +642,7 @@ def build_dataset_mismatch_report(
         requested_surfaces.append("calibrations")
 
     rows: list[DatasetMismatchRow] = []
-    mismatch_counts = {surface: 0 for surface in requested_surfaces}
+    mismatch_counts = dict.fromkeys(requested_surfaces, 0)
     for row in matrix.rows:
         present_surfaces: list[str] = []
         missing_surfaces: list[str] = []
@@ -655,13 +682,19 @@ def _ordering_conflicts_for_surface(
     canonical_order: list[str],
     observed_order: list[str],
 ) -> list[DatasetOrderingConflict]:
-    canonical_shared = [taxon for taxon in canonical_order if taxon in set(observed_order)]
-    observed_shared = [taxon for taxon in observed_order if taxon in set(canonical_order)]
+    canonical_shared = [
+        taxon for taxon in canonical_order if taxon in set(observed_order)
+    ]
+    observed_shared = [
+        taxon for taxon in observed_order if taxon in set(canonical_order)
+    ]
     if canonical_shared == observed_shared:
         return []
 
-    expected_index = {taxon: index for index, taxon in enumerate(canonical_shared, start=1)}
-    conflicts = [
+    expected_index = {
+        taxon: index for index, taxon in enumerate(canonical_shared, start=1)
+    }
+    return [
         DatasetOrderingConflict(
             surface=surface,
             taxon=taxon,
@@ -671,7 +704,6 @@ def _ordering_conflicts_for_surface(
         for index, taxon in enumerate(observed_shared, start=1)
         if expected_index[taxon] != index
     ]
-    return conflicts
 
 
 def audit_dataset_taxon_ordering(
@@ -755,7 +787,9 @@ def summarize_dataset_readiness(
     if unusable_trait_columns:
         blockers.append("one or more trait columns exceed the missingness threshold")
     if len(analysis_taxa) < 2:
-        blockers.append("fewer than two taxa remain after intersecting tree, metadata, and traits")
+        blockers.append(
+            "fewer than two taxa remain after intersecting tree, metadata, and traits"
+        )
     if metadata_only_taxa:
         warnings.append("metadata table contains taxa absent from the tree")
     if traits_linkage.extra_trait_taxa:
@@ -799,13 +833,15 @@ def _append_finding(
         findings.append(finding)
 
 
-def _categorize_findings(findings: list[DatasetAuditFinding], severity: str) -> dict[str, list[str]]:
+def _categorize_findings(
+    findings: list[DatasetAuditFinding], severity: str
+) -> dict[str, list[str]]:
     categories: dict[str, list[str]] = {}
     for finding in findings:
         if finding.severity != severity:
             continue
         categories.setdefault(finding.category, []).append(finding.message)
-    return {category: messages for category, messages in sorted(categories.items())}
+    return dict(sorted(categories.items()))
 
 
 def _pruning_steps(
@@ -825,7 +861,9 @@ def _pruning_steps(
     for step_name, next_taxa, reason in (
         (
             "alignment",
-            set(context.alignment_ids) if context.alignment_path is not None else set(context.tree_taxa),
+            set(context.alignment_ids)
+            if context.alignment_path is not None
+            else set(context.tree_taxa),
             "retain taxa present in the alignment",
         ),
         (
@@ -840,7 +878,9 @@ def _pruning_steps(
         ),
         (
             "tip_dates",
-            set(context.tip_date_taxa) if context.tip_dates_path is not None else current,
+            set(context.tip_date_taxa)
+            if context.tip_dates_path is not None
+            else current,
             "retain taxa with valid tip-date rows",
         ),
     ):
@@ -867,7 +907,10 @@ def _group_imbalance_warnings(
     retained_taxa: set[str],
 ) -> list[DatasetGroupImbalanceWarning]:
     warnings: list[DatasetGroupImbalanceWarning] = []
-    for surface, table in (("metadata", context.metadata_table), ("traits", context.traits_table)):
+    for surface, table in (
+        ("metadata", context.metadata_table),
+        ("traits", context.traits_table),
+    ):
         for column in _infer_group_columns(table):
             groups: dict[str, set[str]] = {}
             for row in table.rows:
@@ -878,7 +921,9 @@ def _group_imbalance_warnings(
                 original_count = len(taxa)
                 retained_count = len(taxa & retained_taxa)
                 removed_count = original_count - retained_count
-                removed_fraction = 0.0 if original_count == 0 else removed_count / original_count
+                removed_fraction = (
+                    0.0 if original_count == 0 else removed_count / original_count
+                )
                 if original_count >= 1 and removed_fraction >= 0.5:
                     warnings.append(
                         DatasetGroupImbalanceWarning(
@@ -897,8 +942,24 @@ def _group_imbalance_warnings(
 
 def _affected_analyses_for_missing_surface(surface: str) -> list[str]:
     return {
-        "tree": ["inspection", "distance", "maximum_likelihood", "bayesian", "coding", "comparative", "time_tree", "publication"],
-        "alignment": ["distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"],
+        "tree": [
+            "inspection",
+            "distance",
+            "maximum_likelihood",
+            "bayesian",
+            "coding",
+            "comparative",
+            "time_tree",
+            "publication",
+        ],
+        "alignment": [
+            "distance",
+            "maximum_likelihood",
+            "bayesian",
+            "coding",
+            "time_tree",
+            "publication",
+        ],
         "metadata": ["comparative", "time_tree", "publication"],
         "traits": ["comparative", "publication"],
         "tip_dates": ["time_tree", "publication"],
@@ -927,7 +988,9 @@ def _build_exclusion_table(
         affected_analyses: list[str] = []
         for cause in causes:
             affected_analyses.extend(
-                _affected_analyses_for_missing_surface(cause.removeprefix("absent_from_"))
+                _affected_analyses_for_missing_surface(
+                    cause.removeprefix("absent_from_")
+                )
             )
         rows.append(
             DatasetExclusionRow(
@@ -960,27 +1023,42 @@ def _analysis_decisions(
     blockers_by_analysis = {analysis: [] for analysis in analyses}
     warnings_by_analysis = {analysis: [] for analysis in analyses}
     for finding in findings:
-        target = blockers_by_analysis if finding.severity == "blocker" else warnings_by_analysis
+        target = (
+            blockers_by_analysis
+            if finding.severity == "blocker"
+            else warnings_by_analysis
+        )
         for analysis in finding.affected_analyses:
             if analysis in target:
                 target[analysis].append(finding.message)
 
     decisions: list[DatasetAnalysisDecision] = []
     for analysis in analyses:
-        reasons = sorted(dict.fromkeys(blockers_by_analysis[analysis] + warnings_by_analysis[analysis]))
+        reasons = sorted(
+            dict.fromkeys(
+                blockers_by_analysis[analysis] + warnings_by_analysis[analysis]
+            )
+        )
         if blockers_by_analysis[analysis]:
             decision = "blocked"
         elif warnings_by_analysis[analysis]:
             decision = "risky"
         else:
             decision = "allowed"
-        if analysis in {"distance", "maximum_likelihood", "bayesian", "coding"} and alignment_forensic is None:
+        if (
+            analysis in {"distance", "maximum_likelihood", "bayesian", "coding"}
+            and alignment_forensic is None
+        ):
             decision = "blocked"
             reasons = ["analysis requires an alignment input"]
         if analysis == "time_tree" and tip_dates is None and calibrations is None:
             decision = "blocked"
             reasons = ["analysis requires tip dates or fossil calibrations"]
-        decisions.append(DatasetAnalysisDecision(analysis=analysis, decision=decision, reasons=reasons))
+        decisions.append(
+            DatasetAnalysisDecision(
+                analysis=analysis, decision=decision, reasons=reasons
+            )
+        )
     return decisions
 
 
@@ -991,7 +1069,9 @@ def _readiness_levels(
 
     def summarize(level: str, analyses: list[str]) -> DatasetReadinessLevel:
         members = [decision_by_analysis[analysis] for analysis in analyses]
-        reasons = sorted(dict.fromkeys(reason for member in members for reason in member.reasons))
+        reasons = sorted(
+            dict.fromkeys(reason for member in members for reason in member.reasons)
+        )
         if any(member.decision == "blocked" for member in members):
             decision = "blocked"
         elif any(member.decision == "risky" for member in members):
@@ -1033,8 +1113,12 @@ def _dataset_risk_score(
         ]
         score = 0.0
         reasons = [finding.message for finding in component_findings]
-        score += 25.0 * sum(1 for finding in component_findings if finding.severity == "blocker")
-        score += 10.0 * sum(1 for finding in component_findings if finding.severity == "warning")
+        score += 25.0 * sum(
+            1 for finding in component_findings if finding.severity == "blocker"
+        )
+        score += 10.0 * sum(
+            1 for finding in component_findings if finding.severity == "warning"
+        )
         if component == "calibration" and tip_dates is None and calibrations is None:
             reasons.append("time-tree surfaces were not supplied")
         components.append(
@@ -1044,14 +1128,18 @@ def _dataset_risk_score(
                 reasons=sorted(dict.fromkeys(reasons)),
             )
         )
-    total_score = round(sum(component.score for component in components) / len(components), 15)
+    total_score = round(
+        sum(component.score for component in components) / len(components), 15
+    )
     if total_score >= 50.0:
         risk_level = "high"
     elif total_score >= 20.0:
         risk_level = "moderate"
     else:
         risk_level = "low"
-    return DatasetRiskScoreReport(total_score=total_score, risk_level=risk_level, components=components)
+    return DatasetRiskScoreReport(
+        total_score=total_score, risk_level=risk_level, components=components
+    )
 
 
 def _minimal_fix_plan(
@@ -1060,7 +1148,9 @@ def _minimal_fix_plan(
 ) -> DatasetMinimalFixPlan:
     recommendations: list[DatasetFixRecommendation] = []
 
-    def add(priority: int, summary: str, affected_surfaces: list[str], unlocks: list[str]) -> None:
+    def add(
+        priority: int, summary: str, affected_surfaces: list[str], unlocks: list[str]
+    ) -> None:
         row = DatasetFixRecommendation(
             priority=priority,
             summary=summary,
@@ -1072,21 +1162,81 @@ def _minimal_fix_plan(
 
     messages = {finding.message: finding for finding in findings}
     if "tree requires complete branch lengths" in messages:
-        add(1, "supply complete branch lengths for every non-root edge", ["tree"], ["comparative", "publication"])
+        add(
+            1,
+            "supply complete branch lengths for every non-root edge",
+            ["tree"],
+            ["comparative", "publication"],
+        )
     if "metadata table is missing one or more tree taxa" in messages:
-        add(1, "fill metadata rows for every tree tip or prune unmatched tips explicitly", ["metadata"], ["comparative", "publication"])
+        add(
+            1,
+            "fill metadata rows for every tree tip or prune unmatched tips explicitly",
+            ["metadata"],
+            ["comparative", "publication"],
+        )
     if "trait table is missing one or more tree taxa" in messages:
-        add(1, "complete the trait table for every retained tree tip", ["traits"], ["comparative", "publication"])
+        add(
+            1,
+            "complete the trait table for every retained tree tip",
+            ["traits"],
+            ["comparative", "publication"],
+        )
     if "alignment is missing one or more tree taxa" in messages:
-        add(1, "reconcile tree and alignment taxon sets before inference", ["alignment", "tree"], ["distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"])
+        add(
+            1,
+            "reconcile tree and alignment taxon sets before inference",
+            ["alignment", "tree"],
+            [
+                "distance",
+                "maximum_likelihood",
+                "bayesian",
+                "coding",
+                "time_tree",
+                "publication",
+            ],
+        )
     if "tip-date metadata contains invalid or missing tree-tip dates" in messages:
-        add(1, "correct invalid or missing tip-date rows", ["tip_dates"], ["time_tree", "publication"])
-    if "calibration table contains invalid fossil calibration targets or ages" in messages:
-        add(1, "repair invalid fossil calibrations or remove unsupported targets", ["calibration"], ["time_tree", "publication"])
-    if any(decision.analysis in {"distance", "maximum_likelihood", "bayesian", "coding"} for decision in decisions if decision.decision == "blocked" and "alignment input" in " ".join(decision.reasons)):
-        add(2, "add an alignment input for sequence-based inference workflows", ["alignment"], ["distance", "maximum_likelihood", "bayesian", "coding"])
-    if any(decision.analysis == "time_tree" for decision in decisions if decision.decision == "blocked" and "tip dates or fossil calibrations" in " ".join(decision.reasons)):
-        add(2, "supply tip dates or fossil calibrations for time-tree analysis", ["tip_dates", "calibration"], ["time_tree"])
+        add(
+            1,
+            "correct invalid or missing tip-date rows",
+            ["tip_dates"],
+            ["time_tree", "publication"],
+        )
+    if (
+        "calibration table contains invalid fossil calibration targets or ages"
+        in messages
+    ):
+        add(
+            1,
+            "repair invalid fossil calibrations or remove unsupported targets",
+            ["calibration"],
+            ["time_tree", "publication"],
+        )
+    if any(
+        decision.analysis in {"distance", "maximum_likelihood", "bayesian", "coding"}
+        for decision in decisions
+        if decision.decision == "blocked"
+        and "alignment input" in " ".join(decision.reasons)
+    ):
+        add(
+            2,
+            "add an alignment input for sequence-based inference workflows",
+            ["alignment"],
+            ["distance", "maximum_likelihood", "bayesian", "coding"],
+        )
+    if any(
+        decision.analysis == "time_tree"
+        for decision in decisions
+        if decision.decision == "blocked"
+        and "tip dates or fossil calibrations" in " ".join(decision.reasons)
+    ):
+        add(
+            2,
+            "supply tip dates or fossil calibrations for time-tree analysis",
+            ["tip_dates", "calibration"],
+            ["time_tree"],
+        )
 
     recommendations.sort(key=lambda row: (row.priority, row.summary))
     return DatasetMinimalFixPlan(recommendations=recommendations)
@@ -1106,12 +1256,18 @@ def _reviewer_checklist(
             return "blocked"
         return "pass"
 
-    risky_analyses = [decision.analysis for decision in decisions if decision.decision == "risky"]
-    blocked_analyses = [decision.analysis for decision in decisions if decision.decision == "blocked"]
+    risky_analyses = [
+        decision.analysis for decision in decisions if decision.decision == "risky"
+    ]
+    blocked_analyses = [
+        decision.analysis for decision in decisions if decision.decision == "blocked"
+    ]
     items = [
         DatasetReviewerChecklistItem(
             section="overall_readiness",
-            status="blocked" if readiness_decision == "blocked" else ("risk" if warnings else "pass"),
+            status="blocked"
+            if readiness_decision == "blocked"
+            else ("risk" if warnings else "pass"),
             summary=f"dataset readiness is {readiness_decision}",
             evidence=blockers or warnings,
         ),
@@ -1125,7 +1281,9 @@ def _reviewer_checklist(
             section="dataset_risk",
             status="risk" if risk_score.risk_level != "low" else "pass",
             summary=f"transparent dataset risk level is {risk_score.risk_level}",
-            evidence=[f"{row.component}: {row.score:g}" for row in risk_score.components],
+            evidence=[
+                f"{row.component}: {row.score:g}" for row in risk_score.components
+            ],
         ),
         DatasetReviewerChecklistItem(
             section="analysis_eligibility",
@@ -1163,7 +1321,11 @@ def audit_dataset_inputs(
 
     findings: list[DatasetAuditFinding] = []
     for message in readiness.blockers:
-        category = "traits" if "trait" in message else ("metadata" if "metadata" in message else "tree")
+        category = (
+            "traits"
+            if "trait" in message
+            else ("metadata" if "metadata" in message else "tree")
+        )
         _append_finding(
             findings,
             severity="blocker",
@@ -1173,7 +1335,11 @@ def audit_dataset_inputs(
             affected_analyses=["comparative", "publication"],
         )
     for message in readiness.warnings:
-        category = "traits" if "trait" in message else ("metadata" if "metadata" in message else "dataset")
+        category = (
+            "traits"
+            if "trait" in message
+            else ("metadata" if "metadata" in message else "dataset")
+        )
         _append_finding(
             findings,
             severity="warning",
@@ -1196,7 +1362,14 @@ def audit_dataset_inputs(
                 category="alignment",
                 code="missing-tree-taxa",
                 message="alignment is missing one or more tree taxa",
-                affected_analyses=["distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"],
+                affected_analyses=[
+                    "distance",
+                    "maximum_likelihood",
+                    "bayesian",
+                    "coding",
+                    "time_tree",
+                    "publication",
+                ],
             )
         if alignment_linkage.extra_alignment_ids:
             _append_finding(
@@ -1205,16 +1378,30 @@ def audit_dataset_inputs(
                 category="alignment",
                 code="extra-alignment-taxa",
                 message="alignment contains taxa absent from the tree",
-                affected_analyses=["distance", "maximum_likelihood", "bayesian", "coding", "publication"],
+                affected_analyses=[
+                    "distance",
+                    "maximum_likelihood",
+                    "bayesian",
+                    "coding",
+                    "publication",
+                ],
             )
-        if not alignment_forensic.safe_for_distance_analysis and not alignment_forensic.safe_for_maximum_likelihood:
+        if (
+            not alignment_forensic.safe_for_distance_analysis
+            and not alignment_forensic.safe_for_maximum_likelihood
+        ):
             _append_finding(
                 findings,
                 severity="blocker",
                 category="alignment",
                 code="inference-unsafe-alignment",
                 message="alignment is not currently safe for core inference workflows",
-                affected_analyses=["distance", "maximum_likelihood", "bayesian", "publication"],
+                affected_analyses=[
+                    "distance",
+                    "maximum_likelihood",
+                    "bayesian",
+                    "publication",
+                ],
             )
         for warning in alignment_forensic.warnings:
             affected = ["publication"]
@@ -1282,7 +1469,9 @@ def audit_dataset_inputs(
         calibration_report=calibrations,
     )
     pruning_steps, analysis_taxa_set = _pruning_steps(context)
-    analysis_taxa = sorted(tree_taxa & metadata_taxa & trait_taxa & alignment_taxa & analysis_taxa_set)
+    analysis_taxa = sorted(
+        tree_taxa & metadata_taxa & trait_taxa & alignment_taxa & analysis_taxa_set
+    )
     if len(analysis_taxa) < 2:
         _append_finding(
             findings,
@@ -1290,7 +1479,15 @@ def audit_dataset_inputs(
             category="dataset",
             code="too-few-intersection-taxa",
             message="fewer than two taxa remain after intersecting all requested dataset surfaces",
-            affected_analyses=["comparative", "distance", "maximum_likelihood", "bayesian", "coding", "time_tree", "publication"],
+            affected_analyses=[
+                "comparative",
+                "distance",
+                "maximum_likelihood",
+                "bayesian",
+                "coding",
+                "time_tree",
+                "publication",
+            ],
         )
 
     ordering_audit = audit_dataset_taxon_ordering(
@@ -1354,16 +1551,32 @@ def audit_dataset_inputs(
     )
     readiness_levels = _readiness_levels(analysis_decisions)
 
-    blockers = sorted(dict.fromkeys(finding.message for finding in findings if finding.severity == "blocker"))
-    warnings = sorted(dict.fromkeys(finding.message for finding in findings if finding.severity == "warning"))
+    blockers = sorted(
+        dict.fromkeys(
+            finding.message for finding in findings if finding.severity == "blocker"
+        )
+    )
+    warnings = sorted(
+        dict.fromkeys(
+            finding.message for finding in findings if finding.severity == "warning"
+        )
+    )
     allowed_analyses = sorted(
-        decision.analysis for decision in analysis_decisions if decision.decision != "blocked"
+        decision.analysis
+        for decision in analysis_decisions
+        if decision.decision != "blocked"
     )
     blocked_analyses = sorted(
-        decision.analysis for decision in analysis_decisions if decision.decision == "blocked"
+        decision.analysis
+        for decision in analysis_decisions
+        if decision.decision == "blocked"
     )
-    readiness_decision = "blocked" if blockers else ("ready_with_warnings" if warnings else "ready")
-    risk_score = _dataset_risk_score(findings, tip_dates=tip_dates, calibrations=calibrations)
+    readiness_decision = (
+        "blocked" if blockers else ("ready_with_warnings" if warnings else "ready")
+    )
+    risk_score = _dataset_risk_score(
+        findings, tip_dates=tip_dates, calibrations=calibrations
+    )
     minimal_fix_plan = _minimal_fix_plan(findings, analysis_decisions)
     reviewer_checklist = _reviewer_checklist(
         readiness_decision=readiness_decision,

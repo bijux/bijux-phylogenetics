@@ -3,7 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.evidence.bundles import EvidenceBundleReport, EvidenceValidationReport, bundle_file_paths, validate_bundle
+from bijux_phylogenetics.evidence.bundles import (
+    EvidenceBundleReport,
+    EvidenceValidationReport,
+    bundle_file_paths,
+    validate_bundle,
+)
 
 from .common import load_engine_manifest
 
@@ -33,7 +38,9 @@ def bundle_inference_workflow_evidence(
     for manifest_path in normalized_manifests:
         manifest = load_engine_manifest(manifest_path)
         input_paths.extend(Path(path) for path in manifest["input_paths"])
-        output_paths.extend(Path(path) for path in dict(manifest["output_paths"]).values())
+        output_paths.extend(
+            Path(path) for path in dict(manifest["output_paths"]).values()
+        )
     unique_inputs = _deduplicate_existing_paths(input_paths)
     unique_outputs = _deduplicate_existing_paths([*output_paths, *normalized_manifests])
     bundle = bundle_file_paths(unique_inputs, unique_outputs, bundle_root)

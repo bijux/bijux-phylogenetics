@@ -80,7 +80,9 @@ def _detect_delimiter(path: Path) -> tuple[str, str]:
     if suffix == ".tsv":
         return "\t", "tsv"
 
-    header_line = path.read_text(encoding="utf-8").splitlines()[0] if path.exists() else ""
+    header_line = (
+        path.read_text(encoding="utf-8").splitlines()[0] if path.exists() else ""
+    )
     if "\t" in header_line:
         return "\t", "tsv"
     return ",", "csv"
@@ -117,7 +119,9 @@ def load_taxon_table(path: Path, *, taxon_column: str | None = None) -> TaxonTab
         seen_taxa: set[str] = set()
 
         for row_index, row in enumerate(reader, start=2):
-            normalized_row = {column: str(row.get(column, "")).strip() for column in columns}
+            normalized_row = {
+                column: str(row.get(column, "")).strip() for column in columns
+            }
             taxon = normalized_row[resolved_taxon_column]
             if not taxon:
                 raise MetadataJoinError(
@@ -140,7 +144,9 @@ def load_taxon_table(path: Path, *, taxon_column: str | None = None) -> TaxonTab
     )
 
 
-def inspect_metadata_table(path: Path, *, taxon_column: str | None = None) -> MetadataInspectionReport:
+def inspect_metadata_table(
+    path: Path, *, taxon_column: str | None = None
+) -> MetadataInspectionReport:
     """Inspect a metadata table and expose the stable taxon-key contract."""
     table = load_taxon_table(path, taxon_column=taxon_column)
     row_count = max(table.row_count, 1)
@@ -148,7 +154,8 @@ def inspect_metadata_table(path: Path, *, taxon_column: str | None = None) -> Me
         MetadataColumnCompleteness(
             name=column,
             missing_count=sum(1 for row in table.rows if not row[column]),
-            completeness_fraction=sum(1 for row in table.rows if row[column]) / row_count,
+            completeness_fraction=sum(1 for row in table.rows if row[column])
+            / row_count,
         )
         for column in table.columns
     ]
@@ -164,7 +171,9 @@ def inspect_metadata_table(path: Path, *, taxon_column: str | None = None) -> Me
     )
 
 
-def write_taxon_rows(path: Path, *, columns: list[str], rows: list[dict[str, str]]) -> Path:
+def write_taxon_rows(
+    path: Path, *, columns: list[str], rows: list[dict[str, str]]
+) -> Path:
     """Write taxon-keyed rows as CSV or TSV based on the output suffix."""
     delimiter, _ = _detect_delimiter(path)
     path.parent.mkdir(parents=True, exist_ok=True)

@@ -68,7 +68,11 @@ def standardize_support_labels(tree_path: Path) -> list[StandardizedSupportLabel
     """Convert support-like internal labels into normalized support fields."""
     inspection = inspect_tree_path(tree_path)
     standardized: list[StandardizedSupportLabel] = []
-    support_values = [row.numeric_value for row in inspection.likely_support_labels if row.numeric_value is not None]
+    support_values = [
+        row.numeric_value
+        for row in inspection.likely_support_labels
+        if row.numeric_value is not None
+    ]
     has_fraction_scale = any(0.0 <= value <= 1.0 for value in support_values)
     has_percent_scale = any(1.0 < value <= 100.0 for value in support_values)
     for row in inspection.likely_support_labels:
@@ -116,7 +120,9 @@ def inspect_branch_length_units(
 ) -> BranchLengthUnitReport:
     """Inspect metadata for declared branch-length units."""
     table = load_taxon_table(metadata_path, taxon_column=taxon_column)
-    column_name = next((column for column in _UNIT_COLUMNS if column in table.columns), None)
+    column_name = next(
+        (column for column in _UNIT_COLUMNS if column in table.columns), None
+    )
     if column_name is None:
         return BranchLengthUnitReport(
             metadata_path=metadata_path,
@@ -128,7 +134,9 @@ def inspect_branch_length_units(
             conflicting_values=[],
         )
 
-    observed_values = sorted({row[column_name].strip() for row in table.rows if row[column_name].strip()})
+    observed_values = sorted(
+        {row[column_name].strip() for row in table.rows if row[column_name].strip()}
+    )
     if not observed_values:
         return BranchLengthUnitReport(
             metadata_path=metadata_path,
@@ -185,14 +193,21 @@ def assess_tree_assumptions(
         blockers.append("tree requires complete branch lengths")
     if inspection.zero_length_branch_count:
         warnings.append("tree contains zero-length branches")
-    if any(warning.code == "negative_branch_lengths" for warning in inspection.tree_quality_warnings):
+    if any(
+        warning.code == "negative_branch_lengths"
+        for warning in inspection.tree_quality_warnings
+    ):
         blockers.append("tree contains negative branch lengths")
     if unit_report is not None and unit_report.conflicting_values:
         blockers.append("metadata declares conflicting branch-length units")
 
     time_tree_compatible = inspection.is_ultrametric is True and not blockers
-    substitution_tree_compatible = inspection.branch_length_status == "complete" and not any(
-        warning.code == "negative_branch_lengths" for warning in inspection.tree_quality_warnings
+    substitution_tree_compatible = (
+        inspection.branch_length_status == "complete"
+        and not any(
+            warning.code == "negative_branch_lengths"
+            for warning in inspection.tree_quality_warnings
+        )
     )
 
     if unit_report is not None and unit_report.normalized_unit is not None:

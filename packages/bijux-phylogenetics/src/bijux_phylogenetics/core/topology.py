@@ -19,7 +19,7 @@ class CladeExtractionReport:
     retained_all_requested_descendants: bool
     missing_requested_descendants: list[str]
     unexpected_retained_taxa: list[str]
-    summary: "TreeTransformationSummary"
+    summary: TreeTransformationSummary
 
 
 @dataclass(slots=True)
@@ -30,7 +30,7 @@ class BranchCollapseReport:
     threshold: float
     collapsed_clades: list[str]
     topology_preserved: bool
-    summary: "TreeTransformationSummary"
+    summary: TreeTransformationSummary
 
 
 @dataclass(slots=True)
@@ -42,7 +42,7 @@ class TreeOrderingReport:
     tip_order: list[str]
     rooted_topology_preserved: bool
     unrooted_topology_preserved: bool
-    summary: "TreeTransformationSummary"
+    summary: TreeTransformationSummary
 
 
 @dataclass(slots=True)
@@ -55,7 +55,7 @@ class TreeRootingReport:
     matched_taxa: list[str]
     absent_taxa: list[str]
     tip_order: list[str]
-    summary: "TreeTransformationSummary"
+    summary: TreeTransformationSummary
 
 
 @dataclass(slots=True)
@@ -132,7 +132,9 @@ def _combine_branch_lengths(base: float | None, extra: float | None) -> float | 
     return base + extra
 
 
-def _branch_length_affecting_nodes(original: TreeNode, transformed: TreeNode) -> list[str]:
+def _branch_length_affecting_nodes(
+    original: TreeNode, transformed: TreeNode
+) -> list[str]:
     original_nodes = {
         _node_signature(node): node.branch_length
         for node in original.iter_nodes()
@@ -171,7 +173,9 @@ def _summarize_transformation(
     nodes_changed = _changed_node_signatures(original.root, transformed.root)
     if extra_changed_nodes:
         nodes_changed = sorted(set(nodes_changed) | set(extra_changed_nodes))
-    branch_lengths_affected = _branch_length_affecting_nodes(original.root, transformed.root)
+    branch_lengths_affected = _branch_length_affecting_nodes(
+        original.root, transformed.root
+    )
     original_total = round(original.total_branch_length(), 15)
     transformed_total = round(transformed.total_branch_length(), 15)
     return TreeTransformationSummary(
@@ -234,15 +238,21 @@ def _unrooted_splits(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[st
     return splits
 
 
-def _compare_tree_topology(original: PhyloTree, transformed: PhyloTree) -> _TopologyComparison:
+def _compare_tree_topology(
+    original: PhyloTree, transformed: PhyloTree
+) -> _TopologyComparison:
     shared_taxa = set(original.tip_names) & set(transformed.tip_names)
     if len(shared_taxa) < 2:
-        return _TopologyComparison(topology_equal=original.tip_names == transformed.tip_names, same_unrooted_topology=True)
+        return _TopologyComparison(
+            topology_equal=original.tip_names == transformed.tip_names,
+            same_unrooted_topology=True,
+        )
     left_clades = _informative_clades(original, shared_taxa)
     right_clades = _informative_clades(transformed, shared_taxa)
     return _TopologyComparison(
         topology_equal=left_clades == right_clades,
-        same_unrooted_topology=_unrooted_splits(original, shared_taxa) == _unrooted_splits(transformed, shared_taxa),
+        same_unrooted_topology=_unrooted_splits(original, shared_taxa)
+        == _unrooted_splits(transformed, shared_taxa),
     )
 
 
@@ -273,7 +283,9 @@ def _collapse_short_internal_branches(
                 TreeNode(
                     name=grandchild.name,
                     branch_length=grandchild.branch_length,
-                    children=[_clone_node(child_node) for child_node in grandchild.children],
+                    children=[
+                        _clone_node(child_node) for child_node in grandchild.children
+                    ],
                 )
                 for grandchild in rewritten_child.children
             )
@@ -302,10 +314,14 @@ def extract_named_clade(
 
     subtree_root = _clone_node(matches[0])
     subtree_root.branch_length = None
-    subtree = PhyloTree(root=subtree_root, source_format=tree.source_format, rooted=tree.rooted)
+    subtree = PhyloTree(
+        root=subtree_root, source_format=tree.source_format, rooted=tree.rooted
+    )
     expected_taxa = sorted(_descendant_taxa(matches[0]))
     observed_taxa = sorted(subtree.tip_names)
-    summary = _summarize_transformation(tree, subtree, transformation="extract-named-clade")
+    summary = _summarize_transformation(
+        tree, subtree, transformation="extract-named-clade"
+    )
     return subtree, CladeExtractionReport(
         tree_path=tree_path,
         clade_name=clade_name,
@@ -335,7 +351,9 @@ def collapse_branches_below_length(
         collapsed_clades=collapsed_clades,
     )
     collapsed_root.branch_length = None
-    collapsed_tree = PhyloTree(root=collapsed_root, source_format=tree.source_format, rooted=tree.rooted)
+    collapsed_tree = PhyloTree(
+        root=collapsed_root, source_format=tree.source_format, rooted=tree.rooted
+    )
     comparison = _compare_tree_topology(tree, collapsed_tree)
     summary = _summarize_transformation(
         tree,
@@ -356,9 +374,13 @@ def _order_tree(node: TreeNode, *, strategy: str) -> TreeNode:
     if node.is_leaf():
         return TreeNode(name=node.name, branch_length=node.branch_length, children=[])
 
-    ordered_children = [_order_tree(child, strategy=strategy) for child in node.children]
+    ordered_children = [
+        _order_tree(child, strategy=strategy) for child in node.children
+    ]
     if strategy == "ladderize":
-        ordered_children.sort(key=lambda child: (-_leaf_count(child), _descendant_taxa(child)))
+        ordered_children.sort(
+            key=lambda child: (-_leaf_count(child), _descendant_taxa(child))
+        )
     elif strategy == "alphabetical":
         ordered_children.sort(key=_descendant_taxa)
     else:
@@ -380,7 +402,9 @@ def ladderize_tree(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
         rooted=tree.rooted,
     )
     comparison = _compare_tree_topology(tree, ladderized_tree)
-    summary = _summarize_transformation(tree, ladderized_tree, transformation="ladderize-tree")
+    summary = _summarize_transformation(
+        tree, ladderized_tree, transformation="ladderize-tree"
+    )
     return ladderized_tree, TreeOrderingReport(
         tree_path=tree_path,
         strategy="ladderize",
@@ -391,7 +415,9 @@ def ladderize_tree(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
     )
 
 
-def sort_tree_tips_alphabetically(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
+def sort_tree_tips_alphabetically(
+    tree_path: Path,
+) -> tuple[PhyloTree, TreeOrderingReport]:
     """Sort tree children recursively by alphabetical descendant tip order."""
     tree = load_tree(tree_path)
     sorted_tree = PhyloTree(
@@ -400,7 +426,9 @@ def sort_tree_tips_alphabetically(tree_path: Path) -> tuple[PhyloTree, TreeOrder
         rooted=tree.rooted,
     )
     comparison = _compare_tree_topology(tree, sorted_tree)
-    summary = _summarize_transformation(tree, sorted_tree, transformation="sort-tree-tips")
+    summary = _summarize_transformation(
+        tree, sorted_tree, transformation="sort-tree-tips"
+    )
     return sorted_tree, TreeOrderingReport(
         tree_path=tree_path,
         strategy="alphabetical",
@@ -423,17 +451,30 @@ def root_tree_on_outgroup(
     tree = load_tree(tree_path)
     biophylo_tree = tree_to_biophylo(tree)
     matched_clades = [
-        next(biophylo_tree.find_clades(name=taxon), None)
-        for taxon in outgroup_taxa
+        next(biophylo_tree.find_clades(name=taxon), None) for taxon in outgroup_taxa
     ]
-    matched_taxa = [taxon for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True) if clade is not None]
-    absent_taxa = sorted(taxon for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True) if clade is None)
+    matched_taxa = [
+        taxon
+        for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True)
+        if clade is not None
+    ]
+    absent_taxa = sorted(
+        taxon
+        for taxon, clade in zip(outgroup_taxa, matched_clades, strict=True)
+        if clade is None
+    )
     if not matched_taxa:
-        raise ValueError(f"none of the requested outgroup taxa were found in {tree_path}")
+        raise ValueError(
+            f"none of the requested outgroup taxa were found in {tree_path}"
+        )
 
-    biophylo_tree.root_with_outgroup(*[clade for clade in matched_clades if clade is not None])
+    biophylo_tree.root_with_outgroup(
+        *[clade for clade in matched_clades if clade is not None]
+    )
     rooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
-    summary = _summarize_transformation(tree, rooted_tree, transformation="root-outgroup")
+    summary = _summarize_transformation(
+        tree, rooted_tree, transformation="root-outgroup"
+    )
     return rooted_tree, TreeRootingReport(
         tree_path=tree_path,
         strategy="outgroup",
@@ -450,12 +491,16 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
     tree = load_tree(tree_path)
     branch_lengths = tree.branch_lengths()
     if not branch_lengths or any(length is None for length in branch_lengths):
-        raise ValueError(f"midpoint rerooting requires complete branch lengths in {tree_path}")
+        raise ValueError(
+            f"midpoint rerooting requires complete branch lengths in {tree_path}"
+        )
 
     biophylo_tree = tree_to_biophylo(tree)
     biophylo_tree.root_at_midpoint()
     rerooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
-    summary = _summarize_transformation(tree, rerooted_tree, transformation="reroot-midpoint")
+    summary = _summarize_transformation(
+        tree, rerooted_tree, transformation="reroot-midpoint"
+    )
     return rerooted_tree, TreeRootingReport(
         tree_path=tree_path,
         strategy="midpoint",
@@ -471,19 +516,25 @@ def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
     """Convert a rooted binary tree into an explicit unrooted trifurcation."""
     tree = load_tree(tree_path)
     if len(tree.root.children) != 2:
-        raise ValueError(f"tree is not rooted under the repository convention: {tree_path}")
+        raise ValueError(
+            f"tree is not rooted under the repository convention: {tree_path}"
+        )
 
     left, right = tree.root.children
     expandable_children = [child for child in (left, right) if not child.is_leaf()]
     if not expandable_children:
-        raise ValueError(f"cannot unroot a two-tip tree under the repository convention: {tree_path}")
+        raise ValueError(
+            f"cannot unroot a two-tip tree under the repository convention: {tree_path}"
+        )
 
     expanded = sorted(expandable_children, key=_descendant_taxa)[0]
     retained = right if expanded is left else left
     new_children = [
         TreeNode(
             name=child.name,
-            branch_length=_combine_branch_lengths(child.branch_length, expanded.branch_length),
+            branch_length=_combine_branch_lengths(
+                child.branch_length, expanded.branch_length
+            ),
             children=[_clone_node(grandchild) for grandchild in child.children],
         )
         for child in expanded.children
@@ -494,7 +545,9 @@ def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
         source_format=tree.source_format,
         rooted=False,
     )
-    summary = _summarize_transformation(tree, unrooted_tree, transformation="unroot-tree")
+    summary = _summarize_transformation(
+        tree, unrooted_tree, transformation="unroot-tree"
+    )
     return unrooted_tree, TreeRootingReport(
         tree_path=tree_path,
         strategy="unroot",

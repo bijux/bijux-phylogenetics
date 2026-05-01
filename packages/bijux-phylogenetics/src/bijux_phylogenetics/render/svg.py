@@ -5,10 +5,9 @@ from html import escape
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.assumptions import standardize_support_labels
-from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 from bijux_phylogenetics.core.tree import TreeNode
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.assumptions import standardize_support_labels
+from bijux_phylogenetics.diagnostics.validation import _load_tree, inspect_tree_path
 
 
 @dataclass(slots=True)
@@ -117,7 +116,9 @@ def _coerce_support_label(raw: str | None) -> str | None:
         return None
 
 
-def _polar_point(center_x: float, center_y: float, radius: float, angle_radians: float) -> _Point:
+def _polar_point(
+    center_x: float, center_y: float, radius: float, angle_radians: float
+) -> _Point:
     return _Point(
         x=center_x + radius * math.cos(angle_radians),
         y=center_y + radius * math.sin(angle_radians),
@@ -137,10 +138,7 @@ def _interpolate_channel(start: int, end: int, fraction: float) -> int:
 
 
 def _continuous_color(value: float, minimum: float, maximum: float) -> str:
-    if maximum <= minimum:
-        fraction = 0.5
-    else:
-        fraction = (value - minimum) / (maximum - minimum)
+    fraction = 0.5 if maximum <= minimum else (value - minimum) / (maximum - minimum)
     red = _interpolate_channel(219, 15, fraction)
     green = _interpolate_channel(234, 118, fraction)
     blue = _interpolate_channel(254, 110, fraction)
@@ -159,7 +157,9 @@ def _is_numeric_strings(values: list[str]) -> bool:
 
 
 def _is_collapsed_node(node: TreeNode, collapsed_clades: set[str]) -> bool:
-    return not node.is_leaf() and node.name is not None and node.name in collapsed_clades
+    return (
+        not node.is_leaf() and node.name is not None and node.name in collapsed_clades
+    )
 
 
 def _node_signature(node: TreeNode) -> str:
@@ -195,12 +195,13 @@ def audit_support_label_rendering(tree_path: Path) -> SupportLabelRenderAudit:
 
     standardized = standardize_support_labels(tree_path)
     labels_by_node = {
-        row.node: _format_branch_value(row.support_percent)
-        for row in standardized
+        row.node: _format_branch_value(row.support_percent) for row in standardized
     }
     warnings: list[str] = []
     if inspection.mixed_support_scales:
-        warnings.append("support labels were standardized from mixed input scales before rendering")
+        warnings.append(
+            "support labels were standardized from mixed input scales before rendering"
+        )
     return SupportLabelRenderAudit(
         validated=True,
         labels_by_node=labels_by_node,
@@ -211,20 +212,32 @@ def audit_support_label_rendering(tree_path: Path) -> SupportLabelRenderAudit:
 def _count_visible_leaves(node: TreeNode, collapsed_clades: set[str]) -> int:
     if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
         return 1
-    return sum(_count_visible_leaves(child, collapsed_clades) for child in node.children)
+    return sum(
+        _count_visible_leaves(child, collapsed_clades) for child in node.children
+    )
 
 
-def _max_visible_depth(node: TreeNode, collapsed_clades: set[str], depth: int = 0) -> int:
+def _max_visible_depth(
+    node: TreeNode, collapsed_clades: set[str], depth: int = 0
+) -> int:
     if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
         return depth
-    return max(_max_visible_depth(child, collapsed_clades, depth + 1) for child in node.children)
+    return max(
+        _max_visible_depth(child, collapsed_clades, depth + 1)
+        for child in node.children
+    )
 
 
-def _max_visible_distance(node: TreeNode, collapsed_clades: set[str], distance: float = 0.0) -> float:
+def _max_visible_distance(
+    node: TreeNode, collapsed_clades: set[str], distance: float = 0.0
+) -> float:
     next_distance = distance + float(node.branch_length or 0.0)
     if node.is_leaf() or _is_collapsed_node(node, collapsed_clades):
         return next_distance
-    return max(_max_visible_distance(child, collapsed_clades, next_distance) for child in node.children)
+    return max(
+        _max_visible_distance(child, collapsed_clades, next_distance)
+        for child in node.children
+    )
 
 
 def render_tree_svg(
@@ -299,7 +312,9 @@ def render_tree_svg(
     continuous_min = min(continuous_values) if continuous_values else 0.0
     continuous_max = max(continuous_values) if continuous_values else 0.0
     metadata_strips = metadata_strips or []
-    metadata_strip_colors = [_categorical_color_map(strip.values) for strip in metadata_strips]
+    metadata_strip_colors = [
+        _categorical_color_map(strip.values) for strip in metadata_strips
+    ]
     heatmap_columns = heatmap_columns or []
     internal_annotations = internal_annotations or {}
     internal_annotation_colors = internal_annotation_colors or {}
@@ -308,9 +323,13 @@ def render_tree_svg(
         observed_values = [value for value in column.values.values() if value]
         if _is_numeric_strings(observed_values):
             numeric_values = [float(value) for value in observed_values]
-            heatmap_specs.append(("numeric", {}, min(numeric_values), max(numeric_values)))
+            heatmap_specs.append(
+                ("numeric", {}, min(numeric_values), max(numeric_values))
+            )
         else:
-            heatmap_specs.append(("categorical", _categorical_color_map(column.values), 0.0, 0.0))
+            heatmap_specs.append(
+                ("categorical", _categorical_color_map(column.values), 0.0, 0.0)
+            )
 
     def node_x(depth: int, distance: float) -> float:
         if layout == "phylogram" and max_distance > 0:
@@ -334,9 +353,7 @@ def render_tree_svg(
                 label = f"{node.name or 'collapsed clade'} ({_count_subtree_leaves(node)} tips)"
                 rendered_collapsed_clades += 1
                 triangle = (
-                    f"{x:.1f},{y - 11:.1f} "
-                    f"{x + 24:.1f},{y:.1f} "
-                    f"{x:.1f},{y + 11:.1f}"
+                    f"{x:.1f},{y - 11:.1f} {x + 24:.1f},{y:.1f} {x:.1f},{y + 11:.1f}"
                 )
                 overlays.append(
                     f'<polygon points="{triangle}" fill="#cbd5e1" stroke="#475569" stroke-width="1.5" class="collapsed-clade"/>'
@@ -357,7 +374,12 @@ def render_tree_svg(
             continuous_value = continuous_traits.get(node.name or "")
             if continuous_value is not None:
                 bar_x = left_margin + tree_width + 210
-                fill_fraction = 1.0 if continuous_max <= continuous_min else (continuous_value - continuous_min) / (continuous_max - continuous_min)
+                fill_fraction = (
+                    1.0
+                    if continuous_max <= continuous_min
+                    else (continuous_value - continuous_min)
+                    / (continuous_max - continuous_min)
+                )
                 fill_width = 52 * max(0.0, min(fill_fraction, 1.0))
                 overlays.append(
                     f'<rect x="{bar_x:.1f}" y="{y - 11:.1f}" width="52" height="12" rx="6" fill="#e2e8f0" class="trait-bar-outline"/>'
@@ -388,7 +410,10 @@ def render_tree_svg(
                 )
             return _Point(x=x, y=y)
 
-        child_points = [visit_rectangular(child, depth + 1, branch_distance) for child in node.children]
+        child_points = [
+            visit_rectangular(child, depth + 1, branch_distance)
+            for child in node.children
+        ]
         y = sum(point.y for point in child_points) / len(child_points)
         min_y = min(point.y for point in child_points)
         max_y = max(point.y for point in child_points)
@@ -411,7 +436,9 @@ def render_tree_svg(
             rendered_support_count += 1
         annotation = internal_annotations.get(_node_signature(node))
         if annotation and not node.is_leaf():
-            annotation_color = internal_annotation_colors.get(_node_signature(node), "#7c3aed")
+            annotation_color = internal_annotation_colors.get(
+                _node_signature(node), "#7c3aed"
+            )
             overlays.append(
                 f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{annotation_color}" class="internal-annotation-dot"/>'
             )
@@ -437,7 +464,9 @@ def render_tree_svg(
         def assign_angles(node: TreeNode) -> tuple[float, float]:
             nonlocal next_leaf_index
             if node.is_leaf() or _is_collapsed_node(node, collapsed_clade_names):
-                angle = (2 * math.pi * next_leaf_index / max(leaf_count, 1)) - math.pi / 2
+                angle = (
+                    2 * math.pi * next_leaf_index / max(leaf_count, 1)
+                ) - math.pi / 2
                 next_leaf_index += 1
                 angle_cache[id(node)] = angle
                 return angle, angle
@@ -454,7 +483,9 @@ def render_tree_svg(
             nonlocal rendered_internal_annotation_count
             nonlocal rendered_collapsed_clades
             branch_distance = distance + float(node.branch_length or 0.0)
-            radial = radial_distance(depth, branch_distance if node is not tree.root else distance)
+            radial = radial_distance(
+                depth, branch_distance if node is not tree.root else distance
+            )
             if node.is_leaf() or _is_collapsed_node(node, collapsed_clade_names):
                 angle = angle_cache[id(node)]
                 label = labels.get(node.name or "", node.name or "")
@@ -470,8 +501,12 @@ def render_tree_svg(
                 )
                 if _is_collapsed_node(node, collapsed_clade_names):
                     node_point = _polar_point(center_x, center_y, radial, angle)
-                    left_point = _polar_point(center_x, center_y, radial + 18, angle - 0.08)
-                    right_point = _polar_point(center_x, center_y, radial + 18, angle + 0.08)
+                    left_point = _polar_point(
+                        center_x, center_y, radial + 18, angle - 0.08
+                    )
+                    right_point = _polar_point(
+                        center_x, center_y, radial + 18, angle + 0.08
+                    )
                     overlays.append(
                         f'<polygon points="{node_point.x:.1f},{node_point.y:.1f} {left_point.x:.1f},{left_point.y:.1f} {right_point.x:.1f},{right_point.y:.1f}" fill="#cbd5e1" stroke="#475569" stroke-width="1.5" class="collapsed-clade"/>'
                     )
@@ -491,7 +526,9 @@ def render_tree_svg(
                     rendered_continuous_trait_count += 1
                 return angle, radial
 
-            child_positions = [draw(child, depth + 1, branch_distance) for child in node.children]
+            child_positions = [
+                draw(child, depth + 1, branch_distance) for child in node.children
+            ]
             start_angle = min(angle for angle, _ in child_positions)
             end_angle = max(angle for angle, _ in child_positions)
             if radial > 0 and start_angle != end_angle:
@@ -503,7 +540,9 @@ def render_tree_svg(
                 )
             for child in node.children:
                 child_angle = angle_cache[id(child)]
-                child_branch_distance = branch_distance + float(child.branch_length or 0.0)
+                child_branch_distance = branch_distance + float(
+                    child.branch_length or 0.0
+                )
                 child_radial = radial_distance(depth + 1, child_branch_distance)
                 radial_start = _polar_point(center_x, center_y, radial, child_angle)
                 radial_end = _polar_point(center_x, center_y, child_radial, child_angle)
@@ -517,7 +556,9 @@ def render_tree_svg(
                     support_label = _coerce_support_label(node.name)
             if support_label is not None and node is not tree.root:
                 node_angle = angle_cache[id(node)]
-                support_point = _polar_point(center_x, center_y, radial + 14, node_angle)
+                support_point = _polar_point(
+                    center_x, center_y, radial + 14, node_angle
+                )
                 texts.append(
                     f'<text x="{support_point.x:.1f}" y="{support_point.y + 4:.1f}" class="support-label">{escape(support_label)}</text>'
                 )
@@ -525,8 +566,12 @@ def render_tree_svg(
             annotation = internal_annotations.get(_node_signature(node))
             if annotation and not node.is_leaf():
                 node_angle = angle_cache[id(node)]
-                annotation_point = _polar_point(center_x, center_y, radial + 12, node_angle)
-                annotation_color = internal_annotation_colors.get(_node_signature(node), "#7c3aed")
+                annotation_point = _polar_point(
+                    center_x, center_y, radial + 12, node_angle
+                )
+                annotation_color = internal_annotation_colors.get(
+                    _node_signature(node), "#7c3aed"
+                )
                 overlays.append(
                     f'<circle cx="{annotation_point.x:.1f}" cy="{annotation_point.y:.1f}" r="4.5" fill="{annotation_color}" class="internal-annotation-dot"/>'
                 )
@@ -586,7 +631,7 @@ def render_tree_svg(
             f'<defs><linearGradient id="continuous-trait-gradient" x1="0%" y1="0%" x2="100%" y2="0%">'
             f'<stop offset="0%" stop-color="{_continuous_color(continuous_min, continuous_min, continuous_max)}"/>'
             f'<stop offset="100%" stop-color="{_continuous_color(continuous_max, continuous_min, continuous_max)}"/>'
-            f'</linearGradient></defs>'
+            f"</linearGradient></defs>"
             f'<rect x="{legend_x:.1f}" y="{legend_y:.1f}" width="120" height="12" rx="6" fill="url(#continuous-trait-gradient)"/>'
             f'<text x="{legend_x:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(_format_branch_value(continuous_min))}</text>'
             f'<text x="{legend_x + 88:.1f}" y="{legend_y + 28:.1f}" class="legend-label">{escape(_format_branch_value(continuous_max))}</text>'
@@ -633,9 +678,9 @@ def render_tree_svg(
     .strip-header {{ fill: #475569; font: 11px "Avenir Next", "Segoe UI", sans-serif; }}
   </style>
   <rect x="1" y="1" width="{width - 2}" height="{height - 2}" class="panel" />
-  {''.join(lines)}
-  {''.join(texts)}
-  {''.join(overlays)}
+  {"".join(lines)}
+  {"".join(texts)}
+  {"".join(overlays)}
   {scale_bar}
   {categorical_legend}
   {continuous_legend}
@@ -654,7 +699,9 @@ def render_tree_svg(
         label_count=len(texts),
         has_scale_bar=has_scale_bar,
         scale_bar_length=scale_bar_length,
-        max_branch_distance=max_distance if layout in {"phylogram", "circular"} else None,
+        max_branch_distance=max_distance
+        if layout in {"phylogram", "circular"}
+        else None,
         rendered_support_count=rendered_support_count,
         support_labels_validated=bool(validated_support_labels),
         support_validation_warnings=list(support_validation_warnings),

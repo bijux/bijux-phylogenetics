@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass
 from math import exp, sqrt
 from pathlib import Path
+import random
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature
 from bijux_phylogenetics.core.alignment import AlignmentRecord
-from bijux_phylogenetics.io.fasta import write_fasta_alignment
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import load_tree
 
@@ -132,7 +132,9 @@ def _prune_extinct_subtree(node: TreeNode, *, is_root: bool = False) -> TreeNode
     if len(kept_children) == 1:
         promoted = kept_children[0]
         if not is_root and node.branch_length is not None:
-            promoted.branch_length = round((promoted.branch_length or 0.0) + node.branch_length, 15)
+            promoted.branch_length = round(
+                (promoted.branch_length or 0.0) + node.branch_length, 15
+            )
         return promoted
     node.children = kept_children
     return node
@@ -162,7 +164,7 @@ def _simulate_birth_death_tree_once(
     if death_rate < 0.0:
         raise ValueError(f"death_rate must be nonnegative, got {death_rate}")
 
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311
     for attempt in range(1, 129):
         root = TreeNode()
         extant = [_Lineage(node=root, start_time=0.0, is_root=True)]
@@ -172,9 +174,8 @@ def _simulate_birth_death_tree_once(
             absolute_time += rng.expovariate(total_rate)
             selected_index = rng.randrange(len(extant))
             lineage = extant.pop(selected_index)
-            event_is_birth = (
-                len(extant) == 0
-                or rng.random() < (birth_rate / (birth_rate + death_rate))
+            event_is_birth = len(extant) == 0 or rng.random() < (
+                birth_rate / (birth_rate + death_rate)
             )
             _finalize_branch(lineage, absolute_time)
             if event_is_birth:
@@ -199,7 +200,9 @@ def _simulate_birth_death_tree_once(
         tree = PhyloTree(root=pruned_root, source_format="newick")
         _label_tree_leaves(tree, taxon_prefix=taxon_prefix)
         return tree
-    raise ValueError("birth-death simulation failed to retain the requested number of extant tips after 128 attempts")
+    raise ValueError(
+        "birth-death simulation failed to retain the requested number of extant tips after 128 attempts"
+    )
 
 
 def simulate_birth_death_trees(
@@ -254,7 +257,9 @@ def _iter_tip_trait_values(
     def visit(node: TreeNode, state: float) -> None:
         if node.is_leaf():
             if node.name is not None:
-                values[node.name] = round(state, 15) if isinstance(state, float) else state
+                values[node.name] = (
+                    round(state, 15) if isinstance(state, float) else state
+                )
             return
         for child in node.children:
             branch_length = max(child.branch_length or 0.0, 0.0)
@@ -284,7 +289,9 @@ def _iter_node_trait_values(
     return values
 
 
-def _tip_values_from_node_map(tree: PhyloTree, node_values: dict[str, object]) -> dict[str, object]:
+def _tip_values_from_node_map(
+    tree: PhyloTree, node_values: dict[str, object]
+) -> dict[str, object]:
     return {
         node.name: (
             round(float(node_values[node_signature(node)]), 15)
@@ -335,7 +342,7 @@ def _simulate_coalescent_tree_once(
     if population_size <= 0.0:
         raise ValueError(f"population_size must be positive, got {population_size}")
 
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311
     lineages = [
         _Lineage(
             node=TreeNode(name=f"{taxon_prefix}{index}"),
@@ -403,11 +410,13 @@ def simulate_brownian_traits(
     if sigma < 0.0:
         raise ValueError(f"sigma must be nonnegative, got {sigma}")
     tree = load_tree(tree_path)
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311
     node_values = _iter_node_trait_values(
         tree,
         root_state=root_state,
-        propagate=lambda state, branch_length: state + rng.gauss(0.0, sigma * sqrt(branch_length)),
+        propagate=lambda state, branch_length: (
+            state + rng.gauss(0.0, sigma * sqrt(branch_length))
+        ),
     )
     values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
@@ -451,7 +460,7 @@ def simulate_ou_traits(
     if alpha < 0.0:
         raise ValueError(f"alpha must be nonnegative, got {alpha}")
     tree = load_tree(tree_path)
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311
 
     def propagate(state: float, branch_length: float) -> float:
         if branch_length == 0.0:
@@ -459,10 +468,14 @@ def simulate_ou_traits(
         if alpha == 0.0:
             return state + rng.gauss(0.0, sigma * sqrt(branch_length))
         mean = theta + (state - theta) * exp(-alpha * branch_length)
-        variance = (sigma ** 2) * (1.0 - exp(-2.0 * alpha * branch_length)) / (2.0 * alpha)
+        variance = (
+            (sigma**2) * (1.0 - exp(-2.0 * alpha * branch_length)) / (2.0 * alpha)
+        )
         return mean + rng.gauss(0.0, sqrt(max(variance, 0.0)))
 
-    node_values = _iter_node_trait_values(tree, root_state=root_state, propagate=propagate)
+    node_values = _iter_node_trait_values(
+        tree, root_state=root_state, propagate=propagate
+    )
     values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
         model="ornstein-uhlenbeck",
@@ -505,7 +518,7 @@ def simulate_discrete_traits(
     if transition_rate < 0.0:
         raise ValueError(f"transition_rate must be nonnegative, got {transition_rate}")
     tree = load_tree(tree_path)
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311
     starting_state = root_state or unique_states[0]
     if starting_state not in unique_states:
         raise ValueError(f"root_state '{starting_state}' is not present in states")
@@ -558,9 +571,11 @@ def _simulate_alignment_records(
     if sequence_length < 1:
         raise ValueError(f"sequence_length must be at least 1, got {sequence_length}")
     if substitution_rate < 0.0:
-        raise ValueError(f"substitution_rate must be nonnegative, got {substitution_rate}")
+        raise ValueError(
+            f"substitution_rate must be nonnegative, got {substitution_rate}"
+        )
     tree = load_tree(tree_path)
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311
     root_sequence = "".join(rng.choice(alphabet) for _ in range(sequence_length))
 
     def mutate_sequence(sequence: str, branch_length: float) -> str:
@@ -568,7 +583,9 @@ def _simulate_alignment_records(
         for residue in sequence:
             next_residue = residue
             for _ in range(_poisson_count(substitution_rate * branch_length, rng)):
-                alternatives = [candidate for candidate in alphabet if candidate != next_residue]
+                alternatives = [
+                    candidate for candidate in alphabet if candidate != next_residue
+                ]
                 next_residue = rng.choice(alternatives)
             residues.append(next_residue)
         return "".join(residues)
@@ -632,7 +649,9 @@ def simulate_protein_alignment(
 def write_tree_set(path: Path, trees: list[PhyloTree]) -> Path:
     """Write a list of simulated trees as one canonical Newick tree per line."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(f"{dumps_newick(tree)}\n" for tree in trees), encoding="utf-8")
+    path.write_text(
+        "".join(f"{dumps_newick(tree)}\n" for tree in trees), encoding="utf-8"
+    )
     return path
 
 
@@ -641,7 +660,9 @@ def write_simulated_tree(path: Path, tree: PhyloTree) -> Path:
     return write_newick(path, tree)
 
 
-def write_continuous_trait_table(path: Path, report: ContinuousTraitSimulationReport) -> Path:
+def write_continuous_trait_table(
+    path: Path, report: ContinuousTraitSimulationReport
+) -> Path:
     """Write simulated continuous trait values as a taxon-keyed table."""
     return write_taxon_rows(
         path,
@@ -653,15 +674,14 @@ def write_continuous_trait_table(path: Path, report: ContinuousTraitSimulationRe
     )
 
 
-def write_discrete_trait_table(path: Path, report: DiscreteTraitSimulationReport) -> Path:
+def write_discrete_trait_table(
+    path: Path, report: DiscreteTraitSimulationReport
+) -> Path:
     """Write simulated discrete trait states as a taxon-keyed table."""
     return write_taxon_rows(
         path,
         columns=["taxon", "state"],
-        rows=[
-            {"taxon": row.taxon, "state": row.state}
-            for row in report.traits
-        ],
+        rows=[{"taxon": row.taxon, "state": row.state} for row in report.traits],
     )
 
 

@@ -34,7 +34,9 @@ _DEPENDENCIES = (
 
 def _dependency_status(name: str) -> DependencyStatus:
     try:
-        return DependencyStatus(name=name, version=metadata.version(name), available=True)
+        return DependencyStatus(
+            name=name, version=metadata.version(name), available=True
+        )
     except metadata.PackageNotFoundError:
         return DependencyStatus(name=name, version="unavailable", available=False)
 

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 import re
-from typing import Iterable
-
 
 _NORMALIZE_TAXON_KEY_PATTERN = re.compile(r"[^0-9A-Za-z._-]+")
 
@@ -22,7 +21,7 @@ class TaxonLabel:
     key: str
 
     @classmethod
-    def from_raw(cls, raw: str) -> "TaxonLabel":
+    def from_raw(cls, raw: str) -> TaxonLabel:
         return cls(raw=raw, key=normalize_taxon_key(raw))
 
 
@@ -32,17 +31,17 @@ class TreeNode:
 
     name: str | None = None
     branch_length: float | None = None
-    children: list["TreeNode"] = field(default_factory=list)
+    children: list[TreeNode] = field(default_factory=list)
 
     def is_leaf(self) -> bool:
         return not self.children
 
-    def iter_nodes(self) -> Iterable["TreeNode"]:
+    def iter_nodes(self) -> Iterable[TreeNode]:
         yield self
         for child in self.children:
             yield from child.iter_nodes()
 
-    def iter_leaves(self) -> Iterable["TreeNode"]:
+    def iter_leaves(self) -> Iterable[TreeNode]:
         for node in self.iter_nodes():
             if node.is_leaf():
                 yield node
@@ -74,7 +73,11 @@ class PhyloTree:
 
     @property
     def tip_taxa(self) -> list[TaxonLabel]:
-        return [taxon for taxon in (node.taxon_label for node in self.iter_leaves()) if taxon is not None]
+        return [
+            taxon
+            for taxon in (node.taxon_label for node in self.iter_leaves())
+            if taxon is not None
+        ]
 
     @property
     def tip_count(self) -> int:
@@ -85,10 +88,16 @@ class PhyloTree:
         return sum(1 for node in self.iter_nodes() if not node.is_leaf())
 
     def total_branch_length(self) -> float:
-        return sum(node.branch_length or 0.0 for node in self.iter_nodes() if node is not self.root)
+        return sum(
+            node.branch_length or 0.0
+            for node in self.iter_nodes()
+            if node is not self.root
+        )
 
     def branch_lengths(self) -> list[float | None]:
-        return [node.branch_length for node in self.iter_nodes() if node is not self.root]
+        return [
+            node.branch_length for node in self.iter_nodes() if node is not self.root
+        ]
 
     def terminal_branch_lengths(self) -> list[tuple[str, float | None]]:
         return [

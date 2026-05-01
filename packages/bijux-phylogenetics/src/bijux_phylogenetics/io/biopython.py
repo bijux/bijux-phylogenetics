@@ -31,7 +31,9 @@ def _convert_tree_node(node: TreeNode) -> Clade:
 
 def tree_from_biophylo(tree: Tree, *, source_format: str) -> PhyloTree:
     """Convert a Bio.Phylo tree into the local tree model."""
-    return PhyloTree(root=_convert_clade(tree.root), source_format=source_format, rooted=tree.rooted)
+    return PhyloTree(
+        root=_convert_clade(tree.root), source_format=source_format, rooted=tree.rooted
+    )
 
 
 def tree_to_biophylo(tree: PhyloTree) -> Tree:

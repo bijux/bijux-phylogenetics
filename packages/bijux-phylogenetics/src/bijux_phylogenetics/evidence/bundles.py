@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
 import hashlib
 import json
-import shutil
-from dataclasses import asdict, dataclass
 from pathlib import Path
+import shutil
 
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.errors import EvidenceContractError
@@ -51,13 +51,17 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _copy_roots(*, roots: list[Path], section: str, bundle_root: Path) -> list[EvidenceFile]:
+def _copy_roots(
+    *, roots: list[Path], section: str, bundle_root: Path
+) -> list[EvidenceFile]:
     bundled_files: list[EvidenceFile] = []
     for source_root in roots:
         if not source_root.exists():
             raise EvidenceContractError(f"{section} directory not found: {source_root}")
         if not source_root.is_dir():
-            raise EvidenceContractError(f"{section} root is not a directory: {source_root}")
+            raise EvidenceContractError(
+                f"{section} root is not a directory: {source_root}"
+            )
         for source in sorted(path for path in source_root.rglob("*") if path.is_file()):
             relative_path = Path(source_root.name) / source.relative_to(source_root)
             destination = bundle_root / section / relative_path
@@ -74,7 +78,9 @@ def _copy_roots(*, roots: list[Path], section: str, bundle_root: Path) -> list[E
     return bundled_files
 
 
-def _copy_paths(*, paths: list[Path], section: str, bundle_root: Path) -> list[EvidenceFile]:
+def _copy_paths(
+    *, paths: list[Path], section: str, bundle_root: Path
+) -> list[EvidenceFile]:
     bundled_files: list[EvidenceFile] = []
     for source in paths:
         if not source.exists():
@@ -99,18 +105,24 @@ def _copy_paths(*, paths: list[Path], section: str, bundle_root: Path) -> list[E
 def _write_checksums_tsv(path: Path, files: list[EvidenceFile]) -> Path:
     lines = ["section\trelative_path\tsha256\tsize_bytes"]
     for file in files:
-        lines.append(f"{file.section}\t{file.relative_path.as_posix()}\t{file.sha256}\t{file.size_bytes}")
+        lines.append(
+            f"{file.section}\t{file.relative_path.as_posix()}\t{file.sha256}\t{file.size_bytes}"
+        )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
 
 
 def _write_environment_json(path: Path) -> Path:
     payload = asdict(inspect_environment())
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
-def _write_bundle_readme(path: Path, *, input_roots: list[Path], output_roots: list[Path], file_count: int) -> Path:
+def _write_bundle_readme(
+    path: Path, *, input_roots: list[Path], output_roots: list[Path], file_count: int
+) -> Path:
     lines = [
         "# Bijux Evidence Bundle",
         "",
@@ -143,12 +155,18 @@ def _write_bundle_readme(path: Path, *, input_roots: list[Path], output_roots: l
     return path
 
 
-def bundle_directory(input_roots: list[Path], output_roots: list[Path], bundle_root: Path) -> EvidenceBundleReport:
+def bundle_directory(
+    input_roots: list[Path], output_roots: list[Path], bundle_root: Path
+) -> EvidenceBundleReport:
     """Copy explicit input and output directories into a checksummed evidence bundle."""
     if not input_roots:
-        raise EvidenceContractError("evidence bundle requires at least one input directory")
+        raise EvidenceContractError(
+            "evidence bundle requires at least one input directory"
+        )
     if not output_roots:
-        raise EvidenceContractError("evidence bundle requires at least one output directory")
+        raise EvidenceContractError(
+            "evidence bundle requires at least one output directory"
+        )
 
     normalized_inputs = [Path(root) for root in input_roots]
     normalized_outputs = [Path(root) for root in output_roots]
@@ -157,8 +175,12 @@ def bundle_directory(input_roots: list[Path], output_roots: list[Path], bundle_r
     (bundle_root / "inputs").mkdir(parents=True, exist_ok=True)
     (bundle_root / "outputs").mkdir(parents=True, exist_ok=True)
 
-    input_files = _copy_roots(roots=normalized_inputs, section="inputs", bundle_root=bundle_root)
-    output_files = _copy_roots(roots=normalized_outputs, section="outputs", bundle_root=bundle_root)
+    input_files = _copy_roots(
+        roots=normalized_inputs, section="inputs", bundle_root=bundle_root
+    )
+    output_files = _copy_roots(
+        roots=normalized_outputs, section="outputs", bundle_root=bundle_root
+    )
     bundled_files = input_files + output_files
 
     manifest_payload = {
@@ -176,7 +198,9 @@ def bundle_directory(input_roots: list[Path], output_roots: list[Path], bundle_r
             for file in bundled_files
         ],
     }
-    (bundle_root / "manifest.json").write_text(json.dumps(manifest_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (bundle_root / "manifest.json").write_text(
+        json.dumps(manifest_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     _write_checksums_tsv(bundle_root / "checksums.tsv", bundled_files)
     _write_environment_json(bundle_root / "environment.json")
     _write_bundle_readme(
@@ -197,7 +221,9 @@ def bundle_directory(input_roots: list[Path], output_roots: list[Path], bundle_r
     )
 
 
-def bundle_file_paths(input_paths: list[Path], output_paths: list[Path], bundle_root: Path) -> EvidenceBundleReport:
+def bundle_file_paths(
+    input_paths: list[Path], output_paths: list[Path], bundle_root: Path
+) -> EvidenceBundleReport:
     """Copy explicit input and output files into a checksummed evidence bundle."""
     if not input_paths:
         raise EvidenceContractError("evidence bundle requires at least one input file")
@@ -211,8 +237,12 @@ def bundle_file_paths(input_paths: list[Path], output_paths: list[Path], bundle_
     (bundle_root / "inputs").mkdir(parents=True, exist_ok=True)
     (bundle_root / "outputs").mkdir(parents=True, exist_ok=True)
 
-    input_files = _copy_paths(paths=normalized_inputs, section="inputs", bundle_root=bundle_root)
-    output_files = _copy_paths(paths=normalized_outputs, section="outputs", bundle_root=bundle_root)
+    input_files = _copy_paths(
+        paths=normalized_inputs, section="inputs", bundle_root=bundle_root
+    )
+    output_files = _copy_paths(
+        paths=normalized_outputs, section="outputs", bundle_root=bundle_root
+    )
     bundled_files = input_files + output_files
 
     manifest_payload = {
@@ -230,7 +260,9 @@ def bundle_file_paths(input_paths: list[Path], output_paths: list[Path], bundle_
             for file in bundled_files
         ],
     }
-    (bundle_root / "manifest.json").write_text(json.dumps(manifest_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (bundle_root / "manifest.json").write_text(
+        json.dumps(manifest_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     _write_checksums_tsv(bundle_root / "checksums.tsv", bundled_files)
     _write_environment_json(bundle_root / "environment.json")
     _write_bundle_readme(
@@ -262,20 +294,30 @@ def validate_bundle(bundle_root: Path) -> EvidenceValidationReport:
     if not manifest_path.exists():
         raise EvidenceContractError(f"evidence manifest not found: {manifest_path}")
     if not checksums_path.exists():
-        raise EvidenceContractError(f"evidence checksums file not found: {checksums_path}")
+        raise EvidenceContractError(
+            f"evidence checksums file not found: {checksums_path}"
+        )
     if not environment_path.exists():
-        raise EvidenceContractError(f"evidence environment file not found: {environment_path}")
+        raise EvidenceContractError(
+            f"evidence environment file not found: {environment_path}"
+        )
     if not readme_path.exists():
         raise EvidenceContractError(f"evidence readme not found: {readme_path}")
     if not inputs_root.exists():
-        raise EvidenceContractError(f"evidence inputs directory not found: {inputs_root}")
+        raise EvidenceContractError(
+            f"evidence inputs directory not found: {inputs_root}"
+        )
     if not outputs_root.exists():
-        raise EvidenceContractError(f"evidence outputs directory not found: {outputs_root}")
+        raise EvidenceContractError(
+            f"evidence outputs directory not found: {outputs_root}"
+        )
 
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest_files = payload.get("files")
     if not isinstance(manifest_files, list):
-        raise EvidenceContractError(f"evidence manifest is missing a files list: {manifest_path}")
+        raise EvidenceContractError(
+            f"evidence manifest is missing a files list: {manifest_path}"
+        )
 
     mismatches: list[EvidenceMismatch] = []
     for entry in manifest_files:
@@ -284,17 +326,27 @@ def validate_bundle(bundle_root: Path) -> EvidenceValidationReport:
         expected_sha = str(entry["sha256"])
         expected_size = int(entry["size_bytes"])
         if section not in {"inputs", "outputs"}:
-            mismatches.append(EvidenceMismatch(relative_path=relative_path, reason="invalid_section"))
+            mismatches.append(
+                EvidenceMismatch(relative_path=relative_path, reason="invalid_section")
+            )
             continue
         candidate = bundle_root / section / relative_path
         if not candidate.exists():
-            mismatches.append(EvidenceMismatch(relative_path=relative_path, reason="missing_file"))
+            mismatches.append(
+                EvidenceMismatch(relative_path=relative_path, reason="missing_file")
+            )
             continue
         if candidate.stat().st_size != expected_size:
-            mismatches.append(EvidenceMismatch(relative_path=relative_path, reason="size_mismatch"))
+            mismatches.append(
+                EvidenceMismatch(relative_path=relative_path, reason="size_mismatch")
+            )
             continue
         if _sha256(candidate) != expected_sha:
-            mismatches.append(EvidenceMismatch(relative_path=relative_path, reason="checksum_mismatch"))
+            mismatches.append(
+                EvidenceMismatch(
+                    relative_path=relative_path, reason="checksum_mismatch"
+                )
+            )
 
     return EvidenceValidationReport(
         bundle_root=bundle_root,

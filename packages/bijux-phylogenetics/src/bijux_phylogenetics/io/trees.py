@@ -33,7 +33,7 @@ def detect_tree_format(path: Path) -> TreeFormat:
     prefix = path.read_text(encoding="utf-8")[:256].lstrip().lower()
     if prefix.startswith("#nexus"):
         return "nexus"
-    if prefix.startswith("<?xml") or prefix.startswith("<phyloxml"):
+    if prefix.startswith(("<?xml", "<phyloxml")):
         return "phyloxml"
     if prefix.startswith("("):
         return "newick"

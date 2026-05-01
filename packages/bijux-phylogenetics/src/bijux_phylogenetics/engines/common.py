@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
 import hashlib
 import json
+from pathlib import Path
 import re
 import shutil
-import subprocess
-from dataclasses import asdict, dataclass
-from pathlib import Path
+import subprocess  # nosec B404
 from typing import Any
 
-from bijux_phylogenetics.errors import EngineUnavailableError, EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.errors import (
+    EngineUnavailableError,
+    EngineWorkflowError,
+    InvalidAlignmentError,
+)
 
 _WARNING_PATTERN = re.compile(r"\b(warn(?:ing)?|caution)\b", re.IGNORECASE)
 
@@ -48,16 +52,24 @@ def resolve_engine_executable(executable: str | Path) -> str:
     candidate = Path(executable)
     if candidate.is_absolute() or candidate.parent != Path("."):
         if not candidate.exists():
-            raise EngineUnavailableError(f"engine executable was not found: {candidate}")
+            raise EngineUnavailableError(
+                f"engine executable was not found: {candidate}"
+            )
         if not candidate.is_file():
-            raise EngineUnavailableError(f"engine executable is not a file: {candidate}")
+            raise EngineUnavailableError(
+                f"engine executable is not a file: {candidate}"
+            )
         if not shutil.which(str(candidate)):
-            raise EngineUnavailableError(f"engine executable is not runnable: {candidate}")
+            raise EngineUnavailableError(
+                f"engine executable is not runnable: {candidate}"
+            )
         return str(candidate)
 
     resolved = shutil.which(str(executable))
     if resolved is None:
-        raise EngineUnavailableError(f"engine executable is not available on PATH: {executable}")
+        raise EngineUnavailableError(
+            f"engine executable is not available on PATH: {executable}"
+        )
     return resolved
 
 
@@ -81,11 +93,13 @@ def read_engine_version(
     """Run the engine-specific version command and capture its text."""
     resolved = resolve_engine_executable(executable)
     command = [resolved, *version_args]
-    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    result = subprocess.run(command, capture_output=True, text=True, check=False)  # nosec B603
     fragments = [result.stdout.strip(), result.stderr.strip()]
     version_text = "\n".join(fragment for fragment in fragments if fragment).strip()
     if not version_text:
-        raise EngineWorkflowError(f"{engine_name} did not produce version text for command: {' '.join(command)}")
+        raise EngineWorkflowError(
+            f"{engine_name} did not produce version text for command: {' '.join(command)}"
+        )
     return EngineVersionInfo(
         engine_name=engine_name,
         executable=resolved,
@@ -111,10 +125,11 @@ def execute_engine_command(
     stdout_path.parent.mkdir(parents=True, exist_ok=True)
     stderr_path.parent.mkdir(parents=True, exist_ok=True)
     command = [executable, *command_args]
-    with stdout_path.open("w", encoding="utf-8") as stdout_handle, stderr_path.open(
-        "w", encoding="utf-8"
-    ) as stderr_handle:
-        result = subprocess.run(
+    with (
+        stdout_path.open("w", encoding="utf-8") as stdout_handle,
+        stderr_path.open("w", encoding="utf-8") as stderr_handle,
+    ):
+        result = subprocess.run(  # nosec B603
             command,
             cwd=work_dir,
             stdout=stdout_handle,
@@ -122,9 +137,15 @@ def execute_engine_command(
             text=True,
             check=False,
         )
-    stdout_text = stdout_path.read_text(encoding="utf-8") if stdout_path.exists() else ""
-    stderr_text = stderr_path.read_text(encoding="utf-8") if stderr_path.exists() else ""
-    warning_lines = summarize_engine_warnings(stdout_text=stdout_text, stderr_text=stderr_text)
+    stdout_text = (
+        stdout_path.read_text(encoding="utf-8") if stdout_path.exists() else ""
+    )
+    stderr_text = (
+        stderr_path.read_text(encoding="utf-8") if stderr_path.exists() else ""
+    )
+    warning_lines = summarize_engine_warnings(
+        stdout_text=stdout_text, stderr_text=stderr_text
+    )
     if result.returncode != 0:
         raise EngineWorkflowError(
             f"{engine_name} {workflow} failed with exit code {result.returncode}; stderr log: {stderr_path}"
@@ -166,7 +187,9 @@ def load_unaligned_fasta(path: Path) -> list[tuple[str, str]]:
                 current_sequence = []
                 continue
             if current_identifier is None:
-                raise InvalidAlignmentError(f"alignment sequence appears before any FASTA header in {path}")
+                raise InvalidAlignmentError(
+                    f"alignment sequence appears before any FASTA header in {path}"
+                )
             current_sequence.append(line)
     if current_identifier is not None:
         records.append((current_identifier, "".join(current_sequence)))
@@ -174,9 +197,13 @@ def load_unaligned_fasta(path: Path) -> list[tuple[str, str]]:
         raise InvalidAlignmentError(f"alignment contains no FASTA records: {path}")
 
     ids = [identifier for identifier, _sequence in records]
-    duplicate_ids = sorted(identifier for identifier in set(ids) if ids.count(identifier) > 1)
+    duplicate_ids = sorted(
+        identifier for identifier in set(ids) if ids.count(identifier) > 1
+    )
     if duplicate_ids:
-        raise InvalidAlignmentError(f"alignment contains duplicate sequence ids: {', '.join(duplicate_ids)}")
+        raise InvalidAlignmentError(
+            f"alignment contains duplicate sequence ids: {', '.join(duplicate_ids)}"
+        )
     return records
 
 
@@ -191,13 +218,20 @@ def file_sha256(path: Path) -> str:
 
 def build_file_checksums(paths: list[Path]) -> dict[str, str]:
     """Hash every existing file path in a stable key order."""
-    return {str(path): file_sha256(path) for path in sorted(paths, key=str) if path.exists() and path.is_file()}
+    return {
+        str(path): file_sha256(path)
+        for path in sorted(paths, key=str)
+        if path.exists() and path.is_file()
+    }
 
 
 def write_engine_manifest(path: Path, payload: Any) -> Path:
     """Write a deterministic engine-workflow manifest."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(asdict(payload), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(asdict(payload), default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return path
 
 

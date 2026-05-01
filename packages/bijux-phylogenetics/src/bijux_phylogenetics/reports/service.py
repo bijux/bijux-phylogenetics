@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+import csv
+from dataclasses import asdict, dataclass
 import hashlib
 import json
-from dataclasses import asdict, dataclass
 from pathlib import Path
-import csv
 
 from bijux_phylogenetics.core.alignment import (
+    AlignmentAmbiguousColumnReport,
     AlignmentForensicReport,
     AlignmentLinkageReport,
     AlignmentLowInformationReport,
     AlignmentQualityReport,
     AlignmentSummary,
-    AlignmentAmbiguousColumnReport,
     CodingAlignmentDiagnostics,
     DuplicateSequencePolicyReport,
     SequenceIdentityMatrix,
@@ -26,53 +26,56 @@ from bijux_phylogenetics.core.dataset import (
     build_dataset_crosswalk,
     summarize_dataset_readiness,
 )
-from bijux_phylogenetics.core.metadata import MetadataJoinRow, join_table_to_taxa, load_taxon_table
+from bijux_phylogenetics.core.metadata import (
+    MetadataJoinRow,
+    join_table_to_taxa,
+    load_taxon_table,
+)
+from bijux_phylogenetics.core.taxon_workflows import (
+    TaxonWorkflowLossReport,
+    build_taxon_workflow_loss_report,
+)
 from bijux_phylogenetics.core.taxonomy import TaxonAuditReport, build_taxon_audit_report
-from bijux_phylogenetics.core.taxon_workflows import TaxonWorkflowLossReport, build_taxon_workflow_loss_report
-from bijux_phylogenetics.core.traits import TraitMissingValueReport, detect_missing_trait_values
+from bijux_phylogenetics.core.traits import (
+    TraitMissingValueReport,
+    detect_missing_trait_values,
+)
+from bijux_phylogenetics.diagnostics.validation import (
+    TreeForensicReport,
+    TreeInspectionReport,
+    TreeValidationReport,
+    _load_tree,
+    forensic_tree_path,
+    inspect_tree_path,
+    validate_tree_path,
+)
+from bijux_phylogenetics.distance import (
+    assess_imported_distance_method_assumptions,
+    build_distance_method_report,
+    build_tree_from_imported_distance_matrix,
+    inspect_imported_distance_matrix_quality,
+)
+from bijux_phylogenetics.io.fasta import (
+    assess_alignment_low_information,
+    build_alignment_forensic_report,
+    build_alignment_quality_report,
+    build_ambiguous_alignment_column_report,
+    build_duplicate_sequence_policy_report,
+    build_sequence_quality_ranking,
+    compute_pairwise_sequence_identity_matrix,
+    inspect_coding_alignment,
+    link_alignment_to_tree,
+    list_alignment_filter_profiles,
+    summarise_fasta,
+)
+from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.reference_validation import (
     CoreWorkflowValidationReport,
     LevelOneReleaseGateReport,
     build_core_workflow_validation_report,
     build_level_one_release_gate_report,
 )
-from bijux_phylogenetics.distance import (
-    assess_distance_method_assumptions,
-    assess_distance_method_maturity,
-    assess_imported_distance_method_assumptions,
-    build_distance_method_report,
-    build_distance_tree,
-    build_tree_from_imported_distance_matrix,
-    compare_distance_tree_topologies,
-    compute_pairwise_genetic_distance_matrix,
-    inspect_imported_distance_matrix_quality,
-    inspect_distance_matrix_quality,
-    validate_distance_reference_examples,
-)
-from bijux_phylogenetics.diagnostics.validation import (
-    TreeForensicReport,
-    TreeInspectionReport,
-    TreeValidationReport,
-    forensic_tree_path,
-    inspect_tree_path,
-    validate_tree_path,
-)
-from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.io.fasta import (
-    assess_alignment_low_information,
-    build_ambiguous_alignment_column_report,
-    build_alignment_forensic_report,
-    build_alignment_quality_report,
-    build_duplicate_sequence_policy_report,
-    build_sequence_quality_ranking,
-    compute_pairwise_sequence_identity_matrix,
-    inspect_coding_alignment,
-    list_alignment_filter_profiles,
-    link_alignment_to_tree,
-    summarise_fasta,
-)
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.tree_set import (
     assess_tree_set_maturity,
     assess_tree_set_storage_risk,
@@ -132,7 +135,7 @@ class ReportBuildResult:
     alignment_linkage: AlignmentLinkageReport | None
     dataset_readiness: DatasetReadinessSummary | None
     dataset_audit: DatasetAuditReport | None
-    input_ledger: list["ReportInputLedgerEntry"]
+    input_ledger: list[ReportInputLedgerEntry]
     machine_manifest: dict[str, object]
 
 
@@ -252,7 +255,9 @@ def _dataset_surface_taxa_count(path: Path, role: str) -> int:
     raise ValueError(f"unsupported dataset ledger role: {role}")
 
 
-def _build_input_ledger(entries: list[tuple[Path, str, list[str]]]) -> list[ReportInputLedgerEntry]:
+def _build_input_ledger(
+    entries: list[tuple[Path, str, list[str]]],
+) -> list[ReportInputLedgerEntry]:
     return [
         ReportInputLedgerEntry(
             path=path,
@@ -265,7 +270,9 @@ def _build_input_ledger(entries: list[tuple[Path, str, list[str]]]) -> list[Repo
     ]
 
 
-def _serialize_input_ledger(entries: list[ReportInputLedgerEntry]) -> list[dict[str, object]]:
+def _serialize_input_ledger(
+    entries: list[ReportInputLedgerEntry],
+) -> list[dict[str, object]]:
     return [
         {
             "path": str(entry.path),
@@ -311,7 +318,10 @@ def annotate_tree_against_table(
 def write_annotation_report(path: Path, report: TableLinkageReport) -> Path:
     """Write a linkage report to a deterministic JSON artifact."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return path
 
 
@@ -321,7 +331,10 @@ def _section(name: str, payload: object) -> tuple[str, str]:
 
 def _write_machine_manifest(path: Path, payload: dict[str, object]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return path
 
 
@@ -371,12 +384,18 @@ def _report_summary_and_limitations(
     ]
     limitations = list(forensic.warnings)
     if report_kind == "dataset" and dataset_audit is not None:
-        summary.append(f"dataset readiness decision: {dataset_audit.readiness_decision}")
+        summary.append(
+            f"dataset readiness decision: {dataset_audit.readiness_decision}"
+        )
         summary.append(
             f"blocked analyses: {len(dataset_audit.blocked_analyses)}, risky analyses: "
             f"{sum(1 for row in dataset_audit.analysis_decisions if row.decision == 'risky')}"
         )
-        limitations.extend(finding.message for finding in dataset_audit.findings if finding.severity in {"warning", "blocker"})
+        limitations.extend(
+            finding.message
+            for finding in dataset_audit.findings
+            if finding.severity in {"warning", "blocker"}
+        )
     if report_kind == "phylo-inputs" and alignment_forensic is not None:
         safe_methods = sum(
             1
@@ -392,7 +411,9 @@ def _report_summary_and_limitations(
         summary.append(f"alignment safe-for flags passed: {safe_methods}/5")
         limitations.extend(alignment_forensic.limitations)
     if inspection.mixed_support_scales:
-        limitations.append("support labels originate from mixed scales and should be interpreted only after normalization audit")
+        limitations.append(
+            "support labels originate from mixed scales and should be interpreted only after normalization audit"
+        )
     return summary, sorted(set(limitations))
 
 
@@ -434,10 +455,19 @@ def render_tree_report(*, tree_path: Path, out_path: Path) -> ReportBuildResult:
     )
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
-    input_ledger = _build_input_ledger([(tree_path, "tree", ["tree_validation", "tree_inspection", "tree_forensic"])])
+    input_ledger = _build_input_ledger(
+        [(tree_path, "tree", ["tree_validation", "tree_inspection", "tree_forensic"])]
+    )
     machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return ReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,
@@ -481,8 +511,14 @@ def render_dataset_report(
     inspection = inspect_tree_path(tree_path)
     forensic = forensic_tree_path(tree_path)
     metadata_linkage = annotate_tree_against_table(tree_path, metadata_path)
-    traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path is not None else None
-    trait_missing_values = detect_missing_trait_values(traits_path) if traits_path is not None else None
+    traits_linkage = (
+        annotate_tree_against_table(tree_path, traits_path)
+        if traits_path is not None
+        else None
+    )
+    trait_missing_values = (
+        detect_missing_trait_values(traits_path) if traits_path is not None else None
+    )
     dataset_readiness = (
         summarize_dataset_readiness(tree_path, metadata_path, traits_path)
         if traits_path is not None
@@ -523,33 +559,88 @@ def render_dataset_report(
         sections.append(_section("dataset-readiness", asdict(dataset_readiness)))
     if dataset_audit is not None:
         sections.append(_section("dataset-audit", asdict(dataset_audit)))
-        sections.append(_section("dataset-findings", [asdict(row) for row in dataset_audit.findings]))
-        sections.append(_section("dataset-analysis-decisions", [asdict(row) for row in dataset_audit.analysis_decisions]))
-        sections.append(_section("dataset-readiness-levels", [asdict(row) for row in dataset_audit.readiness_levels]))
+        sections.append(
+            _section(
+                "dataset-findings", [asdict(row) for row in dataset_audit.findings]
+            )
+        )
+        sections.append(
+            _section(
+                "dataset-analysis-decisions",
+                [asdict(row) for row in dataset_audit.analysis_decisions],
+            )
+        )
+        sections.append(
+            _section(
+                "dataset-readiness-levels",
+                [asdict(row) for row in dataset_audit.readiness_levels],
+            )
+        )
         sections.append(_section("dataset-crosswalk", asdict(dataset_audit.crosswalk)))
-        sections.append(_section("dataset-completeness", asdict(dataset_audit.completeness_matrix)))
-        sections.append(_section("dataset-exclusions", asdict(dataset_audit.exclusion_table)))
-        sections.append(_section("dataset-mismatches", asdict(dataset_audit.mismatch_report)))
-        sections.append(_section("dataset-risk-score", asdict(dataset_audit.risk_score)))
-        sections.append(_section("dataset-minimal-fix-plan", asdict(dataset_audit.minimal_fix_plan)))
-        sections.append(_section("dataset-reviewer-checklist", asdict(dataset_audit.reviewer_checklist)))
-        sections.append(_section("dataset-ordering", asdict(dataset_audit.ordering_audit)))
-        sections.append(_section("dataset-pruning", [asdict(row) for row in dataset_audit.pruning_steps]))
-        sections.append(_section("dataset-group-imbalance", [asdict(row) for row in dataset_audit.group_imbalance_warnings]))
+        sections.append(
+            _section("dataset-completeness", asdict(dataset_audit.completeness_matrix))
+        )
+        sections.append(
+            _section("dataset-exclusions", asdict(dataset_audit.exclusion_table))
+        )
+        sections.append(
+            _section("dataset-mismatches", asdict(dataset_audit.mismatch_report))
+        )
+        sections.append(
+            _section("dataset-risk-score", asdict(dataset_audit.risk_score))
+        )
+        sections.append(
+            _section("dataset-minimal-fix-plan", asdict(dataset_audit.minimal_fix_plan))
+        )
+        sections.append(
+            _section(
+                "dataset-reviewer-checklist", asdict(dataset_audit.reviewer_checklist)
+            )
+        )
+        sections.append(
+            _section("dataset-ordering", asdict(dataset_audit.ordering_audit))
+        )
+        sections.append(
+            _section(
+                "dataset-pruning", [asdict(row) for row in dataset_audit.pruning_steps]
+            )
+        )
+        sections.append(
+            _section(
+                "dataset-group-imbalance",
+                [asdict(row) for row in dataset_audit.group_imbalance_warnings],
+            )
+        )
     input_ledger_entries: list[tuple[Path, str, list[str]]] = [
-        (tree_path, "tree", ["tree_validation", "tree_inspection", "tree_forensic", "dataset_audit"]),
+        (
+            tree_path,
+            "tree",
+            ["tree_validation", "tree_inspection", "tree_forensic", "dataset_audit"],
+        ),
         (metadata_path, "metadata", ["metadata_linkage", "dataset_audit"]),
     ]
     if traits_path is not None:
-        input_ledger_entries.append((traits_path, "traits", ["traits_linkage", "trait_missing_values", "dataset_audit"]))
+        input_ledger_entries.append(
+            (
+                traits_path,
+                "traits",
+                ["traits_linkage", "trait_missing_values", "dataset_audit"],
+            )
+        )
     if alignment_path is not None:
-        input_ledger_entries.append((alignment_path, "alignment", ["alignment_forensic", "dataset_audit"]))
+        input_ledger_entries.append(
+            (alignment_path, "alignment", ["alignment_forensic", "dataset_audit"])
+        )
     if tip_dates_path is not None:
         input_ledger_entries.append((tip_dates_path, "tip_dates", ["dataset_audit"]))
     if calibration_path is not None:
-        input_ledger_entries.append((calibration_path, "calibrations", ["dataset_audit"]))
+        input_ledger_entries.append(
+            (calibration_path, "calibrations", ["dataset_audit"])
+        )
     input_ledger = _build_input_ledger(input_ledger_entries)
-    sections.append(_section("dataset-input-ledger", _serialize_input_ledger(input_ledger)))
+    sections.append(
+        _section("dataset-input-ledger", _serialize_input_ledger(input_ledger))
+    )
     sections.append(_section("limitations", limitations))
     input_paths = [tree_path, metadata_path]
     if traits_path is not None:
@@ -570,8 +661,15 @@ def render_dataset_report(
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
     machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return ReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,
@@ -615,14 +713,18 @@ def render_phylo_inputs_report(
     alignment_forensic = build_alignment_forensic_report(alignment_path)
     alignment_low_information = assess_alignment_low_information(alignment_path)
     alignment_duplicate_policy = build_duplicate_sequence_policy_report(alignment_path)
-    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(alignment_path)
+    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(
+        alignment_path
+    )
     alignment_sequence_ranking = build_sequence_quality_ranking(alignment_path)
     alignment_coding = (
         inspect_coding_alignment(alignment_path)
         if alignment.inferred_alphabet in {"dna", "rna"}
         else None
     )
-    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(alignment_path)
+    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(
+        alignment_path
+    )
     alignment_linkage = link_alignment_to_tree(tree_path, alignment_path)
     title = "Bijux Phylo Inputs Report"
     reviewer_summary, limitations = _report_summary_and_limitations(
@@ -644,25 +746,44 @@ def render_phylo_inputs_report(
         _section("alignment-ambiguous-columns", asdict(alignment_ambiguous_columns)),
         _section("alignment-sequence-ranking", asdict(alignment_sequence_ranking)),
         _section("alignment-forensic", asdict(alignment_forensic)),
-        *([_section("alignment-coding", asdict(alignment_coding))] if alignment_coding is not None else []),
+        *(
+            [_section("alignment-coding", asdict(alignment_coding))]
+            if alignment_coding is not None
+            else []
+        ),
         _section("alignment-identity-matrix", asdict(alignment_identity_matrix)),
         _section("alignment-linkage", asdict(alignment_linkage)),
         _section("limitations", limitations),
     ]
-    input_ledger = _build_input_ledger([
-        (tree_path, "tree", ["tree_validation", "tree_inspection", "tree_forensic", "alignment_linkage"]),
-        (alignment_path, "alignment", [
-            "alignment_summary",
-            "alignment_quality",
-            "alignment_low_information",
-            "alignment_duplicate_policy",
-            "alignment_ambiguous_columns",
-            "alignment_sequence_ranking",
-            "alignment_forensic",
-            "alignment_identity_matrix",
-            "alignment_linkage",
-        ]),
-    ])
+    input_ledger = _build_input_ledger(
+        [
+            (
+                tree_path,
+                "tree",
+                [
+                    "tree_validation",
+                    "tree_inspection",
+                    "tree_forensic",
+                    "alignment_linkage",
+                ],
+            ),
+            (
+                alignment_path,
+                "alignment",
+                [
+                    "alignment_summary",
+                    "alignment_quality",
+                    "alignment_low_information",
+                    "alignment_duplicate_policy",
+                    "alignment_ambiguous_columns",
+                    "alignment_sequence_ranking",
+                    "alignment_forensic",
+                    "alignment_identity_matrix",
+                    "alignment_linkage",
+                ],
+            ),
+        ]
+    )
     machine_manifest = _build_machine_manifest(
         report_kind="phylo-inputs",
         title=title,
@@ -673,8 +794,15 @@ def render_phylo_inputs_report(
     machine_manifest["reviewer_summary"] = reviewer_summary
     machine_manifest["limitations"] = limitations
     machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return ReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,
@@ -703,17 +831,27 @@ def render_phylo_inputs_report(
     )
 
 
-def render_alignment_report(*, alignment_path: Path, out_path: Path) -> AlignmentReportBuildResult:
+def render_alignment_report(
+    *, alignment_path: Path, out_path: Path
+) -> AlignmentReportBuildResult:
     """Build a reviewer-facing alignment-only report."""
     alignment = summarise_fasta(alignment_path)
     alignment_quality = build_alignment_quality_report(alignment_path)
     alignment_low_information = assess_alignment_low_information(alignment_path)
     alignment_duplicate_policy = build_duplicate_sequence_policy_report(alignment_path)
-    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(alignment_path)
+    alignment_ambiguous_columns = build_ambiguous_alignment_column_report(
+        alignment_path
+    )
     alignment_sequence_ranking = build_sequence_quality_ranking(alignment_path)
     alignment_forensic = build_alignment_forensic_report(alignment_path)
-    alignment_coding = inspect_coding_alignment(alignment_path) if alignment.inferred_alphabet in {"dna", "rna"} else None
-    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(alignment_path)
+    alignment_coding = (
+        inspect_coding_alignment(alignment_path)
+        if alignment.inferred_alphabet in {"dna", "rna"}
+        else None
+    )
+    alignment_identity_matrix = compute_pairwise_sequence_identity_matrix(
+        alignment_path
+    )
     title = "Bijux Alignment Report"
     reviewer_summary = [
         f"alignment quality score: {alignment_quality.quality_score}",
@@ -748,13 +886,27 @@ def render_alignment_report(*, alignment_path: Path, out_path: Path) -> Alignmen
         _section("alignment-duplicate-policy", asdict(alignment_duplicate_policy)),
         _section("alignment-ambiguous-columns", asdict(alignment_ambiguous_columns)),
         _section("alignment-sequence-ranking", asdict(alignment_sequence_ranking)),
-        _section("alignment-filter-profiles", [asdict(profile) for profile in list_alignment_filter_profiles()]),
-        _section("alignment-suspicious-windows", {
-            "over_aligned_regions": [asdict(row) for row in alignment_forensic.over_aligned_regions],
-            "under_aligned_regions": [asdict(row) for row in alignment_forensic.under_aligned_regions],
-        }),
+        _section(
+            "alignment-filter-profiles",
+            [asdict(profile) for profile in list_alignment_filter_profiles()],
+        ),
+        _section(
+            "alignment-suspicious-windows",
+            {
+                "over_aligned_regions": [
+                    asdict(row) for row in alignment_forensic.over_aligned_regions
+                ],
+                "under_aligned_regions": [
+                    asdict(row) for row in alignment_forensic.under_aligned_regions
+                ],
+            },
+        ),
         _section("alignment-forensic", asdict(alignment_forensic)),
-        *([_section("alignment-coding", asdict(alignment_coding))] if alignment_coding is not None else []),
+        *(
+            [_section("alignment-coding", asdict(alignment_coding))]
+            if alignment_coding is not None
+            else []
+        ),
         _section("alignment-identity-matrix", asdict(alignment_identity_matrix)),
         _section("limitations", limitations),
     ]
@@ -772,8 +924,15 @@ def render_alignment_report(*, alignment_path: Path, out_path: Path) -> Alignmen
         "reviewer_summary": reviewer_summary,
         "limitations": limitations,
     }
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return AlignmentReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,
@@ -844,12 +1003,28 @@ def render_taxon_report(
         _section("taxon-safety", asdict(audit.safety_report)),
         _section("taxon-namespaces", asdict(audit.namespace_report)),
         _section("taxon-rank-consistency", asdict(audit.rank_consistency)),
-        *([_section("taxon-synonyms", asdict(audit.synonym_audit))] if audit.synonym_audit is not None else []),
+        *(
+            [_section("taxon-synonyms", asdict(audit.synonym_audit))]
+            if audit.synonym_audit is not None
+            else []
+        ),
         _section("taxon-duplicate-identities", asdict(audit.duplicate_identities)),
         _section("taxon-mapping-conflicts", asdict(audit.mapping_conflicts)),
-        *([_section("taxon-accepted-names", asdict(audit.accepted_name_export))] if audit.accepted_name_export is not None else []),
-        *([_section("taxon-crosswalk", asdict(taxon_crosswalk))] if taxon_crosswalk is not None else []),
-        *([_section("taxon-loss", asdict(taxon_workflow_loss))] if taxon_workflow_loss is not None else []),
+        *(
+            [_section("taxon-accepted-names", asdict(audit.accepted_name_export))]
+            if audit.accepted_name_export is not None
+            else []
+        ),
+        *(
+            [_section("taxon-crosswalk", asdict(taxon_crosswalk))]
+            if taxon_crosswalk is not None
+            else []
+        ),
+        *(
+            [_section("taxon-loss", asdict(taxon_workflow_loss))]
+            if taxon_workflow_loss is not None
+            else []
+        ),
         *(
             [
                 _section(
@@ -894,8 +1069,15 @@ def render_taxon_report(
         "reviewer_summary": reviewer_summary,
         "limitations": limitations,
     }
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return TaxonReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,
@@ -917,7 +1099,9 @@ def render_distance_report(
 ) -> DistanceReportBuildResult:
     """Build a deterministic HTML report for computed or imported distance analysis."""
     if (alignment_path is None) == (matrix_path is None):
-        raise ValueError("render_distance_report requires exactly one of alignment_path or matrix_path")
+        raise ValueError(
+            "render_distance_report requires exactly one of alignment_path or matrix_path"
+        )
 
     method_limitations = distance_method_limitations()
     if alignment_path is not None:
@@ -927,13 +1111,17 @@ def render_distance_report(
             _section("computed-distance-matrix", asdict(report.matrix)),
             _section("distance-quality", asdict(report.quality)),
             _section("distance-method-assumptions", asdict(report.assumptions)),
-            _section("distance-reference-validation", asdict(report.reference_validation)),
+            _section(
+                "distance-reference-validation", asdict(report.reference_validation)
+            ),
             _section("neighbor-joining-tree", {"newick": report.built_tree_newick}),
             _section("upgma-tree", {"newick": report.alternative_tree_newick}),
             _section("distance-tree-comparison", asdict(report.topology_comparison)),
             _section("distance-bootstrap-summary", asdict(report.bootstrap_summary)),
             _section("distance-model-comparison", asdict(report.model_comparison)),
-            _section("distance-gap-policy-sensitivity", asdict(report.gap_policy_sensitivity)),
+            _section(
+                "distance-gap-policy-sensitivity", asdict(report.gap_policy_sensitivity)
+            ),
             _section("distance-maturity-gate", asdict(report.maturity_gate)),
             _section("distance-method-limitations", method_limitations),
         ]
@@ -944,7 +1132,12 @@ def render_distance_report(
             "method_limitations": method_limitations,
             "sections": [name for name, _ in sections],
         }
-        write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+        write_html_report(
+            title=title,
+            sections=sections,
+            out_path=out_path,
+            embedded_json=machine_manifest,
+        )
         return DistanceReportBuildResult(
             output_path=out_path,
             report_kind="distance-analysis",
@@ -964,9 +1157,18 @@ def render_distance_report(
         _section("distance-method-limitations", method_limitations),
     ]
     validation = quality.validation
-    if validation.complete and validation.symmetric and validation.zero_diagonal and validation.nonnegative:
-        nj_tree, _ = build_tree_from_imported_distance_matrix(matrix_path, method="neighbor-joining")
-        upgma_tree, _ = build_tree_from_imported_distance_matrix(matrix_path, method="upgma")
+    if (
+        validation.complete
+        and validation.symmetric
+        and validation.zero_diagonal
+        and validation.nonnegative
+    ):
+        nj_tree, _ = build_tree_from_imported_distance_matrix(
+            matrix_path, method="neighbor-joining"
+        )
+        upgma_tree, _ = build_tree_from_imported_distance_matrix(
+            matrix_path, method="upgma"
+        )
         sections.extend(
             [
                 _section("neighbor-joining-tree", {"newick": dumps_newick(nj_tree)}),
@@ -980,7 +1182,12 @@ def render_distance_report(
         "method_limitations": method_limitations,
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return DistanceReportBuildResult(
         output_path=out_path,
         report_kind="distance-analysis",
@@ -992,7 +1199,9 @@ def render_distance_report(
     )
 
 
-def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> TreeUncertaintyReportBuildResult:
+def render_tree_uncertainty_report(
+    *, tree_set_path: Path, out_path: Path
+) -> TreeUncertaintyReportBuildResult:
     """Build a deterministic HTML report for consensus and uncertainty across a tree set."""
     summary = load_tree_set(tree_set_path)
     consensus_tree, consensus = compute_consensus_tree(tree_set_path)
@@ -1016,7 +1225,10 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
     title = "Bijux Tree Uncertainty Report"
     sections = [
         _section("tree-set-summary", asdict(summary)),
-        _section("consensus-tree", {"newick": dumps_newick(consensus_tree), "report": asdict(consensus)}),
+        _section(
+            "consensus-tree",
+            {"newick": dumps_newick(consensus_tree), "report": asdict(consensus)},
+        ),
         _section("clade-frequencies", asdict(clade_frequencies)),
         _section("pairwise-tree-distances", asdict(distances)),
         _section("topology-clusters", asdict(clusters)),
@@ -1044,7 +1256,12 @@ def render_tree_uncertainty_report(*, tree_set_path: Path, out_path: Path) -> Tr
         "sections": [name for name, _ in core_sections],
         "supplemental_sections": [name for name, _ in supplemental_sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return TreeUncertaintyReportBuildResult(
         output_path=out_path,
         report_kind="tree-uncertainty",
@@ -1068,7 +1285,9 @@ def render_tree_set_comparison_report(
     right_summary = load_tree_set(right_tree_set_path)
     left_clusters = cluster_trees_by_topology(left_tree_set_path)
     right_clusters = cluster_trees_by_topology(right_tree_set_path)
-    diversity = compare_posterior_topological_diversity(left_tree_set_path, right_tree_set_path)
+    diversity = compare_posterior_topological_diversity(
+        left_tree_set_path, right_tree_set_path
+    )
     left_multimodality = detect_posterior_topology_multimodality(left_tree_set_path)
     right_multimodality = detect_posterior_topology_multimodality(right_tree_set_path)
     left_unstable_taxa = detect_unstable_taxa(left_tree_set_path)
@@ -1106,7 +1325,12 @@ def render_tree_set_comparison_report(
         "shared_rooted_topology_count": comparison.shared_rooted_topology_count,
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return TreeSetComparisonReportBuildResult(
         output_path=out_path,
         report_kind="tree-set-comparison",
@@ -1143,8 +1367,13 @@ def render_workflow_validation_report(
         ),
         _section("validation-suites", [asdict(suite) for suite in validation.suites]),
         _section("workflow-coverage", [asdict(row) for row in validation.workflows]),
-        _section("failure-gallery", [asdict(row) for row in validation.failure_gallery]),
-        _section("maturity-classification", [asdict(row) for row in validation.maturity_classifications]),
+        _section(
+            "failure-gallery", [asdict(row) for row in validation.failure_gallery]
+        ),
+        _section(
+            "maturity-classification",
+            [asdict(row) for row in validation.maturity_classifications],
+        ),
         _section("limitations", validation.limitations),
     ]
     fixture_paths = sorted(
@@ -1159,7 +1388,9 @@ def render_workflow_validation_report(
         "report_kind": "workflow-validation",
         "title": title,
         "input_paths": [str(path) for path in fixture_paths],
-        "input_checksums": {str(path): _sha256(path) for path in fixture_paths if path.exists()},
+        "input_checksums": {
+            str(path): _sha256(path) for path in fixture_paths if path.exists()
+        },
         "sections": [name for name, _ in sections],
         "metrics": {
             "total_fixture_count": validation.total_fixture_count,
@@ -1169,8 +1400,15 @@ def render_workflow_validation_report(
         "reviewer_summary": reviewer_summary,
         "limitations": validation.limitations,
     }
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return WorkflowValidationReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,
@@ -1227,7 +1465,9 @@ def render_level_one_release_gate_report(
         "report_kind": "release-gate",
         "title": title,
         "input_paths": [str(path) for path in fixture_paths],
-        "input_checksums": {str(path): _sha256(path) for path in fixture_paths if path.exists()},
+        "input_checksums": {
+            str(path): _sha256(path) for path in fixture_paths if path.exists()
+        },
         "sections": [name for name, _ in sections],
         "metrics": {
             "retained_taxa": len(release_gate.gate.retained_taxa),
@@ -1237,8 +1477,15 @@ def render_level_one_release_gate_report(
         "reviewer_summary": reviewer_summary,
         "limitations": release_gate.validation.limitations,
     }
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return ReleaseGateReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,
@@ -1262,11 +1509,17 @@ def render_phylogenetics_report(
     inspection = inspect_tree_path(tree_path)
     forensic = forensic_tree_path(tree_path)
     alignment = summarise_fasta(alignment_path) if alignment_path else None
-    alignment_quality = build_alignment_quality_report(alignment_path) if alignment_path else None
-    alignment_forensic = build_alignment_forensic_report(alignment_path) if alignment_path else None
+    alignment_quality = (
+        build_alignment_quality_report(alignment_path) if alignment_path else None
+    )
+    alignment_forensic = (
+        build_alignment_forensic_report(alignment_path) if alignment_path else None
+    )
     alignment_coding = (
         inspect_coding_alignment(alignment_path)
-        if alignment_path is not None and alignment is not None and alignment.inferred_alphabet in {"dna", "rna"}
+        if alignment_path is not None
+        and alignment is not None
+        and alignment.inferred_alphabet in {"dna", "rna"}
         else None
     )
     alignment_identity_matrix = (
@@ -1274,9 +1527,15 @@ def render_phylogenetics_report(
         if alignment_path is not None
         else None
     )
-    traits_linkage = annotate_tree_against_table(tree_path, traits_path) if traits_path else None
-    trait_missing_values = detect_missing_trait_values(traits_path) if traits_path else None
-    metadata_linkage = annotate_tree_against_table(tree_path, metadata_path) if metadata_path else None
+    traits_linkage = (
+        annotate_tree_against_table(tree_path, traits_path) if traits_path else None
+    )
+    trait_missing_values = (
+        detect_missing_trait_values(traits_path) if traits_path else None
+    )
+    metadata_linkage = (
+        annotate_tree_against_table(tree_path, metadata_path) if metadata_path else None
+    )
     dataset_readiness = (
         summarize_dataset_readiness(tree_path, metadata_path, traits_path)
         if traits_path and metadata_path
@@ -1316,7 +1575,9 @@ def render_phylogenetics_report(
     if alignment_coding is not None:
         sections.append(_section("alignment-coding", asdict(alignment_coding)))
     if alignment_identity_matrix is not None:
-        sections.append(_section("alignment-identity-matrix", asdict(alignment_identity_matrix)))
+        sections.append(
+            _section("alignment-identity-matrix", asdict(alignment_identity_matrix))
+        )
     if traits_linkage is not None:
         sections.append(_section("traits-linkage", asdict(traits_linkage)))
     if trait_missing_values is not None:
@@ -1328,7 +1589,9 @@ def render_phylogenetics_report(
     if dataset_audit is not None:
         sections.append(_section("dataset-audit", asdict(dataset_audit)))
         sections.append(_section("dataset-crosswalk", asdict(dataset_audit.crosswalk)))
-        sections.append(_section("dataset-completeness", asdict(dataset_audit.completeness_matrix)))
+        sections.append(
+            _section("dataset-completeness", asdict(dataset_audit.completeness_matrix))
+        )
     sections.append(_section("limitations", limitations))
 
     title = "Bijux Phylogenetics Report"
@@ -1350,8 +1613,15 @@ def render_phylogenetics_report(
     machine_manifest["limitations"] = limitations
     input_ledger: list[ReportInputLedgerEntry] = []
     machine_manifest["input_ledger"] = _serialize_input_ledger(input_ledger)
-    machine_manifest_path = _write_machine_manifest(_report_sidecar_path(out_path), machine_manifest)
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    machine_manifest_path = _write_machine_manifest(
+        _report_sidecar_path(out_path), machine_manifest
+    )
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return ReportBuildResult(
         output_path=out_path,
         machine_manifest_path=machine_manifest_path,

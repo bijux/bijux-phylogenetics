@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 from html import escape
+import json
 from pathlib import Path
 
 

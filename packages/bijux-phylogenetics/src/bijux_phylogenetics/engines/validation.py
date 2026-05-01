@@ -5,13 +5,22 @@ import gzip
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.errors import InvalidAlignmentError
-from bijux_phylogenetics.engines.common import build_file_checksums, load_engine_manifest
-from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_support_values, compare_tree_paths
-from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
-from bijux_phylogenetics.io.fasta import summarize_alignment_readiness
+from bijux_phylogenetics.compare.topology import (
+    compare_branch_lengths,
+    compare_support_values,
+    compare_tree_paths,
+)
+from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.engines.common import (
+    build_file_checksums,
+    load_engine_manifest,
+)
+from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.io.fasta import (
+    load_fasta_alignment,
+    summarize_alignment_readiness,
+)
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.tree_set import load_tree_set
 
@@ -168,9 +177,17 @@ def audit_alignment_inference_readiness(path: Path) -> InferenceReadinessAuditRe
     method_by_name = {method.analysis: method for method in readiness.methods}
     maximum_likelihood = method_by_name["maximum_likelihood"]
     bayesian = method_by_name["bayesian"]
-    fast_approximate_ready = method_by_name["distance"].ready or maximum_likelihood.ready
-    fast_approximate_blockers = [] if fast_approximate_ready else sorted(
-        dict.fromkeys(method_by_name["distance"].blockers + maximum_likelihood.blockers)
+    fast_approximate_ready = (
+        method_by_name["distance"].ready or maximum_likelihood.ready
+    )
+    fast_approximate_blockers = (
+        []
+        if fast_approximate_ready
+        else sorted(
+            dict.fromkeys(
+                method_by_name["distance"].blockers + maximum_likelihood.blockers
+            )
+        )
     )
     generic_warnings = sorted(
         dict.fromkeys(
@@ -235,16 +252,24 @@ def _parse_best_model_file(path: Path) -> str | None:
     return _parse_best_model_text(path.read_text(encoding="utf-8"))
 
 
-def validate_model_selection_against_engine_outputs(manifest_path: Path) -> ModelSelectionValidationReport:
+def validate_model_selection_against_engine_outputs(
+    manifest_path: Path,
+) -> ModelSelectionValidationReport:
     """Verify that the selected model exposed in workflow artifacts matches the engine outputs exactly."""
     manifest = load_engine_manifest(manifest_path)
-    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    output_paths = {
+        key: Path(value) for key, value in dict(manifest["output_paths"]).items()
+    }
     iqtree_report = output_paths.get("iqtree_report")
     selected_model_file = output_paths.get("selected_model")
-    report_selected_model = None if iqtree_report is None else _parse_best_model_file(iqtree_report)
+    report_selected_model = (
+        None if iqtree_report is None else _parse_best_model_file(iqtree_report)
+    )
     artifact_selected_model = None
     if selected_model_file is not None and selected_model_file.exists():
-        artifact_selected_model = selected_model_file.read_text(encoding="utf-8").strip() or None
+        artifact_selected_model = (
+            selected_model_file.read_text(encoding="utf-8").strip() or None
+        )
     if report_selected_model is None and iqtree_report is not None:
         model_sidecar = iqtree_report.with_suffix(".model")
         if model_sidecar.exists():
@@ -253,7 +278,9 @@ def validate_model_selection_against_engine_outputs(manifest_path: Path) -> Mode
             model_gz_sidecar = iqtree_report.with_suffix(".model.gz")
             if model_gz_sidecar.exists():
                 report_selected_model = _parse_best_model_text(
-                    gzip.decompress(model_gz_sidecar.read_bytes()).decode("utf-8", errors="replace")
+                    gzip.decompress(model_gz_sidecar.read_bytes()).decode(
+                        "utf-8", errors="replace"
+                    )
                 )
     manifest_selected_model = manifest.get("selected_model")
     issues: list[str] = []
@@ -265,12 +292,24 @@ def validate_model_selection_against_engine_outputs(manifest_path: Path) -> Mode
         issues.append("engine report does not expose a parsable best-fit model")
     if artifact_selected_model is None:
         issues.append("selected-model artifact is missing or blank")
-    comparable = [value for value in (manifest_selected_model, report_selected_model, artifact_selected_model) if value is not None]
+    comparable = [
+        value
+        for value in (
+            manifest_selected_model,
+            report_selected_model,
+            artifact_selected_model,
+        )
+        if value is not None
+    ]
     if comparable and len(set(comparable)) > 1:
-        issues.append("selected model disagrees across manifest, report, and exported artifact")
+        issues.append(
+            "selected model disagrees across manifest, report, and exported artifact"
+        )
     return ModelSelectionValidationReport(
         manifest_path=manifest_path,
-        manifest_selected_model=None if manifest_selected_model is None else str(manifest_selected_model),
+        manifest_selected_model=None
+        if manifest_selected_model is None
+        else str(manifest_selected_model),
         report_selected_model=report_selected_model,
         artifact_selected_model=artifact_selected_model,
         valid=not issues,
@@ -278,11 +317,15 @@ def validate_model_selection_against_engine_outputs(manifest_path: Path) -> Mode
     )
 
 
-def validate_ml_tree_contains_expected_taxa(manifest_path: Path) -> MLTreeTaxonValidationReport:
+def validate_ml_tree_contains_expected_taxa(
+    manifest_path: Path,
+) -> MLTreeTaxonValidationReport:
     """Ensure an inferred ML tree contains exactly the taxa present in the input alignment."""
     manifest = load_engine_manifest(manifest_path)
     input_paths = [Path(path) for path in manifest["input_paths"]]
-    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    output_paths = {
+        key: Path(value) for key, value in dict(manifest["output_paths"]).items()
+    }
     issues: list[str] = []
     if manifest.get("workflow") != "maximum-likelihood-tree":
         issues.append("manifest does not describe a maximum-likelihood-tree workflow")
@@ -290,7 +333,9 @@ def validate_ml_tree_contains_expected_taxa(manifest_path: Path) -> MLTreeTaxonV
         issues.append("manifest does not include an input alignment path")
         expected_taxa: list[str] = []
     else:
-        expected_taxa = sorted(record.identifier for record in load_fasta_alignment(input_paths[0]))
+        expected_taxa = sorted(
+            record.identifier for record in load_fasta_alignment(input_paths[0])
+        )
     tree_path = output_paths.get("tree")
     if tree_path is None or not tree_path.exists():
         issues.append("manifest tree output is missing")
@@ -300,7 +345,9 @@ def validate_ml_tree_contains_expected_taxa(manifest_path: Path) -> MLTreeTaxonV
     missing_taxa = sorted(set(expected_taxa) - set(observed_taxa))
     unexpected_taxa = sorted(set(observed_taxa) - set(expected_taxa))
     if missing_taxa:
-        issues.append("inferred tree is missing one or more expected taxa from the alignment")
+        issues.append(
+            "inferred tree is missing one or more expected taxa from the alignment"
+        )
     if unexpected_taxa:
         issues.append("inferred tree contains taxa not present in the input alignment")
     return MLTreeTaxonValidationReport(
@@ -368,7 +415,9 @@ def compare_inferred_tree_to_taxon_metadata(
         taxon_column=table.taxon_column,
         group_column=group_column,
         group_count=len(observations),
-        monophyletic_group_count=sum(1 for row in observations if row.monophyletic is True),
+        monophyletic_group_count=sum(
+            1 for row in observations if row.monophyletic is True
+        ),
         split_group_count=sum(1 for row in observations if row.monophyletic is False),
         observations=observations,
     )
@@ -399,7 +448,9 @@ def classify_inference_workflow_failure(
     if run_exit_code is not None and run_exit_code != 0:
         failure_category = "timeout" if run_exit_code == 124 else "engine_failure"
         issues.append(f"engine exited with code {run_exit_code}")
-    missing_outputs = sorted(str(path) for path in output_paths.values() if not path.exists())
+    missing_outputs = sorted(
+        str(path) for path in output_paths.values() if not path.exists()
+    )
     if missing_outputs:
         failure_category = "missing_output"
         issues.append("one or more expected outputs are missing")
@@ -411,7 +462,14 @@ def classify_inference_workflow_failure(
         if path.is_file() and not path.read_text(encoding="utf-8").strip():
             invalid_outputs.append(key)
             continue
-        if path.suffix.lower() in {".treefile", ".contree", ".nwk", ".tre", ".tree", ".ufboot"}:
+        if path.suffix.lower() in {
+            ".treefile",
+            ".contree",
+            ".nwk",
+            ".tre",
+            ".tree",
+            ".ufboot",
+        }:
             try:
                 if key == "bootstrap_trees":
                     from bijux_phylogenetics.tree_set import load_tree_set
@@ -480,7 +538,9 @@ def summarize_bootstrap_support_distribution(
         support_fraction = support / 100.0 if support > 1.0 else support
         nodes.append(
             BootstrapSupportNode(
-                node="|".join(descendant_taxa) if descendant_taxa else (node.name or "<unnamed>"),
+                node="|".join(descendant_taxa)
+                if descendant_taxa
+                else (node.name or "<unnamed>"),
                 descendant_taxa=descendant_taxa,
                 support=support,
                 support_fraction=support_fraction,
@@ -495,7 +555,9 @@ def summarize_bootstrap_support_distribution(
     }
     supports = sorted(node.support for node in nodes)
     if len(nodes) < sum(1 for node in tree.iter_nodes() if not node.is_leaf()):
-        warnings.append("one or more internal nodes did not expose numeric support labels")
+        warnings.append(
+            "one or more internal nodes did not expose numeric support labels"
+        )
     if any(node.support < weak_support_threshold for node in nodes):
         warnings.append("one or more internal clades remain weakly supported")
     return BootstrapSupportSummaryReport(
@@ -505,7 +567,9 @@ def summarize_bootstrap_support_distribution(
         minimum_support=None if not supports else supports[0],
         maximum_support=None if not supports else supports[-1],
         median_support=_median_support(supports),
-        weakly_supported_clade_count=sum(1 for node in nodes if node.support < weak_support_threshold),
+        weakly_supported_clade_count=sum(
+            1 for node in nodes if node.support < weak_support_threshold
+        ),
         support_histogram=histogram,
         nodes=nodes,
         warnings=warnings,
@@ -518,19 +582,23 @@ def detect_weakly_supported_backbone(
     threshold: float = 70.0,
 ) -> WeakBackboneReport:
     """Flag broad internal clades whose support falls below a declared backbone threshold."""
-    summary = summarize_bootstrap_support_distribution(tree_path, weak_support_threshold=threshold)
+    summary = summarize_bootstrap_support_distribution(
+        tree_path, weak_support_threshold=threshold
+    )
     weak_nodes = [
-        node
-        for node in summary.nodes
-        if node.is_backbone and node.support < threshold
+        node for node in summary.nodes if node.is_backbone and node.support < threshold
     ]
     warnings = list(summary.warnings)
     if weak_nodes:
-        warnings.append("major internal branches remain weakly supported along the backbone")
+        warnings.append(
+            "major internal branches remain weakly supported along the backbone"
+        )
     return WeakBackboneReport(
         tree_path=tree_path,
         threshold=threshold,
-        evaluated_backbone_node_count=sum(1 for node in summary.nodes if node.is_backbone),
+        evaluated_backbone_node_count=sum(
+            1 for node in summary.nodes if node.is_backbone
+        ),
         weak_backbone_node_count=len(weak_nodes),
         weak_nodes=weak_nodes,
         warnings=warnings,
@@ -567,8 +635,12 @@ def compare_ml_trees_across_models(
         left_manifest_path,
         right_manifest_path,
         comparison_kind="model",
-        left_label=_manifest_comparison_label(left_manifest_path, fallback="left-model"),
-        right_label=_manifest_comparison_label(right_manifest_path, fallback="right-model"),
+        left_label=_manifest_comparison_label(
+            left_manifest_path, fallback="left-model"
+        ),
+        right_label=_manifest_comparison_label(
+            right_manifest_path, fallback="right-model"
+        ),
     )
 
 
@@ -607,9 +679,13 @@ def _compare_inference_trees(
     if not topology.topology_equal:
         warnings.append("inferred topologies differ across compared workflows")
     if topology.same_unrooted_topology and not topology.topology_equal:
-        warnings.append("compared workflows agree on unrooted splits but differ in rooting")
+        warnings.append(
+            "compared workflows agree on unrooted splits but differ in rooting"
+        )
     if topology.same_topology_different_branch_lengths:
-        warnings.append("compared workflows preserve topology but change branch-length interpretation")
+        warnings.append(
+            "compared workflows preserve topology but change branch-length interpretation"
+        )
     return InferenceTreeComparisonReport(
         comparison_kind=comparison_kind,
         left_manifest_path=left_manifest_path,
@@ -630,7 +706,9 @@ def _compare_inference_trees(
 
 
 def _manifest_tree_output_path(manifest: dict[str, object]) -> Path:
-    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    output_paths = {
+        key: Path(value) for key, value in dict(manifest["output_paths"]).items()
+    }
     tree_path = output_paths.get("tree")
     if tree_path is None:
         raise ValueError("manifest does not expose a tree output")
@@ -661,12 +739,16 @@ def _display_engine_name(raw: str) -> str:
     return mapping.get(raw.lower(), raw)
 
 
-def validate_inference_engine_outputs(manifest_path: Path) -> InferenceOutputConsistencyReport:
+def validate_inference_engine_outputs(
+    manifest_path: Path,
+) -> InferenceOutputConsistencyReport:
     """Detect whether one engine workflow manifest and its current outputs still agree."""
     manifest = load_engine_manifest(manifest_path)
     workflow = str(manifest["workflow"])
     input_paths = [Path(path) for path in manifest["input_paths"]]
-    output_paths = {key: Path(value) for key, value in dict(manifest["output_paths"]).items()}
+    output_paths = {
+        key: Path(value) for key, value in dict(manifest["output_paths"]).items()
+    }
     run_payload = dict(manifest["run"])
     failure = classify_inference_workflow_failure(
         workflow=workflow,
@@ -676,12 +758,19 @@ def validate_inference_engine_outputs(manifest_path: Path) -> InferenceOutputCon
     )
     issues = list(failure.issues)
     current_checksums = build_file_checksums(list(output_paths.values()))
-    manifest_checksums = {str(key): str(value) for key, value in dict(manifest.get("output_checksums", {})).items()}
+    manifest_checksums = {
+        str(key): str(value)
+        for key, value in dict(manifest.get("output_checksums", {})).items()
+    }
     current_output_checksum_match = current_checksums == manifest_checksums
     if not current_output_checksum_match:
-        issues.append("current output checksums do not match the recorded manifest outputs")
+        issues.append(
+            "current output checksums do not match the recorded manifest outputs"
+        )
     if workflow == "model-selection":
-        model_validation = validate_model_selection_against_engine_outputs(manifest_path)
+        model_validation = validate_model_selection_against_engine_outputs(
+            manifest_path
+        )
         issues.extend(model_validation.issues)
     elif workflow == "maximum-likelihood-tree":
         tree_validation = validate_ml_tree_contains_expected_taxa(manifest_path)
@@ -689,7 +778,9 @@ def validate_inference_engine_outputs(manifest_path: Path) -> InferenceOutputCon
     elif workflow == "bootstrap-support":
         bootstrap_path = output_paths.get("bootstrap_trees")
         if bootstrap_path is None:
-            issues.append("bootstrap-support manifest is missing the bootstrap_trees output")
+            issues.append(
+                "bootstrap-support manifest is missing the bootstrap_trees output"
+            )
         else:
             bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
             issues.extend(bootstrap_validation.issues)

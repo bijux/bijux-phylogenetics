@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
+import re
 
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidBranchLengthError
@@ -25,9 +25,13 @@ def _validate_branch_lengths(text: str) -> None:
             cursor += 1
         raw_value = text[start:cursor].strip()
         if not raw_value:
-            raise InvalidBranchLengthError(f"missing branch length in Newick string at position {start}")
+            raise InvalidBranchLengthError(
+                f"missing branch length in Newick string at position {start}"
+            )
         if not _BRANCH_LENGTH_PATTERN.fullmatch(raw_value):
-            raise InvalidBranchLengthError(f"invalid branch length '{raw_value}' in Newick string")
+            raise InvalidBranchLengthError(
+                f"invalid branch length '{raw_value}' in Newick string"
+            )
         index = cursor
 
 
@@ -64,7 +68,9 @@ def _format_label(label: str | None) -> str:
 
 def _serialize_node(node: TreeNode) -> str:
     if node.children:
-        ordered_children = ",".join(_serialize_node(child) for child in sorted(node.children, key=_sort_key))
+        ordered_children = ",".join(
+            _serialize_node(child) for child in sorted(node.children, key=_sort_key)
+        )
         label = _format_label(node.name)
         return f"({ordered_children}){label}{_format_branch_length(node.branch_length)}"
     return f"{_format_label(node.name)}{_format_branch_length(node.branch_length)}"
@@ -73,7 +79,10 @@ def _serialize_node(node: TreeNode) -> str:
 def dumps_newick(tree: PhyloTree) -> str:
     """Serialize a local tree model into canonical Newick."""
     if tree.root.children:
-        ordered_children = ",".join(_serialize_node(child) for child in sorted(tree.root.children, key=_sort_key))
+        ordered_children = ",".join(
+            _serialize_node(child)
+            for child in sorted(tree.root.children, key=_sort_key)
+        )
         root_label = _format_label(tree.root.name)
         return f"({ordered_children}){root_label};"
     return f"{_serialize_node(tree.root)};"

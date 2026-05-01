@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import hashlib
 from importlib import metadata
 import json
-import platform
 from pathlib import Path
+import platform
 import sys
 
 
@@ -57,9 +57,15 @@ def build_run_manifest(
         arguments=list(arguments),
         input_paths=[str(path) for path in normalized_input_paths],
         output_paths=[str(path) for path in normalized_output_paths],
-        input_checksums={str(path): _sha256(path) for path in normalized_input_paths if path.exists() and path.is_file()},
+        input_checksums={
+            str(path): _sha256(path)
+            for path in normalized_input_paths
+            if path.exists() and path.is_file()
+        },
         output_checksums={
-            str(path): _sha256(path) for path in normalized_output_paths if path.exists() and path.is_file()
+            str(path): _sha256(path)
+            for path in normalized_output_paths
+            if path.exists() and path.is_file()
         },
         package_version=_dependency_version("bijux-phylogenetics"),
         python_version=sys.version.split()[0],
@@ -67,7 +73,7 @@ def build_run_manifest(
             "biopython": _dependency_version("biopython"),
             "bijux-phylogenetics": _dependency_version("bijux-phylogenetics"),
         },
-        timestamp_utc=datetime.now(timezone.utc).isoformat(),
+        timestamp_utc=datetime.now(UTC).isoformat(),
         host_platform=platform.platform(),
     )
 
@@ -75,5 +81,7 @@ def build_run_manifest(
 def write_run_manifest(path: Path, manifest: RunManifest) -> Path:
     """Serialize a run manifest to JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(asdict(manifest), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(asdict(manifest), indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path

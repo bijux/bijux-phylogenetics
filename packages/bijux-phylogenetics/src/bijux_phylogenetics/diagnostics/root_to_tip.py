@@ -29,7 +29,9 @@ class UltrametricReport:
     tip_count: int
 
 
-def compute_root_to_tip_distances(path: Path, *, source_format: str | None = None) -> RootToTipDistanceReport:
+def compute_root_to_tip_distances(
+    path: Path, *, source_format: str | None = None
+) -> RootToTipDistanceReport:
     """Compute one root-to-tip distance per leaf."""
     tree = _load_tree(path, source_format=source_format)
     return RootToTipDistanceReport(
@@ -48,7 +50,8 @@ def write_root_to_tip_tsv(path: Path, report: RootToTipDistanceReport) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = ["tip\tdistance"]
     lines.extend(
-        f"{row.tip}\t{'' if row.distance is None else format(row.distance, '.15g')}" for row in report.distances
+        f"{row.tip}\t{'' if row.distance is None else format(row.distance, '.15g')}"
+        for row in report.distances
     )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
@@ -62,7 +65,9 @@ def diagnose_ultrametricity(
 ) -> UltrametricReport:
     """Assess whether a tree is ultrametric within the given tolerance."""
     report = compute_root_to_tip_distances(path, source_format=source_format)
-    numeric_distances = [row.distance for row in report.distances if row.distance is not None]
+    numeric_distances = [
+        row.distance for row in report.distances if row.distance is not None
+    ]
     if not numeric_distances or len(numeric_distances) != len(report.distances):
         return UltrametricReport(
             path=path,

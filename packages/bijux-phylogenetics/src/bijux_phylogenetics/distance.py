@@ -114,7 +114,7 @@ class DistanceTreeBuildReport:
     method: str
     taxon_count: int
     pair_count: int
-    assumptions: "DistanceMethodAssumptionReport"
+    assumptions: DistanceMethodAssumptionReport
 
 
 @dataclass(slots=True)
@@ -230,8 +230,8 @@ class ImportedDistanceMatrixQualityReport:
     """Diagnostics over an imported long-form distance matrix."""
 
     validation: ImportedDistanceMatrixReport
-    saturated_pairs: list["SaturatedDistancePair"]
-    low_information_pairs: list["LowInformationPair"]
+    saturated_pairs: list[SaturatedDistancePair]
+    low_information_pairs: list[LowInformationPair]
     low_information_pair_cutoff: int | None
     saturation_audit_scale: str
     warnings: list[str]
@@ -260,7 +260,7 @@ class DistanceReferenceValidationReport:
     """Validation of built-in reference distance examples."""
 
     observations: list[DistanceReferenceObservation]
-    tree_observations: list["DistanceTreeReferenceObservation"]
+    tree_observations: list[DistanceTreeReferenceObservation]
     all_passed: bool
 
 
@@ -575,7 +575,9 @@ def _site_contribution(
         left = next(iter(left_states))
         right = next(iter(right_states))
         mismatch_weight = 0.0 if left == right else 1.0
-        transition_weight = 1.0 if alphabet != "protein" and _is_transition(left, right) else 0.0
+        transition_weight = (
+            1.0 if alphabet != "protein" and _is_transition(left, right) else 0.0
+        )
         transversion_weight = mismatch_weight - transition_weight
         return _SiteContribution(
             comparable=True,
@@ -662,7 +664,9 @@ def _jukes_cantor_distance(p_distance: float | None) -> tuple[float | None, str 
     return round((-3.0 / 4.0) * math.log(1.0 - (4.0 * p_distance / 3.0)), 15), None
 
 
-def _kimura_two_parameter_distance(summary: _PairSummary) -> tuple[float | None, str | None]:
+def _kimura_two_parameter_distance(
+    summary: _PairSummary,
+) -> tuple[float | None, str | None]:
     if summary.comparable_sites == 0:
         return None, "no comparable sites remain after filtering"
     p = summary.transition_sites / summary.comparable_sites
@@ -670,18 +674,33 @@ def _kimura_two_parameter_distance(summary: _PairSummary) -> tuple[float | None,
     first = 1.0 - (2.0 * p) - q
     second = 1.0 - (2.0 * q)
     if first <= 0.0 or second <= 0.0:
-        return None, "transition and transversion proportions exceed the Kimura 2-parameter correction range"
+        return (
+            None,
+            "transition and transversion proportions exceed the Kimura 2-parameter correction range",
+        )
     value = (-0.5 * math.log(first)) - (0.25 * math.log(second))
     return round(value, 15), None
 
 
 def _protein_p_distance(summary: _PairSummary) -> tuple[float | None, str | None]:
-    return _p_distance(summary), None if summary.comparable_sites > 0 else "no comparable sites remain after filtering"
+    return (
+        _p_distance(summary),
+        None
+        if summary.comparable_sites > 0
+        else "no comparable sites remain after filtering",
+    )
 
 
-def _distance_from_summary(summary: _PairSummary, *, model: DistanceModel) -> tuple[float | None, str | None]:
+def _distance_from_summary(
+    summary: _PairSummary, *, model: DistanceModel
+) -> tuple[float | None, str | None]:
     if model == "p-distance":
-        return _p_distance(summary), None if summary.comparable_sites > 0 else "no comparable sites remain after filtering"
+        return (
+            _p_distance(summary),
+            None
+            if summary.comparable_sites > 0
+            else "no comparable sites remain after filtering",
+        )
     if model == "jukes-cantor":
         return _jukes_cantor_distance(_p_distance(summary))
     if model == "kimura-2-parameter":
@@ -706,7 +725,9 @@ def _pair_summary(
     transversion_sites = 0.0
     ambiguity_sites = 0
     skipped_sites = 0
-    positions = retained_positions if retained_positions is not None else list(range(len(left)))
+    positions = (
+        retained_positions if retained_positions is not None else list(range(len(left)))
+    )
     for position in positions:
         left_states = _states_for_symbol(left[position], alphabet=alphabet)
         right_states = _states_for_symbol(right[position], alphabet=alphabet)
@@ -751,9 +772,15 @@ def _pair_summary(
         or "correction range" in saturation_reason
         or (distance is None and comparable_sites > 0)
     )
-    if model in {"p-distance", "amino-acid-p-distance"} and distance is not None and distance >= 0.75:
+    if (
+        model in {"p-distance", "amino-acid-p-distance"}
+        and distance is not None
+        and distance >= 0.75
+    ):
         saturated = True
-        saturation_reason = "raw p-distance indicates severe divergence and likely saturation"
+        saturation_reason = (
+            "raw p-distance indicates severe divergence and likely saturation"
+        )
     return _PairSummary(
         distance=distance,
         comparable_sites=comparable_sites,
@@ -789,7 +816,9 @@ def _complete_deletion_positions(
     return retained
 
 
-def _load_alignment_for_model(path: Path, *, model: DistanceModel) -> tuple[list[AlignmentRecord], str]:
+def _load_alignment_for_model(
+    path: Path, *, model: DistanceModel
+) -> tuple[list[AlignmentRecord], str]:
     records = load_fasta_alignment(path)
     alphabet = infer_alignment_alphabet(records)
     if model not in _allowed_models_for_alphabet(alphabet):
@@ -804,13 +833,19 @@ def _pair_key(left_identifier: str, right_identifier: str) -> tuple[str, str]:
 
 
 def _distance_rows(entries: list[ImportedDistanceEntry]) -> list[ImportedDistanceEntry]:
-    return [entry for entry in entries if entry.left_identifier != entry.right_identifier]
+    return [
+        entry for entry in entries if entry.left_identifier != entry.right_identifier
+    ]
 
 
-def _unique_distance_rows(entries: list[ImportedDistanceEntry]) -> list[ImportedDistanceEntry]:
+def _unique_distance_rows(
+    entries: list[ImportedDistanceEntry],
+) -> list[ImportedDistanceEntry]:
     unique: dict[tuple[str, str], ImportedDistanceEntry] = {}
     for entry in _distance_rows(entries):
-        unique.setdefault(_pair_key(entry.left_identifier, entry.right_identifier), entry)
+        unique.setdefault(
+            _pair_key(entry.left_identifier, entry.right_identifier), entry
+        )
     return [unique[key] for key in sorted(unique)]
 
 
@@ -829,7 +864,9 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _unique_genetic_distance_pairs(report: GeneticDistanceMatrix) -> list[PairwiseGeneticDistance]:
+def _unique_genetic_distance_pairs(
+    report: GeneticDistanceMatrix,
+) -> list[PairwiseGeneticDistance]:
     unique: dict[tuple[str, str], PairwiseGeneticDistance] = {}
     for pair in report.pairs:
         if pair.left_identifier == pair.right_identifier:
@@ -850,7 +887,9 @@ def load_imported_distance_matrix(path: Path) -> list[ImportedDistanceEntry]:
             raise InvalidDistanceMatrixError(
                 "distance matrix must contain left_identifier, right_identifier, and distance columns"
             )
-        comparable_sites_column = "comparable_sites" if "comparable_sites" in reader.fieldnames else None
+        comparable_sites_column = (
+            "comparable_sites" if "comparable_sites" in reader.fieldnames else None
+        )
         entries: list[ImportedDistanceEntry] = []
         seen_directional_pairs: set[tuple[str, str]] = set()
         for row_index, row in enumerate(reader, start=2):
@@ -862,7 +901,9 @@ def load_imported_distance_matrix(path: Path) -> list[ImportedDistanceEntry]:
                     f"row {row_index} in {path} is missing a left_identifier or right_identifier value"
                 )
             if not raw_distance:
-                raise InvalidDistanceMatrixError(f"row {row_index} in {path} is missing a distance value")
+                raise InvalidDistanceMatrixError(
+                    f"row {row_index} in {path} is missing a distance value"
+                )
             try:
                 distance = float(raw_distance)
             except ValueError as error:
@@ -899,10 +940,18 @@ def load_imported_distance_matrix(path: Path) -> list[ImportedDistanceEntry]:
     return entries
 
 
-def _symmetric_distances(entries: list[ImportedDistanceEntry]) -> dict[tuple[str, str], float]:
+def _symmetric_distances(
+    entries: list[ImportedDistanceEntry],
+) -> dict[tuple[str, str], float]:
     distances: dict[tuple[str, str], float] = {}
-    by_direction = {(entry.left_identifier, entry.right_identifier): entry.distance for entry in entries}
-    identifiers = sorted({entry.left_identifier for entry in entries} | {entry.right_identifier for entry in entries})
+    by_direction = {
+        (entry.left_identifier, entry.right_identifier): entry.distance
+        for entry in entries
+    }
+    identifiers = sorted(
+        {entry.left_identifier for entry in entries}
+        | {entry.right_identifier for entry in entries}
+    )
     for left_identifier in identifiers:
         for right_identifier in identifiers:
             pair_key = _pair_key(left_identifier, right_identifier)
@@ -910,7 +959,9 @@ def _symmetric_distances(entries: list[ImportedDistanceEntry]) -> dict[tuple[str
                 continue
             if left_identifier == right_identifier:
                 if (left_identifier, right_identifier) in by_direction:
-                    distances[pair_key] = by_direction[(left_identifier, right_identifier)]
+                    distances[pair_key] = by_direction[
+                        (left_identifier, right_identifier)
+                    ]
                 continue
             if (left_identifier, right_identifier) in by_direction:
                 distances[pair_key] = by_direction[(left_identifier, right_identifier)]
@@ -963,12 +1014,16 @@ def _iter_ultrametric_violations(
     )
 
 
-def _build_alignment_distance_lookup(report: GeneticDistanceMatrix) -> dict[tuple[str, str], float]:
+def _build_alignment_distance_lookup(
+    report: GeneticDistanceMatrix,
+) -> dict[tuple[str, str], float]:
     distances: dict[tuple[str, str], float] = {}
     for pair in report.pairs:
         if pair.left_identifier == pair.right_identifier or pair.distance is None:
             continue
-        distances[_pair_key(pair.left_identifier, pair.right_identifier)] = float(pair.distance)
+        distances[_pair_key(pair.left_identifier, pair.right_identifier)] = float(
+            pair.distance
+        )
     return distances
 
 
@@ -1000,7 +1055,9 @@ def assess_distance_method_assumptions(
             "UPGMA clock-assumption auditing is incomplete because one or more pairwise distances are undefined under the selected model"
         )
     if violations:
-        warnings.append("pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated")
+        warnings.append(
+            "pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated"
+        )
     return DistanceMethodAssumptionReport(
         source_path=path,
         source_kind="alignment",
@@ -1031,7 +1088,9 @@ def assess_imported_distance_method_assumptions(
     distances = _symmetric_distances(load_imported_distance_matrix(path))
     violations = (
         []
-        if not validation.complete or not validation.symmetric or not validation.nonnegative
+        if not validation.complete
+        or not validation.symmetric
+        or not validation.nonnegative
         else _iter_ultrametric_violations(
             validation.identifiers,
             distances,
@@ -1040,7 +1099,9 @@ def assess_imported_distance_method_assumptions(
     )
     warnings = list(validation.warnings)
     if violations:
-        warnings.append("pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated")
+        warnings.append(
+            "pairwise distances are not ultrametric, so UPGMA's strict clock-like assumption is violated"
+        )
     return DistanceMethodAssumptionReport(
         source_path=path,
         source_kind="imported-distance-matrix",
@@ -1064,8 +1125,13 @@ def assess_imported_distance_method_assumptions(
 def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixReport:
     """Validate a long-form imported distance matrix table."""
     entries = load_imported_distance_matrix(path)
-    identifiers = sorted({entry.left_identifier for entry in entries} | {entry.right_identifier for entry in entries})
-    by_direction = {(entry.left_identifier, entry.right_identifier): entry for entry in entries}
+    identifiers = sorted(
+        {entry.left_identifier for entry in entries}
+        | {entry.right_identifier for entry in entries}
+    )
+    by_direction = {
+        (entry.left_identifier, entry.right_identifier): entry for entry in entries
+    }
 
     missing_pairs: list[str] = []
     diagonal_problems: list[str] = []
@@ -1078,7 +1144,9 @@ def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixRepor
         if diagonal is None:
             missing_pairs.append(f"{left_identifier}/{left_identifier}")
         elif diagonal.distance != 0.0:
-            diagonal_problems.append(f"{left_identifier}/{left_identifier} has diagonal distance {diagonal.distance:g}")
+            diagonal_problems.append(
+                f"{left_identifier}/{left_identifier} has diagonal distance {diagonal.distance:g}"
+            )
         if diagonal is not None and diagonal.distance < 0:
             negative_distance_pairs.append(f"{left_identifier}/{left_identifier}")
 
@@ -1094,11 +1162,15 @@ def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixRepor
                 negative_distance_pairs.append(f"{left_identifier}/{right_identifier}")
             if right_to_left is not None and right_to_left.distance < 0:
                 negative_distance_pairs.append(f"{right_identifier}/{left_identifier}")
-            if left_to_right is not None and right_to_left is not None and not math.isclose(
-                left_to_right.distance,
-                right_to_left.distance,
-                rel_tol=1e-12,
-                abs_tol=1e-12,
+            if (
+                left_to_right is not None
+                and right_to_left is not None
+                and not math.isclose(
+                    left_to_right.distance,
+                    right_to_left.distance,
+                    rel_tol=1e-12,
+                    abs_tol=1e-12,
+                )
             ):
                 asymmetric_pairs.append(
                     DistanceMatrixAsymmetry(
@@ -1120,10 +1192,20 @@ def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixRepor
                         continue
                     if left_identifier > right_identifier:
                         continue
-                    direct_distance = symmetric_distances.get(_pair_key(left_identifier, right_identifier))
-                    left_middle = symmetric_distances.get(_pair_key(left_identifier, middle_identifier))
-                    middle_right = symmetric_distances.get(_pair_key(middle_identifier, right_identifier))
-                    if direct_distance is None or left_middle is None or middle_right is None:
+                    direct_distance = symmetric_distances.get(
+                        _pair_key(left_identifier, right_identifier)
+                    )
+                    left_middle = symmetric_distances.get(
+                        _pair_key(left_identifier, middle_identifier)
+                    )
+                    middle_right = symmetric_distances.get(
+                        _pair_key(middle_identifier, right_identifier)
+                    )
+                    if (
+                        direct_distance is None
+                        or left_middle is None
+                        or middle_right is None
+                    ):
                         continue
                     indirect_distance = round(left_middle + middle_right, 15)
                     if direct_distance > indirect_distance + 1e-12:
@@ -1147,7 +1229,9 @@ def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixRepor
     if asymmetric_pairs:
         warnings.append("distance matrix contains asymmetric directional entries")
     if nonmetric_observations:
-        warnings.append("distance matrix violates triangle inequality for one or more taxon triples")
+        warnings.append(
+            "distance matrix violates triangle inequality for one or more taxon triples"
+        )
 
     return ImportedDistanceMatrixReport(
         path=path,
@@ -1160,10 +1244,17 @@ def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixRepor
         missing_pairs=missing_pairs,
         diagonal_problems=diagonal_problems,
         negative_distance_pairs=sorted(set(negative_distance_pairs)),
-        asymmetric_pairs=sorted(asymmetric_pairs, key=lambda row: (row.left_identifier, row.right_identifier)),
+        asymmetric_pairs=sorted(
+            asymmetric_pairs,
+            key=lambda row: (row.left_identifier, row.right_identifier),
+        ),
         nonmetric_observations=sorted(
             nonmetric_observations,
-            key=lambda row: (row.left_identifier, row.middle_identifier, row.right_identifier),
+            key=lambda row: (
+                row.left_identifier,
+                row.middle_identifier,
+                row.right_identifier,
+            ),
         ),
         warnings=warnings,
     )
@@ -1177,7 +1268,8 @@ def _bio_distance_matrix(report: GeneticDistanceMatrix) -> DistanceMatrix:
     ]
     if undefined_pairs:
         raise InvalidAlignmentError(
-            "distance matrix contains undefined entries for: " + ", ".join(undefined_pairs)
+            "distance matrix contains undefined entries for: "
+            + ", ".join(undefined_pairs)
         )
     rows: list[list[float]] = []
     for row_index, left_identifier in enumerate(report.identifiers):
@@ -1189,20 +1281,25 @@ def _bio_distance_matrix(report: GeneticDistanceMatrix) -> DistanceMatrix:
             pair = next(
                 pair
                 for pair in report.pairs
-                if {pair.left_identifier, pair.right_identifier} == {left_identifier, right_identifier}
+                if {pair.left_identifier, pair.right_identifier}
+                == {left_identifier, right_identifier}
             )
             row.append(float(pair.distance))
         rows.append(row)
     return DistanceMatrix(report.identifiers, rows)
 
 
-def _bio_distance_matrix_from_imported(report: ImportedDistanceMatrixReport, entries: list[ImportedDistanceEntry]) -> DistanceMatrix:
+def _bio_distance_matrix_from_imported(
+    report: ImportedDistanceMatrixReport, entries: list[ImportedDistanceEntry]
+) -> DistanceMatrix:
     if not report.complete:
         raise InvalidDistanceMatrixError("distance matrix is incomplete")
     if not report.zero_diagonal:
         raise InvalidDistanceMatrixError("distance matrix has nonzero diagonal entries")
     if not report.symmetric:
-        raise InvalidDistanceMatrixError("distance matrix contains asymmetric directional entries")
+        raise InvalidDistanceMatrixError(
+            "distance matrix contains asymmetric directional entries"
+        )
     if not report.nonnegative:
         raise InvalidDistanceMatrixError("distance matrix contains negative distances")
 
@@ -1211,9 +1308,13 @@ def _bio_distance_matrix_from_imported(report: ImportedDistanceMatrixReport, ent
     for row_index, left_identifier in enumerate(report.identifiers):
         row: list[float] = []
         for right_identifier in report.identifiers[: row_index + 1]:
-            pair_distance = symmetric_distances.get(_pair_key(left_identifier, right_identifier))
+            pair_distance = symmetric_distances.get(
+                _pair_key(left_identifier, right_identifier)
+            )
             if pair_distance is None:
-                raise InvalidDistanceMatrixError(f"distance matrix is missing pair {left_identifier}/{right_identifier}")
+                raise InvalidDistanceMatrixError(
+                    f"distance matrix is missing pair {left_identifier}/{right_identifier}"
+                )
             row.append(pair_distance)
         rows.append(row)
     return DistanceMatrix(report.identifiers, rows)
@@ -1274,16 +1375,28 @@ def compute_pairwise_genetic_distance_matrix(
     ambiguity_policy: AmbiguityPolicy = "ignore",
 ) -> GeneticDistanceMatrix:
     """Compute a deterministic pairwise genetic distance matrix for an aligned dataset."""
-    if model not in {"p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"}:
+    if model not in {
+        "p-distance",
+        "jukes-cantor",
+        "kimura-2-parameter",
+        "amino-acid-p-distance",
+    }:
         raise ValueError(f"unsupported distance model: {model}")
     if gap_handling not in {"pairwise-deletion", "complete-deletion"}:
         raise ValueError(f"unsupported gap handling mode: {gap_handling}")
-    if ambiguity_policy not in {"ignore", "partial-match", "strict-mismatch", "report-only"}:
+    if ambiguity_policy not in {
+        "ignore",
+        "partial-match",
+        "strict-mismatch",
+        "report-only",
+    }:
         raise ValueError(f"unsupported ambiguity policy: {ambiguity_policy}")
 
     records, alphabet = _load_alignment_for_model(path, model=model)
     retained_positions = (
-        _complete_deletion_positions(records, alphabet=alphabet, ambiguity_policy=ambiguity_policy)
+        _complete_deletion_positions(
+            records, alphabet=alphabet, ambiguity_policy=ambiguity_policy
+        )
         if gap_handling == "complete-deletion"
         else None
     )
@@ -1306,13 +1419,21 @@ def compute_pairwise_genetic_distance_matrix(
                     right_identifier=right.identifier,
                     distance=summary.distance if left_index != right_index else 0.0,
                     comparable_sites=summary.comparable_sites,
-                    mismatch_sites=summary.mismatch_sites if left_index != right_index else 0.0,
-                    transition_sites=summary.transition_sites if left_index != right_index else 0.0,
-                    transversion_sites=summary.transversion_sites if left_index != right_index else 0.0,
+                    mismatch_sites=summary.mismatch_sites
+                    if left_index != right_index
+                    else 0.0,
+                    transition_sites=summary.transition_sites
+                    if left_index != right_index
+                    else 0.0,
+                    transversion_sites=summary.transversion_sites
+                    if left_index != right_index
+                    else 0.0,
                     ambiguity_sites=summary.ambiguity_sites,
                     skipped_sites=summary.skipped_sites,
                     saturated=False if left_index == right_index else summary.saturated,
-                    saturation_reason=None if left_index == right_index else summary.saturation_reason,
+                    saturation_reason=None
+                    if left_index == right_index
+                    else summary.saturation_reason,
                 )
             )
     return GeneticDistanceMatrix(
@@ -1331,7 +1452,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
     """Validate core distance examples against durable reference expectations."""
     examples = [
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_distance.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_distance.fasta",
             "case": "dna-p-distance",
             "model": "p-distance",
             "gap_handling": "pairwise-deletion",
@@ -1342,7 +1464,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_distance.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_distance.fasta",
             "case": "dna-jukes-cantor",
             "model": "jukes-cantor",
             "gap_handling": "pairwise-deletion",
@@ -1353,7 +1476,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_distance.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_distance.fasta",
             "case": "dna-kimura-2-parameter",
             "model": "kimura-2-parameter",
             "gap_handling": "pairwise-deletion",
@@ -1364,7 +1488,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_protein.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_protein.fasta",
             "case": "protein-p-distance",
             "model": "amino-acid-p-distance",
             "gap_handling": "pairwise-deletion",
@@ -1375,7 +1500,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_distance_gaps.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_distance_gaps.fasta",
             "case": "gap-complete-deletion",
             "model": "p-distance",
             "gap_handling": "complete-deletion",
@@ -1386,7 +1512,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 0,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-ignore",
             "model": "p-distance",
             "gap_handling": "pairwise-deletion",
@@ -1397,7 +1524,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 1,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-partial-match",
             "model": "p-distance",
             "gap_handling": "pairwise-deletion",
@@ -1408,7 +1536,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 1,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-strict-mismatch",
             "model": "p-distance",
             "gap_handling": "pairwise-deletion",
@@ -1419,7 +1548,8 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             "expected_ambiguity_sites": 1,
         },
         {
-            "path": Path(__file__).resolve().parents[2] / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
+            "path": Path(__file__).resolve().parents[2]
+            / "tests/fixtures/alignments/example_alignment_ambiguity.fasta",
             "case": "ambiguity-report-only",
             "model": "p-distance",
             "gap_handling": "pairwise-deletion",
@@ -1441,11 +1571,14 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
         pair = next(
             row
             for row in report.pairs
-            if row.left_identifier == example["left"] and row.right_identifier == example["right"]
+            if row.left_identifier == example["left"]
+            and row.right_identifier == example["right"]
         )
         expected_distance = float(example["expected"])
         observed = pair.distance
-        passed = observed is not None and math.isclose(observed, expected_distance, rel_tol=1e-12, abs_tol=1e-12)
+        passed = observed is not None and math.isclose(
+            observed, expected_distance, rel_tol=1e-12, abs_tol=1e-12
+        )
         observations.append(
             DistanceReferenceObservation(
                 case=str(example["case"]),
@@ -1459,14 +1592,23 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
                 comparable_sites=pair.comparable_sites,
                 expected_ambiguity_sites=int(example["expected_ambiguity_sites"]),
                 observed_ambiguity_sites=pair.ambiguity_sites,
-                passed=passed and pair.ambiguity_sites == int(example["expected_ambiguity_sites"]),
+                passed=passed
+                and pair.ambiguity_sites == int(example["expected_ambiguity_sites"]),
             )
         )
     tree_observations: list[DistanceTreeReferenceObservation] = []
-    nj_matrix_path = Path(__file__).resolve().parents[2] / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
-    nj_tree, _ = build_tree_from_imported_distance_matrix(nj_matrix_path, method="neighbor-joining")
+    nj_matrix_path = (
+        Path(__file__).resolve().parents[2]
+        / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
+    )
+    nj_tree, _ = build_tree_from_imported_distance_matrix(
+        nj_matrix_path, method="neighbor-joining"
+    )
     nj_expected_clades = ["A|B"]
-    nj_observed_clades = sorted("|".join(sorted(clade)) for clade in _informative_clades(nj_tree, set(nj_tree.tip_names)))
+    nj_observed_clades = sorted(
+        "|".join(sorted(clade))
+        for clade in _informative_clades(nj_tree, set(nj_tree.tip_names))
+    )
     tree_observations.append(
         DistanceTreeReferenceObservation(
             case="neighbor-joining-reference-clustering",
@@ -1477,10 +1619,18 @@ def validate_distance_reference_examples() -> DistanceReferenceValidationReport:
             passed=nj_observed_clades == nj_expected_clades,
         )
     )
-    upgma_matrix_path = Path(__file__).resolve().parents[2] / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
-    upgma_tree, _ = build_tree_from_imported_distance_matrix(upgma_matrix_path, method="upgma")
+    upgma_matrix_path = (
+        Path(__file__).resolve().parents[2]
+        / "tests/fixtures/metadata/example_distance_matrix_ultrametric.tsv"
+    )
+    upgma_tree, _ = build_tree_from_imported_distance_matrix(
+        upgma_matrix_path, method="upgma"
+    )
     expected_clades = ["A|B", "C|D"]
-    observed_clades = sorted("|".join(sorted(clade)) for clade in _informative_clades(upgma_tree, set(upgma_tree.tip_names)))
+    observed_clades = sorted(
+        "|".join(sorted(clade))
+        for clade in _informative_clades(upgma_tree, set(upgma_tree.tip_names))
+    )
     tree_observations.append(
         DistanceTreeReferenceObservation(
             case="upgma-ultrametric-clustering",
@@ -1513,7 +1663,9 @@ def inspect_distance_matrix_quality(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
-    off_diagonal = [pair for pair in matrix.pairs if pair.left_identifier != pair.right_identifier]
+    off_diagonal = [
+        pair for pair in matrix.pairs if pair.left_identifier != pair.right_identifier
+    ]
     defined_pairs = [pair for pair in off_diagonal if pair.distance is not None]
     saturated_pairs = [
         SaturatedDistancePair(
@@ -1521,7 +1673,8 @@ def inspect_distance_matrix_quality(
             right_identifier=pair.right_identifier,
             distance=pair.distance,
             comparable_sites=pair.comparable_sites,
-            reason=pair.saturation_reason or "distance is not usable under the selected model",
+            reason=pair.saturation_reason
+            or "distance is not usable under the selected model",
         )
         for pair in off_diagonal
         if pair.saturated
@@ -1529,7 +1682,9 @@ def inspect_distance_matrix_quality(
 
     high_distance_outliers: list[DistanceOutlierPair] = []
     if defined_pairs:
-        distances = sorted(float(pair.distance) for pair in defined_pairs if pair.distance is not None)
+        distances = sorted(
+            float(pair.distance) for pair in defined_pairs if pair.distance is not None
+        )
         threshold = 0.75
         if len(distances) >= 4:
             q1 = distances[len(distances) // 4]
@@ -1546,7 +1701,9 @@ def inspect_distance_matrix_quality(
                     )
                 )
 
-    comparable_baseline = median(pair.comparable_sites for pair in off_diagonal) if off_diagonal else 0
+    comparable_baseline = (
+        median(pair.comparable_sites for pair in off_diagonal) if off_diagonal else 0
+    )
     low_information_cutoff = max(10, int(math.floor(comparable_baseline * 0.5)))
     low_information_pairs = [
         LowInformationPair(
@@ -1568,15 +1725,23 @@ def inspect_distance_matrix_quality(
     warnings: list[str] = []
     blocker_reasons: list[str] = []
     if saturated_pairs:
-        warnings.append("one or more pairwise distances are saturated or undefined under the selected model")
+        warnings.append(
+            "one or more pairwise distances are saturated or undefined under the selected model"
+        )
         if len(saturated_pairs) / max(1, len(off_diagonal)) > 0.25:
-            warnings.append("many pairwise distances sit in a saturation regime that weakens distance-method assumptions")
+            warnings.append(
+                "many pairwise distances sit in a saturation regime that weakens distance-method assumptions"
+            )
     if low_information_pairs:
         warnings.append("one or more taxon pairs retain too few comparable sites")
         if len(low_information_pairs) / max(1, len(off_diagonal)) > 0.5:
-            warnings.append("many taxon pairs retain too few comparable sites after filtering")
+            warnings.append(
+                "many taxon pairs retain too few comparable sites after filtering"
+            )
     if not defined_pairs:
-        blocker_reasons.append("no off-diagonal distances could be computed from the selected alignment and policies")
+        blocker_reasons.append(
+            "no off-diagonal distances could be computed from the selected alignment and policies"
+        )
     if matrix.alignment_length < 10:
         warnings.append("alignment is short for robust distance-based tree building")
     if high_distance_outliers:
@@ -1604,7 +1769,9 @@ def inspect_distance_matrix_quality(
     )
 
 
-def inspect_imported_distance_matrix_quality(path: Path) -> ImportedDistanceMatrixQualityReport:
+def inspect_imported_distance_matrix_quality(
+    path: Path,
+) -> ImportedDistanceMatrixQualityReport:
     """Report structural and heuristic quality risks for an imported distance matrix."""
     validation = validate_imported_distance_matrix(path)
     entries = load_imported_distance_matrix(path)
@@ -1625,12 +1792,18 @@ def inspect_imported_distance_matrix_quality(path: Path) -> ImportedDistanceMatr
             if entry.distance >= 0.75
         ]
 
-    comparable_site_counts = [entry.comparable_sites for entry in off_diagonal if entry.comparable_sites is not None]
+    comparable_site_counts = [
+        entry.comparable_sites
+        for entry in off_diagonal
+        if entry.comparable_sites is not None
+    ]
     low_information_pair_cutoff: int | None = None
     low_information_pairs: list[LowInformationPair] = []
     if comparable_site_counts:
         comparable_baseline = median(comparable_site_counts)
-        low_information_pair_cutoff = max(10, int(math.floor(comparable_baseline * 0.5)))
+        low_information_pair_cutoff = max(
+            10, int(math.floor(comparable_baseline * 0.5))
+        )
         low_information_pairs = [
             LowInformationPair(
                 left_identifier=entry.left_identifier,
@@ -1639,19 +1812,28 @@ def inspect_imported_distance_matrix_quality(path: Path) -> ImportedDistanceMatr
                 note="imported pair retains too few comparable sites for a stable distance interpretation",
             )
             for entry in off_diagonal
-            if entry.comparable_sites is not None and entry.comparable_sites < low_information_pair_cutoff
+            if entry.comparable_sites is not None
+            and entry.comparable_sites < low_information_pair_cutoff
         ]
 
     warnings = list(validation.warnings)
     if distance_scale != "unit-interval-like":
-        warnings.append("saturation heuristics were skipped because imported distances do not resemble unit-interval genetic distances")
+        warnings.append(
+            "saturation heuristics were skipped because imported distances do not resemble unit-interval genetic distances"
+        )
     elif saturated_pairs:
-        warnings.append("one or more imported distances fall in a high-divergence regime that deserves saturation review")
+        warnings.append(
+            "one or more imported distances fall in a high-divergence regime that deserves saturation review"
+        )
     if comparable_site_counts:
         if low_information_pairs:
-            warnings.append("one or more imported distances retain too few comparable sites")
+            warnings.append(
+                "one or more imported distances retain too few comparable sites"
+            )
     else:
-        warnings.append("low-information pair auditing is unavailable because the imported matrix does not provide comparable_sites")
+        warnings.append(
+            "low-information pair auditing is unavailable because the imported matrix does not provide comparable_sites"
+        )
 
     return ImportedDistanceMatrixQualityReport(
         validation=validation,
@@ -1665,7 +1847,9 @@ def inspect_imported_distance_matrix_quality(path: Path) -> ImportedDistanceMatr
 
 def write_genetic_distance_matrix(path: Path, report: GeneticDistanceMatrix) -> Path:
     """Write a pairwise genetic distance matrix as a deterministic TSV."""
-    rows = {(pair.left_identifier, pair.right_identifier): pair for pair in report.pairs}
+    rows = {
+        (pair.left_identifier, pair.right_identifier): pair for pair in report.pairs
+    }
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = ["left_identifier\tright_identifier\tdistance\tcomparable_sites"]
     for left in report.identifiers:
@@ -1696,7 +1880,8 @@ def build_distance_tree(
     )
     if quality.method_assessment.decision == "blocked":
         raise InvalidAlignmentError(
-            "distance tree building is blocked: " + "; ".join(quality.method_assessment.reasons)
+            "distance tree building is blocked: "
+            + "; ".join(quality.method_assessment.reasons)
         )
     report = compute_pairwise_genetic_distance_matrix(
         path,
@@ -1757,7 +1942,9 @@ def compare_distance_tree_topologies(
     symmetric_difference = nj_clades.symmetric_difference(upgma_clades)
     denominator = len(nj_clades) + len(upgma_clades)
     topology_equal = len(symmetric_difference) == 0
-    same_unrooted_topology = _unrooted_splits(nj_tree, shared_taxa) == _unrooted_splits(upgma_tree, shared_taxa)
+    same_unrooted_topology = _unrooted_splits(nj_tree, shared_taxa) == _unrooted_splits(
+        upgma_tree, shared_taxa
+    )
     return DistanceTreeTopologyComparison(
         alignment_path=path,
         model=model,
@@ -1767,15 +1954,21 @@ def compare_distance_tree_topologies(
         nj_informative_clades=len(nj_clades),
         upgma_informative_clades=len(upgma_clades),
         robinson_foulds_distance=len(symmetric_difference),
-        normalized_robinson_foulds=0.0 if denominator == 0 else len(symmetric_difference) / denominator,
+        normalized_robinson_foulds=0.0
+        if denominator == 0
+        else len(symmetric_difference) / denominator,
         topology_equal=topology_equal,
         same_unrooted_topology=same_unrooted_topology,
         same_taxa_different_rooting=topology_equal is False and same_unrooted_topology,
     )
 
 
-def _resampled_records(records: list[AlignmentRecord], *, rng: random.Random) -> list[AlignmentRecord]:
-    positions = [rng.randrange(len(records[0].sequence)) for _ in range(len(records[0].sequence))]
+def _resampled_records(
+    records: list[AlignmentRecord], *, rng: random.Random
+) -> list[AlignmentRecord]:
+    positions = [
+        rng.randrange(len(records[0].sequence)) for _ in range(len(records[0].sequence))
+    ]
     return [
         AlignmentRecord(
             identifier=record.identifier,
@@ -1816,7 +2009,8 @@ def bootstrap_distance_trees(
     )
     if quality.method_assessment.decision == "blocked":
         raise InvalidAlignmentError(
-            "distance bootstrap is blocked: " + "; ".join(quality.method_assessment.reasons)
+            "distance bootstrap is blocked: "
+            + "; ".join(quality.method_assessment.reasons)
         )
     records, _ = _load_alignment_for_model(path, model=model)
     rng = random.Random(seed)
@@ -1859,7 +2053,9 @@ def bootstrap_distance_trees(
     )
 
 
-def write_distance_bootstrap_support(path: Path, report: DistanceBootstrapReport) -> Path:
+def write_distance_bootstrap_support(
+    path: Path, report: DistanceBootstrapReport
+) -> Path:
     """Write bootstrap clade support as TSV."""
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = ["clade\ttree_count\tfrequency"]
@@ -1878,12 +2074,18 @@ def summarize_distance_bootstrap_support(
 ) -> DistanceBootstrapSupportSummary:
     """Summarize bootstrap clade frequencies for reviewer-facing reporting."""
     frequencies = sorted(row.frequency for row in report.support)
-    weak_clade_count = sum(1 for row in report.support if row.frequency < weak_frequency_threshold)
+    weak_clade_count = sum(
+        1 for row in report.support if row.frequency < weak_frequency_threshold
+    )
     warnings: list[str] = []
     if weak_clade_count:
-        warnings.append("one or more consensus clades remain weakly supported across bootstrap replicates")
+        warnings.append(
+            "one or more consensus clades remain weakly supported across bootstrap replicates"
+        )
     if not frequencies:
-        warnings.append("bootstrap replicates did not yield any informative internal clades")
+        warnings.append(
+            "bootstrap replicates did not yield any informative internal clades"
+        )
     return DistanceBootstrapSupportSummary(
         alignment_path=report.alignment_path,
         method=report.method,
@@ -1923,11 +2125,17 @@ def compare_distance_tree_to_reference_tree(
     branch_lengths = compare_branch_lengths(built_tree_path, reference_tree_path)
     warnings: list[str] = []
     if not topology.topology_equal:
-        warnings.append("distance tree disagrees topologically with the supplied reference tree")
+        warnings.append(
+            "distance tree disagrees topologically with the supplied reference tree"
+        )
     if topology.same_unrooted_topology and not topology.topology_equal:
-        warnings.append("distance tree matches the reference on unrooted splits but differs in rooting")
+        warnings.append(
+            "distance tree matches the reference on unrooted splits but differs in rooting"
+        )
     if topology.same_topology_different_branch_lengths:
-        warnings.append("distance tree preserves topology but shifts branch-length interpretation relative to the reference")
+        warnings.append(
+            "distance tree preserves topology but shifts branch-length interpretation relative to the reference"
+        )
     return DistanceTreeReferenceComparisonReport(
         alignment_path=path,
         reference_tree_path=reference_tree_path,
@@ -1967,9 +2175,7 @@ def compare_distance_models(
         )
         unique_pairs = _unique_genetic_distance_pairs(matrix)
         defined_distances = sorted(
-            float(pair.distance)
-            for pair in unique_pairs
-            if pair.distance is not None
+            float(pair.distance) for pair in unique_pairs if pair.distance is not None
         )
         rows.append(
             DistanceModelComparisonRow(
@@ -1977,17 +2183,25 @@ def compare_distance_models(
                 defined_pair_count=len(defined_distances),
                 saturated_pair_count=len(quality.saturated_pairs),
                 low_information_pair_count=len(quality.low_information_pairs),
-                mean_distance=None if not defined_distances else round(sum(defined_distances) / len(defined_distances), 15),
-                maximum_distance=None if not defined_distances else max(defined_distances),
+                mean_distance=None
+                if not defined_distances
+                else round(sum(defined_distances) / len(defined_distances), 15),
+                maximum_distance=None
+                if not defined_distances
+                else max(defined_distances),
                 decision=quality.method_assessment.decision,
                 reasons=quality.method_assessment.reasons,
             )
         )
     warnings: list[str] = []
     if any(row.saturated_pair_count > 0 for row in rows):
-        warnings.append("one or more supported models enter a saturation regime on this alignment")
+        warnings.append(
+            "one or more supported models enter a saturation regime on this alignment"
+        )
     if len(rows) < 2:
-        warnings.append("the inferred alphabet supports only one distance model, so cross-model sensitivity is limited")
+        warnings.append(
+            "the inferred alphabet supports only one distance model, so cross-model sensitivity is limited"
+        )
     return DistanceModelComparisonReport(
         alignment_path=path,
         inferred_alphabet=inferred_alphabet,
@@ -2017,8 +2231,14 @@ def compare_distance_gap_policies(
         gap_handling="complete-deletion",
         ambiguity_policy=ambiguity_policy,
     )
-    pairwise_by_key = {_pair_key(pair.left_identifier, pair.right_identifier): pair for pair in _unique_genetic_distance_pairs(pairwise)}
-    complete_by_key = {_pair_key(pair.left_identifier, pair.right_identifier): pair for pair in _unique_genetic_distance_pairs(complete)}
+    pairwise_by_key = {
+        _pair_key(pair.left_identifier, pair.right_identifier): pair
+        for pair in _unique_genetic_distance_pairs(pairwise)
+    }
+    complete_by_key = {
+        _pair_key(pair.left_identifier, pair.right_identifier): pair
+        for pair in _unique_genetic_distance_pairs(complete)
+    }
     rows: list[DistanceGapPolicyDeltaRow] = []
     for pair_key in sorted(set(pairwise_by_key) | set(complete_by_key)):
         pairwise_pair = pairwise_by_key.get(pair_key)
@@ -2041,14 +2261,19 @@ def compare_distance_gap_policies(
                     pairwise_comparable_sites=pairwise_pair.comparable_sites,
                     complete_comparable_sites=complete_pair.comparable_sites,
                     distance_delta=distance_delta,
-                    comparable_site_delta=complete_pair.comparable_sites - pairwise_pair.comparable_sites,
+                    comparable_site_delta=complete_pair.comparable_sites
+                    - pairwise_pair.comparable_sites,
                 )
             )
     warnings: list[str] = []
     if rows:
-        warnings.append("distance estimates change when gap handling switches between pairwise and complete deletion")
+        warnings.append(
+            "distance estimates change when gap handling switches between pairwise and complete deletion"
+        )
     if any(row.complete_comparable_sites == 0 for row in rows):
-        warnings.append("complete deletion removes all comparable sites for one or more taxon pairs")
+        warnings.append(
+            "complete deletion removes all comparable sites for one or more taxon pairs"
+        )
     return DistanceGapPolicySensitivityReport(
         alignment_path=path,
         model=model,
@@ -2110,7 +2335,9 @@ def assess_distance_method_maturity(
     bundle_satisfied = False
     bundle_details = "bundle validation was skipped"
     if validate_bundle:
-        bundle_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-maturity-")) / "bundle"
+        bundle_dir = (
+            Path(tempfile.mkdtemp(prefix="bijux-distance-maturity-")) / "bundle"
+        )
         bundle = write_distance_reproducibility_bundle(
             bundle_dir,
             alignment_path=path,
@@ -2121,24 +2348,38 @@ def assess_distance_method_maturity(
             replicates=min(bootstrap_replicates, 10),
             seed=bootstrap_seed,
         )
-        manifest = json.loads((bundle.out_dir / "distance-analysis.manifest.json").read_text(encoding="utf-8"))
-        bundle_satisfied = "output_checksums" in manifest and "input_checksums" in manifest
-        bundle_details = "bundle manifest includes input and output checksums" if bundle_satisfied else "bundle manifest is missing checksum provenance"
+        manifest = json.loads(
+            (bundle.out_dir / "distance-analysis.manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        bundle_satisfied = (
+            "output_checksums" in manifest and "input_checksums" in manifest
+        )
+        bundle_details = (
+            "bundle manifest includes input and output checksums"
+            if bundle_satisfied
+            else "bundle manifest is missing checksum provenance"
+        )
 
     checks = [
         DistanceMethodMaturityCheck(
             name="reference_validation",
             satisfied=reference_validation.all_passed,
-            details="built-in p-distance, JC69, K2P, protein, NJ, and UPGMA reference cases all pass" if reference_validation.all_passed else "one or more built-in distance reference cases failed",
+            details="built-in p-distance, JC69, K2P, protein, NJ, and UPGMA reference cases all pass"
+            if reference_validation.all_passed
+            else "one or more built-in distance reference cases failed",
         ),
         DistanceMethodMaturityCheck(
             name="upgma_assumption_visibility",
-            satisfied=bool(assumptions.upgma_assumptions) and assumptions.ultrametric_tolerance > 0.0,
+            satisfied=bool(assumptions.upgma_assumptions)
+            and assumptions.ultrametric_tolerance > 0.0,
             details="UPGMA assumptions and ultrametric violations are surfaced explicitly",
         ),
         DistanceMethodMaturityCheck(
             name="suitability_decision",
-            satisfied=quality.method_assessment.decision in {"allowed", "risky", "blocked"},
+            satisfied=quality.method_assessment.decision
+            in {"allowed", "risky", "blocked"},
             details=f"distance workflow received explicit decision '{quality.method_assessment.decision}'",
         ),
         DistanceMethodMaturityCheck(
@@ -2176,7 +2417,10 @@ def assess_distance_method_maturity(
         ambiguity_policy=ambiguity_policy,
         decision=decision,
         checks=checks,
-        warnings=quality.warnings + bootstrap_summary.warnings + model_comparison.warnings + gap_sensitivity.warnings,
+        warnings=quality.warnings
+        + bootstrap_summary.warnings
+        + model_comparison.warnings
+        + gap_sensitivity.warnings,
     )
 
 
@@ -2327,8 +2571,12 @@ def write_distance_reproducibility_bundle(
     )
     matrix_path = write_genetic_distance_matrix(out_dir / "distance-matrix.tsv", matrix)
     tree_path = write_newick(out_dir / "distance-tree.nwk", tree)
-    support_path = write_distance_bootstrap_support(out_dir / "bootstrap-support.tsv", bootstrap)
-    tree_set_path = write_tree_set(out_dir / "bootstrap-replicates.trees", bootstrap_trees)
+    support_path = write_distance_bootstrap_support(
+        out_dir / "bootstrap-support.tsv", bootstrap
+    )
+    tree_set_path = write_tree_set(
+        out_dir / "bootstrap-replicates.trees", bootstrap_trees
+    )
     consensus_tree, _ = compute_consensus_tree(tree_set_path)
     consensus_path = write_newick(out_dir / "bootstrap-consensus.nwk", consensus_tree)
     clade_frequency_path = write_clade_frequency_table(
@@ -2345,7 +2593,10 @@ def write_distance_reproducibility_bundle(
         bootstrap_seed=seed,
     )
     summary_path = out_dir / "distance-summary.json"
-    summary_path.write_text(json.dumps(asdict(summary), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(asdict(summary), default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     manifest_path = out_dir / "distance-analysis.manifest.json"
     manifest_path.write_text(
         json.dumps(
@@ -2435,7 +2686,9 @@ def build_tree_from_imported_distance_matrix(
         tree = constructor.upgma(distance_matrix)
     else:
         raise ValueError(f"unsupported tree-building method: {method}")
-    return tree_from_biophylo(tree, source_format="newick"), ImportedDistanceTreeBuildReport(
+    return tree_from_biophylo(
+        tree, source_format="newick"
+    ), ImportedDistanceTreeBuildReport(
         matrix_path=path,
         method=method,
         taxon_count=len(validation.identifiers),

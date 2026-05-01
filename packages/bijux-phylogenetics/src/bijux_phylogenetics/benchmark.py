@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from pathlib import Path
 import tempfile
 import time
 import tracemalloc
-from dataclasses import dataclass
-from pathlib import Path
 
 from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -60,7 +60,9 @@ class TreeSetConsensusBenchmarkReport:
     observations: list[BenchmarkObservation]
 
 
-def _measure(label: str, item_count: int, *, replicates: int, callback) -> BenchmarkObservation:
+def _measure(
+    label: str, item_count: int, *, replicates: int, callback
+) -> BenchmarkObservation:
     runtimes: list[float] = []
     peak_memory = 0
     for _ in range(replicates):
@@ -80,33 +82,55 @@ def _measure(label: str, item_count: int, *, replicates: int, callback) -> Bench
     )
 
 
-def _build_balanced_tree(tip_count: int, *, branch_length: float = 0.1, prefix: str = "Taxon") -> PhyloTree:
+def _build_balanced_tree(
+    tip_count: int, *, branch_length: float = 0.1, prefix: str = "Taxon"
+) -> PhyloTree:
     if tip_count < 2:
         raise ValueError(f"tip_count must be at least 2, got {tip_count}")
-    leaves = [TreeNode(name=f"{prefix}{index}", branch_length=branch_length) for index in range(1, tip_count + 1)]
+    leaves = [
+        TreeNode(name=f"{prefix}{index}", branch_length=branch_length)
+        for index in range(1, tip_count + 1)
+    ]
     while len(leaves) > 1:
         next_level: list[TreeNode] = []
         for index in range(0, len(leaves), 2):
             left = leaves[index]
             right = leaves[index + 1] if index + 1 < len(leaves) else None
             if right is None:
-                left.branch_length = round((left.branch_length or 0.0) + branch_length, 15)
+                left.branch_length = round(
+                    (left.branch_length or 0.0) + branch_length, 15
+                )
                 next_level.append(left)
                 continue
-            next_level.append(TreeNode(children=[left, right], branch_length=branch_length))
+            next_level.append(
+                TreeNode(children=[left, right], branch_length=branch_length)
+            )
         leaves = next_level
     root = leaves[0]
     root.branch_length = None
     return PhyloTree(root=root, source_format="newick")
 
 
-def _build_caterpillar_tree(tip_count: int, *, branch_length: float = 0.1, prefix: str = "Taxon") -> PhyloTree:
+def _build_caterpillar_tree(
+    tip_count: int, *, branch_length: float = 0.1, prefix: str = "Taxon"
+) -> PhyloTree:
     if tip_count < 2:
         raise ValueError(f"tip_count must be at least 2, got {tip_count}")
-    root = TreeNode(children=[TreeNode(name=f"{prefix}1", branch_length=branch_length), TreeNode(name=f"{prefix}2", branch_length=branch_length)])
+    root = TreeNode(
+        children=[
+            TreeNode(name=f"{prefix}1", branch_length=branch_length),
+            TreeNode(name=f"{prefix}2", branch_length=branch_length),
+        ]
+    )
     current = root
     for index in range(3, tip_count + 1):
-        new_internal = TreeNode(branch_length=branch_length, children=[current.children.pop(), TreeNode(name=f"{prefix}{index}", branch_length=branch_length)])
+        new_internal = TreeNode(
+            branch_length=branch_length,
+            children=[
+                current.children.pop(),
+                TreeNode(name=f"{prefix}{index}", branch_length=branch_length),
+            ],
+        )
         current.children.append(new_internal)
         current = new_internal
     root.branch_length = None
@@ -126,7 +150,9 @@ def benchmark_tree_validation(
     with tempfile.TemporaryDirectory(prefix="bijux-tree-validation-") as tmpdir:
         tmp_path = Path(tmpdir)
         for label, tip_count in classes:
-            tree_path = write_newick(tmp_path / f"{label}.nwk", _build_balanced_tree(tip_count))
+            tree_path = write_newick(
+                tmp_path / f"{label}.nwk", _build_balanced_tree(tip_count)
+            )
             observations.append(
                 _measure(
                     label,
@@ -135,7 +161,9 @@ def benchmark_tree_validation(
                     callback=lambda path=tree_path: validate_tree_path(path),
                 )
             )
-    return TreeValidationBenchmarkReport(replicates=replicates, observations=observations)
+    return TreeValidationBenchmarkReport(
+        replicates=replicates, observations=observations
+    )
 
 
 def benchmark_tree_comparison(
@@ -151,17 +179,27 @@ def benchmark_tree_comparison(
     with tempfile.TemporaryDirectory(prefix="bijux-tree-comparison-") as tmpdir:
         tmp_path = Path(tmpdir)
         for tip_count in counts:
-            left_path = write_newick(tmp_path / f"compare-left-{tip_count}.nwk", _build_balanced_tree(tip_count))
-            right_path = write_newick(tmp_path / f"compare-right-{tip_count}.nwk", _build_caterpillar_tree(tip_count))
+            left_path = write_newick(
+                tmp_path / f"compare-left-{tip_count}.nwk",
+                _build_balanced_tree(tip_count),
+            )
+            right_path = write_newick(
+                tmp_path / f"compare-right-{tip_count}.nwk",
+                _build_caterpillar_tree(tip_count),
+            )
             observations.append(
                 _measure(
                     f"taxa-{tip_count}",
                     tip_count,
                     replicates=replicates,
-                    callback=lambda left=left_path, right=right_path: compare_tree_paths(left, right),
+                    callback=lambda left=left_path, right=right_path: (
+                        compare_tree_paths(left, right)
+                    ),
                 )
             )
-    return TreeComparisonBenchmarkReport(replicates=replicates, observations=observations)
+    return TreeComparisonBenchmarkReport(
+        replicates=replicates, observations=observations
+    )
 
 
 def benchmark_alignment_diagnostics(
@@ -197,10 +235,14 @@ def benchmark_alignment_diagnostics(
                     f"sequences-{sequence_count}",
                     sequence_count,
                     replicates=replicates,
-                    callback=lambda path=alignment_path: build_alignment_quality_report(path),
+                    callback=lambda path=alignment_path: build_alignment_quality_report(
+                        path
+                    ),
                 )
             )
-    return AlignmentDiagnosticsBenchmarkReport(replicates=replicates, observations=observations)
+    return AlignmentDiagnosticsBenchmarkReport(
+        replicates=replicates, observations=observations
+    )
 
 
 def benchmark_alignment_site_scaling(
@@ -236,7 +278,9 @@ def benchmark_alignment_site_scaling(
                     f"sites-{site_count}",
                     site_count,
                     replicates=replicates,
-                    callback=lambda path=alignment_path: build_alignment_quality_report(path),
+                    callback=lambda path=alignment_path: build_alignment_quality_report(
+                        path
+                    ),
                 )
             )
     return AlignmentSiteBenchmarkReport(
@@ -265,7 +309,9 @@ def benchmark_tree_set_consensus(
                 tip_count=tip_count,
                 seed=tree_count,
             )
-            tree_set_path = write_tree_set(tmp_path / f"tree-set-{tree_count}.trees", trees)
+            tree_set_path = write_tree_set(
+                tmp_path / f"tree-set-{tree_count}.trees", trees
+            )
             observations.append(
                 _measure(
                     f"trees-{tree_count}",

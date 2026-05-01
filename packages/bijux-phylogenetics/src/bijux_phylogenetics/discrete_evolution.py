@@ -7,7 +7,11 @@ from pathlib import Path
 import random
 import tempfile
 
-from bijux_phylogenetics.ancestral.common import load_discrete_dataset, node_descendant_taxa, node_signature
+from bijux_phylogenetics.ancestral.common import (
+    load_discrete_dataset,
+    node_descendant_taxa,
+    node_signature,
+)
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.traits import load_tsv_summary
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
@@ -16,7 +20,6 @@ from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
-
 
 _DEFAULT_ALLOWED_STATE_PATTERN_BLOCKLIST = ("|", "/", ";")
 _DEFAULT_STATE_COLORS = (
@@ -435,13 +438,9 @@ def _normalize_probabilities(scores: dict[str, float]) -> dict[str, float]:
     total = sum(scores.values())
     if total <= 0.0:
         uniform = 1.0 / max(len(scores), 1)
-        return {
-            state: float(format(uniform, ".15g"))
-            for state in sorted(scores)
-        }
+        return {state: float(format(uniform, ".15g")) for state in sorted(scores)}
     return {
-        state: float(format(scores[state] / total, ".15g"))
-        for state in sorted(scores)
+        state: float(format(scores[state] / total, ".15g")) for state in sorted(scores)
     }
 
 
@@ -472,8 +471,10 @@ def _transition_allowed(
     return abs(state_order.index(source_state) - state_order.index(target_state)) == 1
 
 
-def _state_support(node, states_by_taxon: dict[str, str], state_order: list[str]) -> dict[str, int]:
-    counts = {state: 0 for state in state_order}
+def _state_support(
+    node, states_by_taxon: dict[str, str], state_order: list[str]
+) -> dict[str, int]:
+    counts = dict.fromkeys(state_order, 0)
     for taxon in node_descendant_taxa(node):
         state = states_by_taxon.get(taxon)
         if state is not None:
@@ -481,7 +482,9 @@ def _state_support(node, states_by_taxon: dict[str, str], state_order: list[str]
     return counts
 
 
-def _fitch_candidate_sets(tree, states_by_taxon: dict[str, str]) -> dict[str, list[str]]:
+def _fitch_candidate_sets(
+    tree, states_by_taxon: dict[str, str]
+) -> dict[str, list[str]]:
     def downpass(node) -> set[str]:
         if node.is_leaf():
             return {states_by_taxon[node.name]}
@@ -495,20 +498,30 @@ def _fitch_candidate_sets(tree, states_by_taxon: dict[str, str]) -> dict[str, li
                 candidate |= child_set
         return candidate
 
-    return {
-        node_signature(node): sorted(downpass(node))
-        for node in tree.iter_nodes()
-    }
+    return {node_signature(node): sorted(downpass(node)) for node in tree.iter_nodes()}
 
 
-def _best_supported_state(candidate_states: list[str], support_counts: dict[str, int], priority_weights: dict[str, float]) -> str:
+def _best_supported_state(
+    candidate_states: list[str],
+    support_counts: dict[str, int],
+    priority_weights: dict[str, float],
+) -> str:
     return max(
         sorted(candidate_states),
-        key=lambda state: (support_counts.get(state, 0), priority_weights.get(state, 0.0), state),
+        key=lambda state: (
+            support_counts.get(state, 0),
+            priority_weights.get(state, 0.0),
+            state,
+        ),
     )
 
 
-def _resolve_er_states(tree, candidate_sets: dict[str, list[str]], states_by_taxon: dict[str, str], state_order: list[str]) -> dict[str, str]:
+def _resolve_er_states(
+    tree,
+    candidate_sets: dict[str, list[str]],
+    states_by_taxon: dict[str, str],
+    state_order: list[str],
+) -> dict[str, str]:
     support_by_node = {
         node_signature(node): _state_support(node, states_by_taxon, state_order)
         for node in tree.iter_nodes()
@@ -516,7 +529,11 @@ def _resolve_er_states(tree, candidate_sets: dict[str, list[str]], states_by_tax
     resolved: dict[str, str] = {}
     root_signature = node_signature(tree.root)
     root_candidates = candidate_sets[root_signature]
-    resolved[root_signature] = _best_supported_state(root_candidates, support_by_node[root_signature], {state: 1.0 for state in state_order})
+    resolved[root_signature] = _best_supported_state(
+        root_candidates,
+        support_by_node[root_signature],
+        dict.fromkeys(state_order, 1.0),
+    )
 
     def visit(node, parent_state: str) -> None:
         for child in node.children:
@@ -525,7 +542,11 @@ def _resolve_er_states(tree, candidate_sets: dict[str, list[str]], states_by_tax
             if parent_state in candidates:
                 chosen = parent_state
             else:
-                chosen = _best_supported_state(candidates, support_by_node[signature], {state: 1.0 for state in state_order})
+                chosen = _best_supported_state(
+                    candidates,
+                    support_by_node[signature],
+                    dict.fromkeys(state_order, 1.0),
+                )
             resolved[signature] = chosen
             if not child.is_leaf():
                 visit(child, chosen)
@@ -559,12 +580,19 @@ def _transition_events(tree, resolved_states: dict[str, str]) -> list[Transition
     return events
 
 
-def _stationary_frequencies(states_by_taxon: dict[str, str], state_order: list[str]) -> dict[str, float]:
+def _stationary_frequencies(
+    states_by_taxon: dict[str, str], state_order: list[str]
+) -> dict[str, float]:
     total = len(states_by_taxon)
     if total == 0:
-        return {state: 0.0 for state in state_order}
+        return dict.fromkeys(state_order, 0.0)
     return {
-        state: float(format(sum(1 for value in states_by_taxon.values() if value == state) / total, ".15g"))
+        state: float(
+            format(
+                sum(1 for value in states_by_taxon.values() if value == state) / total,
+                ".15g",
+            )
+        )
         for state in state_order
     }
 
@@ -580,7 +608,10 @@ def _build_transition_count_matrix(
         source: {
             target: (
                 1.0
-                if target != source and _transition_allowed(source, target, state_order, state_ordering=state_ordering)
+                if target != source
+                and _transition_allowed(
+                    source, target, state_order, state_ordering=state_ordering
+                )
                 else 0.0
             )
             for target in state_order
@@ -591,11 +622,21 @@ def _build_transition_count_matrix(
     for event in er_events:
         if event.source_state == event.target_state:
             continue
-        if not _transition_allowed(event.source_state, event.target_state, state_order, state_ordering=state_ordering):
+        if not _transition_allowed(
+            event.source_state,
+            event.target_state,
+            state_order,
+            state_ordering=state_ordering,
+        ):
             continue
         if model == "symmetric":
             counts[event.source_state][event.target_state] += 1.0
-            if _transition_allowed(event.target_state, event.source_state, state_order, state_ordering=state_ordering):
+            if _transition_allowed(
+                event.target_state,
+                event.source_state,
+                state_order,
+                state_ordering=state_ordering,
+            ):
                 counts[event.target_state][event.source_state] += 1.0
         else:
             counts[event.source_state][event.target_state] += 1.0
@@ -637,11 +678,21 @@ def _fit_transition_matrix(
                                         1
                                         for candidate in state_order
                                         if candidate != source
-                                        and _transition_allowed(source, candidate, state_order, state_ordering=state_ordering)
+                                        and _transition_allowed(
+                                            source,
+                                            candidate,
+                                            state_order,
+                                            state_ordering=state_ordering,
+                                        )
                                     ),
                                     1,
                                 )
-                                if _transition_allowed(source, target, state_order, state_ordering=state_ordering)
+                                if _transition_allowed(
+                                    source,
+                                    target,
+                                    state_order,
+                                    state_ordering=state_ordering,
+                                )
                                 else 0.0
                             ),
                             ".15g",
@@ -673,7 +724,13 @@ def _fit_transition_matrix(
                             format(
                                 (
                                     change_mass * (counts[source][target] / off_total)
-                                    if _transition_allowed(source, target, state_order, state_ordering=state_ordering) and off_total > 0.0
+                                    if _transition_allowed(
+                                        source,
+                                        target,
+                                        state_order,
+                                        state_ordering=state_ordering,
+                                    )
+                                    and off_total > 0.0
                                     else 0.0
                                 ),
                                 ".15g",
@@ -711,11 +768,19 @@ def _estimate_node_states(
 
     root_signature = node_signature(tree.root)
     root_scores = {
-        state: (support_by_node[root_signature].get(state, 0) + 1.0) * root_prior.get(state, 0.0)
-        for state in (state_order if state_ordering == "ordered" else candidate_sets[root_signature])
+        state: (support_by_node[root_signature].get(state, 0) + 1.0)
+        * root_prior.get(state, 0.0)
+        for state in (
+            state_order
+            if state_ordering == "ordered"
+            else candidate_sets[root_signature]
+        )
     }
     probabilities_by_node[root_signature] = _normalize_probabilities(root_scores)
-    resolved_states[root_signature] = max(sorted(probabilities_by_node[root_signature]), key=lambda state: probabilities_by_node[root_signature][state])
+    resolved_states[root_signature] = max(
+        sorted(probabilities_by_node[root_signature]),
+        key=lambda state: probabilities_by_node[root_signature][state],
+    )
 
     def visit(node) -> None:
         parent_signature = node_signature(node)
@@ -729,13 +794,22 @@ def _estimate_node_states(
             else:
                 scores: dict[str, float] = {}
                 child_support = support_by_node[child_signature]
-                for child_state in (state_order if state_ordering == "ordered" else candidate_sets[child_signature]):
+                for child_state in (
+                    state_order
+                    if state_ordering == "ordered"
+                    else candidate_sets[child_signature]
+                ):
                     transition_support = sum(
-                        parent_probabilities[parent_state] * transition_lookup[parent_state][child_state]
+                        parent_probabilities[parent_state]
+                        * transition_lookup[parent_state][child_state]
                         for parent_state in parent_probabilities
                     )
-                    scores[child_state] = transition_support * (child_support.get(child_state, 0) + 1.0)
-                probabilities_by_node[child_signature] = _normalize_probabilities(scores)
+                    scores[child_state] = transition_support * (
+                        child_support.get(child_state, 0) + 1.0
+                    )
+                probabilities_by_node[child_signature] = _normalize_probabilities(
+                    scores
+                )
                 resolved_states[child_signature] = max(
                     sorted(probabilities_by_node[child_signature]),
                     key=lambda state: probabilities_by_node[child_signature][state],
@@ -755,28 +829,45 @@ def _estimate_node_states(
                 descendant_taxa=node_descendant_taxa(node),
                 most_likely_state=resolved_states[signature],
                 state_probabilities=state_probabilities,
-                ambiguous=sum(1 for probability in state_probabilities.values() if probability > 0.0) > 1,
+                ambiguous=sum(
+                    1
+                    for probability in state_probabilities.values()
+                    if probability > 0.0
+                )
+                > 1,
             )
         )
     return estimates
 
 
-def _root_prior(model: str, stationary: dict[str, float], candidate_states: list[str]) -> dict[str, float]:
+def _root_prior(
+    model: str, stationary: dict[str, float], candidate_states: list[str]
+) -> dict[str, float]:
     if model == "equal-rates":
-        return {state: 1.0 for state in candidate_states}
+        return dict.fromkeys(candidate_states, 1.0)
     return {state: stationary.get(state, 0.0) + 1e-9 for state in candidate_states}
 
 
-def _pseudo_log_likelihood(estimates: list[NodeStateEstimate], events: list[TransitionEvent], model: TransitionModelReport) -> float:
+def _pseudo_log_likelihood(
+    estimates: list[NodeStateEstimate],
+    events: list[TransitionEvent],
+    model: TransitionModelReport,
+) -> float:
     estimate_by_node = {estimate.node: estimate for estimate in estimates}
     transition_lookup = _row_lookup(model.transition_matrix)
     root_state = estimates[0].most_likely_state
-    log_likelihood = math.log(max(model.root_state_probabilities.get(root_state, 1e-12), 1e-12))
+    log_likelihood = math.log(
+        max(model.root_state_probabilities.get(root_state, 1e-12), 1e-12)
+    )
     for event in events:
         probability = transition_lookup[event.source_state][event.target_state]
         log_likelihood += math.log(max(probability, 1e-12))
         child_estimate = estimate_by_node[event.child_node]
-        log_likelihood += math.log(max(child_estimate.state_probabilities.get(event.target_state, 1e-12), 1e-12))
+        log_likelihood += math.log(
+            max(
+                child_estimate.state_probabilities.get(event.target_state, 1e-12), 1e-12
+            )
+        )
     return float(format(log_likelihood, ".15g"))
 
 
@@ -798,7 +889,9 @@ def _estimate_transition_rate_uncertainty(
                 if off_total <= 0.0:
                     lower, upper = estimate, estimate
                 else:
-                    proportion = count_matrix[row.source_state][target_state] / off_total
+                    proportion = (
+                        count_matrix[row.source_state][target_state] / off_total
+                    )
                     lower_p, upper_p = _normal_interval(proportion, off_total)
                     lower = float(format(0.2 * lower_p, ".15g"))
                     upper = float(format(0.2 * upper_p, ".15g"))
@@ -841,7 +934,9 @@ def _detect_sparse_state_instability(
     )
 
 
-def _summarize_dominant_state_bias(state_counts: dict[str, int]) -> DominantStateBiasReport:
+def _summarize_dominant_state_bias(
+    state_counts: dict[str, int],
+) -> DominantStateBiasReport:
     if not state_counts:
         return DominantStateBiasReport(
             dominant_states=[],
@@ -851,7 +946,9 @@ def _summarize_dominant_state_bias(state_counts: dict[str, int]) -> DominantStat
         )
     total = sum(state_counts.values())
     max_count = max(state_counts.values())
-    dominant_states = sorted(state for state, count in state_counts.items() if count == max_count)
+    dominant_states = sorted(
+        state for state, count in state_counts.items() if count == max_count
+    )
     dominant_fraction = float(format(max_count / max(total, 1), ".15g"))
     biased = dominant_fraction >= 0.8
     return DominantStateBiasReport(
@@ -898,22 +995,35 @@ def assess_geographic_state_analysis_readiness(
     warnings: list[str] = []
 
     if not tree_validation.syntax_valid or not tree_validation.biologically_safe:
-        blockers.append("tree validation failed and the geographic analysis is not safe to interpret")
+        blockers.append(
+            "tree validation failed and the geographic analysis is not safe to interpret"
+        )
     if not tree_validation.rooted:
         blockers.append("geographic ancestral-state analysis requires a rooted tree")
     if not coding.valid:
-        blockers.append("discrete geographic states contain unsupported labels or coding patterns")
+        blockers.append(
+            "discrete geographic states contain unsupported labels or coding patterns"
+        )
     if any(warning.code == "single-state-dataset" for warning in imbalance.warnings):
-        blockers.append("geographic analysis requires at least two observed states after matching taxa to the tree")
+        blockers.append(
+            "geographic analysis requires at least two observed states after matching taxa to the tree"
+        )
     rare_state_count = sum(1 for count in imbalance.state_counts.values() if count < 2)
     if imbalance.state_counts and rare_state_count == len(imbalance.state_counts):
-        blockers.append("one or more geographic states are too sparse to estimate transitions credibly")
+        blockers.append(
+            "one or more geographic states are too sparse to estimate transitions credibly"
+        )
     if dominant_state_bias.biased:
-        blockers.append("observed geographic states are dominated by one state and the sampling is too biased for credible transition inference")
+        blockers.append(
+            "observed geographic states are dominated by one state and the sampling is too biased for credible transition inference"
+        )
 
     warnings.extend(tree_validation.warnings)
     warnings.extend(warning.message for warning in imbalance.warnings)
-    if dominant_state_bias.message is not None and dominant_state_bias.message not in warnings:
+    if (
+        dominant_state_bias.message is not None
+        and dominant_state_bias.message not in warnings
+    ):
         warnings.append(dominant_state_bias.message)
 
     return GeographicAnalysisReadinessReport(
@@ -956,7 +1066,9 @@ def _estimate_transition_support_rows(
         }
         total_score = sum(scores.values())
         inferred_key = (event.source_state, event.target_state)
-        support = 0.0 if total_score <= 0.0 else scores.get(inferred_key, 0.0) / total_score
+        support = (
+            0.0 if total_score <= 0.0 else scores.get(inferred_key, 0.0) / total_score
+        )
         rows.append(
             TransitionSupportRow(
                 parent_node=event.parent_node,
@@ -974,7 +1086,9 @@ def _quantile(sorted_values: list[float], fraction: float) -> float:
         return 0.0
     if len(sorted_values) == 1:
         return float(format(sorted_values[0], ".15g"))
-    index = max(0, min(len(sorted_values) - 1, int(round(fraction * (len(sorted_values) - 1)))))
+    index = max(
+        0, min(len(sorted_values) - 1, int(round(fraction * (len(sorted_values) - 1))))
+    )
     return float(format(sorted_values[index], ".15g"))
 
 
@@ -983,7 +1097,11 @@ def _build_discrete_evolution_narrative(
     *,
     comparison: DiscreteModelComparisonReport | None = None,
 ) -> DiscreteEvolutionNarrative:
-    root_state = next(estimate.most_likely_state for estimate in report.estimates if estimate.node == node_signature(load_tree(report.tree_path).root))
+    root_state = next(
+        estimate.most_likely_state
+        for estimate in report.estimates
+        if estimate.node == node_signature(load_tree(report.tree_path).root)
+    )
     summary = (
         f"reconstructed {report.trait} across {report.taxon_count} taxa under the {report.model} model"
         f" with root state '{root_state}' and {report.transition_summary.transition_count} inferred branch transitions"
@@ -1023,14 +1141,18 @@ def _build_model_sensitive_regions(
         if not difference.differs:
             continue
         left_probability = difference.left_probabilities.get(difference.left_state, 0.0)
-        right_probability = difference.right_probabilities.get(difference.right_state, 0.0)
+        right_probability = difference.right_probabilities.get(
+            difference.right_state, 0.0
+        )
         rows.append(
             ModelSensitiveRegionRow(
                 node=difference.node,
                 descendant_taxa=difference.descendant_taxa,
                 left_state=difference.left_state,
                 right_state=difference.right_state,
-                sensitivity_score=float(format(abs(left_probability - right_probability), ".15g")),
+                sensitivity_score=float(
+                    format(abs(left_probability - right_probability), ".15g")
+                ),
             )
         )
     return sorted(rows, key=lambda row: (-row.sensitivity_score, row.node))
@@ -1070,7 +1192,9 @@ def _sample_transition_target(
 def _summarize_stochastic_map_replicates(
     replicates: list[StochasticMapReplicate],
 ) -> StochasticMapSummaryReport:
-    total_counts = sorted(float(replicate.total_transition_count) for replicate in replicates)
+    total_counts = sorted(
+        float(replicate.total_transition_count) for replicate in replicates
+    )
     transition_names = sorted(
         {
             transition
@@ -1080,7 +1204,9 @@ def _summarize_stochastic_map_replicates(
     )
     rows: list[StochasticMapSummaryRow] = []
     for transition in transition_names:
-        values = [replicate.transition_counts.get(transition, 0) for replicate in replicates]
+        values = [
+            replicate.transition_counts.get(transition, 0) for replicate in replicates
+        ]
         sorted_values = sorted(float(value) for value in values)
         rows.append(
             StochasticMapSummaryRow(
@@ -1090,12 +1216,19 @@ def _summarize_stochastic_map_replicates(
                 upper_95_interval=_quantile(sorted_values, 0.975),
                 minimum_count=min(values, default=0),
                 maximum_count=max(values, default=0),
-                presence_fraction=float(format(sum(1 for value in values if value > 0) / max(len(values), 1), ".15g")),
+                presence_fraction=float(
+                    format(
+                        sum(1 for value in values if value > 0) / max(len(values), 1),
+                        ".15g",
+                    )
+                ),
             )
         )
     return StochasticMapSummaryReport(
         replicate_count=len(replicates),
-        mean_total_transition_count=float(format(sum(total_counts) / max(len(total_counts), 1), ".15g")),
+        mean_total_transition_count=float(
+            format(sum(total_counts) / max(len(total_counts), 1), ".15g")
+        ),
         lower_95_total_transition_count=_quantile(total_counts, 0.025),
         upper_95_total_transition_count=_quantile(total_counts, 0.975),
         rows=rows,
@@ -1117,15 +1250,23 @@ def validate_discrete_state_coding(
 ) -> StateCodingValidationReport:
     """Detect impossible or unsupported discrete-state labels."""
     tree = load_tree(tree_path)
-    table = load_tsv_summary(traits_path) if taxon_column is None else load_taxon_table(traits_path, taxon_column=taxon_column)
+    table = (
+        load_tsv_summary(traits_path)
+        if taxon_column is None
+        else load_taxon_table(traits_path, taxon_column=taxon_column)
+    )
     if trait not in table.columns:
-        raise AncestralReconstructionError(f"trait table does not contain column '{trait}'")
+        raise AncestralReconstructionError(
+            f"trait table does not contain column '{trait}'"
+        )
     tree_taxa = set(tree.tip_names)
     if state_ordering not in {"unordered", "ordered"}:
         raise ValueError(f"unsupported state ordering: {state_ordering}")
     ordered = list(ordered_states or [])
     if ordered and len(set(ordered)) != len(ordered):
-        raise AncestralReconstructionError("ordered state vocabulary contains duplicate labels")
+        raise AncestralReconstructionError(
+            "ordered state vocabulary contains duplicate labels"
+        )
     allowed = list(allowed_states or ordered or [])
     allowed_set = set(allowed)
     issues: list[StateCodingIssue] = []
@@ -1138,7 +1279,14 @@ def validate_discrete_state_coding(
         raw_state = row[trait].strip()
         if not raw_state:
             continue
-        invalid_delimiter = next((token for token in _DEFAULT_ALLOWED_STATE_PATTERN_BLOCKLIST if token in raw_state), None)
+        invalid_delimiter = next(
+            (
+                token
+                for token in _DEFAULT_ALLOWED_STATE_PATTERN_BLOCKLIST
+                if token in raw_state
+            ),
+            None,
+        )
         if invalid_delimiter is not None:
             issues.append(
                 StateCodingIssue(
@@ -1154,7 +1302,9 @@ def validate_discrete_state_coding(
                 StateCodingIssue(
                     taxon=taxon,
                     raw_state=raw_state,
-                    code="unordered-state-vocabulary" if state_ordering == "ordered" and ordered else "unsupported-state-label",
+                    code="unordered-state-vocabulary"
+                    if state_ordering == "ordered" and ordered
+                    else "unsupported-state-label",
                     message=(
                         "state label is not present in the declared ordered vocabulary"
                         if state_ordering == "ordered" and ordered
@@ -1204,9 +1354,15 @@ def audit_discrete_state_coding(
 ) -> StateCodingAuditReport:
     """Show how raw metadata states become model states or get excluded."""
     tree = load_tree(tree_path)
-    table = load_tsv_summary(traits_path) if taxon_column is None else load_taxon_table(traits_path, taxon_column=taxon_column)
+    table = (
+        load_tsv_summary(traits_path)
+        if taxon_column is None
+        else load_taxon_table(traits_path, taxon_column=taxon_column)
+    )
     if trait not in table.columns:
-        raise AncestralReconstructionError(f"trait table does not contain column '{trait}'")
+        raise AncestralReconstructionError(
+            f"trait table does not contain column '{trait}'"
+        )
     tree_taxa = set(tree.tip_names)
     mapping = dict(coding_map or {})
     ordered = list(ordered_states or [])
@@ -1231,7 +1387,14 @@ def audit_discrete_state_coding(
             )
             continue
         normalized_state = mapping.get(raw_state, raw_state)
-        invalid_delimiter = next((token for token in _DEFAULT_ALLOWED_STATE_PATTERN_BLOCKLIST if token in normalized_state), None)
+        invalid_delimiter = next(
+            (
+                token
+                for token in _DEFAULT_ALLOWED_STATE_PATTERN_BLOCKLIST
+                if token in normalized_state
+            ),
+            None,
+        )
         if not in_tree:
             rows.append(
                 StateCodingAuditRow(
@@ -1266,7 +1429,9 @@ def audit_discrete_state_coding(
                     normalized_state=normalized_state,
                     in_tree=True,
                     included=False,
-                    issue_code="unsupported-state-label" if state_ordering != "ordered" else "unordered-state-vocabulary",
+                    issue_code="unsupported-state-label"
+                    if state_ordering != "ordered"
+                    else "unordered-state-vocabulary",
                     note=(
                         "normalized state is absent from the declared ordered vocabulary"
                         if state_ordering == "ordered" and ordered
@@ -1311,9 +1476,15 @@ def detect_state_imbalance_problems(
 ) -> StateImbalanceReport:
     """Flag rare or degenerate discrete-state inputs over the tree overlap."""
     tree = load_tree(tree_path)
-    table = load_tsv_summary(traits_path) if taxon_column is None else load_taxon_table(traits_path, taxon_column=taxon_column)
+    table = (
+        load_tsv_summary(traits_path)
+        if taxon_column is None
+        else load_taxon_table(traits_path, taxon_column=taxon_column)
+    )
     if trait not in table.columns:
-        raise AncestralReconstructionError(f"trait table does not contain column '{trait}'")
+        raise AncestralReconstructionError(
+            f"trait table does not contain column '{trait}'"
+        )
     tree_taxa = set(tree.tip_names)
     state_counts: dict[str, int] = {}
     for row in table.rows:
@@ -1340,9 +1511,17 @@ def detect_state_imbalance_problems(
                 affected_states=rare_states,
             )
         )
-    dominant_fraction = max(state_counts.values()) / max(sum(state_counts.values()), 1) if state_counts else 0.0
+    dominant_fraction = (
+        max(state_counts.values()) / max(sum(state_counts.values()), 1)
+        if state_counts
+        else 0.0
+    )
     if dominant_fraction >= 0.8 and observed_states:
-        dominant_states = [state for state, count in state_counts.items() if count == max(state_counts.values())]
+        dominant_states = [
+            state
+            for state, count in state_counts.items()
+            if count == max(state_counts.values())
+        ]
         warnings.append(
             StateImbalanceWarning(
                 code="dominant-state-skew",
@@ -1386,7 +1565,9 @@ def run_discrete_state_transition_model(
         ordered_states=ordered_states,
     )
     if not coding.valid:
-        raise AncestralReconstructionError("discrete-state evolution input contains unsupported state labels")
+        raise AncestralReconstructionError(
+            "discrete-state evolution input contains unsupported state labels"
+        )
     imbalance = detect_state_imbalance_problems(
         tree_path,
         traits_path,
@@ -1394,7 +1575,9 @@ def run_discrete_state_transition_model(
         taxon_column=taxon_column,
     )
     if any(warning.code == "single-state-dataset" for warning in imbalance.warnings):
-        raise AncestralReconstructionError("discrete-state evolution requires at least two observed states")
+        raise AncestralReconstructionError(
+            "discrete-state evolution requires at least two observed states"
+        )
     dataset = load_discrete_dataset(
         tree_path,
         traits_path,
@@ -1409,7 +1592,9 @@ def run_discrete_state_transition_model(
     )
     candidate_sets = _fitch_candidate_sets(dataset.tree, dataset.states_by_taxon)
     stationary = _stationary_frequencies(dataset.states_by_taxon, state_order)
-    er_resolved = _resolve_er_states(dataset.tree, candidate_sets, dataset.states_by_taxon, state_order)
+    er_resolved = _resolve_er_states(
+        dataset.tree, candidate_sets, dataset.states_by_taxon, state_order
+    )
     er_events = _transition_events(dataset.tree, er_resolved)
     count_matrix = _build_transition_count_matrix(
         state_order,
@@ -1417,8 +1602,12 @@ def run_discrete_state_transition_model(
         model=model,
         state_ordering=state_ordering,
     )
-    matrix = _fit_transition_matrix(model, state_order, stationary, er_events, state_ordering=state_ordering)
-    root_prior = _root_prior(model, stationary, candidate_sets[node_signature(dataset.tree.root)])
+    matrix = _fit_transition_matrix(
+        model, state_order, stationary, er_events, state_ordering=state_ordering
+    )
+    root_prior = _root_prior(
+        model, stationary, candidate_sets[node_signature(dataset.tree.root)]
+    )
     estimates = _estimate_node_states(
         dataset.tree,
         candidate_sets,
@@ -1428,7 +1617,9 @@ def run_discrete_state_transition_model(
         root_prior,
         state_ordering=state_ordering,
     )
-    resolved_states = {estimate.node: estimate.most_likely_state for estimate in estimates}
+    resolved_states = {
+        estimate.node: estimate.most_likely_state for estimate in estimates
+    }
     events = _transition_events(dataset.tree, resolved_states)
     transition_counts: dict[str, int] = {}
     for event in events:
@@ -1441,7 +1632,9 @@ def run_discrete_state_transition_model(
     )
     branch_count = len(events)
     transition_count = sum(1 for event in events if event.changed)
-    strongly_supported_transition_count = sum(1 for row in support_rows if row.strongly_supported)
+    strongly_supported_transition_count = sum(
+        1 for row in support_rows if row.strongly_supported
+    )
     strongly_supported_transition_counts: dict[str, int] = {}
     for row in support_rows:
         if row.strongly_supported:
@@ -1485,8 +1678,16 @@ def run_discrete_state_transition_model(
         uncertainty=uncertainty,
         root_state_probabilities=_normalize_probabilities(root_prior),
     )
-    transition_model.pseudo_log_likelihood = _pseudo_log_likelihood(estimates, events, transition_model)
-    transition_model.aic = float(format(2.0 * transition_model.parameter_count - 2.0 * transition_model.pseudo_log_likelihood, ".15g"))
+    transition_model.pseudo_log_likelihood = _pseudo_log_likelihood(
+        estimates, events, transition_model
+    )
+    transition_model.aic = float(
+        format(
+            2.0 * transition_model.parameter_count
+            - 2.0 * transition_model.pseudo_log_likelihood,
+            ".15g",
+        )
+    )
     summary = TransitionSummaryReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -1497,14 +1698,18 @@ def run_discrete_state_transition_model(
         transition_count=transition_count,
         strongly_supported_transition_count=strongly_supported_transition_count,
         transition_counts=dict(sorted(transition_counts.items())),
-        strongly_supported_transition_counts=dict(sorted(strongly_supported_transition_counts.items())),
+        strongly_supported_transition_counts=dict(
+            sorted(strongly_supported_transition_counts.items())
+        ),
         support_rows=support_rows,
         events=events,
     )
     warnings = list(dataset.warnings)
     warnings.extend(warning.message for warning in imbalance.warnings)
     if instability.unstable:
-        warnings.append("sparse-state transition estimates may be unstable for one or more source-target paths")
+        warnings.append(
+            "sparse-state transition estimates may be unstable for one or more source-target paths"
+        )
     if dominant_state_bias.biased and dominant_state_bias.message is not None:
         warnings.append(dominant_state_bias.message)
     return DiscreteStateEvolutionReport(
@@ -1554,7 +1759,8 @@ def estimate_ancestral_geographic_states(
     )
     if not readiness.valid:
         raise AncestralReconstructionError(
-            "geographic state analysis is inappropriate: " + "; ".join(readiness.blockers)
+            "geographic state analysis is inappropriate: "
+            + "; ".join(readiness.blockers)
         )
     return run_discrete_state_transition_model(
         tree_path,
@@ -1611,7 +1817,8 @@ def compare_discrete_state_models(
                 descendant_taxa=left_estimate.descendant_taxa,
                 left_state=left_estimate.most_likely_state,
                 right_state=right_estimate.most_likely_state,
-                differs=left_estimate.most_likely_state != right_estimate.most_likely_state,
+                differs=left_estimate.most_likely_state
+                != right_estimate.most_likely_state,
                 left_probabilities=left_estimate.state_probabilities,
                 right_probabilities=right_estimate.state_probabilities,
             )
@@ -1679,14 +1886,27 @@ def simulate_discrete_stochastic_maps(
     estimate_by_node = {estimate.node: estimate for estimate in report.estimates}
     transition_lookup = _row_lookup(report.transition_model.transition_matrix)
     branch_rows = [
-        (index, event.parent_node, event.child_node, next(node for node in tree.iter_nodes() if node_signature(node) == event.child_node))
+        (
+            index,
+            event.parent_node,
+            event.child_node,
+            next(
+                node
+                for node in tree.iter_nodes()
+                if node_signature(node) == event.child_node
+            ),
+        )
         for index, event in enumerate(report.transition_summary.events)
     ]
-    randomizer = random.Random(seed)
+    randomizer = random.Random(seed)  # nosec B311
     maps: list[StochasticMapReplicate] = []
     for replicate_index in range(replicates):
         root_state = _sample_state(
-            next(estimate.state_probabilities for estimate in report.estimates if estimate.node == node_signature(tree.root)),
+            next(
+                estimate.state_probabilities
+                for estimate in report.estimates
+                if estimate.node == node_signature(tree.root)
+            ),
             randomizer,
         )
         node_states = {node_signature(tree.root): root_state}
@@ -1700,11 +1920,17 @@ def simulate_discrete_stochastic_maps(
             start_state = parent_state
             end_state = _sample_state(child_estimate.state_probabilities, randomizer)
             max_event_count = max(1, int(math.ceil(max(branch_length, 0.0) * 2.0)))
-            provisional_event_count = 0 if start_state == end_state else randomizer.randint(1, max_event_count)
+            provisional_event_count = (
+                0
+                if start_state == end_state
+                else randomizer.randint(1, max_event_count)
+            )
             events: list[StochasticMapTransitionEvent] = []
             current_state = start_state
             for _ in range(provisional_event_count):
-                next_state = _sample_transition_target(current_state, transition_lookup, randomizer)
+                next_state = _sample_transition_target(
+                    current_state, transition_lookup, randomizer
+                )
                 if next_state == current_state:
                     continue
                 event = StochasticMapTransitionEvent(
@@ -1838,15 +2064,26 @@ def build_biogeographic_interpretation_report(
         ordered_states=ordered_states,
         coding_map=coding_map,
     )
-    root_estimate = next(estimate for estimate in report.estimates if estimate.node == node_signature(load_tree(tree_path).root))
+    root_estimate = next(
+        estimate
+        for estimate in report.estimates
+        if estimate.node == node_signature(load_tree(tree_path).root)
+    )
     computed_results = [
-        BiogeographicComputedResult(label="root_state", value=root_estimate.most_likely_state),
-        BiogeographicComputedResult(label="transition_count", value=str(report.transition_summary.transition_count)),
+        BiogeographicComputedResult(
+            label="root_state", value=root_estimate.most_likely_state
+        ),
+        BiogeographicComputedResult(
+            label="transition_count",
+            value=str(report.transition_summary.transition_count),
+        ),
         BiogeographicComputedResult(
             label="strongly_supported_transition_count",
             value=str(report.transition_summary.strongly_supported_transition_count),
         ),
-        BiogeographicComputedResult(label="state_count", value=str(len(report.observed_states))),
+        BiogeographicComputedResult(
+            label="state_count", value=str(len(report.observed_states))
+        ),
         BiogeographicComputedResult(label="model", value=report.model),
     ]
     return BiogeographicInterpretationReport(
@@ -1856,14 +2093,18 @@ def build_biogeographic_interpretation_report(
         model=model,
         compare_model=compare_model,
         computed_results=computed_results,
-        model_sensitive_regions=[] if comparison is None else comparison.sensitive_regions,
+        model_sensitive_regions=[]
+        if comparison is None
+        else comparison.sensitive_regions,
         coding_audit_summary={
             "row_count": coding_audit.row_count,
             "included_row_count": coding_audit.included_row_count,
             "excluded_row_count": coding_audit.excluded_row_count,
         },
         readiness_blockers=readiness.blockers,
-        caveats=_build_discrete_evolution_narrative(report, comparison=comparison).caveats,
+        caveats=_build_discrete_evolution_narrative(
+            report, comparison=comparison
+        ).caveats,
         interpretation_guidance=[
             "computed ancestral regions summarize model-conditioned state histories, not direct evidence of dispersal mechanism",
             "biological interpretation should be restricted to patterns that remain stable across supported models and coding assumptions",
@@ -1882,7 +2123,12 @@ def validate_discrete_transition_reference_examples(
             "label": "toy-geography-er",
             "model": "equal-rates",
             "tree_newick": "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);",
-            "trait_rows": [("A", "north"), ("B", "north"), ("C", "south"), ("D", "island")],
+            "trait_rows": [
+                ("A", "north"),
+                ("B", "north"),
+                ("C", "south"),
+                ("D", "island"),
+            ],
             "expected_parameter_count": 1,
             "expected_transition_count": 2,
             "expected_root_state": "north",
@@ -1897,7 +2143,12 @@ def validate_discrete_transition_reference_examples(
             "label": "toy-geography-sym",
             "model": "symmetric",
             "tree_newick": "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);",
-            "trait_rows": [("A", "north"), ("B", "north"), ("C", "south"), ("D", "island")],
+            "trait_rows": [
+                ("A", "north"),
+                ("B", "north"),
+                ("C", "south"),
+                ("D", "island"),
+            ],
             "expected_parameter_count": 3,
             "expected_transition_count": 2,
             "expected_root_state": "north",
@@ -1912,7 +2163,12 @@ def validate_discrete_transition_reference_examples(
             "label": "toy-geography-ard",
             "model": "all-rates-different",
             "tree_newick": "((A:0.1,B:0.1):0.2,(C:0.2,D:0.2):0.1);",
-            "trait_rows": [("A", "north"), ("B", "north"), ("C", "south"), ("D", "island")],
+            "trait_rows": [
+                ("A", "north"),
+                ("B", "north"),
+                ("C", "south"),
+                ("D", "island"),
+            ],
             "expected_parameter_count": 6,
             "expected_transition_count": 2,
             "expected_root_state": "north",
@@ -1952,17 +2208,30 @@ def validate_discrete_transition_reference_examples(
                 target_state=target_state,
                 expected_rate=expected_rate,
                 observed_rate=rate_lookup[(source_state, target_state)],
-                absolute_delta=abs(rate_lookup[(source_state, target_state)] - expected_rate),
+                absolute_delta=abs(
+                    rate_lookup[(source_state, target_state)] - expected_rate
+                ),
             )
-            for (source_state, target_state), expected_rate in sorted(case["expected_rates"].items())
+            for (source_state, target_state), expected_rate in sorted(
+                case["expected_rates"].items()
+            )
         ]
         max_rate_delta = max((row.absolute_delta for row in rate_rows), default=0.0)
-        root_state = next(estimate.most_likely_state for estimate in report.estimates if estimate.node == "A|B|C|D")
+        root_state = next(
+            estimate.most_likely_state
+            for estimate in report.estimates
+            if estimate.node == "A|B|C|D"
+        )
         passed = (
             report.transition_model.parameter_count == case["expected_parameter_count"]
-            and report.transition_summary.transition_count == case["expected_transition_count"]
+            and report.transition_summary.transition_count
+            == case["expected_transition_count"]
             and root_state == case["expected_root_state"]
-            and abs(report.transition_model.pseudo_log_likelihood - case["expected_pseudo_log_likelihood"]) <= tolerance
+            and abs(
+                report.transition_model.pseudo_log_likelihood
+                - case["expected_pseudo_log_likelihood"]
+            )
+            <= tolerance
             and max_rate_delta <= tolerance
         )
         observations.append(
@@ -1975,7 +2244,9 @@ def validate_discrete_transition_reference_examples(
                 observed_transition_count=report.transition_summary.transition_count,
                 expected_root_state=str(case["expected_root_state"]),
                 observed_root_state=root_state,
-                expected_pseudo_log_likelihood=float(case["expected_pseudo_log_likelihood"]),
+                expected_pseudo_log_likelihood=float(
+                    case["expected_pseudo_log_likelihood"]
+                ),
                 observed_pseudo_log_likelihood=report.transition_model.pseudo_log_likelihood,
                 max_rate_delta=max_rate_delta,
                 rate_rows=rate_rows,
@@ -1990,7 +2261,9 @@ def validate_discrete_transition_reference_examples(
     )
 
 
-def write_node_state_probability_table(path: Path, report: DiscreteStateEvolutionReport) -> Path:
+def write_node_state_probability_table(
+    path: Path, report: DiscreteStateEvolutionReport
+) -> Path:
     """Export one deterministic node-probability table for a discrete-state reconstruction."""
     rows = [
         {
@@ -1999,7 +2272,9 @@ def write_node_state_probability_table(path: Path, report: DiscreteStateEvolutio
             "is_tip": str(estimate.is_tip).lower(),
             "descendant_taxa": ",".join(estimate.descendant_taxa),
             "most_likely_state": estimate.most_likely_state,
-            "state_probabilities": json.dumps(estimate.state_probabilities, sort_keys=True),
+            "state_probabilities": json.dumps(
+                estimate.state_probabilities, sort_keys=True
+            ),
             "ambiguous": str(estimate.ambiguous).lower(),
         }
         for estimate in report.estimates
@@ -2019,7 +2294,9 @@ def write_node_state_probability_table(path: Path, report: DiscreteStateEvolutio
     )
 
 
-def write_transition_summary_table(path: Path, report: DiscreteStateEvolutionReport) -> Path:
+def write_transition_summary_table(
+    path: Path, report: DiscreteStateEvolutionReport
+) -> Path:
     """Export one branch-by-branch transition summary table."""
     support_by_branch = {
         (row.parent_node, row.child_node): row
@@ -2033,7 +2310,11 @@ def write_transition_summary_table(path: Path, report: DiscreteStateEvolutionRep
             "target_state": event.target_state,
             "changed": str(event.changed).lower(),
             "support": support_by_branch[(event.parent_node, event.child_node)].support,
-            "strongly_supported": str(support_by_branch[(event.parent_node, event.child_node)].strongly_supported).lower(),
+            "strongly_supported": str(
+                support_by_branch[
+                    (event.parent_node, event.child_node)
+                ].strongly_supported
+            ).lower(),
         }
         for event in report.transition_summary.events
     ]
@@ -2052,7 +2333,9 @@ def write_transition_summary_table(path: Path, report: DiscreteStateEvolutionRep
     )
 
 
-def write_discrete_model_comparison_table(path: Path, report: DiscreteModelComparisonReport) -> Path:
+def write_discrete_model_comparison_table(
+    path: Path, report: DiscreteModelComparisonReport
+) -> Path:
     """Export one node-wise comparison table across two discrete-state models."""
     rows = [
         {
@@ -2061,8 +2344,12 @@ def write_discrete_model_comparison_table(path: Path, report: DiscreteModelCompa
             "left_state": difference.left_state,
             "right_state": difference.right_state,
             "differs": str(difference.differs).lower(),
-            "left_probabilities": json.dumps(difference.left_probabilities, sort_keys=True),
-            "right_probabilities": json.dumps(difference.right_probabilities, sort_keys=True),
+            "left_probabilities": json.dumps(
+                difference.left_probabilities, sort_keys=True
+            ),
+            "right_probabilities": json.dumps(
+                difference.right_probabilities, sort_keys=True
+            ),
         }
         for difference in report.node_differences
     ]
@@ -2081,7 +2368,9 @@ def write_discrete_model_comparison_table(path: Path, report: DiscreteModelCompa
     )
 
 
-def write_stochastic_map_summary_table(path: Path, report: StochasticMapSummaryReport) -> Path:
+def write_stochastic_map_summary_table(
+    path: Path, report: StochasticMapSummaryReport
+) -> Path:
     """Export one transition-by-transition stochastic-map uncertainty table."""
     rows = [
         {
@@ -2110,9 +2399,14 @@ def write_stochastic_map_summary_table(path: Path, report: StochasticMapSummaryR
     )
 
 
-def write_stochastic_map_collection(path: Path, report: StochasticMapCollectionReport) -> Path:
+def write_stochastic_map_collection(
+    path: Path, report: StochasticMapCollectionReport
+) -> Path:
     """Write one stochastic-map collection as JSON."""
-    path.write_text(json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(asdict(report), default=str, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return path
 
 
@@ -2154,8 +2448,12 @@ def load_stochastic_map_collection(path: Path) -> StochasticMapCollectionReport:
     summary = StochasticMapSummaryReport(
         replicate_count=payload["summary"]["replicate_count"],
         mean_total_transition_count=payload["summary"]["mean_total_transition_count"],
-        lower_95_total_transition_count=payload["summary"]["lower_95_total_transition_count"],
-        upper_95_total_transition_count=payload["summary"]["upper_95_total_transition_count"],
+        lower_95_total_transition_count=payload["summary"][
+            "lower_95_total_transition_count"
+        ],
+        upper_95_total_transition_count=payload["summary"][
+            "upper_95_total_transition_count"
+        ],
         rows=[
             StochasticMapSummaryRow(
                 transition=row["transition"],
@@ -2194,10 +2492,9 @@ def render_tree_with_geographic_states(
     layout: str = "phylogram",
 ) -> TreeRenderResult:
     """Render tip and internal discrete states onto a tree SVG."""
-    palette = {
-        state: color
-        for state, color in zip(sorted(report.observed_states), _DEFAULT_STATE_COLORS, strict=False)
-    }
+    palette = dict(
+        zip(sorted(report.observed_states), _DEFAULT_STATE_COLORS, strict=False)
+    )
     internal_annotations = {
         estimate.node: estimate.most_likely_state
         for estimate in report.estimates
@@ -2263,7 +2560,9 @@ def render_discrete_state_evolution_report(
         else None
     )
     render_path = out_path.with_suffix(".svg")
-    render_result = render_tree_with_geographic_states(tree_path, report, out_path=render_path, layout="phylogram")
+    render_result = render_tree_with_geographic_states(
+        tree_path, report, out_path=render_path, layout="phylogram"
+    )
     narrative = _build_discrete_evolution_narrative(report, comparison=comparison)
     interpretation = build_biogeographic_interpretation_report(
         tree_path,
@@ -2277,13 +2576,30 @@ def render_discrete_state_evolution_report(
         ordered_states=ordered_states,
     )
     sections = [
-        ("discrete-state-summary", json.dumps(asdict(narrative), default=str, indent=2, sort_keys=True)),
-        ("discrete-state-evolution", json.dumps(asdict(report), default=str, indent=2, sort_keys=True)),
-        ("biogeographic-interpretation", json.dumps(asdict(interpretation), default=str, indent=2, sort_keys=True)),
-        ("discrete-state-render", json.dumps(asdict(render_result), default=str, indent=2, sort_keys=True)),
+        (
+            "discrete-state-summary",
+            json.dumps(asdict(narrative), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "discrete-state-evolution",
+            json.dumps(asdict(report), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "biogeographic-interpretation",
+            json.dumps(asdict(interpretation), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "discrete-state-render",
+            json.dumps(asdict(render_result), default=str, indent=2, sort_keys=True),
+        ),
     ]
     if comparison is not None:
-        sections.append(("discrete-state-comparison", json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True)))
+        sections.append(
+            (
+                "discrete-state-comparison",
+                json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True),
+            )
+        )
     title = f"Bijux Discrete-State Evolution Report: {trait}"
     machine_manifest = {
         "report_kind": "discrete-state-evolution",
@@ -2296,11 +2612,20 @@ def render_discrete_state_evolution_report(
         "state_ordering": report.state_ordering,
         "ordered_states": report.ordered_states,
         "caveat_count": len(narrative.caveats),
-        "interpretation_sections": ["computed_results", "caveats", "interpretation_guidance"],
+        "interpretation_sections": [
+            "computed_results",
+            "caveats",
+            "interpretation_guidance",
+        ],
         "rendered_tree": str(render_path),
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return DiscreteEvolutionReportBuildResult(
         output_path=out_path,
         report_kind="discrete-state-evolution",

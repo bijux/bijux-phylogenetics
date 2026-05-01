@@ -9,7 +9,6 @@ import re
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode, normalize_taxon_key
 from bijux_phylogenetics.errors import MetadataJoinError
 
-
 _SAMPLE_TOKENS = ("sample", "specimen", "individual", "indiv", "voucher")
 _ISOLATE_TOKENS = ("isolate", "strain", "clone", "cultivar", "lineage")
 _ACCESSION_PATTERNS = (
@@ -271,7 +270,9 @@ def _detect_delimiter(path: Path) -> tuple[str, str]:
         return ",", "csv"
     if suffix == ".tsv":
         return "\t", "tsv"
-    header_line = path.read_text(encoding="utf-8").splitlines()[0] if path.exists() else ""
+    header_line = (
+        path.read_text(encoding="utf-8").splitlines()[0] if path.exists() else ""
+    )
     if "\t" in header_line:
         return "\t", "tsv"
     return ",", "csv"
@@ -330,14 +331,19 @@ def _levenshtein_distance(left: str, right: str) -> int:
         for right_index, right_char in enumerate(right, start=1):
             insert_cost = current[right_index - 1] + 1
             delete_cost = previous[right_index] + 1
-            substitute_cost = previous[right_index - 1] + (0 if left_char == right_char else 1)
+            substitute_cost = previous[right_index - 1] + (
+                0 if left_char == right_char else 1
+            )
             current.append(min(insert_cost, delete_cost, substitute_cost))
         previous = current
     return previous[-1]
 
 
 def _sorted_pairs(pairs: set[tuple[str, str]]) -> list[TaxonLabelPair]:
-    return [TaxonLabelPair(left_label=left, right_label=right) for left, right in sorted(pairs)]
+    return [
+        TaxonLabelPair(left_label=left, right_label=right)
+        for left, right in sorted(pairs)
+    ]
 
 
 def inspect_tree_taxon_identity(tree: PhyloTree) -> TaxonIdentityAudit:
@@ -373,9 +379,15 @@ def inspect_tree_taxon_identity(tree: PhyloTree) -> TaxonIdentityAudit:
         for index, left in enumerate(ordered):
             for right in ordered[index + 1 :]:
                 if left != right:
-                    if " ".join(left.split()).lower() == " ".join(right.split()).lower():
+                    if (
+                        " ".join(left.split()).lower()
+                        == " ".join(right.split()).lower()
+                    ):
                         whitespace_variants.add((left, right))
-                    if left.replace("_", " ").casefold() == right.replace("_", " ").casefold():
+                    if (
+                        left.replace("_", " ").casefold()
+                        == right.replace("_", " ").casefold()
+                    ):
                         underscore_space_collisions.add((left, right))
 
     for grouped in by_casefold.values():
@@ -431,7 +443,9 @@ def inspect_tree_taxa_safety(tree: PhyloTree, *, policy: str) -> TaxonSafetyRepo
         if len(set(raw_labels)) > 1
     ]
 
-    collision_labels = {label for collision in collisions for label in collision.raw_labels}
+    collision_labels = {
+        label for collision in collisions for label in collision.raw_labels
+    }
     if collision_labels:
         augmented_unsafe_taxa: list[UnsafeTaxonName] = []
         for entry in unsafe_taxa:
@@ -487,10 +501,18 @@ def load_taxon_synonym_rows(path: Path) -> list[TaxonSynonymRow]:
         if not reader.fieldnames:
             raise MetadataJoinError(f"synonym table has no header row: {path}")
         columns = [column.strip() for column in reader.fieldnames]
-        raw_column = _resolve_column(columns, ("raw_label", "synonym", "label", "taxon"))
-        accepted_column = _resolve_column(columns, ("accepted_label", "accepted_name", "accepted", "canonical_label"))
-        provenance_column = _resolve_column(columns, ("provenance", "source", "authority_source", "note"))
-        authority_column = _resolve_column(columns, ("authority", "namespace", "catalog"))
+        raw_column = _resolve_column(
+            columns, ("raw_label", "synonym", "label", "taxon")
+        )
+        accepted_column = _resolve_column(
+            columns, ("accepted_label", "accepted_name", "accepted", "canonical_label")
+        )
+        provenance_column = _resolve_column(
+            columns, ("provenance", "source", "authority_source", "note")
+        )
+        authority_column = _resolve_column(
+            columns, ("authority", "namespace", "catalog")
+        )
         if raw_column is None or accepted_column is None:
             raise MetadataJoinError(
                 "synonym table must contain raw_label/synonym and accepted_label/accepted_name columns"
@@ -507,43 +529,57 @@ def load_taxon_synonym_rows(path: Path) -> list[TaxonSynonymRow]:
                 TaxonSynonymRow(
                     raw_label=raw_label,
                     accepted_label=accepted_label,
-                    provenance="" if provenance_column is None else str(row.get(provenance_column, "")).strip(),
-                    authority=None if authority_column is None else (str(row.get(authority_column, "")).strip() or None),
+                    provenance=""
+                    if provenance_column is None
+                    else str(row.get(provenance_column, "")).strip(),
+                    authority=None
+                    if authority_column is None
+                    else (str(row.get(authority_column, "")).strip() or None),
                 )
             )
     return rows
 
 
-def _group_synonym_rows(rows: list[TaxonSynonymRow]) -> tuple[dict[str, list[TaxonSynonymRow]], list[AmbiguousSynonymMapping]]:
+def _group_synonym_rows(
+    rows: list[TaxonSynonymRow],
+) -> tuple[dict[str, list[TaxonSynonymRow]], list[AmbiguousSynonymMapping]]:
     grouped: dict[str, list[TaxonSynonymRow]] = defaultdict(list)
     ambiguous: list[AmbiguousSynonymMapping] = []
     for row in rows:
         grouped[_canonical_taxon_key(row.raw_label)].append(row)
-    for key, grouped_rows in sorted(grouped.items()):
+    for _key, grouped_rows in sorted(grouped.items()):
         accepted_labels = sorted({row.accepted_label for row in grouped_rows})
         if len(accepted_labels) > 1:
             ambiguous.append(
                 AmbiguousSynonymMapping(
                     raw_label=min((row.raw_label for row in grouped_rows), key=len),
                     accepted_labels=accepted_labels,
-                    provenances=sorted({row.provenance for row in grouped_rows if row.provenance}),
+                    provenances=sorted(
+                        {row.provenance for row in grouped_rows if row.provenance}
+                    ),
                 )
             )
     return grouped, ambiguous
 
 
-def audit_tree_taxon_synonyms(tree: PhyloTree, synonym_table_path: Path) -> TaxonSynonymAudit:
+def audit_tree_taxon_synonyms(
+    tree: PhyloTree, synonym_table_path: Path
+) -> TaxonSynonymAudit:
     """Audit tree tips against a configurable synonym table."""
     synonym_rows = load_taxon_synonym_rows(synonym_table_path)
     grouped_rows, ambiguous_mappings = _group_synonym_rows(synonym_rows)
-    ambiguous_keys = {_canonical_taxon_key(entry.raw_label) for entry in ambiguous_mappings}
+    ambiguous_keys = {
+        _canonical_taxon_key(entry.raw_label) for entry in ambiguous_mappings
+    }
     candidates: list[SynonymCandidate] = []
     for label in sorted(tree.tip_names):
         rows = grouped_rows.get(_canonical_taxon_key(label), [])
         if not rows or _canonical_taxon_key(label) in ambiguous_keys:
             continue
         row = rows[0]
-        if _canonical_taxon_key(row.raw_label) == _canonical_taxon_key(row.accepted_label):
+        if _canonical_taxon_key(row.raw_label) == _canonical_taxon_key(
+            row.accepted_label
+        ):
             continue
         candidates.append(
             SynonymCandidate(
@@ -555,9 +591,13 @@ def audit_tree_taxon_synonyms(tree: PhyloTree, synonym_table_path: Path) -> Taxo
         )
     warnings: list[str] = []
     if ambiguous_mappings:
-        warnings.append("synonym table contains one or more raw labels that map to multiple accepted taxa")
+        warnings.append(
+            "synonym table contains one or more raw labels that map to multiple accepted taxa"
+        )
     if candidates:
-        warnings.append("tree contains one or more labels with configured synonym candidates")
+        warnings.append(
+            "tree contains one or more labels with configured synonym candidates"
+        )
     return TaxonSynonymAudit(
         synonym_table_path=synonym_table_path,
         candidates=candidates,
@@ -615,7 +655,9 @@ def resolve_tree_taxon_synonyms(
         raise ValueError(f"unsupported synonym-resolution policy: {resolution_policy}")
     synonym_rows = load_taxon_synonym_rows(synonym_table_path)
     grouped_rows, ambiguous_mappings = _group_synonym_rows(synonym_rows)
-    ambiguous_keys = {_canonical_taxon_key(entry.raw_label) for entry in ambiguous_mappings}
+    ambiguous_keys = {
+        _canonical_taxon_key(entry.raw_label) for entry in ambiguous_mappings
+    }
     renames: list[TaxonSynonymResolutionRow] = []
     resolved_tree = PhyloTree(
         root=_resolve_node_synonyms(
@@ -640,15 +682,21 @@ def resolve_tree_taxon_synonyms(
     ]
     warnings: list[str] = []
     if ambiguous_mappings:
-        warnings.append("one or more synonym rows were left unresolved because they map to multiple accepted taxa")
+        warnings.append(
+            "one or more synonym rows were left unresolved because they map to multiple accepted taxa"
+        )
     if duplicate_resolved_labels:
-        warnings.append("synonym resolution collapses two or more tree tips to the same accepted label")
+        warnings.append(
+            "synonym resolution collapses two or more tree tips to the same accepted label"
+        )
     renamed_labels = {row.raw_label for row in renames}
     return resolved_tree, TaxonSynonymResolutionReport(
         synonym_table_path=synonym_table_path,
         resolution_policy=resolution_policy,
         renamed_taxa=sorted(renames, key=lambda row: row.raw_label),
-        unchanged_taxa=sorted(label for label in tree.tip_names if label not in renamed_labels),
+        unchanged_taxa=sorted(
+            label for label in tree.tip_names if label not in renamed_labels
+        ),
         ambiguous_mappings=ambiguous_mappings,
         duplicate_resolved_labels=duplicate_resolved_labels,
         warnings=warnings,
@@ -678,7 +726,9 @@ def infer_taxon_namespace(label: str) -> TaxonNamespaceAssignment:
             namespace="isolate_id",
             evidence="label contains isolate or strain-like tokens",
         )
-    if any(token in lowered for token in _SAMPLE_TOKENS) or re.fullmatch(r"[A-Za-z]+[-_]\d{2,}", normalized):
+    if any(token in lowered for token in _SAMPLE_TOKENS) or re.fullmatch(
+        r"[A-Za-z]+[-_]\d{2,}", normalized
+    ):
         return TaxonNamespaceAssignment(
             label=label,
             namespace="sample_id",
@@ -693,16 +743,35 @@ def infer_taxon_namespace(label: str) -> TaxonNamespaceAssignment:
 
 def inspect_tree_taxon_namespaces(tree: PhyloTree) -> TaxonNamespaceReport:
     """Audit tree tips for namespace consistency and mixed identifier styles."""
-    assignments = sorted((infer_taxon_namespace(label) for label in tree.tip_names), key=lambda row: row.label)
-    namespace_counts = dict(sorted(Counter(row.namespace for row in assignments).items()))
-    explicit_namespaces = {namespace for namespace in namespace_counts if namespace != "user_defined_label"}
+    assignments = sorted(
+        (infer_taxon_namespace(label) for label in tree.tip_names),
+        key=lambda row: row.label,
+    )
+    namespace_counts = dict(
+        sorted(Counter(row.namespace for row in assignments).items())
+    )
+    explicit_namespaces = {
+        namespace for namespace in namespace_counts if namespace != "user_defined_label"
+    }
     mixed_namespaces = len(explicit_namespaces) > 1
     warnings: list[str] = []
     if mixed_namespaces:
-        warnings.append("tree mixes multiple explicit taxon namespaces without an explicit mapping layer")
-    if explicit_namespaces and "user_defined_label" in namespace_counts and len(namespace_counts) > 1:
-        warnings.append("tree mixes structured namespaces with arbitrary user-defined labels")
-    dominant_namespace = None if not namespace_counts else max(namespace_counts.items(), key=lambda item: (item[1], item[0]))[0]
+        warnings.append(
+            "tree mixes multiple explicit taxon namespaces without an explicit mapping layer"
+        )
+    if (
+        explicit_namespaces
+        and "user_defined_label" in namespace_counts
+        and len(namespace_counts) > 1
+    ):
+        warnings.append(
+            "tree mixes structured namespaces with arbitrary user-defined labels"
+        )
+    dominant_namespace = (
+        None
+        if not namespace_counts
+        else max(namespace_counts.items(), key=lambda item: (item[1], item[0]))[0]
+    )
     return TaxonNamespaceReport(
         assignments=assignments,
         namespace_counts=namespace_counts,
@@ -718,9 +787,13 @@ def infer_taxon_rank(label: str) -> TaxonRankAssignment:
     normalized = label.strip()
     lowered = normalized.lower()
     if namespace.namespace == "accession_id":
-        return TaxonRankAssignment(label=label, inferred_rank="accession", evidence=namespace.evidence)
+        return TaxonRankAssignment(
+            label=label, inferred_rank="accession", evidence=namespace.evidence
+        )
     if namespace.namespace in {"sample_id", "isolate_id"}:
-        return TaxonRankAssignment(label=label, inferred_rank="sample", evidence=namespace.evidence)
+        return TaxonRankAssignment(
+            label=label, inferred_rank="sample", evidence=namespace.evidence
+        )
     if _SPECIES_NAME_PATTERN.fullmatch(normalized):
         return TaxonRankAssignment(
             label=label,
@@ -748,16 +821,28 @@ def infer_taxon_rank(label: str) -> TaxonRankAssignment:
 
 def inspect_tree_taxon_rank_consistency(tree: PhyloTree) -> TaxonRankConsistencyReport:
     """Flag datasets that mix species, genus, accession, sample, or population-level labels."""
-    assignments = sorted((infer_taxon_rank(label) for label in tree.tip_names), key=lambda row: row.label)
-    rank_counts = dict(sorted(Counter(row.inferred_rank for row in assignments).items()))
+    assignments = sorted(
+        (infer_taxon_rank(label) for label in tree.tip_names), key=lambda row: row.label
+    )
+    rank_counts = dict(
+        sorted(Counter(row.inferred_rank for row in assignments).items())
+    )
     explicit_ranks = {rank for rank in rank_counts if rank != "unknown"}
     mixed_ranks = len(explicit_ranks) > 1
     warnings: list[str] = []
     if mixed_ranks:
-        warnings.append("tree mixes multiple biological naming levels without an explicit crosswalk")
+        warnings.append(
+            "tree mixes multiple biological naming levels without an explicit crosswalk"
+        )
     if explicit_ranks and "unknown" in rank_counts and len(rank_counts) > 1:
-        warnings.append("tree mixes interpretable biological ranks with labels of unknown rank semantics")
-    dominant_rank = None if not rank_counts else max(rank_counts.items(), key=lambda item: (item[1], item[0]))[0]
+        warnings.append(
+            "tree mixes interpretable biological ranks with labels of unknown rank semantics"
+        )
+    dominant_rank = (
+        None
+        if not rank_counts
+        else max(rank_counts.items(), key=lambda item: (item[1], item[0]))[0]
+    )
     return TaxonRankConsistencyReport(
         assignments=assignments,
         rank_counts=rank_counts,
@@ -767,11 +852,15 @@ def inspect_tree_taxon_rank_consistency(tree: PhyloTree) -> TaxonRankConsistency
     )
 
 
-def export_tree_accepted_names(tree: PhyloTree, synonym_table_path: Path) -> AcceptedNameExport:
+def export_tree_accepted_names(
+    tree: PhyloTree, synonym_table_path: Path
+) -> AcceptedNameExport:
     """Export raw tree labels to accepted names with explicit resolution status."""
     synonym_rows = load_taxon_synonym_rows(synonym_table_path)
     grouped_rows, ambiguous_mappings = _group_synonym_rows(synonym_rows)
-    ambiguous_by_key = {_canonical_taxon_key(entry.raw_label): entry for entry in ambiguous_mappings}
+    ambiguous_by_key = {
+        _canonical_taxon_key(entry.raw_label): entry for entry in ambiguous_mappings
+    }
     rows: list[AcceptedNameRow] = []
     for label in sorted(tree.tip_names):
         key = _canonical_taxon_key(label)
@@ -806,7 +895,8 @@ def export_tree_accepted_names(tree: PhyloTree, synonym_table_path: Path) -> Acc
                 accepted_label=candidate.accepted_label,
                 status=(
                     "resolved"
-                    if _canonical_taxon_key(label) != _canonical_taxon_key(candidate.accepted_label)
+                    if _canonical_taxon_key(label)
+                    != _canonical_taxon_key(candidate.accepted_label)
                     else "already_accepted"
                 ),
                 provenance=candidate.provenance,
@@ -815,8 +905,12 @@ def export_tree_accepted_names(tree: PhyloTree, synonym_table_path: Path) -> Acc
         )
     warnings: list[str] = []
     if ambiguous_mappings:
-        warnings.append("accepted-name export includes ambiguous synonym rows that require manual review")
-    return AcceptedNameExport(synonym_table_path=synonym_table_path, rows=rows, warnings=warnings)
+        warnings.append(
+            "accepted-name export includes ambiguous synonym rows that require manual review"
+        )
+    return AcceptedNameExport(
+        synonym_table_path=synonym_table_path, rows=rows, warnings=warnings
+    )
 
 
 def detect_duplicate_biological_identities(
@@ -830,7 +924,9 @@ def detect_duplicate_biological_identities(
     for pair in identity.whitespace_variants:
         candidates.add((pair.left_label, pair.right_label, "whitespace_variant", None))
     for pair in identity.underscore_space_collisions:
-        candidates.add((pair.left_label, pair.right_label, "underscore_space_collision", None))
+        candidates.add(
+            (pair.left_label, pair.right_label, "underscore_space_collision", None)
+        )
     for pair in identity.case_collisions:
         candidates.add((pair.left_label, pair.right_label, "case_collision", None))
     for pair in identity.suspicious_near_duplicates:
@@ -849,11 +945,15 @@ def detect_duplicate_biological_identities(
             if len(unique_raw) < 2:
                 continue
             accepted_label = next(
-                row.accepted_label for row in accepted.rows if _canonical_taxon_key(row.accepted_label) == accepted_key
+                row.accepted_label
+                for row in accepted.rows
+                if _canonical_taxon_key(row.accepted_label) == accepted_key
             )
             for index, left in enumerate(unique_raw):
                 for right in unique_raw[index + 1 :]:
-                    candidates.add((left, right, "shared_accepted_name", accepted_label))
+                    candidates.add(
+                        (left, right, "shared_accepted_name", accepted_label)
+                    )
         warnings.extend(accepted.warnings)
 
     ordered = [
@@ -866,8 +966,12 @@ def detect_duplicate_biological_identities(
         for left, right, evidence, accepted_label in sorted(candidates)
     ]
     if ordered:
-        warnings.append("tree contains labels that may represent duplicate biological identities")
-    return DuplicateBiologicalIdentityReport(candidates=ordered, warnings=sorted(dict.fromkeys(warnings)))
+        warnings.append(
+            "tree contains labels that may represent duplicate biological identities"
+        )
+    return DuplicateBiologicalIdentityReport(
+        candidates=ordered, warnings=sorted(dict.fromkeys(warnings))
+    )
 
 
 def build_taxon_mapping_conflict_report(
@@ -922,7 +1026,9 @@ def build_taxon_mapping_conflict_report(
             if len(unique_raw) < 2:
                 continue
             accepted_label = next(
-                row.accepted_label for row in accepted.rows if _canonical_taxon_key(row.accepted_label) == accepted_key
+                row.accepted_label
+                for row in accepted.rows
+                if _canonical_taxon_key(row.accepted_label) == accepted_key
             )
             rows.append(
                 TaxonMappingConflictRow(
@@ -935,8 +1041,12 @@ def build_taxon_mapping_conflict_report(
         warnings.extend(synonym_audit.warnings)
 
     if rows:
-        warnings.append("one or more taxon mapping conflicts require reviewer attention")
-    return TaxonMappingConflictReport(rows=rows, warnings=sorted(dict.fromkeys(warnings)))
+        warnings.append(
+            "one or more taxon mapping conflicts require reviewer attention"
+        )
+    return TaxonMappingConflictReport(
+        rows=rows, warnings=sorted(dict.fromkeys(warnings))
+    )
 
 
 def build_taxon_audit_report(
@@ -949,10 +1059,22 @@ def build_taxon_audit_report(
     safety = inspect_tree_taxa_safety(tree, policy="spaces-to-underscores")
     namespace_report = inspect_tree_taxon_namespaces(tree)
     rank_consistency = inspect_tree_taxon_rank_consistency(tree)
-    synonym_audit = None if synonym_table_path is None else audit_tree_taxon_synonyms(tree, synonym_table_path)
-    duplicate_identities = detect_duplicate_biological_identities(tree, synonym_table_path=synonym_table_path)
-    mapping_conflicts = build_taxon_mapping_conflict_report(tree, synonym_table_path=synonym_table_path)
-    accepted_name_export = None if synonym_table_path is None else export_tree_accepted_names(tree, synonym_table_path)
+    synonym_audit = (
+        None
+        if synonym_table_path is None
+        else audit_tree_taxon_synonyms(tree, synonym_table_path)
+    )
+    duplicate_identities = detect_duplicate_biological_identities(
+        tree, synonym_table_path=synonym_table_path
+    )
+    mapping_conflicts = build_taxon_mapping_conflict_report(
+        tree, synonym_table_path=synonym_table_path
+    )
+    accepted_name_export = (
+        None
+        if synonym_table_path is None
+        else export_tree_accepted_names(tree, synonym_table_path)
+    )
 
     summary: list[str] = []
     warnings = (
@@ -962,21 +1084,39 @@ def build_taxon_audit_report(
         + list(mapping_conflicts.warnings)
     )
     if safety.unsafe_taxa:
-        warnings.append("one or more taxon labels are unsafe for downstream external engines")
-        summary.append(f"{len(safety.unsafe_taxa)} labels need downstream-safe normalization or quoting")
+        warnings.append(
+            "one or more taxon labels are unsafe for downstream external engines"
+        )
+        summary.append(
+            f"{len(safety.unsafe_taxa)} labels need downstream-safe normalization or quoting"
+        )
     if namespace_report.mixed_namespaces:
-        summary.append("tree mixes explicit taxon namespaces and needs a crosswalk before automation")
+        summary.append(
+            "tree mixes explicit taxon namespaces and needs a crosswalk before automation"
+        )
     if rank_consistency.mixed_ranks:
-        summary.append("tree mixes biological naming levels and should not be treated as one uniform taxon namespace")
+        summary.append(
+            "tree mixes biological naming levels and should not be treated as one uniform taxon namespace"
+        )
     if mapping_conflicts.rows:
-        summary.append(f"{len(mapping_conflicts.rows)} mapping conflicts need manual review")
+        summary.append(
+            f"{len(mapping_conflicts.rows)} mapping conflicts need manual review"
+        )
     if duplicate_identities.candidates:
-        summary.append(f"{len(duplicate_identities.candidates)} duplicate-identity candidates were detected")
+        summary.append(
+            f"{len(duplicate_identities.candidates)} duplicate-identity candidates were detected"
+        )
     if synonym_audit is not None and synonym_audit.candidates:
-        summary.append(f"{len(synonym_audit.candidates)} labels have accepted-name synonym candidates")
+        summary.append(
+            f"{len(synonym_audit.candidates)} labels have accepted-name synonym candidates"
+        )
 
     status = "ready"
-    if namespace_report.mixed_namespaces or rank_consistency.mixed_ranks or mapping_conflicts.rows:
+    if (
+        namespace_report.mixed_namespaces
+        or rank_consistency.mixed_ranks
+        or mapping_conflicts.rows
+    ):
         status = "needs_review"
     if safety.collisions:
         status = "blocked"
@@ -997,20 +1137,29 @@ def build_taxon_audit_report(
     )
 
 
-def _normalize_node(node: TreeNode, *, policy: str, renames: list[TaxonRename]) -> TreeNode:
+def _normalize_node(
+    node: TreeNode, *, policy: str, renames: list[TaxonRename]
+) -> TreeNode:
     normalized_name = node.name
     if node.name is not None:
         normalized_name = _normalize_label(node.name, policy=policy)
         if normalized_name != node.name:
-            renames.append(TaxonRename(raw_label=node.name, normalized_label=normalized_name))
+            renames.append(
+                TaxonRename(raw_label=node.name, normalized_label=normalized_name)
+            )
     return TreeNode(
         name=normalized_name,
         branch_length=node.branch_length,
-        children=[_normalize_node(child, policy=policy, renames=renames) for child in node.children],
+        children=[
+            _normalize_node(child, policy=policy, renames=renames)
+            for child in node.children
+        ],
     )
 
 
-def normalize_tree_taxa(tree: PhyloTree, *, policy: str) -> tuple[PhyloTree, TaxonNormalizationReport]:
+def normalize_tree_taxa(
+    tree: PhyloTree, *, policy: str
+) -> tuple[PhyloTree, TaxonNormalizationReport]:
     """Apply an explicit taxon normalization policy to a tree."""
     renames: list[TaxonRename] = []
     normalized_tree = PhyloTree(
@@ -1018,7 +1167,9 @@ def normalize_tree_taxa(tree: PhyloTree, *, policy: str) -> tuple[PhyloTree, Tax
         source_format=tree.source_format,
         rooted=tree.rooted,
     )
-    return normalized_tree, TaxonNormalizationReport(policy=policy, renamed_taxa=renames)
+    return normalized_tree, TaxonNormalizationReport(
+        policy=policy, renamed_taxa=renames
+    )
 
 
 def write_taxon_mapping(path: Path, renames: list[TaxonRename]) -> Path:
@@ -1030,7 +1181,9 @@ def write_taxon_mapping(path: Path, renames: list[TaxonRename]) -> Path:
     return path
 
 
-def write_synonym_resolution_mapping(path: Path, report: TaxonSynonymResolutionReport) -> Path:
+def write_synonym_resolution_mapping(
+    path: Path, report: TaxonSynonymResolutionReport
+) -> Path:
     """Write a TSV mapping file for synonym resolution with provenance."""
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = ["raw_label\tresolved_label\taccepted_label\tprovenance\tauthority"]

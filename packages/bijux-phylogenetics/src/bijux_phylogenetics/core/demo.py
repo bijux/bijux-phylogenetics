@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-import shutil
 from dataclasses import dataclass
 from pathlib import Path
+import shutil
 
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.evidence.bundles import bundle_directory
-from bijux_phylogenetics.reports.service import render_dataset_report, render_phylo_inputs_report, render_tree_report
+from bijux_phylogenetics.reports.service import (
+    render_dataset_report,
+    render_phylo_inputs_report,
+    render_tree_report,
+)
 
 
 @dataclass(slots=True)
@@ -75,7 +79,9 @@ def run_capability_demo(output_root: Path) -> DemoRunResult:
     report_root.mkdir(parents=True, exist_ok=True)
     inputs = _copy_demo_inputs(input_root)
 
-    tree_report = render_tree_report(tree_path=inputs["tree"], out_path=report_root / "tree-report.html").output_path
+    tree_report = render_tree_report(
+        tree_path=inputs["tree"], out_path=report_root / "tree-report.html"
+    ).output_path
     dataset_report = render_dataset_report(
         tree_path=inputs["tree"],
         metadata_path=inputs["metadata"],
@@ -92,7 +98,9 @@ def run_capability_demo(output_root: Path) -> DemoRunResult:
         inputs["alt_tree"],
         out_path=report_root / "comparison-report.html",
     ).output_path
-    evidence_bundle = bundle_directory([input_root], [report_root], output_root / "evidence-pack").output_root
+    evidence_bundle = bundle_directory(
+        [input_root], [report_root], output_root / "evidence-pack"
+    ).output_root
     capability_summary = _write_capability_summary(
         output_root / "capability-summary.md",
         DemoRunResult(

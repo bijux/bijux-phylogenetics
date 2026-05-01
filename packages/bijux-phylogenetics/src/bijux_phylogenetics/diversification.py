@@ -8,7 +8,10 @@ from pathlib import Path
 from bijux_phylogenetics.ancestral.common import node_signature
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.diagnostics.validation import inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.diagnostics.validation import (
+    inspect_tree_path,
+    validate_tree_path,
+)
 from bijux_phylogenetics.errors import DiversificationAnalysisError
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.html import write_html_report
@@ -178,9 +181,13 @@ def _node_depths(tree: PhyloTree) -> dict[str, float]:
 
 
 def _root_age(tree: PhyloTree) -> float:
-    distances = [distance for _tip, distance in tree.root_to_tip_pairs() if distance is not None]
+    distances = [
+        distance for _tip, distance in tree.root_to_tip_pairs() if distance is not None
+    ]
     if not distances:
-        raise DiversificationAnalysisError("diversification analysis requires complete root-to-tip distances")
+        raise DiversificationAnalysisError(
+            "diversification analysis requires complete root-to-tip distances"
+        )
     return float(format(max(distances), ".15g"))
 
 
@@ -203,7 +210,9 @@ def _resolve_sampling_column(columns: list[str], requested: str | None) -> str |
     return next((column for column in _SAMPLING_COLUMNS if column in columns), None)
 
 
-def _lineages_at_time(report: LineageThroughTimeReport, time_before_present: float) -> int:
+def _lineages_at_time(
+    report: LineageThroughTimeReport, time_before_present: float
+) -> int:
     current = report.points[0].lineage_count
     for point in report.points[1:]:
         if point.time_before_present < time_before_present:
@@ -212,11 +221,16 @@ def _lineages_at_time(report: LineageThroughTimeReport, time_before_present: flo
     return current
 
 
-def _interval_log_likelihood(tree: PhyloTree, *, birth_rate: float, death_rate: float, relative_extinction: float) -> float:
+def _interval_log_likelihood(
+    tree: PhyloTree, *, birth_rate: float, death_rate: float, relative_extinction: float
+) -> float:
     root_age = _root_age(tree)
     depths = _node_depths(tree)
     event_rows = [
-        (float(format(root_age - depths[node_signature(node)], ".15g")), max(len(node.children) - 1, 0))
+        (
+            float(format(root_age - depths[node_signature(node)], ".15g")),
+            max(len(node.children) - 1, 0),
+        )
         for node in tree.iter_nodes()
         if node is not tree.root and not node.is_leaf()
     ]
@@ -224,12 +238,16 @@ def _interval_log_likelihood(tree: PhyloTree, *, birth_rate: float, death_rate: 
     lineage_count = max(len(tree.root.children), 1)
     previous_age = root_age
     log_likelihood = 0.0
-    effective_birth = max(birth_rate * max(1.0 - (relative_extinction / 2.0), 1e-9), 1e-9)
+    effective_birth = max(
+        birth_rate * max(1.0 - (relative_extinction / 2.0), 1e-9), 1e-9
+    )
     turnover = max(birth_rate + death_rate, 1e-9)
     for event_age, gained_lineages in event_rows:
         interval = previous_age - event_age
         event_rate = max(lineage_count * effective_birth, 1e-9)
-        log_likelihood += (gained_lineages * math.log(event_rate)) - (lineage_count * turnover * interval)
+        log_likelihood += (gained_lineages * math.log(event_rate)) - (
+            lineage_count * turnover * interval
+        )
         lineage_count += gained_lineages
         previous_age = event_age
     log_likelihood -= lineage_count * turnover * previous_age
@@ -240,7 +258,9 @@ def _node_age(tree: PhyloTree, depths: dict[str, float], node: TreeNode) -> floa
     return float(format(_root_age(tree) - depths[node_signature(node)], ".15g"))
 
 
-def _find_smallest_covering_node(tree: PhyloTree, taxa: set[str]) -> tuple[TreeNode, list[str]]:
+def _find_smallest_covering_node(
+    tree: PhyloTree, taxa: set[str]
+) -> tuple[TreeNode, list[str]]:
     best_node = tree.root
     best_taxa = _descendant_taxa(tree.root)
     for node in tree.iter_nodes():
@@ -260,7 +280,9 @@ def validate_time_tree_for_diversification(tree_path: Path) -> TimeTreeValidatio
         require_ultrametric=True,
     )
     if validation.branch_length_status != "complete":
-        raise DiversificationAnalysisError("diversification analysis requires complete branch lengths")
+        raise DiversificationAnalysisError(
+            "diversification analysis requires complete branch lengths"
+        )
     tree = load_tree(tree_path)
     root_age = _root_age(tree)
     return TimeTreeValidationReport(
@@ -327,7 +349,9 @@ def compute_lineage_through_time_curve(tree_path: Path) -> LineageThroughTimeRep
     )
 
 
-def write_lineage_through_time_table(path: Path, report: LineageThroughTimeReport) -> Path:
+def write_lineage_through_time_table(
+    path: Path, report: LineageThroughTimeReport
+) -> Path:
     """Export a lineage-through-time curve as a deterministic table."""
     rows = [
         {
@@ -349,11 +373,17 @@ def inspect_diversification_time_tree(tree_path: Path) -> TimeTreeValidationRepo
     """Inspect time-tree readiness with explicit diversification semantics."""
     inspection = inspect_tree_path(tree_path)
     if inspection.branch_length_status != "complete":
-        raise DiversificationAnalysisError("diversification analysis requires complete branch lengths")
+        raise DiversificationAnalysisError(
+            "diversification analysis requires complete branch lengths"
+        )
     if not inspection.rooted:
-        raise DiversificationAnalysisError("diversification analysis requires a rooted tree")
+        raise DiversificationAnalysisError(
+            "diversification analysis requires a rooted tree"
+        )
     if inspection.is_ultrametric is not True:
-        raise DiversificationAnalysisError("diversification analysis requires an ultrametric time tree")
+        raise DiversificationAnalysisError(
+            "diversification analysis requires an ultrametric time tree"
+        )
     tree = load_tree(tree_path)
     return TimeTreeValidationReport(
         tree_path=tree_path,
@@ -443,9 +473,13 @@ def detect_incomplete_taxon_sampling_metadata(
     if missing_taxa:
         warnings.append("sampling metadata does not cover every tree tip")
     if invalid_rows:
-        warnings.append("one or more sampling fractions are missing, invalid, or out of range")
+        warnings.append(
+            "one or more sampling fractions are missing, invalid, or out of range"
+        )
     if heterogeneous_values:
-        warnings.append("sampling fractions vary across taxa; mean sampling fraction will be used when correction is applied")
+        warnings.append(
+            "sampling fractions vary across taxa; mean sampling fraction will be used when correction is applied"
+        )
     return SamplingFractionReport(
         tree_path=tree_path,
         metadata_path=metadata_path,
@@ -455,7 +489,9 @@ def detect_incomplete_taxon_sampling_metadata(
         matched_taxa=matched_taxa,
         missing_taxa=missing_taxa,
         invalid_rows=invalid_rows,
-        sampling_fraction=_sampling_fraction_from_rows(fractions) if fractions else None,
+        sampling_fraction=_sampling_fraction_from_rows(fractions)
+        if fractions
+        else None,
         heterogeneous_values=heterogeneous_values,
         warnings=warnings,
     )
@@ -485,20 +521,40 @@ def estimate_diversification_rate(
         if metadata_path is not None
         else None
     )
-    sampling_fraction = sampling_report.sampling_fraction if sampling_report and sampling_report.sampling_fraction else 1.0
-    corrected_tip_count = float(format(validation.tip_count / sampling_fraction, ".15g"))
+    sampling_fraction = (
+        sampling_report.sampling_fraction
+        if sampling_report and sampling_report.sampling_fraction
+        else 1.0
+    )
+    corrected_tip_count = float(
+        format(validation.tip_count / sampling_fraction, ".15g")
+    )
     crown_age = validation.root_age
-    net_diversification_rate = float(format(math.log(max(corrected_tip_count, 1.000000001)) / crown_age, ".15g"))
+    net_diversification_rate = float(
+        format(math.log(max(corrected_tip_count, 1.000000001)) / crown_age, ".15g")
+    )
     midpoint_lineages = _lineages_at_time(ltt, crown_age / 2.0)
     expected_midpoint_lineages = math.sqrt(max(validation.tip_count, 1))
-    slowdown = max(0.0, 1.0 - (midpoint_lineages / max(expected_midpoint_lineages, 1.0)))
-    relative_extinction = 0.0 if model == "yule" else float(format(min(slowdown, 0.95), ".15g"))
+    slowdown = max(
+        0.0, 1.0 - (midpoint_lineages / max(expected_midpoint_lineages, 1.0))
+    )
+    relative_extinction = (
+        0.0 if model == "yule" else float(format(min(slowdown, 0.95), ".15g"))
+    )
     birth_rate = (
         net_diversification_rate
         if model == "yule"
-        else float(format(net_diversification_rate / max(1.0 - relative_extinction, 1e-9), ".15g"))
+        else float(
+            format(
+                net_diversification_rate / max(1.0 - relative_extinction, 1e-9), ".15g"
+            )
+        )
     )
-    death_rate = 0.0 if model == "yule" else float(format(max(birth_rate - net_diversification_rate, 0.0), ".15g"))
+    death_rate = (
+        0.0
+        if model == "yule"
+        else float(format(max(birth_rate - net_diversification_rate, 0.0), ".15g"))
+    )
     log_likelihood = _interval_log_likelihood(
         tree,
         birth_rate=birth_rate,
@@ -515,9 +571,13 @@ def estimate_diversification_rate(
     if sampling_report is not None:
         warnings.extend(sampling_report.warnings)
         if sampling_report.sampling_fraction is None:
-            warnings.append("sampling correction could not be applied because no valid sampling fractions were available")
+            warnings.append(
+                "sampling correction could not be applied because no valid sampling fractions were available"
+            )
     if model == "birth-death":
-        assumptions.append("relative extinction is approximated from lineage-through-time slowdown")
+        assumptions.append(
+            "relative extinction is approximated from lineage-through-time slowdown"
+        )
     else:
         assumptions.append("yule model assumes zero extinction")
     return DiversificationRateReport(
@@ -611,7 +671,9 @@ def detect_diversification_outlier_clades(
         crown_age = _node_age(tree, depths, node)
         if crown_age <= 0.0:
             continue
-        diversification_rate = float(format(math.log(len(descendant_taxa)) / crown_age, ".15g"))
+        diversification_rate = float(
+            format(math.log(len(descendant_taxa)) / crown_age, ".15g")
+        )
         raw_rows.append((node, descendant_taxa, crown_age, diversification_rate))
     rates = [row[3] for row in raw_rows]
     mean_rate = sum(rates) / max(len(rates), 1)
@@ -619,7 +681,9 @@ def detect_diversification_outlier_clades(
     standard_deviation = math.sqrt(variance)
     for node, descendant_taxa, crown_age, diversification_rate in raw_rows:
         z_score = (
-            float(format((diversification_rate - mean_rate) / standard_deviation, ".15g"))
+            float(
+                format((diversification_rate - mean_rate) / standard_deviation, ".15g")
+            )
             if standard_deviation > 0.0
             else 0.0
         )
@@ -666,7 +730,9 @@ def run_trait_dependent_diversification_analysis(
     tree = load_tree(tree_path)
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     if trait not in table.columns:
-        raise DiversificationAnalysisError(f"trait table does not contain column '{trait}'")
+        raise DiversificationAnalysisError(
+            f"trait table does not contain column '{trait}'"
+        )
     tree_taxa = set(tree.tip_names)
     rows_by_taxon = {
         row[table.taxon_column]: row
@@ -678,7 +744,9 @@ def run_trait_dependent_diversification_analysis(
     states: list[TraitDependentDiversificationState] = []
     warnings: list[str] = []
     for state in observed_states:
-        taxa = sorted(taxon for taxon, row in rows_by_taxon.items() if row[trait].strip() == state)
+        taxa = sorted(
+            taxon for taxon, row in rows_by_taxon.items() if row[trait].strip() == state
+        )
         state_warnings: list[str] = []
         if len(taxa) < 2:
             state_warnings.append("state is represented by fewer than two taxa")
@@ -697,7 +765,11 @@ def run_trait_dependent_diversification_analysis(
         covering_node, descendant_taxa = _find_smallest_covering_node(tree, set(taxa))
         monophyletic = descendant_taxa == taxa
         crown_age = _node_age(tree, depths, covering_node)
-        diversification_rate = float(format(math.log(len(taxa)) / crown_age, ".15g")) if monophyletic and crown_age > 0.0 else None
+        diversification_rate = (
+            float(format(math.log(len(taxa)) / crown_age, ".15g"))
+            if monophyletic and crown_age > 0.0
+            else None
+        )
         if not monophyletic:
             state_warnings.append("state taxa are not monophyletic in the input tree")
         states.append(
@@ -723,7 +795,9 @@ def run_trait_dependent_diversification_analysis(
     )
 
 
-def write_clade_diversification_table(path: Path, report: CladeDiversificationScanReport) -> Path:
+def write_clade_diversification_table(
+    path: Path, report: CladeDiversificationScanReport
+) -> Path:
     """Export clade diversification summaries as a deterministic TSV."""
     rows = [
         {
@@ -754,7 +828,9 @@ def write_clade_diversification_table(path: Path, report: CladeDiversificationSc
     )
 
 
-def write_trait_dependent_diversification_table(path: Path, report: TraitDependentDiversificationReport) -> Path:
+def write_trait_dependent_diversification_table(
+    path: Path, report: TraitDependentDiversificationReport
+) -> Path:
     """Export state-linked diversification summaries as a deterministic TSV."""
     rows = [
         {
@@ -763,14 +839,24 @@ def write_trait_dependent_diversification_table(path: Path, report: TraitDepende
             "taxa": ",".join(row.taxa),
             "monophyletic": str(row.monophyletic).lower(),
             "crown_age": "" if row.crown_age is None else format(row.crown_age, ".15g"),
-            "diversification_rate": "" if row.diversification_rate is None else format(row.diversification_rate, ".15g"),
+            "diversification_rate": ""
+            if row.diversification_rate is None
+            else format(row.diversification_rate, ".15g"),
             "warnings": "; ".join(row.warnings),
         }
         for row in report.states
     ]
     return write_taxon_rows(
         path,
-        columns=["state", "taxon_count", "taxa", "monophyletic", "crown_age", "diversification_rate", "warnings"],
+        columns=[
+            "state",
+            "taxon_count",
+            "taxa",
+            "monophyletic",
+            "crown_age",
+            "diversification_rate",
+            "warnings",
+        ],
         rows=rows,
     )
 
@@ -814,11 +900,19 @@ def render_diversification_report(
     sections = [
         ("lineage-through-time", json.dumps(ltt, default=str, indent=2)),
         ("diversification-estimate", json.dumps(estimate, default=str, indent=2)),
-        ("diversification-model-comparison", json.dumps(comparison, default=str, indent=2)),
+        (
+            "diversification-model-comparison",
+            json.dumps(comparison, default=str, indent=2),
+        ),
         ("clade-diversification-scan", json.dumps(clades, default=str, indent=2)),
     ]
     if trait_report is not None:
-        sections.append(("trait-dependent-diversification", json.dumps(trait_report, default=str, indent=2)))
+        sections.append(
+            (
+                "trait-dependent-diversification",
+                json.dumps(trait_report, default=str, indent=2),
+            )
+        )
     title = "Bijux Diversification Report"
     manifest = {
         "report_kind": "diversification",

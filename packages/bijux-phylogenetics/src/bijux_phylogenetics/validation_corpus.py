@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import json
-import hashlib
 from dataclasses import asdict, dataclass, is_dataclass
+import hashlib
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.benchmark import (
@@ -16,7 +16,9 @@ from bijux_phylogenetics.core.dataset import DatasetAuditReport, audit_dataset_i
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import PhylogeneticsError
 from bijux_phylogenetics.io.fasta import summarise_fasta
-from bijux_phylogenetics.reference_validation import build_core_workflow_validation_report
+from bijux_phylogenetics.reference_validation import (
+    build_core_workflow_validation_report,
+)
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     simulate_brownian_traits,
@@ -214,7 +216,9 @@ def _fixture(root: Path, *parts: str) -> Path:
     return root.joinpath(*parts)
 
 
-def _evaluate_dataset_case(case: CorpusDatasetCase) -> tuple[DatasetAuditReport, list[str]]:
+def _evaluate_dataset_case(
+    case: CorpusDatasetCase,
+) -> tuple[DatasetAuditReport, list[str]]:
     report = audit_dataset_inputs(
         case.tree_path,
         case.metadata_path,
@@ -224,24 +228,32 @@ def _evaluate_dataset_case(case: CorpusDatasetCase) -> tuple[DatasetAuditReport,
         calibration_path=case.calibration_path,
     )
     notes: list[str] = []
-    missing_allowed = sorted(set(case.required_allowed_analyses) - set(report.allowed_analyses))
+    missing_allowed = sorted(
+        set(case.required_allowed_analyses) - set(report.allowed_analyses)
+    )
     if missing_allowed:
         notes.append(f"missing required allowed analyses: {', '.join(missing_allowed)}")
-    forbidden = [blocker for blocker in report.blockers if blocker in case.forbidden_blockers]
+    forbidden = [
+        blocker for blocker in report.blockers if blocker in case.forbidden_blockers
+    ]
     if forbidden:
         notes.append(f"observed forbidden blockers: {', '.join(forbidden)}")
     disallowed_warnings = [
         warning
         for warning in report.warnings
         if case.allowed_warning_prefixes
-        and not any(warning.startswith(prefix) for prefix in case.allowed_warning_prefixes)
+        and not any(
+            warning.startswith(prefix) for prefix in case.allowed_warning_prefixes
+        )
     ]
     if disallowed_warnings:
         notes.append(f"unexpected warnings: {', '.join(disallowed_warnings)}")
     return report, notes
 
 
-def build_clean_benchmark_corpus(*, fixtures_root: Path | None = None) -> BenchmarkCorpusReport:
+def build_clean_benchmark_corpus(
+    *, fixtures_root: Path | None = None
+) -> BenchmarkCorpusReport:
     """Validate that the checked-in clean corpus stays usable for core workflows."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     cases = [
@@ -265,9 +277,7 @@ def build_clean_benchmark_corpus(*, fixtures_root: Path | None = None) -> Benchm
                 "alignment is missing one or more tree taxa",
                 "fewer than two taxa remain after intersecting all requested dataset surfaces",
             ),
-            allowed_warning_prefixes=(
-                "equal-length ungapped FASTA may be aligned",
-            ),
+            allowed_warning_prefixes=("equal-length ungapped FASTA may be aligned",),
         )
     ]
 
@@ -303,7 +313,9 @@ def build_clean_benchmark_corpus(*, fixtures_root: Path | None = None) -> Benchm
     )
 
 
-def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> BenchmarkCorpusReport:
+def build_broken_benchmark_corpus(
+    *, fixtures_root: Path | None = None
+) -> BenchmarkCorpusReport:
     """Validate that intentionally broken fixtures still fail for the expected reason."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     results: list[CorpusDatasetCaseResult] = []
@@ -313,16 +325,22 @@ def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> Bench
         notes: list[str] = []
         try:
             callback()
-            notes.append(f"expected error code {expected_code} but the fixture completed successfully")
+            notes.append(
+                f"expected error code {expected_code} but the fixture completed successfully"
+            )
         except PhylogeneticsError as error:
             observed_code = error.code
             if observed_code != expected_code:
-                notes.append(f"expected error code {expected_code} but observed {observed_code}")
+                notes.append(
+                    f"expected error code {expected_code} but observed {observed_code}"
+                )
         results.append(
             CorpusDatasetCaseResult(
                 name=name,
                 passed=not notes,
-                readiness_decision="error" if observed_code is not None else "unexpected_success",
+                readiness_decision="error"
+                if observed_code is not None
+                else "unexpected_success",
                 analysis_taxa=[],
                 allowed_analyses=[],
                 blocked_analyses=[],
@@ -335,12 +353,16 @@ def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> Bench
 
     record_error_case(
         "duplicate_tip_tree",
-        lambda: validate_tree_path(_fixture(root, "trees", "example_tree_duplicate.nwk")),
+        lambda: validate_tree_path(
+            _fixture(root, "trees", "example_tree_duplicate.nwk")
+        ),
         "duplicate_taxon_error",
     )
     record_error_case(
         "invalid_alignment_lengths",
-        lambda: summarise_fasta(_fixture(root, "alignments", "example_alignment_invalid_lengths.fasta")),
+        lambda: summarise_fasta(
+            _fixture(root, "alignments", "example_alignment_invalid_lengths.fasta")
+        ),
         "invalid_alignment_error",
     )
 
@@ -353,7 +375,9 @@ def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> Bench
     )
     report, notes = _evaluate_dataset_case(broken_dataset)
     if report.readiness_decision != "blocked":
-        notes.append(f"expected blocked readiness but observed {report.readiness_decision}")
+        notes.append(
+            f"expected blocked readiness but observed {report.readiness_decision}"
+        )
     if "metadata table is missing one or more tree taxa" not in report.blockers:
         notes.append("expected metadata-missing blocker was not observed")
     results.append(
@@ -367,7 +391,9 @@ def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> Bench
             blockers=report.blockers,
             warnings=report.warnings,
             notes=notes,
-            observed_code="dataset_blocked" if report.readiness_decision == "blocked" else None,
+            observed_code="dataset_blocked"
+            if report.readiness_decision == "blocked"
+            else None,
         )
     )
 
@@ -386,7 +412,9 @@ def build_broken_benchmark_corpus(*, fixtures_root: Path | None = None) -> Bench
     )
 
 
-def build_messy_benchmark_corpus(*, fixtures_root: Path | None = None) -> BenchmarkCorpusReport:
+def build_messy_benchmark_corpus(
+    *, fixtures_root: Path | None = None
+) -> BenchmarkCorpusReport:
     """Validate that realistic multi-problem datasets surface the expected warning mix."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     cases: list[tuple[CorpusDatasetCase, tuple[str, ...], tuple[str, ...]]] = [
@@ -394,11 +422,19 @@ def build_messy_benchmark_corpus(*, fixtures_root: Path | None = None) -> Benchm
             CorpusDatasetCase(
                 name="reordered_alignment_extra_taxa_invalid_dates_and_calibrations",
                 tree_path=_fixture(root, "trees", "example_tree.nwk"),
-                metadata_path=_fixture(root, "metadata", "example_metadata_reordered.tsv"),
+                metadata_path=_fixture(
+                    root, "metadata", "example_metadata_reordered.tsv"
+                ),
                 traits_path=_fixture(root, "metadata", "example_traits_validate.tsv"),
-                alignment_path=_fixture(root, "alignments", "example_alignment_extra_taxon.fasta"),
-                tip_dates_path=_fixture(root, "metadata", "example_tip_dates_invalid.tsv"),
-                calibration_path=_fixture(root, "metadata", "example_calibrations_invalid.tsv"),
+                alignment_path=_fixture(
+                    root, "alignments", "example_alignment_extra_taxon.fasta"
+                ),
+                tip_dates_path=_fixture(
+                    root, "metadata", "example_tip_dates_invalid.tsv"
+                ),
+                calibration_path=_fixture(
+                    root, "metadata", "example_calibrations_invalid.tsv"
+                ),
             ),
             (
                 "calibration table contains invalid fossil calibration targets or ages",
@@ -416,7 +452,9 @@ def build_messy_benchmark_corpus(*, fixtures_root: Path | None = None) -> Benchm
                 tree_path=_fixture(root, "trees", "example_tree.nwk"),
                 metadata_path=_fixture(root, "metadata", "example_metadata.tsv"),
                 traits_path=_fixture(root, "metadata", "example_traits.tsv"),
-                alignment_path=_fixture(root, "alignments", "example_alignment_ambiguity.fasta"),
+                alignment_path=_fixture(
+                    root, "alignments", "example_alignment_ambiguity.fasta"
+                ),
             ),
             (
                 "alignment is missing one or more tree taxa",
@@ -434,14 +472,20 @@ def build_messy_benchmark_corpus(*, fixtures_root: Path | None = None) -> Benchm
     results: list[CorpusDatasetCaseResult] = []
     for case, expected_blockers, expected_warnings in cases:
         report, notes = _evaluate_dataset_case(case)
-        missing_blockers = [message for message in expected_blockers if message not in report.blockers]
+        missing_blockers = [
+            message for message in expected_blockers if message not in report.blockers
+        ]
         if missing_blockers:
             notes.append(f"missing expected blockers: {', '.join(missing_blockers)}")
-        missing_warnings = [message for message in expected_warnings if message not in report.warnings]
+        missing_warnings = [
+            message for message in expected_warnings if message not in report.warnings
+        ]
         if missing_warnings:
             notes.append(f"missing expected warnings: {', '.join(missing_warnings)}")
         if report.readiness_decision != "blocked":
-            notes.append(f"expected blocked readiness but observed {report.readiness_decision}")
+            notes.append(
+                f"expected blocked readiness but observed {report.readiness_decision}"
+            )
         results.append(
             CorpusDatasetCaseResult(
                 name=case.name,
@@ -509,9 +553,13 @@ def build_regression_dataset_corpus(
             _fixture(root, "trees", "example_tree.nwk"),
             _fixture(root, "metadata", "example_metadata_reordered.tsv"),
             _fixture(root, "metadata", "example_traits_validate.tsv"),
-            alignment_path=_fixture(root, "alignments", "example_alignment_extra_taxon.fasta"),
+            alignment_path=_fixture(
+                root, "alignments", "example_alignment_extra_taxon.fasta"
+            ),
             tip_dates_path=_fixture(root, "metadata", "example_tip_dates_invalid.tsv"),
-            calibration_path=_fixture(root, "metadata", "example_calibrations_invalid.tsv"),
+            calibration_path=_fixture(
+                root, "metadata", "example_calibrations_invalid.tsv"
+            ),
         ),
     }
 
@@ -519,7 +567,11 @@ def build_regression_dataset_corpus(
     for name, expected in expected_payload.items():
         observed = _regression_summary(current_reports[name])
         passed = expected == observed
-        notes = [] if passed else ["observed regression summary drifted from the checked-in expectation"]
+        notes = (
+            []
+            if passed
+            else ["observed regression summary drifted from the checked-in expectation"]
+        )
         results.append(
             RegressionDatasetCaseResult(
                 name=name,
@@ -545,7 +597,9 @@ def build_regression_dataset_corpus(
     )
 
 
-def build_method_accuracy_dashboard(*, fixtures_root: Path | None = None) -> MethodAccuracyDashboard:
+def build_method_accuracy_dashboard(
+    *, fixtures_root: Path | None = None
+) -> MethodAccuracyDashboard:
     """Summarize validation accuracy, error counts, and coverage across benchmark surfaces."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     core = build_core_workflow_validation_report(fixtures_root=root)
@@ -624,7 +678,9 @@ def build_method_accuracy_dashboard(*, fixtures_root: Path | None = None) -> Met
     )
 
 
-def build_runtime_benchmark_dashboard(*, replicates: int = 1) -> RuntimeBenchmarkDashboard:
+def build_runtime_benchmark_dashboard(
+    *, replicates: int = 1
+) -> RuntimeBenchmarkDashboard:
     """Summarize runtime scaling across taxa, sites, tree counts, and posterior-like samples."""
     rows = [
         BenchmarkDashboardRow(
@@ -640,12 +696,16 @@ def build_runtime_benchmark_dashboard(*, replicates: int = 1) -> RuntimeBenchmar
         BenchmarkDashboardRow(
             workflow="alignment-diagnostics",
             scaling_axis="sites",
-            observations=benchmark_alignment_site_scaling(replicates=replicates).observations,
+            observations=benchmark_alignment_site_scaling(
+                replicates=replicates
+            ).observations,
         ),
         BenchmarkDashboardRow(
             workflow="tree-set-consensus",
             scaling_axis="posterior_samples",
-            observations=benchmark_tree_set_consensus(replicates=replicates).observations,
+            observations=benchmark_tree_set_consensus(
+                replicates=replicates
+            ).observations,
         ),
     ]
     return RuntimeBenchmarkDashboard(
@@ -657,7 +717,9 @@ def build_runtime_benchmark_dashboard(*, replicates: int = 1) -> RuntimeBenchmar
     )
 
 
-def build_memory_benchmark_dashboard(*, replicates: int = 1) -> MemoryBenchmarkDashboard:
+def build_memory_benchmark_dashboard(
+    *, replicates: int = 1
+) -> MemoryBenchmarkDashboard:
     """Summarize peak memory scaling across the main benchmark axes."""
     rows = [
         BenchmarkDashboardRow(
@@ -673,12 +735,16 @@ def build_memory_benchmark_dashboard(*, replicates: int = 1) -> MemoryBenchmarkD
         BenchmarkDashboardRow(
             workflow="alignment-diagnostics",
             scaling_axis="sites",
-            observations=benchmark_alignment_site_scaling(replicates=replicates).observations,
+            observations=benchmark_alignment_site_scaling(
+                replicates=replicates
+            ).observations,
         ),
         BenchmarkDashboardRow(
             workflow="tree-set-consensus",
             scaling_axis="posterior_samples",
-            observations=benchmark_tree_set_consensus(replicates=replicates).observations,
+            observations=benchmark_tree_set_consensus(
+                replicates=replicates
+            ).observations,
         ),
     ]
     return MemoryBenchmarkDashboard(
@@ -699,49 +765,120 @@ def build_method_limitation_registry() -> MethodLimitationRegistry:
                 method="tree-validation",
                 status="validated",
                 validated_by=["level1-reference-validation", "broken-benchmark-corpus"],
-                assumptions=["input tree syntax is parseable", "tip labels are intended to identify taxa"],
-                invalid_inputs=["duplicate tip labels", "negative branch lengths", "malformed rootedness assumptions"],
-                limitations=["validation does not by itself prove biological interpretation or engine compatibility beyond audited surfaces"],
+                assumptions=[
+                    "input tree syntax is parseable",
+                    "tip labels are intended to identify taxa",
+                ],
+                invalid_inputs=[
+                    "duplicate tip labels",
+                    "negative branch lengths",
+                    "malformed rootedness assumptions",
+                ],
+                limitations=[
+                    "validation does not by itself prove biological interpretation or engine compatibility beyond audited surfaces"
+                ],
             ),
             MethodLimitationEntry(
                 method="dataset-audit",
                 status="validated",
-                validated_by=["clean-benchmark-corpus", "messy-benchmark-corpus", "regression-dataset-corpus"],
-                assumptions=["metadata and trait tables use stable taxon keys", "caller-provided files correspond to one biological dataset"],
-                invalid_inputs=["missing tree taxa in metadata or traits", "unsafe alignments for inference", "invalid tip dates or calibrations"],
-                limitations=["dataset readiness is reviewer-facing triage, not a substitute for downstream method-specific validation"],
+                validated_by=[
+                    "clean-benchmark-corpus",
+                    "messy-benchmark-corpus",
+                    "regression-dataset-corpus",
+                ],
+                assumptions=[
+                    "metadata and trait tables use stable taxon keys",
+                    "caller-provided files correspond to one biological dataset",
+                ],
+                invalid_inputs=[
+                    "missing tree taxa in metadata or traits",
+                    "unsafe alignments for inference",
+                    "invalid tip dates or calibrations",
+                ],
+                limitations=[
+                    "dataset readiness is reviewer-facing triage, not a substitute for downstream method-specific validation"
+                ],
             ),
             MethodLimitationEntry(
                 method="distance-methods",
                 status="validated",
-                validated_by=["distance reference fixtures", "runtime benchmark dashboard"],
-                assumptions=["aligned homologous sequences", "distance model matches alphabet and saturation regime"],
-                invalid_inputs=["too few comparable sites", "severe saturation", "unsafe ambiguity handling for the chosen policy"],
-                limitations=["distance trees remain approximations and can disagree with likelihood or Bayesian inference"],
+                validated_by=[
+                    "distance reference fixtures",
+                    "runtime benchmark dashboard",
+                ],
+                assumptions=[
+                    "aligned homologous sequences",
+                    "distance model matches alphabet and saturation regime",
+                ],
+                invalid_inputs=[
+                    "too few comparable sites",
+                    "severe saturation",
+                    "unsafe ambiguity handling for the chosen policy",
+                ],
+                limitations=[
+                    "distance trees remain approximations and can disagree with likelihood or Bayesian inference"
+                ],
             ),
             MethodLimitationEntry(
                 method="comparative-models",
                 status="validated",
-                validated_by=["comparative reference fixtures", "level1-reference-validation"],
-                assumptions=["tree/taxon linkage is correct", "traits satisfy declared model assumptions"],
-                invalid_inputs=["overfit models", "non-identifiable OU settings", "missing trait coverage after pruning"],
-                limitations=["validated examples do not remove the need for biological judgment about causality or model adequacy"],
+                validated_by=[
+                    "comparative reference fixtures",
+                    "level1-reference-validation",
+                ],
+                assumptions=[
+                    "tree/taxon linkage is correct",
+                    "traits satisfy declared model assumptions",
+                ],
+                invalid_inputs=[
+                    "overfit models",
+                    "non-identifiable OU settings",
+                    "missing trait coverage after pruning",
+                ],
+                limitations=[
+                    "validated examples do not remove the need for biological judgment about causality or model adequacy"
+                ],
             ),
             MethodLimitationEntry(
                 method="ancestral-reconstruction",
                 status="experimental",
-                validated_by=["simulation validation surfaces", "ancestral reference examples"],
-                assumptions=["chosen transition or continuous model is defensible", "tree uncertainty has been considered"],
-                invalid_inputs=["impossible discrete coding", "low-information or unstable internal nodes", "unsafe pruning sensitivity"],
-                limitations=["external tool comparison and maturity gates are still incomplete for every reconstruction mode"],
+                validated_by=[
+                    "simulation validation surfaces",
+                    "ancestral reference examples",
+                ],
+                assumptions=[
+                    "chosen transition or continuous model is defensible",
+                    "tree uncertainty has been considered",
+                ],
+                invalid_inputs=[
+                    "impossible discrete coding",
+                    "low-information or unstable internal nodes",
+                    "unsafe pruning sensitivity",
+                ],
+                limitations=[
+                    "external tool comparison and maturity gates are still incomplete for every reconstruction mode"
+                ],
             ),
             MethodLimitationEntry(
                 method="bayesian-time-tree",
                 status="experimental",
-                validated_by=["tip-date validation", "calibration validation", "BEAST and MrBayes workflow surfaces"],
-                assumptions=["valid dates, calibrations, priors, and convergence diagnostics", "posterior sampling has mixed adequately"],
-                invalid_inputs=["invalid tip dates", "invalid calibrations", "low ESS or conflicting independent runs"],
-                limitations=["workflow support exists, but cross-environment reproducibility and broader benchmark validation remain incomplete"],
+                validated_by=[
+                    "tip-date validation",
+                    "calibration validation",
+                    "BEAST and MrBayes workflow surfaces",
+                ],
+                assumptions=[
+                    "valid dates, calibrations, priors, and convergence diagnostics",
+                    "posterior sampling has mixed adequately",
+                ],
+                invalid_inputs=[
+                    "invalid tip dates",
+                    "invalid calibrations",
+                    "low ESS or conflicting independent runs",
+                ],
+                limitations=[
+                    "workflow support exists, but cross-environment reproducibility and broader benchmark validation remain incomplete"
+                ],
             ),
         ],
         limitations=[
@@ -750,7 +887,9 @@ def build_method_limitation_registry() -> MethodLimitationRegistry:
     )
 
 
-def build_scientific_validation_report(*, fixtures_root: Path | None = None) -> ScientificValidationReport:
+def build_scientific_validation_report(
+    *, fixtures_root: Path | None = None
+) -> ScientificValidationReport:
     """Separate validated, unvalidated, experimental, and unsafe claims for reviewers."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     accuracy = build_method_accuracy_dashboard(fixtures_root=root)
@@ -813,10 +952,7 @@ def _normalize_jsonable(value: object) -> object:
     if isinstance(value, Path):
         return str(value)
     if is_dataclass(value):
-        return {
-            key: _normalize_jsonable(item)
-            for key, item in asdict(value).items()
-        }
+        return {key: _normalize_jsonable(item) for key, item in asdict(value).items()}
     if isinstance(value, dict):
         return {str(key): _normalize_jsonable(item) for key, item in value.items()}
     if isinstance(value, list):
@@ -828,11 +964,15 @@ def write_validation_corpus_json(path: Path, report: object) -> Path:
     """Write a validation-corpus or dashboard report as deterministic JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = _normalize_jsonable(report)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
-def validate_simulation_reproducibility(*, fixtures_root: Path | None = None) -> SimulationReproducibilityReport:
+def validate_simulation_reproducibility(
+    *, fixtures_root: Path | None = None
+) -> SimulationReproducibilityReport:
     """Verify that repeated simulations with the same seed produce identical structured results."""
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     tree_path = _fixture(root, "trees", "example_tree.nwk")
@@ -843,12 +983,42 @@ def validate_simulation_reproducibility(*, fixtures_root: Path | None = None) ->
         return hashlib.sha256(encoded).hexdigest(), encoded.decode("utf-8")
 
     cases: list[tuple[str, object]] = [
-        ("birth-death-tree-set", lambda: simulate_birth_death_trees(tree_count=3, tip_count=4, seed=7)[1].records),
-        ("brownian-traits", lambda: simulate_brownian_traits(tree_path, root_state=1.0, sigma=0.5, seed=7)),
-        ("ou-traits", lambda: simulate_ou_traits(tree_path, root_state=1.0, sigma=0.5, alpha=0.7, theta=0.2, seed=7)),
-        ("discrete-traits", lambda: simulate_discrete_traits(tree_path, states=["north", "south"], transition_rate=0.8, seed=7)),
-        ("dna-alignment", lambda: simulate_dna_alignment(tree_path, sequence_length=16, substitution_rate=0.9, seed=7)),
-        ("protein-alignment", lambda: simulate_protein_alignment(tree_path, sequence_length=12, substitution_rate=0.6, seed=7)),
+        (
+            "birth-death-tree-set",
+            lambda: (
+                simulate_birth_death_trees(tree_count=3, tip_count=4, seed=7)[1].records
+            ),
+        ),
+        (
+            "brownian-traits",
+            lambda: simulate_brownian_traits(
+                tree_path, root_state=1.0, sigma=0.5, seed=7
+            ),
+        ),
+        (
+            "ou-traits",
+            lambda: simulate_ou_traits(
+                tree_path, root_state=1.0, sigma=0.5, alpha=0.7, theta=0.2, seed=7
+            ),
+        ),
+        (
+            "discrete-traits",
+            lambda: simulate_discrete_traits(
+                tree_path, states=["north", "south"], transition_rate=0.8, seed=7
+            ),
+        ),
+        (
+            "dna-alignment",
+            lambda: simulate_dna_alignment(
+                tree_path, sequence_length=16, substitution_rate=0.9, seed=7
+            ),
+        ),
+        (
+            "protein-alignment",
+            lambda: simulate_protein_alignment(
+                tree_path, sequence_length=12, substitution_rate=0.6, seed=7
+            ),
+        ),
     ]
 
     results: list[SimulationReproducibilityCase] = []
