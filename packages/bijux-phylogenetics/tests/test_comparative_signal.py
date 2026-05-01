@@ -10,7 +10,6 @@ from bijux_phylogenetics.comparative.signal import (
     estimate_pagels_lambda,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 

@@ -2,27 +2,32 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.bayesian.beast import (
+    assess_calibration_dominance,
+    assess_time_tree_readiness,
+)
 from bijux_phylogenetics.bayesian.comparison import (
-    compare_ml_tree_to_bayesian_posterior,
     compare_independent_bayesian_runs,
+    compare_ml_tree_to_bayesian_posterior,
     compare_posterior_tree_sets_by_clock,
     compare_posterior_tree_sets_by_prior,
 )
-from bijux_phylogenetics.bayesian.beast import assess_calibration_dominance, assess_time_tree_readiness
 from bijux_phylogenetics.bayesian.posterior import (
     compare_bayesian_tree_sets,
-    summarize_posterior_node_ages,
     summarize_maximum_clade_credibility_tree,
+    summarize_posterior_node_ages,
     thin_posterior_tree_set,
 )
-from bijux_phylogenetics.bayesian.reports import render_bayesian_run_comparison_report, render_time_tree_readiness_report
+from bijux_phylogenetics.bayesian.reports import (
+    render_bayesian_run_comparison_report,
+    render_time_tree_readiness_report,
+)
 from bijux_phylogenetics.bayesian.uncertainty import (
     build_posterior_uncertainty_figure_package,
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
 )
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -31,16 +36,23 @@ def fixture(path: str) -> Path:
     return FIXTURES / path
 
 
-def _write_mrbayes_trace(path: Path, rows: list[tuple[int, float, float, float]]) -> Path:
+def _write_mrbayes_trace(
+    path: Path, rows: list[tuple[int, float, float, float]]
+) -> Path:
     path.write_text(
         "Gen\tLnL\tTL\talpha\n"
-        + "".join(f"{generation}\t{lnl}\t{tl}\t{alpha}\n" for generation, lnl, tl, alpha in rows),
+        + "".join(
+            f"{generation}\t{lnl}\t{tl}\t{alpha}\n"
+            for generation, lnl, tl, alpha in rows
+        ),
         encoding="utf-8",
     )
     return path
 
 
-def test_summarize_maximum_clade_credibility_tree_selects_best_supported_posterior_tree() -> None:
+def test_summarize_maximum_clade_credibility_tree_selects_best_supported_posterior_tree() -> (
+    None
+):
     tree, report = summarize_maximum_clade_credibility_tree(
         fixture("trees/example_tree_set_left.nwk"),
         burnin_fraction=0.0,
@@ -54,7 +66,9 @@ def test_summarize_maximum_clade_credibility_tree_selects_best_supported_posteri
     assert "A:0.1" in report.mcc_newick
 
 
-def test_thin_posterior_tree_set_retains_every_nth_tree_after_burnin(tmp_path: Path) -> None:
+def test_thin_posterior_tree_set_retains_every_nth_tree_after_burnin(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "thinned.nwk"
     report = thin_posterior_tree_set(
         fixture("trees/example_tree_set_left.nwk"),
@@ -63,7 +77,11 @@ def test_thin_posterior_tree_set_retains_every_nth_tree_after_burnin(tmp_path: P
         burnin_fraction=0.0,
     )
 
-    lines = [line for line in output_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    lines = [
+        line
+        for line in output_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     assert report.retained_tree_count == 2
     assert report.retained_indices == [1, 3]
     assert len(lines) == 2
@@ -97,7 +115,9 @@ def test_summarize_posterior_node_ages_reports_clade_heights() -> None:
     assert rows["C|D"].maximum_height == 0.2
 
 
-def test_compare_ml_tree_to_bayesian_posterior_reports_topology_and_branch_length_differences() -> None:
+def test_compare_ml_tree_to_bayesian_posterior_reports_topology_and_branch_length_differences() -> (
+    None
+):
     report = compare_ml_tree_to_bayesian_posterior(
         fixture("trees/example_tree.nwk"),
         fixture("trees/example_tree_set_right.nwk"),
@@ -106,10 +126,14 @@ def test_compare_ml_tree_to_bayesian_posterior_reports_topology_and_branch_lengt
 
     assert report.mcc_tree_index == 2
     assert report.topology.topology_equal is False
-    assert any("maximum-likelihood and Bayesian" in warning for warning in report.warnings)
+    assert any(
+        "maximum-likelihood and Bayesian" in warning for warning in report.warnings
+    )
 
 
-def test_assess_calibration_dominance_flags_single_dominant_calibration(tmp_path: Path) -> None:
+def test_assess_calibration_dominance_flags_single_dominant_calibration(
+    tmp_path: Path,
+) -> None:
     calibration_path = tmp_path / "dominant-calibration.tsv"
     calibration_path.write_text(
         "calibration_id\tclade_name\tminimum_age\tmaximum_age\tdistribution\n"
@@ -134,7 +158,10 @@ def test_assess_time_tree_readiness_blocks_invalid_tip_dates() -> None:
     )
 
     assert report.decision == "blocked"
-    assert "tip-date table contains missing, invalid, or mismatched dated taxa" in report.blockers
+    assert (
+        "tip-date table contains missing, invalid, or mismatched dated taxa"
+        in report.blockers
+    )
 
 
 def test_render_time_tree_readiness_report_writes_sections(tmp_path: Path) -> None:
@@ -153,7 +180,9 @@ def test_render_time_tree_readiness_report_writes_sections(tmp_path: Path) -> No
     assert "limitations" in html
 
 
-def test_compare_independent_bayesian_runs_reports_parameter_shifts_and_topology_conflict(tmp_path: Path) -> None:
+def test_compare_independent_bayesian_runs_reports_parameter_shifts_and_topology_conflict(
+    tmp_path: Path,
+) -> None:
     left_trace = _write_mrbayes_trace(
         tmp_path / "left.run1.p",
         [
@@ -189,10 +218,20 @@ def test_compare_independent_bayesian_runs_reports_parameter_shifts_and_topology
 
     assert report.trace_kind == "mrbayes"
     assert report.tree_comparison.mcc_topology.topology_equal is False
-    assert [row.parameter for row in report.parameter_differences] == ["LnL", "TL", "alpha"]
+    assert [row.parameter for row in report.parameter_differences] == [
+        "LnL",
+        "TL",
+        "alpha",
+    ]
     assert report.parameter_differences[-1].mean_delta > 0.5
-    assert "independent runs select different maximum clade credibility topologies" in report.warnings
-    assert "one or more posterior parameter means differ materially across independent runs" in report.warnings
+    assert (
+        "independent runs select different maximum clade credibility topologies"
+        in report.warnings
+    )
+    assert (
+        "one or more posterior parameter means differ materially across independent runs"
+        in report.warnings
+    )
 
 
 def test_compare_posterior_tree_sets_by_prior_reports_age_shifts() -> None:
@@ -209,7 +248,10 @@ def test_compare_posterior_tree_sets_by_prior_reports_age_shifts() -> None:
     assert report.right_label == "broad-prior"
     assert report.tree_comparison.mcc_topology.topology_equal is False
     assert report.age_differences[0].clade in {"A|B", "A|C", "B|D", "C|D"}
-    assert "prior comparison changes the maximum clade credibility topology" in report.warnings
+    assert (
+        "prior comparison changes the maximum clade credibility topology"
+        in report.warnings
+    )
 
 
 def test_compare_posterior_tree_sets_by_clock_reports_clock_labels() -> None:
@@ -228,7 +270,9 @@ def test_compare_posterior_tree_sets_by_clock_reports_clock_labels() -> None:
     assert report.age_differences
 
 
-def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(tmp_path: Path) -> None:
+def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(
+    tmp_path: Path,
+) -> None:
     left_trace = _write_mrbayes_trace(
         tmp_path / "left.run1.p",
         [
@@ -272,7 +316,9 @@ def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(tm
     assert "parameter-differences" in html
 
 
-def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_tables(tmp_path: Path) -> None:
+def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_tables(
+    tmp_path: Path,
+) -> None:
     result = build_posterior_uncertainty_figure_package(
         fixture("trees/example_tree_set_left.nwk"),
         out_dir=tmp_path / "posterior-uncertainty-package",
@@ -290,7 +336,9 @@ def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_ta
     assert "Conflict-prone clades" in summary
 
 
-def test_write_supplementary_bayesian_diagnostics_table_writes_burnin_and_chain_rows(tmp_path: Path) -> None:
+def test_write_supplementary_bayesian_diagnostics_table_writes_burnin_and_chain_rows(
+    tmp_path: Path,
+) -> None:
     second_chain = tmp_path / "chain-2.log"
     second_chain.write_text(
         "# BEAST fixture log\n"
@@ -322,7 +370,9 @@ def test_write_supplementary_bayesian_diagnostics_table_writes_burnin_and_chain_
     assert "chain-parameter\tchain_1\tposterior" in text
 
 
-def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnostics(tmp_path: Path) -> None:
+def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnostics(
+    tmp_path: Path,
+) -> None:
     second_chain = tmp_path / "chain-2.log"
     second_chain.write_text(
         "# BEAST fixture log\n"
@@ -358,7 +408,9 @@ def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnosti
     assert "effective sample size" in text
 
 
-def test_write_bayesian_limitations_text_includes_diagnostics_and_dating_risks(tmp_path: Path) -> None:
+def test_write_bayesian_limitations_text_includes_diagnostics_and_dating_risks(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "bayesian-limitations.md"
     report = write_bayesian_limitations_text(
         output_path,

@@ -14,15 +14,14 @@ from bijux_phylogenetics.core.taxonomy import (
     build_taxon_mapping_conflict_report,
     detect_duplicate_biological_identities,
     export_tree_accepted_names,
-    inspect_tree_taxon_rank_consistency,
     inspect_tree_taxon_namespaces,
+    inspect_tree_taxon_rank_consistency,
     resolve_tree_taxon_synonyms,
     write_accepted_name_mapping,
     write_synonym_resolution_mapping,
 )
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.io.trees import load_tree
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -46,12 +45,16 @@ def test_audit_tree_taxon_synonyms_detects_candidates_and_ambiguity() -> None:
     assert [(row.raw_label, row.accepted_label) for row in report.candidates] == [
         ("Felis_concolor", "Puma_concolor"),
     ]
-    assert [(row.raw_label, row.accepted_labels) for row in report.ambiguous_mappings] == [
+    assert [
+        (row.raw_label, row.accepted_labels) for row in report.ambiguous_mappings
+    ] == [
         ("Jaguar", ["Panthera_onca", "Panthera_pardus"]),
     ]
 
 
-def test_resolve_tree_taxon_synonyms_is_reversible_and_rejects_ambiguous_rows(tmp_path: Path) -> None:
+def test_resolve_tree_taxon_synonyms_is_reversible_and_rejects_ambiguous_rows(
+    tmp_path: Path,
+) -> None:
     tree = load_tree(fixture("example_taxonomy_tree.nwk"))
     resolved_tree, report = resolve_tree_taxon_synonyms(
         tree,
@@ -77,7 +80,9 @@ def test_inspect_tree_taxon_namespaces_reports_mixed_identifier_styles() -> None
     assert report.namespace_counts["species_name"] == 2
     assert report.namespace_counts["sample_id"] == 1
     assert report.namespace_counts["isolate_id"] == 1
-    assert any("multiple explicit taxon namespaces" in warning for warning in report.warnings)
+    assert any(
+        "multiple explicit taxon namespaces" in warning for warning in report.warnings
+    )
 
 
 def test_inspect_tree_taxon_rank_consistency_flags_mixed_label_levels() -> None:
@@ -92,7 +97,9 @@ def test_inspect_tree_taxon_rank_consistency_flags_mixed_label_levels() -> None:
     assert report.rank_counts["sample"] == 1
 
 
-def test_export_tree_accepted_names_marks_resolved_unchanged_and_ambiguous_rows(tmp_path: Path) -> None:
+def test_export_tree_accepted_names_marks_resolved_unchanged_and_ambiguous_rows(
+    tmp_path: Path,
+) -> None:
     tree = load_tree(fixture("example_taxonomy_tree.nwk"))
     report = export_tree_accepted_names(tree, fixture("example_taxon_synonyms.tsv"))
 
@@ -108,7 +115,9 @@ def test_export_tree_accepted_names_marks_resolved_unchanged_and_ambiguous_rows(
 
 def test_duplicate_biological_identity_detection_uses_shared_accepted_names() -> None:
     tree = loads_newick("(Felis_concolor:0.1,Puma_concolor:0.2,Jaguar:0.3);")
-    report = detect_duplicate_biological_identities(tree, synonym_table_path=fixture("example_taxon_synonyms.tsv"))
+    report = detect_duplicate_biological_identities(
+        tree, synonym_table_path=fixture("example_taxon_synonyms.tsv")
+    )
 
     assert any(
         row.evidence == "shared_accepted_name"
@@ -120,7 +129,9 @@ def test_duplicate_biological_identity_detection_uses_shared_accepted_names() ->
 
 def test_build_taxon_mapping_conflict_report_collects_synonym_ambiguity() -> None:
     tree = load_tree(fixture("example_taxonomy_tree.nwk"))
-    report = build_taxon_mapping_conflict_report(tree, synonym_table_path=fixture("example_taxon_synonyms.tsv"))
+    report = build_taxon_mapping_conflict_report(
+        tree, synonym_table_path=fixture("example_taxon_synonyms.tsv")
+    )
 
     assert any(row.conflict_type == "ambiguous_synonym" for row in report.rows)
     assert any("reviewer attention" in warning for warning in report.warnings)
@@ -128,7 +139,9 @@ def test_build_taxon_mapping_conflict_report_collects_synonym_ambiguity() -> Non
 
 def test_build_taxon_audit_report_combines_rank_namespace_and_mapping_reviews() -> None:
     tree = load_tree(fixture("example_taxonomy_rank_mixed.nwk"))
-    report = build_taxon_audit_report(tree, synonym_table_path=fixture("example_taxon_synonyms.tsv"))
+    report = build_taxon_audit_report(
+        tree, synonym_table_path=fixture("example_taxon_synonyms.tsv")
+    )
 
     assert report.tree_tip_count == 5
     assert report.rank_consistency.mixed_ranks is True
@@ -155,7 +168,9 @@ def test_build_taxon_workflow_loss_report_tracks_first_loss_stage() -> None:
         fixture("example_taxon_workflow_metadata.csv"),
         fixture("example_taxon_workflow_traits.csv"),
         alignment_path=fixture("example_taxon_workflow_alignment.fasta"),
-        filtered_alignment_path=fixture("example_taxon_workflow_filtered_alignment.fasta"),
+        filtered_alignment_path=fixture(
+            "example_taxon_workflow_filtered_alignment.fasta"
+        ),
         inference_tree_path=fixture("example_taxon_workflow_inference.nwk"),
         reported_taxa_path=fixture("example_taxon_workflow_reported.csv"),
     )
@@ -175,9 +190,17 @@ def test_build_taxon_workflow_loss_report_tracks_first_loss_stage() -> None:
 def test_build_taxon_stability_report_compares_named_sources() -> None:
     report = build_taxon_stability_report(
         [
-            load_taxon_run_source(label="tree", path=fixture("example_taxon_workflow_tree.nwk")),
-            load_taxon_run_source(label="alignment", path=fixture("example_taxon_workflow_alignment.fasta")),
-            load_taxon_run_source(label="filtered", path=fixture("example_taxon_workflow_filtered_alignment.fasta")),
+            load_taxon_run_source(
+                label="tree", path=fixture("example_taxon_workflow_tree.nwk")
+            ),
+            load_taxon_run_source(
+                label="alignment",
+                path=fixture("example_taxon_workflow_alignment.fasta"),
+            ),
+            load_taxon_run_source(
+                label="filtered",
+                path=fixture("example_taxon_workflow_filtered_alignment.fasta"),
+            ),
         ]
     )
 

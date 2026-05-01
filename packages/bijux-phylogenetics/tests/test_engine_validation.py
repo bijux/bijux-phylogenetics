@@ -6,17 +6,16 @@ from bijux_phylogenetics.engines import run_model_selection
 from bijux_phylogenetics.engines.validation import (
     audit_alignment_inference_readiness,
     classify_inference_workflow_failure,
+    compare_inferred_tree_to_taxon_metadata,
     compare_inferred_trees_across_engines,
     compare_ml_trees_across_models,
-    compare_inferred_tree_to_taxon_metadata,
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
-    validate_ml_tree_contains_expected_taxa,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
+    validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
 )
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -119,21 +118,32 @@ print({tree_newick!r})
     )
 
 
-def test_audit_alignment_inference_readiness_prefers_ml_for_aligned_variable_data() -> None:
+def test_audit_alignment_inference_readiness_prefers_ml_for_aligned_variable_data() -> (
+    None
+):
     report = audit_alignment_inference_readiness(fixture("example_alignment.fasta"))
     assert report.overall_decision == "ready"
     assert report.recommended_workflow == "maximum_likelihood"
-    assert any(decision.workflow == "bayesian" and decision.ready for decision in report.decisions)
+    assert any(
+        decision.workflow == "bayesian" and decision.ready
+        for decision in report.decisions
+    )
 
 
 def test_audit_alignment_inference_readiness_blocks_unaligned_raw_sequences() -> None:
     report = audit_alignment_inference_readiness(fixture("example_sequences_raw.fasta"))
     assert report.overall_decision == "blocked"
     assert report.recommended_workflow == "unsuitable"
-    assert any("not yet aligned" in blocker for decision in report.decisions for blocker in decision.blockers)
+    assert any(
+        "not yet aligned" in blocker
+        for decision in report.decisions
+        for blocker in decision.blockers
+    )
 
 
-def test_validate_model_selection_against_engine_outputs_requires_exact_match(tmp_path: Path) -> None:
+def test_validate_model_selection_against_engine_outputs_requires_exact_match(
+    tmp_path: Path,
+) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture")
     workflow = run_model_selection(
         fixture("example_alignment.fasta"),
@@ -148,7 +158,9 @@ def test_validate_model_selection_against_engine_outputs_requires_exact_match(tm
     assert report.artifact_selected_model == "GTR+G"
 
 
-def test_validate_ml_tree_contains_expected_taxa_matches_alignment_ids(tmp_path: Path) -> None:
+def test_validate_ml_tree_contains_expected_taxa_matches_alignment_ids(
+    tmp_path: Path,
+) -> None:
     executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
     from bijux_phylogenetics.engines import run_maximum_likelihood_tree_inference
 
@@ -165,7 +177,9 @@ def test_validate_ml_tree_contains_expected_taxa_matches_alignment_ids(tmp_path:
     assert report.observed_taxa == ["A", "B", "C", "D"]
 
 
-def test_compare_inferred_tree_to_taxon_metadata_reports_monophyly_and_splits(tmp_path: Path) -> None:
+def test_compare_inferred_tree_to_taxon_metadata_reports_monophyly_and_splits(
+    tmp_path: Path,
+) -> None:
     metadata_path = tmp_path / "metadata.tsv"
     metadata_path.write_text(
         "taxon\tgroup\nA\tleft\nB\tleft\nC\tright\nD\tright\n",
@@ -191,7 +205,9 @@ def test_compare_inferred_tree_to_taxon_metadata_reports_monophyly_and_splits(tm
     assert any(row.status == "split_unexpectedly" for row in split_report.observations)
 
 
-def test_classify_inference_workflow_failure_distinguishes_engine_and_parse_failures(tmp_path: Path) -> None:
+def test_classify_inference_workflow_failure_distinguishes_engine_and_parse_failures(
+    tmp_path: Path,
+) -> None:
     engine_failure = classify_inference_workflow_failure(
         workflow="maximum-likelihood-tree",
         input_paths=[fixture("example_alignment.fasta")],
@@ -211,7 +227,9 @@ def test_classify_inference_workflow_failure_distinguishes_engine_and_parse_fail
     assert parse_failure.failure_category == "parse_failure"
 
 
-def test_classify_inference_workflow_failure_detects_input_failures(tmp_path: Path) -> None:
+def test_classify_inference_workflow_failure_detects_input_failures(
+    tmp_path: Path,
+) -> None:
     missing_input = tmp_path / "missing.fasta"
     report = classify_inference_workflow_failure(
         workflow="maximum-likelihood-tree",
@@ -241,9 +259,13 @@ def test_validate_bootstrap_tree_set_requires_consistent_taxa(tmp_path: Path) ->
     assert any("same taxon set" in issue for issue in invalid_report.issues)
 
 
-def test_summarize_bootstrap_support_distribution_reports_range_median_and_histogram(tmp_path: Path) -> None:
+def test_summarize_bootstrap_support_distribution_reports_range_median_and_histogram(
+    tmp_path: Path,
+) -> None:
     tree_path = tmp_path / "supported.nwk"
-    tree_path.write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)68:0.2)72:0.3;\n", encoding="utf-8")
+    tree_path.write_text(
+        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)68:0.2)72:0.3;\n", encoding="utf-8"
+    )
 
     report = summarize_bootstrap_support_distribution(tree_path)
 
@@ -255,9 +277,14 @@ def test_summarize_bootstrap_support_distribution_reports_range_median_and_histo
     assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 1, "ge90": 1}
 
 
-def test_detect_weakly_supported_backbone_flags_major_internal_branches(tmp_path: Path) -> None:
+def test_detect_weakly_supported_backbone_flags_major_internal_branches(
+    tmp_path: Path,
+) -> None:
     tree_path = tmp_path / "weak-backbone.nwk"
-    tree_path.write_text("(((A:0.1,B:0.1)95:0.2,C:0.1)62:0.3,(D:0.1,E:0.1)91:0.2)58:0.4;\n", encoding="utf-8")
+    tree_path.write_text(
+        "(((A:0.1,B:0.1)95:0.2,C:0.1)62:0.3,(D:0.1,E:0.1)91:0.2)58:0.4;\n",
+        encoding="utf-8",
+    )
 
     report = detect_weakly_supported_backbone(tree_path, threshold=70.0)
 
@@ -267,7 +294,9 @@ def test_detect_weakly_supported_backbone_flags_major_internal_branches(tmp_path
     assert any("backbone" in warning for warning in report.warnings)
 
 
-def test_compare_ml_trees_across_models_reports_topology_and_branch_length_differences(tmp_path: Path) -> None:
+def test_compare_ml_trees_across_models_reports_topology_and_branch_length_differences(
+    tmp_path: Path,
+) -> None:
     from bijux_phylogenetics.engines import run_maximum_likelihood_tree_inference
 
     left_executable = _fake_iqtree_tree_alt(
@@ -304,8 +333,13 @@ def test_compare_ml_trees_across_models_reports_topology_and_branch_length_diffe
     assert any("topologies differ" in warning for warning in report.warnings)
 
 
-def test_compare_inferred_trees_across_engines_reports_engine_labels(tmp_path: Path) -> None:
-    from bijux_phylogenetics.engines import run_fast_tree_inference, run_maximum_likelihood_tree_inference
+def test_compare_inferred_trees_across_engines_reports_engine_labels(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import (
+        run_fast_tree_inference,
+        run_maximum_likelihood_tree_inference,
+    )
 
     iqtree_executable = _fake_iqtree_tree_alt(
         tmp_path / "iqtree-engine",
@@ -339,7 +373,9 @@ def test_compare_inferred_trees_across_engines_reports_engine_labels(tmp_path: P
     assert any("branch-length" in warning for warning in report.warnings)
 
 
-def test_validate_inference_engine_outputs_checks_manifest_consistency(tmp_path: Path) -> None:
+def test_validate_inference_engine_outputs_checks_manifest_consistency(
+    tmp_path: Path,
+) -> None:
     executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
     from bijux_phylogenetics.engines import run_maximum_likelihood_tree_inference
 
@@ -354,7 +390,12 @@ def test_validate_inference_engine_outputs_checks_manifest_consistency(tmp_path:
     assert report.valid is True
     assert report.current_output_checksum_match is True
 
-    workflow.output_paths["tree"].write_text("((A:0.1,B:0.1):0.2,(C:0.1,X:0.1):0.2);\n", encoding="utf-8")
+    workflow.output_paths["tree"].write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,X:0.1):0.2);\n", encoding="utf-8"
+    )
     drift_report = validate_inference_engine_outputs(workflow.manifest_path)
     assert drift_report.valid is False
-    assert any("checksums" in issue or "expected taxa" in issue for issue in drift_report.issues)
+    assert any(
+        "checksums" in issue or "expected taxa" in issue
+        for issue in drift_report.issues
+    )

@@ -3,13 +3,16 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-import pytest
-
-from bijux_phylogenetics.ancestral.common import load_continuous_dataset, load_discrete_dataset
-from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
+from bijux_phylogenetics.ancestral.common import (
+    load_continuous_dataset,
+    load_discrete_dataset,
+)
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.errors import AncestralReconstructionError
-
+import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -26,7 +29,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_load_continuous_dataset_prunes_missing_taxa_and_warns_on_small_sample() -> None:
+def test_load_continuous_dataset_prunes_missing_taxa_and_warns_on_small_sample() -> (
+    None
+):
     dataset = load_continuous_dataset(
         fixture("example_tree.nwk"),
         fixture("example_traits.tsv"),
@@ -48,15 +53,28 @@ def test_continuous_reconstruction_reports_internal_estimates_and_intervals() ->
         trait="response",
         model="brownian",
     )
-    internal_estimates = {estimate.node: estimate for estimate in report.estimates if not estimate.is_tip}
+    internal_estimates = {
+        estimate.node: estimate for estimate in report.estimates if not estimate.is_tip
+    }
     assert report.model == "brownian"
     assert report.taxon_count == 4
     assert math.isclose(internal_estimates["A|B"].estimate, 2.25)
     assert math.isclose(internal_estimates["C|D"].estimate, 3.25)
     assert math.isclose(internal_estimates["A|B|C|D"].estimate, 2.8055555555555554)
-    assert internal_estimates["A|B|C|D"].lower_95_interval < internal_estimates["A|B|C|D"].estimate
-    assert internal_estimates["A|B|C|D"].upper_95_interval > internal_estimates["A|B|C|D"].estimate
-    assert internal_estimates["A|B|C|D"].interpretation in {"moderate uncertainty", "narrow uncertainty", "broad uncertainty", "unstable node estimate"}
+    assert (
+        internal_estimates["A|B|C|D"].lower_95_interval
+        < internal_estimates["A|B|C|D"].estimate
+    )
+    assert (
+        internal_estimates["A|B|C|D"].upper_95_interval
+        > internal_estimates["A|B|C|D"].estimate
+    )
+    assert internal_estimates["A|B|C|D"].interpretation in {
+        "moderate uncertainty",
+        "narrow uncertainty",
+        "broad uncertainty",
+        "unstable node estimate",
+    }
     assert 0.0 <= internal_estimates["A|B|C|D"].confidence <= 1.0
     assert isinstance(internal_estimates["A|B|C|D"].downstream_risks, list)
 
@@ -102,7 +120,9 @@ def test_discrete_reconstruction_reports_ambiguous_root_probabilities() -> None:
         fixture("example_traits_comparative.tsv"),
         trait="habitat",
     )
-    estimates = {estimate.node: estimate for estimate in report.estimates if not estimate.is_tip}
+    estimates = {
+        estimate.node: estimate for estimate in report.estimates if not estimate.is_tip
+    }
     assert estimates["A|B"].most_likely_state == "forest"
     assert estimates["C|D"].most_likely_state == "tundra"
     assert estimates["A|B|C|D"].ambiguous is True

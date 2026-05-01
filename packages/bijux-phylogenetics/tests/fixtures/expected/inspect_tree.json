@@ -106,7 +106,7 @@
       "whitespace_variants": []
     },
     "tip_count": 4,
-    "total_branch_length": 0.9,
+    "total_branch_length": 0.8999999999999999,
     "tree_diameter": 0.6,
     "tree_quality_score": 100.0,
     "tree_quality_warnings": [],
@@ -152,7 +152,7 @@
     "cli": "bijux-phylogenetics",
     "import_name": "bijux_phylogenetics",
     "package": "bijux-phylogenetics",
-    "version": "0.1.1.dev5+dirty"
+    "version": "0.1.1.dev524"
   },
   "status": "ok",
   "warnings": []

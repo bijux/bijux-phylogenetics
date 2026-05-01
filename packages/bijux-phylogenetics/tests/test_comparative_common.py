@@ -3,8 +3,6 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-import pytest
-
 from bijux_phylogenetics.comparative.common import (
     build_brownian_covariance_matrix,
     load_comparative_dataset,
@@ -13,7 +11,7 @@ from bijux_phylogenetics.comparative.common import (
 )
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
-
+import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

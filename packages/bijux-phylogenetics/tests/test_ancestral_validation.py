@@ -7,7 +7,6 @@ from bijux_phylogenetics.ancestral.validation import (
     validate_discrete_ancestral_reconstruction,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -23,7 +22,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_validate_continuous_ancestral_reconstruction_reports_error_against_truth() -> None:
+def test_validate_continuous_ancestral_reconstruction_reports_error_against_truth() -> (
+    None
+):
     report = validate_continuous_ancestral_reconstruction(
         fixture("example_tree.nwk"),
         simulation_model="brownian",
@@ -37,7 +38,9 @@ def test_validate_continuous_ancestral_reconstruction_reports_error_against_trut
     assert report.root_mean_squared_error >= 0.0
 
 
-def test_validate_discrete_ancestral_reconstruction_reports_accuracy_and_calibration() -> None:
+def test_validate_discrete_ancestral_reconstruction_reports_accuracy_and_calibration() -> (
+    None
+):
     report = validate_discrete_ancestral_reconstruction(
         fixture("example_tree.nwk"),
         reconstruction_model="fitch",

@@ -10,7 +10,6 @@ from bijux_phylogenetics.comparative.reporting import (
     write_comparative_method_report,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -37,7 +36,10 @@ def test_build_comparative_method_report_returns_audit_rows_and_limitations() ->
     assert len(report.snapshot.audit_rows) == 3
     assert report.snapshot.maturity.reference_validation_passed is True
     assert report.snapshot.pgls_inputs.formula_audit.encoded_columns
-    assert "causal interpretation is not warranted from comparative association alone" in report.snapshot.limitations
+    assert (
+        "causal interpretation is not warranted from comparative association alone"
+        in report.snapshot.limitations
+    )
 
 
 def test_build_trait_influence_report_combines_predictor_and_taxon_rankings() -> None:

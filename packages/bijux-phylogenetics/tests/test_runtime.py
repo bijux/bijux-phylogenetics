@@ -19,8 +19,8 @@ from bijux_phylogenetics.bayesian import (
     assess_beast_chain_mixing,
     assess_beast_convergence,
     assess_mrbayes_convergence,
-    build_posterior_uncertainty_figure_package,
     build_bayesian_evidence_package,
+    build_posterior_uncertainty_figure_package,
     compare_bayesian_tree_sets,
     compare_independent_bayesian_runs,
     compare_posterior_tree_sets_by_clock,
@@ -52,15 +52,7 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_validation,
 )
 from bijux_phylogenetics.cli import main
-from bijux_phylogenetics.compare.topology import (
-    compare_branch_lengths,
-    compare_clade_sets,
-    compare_support_values,
-    compare_tree_paths,
-    detect_clade_changes,
-    prune_trees_to_shared_taxa,
-    write_tree_comparison_table,
-)
+from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
     assess_comparative_method_maturity,
     audit_comparative_parameter_uncertainty,
@@ -75,6 +67,15 @@ from bijux_phylogenetics.comparative import (
     summarize_numeric_trait_readiness,
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.compare.topology import (
+    compare_branch_lengths,
+    compare_clade_sets,
+    compare_support_values,
+    compare_tree_paths,
+    detect_clade_changes,
+    prune_trees_to_shared_taxa,
+    write_tree_comparison_table,
+)
 from bijux_phylogenetics.core.alignment import AlignmentSummary
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
@@ -88,19 +89,56 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
-from bijux_phylogenetics.distance import (
-    assess_distance_method_maturity,
-    build_distance_method_report,
-    build_distance_tree,
-    build_tree_from_imported_distance_matrix,
-    compare_distance_gap_policies,
-    compare_distance_models,
-    compare_distance_tree_to_reference_tree,
-    compare_distance_tree_topologies,
-    compute_pairwise_genetic_distance_matrix,
-    summarize_distance_bootstrap_support,
-    load_imported_distance_matrix,
-    validate_imported_distance_matrix,
+from bijux_phylogenetics.core.pruning import (
+    drop_tree_taxa,
+    prune_alignment_to_tree,
+    prune_tree_to_alignment,
+    prune_tree_to_requested_taxa,
+    prune_tree_to_taxa,
+)
+from bijux_phylogenetics.core.taxonomy import (
+    build_taxon_audit_report,
+    build_taxon_mapping_conflict_report,
+    detect_duplicate_biological_identities,
+    export_tree_accepted_names,
+    infer_taxon_rank,
+    inspect_tree_taxa_safety,
+    inspect_tree_taxon_identity,
+    inspect_tree_taxon_rank_consistency,
+    normalize_tree_taxa,
+    write_accepted_name_mapping,
+    write_taxon_mapping,
+)
+from bijux_phylogenetics.core.topology import (
+    collapse_branches_below_length,
+    extract_named_clade,
+    ladderize_tree,
+    reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
+    sort_tree_tips_alphabetically,
+    unroot_tree,
+)
+from bijux_phylogenetics.core.traits import (
+    detect_missing_trait_values,
+    detect_unusable_trait_columns,
+    link_tree_to_traits,
+    prune_traits_to_tree,
+    validate_traits_table,
+)
+from bijux_phylogenetics.diagnostics.assumptions import (
+    assess_tree_assumptions,
+    inspect_branch_length_units,
+    standardize_support_labels,
+)
+from bijux_phylogenetics.diagnostics.root_to_tip import (
+    compute_root_to_tip_distances,
+    diagnose_ultrametricity,
+)
+from bijux_phylogenetics.diagnostics.validation import (
+    diagnose_tree_path,
+    forensic_tree_path,
+    inspect_tree_path,
+    validate_tree_path,
 )
 from bijux_phylogenetics.discrete_evolution import (
     compare_discrete_state_models,
@@ -119,7 +157,20 @@ from bijux_phylogenetics.discrete_evolution import (
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
-from bijux_phylogenetics.command_line.registry import get_command_spec
+from bijux_phylogenetics.distance import (
+    assess_distance_method_maturity,
+    build_distance_method_report,
+    build_distance_tree,
+    build_tree_from_imported_distance_matrix,
+    compare_distance_gap_policies,
+    compare_distance_models,
+    compare_distance_tree_to_reference_tree,
+    compare_distance_tree_topologies,
+    compute_pairwise_genetic_distance_matrix,
+    load_imported_distance_matrix,
+    summarize_distance_bootstrap_support,
+    validate_imported_distance_matrix,
+)
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
     compute_lineage_through_time_curve,
@@ -137,8 +188,8 @@ from bijux_phylogenetics.diversification import (
 from bijux_phylogenetics.engines import (
     audit_alignment_inference_readiness,
     classify_inference_workflow_failure,
-    compare_inferred_tree_to_taxon_metadata,
     compare_fast_and_ml_trees,
+    compare_inferred_tree_to_taxon_metadata,
     render_inference_workflow_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
@@ -152,108 +203,69 @@ from bijux_phylogenetics.engines import (
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
 )
-from bijux_phylogenetics.core.pruning import (
-    drop_tree_taxa,
-    prune_alignment_to_tree,
-    prune_tree_to_alignment,
-    prune_tree_to_requested_taxa,
-    prune_tree_to_taxa,
-)
-from bijux_phylogenetics.core.topology import (
-    collapse_branches_below_length,
-    extract_named_clade,
-    ladderize_tree,
-    reroot_tree_by_midpoint,
-    root_tree_on_outgroup,
-    sort_tree_tips_alphabetically,
-    unroot_tree,
-)
-from bijux_phylogenetics.core.taxonomy import (
-    build_taxon_audit_report,
-    build_taxon_mapping_conflict_report,
-    detect_duplicate_biological_identities,
-    export_tree_accepted_names,
-    infer_taxon_rank,
-    inspect_tree_taxa_safety,
-    inspect_tree_taxon_identity,
-    inspect_tree_taxon_rank_consistency,
-    normalize_tree_taxa,
-    write_accepted_name_mapping,
-    write_taxon_mapping,
-)
-from bijux_phylogenetics.core.traits import (
-    detect_missing_trait_values,
-    detect_unusable_trait_columns,
-    link_tree_to_traits,
-    prune_traits_to_tree,
-    validate_traits_table,
-)
-from bijux_phylogenetics.diagnostics.root_to_tip import compute_root_to_tip_distances
-from bijux_phylogenetics.diagnostics.root_to_tip import diagnose_ultrametricity
-from bijux_phylogenetics.diagnostics.assumptions import (
-    assess_tree_assumptions,
-    inspect_branch_length_units,
-    standardize_support_labels,
-)
-from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, forensic_tree_path, inspect_tree_path, validate_tree_path
-from bijux_phylogenetics.evidence.bundles import bundle_directory, bundle_file_paths, validate_bundle
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
     DuplicateTaxonError,
     EngineUnavailableError,
-    InvalidBranchLengthError,
     InvalidAlignmentError,
+    InvalidBranchLengthError,
     InvalidDistanceMatrixError,
     MetadataJoinError,
     NonUltrametricTreeError,
     UnnamedTipError,
-    UnsupportedTreeFormatError,
     UnrootedTreeError,
+    UnsupportedTreeFormatError,
+)
+from bijux_phylogenetics.evidence.bundles import (
+    bundle_directory,
+    bundle_file_paths,
+    validate_bundle,
 )
 from bijux_phylogenetics.identity import IDENTITY
-from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
-from bijux_phylogenetics.io.nexus import load_nexus
-from bijux_phylogenetics.io.phyloxml import load_phyloxml
-from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
-from bijux_phylogenetics.io.trees import detect_tree_format
-from bijux_phylogenetics.io.fasta import link_alignment_to_tree, load_fasta_alignment, summarise_fasta
 from bijux_phylogenetics.io.fasta import (
     assess_alignment_low_information,
-    build_ambiguous_alignment_column_report,
     build_alignment_forensic_report,
     build_alignment_quality_report,
+    build_ambiguous_alignment_column_report,
     build_duplicate_sequence_policy_report,
     build_sequence_quality_ranking,
-    clean_alignment_with_profile,
     classify_alignment_sequences,
+    clean_alignment_with_profile,
     compare_alignment_versions,
-    compute_pairwise_sequence_identity_matrix,
     compute_amino_acid_composition,
     compute_nucleotide_composition,
+    compute_pairwise_sequence_identity_matrix,
     detect_composition_outlier_sequences,
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
     detect_over_aligned_regions,
     detect_sequence_length_outliers,
+    detect_sequences_with_excessive_missing_data,
+    detect_sites_with_excessive_missing_data,
     detect_under_aligned_regions,
     get_alignment_filter_profile,
     infer_alignment_alphabet,
-    list_alignment_filter_profiles,
-    detect_sequences_with_excessive_missing_data,
-    detect_sites_with_excessive_missing_data,
     inspect_coding_alignment,
-    summarize_alignment_readiness,
-    summarize_alignment_windows,
+    link_alignment_to_tree,
+    list_alignment_filter_profiles,
+    load_fasta_alignment,
     remove_all_gap_columns,
     remove_all_missing_columns,
     remove_sequences_above_missingness_threshold,
-    trim_columns_above_missingness_threshold,
+    summarise_fasta,
+    summarize_alignment_readiness,
+    summarize_alignment_windows,
     translate_coding_alignment,
     trim_alignment,
+    trim_columns_above_missingness_threshold,
     write_fasta_alignment,
 )
-from bijux_phylogenetics.render.package import build_tree_figure_package
+from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
+from bijux_phylogenetics.io.nexus import load_nexus
+from bijux_phylogenetics.io.phyloxml import load_phyloxml
+from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
+from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.reference_validation import (
     build_core_workflow_failure_gallery,
     build_core_workflow_validation_report,
@@ -266,6 +278,7 @@ from bijux_phylogenetics.reference_validation import (
     validate_taxon_naming_reference_fixtures,
     validate_tree_reference_fixtures,
 )
+from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
@@ -275,11 +288,11 @@ from bijux_phylogenetics.reports.service import (
     render_distance_report,
     render_level_one_release_gate_report,
     render_phylo_inputs_report,
-    render_taxon_report,
     render_phylogenetics_report,
+    render_taxon_report,
+    render_tree_report,
     render_tree_set_comparison_report,
     render_tree_uncertainty_report,
-    render_tree_report,
     render_workflow_validation_report,
 )
 from bijux_phylogenetics.simulation import (
@@ -314,7 +327,6 @@ from bijux_phylogenetics.tree_set import (
     write_uncertainty_conclusion_table,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -335,103 +347,319 @@ def test_package_identity_matches_canonical_names() -> None:
     assert IDENTITY.package_name == "bijux-phylogenetics"
     assert IDENTITY.import_name == "bijux_phylogenetics"
     assert IDENTITY.cli_name == "bijux-phylogenetics"
-    assert "bijux phylogenetics" == IDENTITY.umbrella_command
+    assert IDENTITY.umbrella_command == "bijux phylogenetics"
 
 
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.summarise_fasta is summarise_fasta
-    assert bijux_phylogenetics.build_alignment_quality_report is build_alignment_quality_report
-    assert bijux_phylogenetics.build_alignment_forensic_report is build_alignment_forensic_report
-    assert bijux_phylogenetics.classify_alignment_sequences is classify_alignment_sequences
-    assert bijux_phylogenetics.clean_alignment_with_profile is clean_alignment_with_profile
+    assert (
+        bijux_phylogenetics.build_alignment_quality_report
+        is build_alignment_quality_report
+    )
+    assert (
+        bijux_phylogenetics.build_alignment_forensic_report
+        is build_alignment_forensic_report
+    )
+    assert (
+        bijux_phylogenetics.classify_alignment_sequences is classify_alignment_sequences
+    )
+    assert (
+        bijux_phylogenetics.clean_alignment_with_profile is clean_alignment_with_profile
+    )
     assert bijux_phylogenetics.compare_alignment_versions is compare_alignment_versions
-    assert bijux_phylogenetics.compute_pairwise_genetic_distance_matrix is compute_pairwise_genetic_distance_matrix
-    assert bijux_phylogenetics.build_distance_method_report is build_distance_method_report
+    assert (
+        bijux_phylogenetics.compute_pairwise_genetic_distance_matrix
+        is compute_pairwise_genetic_distance_matrix
+    )
+    assert (
+        bijux_phylogenetics.build_distance_method_report is build_distance_method_report
+    )
     assert bijux_phylogenetics.build_distance_tree is build_distance_tree
-    assert bijux_phylogenetics.build_tree_from_imported_distance_matrix is build_tree_from_imported_distance_matrix
-    assert bijux_phylogenetics.compare_distance_gap_policies is compare_distance_gap_policies
+    assert (
+        bijux_phylogenetics.build_tree_from_imported_distance_matrix
+        is build_tree_from_imported_distance_matrix
+    )
+    assert (
+        bijux_phylogenetics.compare_distance_gap_policies
+        is compare_distance_gap_policies
+    )
     assert bijux_phylogenetics.compare_distance_models is compare_distance_models
-    assert bijux_phylogenetics.compare_distance_tree_to_reference_tree is compare_distance_tree_to_reference_tree
-    assert bijux_phylogenetics.compare_distance_tree_topologies is compare_distance_tree_topologies
-    assert bijux_phylogenetics.assess_distance_method_maturity is assess_distance_method_maturity
-    assert bijux_phylogenetics.summarize_distance_bootstrap_support is summarize_distance_bootstrap_support
-    assert bijux_phylogenetics.validate_imported_distance_matrix is validate_imported_distance_matrix
-    assert bijux_phylogenetics.validate_discrete_state_coding is validate_discrete_state_coding
-    assert bijux_phylogenetics.detect_state_imbalance_problems is detect_state_imbalance_problems
-    assert bijux_phylogenetics.run_discrete_state_transition_model is run_discrete_state_transition_model
-    assert bijux_phylogenetics.estimate_ancestral_geographic_states is estimate_ancestral_geographic_states
-    assert bijux_phylogenetics.compare_discrete_state_models is compare_discrete_state_models
-    assert bijux_phylogenetics.write_discrete_model_comparison_table is write_discrete_model_comparison_table
-    assert bijux_phylogenetics.write_node_state_probability_table is write_node_state_probability_table
-    assert bijux_phylogenetics.write_transition_summary_table is write_transition_summary_table
-    assert bijux_phylogenetics.simulate_discrete_stochastic_maps is simulate_discrete_stochastic_maps
-    assert bijux_phylogenetics.summarize_discrete_stochastic_maps is summarize_discrete_stochastic_maps
-    assert bijux_phylogenetics.write_stochastic_map_collection is write_stochastic_map_collection
-    assert bijux_phylogenetics.write_stochastic_map_summary_table is write_stochastic_map_summary_table
-    assert bijux_phylogenetics.load_stochastic_map_collection is load_stochastic_map_collection
-    assert bijux_phylogenetics.validate_time_tree_for_diversification is validate_time_tree_for_diversification
-    assert bijux_phylogenetics.inspect_diversification_time_tree is inspect_diversification_time_tree
-    assert bijux_phylogenetics.compute_lineage_through_time_curve is compute_lineage_through_time_curve
-    assert bijux_phylogenetics.detect_incomplete_taxon_sampling_metadata is detect_incomplete_taxon_sampling_metadata
-    assert bijux_phylogenetics.estimate_diversification_rate is estimate_diversification_rate
-    assert bijux_phylogenetics.compare_diversification_models is compare_diversification_models
-    assert bijux_phylogenetics.detect_diversification_outlier_clades is detect_diversification_outlier_clades
-    assert bijux_phylogenetics.run_trait_dependent_diversification_analysis is run_trait_dependent_diversification_analysis
-    assert bijux_phylogenetics.render_diversification_report is render_diversification_report
-    assert bijux_phylogenetics.write_lineage_through_time_table is write_lineage_through_time_table
-    assert bijux_phylogenetics.write_clade_diversification_table is write_clade_diversification_table
-    assert bijux_phylogenetics.write_trait_dependent_diversification_table is write_trait_dependent_diversification_table
-    assert bijux_phylogenetics.render_tree_with_geographic_states is render_tree_with_geographic_states
-    assert bijux_phylogenetics.render_discrete_state_evolution_report is render_discrete_state_evolution_report
+    assert (
+        bijux_phylogenetics.compare_distance_tree_to_reference_tree
+        is compare_distance_tree_to_reference_tree
+    )
+    assert (
+        bijux_phylogenetics.compare_distance_tree_topologies
+        is compare_distance_tree_topologies
+    )
+    assert (
+        bijux_phylogenetics.assess_distance_method_maturity
+        is assess_distance_method_maturity
+    )
+    assert (
+        bijux_phylogenetics.summarize_distance_bootstrap_support
+        is summarize_distance_bootstrap_support
+    )
+    assert (
+        bijux_phylogenetics.validate_imported_distance_matrix
+        is validate_imported_distance_matrix
+    )
+    assert (
+        bijux_phylogenetics.validate_discrete_state_coding
+        is validate_discrete_state_coding
+    )
+    assert (
+        bijux_phylogenetics.detect_state_imbalance_problems
+        is detect_state_imbalance_problems
+    )
+    assert (
+        bijux_phylogenetics.run_discrete_state_transition_model
+        is run_discrete_state_transition_model
+    )
+    assert (
+        bijux_phylogenetics.estimate_ancestral_geographic_states
+        is estimate_ancestral_geographic_states
+    )
+    assert (
+        bijux_phylogenetics.compare_discrete_state_models
+        is compare_discrete_state_models
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_model_comparison_table
+        is write_discrete_model_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_node_state_probability_table
+        is write_node_state_probability_table
+    )
+    assert (
+        bijux_phylogenetics.write_transition_summary_table
+        is write_transition_summary_table
+    )
+    assert (
+        bijux_phylogenetics.simulate_discrete_stochastic_maps
+        is simulate_discrete_stochastic_maps
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_stochastic_maps
+        is summarize_discrete_stochastic_maps
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_collection
+        is write_stochastic_map_collection
+    )
+    assert (
+        bijux_phylogenetics.write_stochastic_map_summary_table
+        is write_stochastic_map_summary_table
+    )
+    assert (
+        bijux_phylogenetics.load_stochastic_map_collection
+        is load_stochastic_map_collection
+    )
+    assert (
+        bijux_phylogenetics.validate_time_tree_for_diversification
+        is validate_time_tree_for_diversification
+    )
+    assert (
+        bijux_phylogenetics.inspect_diversification_time_tree
+        is inspect_diversification_time_tree
+    )
+    assert (
+        bijux_phylogenetics.compute_lineage_through_time_curve
+        is compute_lineage_through_time_curve
+    )
+    assert (
+        bijux_phylogenetics.detect_incomplete_taxon_sampling_metadata
+        is detect_incomplete_taxon_sampling_metadata
+    )
+    assert (
+        bijux_phylogenetics.estimate_diversification_rate
+        is estimate_diversification_rate
+    )
+    assert (
+        bijux_phylogenetics.compare_diversification_models
+        is compare_diversification_models
+    )
+    assert (
+        bijux_phylogenetics.detect_diversification_outlier_clades
+        is detect_diversification_outlier_clades
+    )
+    assert (
+        bijux_phylogenetics.run_trait_dependent_diversification_analysis
+        is run_trait_dependent_diversification_analysis
+    )
+    assert (
+        bijux_phylogenetics.render_diversification_report
+        is render_diversification_report
+    )
+    assert (
+        bijux_phylogenetics.write_lineage_through_time_table
+        is write_lineage_through_time_table
+    )
+    assert (
+        bijux_phylogenetics.write_clade_diversification_table
+        is write_clade_diversification_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_dependent_diversification_table
+        is write_trait_dependent_diversification_table
+    )
+    assert (
+        bijux_phylogenetics.render_tree_with_geographic_states
+        is render_tree_with_geographic_states
+    )
+    assert (
+        bijux_phylogenetics.render_discrete_state_evolution_report
+        is render_discrete_state_evolution_report
+    )
     assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
     assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
-    assert bijux_phylogenetics.compute_pairwise_sequence_identity_matrix is compute_pairwise_sequence_identity_matrix
-    assert bijux_phylogenetics.detect_sequence_length_outliers is detect_sequence_length_outliers
-    assert bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
-    assert bijux_phylogenetics.detect_under_aligned_regions is detect_under_aligned_regions
-    assert bijux_phylogenetics.list_alignment_filter_profiles is list_alignment_filter_profiles
-    assert bijux_phylogenetics.get_alignment_filter_profile is get_alignment_filter_profile
-    assert bijux_phylogenetics.summarize_alignment_windows is summarize_alignment_windows
-    assert bijux_phylogenetics.summarize_alignment_readiness is summarize_alignment_readiness
+    assert (
+        bijux_phylogenetics.compute_pairwise_sequence_identity_matrix
+        is compute_pairwise_sequence_identity_matrix
+    )
+    assert (
+        bijux_phylogenetics.detect_sequence_length_outliers
+        is detect_sequence_length_outliers
+    )
+    assert (
+        bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
+    )
+    assert (
+        bijux_phylogenetics.detect_under_aligned_regions is detect_under_aligned_regions
+    )
+    assert (
+        bijux_phylogenetics.list_alignment_filter_profiles
+        is list_alignment_filter_profiles
+    )
+    assert (
+        bijux_phylogenetics.get_alignment_filter_profile is get_alignment_filter_profile
+    )
+    assert (
+        bijux_phylogenetics.summarize_alignment_windows is summarize_alignment_windows
+    )
+    assert (
+        bijux_phylogenetics.summarize_alignment_readiness
+        is summarize_alignment_readiness
+    )
     assert bijux_phylogenetics.audit_dataset_inputs is audit_dataset_inputs
-    assert bijux_phylogenetics.audit_dataset_taxon_ordering is audit_dataset_taxon_ordering
-    assert bijux_phylogenetics.build_dataset_completeness_matrix is build_dataset_completeness_matrix
+    assert (
+        bijux_phylogenetics.audit_dataset_taxon_ordering is audit_dataset_taxon_ordering
+    )
+    assert (
+        bijux_phylogenetics.build_dataset_completeness_matrix
+        is build_dataset_completeness_matrix
+    )
     assert bijux_phylogenetics.build_dataset_crosswalk is build_dataset_crosswalk
-    assert bijux_phylogenetics.build_dataset_mismatch_report is build_dataset_mismatch_report
-    assert bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
+    assert (
+        bijux_phylogenetics.build_dataset_mismatch_report
+        is build_dataset_mismatch_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
+    )
     assert bijux_phylogenetics.build_taxon_audit_report is build_taxon_audit_report
-    assert bijux_phylogenetics.build_taxon_mapping_conflict_report is build_taxon_mapping_conflict_report
-    assert bijux_phylogenetics.detect_duplicate_biological_identities is detect_duplicate_biological_identities
+    assert (
+        bijux_phylogenetics.build_taxon_mapping_conflict_report
+        is build_taxon_mapping_conflict_report
+    )
+    assert (
+        bijux_phylogenetics.detect_duplicate_biological_identities
+        is detect_duplicate_biological_identities
+    )
     assert bijux_phylogenetics.export_tree_accepted_names is export_tree_accepted_names
     assert bijux_phylogenetics.infer_taxon_rank is infer_taxon_rank
-    assert bijux_phylogenetics.inspect_tree_taxon_rank_consistency is inspect_tree_taxon_rank_consistency
-    assert bijux_phylogenetics.write_accepted_name_mapping is write_accepted_name_mapping
+    assert (
+        bijux_phylogenetics.inspect_tree_taxon_rank_consistency
+        is inspect_tree_taxon_rank_consistency
+    )
+    assert (
+        bijux_phylogenetics.write_accepted_name_mapping is write_accepted_name_mapping
+    )
     assert bijux_phylogenetics.load_tree_set is load_tree_set
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
-    assert bijux_phylogenetics.compute_clade_frequency_table is compute_clade_frequency_table
-    assert bijux_phylogenetics.compute_tree_distance_matrix is compute_tree_distance_matrix
+    assert (
+        bijux_phylogenetics.compute_clade_frequency_table
+        is compute_clade_frequency_table
+    )
+    assert (
+        bijux_phylogenetics.compute_tree_distance_matrix is compute_tree_distance_matrix
+    )
     assert bijux_phylogenetics.cluster_trees_by_topology is cluster_trees_by_topology
     assert bijux_phylogenetics.detect_unstable_taxa is detect_unstable_taxa
     assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
-    assert bijux_phylogenetics.compare_posterior_topological_diversity is compare_posterior_topological_diversity
-    assert bijux_phylogenetics.detect_posterior_topology_multimodality is detect_posterior_topology_multimodality
-    assert bijux_phylogenetics.summarize_clade_credibility_conflicts is summarize_clade_credibility_conflicts
-    assert bijux_phylogenetics.summarize_uncertainty_aware_conclusions is summarize_uncertainty_aware_conclusions
-    assert bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
-    assert bijux_phylogenetics.render_tree_uncertainty_report is render_tree_uncertainty_report
-    assert bijux_phylogenetics.validate_tree_reference_fixtures is validate_tree_reference_fixtures
-    assert bijux_phylogenetics.validate_taxon_naming_reference_fixtures is validate_taxon_naming_reference_fixtures
-    assert bijux_phylogenetics.validate_alignment_quality_reference_fixtures is validate_alignment_quality_reference_fixtures
-    assert bijux_phylogenetics.validate_dataset_audit_reference_fixtures is validate_dataset_audit_reference_fixtures
-    assert bijux_phylogenetics.validate_figure_reference_fixtures is validate_figure_reference_fixtures
-    assert bijux_phylogenetics.validate_report_regression_fixtures is validate_report_regression_fixtures
-    assert bijux_phylogenetics.build_core_workflow_validation_report is build_core_workflow_validation_report
-    assert bijux_phylogenetics.build_core_workflow_failure_gallery is build_core_workflow_failure_gallery
-    assert bijux_phylogenetics.classify_core_workflow_maturity is classify_core_workflow_maturity
-    assert bijux_phylogenetics.build_level_one_release_gate_report is build_level_one_release_gate_report
+    assert (
+        bijux_phylogenetics.compare_posterior_topological_diversity
+        is compare_posterior_topological_diversity
+    )
+    assert (
+        bijux_phylogenetics.detect_posterior_topology_multimodality
+        is detect_posterior_topology_multimodality
+    )
+    assert (
+        bijux_phylogenetics.summarize_clade_credibility_conflicts
+        is summarize_clade_credibility_conflicts
+    )
+    assert (
+        bijux_phylogenetics.summarize_uncertainty_aware_conclusions
+        is summarize_uncertainty_aware_conclusions
+    )
+    assert (
+        bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
+    )
+    assert (
+        bijux_phylogenetics.render_tree_uncertainty_report
+        is render_tree_uncertainty_report
+    )
+    assert (
+        bijux_phylogenetics.validate_tree_reference_fixtures
+        is validate_tree_reference_fixtures
+    )
+    assert (
+        bijux_phylogenetics.validate_taxon_naming_reference_fixtures
+        is validate_taxon_naming_reference_fixtures
+    )
+    assert (
+        bijux_phylogenetics.validate_alignment_quality_reference_fixtures
+        is validate_alignment_quality_reference_fixtures
+    )
+    assert (
+        bijux_phylogenetics.validate_dataset_audit_reference_fixtures
+        is validate_dataset_audit_reference_fixtures
+    )
+    assert (
+        bijux_phylogenetics.validate_figure_reference_fixtures
+        is validate_figure_reference_fixtures
+    )
+    assert (
+        bijux_phylogenetics.validate_report_regression_fixtures
+        is validate_report_regression_fixtures
+    )
+    assert (
+        bijux_phylogenetics.build_core_workflow_validation_report
+        is build_core_workflow_validation_report
+    )
+    assert (
+        bijux_phylogenetics.build_core_workflow_failure_gallery
+        is build_core_workflow_failure_gallery
+    )
+    assert (
+        bijux_phylogenetics.classify_core_workflow_maturity
+        is classify_core_workflow_maturity
+    )
+    assert (
+        bijux_phylogenetics.build_level_one_release_gate_report
+        is build_level_one_release_gate_report
+    )
     assert bijux_phylogenetics.render_tree_report is render_tree_report
-    assert bijux_phylogenetics.render_workflow_validation_report is render_workflow_validation_report
-    assert bijux_phylogenetics.render_level_one_release_gate_report is render_level_one_release_gate_report
+    assert (
+        bijux_phylogenetics.render_workflow_validation_report
+        is render_workflow_validation_report
+    )
+    assert (
+        bijux_phylogenetics.render_level_one_release_gate_report
+        is render_level_one_release_gate_report
+    )
     assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
     assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
@@ -458,78 +686,221 @@ def test_command_registry_exposes_diversification_surface() -> None:
 def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.benchmark_tree_validation is benchmark_tree_validation
     assert bijux_phylogenetics.benchmark_tree_comparison is benchmark_tree_comparison
-    assert bijux_phylogenetics.benchmark_alignment_diagnostics is benchmark_alignment_diagnostics
-    assert bijux_phylogenetics.summarize_numeric_trait_readiness is summarize_numeric_trait_readiness
+    assert (
+        bijux_phylogenetics.benchmark_alignment_diagnostics
+        is benchmark_alignment_diagnostics
+    )
+    assert (
+        bijux_phylogenetics.summarize_numeric_trait_readiness
+        is summarize_numeric_trait_readiness
+    )
     assert bijux_phylogenetics.summarize_numeric_trait is summarize_numeric_trait
-    assert bijux_phylogenetics.compute_phylogenetic_independent_contrasts is compute_phylogenetic_independent_contrasts
+    assert (
+        bijux_phylogenetics.compute_phylogenetic_independent_contrasts
+        is compute_phylogenetic_independent_contrasts
+    )
     assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
     assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
-    assert bijux_phylogenetics.compute_phylogenetic_signal_test is compute_phylogenetic_signal_test
-    assert bijux_phylogenetics.assess_comparative_method_maturity is assess_comparative_method_maturity
-    assert bijux_phylogenetics.audit_comparative_parameter_uncertainty is audit_comparative_parameter_uncertainty
+    assert (
+        bijux_phylogenetics.compute_phylogenetic_signal_test
+        is compute_phylogenetic_signal_test
+    )
+    assert (
+        bijux_phylogenetics.assess_comparative_method_maturity
+        is assess_comparative_method_maturity
+    )
+    assert (
+        bijux_phylogenetics.audit_comparative_parameter_uncertainty
+        is audit_comparative_parameter_uncertainty
+    )
     assert (
         bijux_phylogenetics.audit_ou_identifiability_reference_examples
         is audit_ou_identifiability_reference_examples
     )
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
-    assert bijux_phylogenetics.reconstruct_continuous_ancestral_states is reconstruct_continuous_ancestral_states
-    assert bijux_phylogenetics.reconstruct_discrete_ancestral_states is reconstruct_discrete_ancestral_states
-    assert bijux_phylogenetics.build_ancestral_figure_package is build_ancestral_figure_package
-    assert bijux_phylogenetics.build_ancestral_sensitivity_report is build_ancestral_sensitivity_report
-    assert bijux_phylogenetics.compare_continuous_ancestral_models is compare_continuous_ancestral_models
-    assert bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
-    assert bijux_phylogenetics.render_ancestral_state_report is render_ancestral_state_report
-    assert bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
-    assert bijux_phylogenetics.run_multiple_sequence_alignment is run_multiple_sequence_alignment
+    assert (
+        bijux_phylogenetics.reconstruct_continuous_ancestral_states
+        is reconstruct_continuous_ancestral_states
+    )
+    assert (
+        bijux_phylogenetics.reconstruct_discrete_ancestral_states
+        is reconstruct_discrete_ancestral_states
+    )
+    assert (
+        bijux_phylogenetics.build_ancestral_figure_package
+        is build_ancestral_figure_package
+    )
+    assert (
+        bijux_phylogenetics.build_ancestral_sensitivity_report
+        is build_ancestral_sensitivity_report
+    )
+    assert (
+        bijux_phylogenetics.compare_continuous_ancestral_models
+        is compare_continuous_ancestral_models
+    )
+    assert (
+        bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
+    )
+    assert (
+        bijux_phylogenetics.render_ancestral_state_report
+        is render_ancestral_state_report
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
+    )
+    assert (
+        bijux_phylogenetics.run_multiple_sequence_alignment
+        is run_multiple_sequence_alignment
+    )
     assert bijux_phylogenetics.run_alignment_trimming is run_alignment_trimming
-    assert bijux_phylogenetics.audit_alignment_inference_readiness is audit_alignment_inference_readiness
+    assert (
+        bijux_phylogenetics.audit_alignment_inference_readiness
+        is audit_alignment_inference_readiness
+    )
     assert bijux_phylogenetics.run_model_selection is run_model_selection
-    assert bijux_phylogenetics.validate_model_selection_against_engine_outputs is validate_model_selection_against_engine_outputs
-    assert bijux_phylogenetics.run_maximum_likelihood_tree_inference is run_maximum_likelihood_tree_inference
-    assert bijux_phylogenetics.validate_ml_tree_contains_expected_taxa is validate_ml_tree_contains_expected_taxa
-    assert bijux_phylogenetics.run_bootstrap_support_estimation is run_bootstrap_support_estimation
-    assert bijux_phylogenetics.validate_bootstrap_tree_set is validate_bootstrap_tree_set
-    assert bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
+    assert (
+        bijux_phylogenetics.validate_model_selection_against_engine_outputs
+        is validate_model_selection_against_engine_outputs
+    )
+    assert (
+        bijux_phylogenetics.run_maximum_likelihood_tree_inference
+        is run_maximum_likelihood_tree_inference
+    )
+    assert (
+        bijux_phylogenetics.validate_ml_tree_contains_expected_taxa
+        is validate_ml_tree_contains_expected_taxa
+    )
+    assert (
+        bijux_phylogenetics.run_bootstrap_support_estimation
+        is run_bootstrap_support_estimation
+    )
+    assert (
+        bijux_phylogenetics.validate_bootstrap_tree_set is validate_bootstrap_tree_set
+    )
+    assert (
+        bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
+    )
     assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
     assert bijux_phylogenetics.compare_fast_and_ml_trees is compare_fast_and_ml_trees
-    assert bijux_phylogenetics.compare_inferred_tree_to_taxon_metadata is compare_inferred_tree_to_taxon_metadata
-    assert bijux_phylogenetics.classify_inference_workflow_failure is classify_inference_workflow_failure
-    assert bijux_phylogenetics.validate_inference_engine_outputs is validate_inference_engine_outputs
-    assert bijux_phylogenetics.render_inference_workflow_report is render_inference_workflow_report
+    assert (
+        bijux_phylogenetics.compare_inferred_tree_to_taxon_metadata
+        is compare_inferred_tree_to_taxon_metadata
+    )
+    assert (
+        bijux_phylogenetics.classify_inference_workflow_failure
+        is classify_inference_workflow_failure
+    )
+    assert (
+        bijux_phylogenetics.validate_inference_engine_outputs
+        is validate_inference_engine_outputs
+    )
+    assert (
+        bijux_phylogenetics.render_inference_workflow_report
+        is render_inference_workflow_report
+    )
     assert bijux_phylogenetics.prepare_mrbayes_analysis is prepare_mrbayes_analysis
-    assert bijux_phylogenetics.run_mrbayes_posterior_inference is run_mrbayes_posterior_inference
-    assert bijux_phylogenetics.summarize_mrbayes_posterior_trees is summarize_mrbayes_posterior_trees
-    assert bijux_phylogenetics.parse_mrbayes_parameter_traces is parse_mrbayes_parameter_traces
-    assert bijux_phylogenetics.compute_mrbayes_effective_sample_sizes is compute_mrbayes_effective_sample_sizes
+    assert (
+        bijux_phylogenetics.run_mrbayes_posterior_inference
+        is run_mrbayes_posterior_inference
+    )
+    assert (
+        bijux_phylogenetics.summarize_mrbayes_posterior_trees
+        is summarize_mrbayes_posterior_trees
+    )
+    assert (
+        bijux_phylogenetics.parse_mrbayes_parameter_traces
+        is parse_mrbayes_parameter_traces
+    )
+    assert (
+        bijux_phylogenetics.compute_mrbayes_effective_sample_sizes
+        is compute_mrbayes_effective_sample_sizes
+    )
     assert bijux_phylogenetics.assess_mrbayes_convergence is assess_mrbayes_convergence
-    assert bijux_phylogenetics.render_bayesian_posterior_report is render_bayesian_posterior_report
-    assert bijux_phylogenetics.validate_fossil_calibration_table is validate_fossil_calibration_table
-    assert bijux_phylogenetics.detect_impossible_calibration_constraints is detect_impossible_calibration_constraints
-    assert bijux_phylogenetics.validate_tip_dating_metadata is validate_tip_dating_metadata
-    assert bijux_phylogenetics.prepare_beast_time_tree_analysis is prepare_beast_time_tree_analysis
+    assert (
+        bijux_phylogenetics.render_bayesian_posterior_report
+        is render_bayesian_posterior_report
+    )
+    assert (
+        bijux_phylogenetics.validate_fossil_calibration_table
+        is validate_fossil_calibration_table
+    )
+    assert (
+        bijux_phylogenetics.detect_impossible_calibration_constraints
+        is detect_impossible_calibration_constraints
+    )
+    assert (
+        bijux_phylogenetics.validate_tip_dating_metadata is validate_tip_dating_metadata
+    )
+    assert (
+        bijux_phylogenetics.prepare_beast_time_tree_analysis
+        is prepare_beast_time_tree_analysis
+    )
     assert bijux_phylogenetics.parse_beast_log is parse_beast_log
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
-    assert bijux_phylogenetics.validate_beast_posterior_log is validate_beast_posterior_log
-    assert bijux_phylogenetics.assess_beast_burnin_sensitivity is assess_beast_burnin_sensitivity
+    assert (
+        bijux_phylogenetics.validate_beast_posterior_log is validate_beast_posterior_log
+    )
+    assert (
+        bijux_phylogenetics.assess_beast_burnin_sensitivity
+        is assess_beast_burnin_sensitivity
+    )
     assert bijux_phylogenetics.assess_beast_chain_mixing is assess_beast_chain_mixing
-    assert bijux_phylogenetics.summarize_maximum_clade_credibility_tree is summarize_maximum_clade_credibility_tree
+    assert (
+        bijux_phylogenetics.summarize_maximum_clade_credibility_tree
+        is summarize_maximum_clade_credibility_tree
+    )
     assert bijux_phylogenetics.thin_posterior_tree_set is thin_posterior_tree_set
-    assert bijux_phylogenetics.summarize_posterior_node_ages is summarize_posterior_node_ages
+    assert (
+        bijux_phylogenetics.summarize_posterior_node_ages
+        is summarize_posterior_node_ages
+    )
     assert bijux_phylogenetics.compare_bayesian_tree_sets is compare_bayesian_tree_sets
-    assert bijux_phylogenetics.compare_independent_bayesian_runs is compare_independent_bayesian_runs
-    assert bijux_phylogenetics.compare_posterior_tree_sets_by_prior is compare_posterior_tree_sets_by_prior
-    assert bijux_phylogenetics.compare_posterior_tree_sets_by_clock is compare_posterior_tree_sets_by_clock
-    assert bijux_phylogenetics.render_bayesian_run_comparison_report is render_bayesian_run_comparison_report
-    assert bijux_phylogenetics.render_bayesian_diagnostics_report is render_bayesian_diagnostics_report
-    assert bijux_phylogenetics.build_posterior_uncertainty_figure_package is build_posterior_uncertainty_figure_package
-    assert bijux_phylogenetics.write_supplementary_bayesian_diagnostics_table is write_supplementary_bayesian_diagnostics_table
-    assert bijux_phylogenetics.write_bayesian_methods_summary_text is write_bayesian_methods_summary_text
-    assert bijux_phylogenetics.render_calibration_audit_report is render_calibration_audit_report
-    assert bijux_phylogenetics.build_bayesian_evidence_package is build_bayesian_evidence_package
+    assert (
+        bijux_phylogenetics.compare_independent_bayesian_runs
+        is compare_independent_bayesian_runs
+    )
+    assert (
+        bijux_phylogenetics.compare_posterior_tree_sets_by_prior
+        is compare_posterior_tree_sets_by_prior
+    )
+    assert (
+        bijux_phylogenetics.compare_posterior_tree_sets_by_clock
+        is compare_posterior_tree_sets_by_clock
+    )
+    assert (
+        bijux_phylogenetics.render_bayesian_run_comparison_report
+        is render_bayesian_run_comparison_report
+    )
+    assert (
+        bijux_phylogenetics.render_bayesian_diagnostics_report
+        is render_bayesian_diagnostics_report
+    )
+    assert (
+        bijux_phylogenetics.build_posterior_uncertainty_figure_package
+        is build_posterior_uncertainty_figure_package
+    )
+    assert (
+        bijux_phylogenetics.write_supplementary_bayesian_diagnostics_table
+        is write_supplementary_bayesian_diagnostics_table
+    )
+    assert (
+        bijux_phylogenetics.write_bayesian_methods_summary_text
+        is write_bayesian_methods_summary_text
+    )
+    assert (
+        bijux_phylogenetics.render_calibration_audit_report
+        is render_calibration_audit_report
+    )
+    assert (
+        bijux_phylogenetics.build_bayesian_evidence_package
+        is build_bayesian_evidence_package
+    )
 
 
-def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(tmp_path: Path) -> None:
+def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(
+    tmp_path: Path,
+) -> None:
     trees, report = simulate_birth_death_trees(tree_count=2, tip_count=4, seed=7)
     assert report.model == "birth-death"
     assert report.tree_count == 2
@@ -560,7 +931,9 @@ def test_simulate_coalescent_trees_returns_requested_sample_size() -> None:
 
 
 def test_simulate_brownian_traits_generates_one_value_per_tip(tmp_path: Path) -> None:
-    report = simulate_brownian_traits(fixture("example_tree.nwk"), seed=7, root_state=1.0, sigma=0.5)
+    report = simulate_brownian_traits(
+        fixture("example_tree.nwk"), seed=7, root_state=1.0, sigma=0.5
+    )
     assert report.model == "brownian-motion"
     assert report.tip_count == 4
     assert [(row.taxon, row.value) for row in report.traits] == [
@@ -578,7 +951,11 @@ def test_simulate_brownian_traits_generates_one_value_per_tip(tmp_path: Path) ->
         "C\t0.742224918944575\n"
         "D\t0.90248754291519\n"
     )
-    assert [row.node for row in report.node_values if not row.is_tip] == ["A|B|C|D", "A|B", "C|D"]
+    assert [row.node for row in report.node_values if not row.is_tip] == [
+        "A|B|C|D",
+        "A|B",
+        "C|D",
+    ]
 
 
 def test_simulate_ou_traits_uses_declared_parameters() -> None:
@@ -620,17 +997,21 @@ def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -
     output_path = tmp_path / "discrete.tsv"
     write_discrete_trait_table(output_path, report)
     assert output_path.read_text(encoding="utf-8") == (
-        "taxon\tstate\n"
-        "A\twet\n"
-        "B\tdry\n"
-        "C\twet\n"
-        "D\tmixed\n"
+        "taxon\tstate\nA\twet\nB\tdry\nC\twet\nD\tmixed\n"
     )
-    assert [row.node for row in report.node_states if not row.is_tip] == ["A|B|C|D", "A|B", "C|D"]
+    assert [row.node for row in report.node_states if not row.is_tip] == [
+        "A|B|C|D",
+        "A|B",
+        "C|D",
+    ]
 
 
-def test_simulate_dna_alignment_returns_requested_taxa_and_length(tmp_path: Path) -> None:
-    report = simulate_dna_alignment(fixture("example_tree.nwk"), sequence_length=8, substitution_rate=1.2, seed=7)
+def test_simulate_dna_alignment_returns_requested_taxa_and_length(
+    tmp_path: Path,
+) -> None:
+    report = simulate_dna_alignment(
+        fixture("example_tree.nwk"), sequence_length=8, substitution_rate=1.2, seed=7
+    )
     assert report.model == "jukes-cantor-like"
     assert report.tip_count == 4
     assert report.sequence_length == 8
@@ -643,15 +1024,14 @@ def test_simulate_dna_alignment_returns_requested_taxa_and_length(tmp_path: Path
     output_path = tmp_path / "simulated-dna.fasta"
     write_simulated_alignment(output_path, report)
     assert output_path.read_text(encoding="utf-8") == (
-        ">A\nACTAACGA\n"
-        ">B\nACTAACGA\n"
-        ">C\nGCTAGAAA\n"
-        ">D\nGCGAAGAA\n"
+        ">A\nACTAACGA\n>B\nACTAACGA\n>C\nGCTAGAAA\n>D\nGCGAAGAA\n"
     )
 
 
 def test_simulate_protein_alignment_returns_requested_length_and_alphabet() -> None:
-    report = simulate_protein_alignment(fixture("example_tree.nwk"), sequence_length=6, substitution_rate=0.8, seed=7)
+    report = simulate_protein_alignment(
+        fixture("example_tree.nwk"), sequence_length=6, substitution_rate=0.8, seed=7
+    )
     assert report.model == "symmetric-protein"
     assert report.inferred_alphabet == "protein"
     assert report.sequence_length == 6
@@ -691,7 +1071,9 @@ def test_benchmark_tree_comparison_reports_scaling_curve() -> None:
 
 
 def test_benchmark_alignment_diagnostics_reports_runtime_and_memory() -> None:
-    report = benchmark_alignment_diagnostics(replicates=1, sequence_counts=[4, 8, 16], sequence_length=24)
+    report = benchmark_alignment_diagnostics(
+        replicates=1, sequence_counts=[4, 8, 16], sequence_length=24
+    )
     assert report.replicates == 1
     assert [(row.label, row.item_count) for row in report.observations] == [
         ("sequences-4", 4),
@@ -708,12 +1090,18 @@ def test_load_tree_set_reports_tree_count_and_topology_diversity() -> None:
     assert report.shared_taxa == ["A", "B", "C", "D"]
     assert report.rooted_topology_count == 2
     assert report.unrooted_topology_count == 2
-    assert [(row.index, row.tip_count) for row in report.records] == [(1, 4), (2, 4), (3, 4)]
+    assert [(row.index, row.tip_count) for row in report.records] == [
+        (1, 4),
+        (2, 4),
+        (3, 4),
+    ]
 
 
 def test_compute_clade_frequency_table_counts_informative_clades() -> None:
     report = compute_clade_frequency_table(fixture("example_tree_set_left.nwk"))
-    assert [(row.clade, row.tree_count, row.frequency) for row in report.clade_frequencies] == [
+    assert [
+        (row.clade, row.tree_count, row.frequency) for row in report.clade_frequencies
+    ] == [
         ("A|B", 2, 0.666666666666667),
         ("A|C", 1, 0.333333333333333),
         ("B|D", 1, 0.333333333333333),
@@ -728,7 +1116,10 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     )
     assert report.tree_count == 3
     assert report.shared_taxa == ["A", "B", "C", "D"]
-    assert bijux_phylogenetics.trim_columns_above_missingness_threshold is trim_columns_above_missingness_threshold
+    assert (
+        bijux_phylogenetics.trim_columns_above_missingness_threshold
+        is trim_columns_above_missingness_threshold
+    )
     assert bijux_phylogenetics.trim_alignment is trim_alignment
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
     assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
@@ -774,8 +1165,22 @@ def test_cluster_trees_by_topology_groups_identical_rooted_signatures() -> None:
         )
         for cluster in report.clusters
     ] == [
-        ("A|B||C|D", [1, 2], 2, 0.666666666666667, 1, "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);"),
-        ("A|C||B|D", [3], 1, 0.333333333333333, 3, "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);"),
+        (
+            "A|B||C|D",
+            [1, 2],
+            2,
+            0.666666666666667,
+            1,
+            "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);",
+        ),
+        (
+            "A|C||B|D",
+            [3],
+            1,
+            0.333333333333333,
+            3,
+            "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);",
+        ),
     ]
 
 
@@ -787,14 +1192,41 @@ def test_detect_unstable_taxa_reports_inconsistent_placements() -> None:
             row.unique_placements,
             row.dominant_frequency,
             row.instability_score,
-            [(placement.signature, placement.tree_count, placement.frequency) for placement in row.placements],
+            [
+                (placement.signature, placement.tree_count, placement.frequency)
+                for placement in row.placements
+            ],
         )
         for row in report.taxa
     ] == [
-        ("A", 2, 0.666666666666667, 0.333333333333333, [("A|B", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
-        ("B", 2, 0.666666666666667, 0.333333333333333, [("A|B", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
-        ("C", 2, 0.666666666666667, 0.333333333333333, [("C|D", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)]),
-        ("D", 2, 0.666666666666667, 0.333333333333333, [("C|D", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)]),
+        (
+            "A",
+            2,
+            0.666666666666667,
+            0.333333333333333,
+            [("A|B", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)],
+        ),
+        (
+            "B",
+            2,
+            0.666666666666667,
+            0.333333333333333,
+            [("A|B", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)],
+        ),
+        (
+            "C",
+            2,
+            0.666666666666667,
+            0.333333333333333,
+            [("C|D", 2, 0.666666666666667), ("A|C", 1, 0.333333333333333)],
+        ),
+        (
+            "D",
+            2,
+            0.666666666666667,
+            0.333333333333333,
+            [("C|D", 2, 0.666666666666667), ("B|D", 1, 0.333333333333333)],
+        ),
     ]
 
 
@@ -812,10 +1244,42 @@ def test_detect_unstable_clades_reports_frequencies_and_conflicts() -> None:
         )
         for row in report.clades
     ] == [
-        ("A|B", 2, 0.666666666666667, 2, 0.333333333333333, "intermediate-support", ["A|C", "B|D"]),
-        ("A|C", 1, 0.333333333333333, 2, 0.333333333333333, "intermediate-support", ["A|B", "C|D"]),
-        ("B|D", 1, 0.333333333333333, 2, 0.333333333333333, "intermediate-support", ["A|B", "C|D"]),
-        ("C|D", 2, 0.666666666666667, 2, 0.333333333333333, "intermediate-support", ["A|C", "B|D"]),
+        (
+            "A|B",
+            2,
+            0.666666666666667,
+            2,
+            0.333333333333333,
+            "intermediate-support",
+            ["A|C", "B|D"],
+        ),
+        (
+            "A|C",
+            1,
+            0.333333333333333,
+            2,
+            0.333333333333333,
+            "intermediate-support",
+            ["A|B", "C|D"],
+        ),
+        (
+            "B|D",
+            1,
+            0.333333333333333,
+            2,
+            0.333333333333333,
+            "intermediate-support",
+            ["A|B", "C|D"],
+        ),
+        (
+            "C|D",
+            2,
+            0.666666666666667,
+            2,
+            0.333333333333333,
+            "intermediate-support",
+            ["A|C", "B|D"],
+        ),
     ]
 
 
@@ -829,7 +1293,10 @@ def test_compare_posterior_topological_diversity_reports_relative_dispersion() -
     assert report.right_summary.rooted_topology_count == 2
     assert report.left_summary.dominant_topology_frequency == 0.666666666666667
     assert report.right_summary.effective_topology_count == 1.889881574842309
-    assert report.left_summary.mean_within_set_normalized_robinson_foulds == 0.666666666666667
+    assert (
+        report.left_summary.mean_within_set_normalized_robinson_foulds
+        == 0.666666666666667
+    )
     assert report.warnings == []
 
 
@@ -845,7 +1312,9 @@ def test_detect_posterior_topology_multimodality_reports_multiple_modes() -> Non
     assert [mode.tree_indices for mode in report.modes] == [[1, 2], [3]]
 
 
-def test_summarize_clade_credibility_conflicts_reports_incompatible_high_frequency_clades() -> None:
+def test_summarize_clade_credibility_conflicts_reports_incompatible_high_frequency_clades() -> (
+    None
+):
     report = summarize_clade_credibility_conflicts(
         fixture("example_tree_set_left.nwk"),
         credibility_threshold=0.3,
@@ -856,7 +1325,9 @@ def test_summarize_clade_credibility_conflicts_reports_incompatible_high_frequen
     assert report.conflicts[0].combined_frequency == 1.0
 
 
-def test_summarize_uncertainty_aware_conclusions_separates_robust_uncertain_and_conflicting_clades() -> None:
+def test_summarize_uncertainty_aware_conclusions_separates_robust_uncertain_and_conflicting_clades() -> (
+    None
+):
     report = summarize_uncertainty_aware_conclusions(
         fixture("example_tree_set_left.nwk"),
         robust_threshold=0.95,
@@ -870,27 +1341,43 @@ def test_summarize_uncertainty_aware_conclusions_separates_robust_uncertain_and_
     assert {row.conclusion for row in report.conflicting_clades} == {"conflict-prone"}
 
 
-def test_write_uncertainty_tables_emit_clusters_conflicts_and_conclusions(tmp_path: Path) -> None:
+def test_write_uncertainty_tables_emit_clusters_conflicts_and_conclusions(
+    tmp_path: Path,
+) -> None:
     cluster_path = tmp_path / "topology-clusters.tsv"
     conflict_path = tmp_path / "clade-conflicts.tsv"
     conclusion_path = tmp_path / "uncertainty-conclusions.tsv"
 
-    write_topology_cluster_table(cluster_path, cluster_trees_by_topology(fixture("example_tree_set_left.nwk")))
+    write_topology_cluster_table(
+        cluster_path, cluster_trees_by_topology(fixture("example_tree_set_left.nwk"))
+    )
     write_clade_credibility_conflict_table(
         conflict_path,
-        summarize_clade_credibility_conflicts(fixture("example_tree_set_left.nwk"), credibility_threshold=0.3),
+        summarize_clade_credibility_conflicts(
+            fixture("example_tree_set_left.nwk"), credibility_threshold=0.3
+        ),
     )
     write_uncertainty_conclusion_table(
         conclusion_path,
-        summarize_uncertainty_aware_conclusions(fixture("example_tree_set_left.nwk"), robust_threshold=0.95, credibility_threshold=0.3),
+        summarize_uncertainty_aware_conclusions(
+            fixture("example_tree_set_left.nwk"),
+            robust_threshold=0.95,
+            credibility_threshold=0.3,
+        ),
     )
 
-    assert "rooted_topology_id\ttree_indices" in cluster_path.read_text(encoding="utf-8")
-    assert "left_clade\tleft_frequency\tright_clade" in conflict_path.read_text(encoding="utf-8")
+    assert "rooted_topology_id\ttree_indices" in cluster_path.read_text(
+        encoding="utf-8"
+    )
+    assert "left_clade\tleft_frequency\tright_clade" in conflict_path.read_text(
+        encoding="utf-8"
+    )
     assert "clade\tfrequency\tconclusion" in conclusion_path.read_text(encoding="utf-8")
 
 
-def test_compare_posterior_tree_sets_reports_clade_deltas_and_cross_set_distance() -> None:
+def test_compare_posterior_tree_sets_reports_clade_deltas_and_cross_set_distance() -> (
+    None
+):
     report = compare_posterior_tree_sets(
         fixture("example_tree_set_left.nwk"),
         fixture("example_tree_set_right.nwk"),
@@ -916,9 +1403,13 @@ def test_compare_posterior_tree_sets_reports_clade_deltas_and_cross_set_distance
     ]
 
 
-def test_compare_bootstrap_and_posterior_uncertainty_reports_conflicting_clades(tmp_path: Path) -> None:
+def test_compare_bootstrap_and_posterior_uncertainty_reports_conflicting_clades(
+    tmp_path: Path,
+) -> None:
     bootstrap_tree = tmp_path / "bootstrap-support.nwk"
-    bootstrap_tree.write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)60:0.2);\n", encoding="utf-8")
+    bootstrap_tree.write_text(
+        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)60:0.2);\n", encoding="utf-8"
+    )
 
     report = compare_bootstrap_and_posterior_uncertainty(
         bootstrap_tree,
@@ -931,7 +1422,9 @@ def test_compare_bootstrap_and_posterior_uncertainty_reports_conflicting_clades(
     assert rows["C|D"].posterior_frequency == 0.333333333333333
 
 
-def test_render_tree_set_comparison_report_embeds_tree_set_differences(tmp_path: Path) -> None:
+def test_render_tree_set_comparison_report_embeds_tree_set_differences(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "tree-set-comparison.html"
     result = render_tree_set_comparison_report(
         left_tree_set_path=fixture("example_tree_set_left.nwk"),
@@ -968,32 +1461,49 @@ def test_normalize_tree_taxa_reports_rename_mapping() -> None:
     tree = loads_newick("('Homo sapiens':0.1,'Mus musculus':0.2,A:0.3);")
     normalized_tree, report = normalize_tree_taxa(tree, policy="spaces-to-underscores")
     assert normalized_tree.tip_names == ["Homo_sapiens", "Mus_musculus", "A"]
-    assert [(rename.raw_label, rename.normalized_label) for rename in report.renamed_taxa] == [
+    assert [
+        (rename.raw_label, rename.normalized_label) for rename in report.renamed_taxa
+    ] == [
         ("Homo sapiens", "Homo_sapiens"),
         ("Mus musculus", "Mus_musculus"),
     ]
 
 
-def test_taxon_safety_reports_unsafe_labels_and_normalization_collisions(tmp_path: Path) -> None:
+def test_taxon_safety_reports_unsafe_labels_and_normalization_collisions(
+    tmp_path: Path,
+) -> None:
     tree = loads_newick(
         "('Homo sapiens':0.1,Homo_sapiens:0.2,'NCBI/123':0.3,'Quoted''Name':0.4,A:0.5);"
     )
     report = inspect_tree_taxa_safety(tree, policy="spaces-to-underscores")
-    assert [(entry.raw_label, entry.normalized_label, entry.reasons) for entry in report.unsafe_taxa] == [
-        ("Homo sapiens", "Homo_sapiens", ["contains whitespace", "collides with another label after normalization"]),
-        ("Homo_sapiens", "Homo_sapiens", ["collides with another label after normalization"]),
+    assert [
+        (entry.raw_label, entry.normalized_label, entry.reasons)
+        for entry in report.unsafe_taxa
+    ] == [
+        (
+            "Homo sapiens",
+            "Homo_sapiens",
+            ["contains whitespace", "collides with another label after normalization"],
+        ),
+        (
+            "Homo_sapiens",
+            "Homo_sapiens",
+            ["collides with another label after normalization"],
+        ),
         ("NCBI/123", "NCBI/123", ["contains slash characters"]),
         ("Quoted'Name", "Quoted'Name", ["contains quote characters"]),
     ]
-    assert [(entry.normalized_label, entry.raw_labels) for entry in report.collisions] == [
-        ("Homo_sapiens", ["Homo sapiens", "Homo_sapiens"])
-    ]
+    assert [
+        (entry.normalized_label, entry.raw_labels) for entry in report.collisions
+    ] == [("Homo_sapiens", ["Homo sapiens", "Homo_sapiens"])]
 
     mapping_path = tmp_path / "taxon-mapping.tsv"
-    write_taxon_mapping(mapping_path, normalize_tree_taxa(tree, policy="spaces-to-underscores")[1].renamed_taxa)
+    write_taxon_mapping(
+        mapping_path,
+        normalize_tree_taxa(tree, policy="spaces-to-underscores")[1].renamed_taxa,
+    )
     assert mapping_path.read_text(encoding="utf-8") == (
-        "raw_label\tnormalized_label\n"
-        "Homo sapiens\tHomo_sapiens\n"
+        "raw_label\tnormalized_label\nHomo sapiens\tHomo_sapiens\n"
     )
 
 
@@ -1004,7 +1514,10 @@ def test_metadata_inspect_reports_taxon_contract() -> None:
     assert report.column_count == 3
     assert report.taxon_column == "taxon"
     assert report.taxa == ["A", "B", "C", "D"]
-    assert [(row.name, row.missing_count, row.completeness_fraction) for row in report.column_completeness] == [
+    assert [
+        (row.name, row.missing_count, row.completeness_fraction)
+        for row in report.column_completeness
+    ] == [
         ("taxon", 0, 1.0),
         ("species", 0, 1.0),
         ("location", 0, 1.0),
@@ -1013,7 +1526,10 @@ def test_metadata_inspect_reports_taxon_contract() -> None:
 
 def test_join_table_to_taxa_returns_tip_by_tip_metadata_rows() -> None:
     report = join_table_to_taxa(["A", "B", "Z"], fixture("example_metadata.tsv"))
-    assert [(row.taxon, row.matched, row.values.get("species", "")) for row in report.joined_rows] == [
+    assert [
+        (row.taxon, row.matched, row.values.get("species", ""))
+        for row in report.joined_rows
+    ] == [
         ("A", True, "Alpha species"),
         ("B", True, "Beta species"),
         ("Z", False, ""),
@@ -1042,7 +1558,9 @@ def test_metadata_inspect_rejects_duplicate_taxa() -> None:
 
 def test_metadata_inspect_rejects_missing_requested_taxon_column() -> None:
     try:
-        inspect_metadata_table(fixture("example_metadata_missing_taxon.csv"), taxon_column="taxon")
+        inspect_metadata_table(
+            fixture("example_metadata_missing_taxon.csv"), taxon_column="taxon"
+        )
     except MetadataJoinError as error:
         assert error.code == "metadata_join_error"
         assert error.message == "missing taxon column 'taxon'"
@@ -1078,16 +1596,22 @@ def test_traits_detect_unusable_columns_by_missingness() -> None:
         fixture("example_traits_validate.tsv"),
         missingness_threshold=0.2,
     )
-    assert [(column.name, column.missing_fraction) for column in columns] == [("status", 0.25)]
+    assert [(column.name, column.missing_fraction) for column in columns] == [
+        ("status", 0.25)
+    ]
 
 
 def test_detect_missing_trait_values_reports_taxon_and_column() -> None:
     report = detect_missing_trait_values(fixture("example_traits_validate.tsv"))
-    assert [(item.taxon, item.trait) for item in report.missing_values] == [("C", "status")]
+    assert [(item.taxon, item.trait) for item in report.missing_values] == [
+        ("C", "status")
+    ]
 
 
 def test_traits_link_reports_mismatch_and_usable_taxa() -> None:
-    report = link_tree_to_traits(fixture("example_tree.nwk"), fixture("example_traits.tsv"))
+    report = link_tree_to_traits(
+        fixture("example_tree.nwk"), fixture("example_traits.tsv")
+    )
     assert report.tree_taxa == 4
     assert report.trait_taxa == 4
     assert report.linked_taxa == 3
@@ -1098,7 +1622,9 @@ def test_traits_link_reports_mismatch_and_usable_taxa() -> None:
 
 def test_traits_link_strict_mode_rejects_mismatch() -> None:
     try:
-        link_tree_to_traits(fixture("example_tree.nwk"), fixture("example_traits.tsv"), strict=True)
+        link_tree_to_traits(
+            fixture("example_tree.nwk"), fixture("example_traits.tsv"), strict=True
+        )
     except MetadataJoinError as error:
         assert error.code == "metadata_join_error"
     else:  # pragma: no cover - defensive assertion
@@ -1116,7 +1642,9 @@ def test_prune_traits_to_tree_keeps_tree_order_for_overlapping_taxa() -> None:
     assert report.removed_taxa == ["E"]
 
 
-def test_traits_prune_cli_writes_pruned_table_in_tree_order(tmp_path: Path, capsys) -> None:
+def test_traits_prune_cli_writes_pruned_table_in_tree_order(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "pruned-traits.tsv"
     exit_code = main(
         [
@@ -1133,17 +1661,16 @@ def test_traits_prune_cli_writes_pruned_table_in_tree_order(tmp_path: Path, caps
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert output_path.read_text(encoding="utf-8") == (
-        "taxon\tvalue\n"
-        "A\t1.2\n"
-        "B\t1.4\n"
-        "C\t1.8\n"
+        "taxon\tvalue\nA\t1.2\nB\t1.4\nC\t1.8\n"
     )
     assert payload["data"]["kept_taxa"] == ["A", "B", "C"]
     assert payload["data"]["removed_taxa"] == ["E"]
 
 
 def test_traits_missing_cli_reports_taxon_and_column(capsys) -> None:
-    exit_code = main(["traits", "missing", str(fixture("example_traits_validate.tsv")), "--json"])
+    exit_code = main(
+        ["traits", "missing", str(fixture("example_traits_validate.tsv")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -1183,12 +1710,16 @@ def test_dataset_readiness_reports_linkage_blockers() -> None:
 
 
 def test_prune_tree_to_taxa_writes_expected_tip_set() -> None:
-    tree, report = prune_tree_to_taxa(fixture("example_tree.nwk"), fixture("example_traits.tsv"))
+    tree, report = prune_tree_to_taxa(
+        fixture("example_tree.nwk"), fixture("example_traits.tsv")
+    )
     assert tree.tip_names == ["A", "B", "C"]
     assert dumps_newick(tree) == "((A:0.1,B:0.1):0.2,C:0.3);"
     assert report.kept_taxa == ["A", "B", "C"]
     assert report.removed_taxa == ["D"]
-    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [("D", "absent_from_keep_table")]
+    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [
+        ("D", "absent_from_keep_table")
+    ]
     assert report.summary.removed_taxa == ["D"]
 
 
@@ -1255,7 +1786,9 @@ def test_prune_cli_accepts_explicit_taxon_keep_lists(tmp_path: Path, capsys) -> 
     assert payload["data"]["kept_taxa"] == ["A", "C"]
 
 
-def test_prune_cli_accepts_explicit_taxon_exclusion_lists(tmp_path: Path, capsys) -> None:
+def test_prune_cli_accepts_explicit_taxon_exclusion_lists(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "pruned-tree.nwk"
     pruned_taxa_path = tmp_path / "removed.tsv"
     exit_code = main(
@@ -1298,7 +1831,9 @@ def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
     assert report.summary.removed_taxa == ["C", "D"]
 
 
-def test_collapse_branches_below_length_turns_short_internal_edges_into_polytomies() -> None:
+def test_collapse_branches_below_length_turns_short_internal_edges_into_polytomies() -> (
+    None
+):
     tree, report = collapse_branches_below_length(
         fixture("example_tree_collapse_threshold.nwk"),
         threshold=0.05,
@@ -1314,17 +1849,23 @@ def test_collapse_branches_below_length_turns_short_internal_edges_into_polytomi
 def test_ladderize_tree_orders_larger_subtrees_first() -> None:
     tree, report = ladderize_tree(fixture("example_tree_ordering.nwk"))
     assert tree.tip_names == ["X", "Y", "Z", "A", "B"]
-    assert [len(child.children) if child.children else 1 for child in tree.root.children] == [3, 2]
+    assert [
+        len(child.children) if child.children else 1 for child in tree.root.children
+    ] == [3, 2]
     assert report.strategy == "ladderize"
     assert report.tip_order == ["X", "Y", "Z", "A", "B"]
     assert report.rooted_topology_preserved is True
     assert report.unrooted_topology_preserved is True
 
 
-def test_sort_tree_tips_alphabetically_preserves_topology_with_stable_tip_order() -> None:
+def test_sort_tree_tips_alphabetically_preserves_topology_with_stable_tip_order() -> (
+    None
+):
     tree, report = sort_tree_tips_alphabetically(fixture("example_tree_ordering.nwk"))
     assert tree.tip_names == ["A", "B", "X", "Y", "Z"]
-    assert [len(child.children) if child.children else 1 for child in tree.root.children] == [2, 3]
+    assert [
+        len(child.children) if child.children else 1 for child in tree.root.children
+    ] == [2, 3]
     assert report.strategy == "alphabetical"
     assert report.tip_order == ["A", "B", "X", "Y", "Z"]
     assert report.rooted_topology_preserved is True
@@ -1374,7 +1915,9 @@ def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
     assert report.original_sequence_count == 5
     assert report.kept_ids == ["A", "B", "C", "D"]
     assert report.removed_ids == ["E"]
-    assert [(row.taxon, row.reason) for row in report.removed_ids_with_reasons] == [("E", "absent_from_tree")]
+    assert [(row.taxon, row.reason) for row in report.removed_ids_with_reasons] == [
+        ("E", "absent_from_tree")
+    ]
 
 
 def test_prune_tree_to_alignment_keeps_exact_alignment_taxa() -> None:
@@ -1387,7 +1930,9 @@ def test_prune_tree_to_alignment_keeps_exact_alignment_taxa() -> None:
     assert report.kept_taxa == ["A", "B", "C"]
     assert report.removed_taxa == ["D"]
     assert report.taxon_column == "identifier"
-    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [("D", "absent_from_alignment")]
+    assert [(row.taxon, row.reason) for row in report.removed_taxa_with_reasons] == [
+        ("D", "absent_from_alignment")
+    ]
 
 
 def test_alignment_inspect_reports_core_diagnostics() -> None:
@@ -1402,15 +1947,25 @@ def test_alignment_inspect_reports_core_diagnostics() -> None:
     assert report.variable_site_count == 2
     assert report.parsimony_informative_site_count == 2
     assert report.inferred_alphabet == "dna"
-    assert report.nucleotide_composition == {"A": 0.3125, "C": 0.25, "G": 0.25, "T": 0.1875}
+    assert report.nucleotide_composition == {
+        "A": 0.3125,
+        "C": 0.25,
+        "G": 0.25,
+        "T": 0.1875,
+    }
     assert report.whole_alignment_gc_content == 0.5
-    assert [(row.identifier, row.missing_fraction) for row in report.per_sequence_missingness] == [
+    assert [
+        (row.identifier, row.missing_fraction)
+        for row in report.per_sequence_missingness
+    ] == [
         ("A", 0.0),
         ("B", 0.0),
         ("C", 0.0),
         ("D", 0.0),
     ]
-    assert [(row.identifier, row.gc_fraction) for row in report.per_sequence_gc_content] == [
+    assert [
+        (row.identifier, row.gc_fraction) for row in report.per_sequence_gc_content
+    ] == [
         ("A", 0.5),
         ("B", 0.375),
         ("C", 0.625),
@@ -1430,7 +1985,9 @@ def test_alignment_detects_invalid_characters_for_declared_alphabet() -> None:
         fixture("example_alignment_invalid_dna.fasta"),
         alphabet="dna",
     )
-    assert [(row.identifier, row.position, row.character) for row in invalid] == [("A", 5, "Z")]
+    assert [(row.identifier, row.position, row.character) for row in invalid] == [
+        ("A", 5, "Z")
+    ]
 
 
 def test_alignment_reports_nucleotide_and_amino_acid_composition() -> None:
@@ -1466,7 +2023,9 @@ def test_alignment_detects_gc_composition_outliers() -> None:
 
 
 def test_alignment_detects_identical_and_near_duplicate_sequences() -> None:
-    duplicates = detect_identical_duplicate_sequences(fixture("example_alignment_duplicates.fasta"))
+    duplicates = detect_identical_duplicate_sequences(
+        fixture("example_alignment_duplicates.fasta")
+    )
     near_duplicates = detect_near_duplicate_sequences(
         fixture("example_alignment_duplicates.fasta"),
         identity_threshold=0.875,
@@ -1474,7 +2033,15 @@ def test_alignment_detects_identical_and_near_duplicate_sequences() -> None:
     assert [(group.identifiers, group.sequence) for group in duplicates] == [
         (["A", "B"], "ACTGACTG")
     ]
-    assert [(pair.left_identifier, pair.right_identifier, pair.identity, pair.comparable_sites) for pair in near_duplicates] == [
+    assert [
+        (
+            pair.left_identifier,
+            pair.right_identifier,
+            pair.identity,
+            pair.comparable_sites,
+        )
+        for pair in near_duplicates
+    ] == [
         ("A", "C", 0.875, 8),
         ("A", "D", 0.875, 8),
         ("B", "C", 0.875, 8),
@@ -1483,8 +2050,12 @@ def test_alignment_detects_identical_and_near_duplicate_sequences() -> None:
     ]
 
 
-def test_alignment_quality_report_collects_composition_duplicates_and_warnings() -> None:
-    report = build_alignment_quality_report(fixture("example_alignment_duplicates.fasta"))
+def test_alignment_quality_report_collects_composition_duplicates_and_warnings() -> (
+    None
+):
+    report = build_alignment_quality_report(
+        fixture("example_alignment_duplicates.fasta")
+    )
     assert report.sequence_count == 4
     assert report.alignment_length == 8
     assert report.variable_site_count == 1
@@ -1519,12 +2090,17 @@ def test_alignment_inspect_reports_per_sequence_missingness() -> None:
     assert report.variable_site_count == 0
     assert report.parsimony_informative_site_count == 0
     assert report.missing_data_fraction == 4 / 18
-    assert [(row.identifier, row.missing_fraction) for row in report.per_sequence_missingness] == [
+    assert [
+        (row.identifier, row.missing_fraction)
+        for row in report.per_sequence_missingness
+    ] == [
         ("A", 2 / 6),
         ("B", 2 / 6),
         ("C", 0.0),
     ]
-    assert [(row.position, row.missing_fraction) for row in report.per_site_missingness] == [
+    assert [
+        (row.position, row.missing_fraction) for row in report.per_site_missingness
+    ] == [
         (1, 0.0),
         (2, 0.0),
         (3, 0.0),
@@ -1539,7 +2115,9 @@ def test_alignment_inspect_reports_per_sequence_missingness() -> None:
 def test_alignment_inspect_reports_site_missingness_and_empty_columns() -> None:
     report = summarise_fasta(fixture("example_alignment_site_missingness.fasta"))
     assert report.alignment_length == 5
-    assert [(row.position, row.missing_fraction) for row in report.per_site_missingness] == [
+    assert [
+        (row.position, row.missing_fraction) for row in report.per_site_missingness
+    ] == [
         (1, 0.0),
         (2, 0.0),
         (3, 1.0),
@@ -1555,7 +2133,10 @@ def test_alignment_inspect_separates_gaps_missingness_and_ambiguity() -> None:
     assert report.missing_data_fraction == 5 / 18
     assert report.gap_fraction == 1 / 18
     assert report.ambiguity_fraction == 2 / 18
-    assert [(row.identifier, row.gap_fraction, row.missing_fraction, row.ambiguity_fraction) for row in report.per_sequence_uncertainty] == [
+    assert [
+        (row.identifier, row.gap_fraction, row.missing_fraction, row.ambiguity_fraction)
+        for row in report.per_sequence_uncertainty
+    ] == [
         ("A", 0.0, 2 / 6, 1 / 6),
         ("B", 0.0, 2 / 6, 1 / 6),
         ("C", 1 / 6, 1 / 6, 0.0),
@@ -1578,12 +2159,25 @@ def test_alignment_windows_report_over_and_under_aligned_regions() -> None:
         window_size=4,
         step_size=4,
     )
-    assert [(window.start, window.end, window.gap_fraction, window.missing_fraction, window.ambiguity_fraction) for window in windows] == [
+    assert [
+        (
+            window.start,
+            window.end,
+            window.gap_fraction,
+            window.missing_fraction,
+            window.ambiguity_fraction,
+        )
+        for window in windows
+    ] == [
         (1, 4, 0.25, 0.5, 0.25),
         (5, 8, 0.0, 0.0, 0.0),
     ]
-    assert [(row.start, row.end, row.kind) for row in over_aligned] == [(1, 4, "over_aligned")]
-    assert [(row.start, row.end, row.kind) for row in under_aligned] == [(5, 8, "under_aligned")]
+    assert [(row.start, row.end, row.kind) for row in over_aligned] == [
+        (1, 4, "over_aligned")
+    ]
+    assert [(row.start, row.end, row.kind) for row in under_aligned] == [
+        (5, 8, "under_aligned")
+    ]
 
 
 def test_alignment_readiness_reports_method_specific_decisions() -> None:
@@ -1593,11 +2187,19 @@ def test_alignment_readiness_reports_method_specific_decisions() -> None:
     coding_methods = {row.analysis: row for row in coding.methods}
 
     assert raw_methods["distance"].ready is False
-    assert raw_methods["maximum_likelihood"].blockers == ["input sequences are not yet aligned"]
+    assert raw_methods["maximum_likelihood"].blockers == [
+        "input sequences are not yet aligned"
+    ]
     assert coding_methods["distance"].ready is True
     assert coding_methods["coding"].ready is False
-    assert "one or more sequences contain premature stop codons" in coding_methods["coding"].blockers
-    assert "one or more sequences contain partial codons after gaps and missing data are removed" in coding_methods["coding"].blockers
+    assert (
+        "one or more sequences contain premature stop codons"
+        in coding_methods["coding"].blockers
+    )
+    assert (
+        "one or more sequences contain partial codons after gaps and missing data are removed"
+        in coding_methods["coding"].blockers
+    )
 
 
 def test_alignment_filter_profiles_include_coding_safe_profile() -> None:
@@ -1615,7 +2217,10 @@ def test_alignment_filter_profiles_include_coding_safe_profile() -> None:
 def test_coding_alignment_reports_mixed_coding_behaviors() -> None:
     diagnostics = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
     assert diagnostics.mixed_coding_signals is True
-    assert [(row.identifier, row.coding_like, row.premature_stop_count) for row in diagnostics.coding_behaviors] == [
+    assert [
+        (row.identifier, row.coding_like, row.premature_stop_count)
+        for row in diagnostics.coding_behaviors
+    ] == [
         ("A", True, 0),
         ("B", True, 0),
         ("C", False, 0),
@@ -1631,7 +2236,11 @@ def test_alignment_cleaning_profile_reports_comparison_and_bias_warnings() -> No
         group_columns=["region"],
     )
     assert [record.identifier for record in records] == ["A", "B", "C"]
-    assert [record.sequence for record in records] == ["ACTGACTG", "ACTGACTG", "ACTGACTA"]
+    assert [record.sequence for record in records] == [
+        "ACTGACTG",
+        "ACTGACTG",
+        "ACTGACTA",
+    ]
     assert report.profile.name == "moderate"
     assert report.trim.trimmed_alignment_length == 8
     assert [(row.position, row.reason) for row in report.trim.removed_columns] == [
@@ -1640,11 +2249,21 @@ def test_alignment_cleaning_profile_reports_comparison_and_bias_warnings() -> No
         (7, "missingness-threshold"),
         (8, "missingness-threshold"),
     ]
-    assert [(row.identifier, row.reason) for row in report.trim.removed_sequences] == [("D", "missingness-threshold")]
+    assert [(row.identifier, row.reason) for row in report.trim.removed_sequences] == [
+        ("D", "missingness-threshold")
+    ]
     assert report.comparison.left_alignment_length == 12
     assert report.comparison.right_alignment_length == 8
-    assert any(group.column == "region" and group.value == "island" and group.removed_fraction == 1.0 for group in report.group_retention)
-    assert "cleaning removed most taxa from one or more metadata or trait groups" in report.warnings
+    assert any(
+        group.column == "region"
+        and group.value == "island"
+        and group.removed_fraction == 1.0
+        for group in report.group_retention
+    )
+    assert (
+        "cleaning removed most taxa from one or more metadata or trait groups"
+        in report.warnings
+    )
 
 
 def test_alignment_version_comparison_reports_taxa_length_and_signal_changes() -> None:
@@ -1657,11 +2276,16 @@ def test_alignment_version_comparison_reports_taxa_length_and_signal_changes() -
     assert report.right_only_taxa == []
     assert report.left_alignment_length == 12
     assert report.right_alignment_length == 8
-    assert report.left_parsimony_informative_site_count >= report.right_parsimony_informative_site_count
+    assert (
+        report.left_parsimony_informative_site_count
+        >= report.right_parsimony_informative_site_count
+    )
 
 
 def test_alignment_quality_report_includes_transparent_score_components() -> None:
-    report = build_alignment_quality_report(fixture("example_alignment_filtering.fasta"))
+    report = build_alignment_quality_report(
+        fixture("example_alignment_filtering.fasta")
+    )
     assert set(report.quality_components) == {
         "composition_outliers",
         "duplicates",
@@ -1673,16 +2297,29 @@ def test_alignment_quality_report_includes_transparent_score_components() -> Non
 
 
 def test_alignment_low_information_detection_blocks_sparse_inference_inputs() -> None:
-    report = assess_alignment_low_information(fixture("example_alignment_missingness.fasta"))
-    readiness = summarize_alignment_readiness(fixture("example_alignment_missingness.fasta"))
+    report = assess_alignment_low_information(
+        fixture("example_alignment_missingness.fasta")
+    )
+    readiness = summarize_alignment_readiness(
+        fixture("example_alignment_missingness.fasta")
+    )
     methods = {row.analysis: row for row in readiness.methods}
 
     assert report.low_information is True
     assert report.parsimony_informative_site_count == 0
     assert any("parsimony-informative sites" in reason for reason in report.reasons)
-    assert "alignment has too few parsimony-informative sites for defensible inference" in methods["distance"].blockers
-    assert "alignment has too few parsimony-informative sites for defensible inference" in methods["maximum_likelihood"].blockers
-    assert "alignment has too few parsimony-informative sites for defensible inference" in methods["bayesian"].blockers
+    assert (
+        "alignment has too few parsimony-informative sites for defensible inference"
+        in methods["distance"].blockers
+    )
+    assert (
+        "alignment has too few parsimony-informative sites for defensible inference"
+        in methods["maximum_likelihood"].blockers
+    )
+    assert (
+        "alignment has too few parsimony-informative sites for defensible inference"
+        in methods["bayesian"].blockers
+    )
 
 
 def test_duplicate_sequence_policy_report_recommends_collapse_and_review() -> None:
@@ -1691,11 +2328,19 @@ def test_duplicate_sequence_policy_report_recommends_collapse_and_review() -> No
         near_duplicate_threshold=0.875,
     )
 
-    assert [(group.identifiers, group.sequence) for group in report.exact_duplicate_groups] == [
-        (["A", "B"], "ACTGACTG")
-    ]
-    assert any(action.action == "collapse_exact_duplicates" and action.affected_identifiers == ["A", "B"] for action in report.policy_actions)
-    assert any(action.action == "review_near_duplicates" and action.affected_identifiers == ["A", "C"] for action in report.policy_actions)
+    assert [
+        (group.identifiers, group.sequence) for group in report.exact_duplicate_groups
+    ] == [(["A", "B"], "ACTGACTG")]
+    assert any(
+        action.action == "collapse_exact_duplicates"
+        and action.affected_identifiers == ["A", "B"]
+        for action in report.policy_actions
+    )
+    assert any(
+        action.action == "review_near_duplicates"
+        and action.affected_identifiers == ["A", "C"]
+        for action in report.policy_actions
+    )
     assert any("deduplicated" in warning for warning in report.warnings)
 
 
@@ -1705,33 +2350,47 @@ def test_ambiguous_alignment_column_report_lists_uncertainty_heavy_sites() -> No
         threshold=0.5,
     )
 
-    assert [(row.position, row.gap_fraction, row.missing_fraction) for row in report.rows] == [
+    assert [
+        (row.position, row.gap_fraction, row.missing_fraction) for row in report.rows
+    ] == [
         (2, 1.0, 0.0),
         (3, 0.0, 1.0),
         (4, 0.0, 1.0),
         (5, 0.0, 0.5),
     ]
-    assert report.warnings == ["alignment contains ambiguity-heavy columns that may be unsuitable for inference without masking"]
+    assert report.warnings == [
+        "alignment contains ambiguity-heavy columns that may be unsuitable for inference without masking"
+    ]
 
 
 def test_sequence_quality_ranking_orders_sequences_by_burden() -> None:
-    report = build_sequence_quality_ranking(fixture("example_alignment_ambiguity.fasta"))
+    report = build_sequence_quality_ranking(
+        fixture("example_alignment_ambiguity.fasta")
+    )
 
     assert [(row.identifier, row.rank, row.score) for row in report.rows] == [
         ("A", 1, 78.333),
         ("B", 2, 78.333),
         ("C", 3, 84.167),
     ]
-    assert report.warnings == ["lower-ranked sequences should be reviewed before publication or inference"]
+    assert report.warnings == [
+        "lower-ranked sequences should be reviewed before publication or inference"
+    ]
 
 
 def test_alignment_forensic_report_integrates_alignment_risks() -> None:
     report = build_alignment_forensic_report(fixture("example_alignment_coding.fasta"))
     assert report.safe_for_distance_analysis is True
     assert report.safe_for_coding_analysis is False
-    assert "alignment mixes coding-like and noncoding-like sequence behavior" in report.warnings
+    assert (
+        "alignment mixes coding-like and noncoding-like sequence behavior"
+        in report.warnings
+    )
     assert report.low_information.low_information is False
-    assert any("near-duplicate sequences" in warning for warning in report.duplicate_policy.warnings)
+    assert any(
+        "near-duplicate sequences" in warning
+        for warning in report.duplicate_policy.warnings
+    )
     assert report.ambiguous_columns.rows == []
     assert report.sequence_ranking.rows
 
@@ -1753,8 +2412,14 @@ def test_dataset_audit_integrates_alignment_and_time_tree_surfaces() -> None:
     assert report.tip_dates is not None
     assert report.calibrations is not None
     assert "alignment" in report.warning_categories
-    assert any(row.analysis == "distance" and row.decision == "risky" for row in report.analysis_decisions)
-    assert any(level.level == "publication_ready" and level.decision == "risky" for level in report.readiness_levels)
+    assert any(
+        row.analysis == "distance" and row.decision == "risky"
+        for row in report.analysis_decisions
+    )
+    assert any(
+        level.level == "publication_ready" and level.decision == "risky"
+        for level in report.readiness_levels
+    )
 
 
 def test_dataset_audit_blocks_invalid_time_tree_inputs() -> None:
@@ -1826,7 +2491,10 @@ def test_dataset_ordering_audit_detects_reordered_metadata_rows() -> None:
     assert report.consistent is False
     assert report.drifted_surfaces == ["metadata"]
     assert any(
-        row.surface == "metadata" and row.taxon == "C" and row.expected_index == 3 and row.observed_index == 1
+        row.surface == "metadata"
+        and row.taxon == "C"
+        and row.expected_index == 3
+        and row.observed_index == 1
         for row in report.conflicts
     )
 
@@ -1839,17 +2507,27 @@ def test_dataset_audit_reports_group_imbalance_and_exclusion_rows() -> None:
         alignment_path=fixture("example_alignment_filtering_cleaned_moderate.fasta"),
     )
     assert any(
-        row.surface == "metadata" and row.group_column == "region" and row.group == "island" and row.removed_fraction == 1.0
+        row.surface == "metadata"
+        and row.group_column == "region"
+        and row.group == "island"
+        and row.removed_fraction == 1.0
         for row in report.group_imbalance_warnings
     )
     exclusion_by_taxon = {row.taxon: row for row in report.exclusion_table.rows}
-    assert exclusion_by_taxon["D"].causes == ["absent_from_alignment", "absent_from_traits"]
+    assert exclusion_by_taxon["D"].causes == [
+        "absent_from_alignment",
+        "absent_from_traits",
+    ]
     assert exclusion_by_taxon["D"].first_failed_surface == "alignment"
     assert report.mismatch_report.rows
     assert report.risk_score.total_score > 0.0
-    assert any(component.component == "alignment" for component in report.risk_score.components)
+    assert any(
+        component.component == "alignment" for component in report.risk_score.components
+    )
     assert report.minimal_fix_plan.recommendations
-    assert any(item.section == "dataset_risk" for item in report.reviewer_checklist.items)
+    assert any(
+        item.section == "dataset_risk" for item in report.reviewer_checklist.items
+    )
 
 
 def test_alignment_inspect_rejects_unequal_lengths() -> None:
@@ -1862,7 +2540,9 @@ def test_alignment_inspect_rejects_unequal_lengths() -> None:
 
 
 def test_alignment_link_reports_exact_mismatch() -> None:
-    report = link_alignment_to_tree(fixture("example_tree.nwk"), fixture("example_alignment.fasta"))
+    report = link_alignment_to_tree(
+        fixture("example_tree.nwk"), fixture("example_alignment.fasta")
+    )
     assert report.tree_taxa == 4
     assert report.alignment_ids == 4
     assert report.linked_taxa == 4
@@ -1872,22 +2552,25 @@ def test_alignment_link_reports_exact_mismatch() -> None:
 
 def test_alignment_link_strict_mode_rejects_mismatch() -> None:
     try:
-        link_alignment_to_tree(fixture("example_tree.nwk"), fixture("example_alignment_mismatch.fasta"), strict=True)
+        link_alignment_to_tree(
+            fixture("example_tree.nwk"),
+            fixture("example_alignment_mismatch.fasta"),
+            strict=True,
+        )
     except AlignmentTaxonMismatchError as error:
         assert error.code == "alignment_taxon_mismatch_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected AlignmentTaxonMismatchError")
 
 
-def test_write_fasta_alignment_preserves_record_order_and_sequences(tmp_path: Path) -> None:
+def test_write_fasta_alignment_preserves_record_order_and_sequences(
+    tmp_path: Path,
+) -> None:
     records = load_fasta_alignment(fixture("example_alignment.fasta"))
     output = tmp_path / "alignment.fasta"
     write_fasta_alignment(output, records)
     assert output.read_text(encoding="utf-8") == (
-        ">A\nACTGACTG\n"
-        ">B\nACTGACTA\n"
-        ">C\nACTGACGG\n"
-        ">D\nACTGACGA\n"
+        ">A\nACTGACTG\n>B\nACTGACTA\n>C\nACTGACGG\n>D\nACTGACGA\n"
     )
     assert load_fasta_alignment(output) == records
 
@@ -1916,15 +2599,21 @@ def test_alignment_detects_sites_with_excessive_missing_data() -> None:
 
 
 def test_alignment_removes_all_gap_columns() -> None:
-    records, report = remove_all_gap_columns(fixture("example_alignment_site_missingness.fasta"))
+    records, report = remove_all_gap_columns(
+        fixture("example_alignment_site_missingness.fasta")
+    )
     assert [record.sequence for record in records] == ["AN?T", "CN?N", "GN?A", "TN?N"]
     assert report.original_alignment_length == 5
     assert report.trimmed_alignment_length == 4
-    assert [(column.position, column.reason) for column in report.removed_columns] == [(2, "all-gap")]
+    assert [(column.position, column.reason) for column in report.removed_columns] == [
+        (2, "all-gap")
+    ]
 
 
 def test_alignment_removes_all_missing_columns() -> None:
-    records, report = remove_all_missing_columns(fixture("example_alignment_site_missingness.fasta"))
+    records, report = remove_all_missing_columns(
+        fixture("example_alignment_site_missingness.fasta")
+    )
     assert [record.sequence for record in records] == ["A-T", "C-N", "G-A", "T-N"]
     assert report.original_alignment_length == 5
     assert report.trimmed_alignment_length == 3
@@ -1942,7 +2631,10 @@ def test_alignment_removes_sequences_above_missingness_threshold() -> None:
     assert [record.identifier for record in records] == ["C"]
     assert report.original_sequence_count == 3
     assert report.trimmed_sequence_count == 1
-    assert [(row.identifier, row.missing_fraction, row.reason) for row in report.removed_sequences] == [
+    assert [
+        (row.identifier, row.missing_fraction, row.reason)
+        for row in report.removed_sequences
+    ] == [
         ("A", 2 / 6, "missingness-threshold"),
         ("B", 2 / 6, "missingness-threshold"),
     ]
@@ -1969,7 +2661,9 @@ def test_alignment_trimming_report_combines_sequence_and_column_transforms() -> 
         site_missingness_threshold=0.4,
         sequence_missingness_threshold=0.3,
     )
-    assert [(record.identifier, record.sequence) for record in records] == [("B", "ACG")]
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("B", "ACG")
+    ]
     assert report.original_sequence_count == 3
     assert report.trimmed_sequence_count == 1
     assert report.original_alignment_length == 6
@@ -1986,9 +2680,19 @@ def test_alignment_trimming_report_combines_sequence_and_column_transforms() -> 
 
 
 def test_alignment_identity_matrix_reports_pairs_and_comparable_sites() -> None:
-    report = compute_pairwise_sequence_identity_matrix(fixture("example_alignment_duplicates.fasta"))
+    report = compute_pairwise_sequence_identity_matrix(
+        fixture("example_alignment_duplicates.fasta")
+    )
     assert report.identifiers == ["A", "B", "C", "D"]
-    assert [(pair.left_identifier, pair.right_identifier, pair.identity, pair.comparable_sites) for pair in report.pairs] == [
+    assert [
+        (
+            pair.left_identifier,
+            pair.right_identifier,
+            pair.identity,
+            pair.comparable_sites,
+        )
+        for pair in report.pairs
+    ] == [
         ("A", "A", 1.0, 8),
         ("A", "B", 1.0, 8),
         ("A", "C", 0.875, 8),
@@ -2006,20 +2710,27 @@ def test_coding_alignment_reports_frameshift_like_sequences_and_stop_codons() ->
     diagnostics = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
     assert diagnostics.sequence_count == 4
     assert diagnostics.alignment_length_multiple_of_three is True
-    assert [(row.identifier, row.comparable_length, row.remainder) for row in diagnostics.frameshift_like_sequences] == [
-        ("C", 8, 2)
-    ]
-    assert [(row.identifier, row.comparable_length, row.trailing_bases) for row in diagnostics.partial_codon_sequences] == [
-        ("C", 8, 2)
-    ]
-    assert [(row.identifier, row.codon_index, row.nucleotide_start, row.codon, row.terminal) for row in diagnostics.stop_codons] == [
+    assert [
+        (row.identifier, row.comparable_length, row.remainder)
+        for row in diagnostics.frameshift_like_sequences
+    ] == [("C", 8, 2)]
+    assert [
+        (row.identifier, row.comparable_length, row.trailing_bases)
+        for row in diagnostics.partial_codon_sequences
+    ] == [("C", 8, 2)]
+    assert [
+        (row.identifier, row.codon_index, row.nucleotide_start, row.codon, row.terminal)
+        for row in diagnostics.stop_codons
+    ] == [
         ("A", 3, 7, "TAA", True),
         ("D", 2, 4, "TAG", False),
     ]
 
 
 def test_translate_coding_alignment_emits_amino_acid_records() -> None:
-    records, report = translate_coding_alignment(fixture("example_alignment_coding.fasta"))
+    records, report = translate_coding_alignment(
+        fixture("example_alignment_coding.fasta")
+    )
     assert [(record.identifier, record.sequence) for record in records] == [
         ("A", "ME*"),
         ("B", "MEW"),
@@ -2033,7 +2744,9 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
     assert report.frameshift_like_sequence_count == 1
 
 
-def test_cli_alignment_trim_writes_trimmed_fasta_and_report(tmp_path: Path, capsys) -> None:
+def test_cli_alignment_trim_writes_trimmed_fasta_and_report(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "trimmed.fasta"
     exit_code = main(
         [
@@ -2111,11 +2824,21 @@ def test_cli_alignment_distance_matrix_writes_tsv(tmp_path: Path, capsys) -> Non
 
 
 def test_compute_pairwise_genetic_distance_matrix_reports_p_distance() -> None:
-    report = compute_pairwise_genetic_distance_matrix(fixture("example_alignment_distance.fasta"))
+    report = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance.fasta")
+    )
     assert report.model == "p-distance"
     assert report.gap_handling == "pairwise-deletion"
     assert report.identifiers == ["A", "B", "C", "D"]
-    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+    assert [
+        (
+            pair.left_identifier,
+            pair.right_identifier,
+            pair.distance,
+            pair.comparable_sites,
+        )
+        for pair in report.pairs
+    ] == [
         ("A", "A", 0.0, 8),
         ("A", "B", 0.125, 8),
         ("A", "C", 0.5, 8),
@@ -2130,8 +2853,18 @@ def test_compute_pairwise_genetic_distance_matrix_reports_p_distance() -> None:
 
 
 def test_compute_pairwise_genetic_distance_matrix_uses_pairwise_deletion() -> None:
-    report = compute_pairwise_genetic_distance_matrix(fixture("example_alignment_distance_gaps.fasta"))
-    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+    report = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance_gaps.fasta")
+    )
+    assert [
+        (
+            pair.left_identifier,
+            pair.right_identifier,
+            pair.distance,
+            pair.comparable_sites,
+        )
+        for pair in report.pairs
+    ] == [
         ("A", "A", 0.0, 6),
         ("A", "B", 0.166666666666667, 6),
         ("A", "C", 0.5, 6),
@@ -2151,7 +2884,15 @@ def test_compute_pairwise_genetic_distance_matrix_supports_complete_deletion() -
         gap_handling="complete-deletion",
     )
     assert report.gap_handling == "complete-deletion"
-    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+    assert [
+        (
+            pair.left_identifier,
+            pair.right_identifier,
+            pair.distance,
+            pair.comparable_sites,
+        )
+        for pair in report.pairs
+    ] == [
         ("A", "A", 0.0, 4),
         ("A", "B", 0.0, 4),
         ("A", "C", 0.25, 4),
@@ -2171,7 +2912,15 @@ def test_compute_pairwise_genetic_distance_matrix_supports_jukes_cantor() -> Non
         model="jukes-cantor",
     )
     assert report.model == "jukes-cantor"
-    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+    assert [
+        (
+            pair.left_identifier,
+            pair.right_identifier,
+            pair.distance,
+            pair.comparable_sites,
+        )
+        for pair in report.pairs
+    ] == [
         ("A", "A", 0.0, 8),
         ("A", "B", 0.136741167595466, 8),
         ("A", "C", 0.823959216501082, 8),
@@ -2185,12 +2934,22 @@ def test_compute_pairwise_genetic_distance_matrix_supports_jukes_cantor() -> Non
     ]
 
 
-def test_compute_pairwise_genetic_distance_matrix_marks_saturated_jukes_cantor_pairs_undefined() -> None:
+def test_compute_pairwise_genetic_distance_matrix_marks_saturated_jukes_cantor_pairs_undefined() -> (
+    None
+):
     report = compute_pairwise_genetic_distance_matrix(
         fixture("example_alignment_distance_saturated.fasta"),
         model="jukes-cantor",
     )
-    assert [(pair.left_identifier, pair.right_identifier, pair.distance, pair.comparable_sites) for pair in report.pairs] == [
+    assert [
+        (
+            pair.left_identifier,
+            pair.right_identifier,
+            pair.distance,
+            pair.comparable_sites,
+        )
+        for pair in report.pairs
+    ] == [
         ("A", "A", 0.0, 4),
         ("A", "B", None, 4),
         ("A", "C", 0.304098831081123, 4),
@@ -2202,7 +2961,15 @@ def test_compute_pairwise_genetic_distance_matrix_marks_saturated_jukes_cantor_p
 
 def test_load_imported_distance_matrix_reads_exported_long_form() -> None:
     entries = load_imported_distance_matrix(fixture("example_distance_matrix.tsv"))
-    assert [(entry.left_identifier, entry.right_identifier, entry.distance, entry.comparable_sites) for entry in entries[:4]] == [
+    assert [
+        (
+            entry.left_identifier,
+            entry.right_identifier,
+            entry.distance,
+            entry.comparable_sites,
+        )
+        for entry in entries[:4]
+    ] == [
         ("A", "A", 0.0, 8),
         ("A", "B", 0.125, 8),
         ("A", "C", 0.5, 8),
@@ -2222,23 +2989,48 @@ def test_validate_imported_distance_matrix_reports_clean_matrix() -> None:
 
 
 def test_validate_imported_distance_matrix_detects_nonmetric_violations() -> None:
-    report = validate_imported_distance_matrix(fixture("example_distance_matrix_nonmetric.tsv"))
-    assert [(row.left_identifier, row.middle_identifier, row.right_identifier, row.direct_distance, row.indirect_distance) for row in report.nonmetric_observations] == [
+    report = validate_imported_distance_matrix(
+        fixture("example_distance_matrix_nonmetric.tsv")
+    )
+    assert [
+        (
+            row.left_identifier,
+            row.middle_identifier,
+            row.right_identifier,
+            row.direct_distance,
+            row.indirect_distance,
+        )
+        for row in report.nonmetric_observations
+    ] == [
         ("A", "B", "C", 5.0, 2.0),
     ]
-    assert report.warnings == ["distance matrix violates triangle inequality for one or more taxon triples"]
+    assert report.warnings == [
+        "distance matrix violates triangle inequality for one or more taxon triples"
+    ]
 
 
 def test_validate_imported_distance_matrix_detects_asymmetry() -> None:
-    report = validate_imported_distance_matrix(fixture("example_distance_matrix_asymmetric.tsv"))
+    report = validate_imported_distance_matrix(
+        fixture("example_distance_matrix_asymmetric.tsv")
+    )
     assert report.complete is True
     assert report.symmetric is False
-    assert [(row.left_identifier, row.right_identifier, row.left_to_right_distance, row.right_to_left_distance) for row in report.asymmetric_pairs] == [
+    assert [
+        (
+            row.left_identifier,
+            row.right_identifier,
+            row.left_to_right_distance,
+            row.right_to_left_distance,
+        )
+        for row in report.asymmetric_pairs
+    ] == [
         ("A", "B", 1.0, 2.0),
     ]
 
 
-def test_build_tree_from_imported_distance_matrix_constructs_neighbor_joining_tree() -> None:
+def test_build_tree_from_imported_distance_matrix_constructs_neighbor_joining_tree() -> (
+    None
+):
     tree, report = build_tree_from_imported_distance_matrix(
         fixture("example_distance_matrix.tsv"),
         method="neighbor-joining",
@@ -2266,7 +3058,9 @@ def test_distance_method_limitations_explain_approximate_methods() -> None:
     assert limitations[0].startswith("distance methods collapse")
 
 
-def test_render_distance_report_embeds_limitations_and_validation(tmp_path: Path) -> None:
+def test_render_distance_report_embeds_limitations_and_validation(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "distance-report.html"
     result = render_distance_report(
         out_path=output_path,
@@ -2279,7 +3073,9 @@ def test_render_distance_report_embeds_limitations_and_validation(tmp_path: Path
     assert "neighbor-joining-tree" in html
 
 
-def test_render_tree_uncertainty_report_embeds_consensus_and_instability_sections(tmp_path: Path) -> None:
+def test_render_tree_uncertainty_report_embeds_consensus_and_instability_sections(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "tree-uncertainty-report.html"
     result = render_tree_uncertainty_report(
         tree_set_path=fixture("example_tree_set_left.nwk"),
@@ -2302,7 +3098,10 @@ def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
         fixture("example_alignment_distance.fasta"),
         method="neighbor-joining",
     )
-    assert dumps_newick(tree) == "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;"
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;"
+    )
     assert report.method == "neighbor-joining"
     assert report.taxon_count == 4
 
@@ -2312,13 +3111,18 @@ def test_build_distance_tree_constructs_upgma_tree() -> None:
         fixture("example_alignment_distance.fasta"),
         method="upgma",
     )
-    assert dumps_newick(tree) == "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;"
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;"
+    )
     assert report.method == "upgma"
     assert report.taxon_count == 4
 
 
 def test_compare_distance_tree_topologies_reports_rooting_difference() -> None:
-    report = compare_distance_tree_topologies(fixture("example_alignment_distance.fasta"))
+    report = compare_distance_tree_topologies(
+        fixture("example_alignment_distance.fasta")
+    )
     assert report.shared_taxa == ["A", "B", "C", "D"]
     assert report.topology_equal is False
     assert report.same_unrooted_topology is True
@@ -2362,7 +3166,9 @@ def test_cli_alignment_build_tree_writes_newick(tmp_path: Path, capsys) -> None:
     assert payload["metrics"]["method"] == "upgma"
 
 
-def test_cli_alignment_compare_distance_trees_reports_rooting_difference(capsys) -> None:
+def test_cli_alignment_compare_distance_trees_reports_rooting_difference(
+    capsys,
+) -> None:
     exit_code = main(
         [
             "alignment",
@@ -2379,7 +3185,14 @@ def test_cli_alignment_compare_distance_trees_reports_rooting_difference(capsys)
 
 
 def test_cli_distance_validate_reports_imported_matrix_status(capsys) -> None:
-    exit_code = main(["distance", "validate", str(fixture("example_distance_matrix_nonmetric.tsv")), "--json"])
+    exit_code = main(
+        [
+            "distance",
+            "validate",
+            str(fixture("example_distance_matrix_nonmetric.tsv")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -2406,7 +3219,10 @@ def test_cli_distance_build_tree_writes_newick(tmp_path: Path, capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert output_path.read_text(encoding="utf-8") == "((A:0.0625,B:0.0625)Inner1:0.21875,C:0.28125)Inner2;\n"
+    assert (
+        output_path.read_text(encoding="utf-8")
+        == "((A:0.0625,B:0.0625)Inner1:0.21875,C:0.28125)Inner2;\n"
+    )
     assert payload["metrics"]["method"] == "upgma"
 
 
@@ -2430,7 +3246,9 @@ def test_cli_distance_report_writes_html(tmp_path: Path, capsys) -> None:
 
 
 def test_cli_distance_explain_reports_limitations(capsys) -> None:
-    exit_code = main(["distance", "explain", str(fixture("example_distance_matrix.tsv")), "--json"])
+    exit_code = main(
+        ["distance", "explain", str(fixture("example_distance_matrix.tsv")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -2472,7 +3290,10 @@ def test_cli_tree_set_compare_reports_shared_topologies(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["shared_rooted_topology_count"] == 1
-    assert payload["data"]["mean_between_set_normalized_robinson_foulds"] == 0.777777777777778
+    assert (
+        payload["data"]["mean_between_set_normalized_robinson_foulds"]
+        == 0.777777777777778
+    )
 
 
 def test_cli_tree_set_report_writes_html(tmp_path: Path, capsys) -> None:
@@ -2553,7 +3374,14 @@ def test_cli_benchmark_tree_validation_reports_observations(capsys) -> None:
 
 
 def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
-    exit_code = main(["alignment", "coding", str(fixture("example_alignment_coding.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "coding",
+            str(fixture("example_alignment_coding.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -2561,7 +3389,9 @@ def test_cli_alignment_coding_reports_frameshifts_and_stops(capsys) -> None:
     assert payload["metrics"]["stop_codon_count"] == 2
 
 
-def test_cli_alignment_translate_writes_amino_acid_alignment(tmp_path: Path, capsys) -> None:
+def test_cli_alignment_translate_writes_amino_acid_alignment(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "translated.fasta"
     exit_code = main(
         [
@@ -2577,10 +3407,7 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(tmp_path: Path, cap
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert output_path.read_text(encoding="utf-8") == (
-        ">A\nME*\n"
-        ">B\nMEW\n"
-        ">C\nMXW\n"
-        ">D\nM*W\n"
+        ">A\nME*\n>B\nMEW\n>C\nMXW\n>D\nM*W\n"
     )
     assert payload["metrics"]["translated_sequence_count"] == 4
     assert payload["metrics"]["stop_codon_count"] == 2
@@ -2604,7 +3431,10 @@ def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert output_path.read_text(encoding="utf-8") == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);\n"
+    assert (
+        output_path.read_text(encoding="utf-8")
+        == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);\n"
+    )
     assert payload["metrics"]["matched_taxa"] == 1
     assert payload["metrics"]["absent_taxa"] == 1
 
@@ -2624,7 +3454,10 @@ def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> Non
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert output_path.read_text(encoding="utf-8") == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);\n"
+    assert (
+        output_path.read_text(encoding="utf-8")
+        == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);\n"
+    )
     assert payload["data"]["strategy"] == "midpoint"
     assert payload["metrics"]["tip_count"] == 4
 
@@ -2644,7 +3477,9 @@ def test_cli_topology_unroot_writes_trifurcating_tree(tmp_path: Path, capsys) ->
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert output_path.read_text(encoding="utf-8") == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);\n"
+    assert (
+        output_path.read_text(encoding="utf-8") == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);\n"
+    )
     assert payload["data"]["strategy"] == "unroot"
     assert payload["metrics"]["tip_count"] == 4
 
@@ -2725,7 +3560,9 @@ def test_validate_tree_path_can_require_rooted_tree() -> None:
 
 def test_validate_tree_path_can_require_ultrametric_tree() -> None:
     try:
-        validate_tree_path(fixture("example_tree_ladderized.nwk"), require_ultrametric=True)
+        validate_tree_path(
+            fixture("example_tree_ladderized.nwk"), require_ultrametric=True
+        )
     except NonUltrametricTreeError as error:
         assert error.code == "non_ultrametric_tree_error"
     else:  # pragma: no cover - defensive assertion
@@ -2738,7 +3575,9 @@ def test_validate_tree_path_warns_for_zero_length_branches() -> None:
     assert "tree contains zero-length branches" in report.warnings
 
 
-def test_validate_tree_path_localizes_missing_internal_and_terminal_branch_lengths() -> None:
+def test_validate_tree_path_localizes_missing_internal_and_terminal_branch_lengths() -> (
+    None
+):
     internal = validate_tree_path(fixture("example_tree_missing_internal_length.nwk"))
     terminal = validate_tree_path(fixture("example_tree_partial_lengths.nwk"))
     assert internal.missing_internal_branch_nodes == ["A|B"]
@@ -2804,7 +3643,9 @@ def test_inspect_tree_path_returns_normalized_json_summary_contract() -> None:
 
 def test_inspect_tree_path_reports_structural_and_missing_branch_diagnostics() -> None:
     singleton = inspect_tree_path(fixture("example_tree_singleton.nwk"))
-    missing_internal = inspect_tree_path(fixture("example_tree_missing_internal_length.nwk"))
+    missing_internal = inspect_tree_path(
+        fixture("example_tree_missing_internal_length.nwk")
+    )
     missing_terminal = inspect_tree_path(fixture("example_tree_partial_lengths.nwk"))
     assert [(row.node, row.child_count) for row in singleton.internal_child_counts] == [
         ("A|B|C", 2),
@@ -2864,39 +3705,52 @@ def test_inspect_tree_path_reports_exact_polytomy_nodes() -> None:
 def test_inspect_tree_path_detects_long_branch_taxa() -> None:
     report = inspect_tree_path(fixture("example_tree_long_branch.nwk"))
     assert report.long_branch_taxa == ["A"]
-    assert [(row.node, row.branch_length, row.branch_type) for row in report.long_branch_outliers] == [
-        ("A", 1.0, "terminal")
-    ]
+    assert [
+        (row.node, row.branch_length, row.branch_type)
+        for row in report.long_branch_outliers
+    ] == [("A", 1.0, "terminal")]
     assert report.short_branch_outliers == []
     assert report.star_like is False
     assert report.tree_quality_score == 85.0
-    assert [warning.code for warning in report.tree_quality_warnings] == ["long_branches"]
+    assert [warning.code for warning in report.tree_quality_warnings] == [
+        "long_branches"
+    ]
 
 
 def test_inspect_tree_path_detects_internal_long_and_short_branch_outliers() -> None:
     long_report = inspect_tree_path(fixture("example_tree_internal_long_branch.nwk"))
     short_report = inspect_tree_path(fixture("example_tree_short_branch.nwk"))
-    assert [(row.node, row.branch_length, row.branch_type) for row in long_report.long_branch_outliers] == [
-        ("A|B", 1.0, "internal")
-    ]
+    assert [
+        (row.node, row.branch_length, row.branch_type)
+        for row in long_report.long_branch_outliers
+    ] == [("A|B", 1.0, "internal")]
     assert long_report.long_branch_taxa == []
     assert long_report.short_branch_outliers == []
-    assert [(row.node, row.branch_length, row.branch_type) for row in short_report.short_branch_outliers] == [
-        ("B", 0.001, "terminal")
+    assert [
+        (row.node, row.branch_length, row.branch_type)
+        for row in short_report.short_branch_outliers
+    ] == [("B", 0.001, "terminal")]
+    assert [warning.code for warning in short_report.tree_quality_warnings] == [
+        "short_branches"
     ]
-    assert [warning.code for warning in short_report.tree_quality_warnings] == ["short_branches"]
 
 
 def test_inspect_tree_path_classifies_internal_support_and_name_labels() -> None:
     support = inspect_tree_path(fixture("example_tree_support_mixed.nwk"))
     names = inspect_tree_path(fixture("example_tree_named_clades.nwk"))
-    assert [(row.node, row.label, row.numeric_value) for row in support.likely_support_labels] == [
+    assert [
+        (row.node, row.label, row.numeric_value)
+        for row in support.likely_support_labels
+    ] == [
         ("A|B", "0.95", 0.95),
         ("A|B|C|D", "99", 99.0),
         ("C|D", "88", 88.0),
     ]
     assert support.likely_named_internal_labels == []
-    assert [(row.node, row.label, row.interpretation) for row in names.likely_named_internal_labels] == [
+    assert [
+        (row.node, row.label, row.interpretation)
+        for row in names.likely_named_internal_labels
+    ] == [
         ("A|B", "Mammals", "name"),
         ("A|B|C|D", "Root", "name"),
         ("C|D", "Birds", "name"),
@@ -2915,17 +3769,25 @@ def test_inspect_tree_path_detects_suspicious_and_mixed_support_scales() -> None
     assert invalid.mixed_support_scales is False
     assert mixed.suspicious_support_value_ranges == []
     assert mixed.mixed_support_scales is True
-    assert [warning.code for warning in mixed.tree_quality_warnings] == ["mixed_support_scales"]
+    assert [warning.code for warning in mixed.tree_quality_warnings] == [
+        "mixed_support_scales"
+    ]
 
 
 def test_standardize_support_labels_normalizes_fraction_and_percentage_scales() -> None:
     rows = standardize_support_labels(fixture("example_tree_support_mixed.nwk"))
-    assert [(row.node, row.raw_value, row.scale, row.support_fraction, row.support_percent) for row in rows] == [
+    assert [
+        (row.node, row.raw_value, row.scale, row.support_fraction, row.support_percent)
+        for row in rows
+    ] == [
         ("A|B", 0.95, "fraction", 0.95, 95.0),
         ("A|B|C|D", 99.0, "percentage", 0.99, 99.0),
         ("C|D", 88.0, "percentage", 0.88, 88.0),
     ]
-    assert [(row.node, row.normalized_probability, row.confidence_of_inference) for row in rows] == [
+    assert [
+        (row.node, row.normalized_probability, row.confidence_of_inference)
+        for row in rows
+    ] == [
         ("A|B", 0.95, "medium"),
         ("A|B|C|D", 0.99, "medium"),
         ("C|D", 0.88, "medium"),
@@ -2933,8 +3795,12 @@ def test_standardize_support_labels_normalizes_fraction_and_percentage_scales() 
 
 
 def test_validate_tree_roundtrip_preserves_tree_structure_across_formats() -> None:
-    nexus_report = validate_tree_roundtrip(fixture("example_tree.nwk"), target_format="nexus")
-    phyloxml_report = validate_tree_roundtrip(fixture("example_tree.nwk"), target_format="phyloxml")
+    nexus_report = validate_tree_roundtrip(
+        fixture("example_tree.nwk"), target_format="nexus"
+    )
+    phyloxml_report = validate_tree_roundtrip(
+        fixture("example_tree.nwk"), target_format="phyloxml"
+    )
     assert nexus_report.preserved_taxa is True
     assert nexus_report.preserved_topology is True
     assert nexus_report.preserved_branch_lengths is True
@@ -2944,8 +3810,12 @@ def test_validate_tree_roundtrip_preserves_tree_structure_across_formats() -> No
 
 
 def test_validate_tree_roundtrip_reports_semantic_loss_for_nexus_and_phyloxml() -> None:
-    nexus_report = validate_tree_roundtrip(fixture("example_tree.nex"), target_format="newick")
-    phyloxml_report = validate_tree_roundtrip(fixture("example_tree_annotated.phyloxml"), target_format="newick")
+    nexus_report = validate_tree_roundtrip(
+        fixture("example_tree.nex"), target_format="newick"
+    )
+    phyloxml_report = validate_tree_roundtrip(
+        fixture("example_tree_annotated.phyloxml"), target_format="newick"
+    )
     assert [item.feature for item in nexus_report.semantic_loss] == [
         "nexus-metadata-blocks",
         "nexus-translate",
@@ -2962,11 +3832,18 @@ def test_taxon_identity_audit_reports_collisions_and_near_duplicates() -> None:
     report = inspect_tree_taxon_identity(load_nexus(fixture("example_tree.nex")))
     assert report.spelling_variants == []
     assert report.whitespace_variants == []
-    identity_report = inspect_tree_taxon_identity(load_phyloxml(fixture("example_tree_annotated.phyloxml")))
+    identity_report = inspect_tree_taxon_identity(
+        load_phyloxml(fixture("example_tree_annotated.phyloxml"))
+    )
     assert identity_report.case_collisions == []
 
-    ambiguous = inspect_tree_taxon_identity(loads_newick(fixture("example_tree_identity.nwk").read_text(encoding="utf-8")))
-    assert {(row.left_label, row.right_label) for row in ambiguous.underscore_space_collisions} == {
+    ambiguous = inspect_tree_taxon_identity(
+        loads_newick(fixture("example_tree_identity.nwk").read_text(encoding="utf-8"))
+    )
+    assert {
+        (row.left_label, row.right_label)
+        for row in ambiguous.underscore_space_collisions
+    } == {
         ("Homo sapiens", "Homo_sapiens"),
         ("Homo sapiens", "homo sapiens"),
         ("Homo_sapiens", "homo sapiens"),
@@ -2975,15 +3852,26 @@ def test_taxon_identity_audit_reports_collisions_and_near_duplicates() -> None:
         ("Homo sapiens", "homo sapiens"),
     ]
     assert ("Homo sapiens", "Hoomo sapiens") in [
-        (row.left_label, row.right_label) for row in ambiguous.suspicious_near_duplicates
+        (row.left_label, row.right_label)
+        for row in ambiguous.suspicious_near_duplicates
     ]
 
 
 def test_inspect_branch_length_units_reports_time_and_substitution_metadata() -> None:
-    time_report = inspect_branch_length_units(fixture("example_metadata_branch_units_time.tsv"))
-    substitution_report = inspect_branch_length_units(fixture("example_metadata_branch_units_substitution.tsv"))
-    conflict_report = inspect_branch_length_units(fixture("example_metadata_branch_units_conflict.tsv"))
-    assert (time_report.declared_unit, time_report.compatible_with_time_tree, time_report.compatible_with_substitution_tree) == (
+    time_report = inspect_branch_length_units(
+        fixture("example_metadata_branch_units_time.tsv")
+    )
+    substitution_report = inspect_branch_length_units(
+        fixture("example_metadata_branch_units_substitution.tsv")
+    )
+    conflict_report = inspect_branch_length_units(
+        fixture("example_metadata_branch_units_conflict.tsv")
+    )
+    assert (
+        time_report.declared_unit,
+        time_report.compatible_with_time_tree,
+        time_report.compatible_with_substitution_tree,
+    ) == (
         "years",
         True,
         False,
@@ -3026,7 +3914,10 @@ def test_inspect_tree_path_detects_star_like_tree() -> None:
     assert report.star_like is True
     assert report.long_branch_taxa == []
     assert report.tree_quality_score == 80.0
-    assert [warning.code for warning in report.tree_quality_warnings] == ["polytomies", "star_like"]
+    assert [warning.code for warning in report.tree_quality_warnings] == [
+        "polytomies",
+        "star_like",
+    ]
 
 
 def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
@@ -3056,29 +3947,48 @@ def test_inspect_tree_path_classifies_branch_length_completeness() -> None:
     assert complete.root_state_confidence.classification == "apparently_rooted"
 
 
-def test_validate_tree_path_reports_validity_decision_contexts_and_repair_guidance() -> None:
-    report = validate_tree_path(fixture("example_tree_partial_lengths.nwk"), allow_duplicates=True)
+def test_validate_tree_path_reports_validity_decision_contexts_and_repair_guidance() -> (
+    None
+):
+    report = validate_tree_path(
+        fixture("example_tree_partial_lengths.nwk"), allow_duplicates=True
+    )
     assert report.syntax_valid is True
     assert report.biologically_safe is False
     assert report.validity_decision == "invalid"
     assert report.root_state_confidence.classification == "apparently_rooted"
-    assert {context.context: context.allowed for context in report.branch_length_contexts} == {
+    assert {
+        context.context: context.allowed for context in report.branch_length_contexts
+    } == {
         "topology_only": True,
         "substitution_tree": False,
         "time_tree": False,
         "comparative_methods": False,
     }
-    assert [item.issue_code for item in report.branch_length_repair_suggestions] == ["partial_branch_lengths"]
+    assert [item.issue_code for item in report.branch_length_repair_suggestions] == [
+        "partial_branch_lengths"
+    ]
 
 
-def test_forensic_tree_path_reports_unsafe_external_labels_and_downstream_safety() -> None:
+def test_forensic_tree_path_reports_unsafe_external_labels_and_downstream_safety() -> (
+    None
+):
     report = forensic_tree_path(fixture("example_tree_labels.nwk"))
     assert report.validity_decision == "valid_with_warnings"
     assert report.safe_for_topology_comparison is True
     assert report.safe_for_time_tree_analysis is False
     assert report.safe_for_comparative_methods is False
-    assert report.unsafe_external_labels[0].engines == ["iqtree", "raxml", "mrbayes", "beast", "r", "shell"]
-    assert any(item.raw_label == "Homo sapiens" for item in report.unsafe_external_labels)
+    assert report.unsafe_external_labels[0].engines == [
+        "iqtree",
+        "raxml",
+        "mrbayes",
+        "beast",
+        "r",
+        "shell",
+    ]
+    assert any(
+        item.raw_label == "Homo sapiens" for item in report.unsafe_external_labels
+    )
 
 
 def test_newick_loader_raises_invalid_branch_length_error() -> None:
@@ -3127,7 +4037,14 @@ def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -
 
 
 def test_validate_cli_can_allow_duplicate_tip_labels(capsys) -> None:
-    exit_code = main(["validate", str(fixture("example_tree_duplicate.nwk")), "--allow-duplicates", "--json"])
+    exit_code = main(
+        [
+            "validate",
+            str(fixture("example_tree_duplicate.nwk")),
+            "--allow-duplicates",
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3136,7 +4053,9 @@ def test_validate_cli_can_allow_duplicate_tip_labels(capsys) -> None:
 
 
 def test_validate_cli_strict_mode_rejects_unnamed_tips(capsys) -> None:
-    exit_code = main(["validate", str(fixture("example_tree_unnamed_tip.nwk")), "--strict", "--json"])
+    exit_code = main(
+        ["validate", str(fixture("example_tree_unnamed_tip.nwk")), "--strict", "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 2
@@ -3151,7 +4070,12 @@ def test_validate_cli_strict_mode_rejects_unnamed_tips(capsys) -> None:
 
 def test_validate_cli_can_allow_negative_branch_lengths(capsys) -> None:
     exit_code = main(
-        ["validate", str(fixture("example_tree_negative_length.nwk")), "--allow-negative-branches", "--json"]
+        [
+            "validate",
+            str(fixture("example_tree_negative_length.nwk")),
+            "--allow-negative-branches",
+            "--json",
+        ]
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
@@ -3161,13 +4085,27 @@ def test_validate_cli_can_allow_negative_branch_lengths(capsys) -> None:
 
 
 def test_validate_cli_can_require_rooted_and_ultrametric_typed_errors(capsys) -> None:
-    exit_code = main(["validate", str(fixture("example_tree_unrooted.nwk")), "--require-rooted", "--json"])
+    exit_code = main(
+        [
+            "validate",
+            str(fixture("example_tree_unrooted.nwk")),
+            "--require-rooted",
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 2
     assert payload["errors"][0]["code"] == UnrootedTreeError.code
 
-    exit_code = main(["validate", str(fixture("example_tree_ladderized.nwk")), "--require-ultrametric", "--json"])
+    exit_code = main(
+        [
+            "validate",
+            str(fixture("example_tree_ladderized.nwk")),
+            "--require-ultrametric",
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 2
@@ -3175,7 +4113,9 @@ def test_validate_cli_can_require_rooted_and_ultrametric_typed_errors(capsys) ->
 
 
 def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
-    exit_code = main(["inspect", str(fixture("example_tree.nex")), "--format", "nexus", "--json"])
+    exit_code = main(
+        ["inspect", str(fixture("example_tree.nex")), "--format", "nexus", "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3198,13 +4138,19 @@ def test_cli_inspect_accepts_explicit_tree_format(capsys) -> None:
     assert payload["metrics"]["tip_count"] == 4
 
 
-def test_cli_validate_and_inspect_surface_structural_and_support_diagnostics(capsys) -> None:
-    validate_exit = main(["validate", str(fixture("example_tree_singleton.nwk")), "--json"])
+def test_cli_validate_and_inspect_surface_structural_and_support_diagnostics(
+    capsys,
+) -> None:
+    validate_exit = main(
+        ["validate", str(fixture("example_tree_singleton.nwk")), "--json"]
+    )
     validate_payload = json.loads(capsys.readouterr().out)
     assert validate_exit == 0
     assert validate_payload["metrics"]["singleton_internal_node_count"] == 1
 
-    inspect_exit = main(["inspect", str(fixture("example_tree_support_mixed.nwk")), "--json"])
+    inspect_exit = main(
+        ["inspect", str(fixture("example_tree_support_mixed.nwk")), "--json"]
+    )
     inspect_payload = json.loads(capsys.readouterr().out)
     assert inspect_exit == 0
     assert inspect_payload["metrics"]["likely_support_label_count"] == 3
@@ -3215,14 +4161,25 @@ def test_cli_validate_and_inspect_surface_structural_and_support_diagnostics(cap
 def test_cli_normalize_writes_canonical_newick(tmp_path: Path, capsys) -> None:
     output = tmp_path / "normalized.nwk"
     exit_code = main(
-        ["normalize", str(fixture("example_tree.nex")), "--format", "nexus", "--out", str(output), "--json"]
+        [
+            "normalize",
+            str(fixture("example_tree.nex")),
+            "--format",
+            "nexus",
+            "--out",
+            str(output),
+            "--json",
+        ]
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["outputs"] == [str(output)]
-    assert output.read_text(encoding="utf-8").strip() == "((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);"
+    assert (
+        output.read_text(encoding="utf-8").strip()
+        == "((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);"
+    )
 
 
 def test_cli_normalize_taxa_writes_mapping_file(tmp_path: Path, capsys) -> None:
@@ -3246,7 +4203,10 @@ def test_cli_normalize_taxa_writes_mapping_file(tmp_path: Path, capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["renamed_taxa"] == 2
-    assert output.read_text(encoding="utf-8").strip() == "(A.B-1:0.3,Homo_sapiens:0.1,Mus_musculus:0.2);"
+    assert (
+        output.read_text(encoding="utf-8").strip()
+        == "(A.B-1:0.3,Homo_sapiens:0.1,Mus_musculus:0.2);"
+    )
     assert mapping.read_text(encoding="utf-8") == (
         "raw_label\tnormalized_label\n"
         "Homo sapiens\tHomo_sapiens\n"
@@ -3255,7 +4215,9 @@ def test_cli_normalize_taxa_writes_mapping_file(tmp_path: Path, capsys) -> None:
 
 
 def test_compare_tree_paths_reports_nonzero_distance() -> None:
-    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree_alt.nwk"))
+    report = compare_tree_paths(
+        fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
+    )
     assert report.shared_taxa == ["A", "B", "C", "D"]
     assert report.robinson_foulds_distance > 0
 
@@ -3273,7 +4235,9 @@ def test_prune_trees_to_shared_taxa_keeps_identical_tip_sets() -> None:
 
 
 def test_compare_tree_paths_reports_identical_topology_boolean() -> None:
-    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree.nwk"))
+    report = compare_tree_paths(
+        fixture("example_tree.nwk"), fixture("example_tree.nwk")
+    )
     assert report.topology_equal is True
     assert report.same_unrooted_topology is True
     assert report.same_taxa_different_rooting is False
@@ -3282,63 +4246,92 @@ def test_compare_tree_paths_reports_identical_topology_boolean() -> None:
 
 
 def test_compare_tree_paths_reports_different_topology_boolean() -> None:
-    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree_topology_diff.nwk"))
+    report = compare_tree_paths(
+        fixture("example_tree.nwk"), fixture("example_tree_topology_diff.nwk")
+    )
     assert report.topology_equal is False
     assert report.same_unrooted_topology is False
     assert report.same_taxa_different_rooting is False
 
 
 def test_compare_clade_sets_reports_shared_and_unique_clades() -> None:
-    report = compare_clade_sets(fixture("example_tree.nwk"), fixture("example_tree_alt.nwk"))
+    report = compare_clade_sets(
+        fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
+    )
     assert report.shared_clades == ["A|B"]
     assert report.left_only_clades == ["C|D"]
     assert report.right_only_clades == ["A|B|C"]
 
 
-def test_compare_tree_paths_detects_same_topology_with_different_branch_lengths() -> None:
-    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk"))
+def test_compare_tree_paths_detects_same_topology_with_different_branch_lengths() -> (
+    None
+):
+    report = compare_tree_paths(
+        fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk")
+    )
     assert report.topology_equal is True
     assert report.same_topology_different_branch_lengths is True
 
 
 def test_compare_tree_paths_detects_same_taxa_with_different_rooting() -> None:
-    report = compare_tree_paths(fixture("example_tree.nwk"), fixture("example_tree_rooting_diff.nwk"))
+    report = compare_tree_paths(
+        fixture("example_tree.nwk"), fixture("example_tree_rooting_diff.nwk")
+    )
     assert report.topology_equal is False
     assert report.same_unrooted_topology is True
     assert report.same_taxa_different_rooting is True
 
 
 def test_detect_clade_changes_reports_lost_and_gained_sets() -> None:
-    report = detect_clade_changes(fixture("example_tree.nwk"), fixture("example_tree_alt.nwk"))
+    report = detect_clade_changes(
+        fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
+    )
     assert report.lost_clades == ["C|D"]
     assert report.gained_clades == ["A|B|C"]
 
 
 def test_compare_support_values_pairs_shared_clades() -> None:
-    report = compare_support_values(fixture("example_tree_support_left.nwk"), fixture("example_tree_support_right.nwk"))
+    report = compare_support_values(
+        fixture("example_tree_support_left.nwk"),
+        fixture("example_tree_support_right.nwk"),
+    )
     assert report.shared_taxa == ["A", "B", "C", "D"]
-    assert [(row.split_id, row.left_support, row.right_support) for row in report.shared_clades] == [
+    assert [
+        (row.split_id, row.left_support, row.right_support)
+        for row in report.shared_clades
+    ] == [
         ("A|B", 95.0, 90.0),
         ("C|D", 88.0, 85.0),
     ]
 
 
 def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> None:
-    scaled = compare_branch_lengths(fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk"))
-    missing = compare_branch_lengths(fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_missing.nwk"))
+    scaled = compare_branch_lengths(
+        fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk")
+    )
+    missing = compare_branch_lengths(
+        fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_missing.nwk")
+    )
     assert [(row.split_id, row.delta, row.ratio) for row in scaled.shared_splits] == [
         ("A|B", 0.2, 2.0),
         ("C|D", 0.1, 2.0),
     ]
-    assert [(row.split_id, row.left_length, row.right_length, row.delta, row.ratio) for row in missing.shared_splits] == [
+    assert [
+        (row.split_id, row.left_length, row.right_length, row.delta, row.ratio)
+        for row in missing.shared_splits
+    ] == [
         ("A|B", 0.2, None, None, None),
         ("C|D", 0.1, 0.2, 0.1, 2.0),
     ]
 
 
-def test_write_tree_comparison_table_writes_one_row_per_compared_split(tmp_path: Path) -> None:
+def test_write_tree_comparison_table_writes_one_row_per_compared_split(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "comparison.tsv"
-    write_tree_comparison_table(output, fixture("example_tree.nwk"), fixture("example_tree_alt.nwk"))
+    write_tree_comparison_table(
+        output, fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
+    )
     assert output.read_text(encoding="utf-8") == (
         "split_id\tcomparison_status\tshared_clade\tleft_support\tright_support\tleft_length\tright_length\tlength_delta\tlength_ratio\n"
         "A|B\tshared\ttrue\t\t\t0.2\t0.1\t-0.1\t0.5\n"
@@ -3347,7 +4340,9 @@ def test_write_tree_comparison_table_writes_one_row_per_compared_split(tmp_path:
     )
 
 
-def test_build_tree_comparison_report_writes_html_with_checksums(tmp_path: Path) -> None:
+def test_build_tree_comparison_report_writes_html_with_checksums(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "compare.html"
     result = build_tree_comparison_report(
         fixture("example_tree_support_left.nwk"),
@@ -3377,7 +4372,9 @@ def test_render_tree_svg_writes_static_tree_image(tmp_path: Path) -> None:
 
 def test_render_tree_svg_can_render_phylogram_with_scale_bar(tmp_path: Path) -> None:
     output = tmp_path / "phylogram.svg"
-    result = render_tree_svg(fixture("example_tree.nwk"), out_path=output, layout="phylogram")
+    result = render_tree_svg(
+        fixture("example_tree.nwk"), out_path=output, layout="phylogram"
+    )
     svg = output.read_text(encoding="utf-8")
     assert result.layout == "phylogram"
     assert result.has_scale_bar is True
@@ -3389,11 +4386,13 @@ def test_render_tree_svg_can_render_phylogram_with_scale_bar(tmp_path: Path) -> 
 
 def test_render_tree_svg_can_render_circular_layout(tmp_path: Path) -> None:
     output = tmp_path / "circular.svg"
-    result = render_tree_svg(fixture("example_tree.nwk"), out_path=output, layout="circular")
+    result = render_tree_svg(
+        fixture("example_tree.nwk"), out_path=output, layout="circular"
+    )
     svg = output.read_text(encoding="utf-8")
     assert result.layout == "circular"
     assert result.has_scale_bar is False
-    assert "<path d=\"M " in svg
+    assert '<path d="M ' in svg
     assert "text-anchor=" in svg
 
 
@@ -3417,7 +4416,12 @@ def test_render_tree_svg_can_render_categorical_tip_traits(tmp_path: Path) -> No
     result = render_tree_svg(
         fixture("example_tree.nwk"),
         out_path=output,
-        categorical_traits={"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"},
+        categorical_traits={
+            "A": "Sweden",
+            "B": "Norway",
+            "C": "Denmark",
+            "D": "Finland",
+        },
     )
     svg = output.read_text(encoding="utf-8")
     assert result.rendered_categorical_trait_count == 4
@@ -3461,8 +4465,19 @@ def test_render_tree_svg_can_render_metadata_strips(tmp_path: Path) -> None:
         fixture("example_tree.nwk"),
         out_path=output,
         metadata_strips=[
-            AnnotationStrip("species", {"A": "Alpha species", "B": "Beta species", "C": "Gamma species", "D": "Delta species"}),
-            AnnotationStrip("location", {"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"}),
+            AnnotationStrip(
+                "species",
+                {
+                    "A": "Alpha species",
+                    "B": "Beta species",
+                    "C": "Gamma species",
+                    "D": "Delta species",
+                },
+            ),
+            AnnotationStrip(
+                "location",
+                {"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"},
+            ),
         ],
     )
     svg = output.read_text(encoding="utf-8")
@@ -3478,8 +4493,12 @@ def test_render_tree_svg_can_render_trait_heatmap_columns(tmp_path: Path) -> Non
         fixture("example_tree.nwk"),
         out_path=output,
         heatmap_columns=[
-            AnnotationStrip("temperature", {"A": "1.2", "B": "1.4", "C": "1.8", "D": "2.0"}),
-            AnnotationStrip("status", {"A": "high", "B": "medium", "C": "medium", "D": "low"}),
+            AnnotationStrip(
+                "temperature", {"A": "1.2", "B": "1.4", "C": "1.8", "D": "2.0"}
+            ),
+            AnnotationStrip(
+                "status", {"A": "high", "B": "medium", "C": "medium", "D": "low"}
+            ),
         ],
     )
     svg = output.read_text(encoding="utf-8")
@@ -3495,9 +4514,23 @@ def test_build_tree_figure_package_writes_publication_bundle(tmp_path: Path) -> 
         fixture("example_tree_support_left.nwk"),
         out_dir=output_dir,
         show_support_values=True,
-        categorical_traits={"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"},
-        metadata_strips=[AnnotationStrip("location", {"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"})],
-        heatmap_columns=[AnnotationStrip("temperature", {"A": "1.2", "B": "1.4", "C": "1.8", "D": "2.0"})],
+        categorical_traits={
+            "A": "Sweden",
+            "B": "Norway",
+            "C": "Denmark",
+            "D": "Finland",
+        },
+        metadata_strips=[
+            AnnotationStrip(
+                "location",
+                {"A": "Sweden", "B": "Norway", "C": "Denmark", "D": "Finland"},
+            )
+        ],
+        heatmap_columns=[
+            AnnotationStrip(
+                "temperature", {"A": "1.2", "B": "1.4", "C": "1.8", "D": "2.0"}
+            )
+        ],
     )
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     assert result.figure_path.exists()
@@ -3507,21 +4540,31 @@ def test_build_tree_figure_package_writes_publication_bundle(tmp_path: Path) -> 
     assert manifest["render"]["rendered_support_count"] == 2
     assert manifest["audit"]["scale_bar_valid"] is True
     assert manifest["audit"]["support_audit"]["validated"] is True
-    assert "taxon\tlabel\tcategorical_trait\tcontinuous_trait\tlocation\ttemperature" in result.annotations_path.read_text(encoding="utf-8")
+    assert (
+        "taxon\tlabel\tcategorical_trait\tcontinuous_trait\tlocation\ttemperature"
+        in result.annotations_path.read_text(encoding="utf-8")
+    )
     caption = result.caption_path.read_text(encoding="utf-8")
     assert "## Reviewer Summary" in caption
     assert "## Legend" in caption
     assert "## Limitations" in caption
 
 
-def test_build_tree_figure_package_records_collapsed_clade_and_annotation_audits(tmp_path: Path) -> None:
+def test_build_tree_figure_package_records_collapsed_clade_and_annotation_audits(
+    tmp_path: Path,
+) -> None:
     output_dir = tmp_path / "tree-figure"
     result = build_tree_figure_package(
         fixture("example_tree_named_clades.nwk"),
         out_dir=output_dir,
         labels={"A": "Alpha", "B": "Beta", "C": "Gamma", "D": "Delta"},
         layout="phylogram",
-        metadata_strips=[AnnotationStrip("location", {"A": "Sweden", "B": "Sweden", "C": "Denmark", "D": "Finland"})],
+        metadata_strips=[
+            AnnotationStrip(
+                "location",
+                {"A": "Sweden", "B": "Sweden", "C": "Denmark", "D": "Finland"},
+            )
+        ],
         collapsed_clades=["Mammals"],
     )
     assert result.audit.collapsed_clades[0].clade_name == "Mammals"
@@ -3532,7 +4575,9 @@ def test_build_tree_figure_package_records_collapsed_clade_and_annotation_audits
     assert result.audit.table_consistency.consistent is True
 
 
-def test_build_tree_figure_package_withholds_unvalidated_support_labels(tmp_path: Path) -> None:
+def test_build_tree_figure_package_withholds_unvalidated_support_labels(
+    tmp_path: Path,
+) -> None:
     output_dir = tmp_path / "tree-figure"
     result = build_tree_figure_package(
         fixture("example_tree_support_invalid.nwk"),
@@ -3576,7 +4621,9 @@ def test_compute_root_to_tip_distances_reports_one_row_per_tip() -> None:
 
 def test_diagnose_ultrametricity_reports_max_deviation() -> None:
     ultrametric = diagnose_ultrametricity(fixture("example_tree.nwk"), tolerance=1e-6)
-    non_ultrametric = diagnose_ultrametricity(fixture("example_tree_ladderized.nwk"), tolerance=1e-6)
+    non_ultrametric = diagnose_ultrametricity(
+        fixture("example_tree_ladderized.nwk"), tolerance=1e-6
+    )
     assert ultrametric.ultrametric is True
     assert ultrametric.max_deviation == 0.0
     assert non_ultrametric.ultrametric is False
@@ -3584,7 +4631,9 @@ def test_diagnose_ultrametricity_reports_max_deviation() -> None:
 
 
 def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
-    report = annotate_tree_against_table(fixture("example_tree.nwk"), fixture("example_traits.tsv"))
+    report = annotate_tree_against_table(
+        fixture("example_tree.nwk"), fixture("example_traits.tsv")
+    )
     assert report.linked_taxa == 3
     assert report.annotated_taxa == ["A", "B", "C"]
     assert report.missing_from_table == ["D"]
@@ -3598,7 +4647,9 @@ def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
 
 
 def test_cli_metadata_inspect_json_output(capsys) -> None:
-    exit_code = main(["metadata", "inspect", str(fixture("example_metadata.tsv")), "--json"])
+    exit_code = main(
+        ["metadata", "inspect", str(fixture("example_metadata.tsv")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3672,7 +4723,9 @@ def test_cli_annotate_writes_annotation_json(tmp_path: Path, capsys) -> None:
 
 
 def test_cli_traits_validate_json_output(capsys) -> None:
-    exit_code = main(["traits", "validate", str(fixture("example_traits_validate.tsv")), "--json"])
+    exit_code = main(
+        ["traits", "validate", str(fixture("example_traits_validate.tsv")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3684,7 +4737,13 @@ def test_cli_traits_validate_json_output(capsys) -> None:
 
 def test_cli_traits_link_json_output(capsys) -> None:
     exit_code = main(
-        ["traits", "link", str(fixture("example_tree.nwk")), str(fixture("example_traits.tsv")), "--json"]
+        [
+            "traits",
+            "link",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits.tsv")),
+            "--json",
+        ]
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
@@ -3735,7 +4794,9 @@ def test_cli_prune_writes_tree_and_pruned_taxa_report(tmp_path: Path, capsys) ->
 
 
 def test_cli_alignment_inspect_json_output(capsys) -> None:
-    exit_code = main(["alignment", "inspect", str(fixture("example_alignment.fasta")), "--json"])
+    exit_code = main(
+        ["alignment", "inspect", str(fixture("example_alignment.fasta")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3749,7 +4810,13 @@ def test_cli_alignment_inspect_json_output(capsys) -> None:
 
 def test_cli_alignment_link_json_output(capsys) -> None:
     exit_code = main(
-        ["alignment", "link", str(fixture("example_tree.nwk")), str(fixture("example_alignment.fasta")), "--json"]
+        [
+            "alignment",
+            "link",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_alignment.fasta")),
+            "--json",
+        ]
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
@@ -3777,7 +4844,14 @@ def test_cli_alignment_link_strict_mode_returns_typed_error(capsys) -> None:
 
 
 def test_cli_alignment_quality_json_output(capsys) -> None:
-    exit_code = main(["alignment", "quality", str(fixture("example_alignment_duplicates.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "quality",
+            str(fixture("example_alignment_duplicates.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3788,7 +4862,9 @@ def test_cli_alignment_quality_json_output(capsys) -> None:
 
 
 def test_cli_alignment_classify_json_output(capsys) -> None:
-    exit_code = main(["alignment", "classify", str(fixture("example_sequences_raw.fasta")), "--json"])
+    exit_code = main(
+        ["alignment", "classify", str(fixture("example_sequences_raw.fasta")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3818,13 +4894,23 @@ def test_cli_alignment_windows_json_output(capsys) -> None:
 
 
 def test_cli_alignment_readiness_json_output(capsys) -> None:
-    exit_code = main(["alignment", "readiness", str(fixture("example_alignment_coding.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "readiness",
+            str(fixture("example_alignment_coding.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["ready_method_count"] == 3
     assert payload["metrics"]["blocked_method_count"] == 2
-    assert any(method["analysis"] == "coding" and method["ready"] is False for method in payload["data"]["methods"])
+    assert any(
+        method["analysis"] == "coding" and method["ready"] is False
+        for method in payload["data"]["methods"]
+    )
 
 
 def test_cli_alignment_profiles_json_output(capsys) -> None:
@@ -3837,7 +4923,14 @@ def test_cli_alignment_profiles_json_output(capsys) -> None:
 
 
 def test_cli_alignment_forensic_json_output(capsys) -> None:
-    exit_code = main(["alignment", "forensic", str(fixture("example_alignment_coding.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "forensic",
+            str(fixture("example_alignment_coding.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3846,7 +4939,14 @@ def test_cli_alignment_forensic_json_output(capsys) -> None:
 
 
 def test_cli_alignment_low_information_json_output(capsys) -> None:
-    exit_code = main(["alignment", "low-information", str(fixture("example_alignment_missingness.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "low-information",
+            str(fixture("example_alignment_missingness.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3890,7 +4990,14 @@ def test_cli_alignment_ambiguous_columns_json_output(capsys) -> None:
 
 
 def test_cli_alignment_sequence_ranking_json_output(capsys) -> None:
-    exit_code = main(["alignment", "sequence-ranking", str(fixture("example_alignment_ambiguity.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "sequence-ranking",
+            str(fixture("example_alignment_ambiguity.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3919,7 +5026,9 @@ def test_cli_alignment_filter_json_output(tmp_path: Path, capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert output.read_text(encoding="utf-8") == fixture("example_alignment_filtering_cleaned_moderate.fasta").read_text(encoding="utf-8")
+    assert output.read_text(encoding="utf-8") == fixture(
+        "example_alignment_filtering_cleaned_moderate.fasta"
+    ).read_text(encoding="utf-8")
     assert payload["metrics"]["profile"] == "moderate"
     assert payload["metrics"]["trimmed_alignment_length"] == 8
 
@@ -3975,7 +5084,14 @@ def test_cli_report_dataset_json_output_includes_audit(capsys, tmp_path: Path) -
 
 
 def test_cli_alignment_length_outliers_json_output(capsys) -> None:
-    exit_code = main(["alignment", "length-outliers", str(fixture("example_sequences_raw.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "length-outliers",
+            str(fixture("example_sequences_raw.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3984,7 +5100,9 @@ def test_cli_alignment_length_outliers_json_output(capsys) -> None:
 
 
 def test_cli_alignment_composition_json_output(capsys) -> None:
-    exit_code = main(["alignment", "composition", str(fixture("example_alignment.fasta")), "--json"])
+    exit_code = main(
+        ["alignment", "composition", str(fixture("example_alignment.fasta")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -3999,7 +5117,14 @@ def test_cli_alignment_composition_json_output(capsys) -> None:
 
 
 def test_cli_alignment_alphabet_json_output(capsys) -> None:
-    exit_code = main(["alignment", "alphabet", str(fixture("example_alignment_protein.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "alphabet",
+            str(fixture("example_alignment_protein.fasta")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -4008,12 +5133,17 @@ def test_cli_alignment_alphabet_json_output(capsys) -> None:
 
 
 def test_cli_alignment_gc_json_output(capsys) -> None:
-    exit_code = main(["alignment", "gc", str(fixture("example_alignment.fasta")), "--json"])
+    exit_code = main(
+        ["alignment", "gc", str(fixture("example_alignment.fasta")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["data"]["whole_alignment_gc_content"] == 0.5
-    assert payload["data"]["per_sequence_gc_content"][1] == {"gc_fraction": 0.375, "identifier": "B"}
+    assert payload["data"]["per_sequence_gc_content"][1] == {
+        "gc_fraction": 0.375,
+        "identifier": "B",
+    }
 
 
 def test_cli_alignment_invalid_json_output(capsys) -> None:
@@ -4068,7 +5198,9 @@ def test_cli_alignment_outliers_json_output(capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["composition_outlier_count"] == 1
-    assert payload["data"] == [{"deviation": 1.0, "identifier": "C", "robust_z_score": None}]
+    assert payload["data"] == [
+        {"deviation": 1.0, "identifier": "C", "robust_z_score": None}
+    ]
 
 
 def test_cli_compare_support_json_output(capsys) -> None:
@@ -4108,7 +5240,13 @@ def test_cli_compare_branch_lengths_json_output(capsys) -> None:
 
 def test_cli_compare_clades_json_output(capsys) -> None:
     exit_code = main(
-        ["compare", "clades", str(fixture("example_tree.nwk")), str(fixture("example_tree_alt.nwk")), "--json"]
+        [
+            "compare",
+            "clades",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_alt.nwk")),
+            "--json",
+        ]
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
@@ -4120,7 +5258,13 @@ def test_cli_compare_clades_json_output(capsys) -> None:
 
 def test_cli_compare_changes_json_output(capsys) -> None:
     exit_code = main(
-        ["compare", "changes", str(fixture("example_tree.nwk")), str(fixture("example_tree_alt.nwk")), "--json"]
+        [
+            "compare",
+            "changes",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_alt.nwk")),
+            "--json",
+        ]
     )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
@@ -4146,8 +5290,12 @@ def test_cli_compare_prune_writes_shared_taxon_trees(tmp_path: Path, capsys) -> 
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["data"]["shared_taxa"] == ["A", "B", "C"]
-    assert (output_dir / "left-shared.nwk").read_text(encoding="utf-8") == "((A:0.1,B:0.1):0.2,C:0.3);\n"
-    assert (output_dir / "right-shared.nwk").read_text(encoding="utf-8") == "((A:0.1,B:0.1):0.2,C:0.3);\n"
+    assert (output_dir / "left-shared.nwk").read_text(
+        encoding="utf-8"
+    ) == "((A:0.1,B:0.1):0.2,C:0.3);\n"
+    assert (output_dir / "right-shared.nwk").read_text(
+        encoding="utf-8"
+    ) == "((A:0.1,B:0.1):0.2,C:0.3);\n"
 
 
 def test_cli_compare_table_writes_tsv_output(tmp_path: Path, capsys) -> None:
@@ -4167,7 +5315,9 @@ def test_cli_compare_table_writes_tsv_output(tmp_path: Path, capsys) -> None:
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["table_rows"] == 3
-    assert output.read_text(encoding="utf-8").startswith("split_id\tcomparison_status\tshared_clade\t")
+    assert output.read_text(encoding="utf-8").startswith(
+        "split_id\tcomparison_status\tshared_clade\t"
+    )
     assert payload["data"]["table_path"] == str(output)
 
 
@@ -4194,7 +5344,9 @@ def test_cli_compare_report_json_output(tmp_path: Path, capsys) -> None:
 
 def test_cli_render_writes_svg_output(tmp_path: Path, capsys) -> None:
     output = tmp_path / "tree.svg"
-    exit_code = main(["render", str(fixture("example_tree.nwk")), "--out", str(output), "--json"])
+    exit_code = main(
+        ["render", str(fixture("example_tree.nwk")), "--out", str(output), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -4203,7 +5355,9 @@ def test_cli_render_writes_svg_output(tmp_path: Path, capsys) -> None:
     assert "<svg" in output.read_text(encoding="utf-8")
 
 
-def test_cli_render_with_metadata_labels_reports_missing_taxa(tmp_path: Path, capsys) -> None:
+def test_cli_render_with_metadata_labels_reports_missing_taxa(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "annotated.svg"
     exit_code = main(
         [
@@ -4225,7 +5379,9 @@ def test_cli_render_with_metadata_labels_reports_missing_taxa(tmp_path: Path, ca
     assert "Alpha species" in output.read_text(encoding="utf-8")
 
 
-def test_cli_render_with_partial_metadata_warns_for_missing_labels(tmp_path: Path, capsys) -> None:
+def test_cli_render_with_partial_metadata_warns_for_missing_labels(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "partial.svg"
     exit_code = main(
         [
@@ -4317,17 +5473,25 @@ def test_render_tree_report_writes_embedded_manifest(tmp_path: Path) -> None:
     assert "Bijux Tree Report" in text
 
 
-def test_render_tree_report_preserves_support_and_branch_diagnostics(tmp_path: Path) -> None:
+def test_render_tree_report_preserves_support_and_branch_diagnostics(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "tree-support-report.html"
-    result = render_tree_report(tree_path=fixture("example_tree_support_invalid.nwk"), out_path=output)
+    result = render_tree_report(
+        tree_path=fixture("example_tree_support_invalid.nwk"), out_path=output
+    )
     assert result.validation.missing_internal_branch_nodes == []
     assert result.inspection.suspicious_support_value_ranges == [
         "support value 101 at A|B|C|D exceeds 100",
         "support value 120 at A|B exceeds 100",
         "support value -5 at C|D is negative",
     ]
-    assert [warning.code for warning in result.inspection.tree_quality_warnings] == ["suspicious_support_ranges"]
-    assert output.read_text(encoding="utf-8").count("suspicious_support_value_ranges") >= 1
+    assert [warning.code for warning in result.inspection.tree_quality_warnings] == [
+        "suspicious_support_ranges"
+    ]
+    assert (
+        output.read_text(encoding="utf-8").count("suspicious_support_value_ranges") >= 1
+    )
 
 
 def test_render_dataset_report_writes_metadata_sections(tmp_path: Path) -> None:
@@ -4473,11 +5637,15 @@ def test_render_taxon_report_writes_taxon_sections(tmp_path: Path) -> None:
     assert "Bijux Taxon Audit Report" in text
 
 
-def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tmp_path: Path) -> None:
+def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(
+    tmp_path: Path,
+) -> None:
     tree_output = tmp_path / "tree-report.html"
     dataset_output = tmp_path / "dataset-report.html"
     phylo_output = tmp_path / "phylo-report.html"
-    tree_result = render_tree_report(tree_path=fixture("example_tree_support_invalid.nwk"), out_path=tree_output)
+    tree_result = render_tree_report(
+        tree_path=fixture("example_tree_support_invalid.nwk"), out_path=tree_output
+    )
     dataset_result = render_dataset_report(
         tree_path=fixture("example_tree.nwk"),
         metadata_path=fixture("example_metadata.tsv"),
@@ -4490,10 +5658,19 @@ def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(tm
         alignment_path=fixture("example_alignment_coding.fasta"),
         out_path=phylo_output,
     )
-    tree_sidecar = json.loads(tree_result.machine_manifest_path.read_text(encoding="utf-8"))
-    dataset_sidecar = json.loads(dataset_result.machine_manifest_path.read_text(encoding="utf-8"))
-    phylo_sidecar = json.loads(phylo_result.machine_manifest_path.read_text(encoding="utf-8"))
-    assert tree_sidecar["reviewer_summary"][0] == "tree validity decision: valid_with_warnings"
+    tree_sidecar = json.loads(
+        tree_result.machine_manifest_path.read_text(encoding="utf-8")
+    )
+    dataset_sidecar = json.loads(
+        dataset_result.machine_manifest_path.read_text(encoding="utf-8")
+    )
+    phylo_sidecar = json.loads(
+        phylo_result.machine_manifest_path.read_text(encoding="utf-8")
+    )
+    assert (
+        tree_sidecar["reviewer_summary"][0]
+        == "tree validity decision: valid_with_warnings"
+    )
     assert "limitations" in dataset_sidecar
     assert dataset_sidecar["input_ledger"][0]["role"] == "tree"
     assert "reviewer-summary" in dataset_result.machine_manifest["sections"]
@@ -4515,7 +5692,9 @@ def test_reference_validation_suites_cover_goals_91_through_96() -> None:
     assert sum(suite.fixture_count for suite in suites) >= 18
 
 
-def test_build_core_workflow_validation_report_aggregates_suites_failures_and_maturity() -> None:
+def test_build_core_workflow_validation_report_aggregates_suites_failures_and_maturity() -> (
+    None
+):
     report = build_core_workflow_validation_report()
 
     assert report.total_fixture_count == 18
@@ -4535,7 +5714,9 @@ def test_build_core_workflow_validation_report_aggregates_suites_failures_and_ma
     }
 
 
-def test_render_workflow_validation_report_writes_fixture_sections(tmp_path: Path) -> None:
+def test_render_workflow_validation_report_writes_fixture_sections(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "workflow-validation.html"
     result = render_workflow_validation_report(out_path=output)
 
@@ -4555,7 +5736,9 @@ def test_render_workflow_validation_report_writes_fixture_sections(tmp_path: Pat
     assert "Bijux Core Workflow Validation Report" in text
 
 
-def test_build_level_one_release_gate_report_tracks_taxon_loss_and_blocked_analysis() -> None:
+def test_build_level_one_release_gate_report_tracks_taxon_loss_and_blocked_analysis() -> (
+    None
+):
     report = build_level_one_release_gate_report()
 
     assert report.gate.decision == "blocked"
@@ -4572,7 +5755,9 @@ def test_build_level_one_release_gate_report_tracks_taxon_loss_and_blocked_analy
     assert "maximum_likelihood" in report.gate.blocked_analyses
 
 
-def test_render_level_one_release_gate_report_writes_traceability_sections(tmp_path: Path) -> None:
+def test_render_level_one_release_gate_report_writes_traceability_sections(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "release-gate.html"
     result = render_level_one_release_gate_report(out_path=output)
 
@@ -4632,13 +5817,17 @@ def test_validate_bundle_detects_checksum_drift(tmp_path: Path) -> None:
     (outputs_root / "summary.txt").write_text("result\n", encoding="utf-8")
     bundle_root = tmp_path / "bundle"
     bundle_directory([inputs_root], [outputs_root], bundle_root)
-    (bundle_root / "outputs" / "outputs" / "summary.txt").write_text("drift\n", encoding="utf-8")
+    (bundle_root / "outputs" / "outputs" / "summary.txt").write_text(
+        "drift\n", encoding="utf-8"
+    )
     report = validate_bundle(bundle_root)
     assert report.valid is False
     assert report.mismatches[0].reason in {"checksum_mismatch", "size_mismatch"}
 
 
-def test_bundle_file_paths_copies_explicit_input_and_output_files(tmp_path: Path) -> None:
+def test_bundle_file_paths_copies_explicit_input_and_output_files(
+    tmp_path: Path,
+) -> None:
     input_path = tmp_path / "inputs" / "alignment.fasta"
     output_path = tmp_path / "outputs" / "analysis.xml"
     input_path.parent.mkdir(parents=True, exist_ok=True)
@@ -4666,7 +5855,9 @@ def test_cli_validate_json_output(capsys) -> None:
 
 
 def test_cli_inspect_reports_zero_length_branch_count(capsys) -> None:
-    exit_code = main(["inspect", str(fixture("example_tree_zero_lengths.nwk")), "--json"])
+    exit_code = main(
+        ["inspect", str(fixture("example_tree_zero_lengths.nwk")), "--json"]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -4690,18 +5881,23 @@ def test_cli_diagnose_json_output(capsys) -> None:
 
 def test_cli_diagnose_distances_writes_tsv(tmp_path: Path, capsys) -> None:
     output = tmp_path / "distances.tsv"
-    exit_code = main(["diagnose", "distances", str(fixture("example_tree.nwk")), "--out", str(output), "--json"])
+    exit_code = main(
+        [
+            "diagnose",
+            "distances",
+            str(fixture("example_tree.nwk")),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["outputs"] == [str(output)]
     assert output.read_text(encoding="utf-8") == (
-        "tip\tdistance\n"
-        "A\t0.3\n"
-        "B\t0.3\n"
-        "C\t0.3\n"
-        "D\t0.3\n"
+        "tip\tdistance\nA\t0.3\nB\t0.3\nC\t0.3\nD\t0.3\n"
     )
 
 
@@ -4726,7 +5922,14 @@ def test_cli_diagnose_assumptions_reports_unit_aware_compatibility(capsys) -> No
 
 
 def test_cli_diagnose_ultrametric_reports_tolerance_and_deviation(capsys) -> None:
-    exit_code = main(["diagnose", "ultrametric", str(fixture("example_tree_ladderized.nwk")), "--json"])
+    exit_code = main(
+        [
+            "diagnose",
+            "ultrametric",
+            str(fixture("example_tree_ladderized.nwk")),
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
@@ -4737,7 +5940,15 @@ def test_cli_diagnose_ultrametric_reports_tolerance_and_deviation(capsys) -> Non
 
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
     manifest = tmp_path / "validate.manifest.json"
-    exit_code = main(["validate", str(fixture("example_tree.nwk")), "--json", "--manifest", str(manifest)])
+    exit_code = main(
+        [
+            "validate",
+            str(fixture("example_tree.nwk")),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
@@ -4861,7 +6072,9 @@ def test_cli_evidence_bundle_and_validate_json_output(tmp_path: Path, capsys) ->
     assert validate_payload["data"]["valid"] is True
 
 
-def test_cli_demo_run_json_output_reports_generated_artifacts(tmp_path: Path, capsys) -> None:
+def test_cli_demo_run_json_output_reports_generated_artifacts(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "demo"
     exit_code = main(["demo", "run", "--out", str(output), "--json"])
     captured = capsys.readouterr()
@@ -4869,7 +6082,9 @@ def test_cli_demo_run_json_output_reports_generated_artifacts(tmp_path: Path, ca
     assert exit_code == 0
     assert payload["command"] == "demo"
     assert payload["metrics"]["artifact_count"] == 6
-    assert payload["data"]["tree_report"] == str(output / "reports" / "tree-report.html")
+    assert payload["data"]["tree_report"] == str(
+        output / "reports" / "tree-report.html"
+    )
     assert payload["data"]["evidence_bundle"] == str(output / "evidence-pack")
 
 
@@ -4894,7 +6109,9 @@ def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> 
     assert payload["data"]["report_kind"] == "tree"
 
 
-def test_cli_report_dataset_json_output_uses_dataset_contract(tmp_path: Path, capsys) -> None:
+def test_cli_report_dataset_json_output_uses_dataset_contract(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "dataset-report.html"
     exit_code = main(
         [
@@ -4921,7 +6138,9 @@ def test_cli_report_dataset_json_output_uses_dataset_contract(tmp_path: Path, ca
     assert payload["data"]["input_ledger"][0]["role"] == "tree"
 
 
-def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(tmp_path: Path, capsys) -> None:
+def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "phylo-inputs-report.html"
     exit_code = main(
         [
@@ -4946,7 +6165,9 @@ def test_cli_report_phylo_inputs_json_output_uses_alignment_contract(tmp_path: P
     assert payload["metrics"]["linked_taxa"] == 4
 
 
-def test_cli_report_alignment_json_output_uses_alignment_contract(tmp_path: Path, capsys) -> None:
+def test_cli_report_alignment_json_output_uses_alignment_contract(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "alignment-report.html"
     exit_code = main(
         [
@@ -4968,7 +6189,9 @@ def test_cli_report_alignment_json_output_uses_alignment_contract(tmp_path: Path
     assert payload["metrics"]["sequence_count"] == 4
 
 
-def test_cli_report_taxonomy_json_output_uses_taxon_contract(tmp_path: Path, capsys) -> None:
+def test_cli_report_taxonomy_json_output_uses_taxon_contract(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "taxonomy-report.html"
     exit_code = main(
         [
@@ -4992,7 +6215,9 @@ def test_cli_report_taxonomy_json_output_uses_taxon_contract(tmp_path: Path, cap
     assert payload["metrics"]["tree_tip_count"] == 6
 
 
-def test_cli_report_workflow_validation_json_output_uses_reference_contract(tmp_path: Path, capsys) -> None:
+def test_cli_report_workflow_validation_json_output_uses_reference_contract(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "workflow-validation.html"
     exit_code = main(
         [
@@ -5012,7 +6237,9 @@ def test_cli_report_workflow_validation_json_output_uses_reference_contract(tmp_
     assert payload["metrics"]["passed_fixture_count"] == 18
 
 
-def test_cli_report_release_gate_json_output_uses_gate_contract(tmp_path: Path, capsys) -> None:
+def test_cli_report_release_gate_json_output_uses_gate_contract(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "release-gate.html"
     exit_code = main(
         [
@@ -5034,7 +6261,16 @@ def test_cli_report_release_gate_json_output_uses_gate_contract(tmp_path: Path, 
 
 
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
-    exit_code = main(["adapter", "inspect", "iqtree", "--executable", "definitely-not-installed-engine", "--json"])
+    exit_code = main(
+        [
+            "adapter",
+            "inspect",
+            "iqtree",
+            "--executable",
+            "definitely-not-installed-engine",
+            "--json",
+        ]
+    )
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 2

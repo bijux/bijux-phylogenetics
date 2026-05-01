@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.distance import (
-    assess_distance_method_maturity,
     assess_distance_method_assumptions,
+    assess_distance_method_maturity,
     assess_imported_distance_method_assumptions,
     bootstrap_distance_trees,
     build_distance_method_report,
@@ -14,15 +14,14 @@ from bijux_phylogenetics.distance import (
     compare_distance_models,
     compare_distance_tree_to_reference_tree,
     compute_pairwise_genetic_distance_matrix,
-    inspect_imported_distance_matrix_quality,
     inspect_distance_matrix_quality,
+    inspect_imported_distance_matrix_quality,
     summarize_distance_bootstrap_support,
     validate_distance_reference_examples,
     write_distance_reproducibility_bundle,
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.reports.service import render_distance_report
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -46,12 +45,18 @@ def test_validate_distance_reference_examples_passes() -> None:
     assert len(report.tree_observations) == 2
 
 
-def test_compute_pairwise_genetic_distance_matrix_supports_kimura_two_parameter() -> None:
+def test_compute_pairwise_genetic_distance_matrix_supports_kimura_two_parameter() -> (
+    None
+):
     report = compute_pairwise_genetic_distance_matrix(
         fixture("example_alignment_distance.fasta"),
         model="kimura-2-parameter",
     )
-    pair = next(row for row in report.pairs if row.left_identifier == "A" and row.right_identifier == "B")
+    pair = next(
+        row
+        for row in report.pairs
+        if row.left_identifier == "A" and row.right_identifier == "B"
+    )
     assert pair.distance == 0.14384103622589
     assert pair.transition_sites == 1.0
     assert pair.transversion_sites == 0.0
@@ -62,12 +67,18 @@ def test_compute_pairwise_genetic_distance_matrix_supports_amino_acid_model() ->
         fixture("example_alignment_protein.fasta"),
         model="amino-acid-p-distance",
     )
-    pair = next(row for row in report.pairs if row.left_identifier == "P1" and row.right_identifier == "P2")
+    pair = next(
+        row
+        for row in report.pairs
+        if row.left_identifier == "P1" and row.right_identifier == "P2"
+    )
     assert report.inferred_alphabet == "protein"
     assert pair.distance == 0.125
 
 
-def test_compute_pairwise_genetic_distance_matrix_honors_partial_match_ambiguity_policy() -> None:
+def test_compute_pairwise_genetic_distance_matrix_honors_partial_match_ambiguity_policy() -> (
+    None
+):
     partial = compute_pairwise_genetic_distance_matrix(
         fixture("example_alignment_ambiguity.fasta"),
         model="p-distance",
@@ -78,21 +89,35 @@ def test_compute_pairwise_genetic_distance_matrix_honors_partial_match_ambiguity
         model="p-distance",
         ambiguity_policy="ignore",
     )
-    partial_pair = next(row for row in partial.pairs if row.left_identifier == "A" and row.right_identifier == "B")
-    ignore_pair = next(row for row in ignore.pairs if row.left_identifier == "A" and row.right_identifier == "B")
+    partial_pair = next(
+        row
+        for row in partial.pairs
+        if row.left_identifier == "A" and row.right_identifier == "B"
+    )
+    ignore_pair = next(
+        row
+        for row in ignore.pairs
+        if row.left_identifier == "A" and row.right_identifier == "B"
+    )
     assert partial_pair.distance == 0.15
     assert partial_pair.ambiguity_sites == 1
     assert ignore_pair.distance == 0.0
     assert ignore_pair.comparable_sites == 4
 
 
-def test_compute_pairwise_genetic_distance_matrix_supports_report_only_ambiguity_policy() -> None:
+def test_compute_pairwise_genetic_distance_matrix_supports_report_only_ambiguity_policy() -> (
+    None
+):
     report_only = compute_pairwise_genetic_distance_matrix(
         fixture("example_alignment_ambiguity.fasta"),
         model="p-distance",
         ambiguity_policy="report-only",
     )
-    pair = next(row for row in report_only.pairs if row.left_identifier == "A" and row.right_identifier == "B")
+    pair = next(
+        row
+        for row in report_only.pairs
+        if row.left_identifier == "A" and row.right_identifier == "B"
+    )
     assert pair.distance == 0.0
     assert pair.comparable_sites == 4
     assert pair.ambiguity_sites == 1
@@ -108,19 +133,29 @@ def test_inspect_distance_matrix_quality_reports_saturation_risk() -> None:
 
 
 def test_assess_distance_method_assumptions_reports_ultrametric_violation() -> None:
-    report = assess_distance_method_assumptions(fixture("example_alignment_distance.fasta"))
+    report = assess_distance_method_assumptions(
+        fixture("example_alignment_distance.fasta")
+    )
     assert report.ultrametric_compatible is False
     assert len(report.upgma_ultrametric_violations) > 0
 
 
-def test_assess_imported_distance_method_assumptions_accepts_ultrametric_matrix() -> None:
-    report = assess_imported_distance_method_assumptions(fixture("example_distance_matrix_ultrametric.tsv"))
+def test_assess_imported_distance_method_assumptions_accepts_ultrametric_matrix() -> (
+    None
+):
+    report = assess_imported_distance_method_assumptions(
+        fixture("example_distance_matrix_ultrametric.tsv")
+    )
     assert report.ultrametric_compatible is True
     assert report.upgma_ultrametric_violations == []
 
 
-def test_inspect_imported_distance_matrix_quality_reports_structural_and_site_risks() -> None:
-    report = inspect_imported_distance_matrix_quality(fixture("example_distance_matrix_nonultrametric.tsv"))
+def test_inspect_imported_distance_matrix_quality_reports_structural_and_site_risks() -> (
+    None
+):
+    report = inspect_imported_distance_matrix_quality(
+        fixture("example_distance_matrix_nonultrametric.tsv")
+    )
     assert report.validation.complete is True
     assert report.saturation_audit_scale == "unknown"
     assert report.low_information_pair_cutoff == 50
@@ -154,8 +189,12 @@ def test_summarize_distance_bootstrap_support_reports_weak_clade_counts() -> Non
     assert report.replicates == 5
 
 
-def test_compare_distance_tree_to_reference_tree_reports_matching_topology(tmp_path: Path) -> None:
-    tree, _ = build_distance_tree(fixture("example_alignment_distance.fasta"), method="neighbor-joining")
+def test_compare_distance_tree_to_reference_tree_reports_matching_topology(
+    tmp_path: Path,
+) -> None:
+    tree, _ = build_distance_tree(
+        fixture("example_alignment_distance.fasta"), method="neighbor-joining"
+    )
     reference_path = tmp_path / "reference.nwk"
     write_newick(reference_path, tree)
     report = compare_distance_tree_to_reference_tree(
@@ -168,7 +207,11 @@ def test_compare_distance_tree_to_reference_tree_reports_matching_topology(tmp_p
 
 def test_compare_distance_models_reports_supported_dna_models() -> None:
     report = compare_distance_models(fixture("example_alignment_distance.fasta"))
-    assert [row.model for row in report.rows] == ["jukes-cantor", "kimura-2-parameter", "p-distance"]
+    assert [row.model for row in report.rows] == [
+        "jukes-cantor",
+        "kimura-2-parameter",
+        "p-distance",
+    ]
 
 
 def test_compare_distance_gap_policies_reports_changed_pairs() -> None:
@@ -180,7 +223,9 @@ def test_compare_distance_gap_policies_reports_changed_pairs() -> None:
     assert any(row.comparable_site_delta != 0 for row in report.rows)
 
 
-def test_build_distance_method_report_combines_support_models_and_gap_sensitivity() -> None:
+def test_build_distance_method_report_combines_support_models_and_gap_sensitivity() -> (
+    None
+):
     report = build_distance_method_report(
         fixture("example_alignment_distance.fasta"),
         method="neighbor-joining",
@@ -201,10 +246,14 @@ def test_assess_distance_method_maturity_validates_bundle_provenance() -> None:
         validate_bundle=True,
     )
     assert report.decision in {"production_candidate", "validated_with_limits"}
-    assert any(check.name == "bundle_provenance" and check.satisfied for check in report.checks)
+    assert any(
+        check.name == "bundle_provenance" and check.satisfied for check in report.checks
+    )
 
 
-def test_write_distance_reproducibility_bundle_writes_expected_files(tmp_path: Path) -> None:
+def test_write_distance_reproducibility_bundle_writes_expected_files(
+    tmp_path: Path,
+) -> None:
     report = write_distance_reproducibility_bundle(
         tmp_path / "bundle",
         alignment_path=fixture("example_alignment_distance.fasta"),
@@ -224,12 +273,18 @@ def test_write_distance_reproducibility_bundle_writes_expected_files(tmp_path: P
         "distance-tree.nwk",
         "input-alignment.fasta",
     ]
-    manifest = json.loads((tmp_path / "bundle" / "distance-analysis.manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (tmp_path / "bundle" / "distance-analysis.manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert manifest["reference_validation_passed"] is True
     assert "input-alignment.fasta" in manifest["output_checksums"]
 
 
-def test_render_distance_report_for_alignment_embeds_quality_sections(tmp_path: Path) -> None:
+def test_render_distance_report_for_alignment_embeds_quality_sections(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "distance-report.html"
     render_distance_report(
         out_path=output_path,

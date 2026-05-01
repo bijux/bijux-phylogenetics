@@ -3,8 +3,11 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls, run_pgls_multiple_testing
-
+from bijux_phylogenetics.comparative.pgls import (
+    inspect_pgls_inputs,
+    run_pgls,
+    run_pgls_multiple_testing,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -46,7 +49,9 @@ def test_pgls_input_inspection_reports_transformed_terms_and_exclusions() -> Non
         fixture("example_traits_comparative.tsv"),
         formula="response ~ log(predictor_one) + habitat",
     )
-    transformed = next(row for row in report.predictors if row.name == "log(predictor_one)")
+    transformed = next(
+        row for row in report.predictors if row.name == "log(predictor_one)"
+    )
     assert transformed.transformation == "log"
     assert transformed.source_column == "predictor_one"
     assert report.formula_audit.transformed_terms == ["log(predictor_one)"]
@@ -86,7 +91,9 @@ def test_run_pgls_supports_multiple_predictors() -> None:
         predictors=["predictor_one", "predictor_two"],
         lambda_value=0.0,
     )
-    coefficients = {coefficient.name: coefficient.estimate for coefficient in report.coefficients}
+    coefficients = {
+        coefficient.name: coefficient.estimate for coefficient in report.coefficients
+    }
     assert math.isclose(coefficients["intercept"], 1.0, abs_tol=1e-6)
     assert math.isclose(coefficients["predictor_one"], 0.5, abs_tol=1e-6)
     assert math.isclose(coefficients["predictor_two"], 1.0, abs_tol=1e-6)
@@ -100,7 +107,9 @@ def test_run_pgls_supports_categorical_predictors_with_dummy_encoding() -> None:
         predictors=["predictor_one", "habitat"],
         lambda_value=0.0,
     )
-    coefficients = {coefficient.name: coefficient.estimate for coefficient in report.coefficients}
+    coefficients = {
+        coefficient.name: coefficient.estimate for coefficient in report.coefficients
+    }
     assert report.encoded_columns == ["intercept", "predictor_one", "habitat[tundra]"]
     assert math.isclose(coefficients["predictor_one"], 1.5, abs_tol=1e-6)
     assert math.isclose(coefficients["habitat[tundra]"], -2.0, abs_tol=1e-6)
@@ -131,12 +140,16 @@ def test_run_pgls_supports_formula_interactions() -> None:
         formula="response ~ predictor_one * habitat",
         lambda_value=0.0,
     )
-    coefficients = {coefficient.name: coefficient.estimate for coefficient in report.coefficients}
+    coefficients = {
+        coefficient.name: coefficient.estimate for coefficient in report.coefficients
+    }
     assert report.formula.formula == "response ~ predictor_one * habitat"
     assert math.isclose(coefficients["intercept"], 1.0, abs_tol=1e-6)
     assert math.isclose(coefficients["predictor_one"], 1.0, abs_tol=1e-6)
     assert math.isclose(coefficients["habitat[tundra]"], 2.0, abs_tol=1e-6)
-    assert math.isclose(coefficients["predictor_one:habitat[tundra]"], 0.5, abs_tol=1e-6)
+    assert math.isclose(
+        coefficients["predictor_one:habitat[tundra]"], 0.5, abs_tol=1e-6
+    )
 
 
 def test_run_pgls_supports_transformed_numeric_predictors() -> None:
@@ -146,7 +159,9 @@ def test_run_pgls_supports_transformed_numeric_predictors() -> None:
         formula="response ~ log(predictor_one) + habitat",
         lambda_value=0.0,
     )
-    coefficients = {coefficient.name: coefficient.estimate for coefficient in report.coefficients}
+    coefficients = {
+        coefficient.name: coefficient.estimate for coefficient in report.coefficients
+    }
     assert "log(predictor_one)" in coefficients
     assert "habitat[tundra]" in coefficients
 

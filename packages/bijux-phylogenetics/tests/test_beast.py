@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
@@ -19,7 +19,6 @@ from bijux_phylogenetics.bayesian.reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
 )
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -45,12 +44,17 @@ def test_validate_fossil_calibration_table_accepts_named_and_taxon_targets() -> 
     assert report.calibration_count == 2
     assert report.valid_calibration_count == 2
     assert report.invalid_calibration_count == 0
-    assert [calibration.target_kind for calibration in report.calibrations] == ["named-clade", "taxa"]
+    assert [calibration.target_kind for calibration in report.calibrations] == [
+        "named-clade",
+        "taxa",
+    ]
     assert report.calibrations[0].taxa == ["A", "B"]
     assert report.calibrations[1].taxa == ["C", "D"]
 
 
-def test_detect_impossible_calibration_constraints_reports_unknown_and_invalid_targets() -> None:
+def test_detect_impossible_calibration_constraints_reports_unknown_and_invalid_targets() -> (
+    None
+):
     report = detect_impossible_calibration_constraints(
         fixture("example_tree_named_clades.nwk"),
         fixture("example_calibrations_invalid.tsv"),
@@ -77,10 +81,16 @@ def test_validate_tip_dating_metadata_checks_tree_and_alignment_membership() -> 
     assert report.invalid_tip_count == 2
     assert report.extra_tip_taxa == ["E"]
     assert report.extra_alignment_taxa == ["E"]
-    assert {issue.code for issue in report.issues} >= {"taxon-missing-from-tree", "taxon-missing-from-alignment", "invalid-date"}
+    assert {issue.code for issue in report.issues} >= {
+        "taxon-missing-from-tree",
+        "taxon-missing-from-alignment",
+        "invalid-date",
+    }
 
 
-def test_prepare_beast_time_tree_analysis_writes_clock_prior_calibrations_and_tip_dates(tmp_path: Path) -> None:
+def test_prepare_beast_time_tree_analysis_writes_clock_prior_calibrations_and_tip_dates(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "analysis.xml"
 
     report = prepare_beast_time_tree_analysis(
@@ -118,10 +128,15 @@ def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> 
     assert log_report.columns == ["posterior", "likelihood", "clockRate", "treeHeight"]
     assert log_report.rows[1].state == 1000
     assert convergence.converged is False
-    assert {warning["code"] for warning in convergence.warnings} == {"low-ess", "mean-drift"}
+    assert {warning["code"] for warning in convergence.warnings} == {
+        "low-ess",
+        "mean-drift",
+    }
 
 
-def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(tmp_path: Path) -> None:
+def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(
+    tmp_path: Path,
+) -> None:
     broken_log = tmp_path / "broken-beast.log"
     broken_log.write_text(
         "# BEAST fixture log\n"
@@ -155,7 +170,9 @@ def test_assess_beast_burnin_sensitivity_reports_tree_and_log_shifts() -> None:
     assert report.slices[2].tree_height_mean == 13.1
 
 
-def test_assess_beast_chain_mixing_flags_stuck_and_inconsistent_chains(tmp_path: Path) -> None:
+def test_assess_beast_chain_mixing_flags_stuck_and_inconsistent_chains(
+    tmp_path: Path,
+) -> None:
     stable = tmp_path / "stable.log"
     stable.write_text(
         "# BEAST fixture log\n"
@@ -185,10 +202,15 @@ def test_assess_beast_chain_mixing_flags_stuck_and_inconsistent_chains(tmp_path:
     )
 
     assert report.converged is False
-    assert {issue.code for issue in report.issues} >= {"stuck-parameter", "inconsistent-chains"}
+    assert {issue.code for issue in report.issues} >= {
+        "stuck-parameter",
+        "inconsistent-chains",
+    }
 
 
-def test_render_calibration_audit_report_includes_calibration_and_tip_date_sections(tmp_path: Path) -> None:
+def test_render_calibration_audit_report_includes_calibration_and_tip_date_sections(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "calibration-audit.html"
 
     report = render_calibration_audit_report(
@@ -207,7 +229,9 @@ def test_render_calibration_audit_report_includes_calibration_and_tip_date_secti
     assert "tip-dates" in html
 
 
-def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(tmp_path: Path) -> None:
+def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(
+    tmp_path: Path,
+) -> None:
     config_path = tmp_path / "analysis.xml"
     report_path = tmp_path / "calibration-audit.html"
     diagnostic_path = tmp_path / "diagnostics.json"
@@ -225,11 +249,17 @@ def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(tmp_
         alignment_path=fixture("example_alignment.fasta"),
         out_path=report_path,
     )
-    diagnostic_path.write_text(json.dumps({"warning_count": 0}, indent=2) + "\n", encoding="utf-8")
+    diagnostic_path.write_text(
+        json.dumps({"warning_count": 0}, indent=2) + "\n", encoding="utf-8"
+    )
 
     bundle = build_bayesian_evidence_package(
         bundle_root=tmp_path / "bayesian-bundle",
-        input_paths=[fixture("example_alignment.fasta"), fixture("example_calibrations.tsv"), fixture("example_tip_dates.tsv")],
+        input_paths=[
+            fixture("example_alignment.fasta"),
+            fixture("example_calibrations.tsv"),
+            fixture("example_tip_dates.tsv"),
+        ],
         config_paths=[config_path],
         tree_paths=[fixture("example_tree_named_clades.nwk")],
         log_paths=[fixture("example_beast.log")],
@@ -245,7 +275,9 @@ def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(tmp_
     assert bundle.report_count == 1
 
 
-def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calibration_sections(tmp_path: Path) -> None:
+def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calibration_sections(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "bayesian-diagnostics.html"
     second_chain = tmp_path / "chain-2.log"
     second_chain.write_text(

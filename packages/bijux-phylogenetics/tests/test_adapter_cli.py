@@ -151,7 +151,9 @@ print("warning: mrbayes fixture posterior run", file=sys.stderr)
 def test_adapter_inspect_cli_reports_engine_version(tmp_path: Path, capsys) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture")
 
-    exit_code = main(["adapter", "inspect", "iqtree", "--executable", str(executable), "--json"])
+    exit_code = main(
+        ["adapter", "inspect", "iqtree", "--executable", str(executable), "--json"]
+    )
 
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
@@ -159,7 +161,9 @@ def test_adapter_inspect_cli_reports_engine_version(tmp_path: Path, capsys) -> N
     assert payload["data"]["text"] == "IQ-TREE multicore version 2.9.9"
 
 
-def test_adapter_align_cli_writes_aligned_fasta_and_manifest(tmp_path: Path, capsys) -> None:
+def test_adapter_align_cli_writes_aligned_fasta_and_manifest(
+    tmp_path: Path, capsys
+) -> None:
     executable = _fake_mafft(tmp_path / "mafft-fixture")
     input_path = tmp_path / "unaligned.fasta"
     input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
@@ -186,7 +190,9 @@ def test_adapter_align_cli_writes_aligned_fasta_and_manifest(tmp_path: Path, cap
     assert Path(payload["data"]["manifest_path"]).exists()
 
 
-def test_adapter_model_select_and_compare_cli_produce_outputs(tmp_path: Path, capsys) -> None:
+def test_adapter_model_select_and_compare_cli_produce_outputs(
+    tmp_path: Path, capsys
+) -> None:
     iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
     fasttree = _fake_fasttree(tmp_path / "FastTree-fixture")
     input_path = fixture("alignments/example_alignment.fasta")
@@ -246,7 +252,9 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(tmp_path: Path, ca
     )
     fast_payload = json.loads(capsys.readouterr().out)
     assert fast_exit == 0
-    assert fast_payload["warnings"] == ["warning: fasttree fixture approximate support only"]
+    assert fast_payload["warnings"] == [
+        "warning: fasttree fixture approximate support only"
+    ]
 
     compare_exit = main(
         [
@@ -350,13 +358,27 @@ def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     assert report_path.exists()
 
 
-def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(tmp_path: Path, capsys) -> None:
+def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(
+    tmp_path: Path, capsys
+) -> None:
     executable = _fake_mrbayes(tmp_path / "mb-fixture")
     alignment_path = fixture("alignments/example_alignment.fasta")
     nexus_path = tmp_path / "analysis.nex"
     posterior_report_path = tmp_path / "posterior-report.html"
 
-    assert main(["adapter", "mrbayes-prepare", str(alignment_path), "--out", str(nexus_path), "--json"]) == 0
+    assert (
+        main(
+            [
+                "adapter",
+                "mrbayes-prepare",
+                str(alignment_path),
+                "--out",
+                str(nexus_path),
+                "--json",
+            ]
+        )
+        == 0
+    )
     capsys.readouterr()
 
     run_exit = main(
@@ -412,7 +434,9 @@ def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(tmp_p
     assert posterior_report_path.exists()
 
 
-def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(tmp_path: Path, capsys) -> None:
+def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
+    tmp_path: Path, capsys
+) -> None:
     analysis_path = tmp_path / "analysis.xml"
     report_path = tmp_path / "calibration-audit.html"
     diagnostics_path = tmp_path / "diagnostics.json"
@@ -470,7 +494,9 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(tmp_path:
     assert tip_dates_exit == 0
     assert tip_dates_payload["metrics"]["valid_tip_count"] == 4
 
-    log_exit = main(["adapter", "beast-log", str(fixture("metadata/example_beast.log")), "--json"])
+    log_exit = main(
+        ["adapter", "beast-log", str(fixture("metadata/example_beast.log")), "--json"]
+    )
     log_payload = json.loads(capsys.readouterr().out)
     assert log_exit == 0
     assert log_payload["metrics"]["row_count"] == 4
@@ -511,7 +537,9 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(tmp_path:
     assert report_payload["metrics"]["invalid_calibration_count"] == 0
     assert report_path.exists()
 
-    diagnostics_path.write_text(json.dumps({"warning_count": 0}, indent=2) + "\n", encoding="utf-8")
+    diagnostics_path.write_text(
+        json.dumps({"warning_count": 0}, indent=2) + "\n", encoding="utf-8"
+    )
     evidence_exit = main(
         [
             "adapter",
@@ -541,7 +569,9 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(tmp_path:
     assert bundle_root.exists()
 
 
-def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(tmp_path: Path, capsys) -> None:
+def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
+    tmp_path: Path, capsys
+) -> None:
     package_dir = tmp_path / "posterior-uncertainty-package"
 
     diversity_exit = main(
@@ -602,7 +632,9 @@ def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(tmp_path:
     assert (package_dir / "clade-frequency-plot.svg").exists()
 
 
-def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(tmp_path: Path, capsys) -> None:
+def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(
+    tmp_path: Path, capsys
+) -> None:
     second_chain = tmp_path / "chain-2.log"
     second_chain.write_text(
         "# BEAST fixture log\n"

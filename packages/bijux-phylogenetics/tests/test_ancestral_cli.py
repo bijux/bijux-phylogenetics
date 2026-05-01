@@ -5,7 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.cli import main
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -58,11 +57,19 @@ def test_ancestral_discrete_cli_reports_sparse_state_warning(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert "one or more discrete states are represented by fewer than two taxa and should be interpreted cautiously" in payload["warnings"]
-    assert "one or more discrete ancestral nodes remain unstable across candidate states" in payload["warnings"]
+    assert (
+        "one or more discrete states are represented by fewer than two taxa and should be interpreted cautiously"
+        in payload["warnings"]
+    )
+    assert (
+        "one or more discrete ancestral nodes remain unstable across candidate states"
+        in payload["warnings"]
+    )
 
 
-def test_ancestral_render_cli_writes_svg_with_internal_annotations(tmp_path: Path, capsys) -> None:
+def test_ancestral_render_cli_writes_svg_with_internal_annotations(
+    tmp_path: Path, capsys
+) -> None:
     output = tmp_path / "ancestral.svg"
     exit_code = main(
         [
@@ -138,7 +145,9 @@ def test_ancestral_sensitivity_cli_reports_available_comparisons(capsys) -> None
     assert payload["metrics"]["has_tree_sensitivity"] is True
 
 
-def test_ancestral_package_cli_writes_publication_bundle(tmp_path: Path, capsys) -> None:
+def test_ancestral_package_cli_writes_publication_bundle(
+    tmp_path: Path, capsys
+) -> None:
     output_dir = tmp_path / "ancestral-package"
     exit_code = main(
         [
@@ -183,4 +192,7 @@ def test_ancestral_discrete_cli_rejects_ordered_fitch_model(capsys) -> None:
     except SystemExit as error:
         assert error.code == 2
     captured = capsys.readouterr()
-    assert "ordered ancestral discrete reconstruction requires a likelihood model" in captured.err
+    assert (
+        "ordered ancestral discrete reconstruction requires a likelihood model"
+        in captured.err
+    )

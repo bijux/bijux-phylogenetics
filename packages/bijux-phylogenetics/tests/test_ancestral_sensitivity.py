@@ -4,7 +4,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -20,7 +19,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_build_continuous_ancestral_sensitivity_report_summarizes_model_tree_and_pruning() -> None:
+def test_build_continuous_ancestral_sensitivity_report_summarizes_model_tree_and_pruning() -> (
+    None
+):
     report = build_ancestral_sensitivity_report(
         tree_path=fixture("example_tree.nwk"),
         traits_path=fixture("example_traits_comparative.tsv"),
@@ -36,7 +37,9 @@ def test_build_continuous_ancestral_sensitivity_report_summarizes_model_tree_and
     assert report.pruning_sensitivity is not None
 
 
-def test_build_discrete_ancestral_sensitivity_report_summarizes_coding_changes() -> None:
+def test_build_discrete_ancestral_sensitivity_report_summarizes_coding_changes() -> (
+    None
+):
     report = build_ancestral_sensitivity_report(
         tree_path=fixture("example_tree.nwk"),
         traits_path=fixture("example_traits_comparative.tsv"),

@@ -5,7 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.cli import main
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -21,7 +20,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_diversification_ltt_sampling_and_estimate_cli_outputs_json_and_tables(tmp_path: Path, capsys) -> None:
+def test_diversification_ltt_sampling_and_estimate_cli_outputs_json_and_tables(
+    tmp_path: Path, capsys
+) -> None:
     ltt_path = tmp_path / "ltt.tsv"
 
     ltt_exit = main(
@@ -71,7 +72,9 @@ def test_diversification_ltt_sampling_and_estimate_cli_outputs_json_and_tables(t
     assert estimate_payload["metrics"]["sampling_fraction"] == 0.75
 
 
-def test_diversification_compare_clades_trait_and_report_cli_write_outputs(tmp_path: Path, capsys) -> None:
+def test_diversification_compare_clades_trait_and_report_cli_write_outputs(
+    tmp_path: Path, capsys
+) -> None:
     clades_path = tmp_path / "clades.tsv"
     trait_path = tmp_path / "trait.tsv"
     report_path = tmp_path / "diversification-report.html"

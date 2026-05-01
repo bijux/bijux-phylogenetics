@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
@@ -14,7 +16,6 @@ from bijux_phylogenetics.ancestral.service import (
     render_ancestral_state_tree,
     write_ancestral_state_table,
 )
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -45,7 +46,9 @@ def test_compare_continuous_ancestral_models_reports_node_deltas() -> None:
     assert any(row.estimate_delta != 0 for row in report.rows if row.node == "A|B|C|D")
 
 
-def test_write_ancestral_state_table_exports_continuous_and_discrete_rows(tmp_path: Path) -> None:
+def test_write_ancestral_state_table_exports_continuous_and_discrete_rows(
+    tmp_path: Path,
+) -> None:
     continuous = reconstruct_continuous_ancestral_states(
         fixture("example_tree.nwk"),
         fixture("example_traits_comparative.tsv"),
@@ -72,7 +75,10 @@ def test_compare_discrete_ancestral_models_selects_supported_model() -> None:
     )
     assert len(report.rows) == 3
     assert report.selected_model in {"equal-rates", "symmetric", "all-rates-different"}
-    assert any(difference.comparison_model == "symmetric" for difference in report.node_differences)
+    assert any(
+        difference.comparison_model == "symmetric"
+        for difference in report.node_differences
+    )
 
 
 def test_compare_ancestral_reconstructions_across_trees_reports_shared_nodes() -> None:
@@ -100,7 +106,9 @@ def test_render_ancestral_state_tree_adds_internal_annotations(tmp_path: Path) -
         trait="response",
     )
     output = tmp_path / "ancestral.svg"
-    result = render_ancestral_state_tree(fixture("example_tree.nwk"), report, out_path=output, layout="phylogram")
+    result = render_ancestral_state_tree(
+        fixture("example_tree.nwk"), report, out_path=output, layout="phylogram"
+    )
     svg = output.read_text(encoding="utf-8")
     assert result.rendered_internal_annotation_count == 3
     assert 'class="internal-annotation-label"' in svg
@@ -119,7 +127,11 @@ def test_render_ancestral_state_report_writes_html_and_svg(tmp_path: Path) -> No
         out_path=output,
     )
     html = output.read_text(encoding="utf-8")
-    manifest = json.loads(html.split('<script id="bijux-report-manifest" type="application/json">', 1)[1].split("</script>", 1)[0])
+    manifest = json.loads(
+        html.split('<script id="bijux-report-manifest" type="application/json">', 1)[
+            1
+        ].split("</script>", 1)[0]
+    )
     assert result.output_path == output
     assert output.with_suffix(".svg").exists()
     assert "ancestral-reconstruction" in html

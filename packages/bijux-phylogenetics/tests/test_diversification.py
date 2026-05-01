@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
     compute_lineage_through_time_curve,
-    detect_incomplete_taxon_sampling_metadata,
     detect_diversification_outlier_clades,
+    detect_incomplete_taxon_sampling_metadata,
     estimate_diversification_rate,
     inspect_diversification_time_tree,
     render_diversification_report,
@@ -19,7 +17,7 @@ from bijux_phylogenetics.diversification import (
     write_trait_dependent_diversification_table,
 )
 from bijux_phylogenetics.errors import DiversificationAnalysisError, UnrootedTreeError
-
+import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -49,7 +47,9 @@ def test_validate_time_tree_for_diversification_reports_root_age() -> None:
 def test_compute_lineage_through_time_curve_tracks_lineage_increases() -> None:
     report = compute_lineage_through_time_curve(fixture("example_tree.nwk"))
 
-    assert [(point.time_before_present, point.lineage_count) for point in report.points] == [
+    assert [
+        (point.time_before_present, point.lineage_count) for point in report.points
+    ] == [
         (0.3, 2),
         (0.2, 3),
         (0.1, 4),
@@ -80,7 +80,9 @@ def test_inspect_diversification_time_tree_rejects_invalid_time_tree() -> None:
         validate_time_tree_for_diversification(fixture("example_tree_unrooted.nwk"))
 
 
-def test_detect_incomplete_taxon_sampling_metadata_reports_missing_and_invalid_rows() -> None:
+def test_detect_incomplete_taxon_sampling_metadata_reports_missing_and_invalid_rows() -> (
+    None
+):
     report = detect_incomplete_taxon_sampling_metadata(
         fixture("example_tree.nwk"),
         fixture("example_sampling_fractions_incomplete.tsv"),
@@ -126,12 +128,18 @@ def test_detect_diversification_outlier_clades_flags_high_and_low_clades() -> No
     report = detect_diversification_outlier_clades(fixture("example_tree.nwk"))
 
     assert report.global_rate > 0.0
-    assert {row.classification for row in report.observations} == {"baseline", "high", "low"}
+    assert {row.classification for row in report.observations} == {
+        "baseline",
+        "high",
+        "low",
+    }
     assert [row.node for row in report.high_diversification_clades] == ["A|B"]
     assert [row.node for row in report.low_diversification_clades] == ["C|D"]
 
 
-def test_run_trait_dependent_diversification_analysis_reports_monophyly_and_polyphyly() -> None:
+def test_run_trait_dependent_diversification_analysis_reports_monophyly_and_polyphyly() -> (
+    None
+):
     monophyletic = run_trait_dependent_diversification_analysis(
         fixture("example_tree.nwk"),
         fixture("example_traits_diversification.tsv"),
@@ -144,7 +152,10 @@ def test_run_trait_dependent_diversification_analysis_reports_monophyly_and_poly
     )
 
     assert [row.monophyletic for row in monophyletic.states] == [True, True]
-    assert [row.diversification_rate for row in monophyletic.states] == [6.93147180559945, 3.46573590279973]
+    assert [row.diversification_rate for row in monophyletic.states] == [
+        6.93147180559945,
+        3.46573590279973,
+    ]
     assert any("not monophyletic" in warning for warning in polyphyletic.warnings)
 
 

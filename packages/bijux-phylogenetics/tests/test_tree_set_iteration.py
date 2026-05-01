@@ -11,7 +11,6 @@ from bijux_phylogenetics.tree_set import (
     compare_consensus_thresholds,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures" / "trees"
 
 
@@ -20,7 +19,9 @@ def fixture(name: str) -> Path:
 
 
 def test_benchmark_tree_set_uncertainty_reports_rows() -> None:
-    report = benchmark_tree_set_uncertainty(tree_counts=[3], taxon_counts=[4], replicates=1, seed=7)
+    report = benchmark_tree_set_uncertainty(
+        tree_counts=[3], taxon_counts=[4], replicates=1, seed=7
+    )
 
     assert report.tree_counts == [3]
     assert report.taxon_counts == [4]
@@ -68,7 +69,9 @@ def test_assess_tree_set_maturity_reports_decision_and_checks() -> None:
     assert len(report.checks) == 5
 
 
-def test_render_tree_uncertainty_report_includes_new_iteration_sections(tmp_path: Path) -> None:
+def test_render_tree_uncertainty_report_includes_new_iteration_sections(
+    tmp_path: Path,
+) -> None:
     output_path = tmp_path / "tree-uncertainty.html"
     report = render_tree_uncertainty_report(
         tree_set_path=fixture("example_tree_set_left.nwk"),

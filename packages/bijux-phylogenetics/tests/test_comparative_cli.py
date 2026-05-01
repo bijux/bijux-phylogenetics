@@ -6,7 +6,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.cli import main
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -141,10 +140,12 @@ def test_comparative_pgls_cli_accepts_formula_interactions(capsys) -> None:
         for coefficient in payload["data"]["model"]["coefficients"]
     }
     assert exit_code == 0
-    assert payload["data"]["inputs"]["formula"]["interaction_terms"] == ["predictor_one:habitat"]
-    assert payload["data"]["inputs"]["formula_audit"]["interaction_terms"][0]["encoded_columns"] == [
-        "predictor_one:habitat[tundra]"
+    assert payload["data"]["inputs"]["formula"]["interaction_terms"] == [
+        "predictor_one:habitat"
     ]
+    assert payload["data"]["inputs"]["formula_audit"]["interaction_terms"][0][
+        "encoded_columns"
+    ] == ["predictor_one:habitat[tundra]"]
     assert math.isclose(coefficients["predictor_one:habitat[tundra]"], 0.5)
 
 
@@ -165,7 +166,9 @@ def test_comparative_pgls_cli_reports_transformed_terms(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["transformed_term_count"] == 1
-    assert payload["data"]["inputs"]["formula_audit"]["transformed_terms"] == ["log(predictor_one)"]
+    assert payload["data"]["inputs"]["formula_audit"]["transformed_terms"] == [
+        "log(predictor_one)"
+    ]
 
 
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
@@ -192,7 +195,10 @@ def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> Non
     assert payload["metrics"]["response_count"] == 2
     assert payload["metrics"]["test_count"] == 4
     assert payload["metrics"]["family_size"] == 4
-    assert payload["metrics"]["raw_significant_count"] >= payload["metrics"]["significant_count"]
+    assert (
+        payload["metrics"]["raw_significant_count"]
+        >= payload["metrics"]["significant_count"]
+    )
 
 
 def test_comparative_report_cli_reports_audit_and_limitations(capsys) -> None:

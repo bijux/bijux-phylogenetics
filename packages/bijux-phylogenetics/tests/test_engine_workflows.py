@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from pathlib import Path
 
 from bijux_phylogenetics.engines import (
@@ -7,8 +8,8 @@ from bijux_phylogenetics.engines import (
     bundle_inference_workflow_evidence,
     compare_fast_and_ml_trees,
     render_inference_sensitivity_report,
-    render_model_selection_limitations_report,
     render_inference_workflow_report,
+    render_model_selection_limitations_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -19,7 +20,6 @@ from bijux_phylogenetics.engines import (
 )
 from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -240,40 +240,59 @@ print("warning: iqtree fixture tree inference", file=sys.stderr)
     )
 
 
-def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(tmp_path: Path) -> None:
+def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(
+    tmp_path: Path,
+) -> None:
     executable = _fake_mafft(tmp_path / "mafft-fixture")
     input_path = tmp_path / "unaligned.fasta"
     input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
     output_path = tmp_path / "aligned.fasta"
 
-    report = run_multiple_sequence_alignment(input_path, output_path, executable=executable)
+    report = run_multiple_sequence_alignment(
+        input_path, output_path, executable=executable
+    )
 
     records = load_fasta_alignment(output_path)
     assert [len(record.sequence) for record in records] == [5, 5, 5]
     assert "mafft v7.999" in report.run.version.text
     assert report.run.command[0] == str(executable)
-    assert report.run.warning_lines == ["WARNING: mafft fixture inserted alignment padding"]
+    assert report.run.warning_lines == [
+        "WARNING: mafft fixture inserted alignment padding"
+    ]
     assert report.manifest_path.exists()
 
 
-def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(tmp_path: Path) -> None:
+def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(
+    tmp_path: Path,
+) -> None:
     executable = _fake_trimal(tmp_path / "trimal-fixture")
     input_path = fixture("alignments/example_alignment_trim.fasta")
     output_path = tmp_path / "trimmed.fasta"
 
-    report = run_alignment_trimming(input_path, output_path, executable=executable, gap_threshold=0.2)
+    report = run_alignment_trimming(
+        input_path, output_path, executable=executable, gap_threshold=0.2
+    )
 
     records = load_fasta_alignment(output_path)
-    assert len(records[0].sequence) == len(load_fasta_alignment(input_path)[0].sequence) - 1
-    assert report.run.warning_lines == ["warning: trimal fixture trimmed one trailing site"]
+    assert (
+        len(records[0].sequence)
+        == len(load_fasta_alignment(input_path)[0].sequence) - 1
+    )
+    assert report.run.warning_lines == [
+        "warning: trimal fixture trimmed one trailing site"
+    ]
     assert report.manifest_path.exists()
 
 
-def test_run_model_selection_parses_best_fit_model_and_writes_manifest(tmp_path: Path) -> None:
+def test_run_model_selection_parses_best_fit_model_and_writes_manifest(
+    tmp_path: Path,
+) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture")
     input_path = fixture("alignments/example_alignment.fasta")
 
-    report = run_model_selection(input_path, out_dir=tmp_path / "model", executable=executable, prefix="example")
+    report = run_model_selection(
+        input_path, out_dir=tmp_path / "model", executable=executable, prefix="example"
+    )
 
     assert report.selected_model == "GTR+G"
     selected_model_path = report.output_paths["selected_model"]
@@ -308,7 +327,9 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
         executable=iqtree,
         prefix="example",
     )
-    fast_report = run_fast_tree_inference(input_path, tmp_path / "fasttree.nwk", executable=fasttree)
+    fast_report = run_fast_tree_inference(
+        input_path, tmp_path / "fasttree.nwk", executable=fasttree
+    )
 
     assert ml_report.output_paths["tree"].exists()
     assert bootstrap_report.output_paths["bootstrap_trees"].exists()
@@ -317,10 +338,14 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert ml_report.run.warning_lines == ["warning: iqtree fixture tree inference"]
     assert bootstrap_report.run.warning_lines == ["warning: iqtree fixture bootstrap"]
     assert consensus_report.run.warning_lines == ["warning: iqtree fixture consensus"]
-    assert fast_report.run.warning_lines == ["warning: fasttree fixture approximate support only"]
+    assert fast_report.run.warning_lines == [
+        "warning: fasttree fixture approximate support only"
+    ]
 
 
-def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(tmp_path: Path) -> None:
+def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(
+    tmp_path: Path,
+) -> None:
     failing_iqtree = _fake_iqtree_fail(tmp_path / "iqtree-fail")
     empty_trimal = _fake_trimal_empty(tmp_path / "trimal-empty")
     input_path = fixture("alignments/example_alignment.fasta")
@@ -336,10 +361,14 @@ def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(tm
     except EngineWorkflowError as error:
         assert "failed with exit code 3" in error.message
     else:  # pragma: no cover - defensive assertion
-        raise AssertionError("expected failing IQ-TREE fixture to raise EngineWorkflowError")
+        raise AssertionError(
+            "expected failing IQ-TREE fixture to raise EngineWorkflowError"
+        )
 
     try:
-        run_alignment_trimming(input_path, tmp_path / "empty.fasta", executable=empty_trimal)
+        run_alignment_trimming(
+            input_path, tmp_path / "empty.fasta", executable=empty_trimal
+        )
     except EngineWorkflowError as error:
         assert "inference alignment is empty after filtering" in error.message
     else:  # pragma: no cover - defensive assertion
@@ -384,16 +413,24 @@ def test_inference_workflow_resume_and_html_report(tmp_path: Path) -> None:
 def test_compare_fast_and_ml_trees_builds_html_report(tmp_path: Path) -> None:
     fast_tree_path = tmp_path / "fast.nwk"
     ml_tree_path = tmp_path / "ml.nwk"
-    fast_tree_path.write_text("((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);\n", encoding="utf-8")
-    ml_tree_path.write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n", encoding="utf-8")
+    fast_tree_path.write_text(
+        "((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);\n", encoding="utf-8"
+    )
+    ml_tree_path.write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n", encoding="utf-8"
+    )
 
-    comparison = compare_fast_and_ml_trees(fast_tree_path, ml_tree_path, out_path=tmp_path / "comparison.html")
+    comparison = compare_fast_and_ml_trees(
+        fast_tree_path, ml_tree_path, out_path=tmp_path / "comparison.html"
+    )
 
     assert comparison.comparison_report.output_path.exists()
     assert comparison.comparison_report.topology.shared_taxa == ["A", "B", "C", "D"]
 
 
-def test_model_selection_limitations_report_records_interpretation_boundaries(tmp_path: Path) -> None:
+def test_model_selection_limitations_report_records_interpretation_boundaries(
+    tmp_path: Path,
+) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture")
     workflow = run_model_selection(
         fixture("alignments/example_alignment.fasta"),
@@ -415,7 +452,9 @@ def test_model_selection_limitations_report_records_interpretation_boundaries(tm
     assert rendered.report_kind == "model-selection-limitations"
 
 
-def test_inference_sensitivity_report_summarizes_filter_model_engine_and_bootstrap_changes(tmp_path: Path) -> None:
+def test_inference_sensitivity_report_summarizes_filter_model_engine_and_bootstrap_changes(
+    tmp_path: Path,
+) -> None:
     baseline_exec = _fake_iqtree_tree_variant(
         tmp_path / "baseline-iqtree",
         tree_newick="((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);",
@@ -490,7 +529,9 @@ def test_inference_sensitivity_report_summarizes_filter_model_engine_and_bootstr
     assert rendered.machine_manifest["has_bootstrap_support"] is True
 
 
-def test_bootstrap_workflow_report_includes_support_and_backbone_sections(tmp_path: Path) -> None:
+def test_bootstrap_workflow_report_includes_support_and_backbone_sections(
+    tmp_path: Path,
+) -> None:
     executable = _fake_iqtree(tmp_path / "bootstrap-iqtree")
     workflow = run_bootstrap_support_estimation(
         fixture("alignments/example_alignment.fasta"),
@@ -509,7 +550,9 @@ def test_bootstrap_workflow_report_includes_support_and_backbone_sections(tmp_pa
     assert "weak-backbone" in rendered.supplement_sections
 
 
-def test_bundle_inference_workflow_evidence_copies_inputs_outputs_and_manifests(tmp_path: Path) -> None:
+def test_bundle_inference_workflow_evidence_copies_inputs_outputs_and_manifests(
+    tmp_path: Path,
+) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture")
     model = run_model_selection(
         fixture("alignments/example_alignment.fasta"),

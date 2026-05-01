@@ -5,7 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.cli import main
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -103,7 +102,14 @@ def test_cli_alignment_distance_support_summary_json_output(capsys) -> None:
 
 
 def test_cli_alignment_distance_models_json_output(capsys) -> None:
-    exit_code = main(["alignment", "distance-models", str(fixture("example_alignment_distance.fasta")), "--json"])
+    exit_code = main(
+        [
+            "alignment",
+            "distance-models",
+            str(fixture("example_alignment_distance.fasta")),
+            "--json",
+        ]
+    )
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["model_count"] == 3
@@ -141,7 +147,10 @@ def test_cli_alignment_distance_maturity_json_output(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["check_count"] > 0
-    assert payload["metrics"]["decision"] in {"production_candidate", "validated_with_limits"}
+    assert payload["metrics"]["decision"] in {
+        "production_candidate",
+        "validated_with_limits",
+    }
 
 
 def test_cli_distance_reference_json_output(capsys) -> None:
@@ -153,7 +162,14 @@ def test_cli_distance_reference_json_output(capsys) -> None:
 
 
 def test_cli_distance_assumptions_json_output(capsys) -> None:
-    exit_code = main(["distance", "assumptions", str(fixture("example_distance_matrix_nonultrametric.tsv")), "--json"])
+    exit_code = main(
+        [
+            "distance",
+            "assumptions",
+            str(fixture("example_distance_matrix_nonultrametric.tsv")),
+            "--json",
+        ]
+    )
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["ultrametric_compatible"] is False
@@ -161,7 +177,9 @@ def test_cli_distance_assumptions_json_output(capsys) -> None:
 
 
 def test_cli_distance_quality_json_output(capsys) -> None:
-    exit_code = main(["distance", "quality", str(fixture("example_distance_matrix.tsv")), "--json"])
+    exit_code = main(
+        ["distance", "quality", str(fixture("example_distance_matrix.tsv")), "--json"]
+    )
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["saturation_audit_scale"] == "unit-interval-like"

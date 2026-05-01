@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
 
 from bijux_phylogenetics.discrete_evolution import (
     assess_geographic_state_analysis_readiness,
@@ -16,16 +15,16 @@ from bijux_phylogenetics.discrete_evolution import (
     run_discrete_state_transition_model,
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_maps,
+    validate_discrete_state_coding,
     validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
-    validate_discrete_state_coding,
     write_node_state_probability_table,
     write_stochastic_map_collection,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
 from bijux_phylogenetics.errors import AncestralReconstructionError
-
+import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -42,7 +41,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_validate_discrete_state_coding_reports_unsupported_and_delimited_states() -> None:
+def test_validate_discrete_state_coding_reports_unsupported_and_delimited_states() -> (
+    None
+):
     report = validate_discrete_state_coding(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography_invalid.tsv"),
@@ -52,7 +53,10 @@ def test_validate_discrete_state_coding_reports_unsupported_and_delimited_states
 
     assert report.valid is False
     assert report.observed_states == ["island", "north"]
-    assert {issue.code for issue in report.issues} == {"unsupported-state-delimiter", "unsupported-state-label"}
+    assert {issue.code for issue in report.issues} == {
+        "unsupported-state-delimiter",
+        "unsupported-state-label",
+    }
 
 
 def test_audit_discrete_state_coding_tracks_normalized_and_excluded_rows() -> None:
@@ -72,7 +76,9 @@ def test_audit_discrete_state_coding_tracks_normalized_and_excluded_rows() -> No
     assert by_taxon["C"].issue_code == "unsupported-state-label"
 
 
-def test_audit_discrete_state_coding_applies_coding_map_and_tree_overlap(tmp_path: Path) -> None:
+def test_audit_discrete_state_coding_applies_coding_map_and_tree_overlap(
+    tmp_path: Path,
+) -> None:
     traits_path = tmp_path / "geography-audit.tsv"
     traits_path.write_text(
         "taxon\tregion\nA\tN\nB\tsouth\nGhost\tisland\n",
@@ -124,10 +130,15 @@ def test_detect_state_imbalance_problems_flags_single_state_and_dominance() -> N
     )
 
     assert report.state_counts == {"north": 4}
-    assert {warning.code for warning in report.warnings} == {"single-state-dataset", "dominant-state-skew"}
+    assert {warning.code for warning in report.warnings} == {
+        "single-state-dataset",
+        "dominant-state-skew",
+    }
 
 
-def test_run_discrete_state_transition_model_returns_transition_matrix_and_events() -> None:
+def test_run_discrete_state_transition_model_returns_transition_matrix_and_events() -> (
+    None
+):
     report = run_discrete_state_transition_model(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -140,12 +151,20 @@ def test_run_discrete_state_transition_model_returns_transition_matrix_and_event
     assert report.transition_summary.branch_count == 6
     assert report.transition_summary.transition_count >= 1
     assert report.transition_summary.strongly_supported_transition_count >= 0
-    assert len(report.transition_summary.support_rows) == report.transition_summary.branch_count
-    assert all(sum(row.target_rates.values()) > 0.99 for row in report.transition_model.transition_matrix)
+    assert (
+        len(report.transition_summary.support_rows)
+        == report.transition_summary.branch_count
+    )
+    assert all(
+        sum(row.target_rates.values()) > 0.99
+        for row in report.transition_model.transition_matrix
+    )
     assert report.transition_model.uncertainty.rows
 
 
-def test_run_discrete_state_transition_model_reports_instability_and_dominant_bias() -> None:
+def test_run_discrete_state_transition_model_reports_instability_and_dominant_bias() -> (
+    None
+):
     report = run_discrete_state_transition_model(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -192,7 +211,9 @@ def test_assess_geographic_state_analysis_readiness_allows_balanced_example() ->
     assert report.blockers == []
 
 
-def test_assess_geographic_state_analysis_readiness_blocks_sparse_or_single_state_inputs(tmp_path: Path) -> None:
+def test_assess_geographic_state_analysis_readiness_blocks_sparse_or_single_state_inputs(
+    tmp_path: Path,
+) -> None:
     sparse_traits = tmp_path / "sparse-geography.tsv"
     sparse_traits.write_text(
         "taxon\tregion\nA\tnorth\nB\tsouth\nC\teast\nD\twest\n",
@@ -214,7 +235,9 @@ def test_assess_geographic_state_analysis_readiness_blocks_sparse_or_single_stat
         )
 
 
-def test_estimate_ancestral_geographic_states_and_compare_models_return_node_differences() -> None:
+def test_estimate_ancestral_geographic_states_and_compare_models_return_node_differences() -> (
+    None
+):
     report = estimate_ancestral_geographic_states(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -234,7 +257,9 @@ def test_estimate_ancestral_geographic_states_and_compare_models_return_node_dif
     assert comparison.sensitive_region_count == len(comparison.sensitive_regions)
 
 
-def test_write_node_probability_table_and_render_report_outputs_files(tmp_path: Path) -> None:
+def test_write_node_probability_table_and_render_report_outputs_files(
+    tmp_path: Path,
+) -> None:
     report = run_discrete_state_transition_model(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -264,11 +289,16 @@ def test_write_node_probability_table_and_render_report_outputs_files(tmp_path: 
     assert render_result.rendered_internal_annotation_count == 3
     assert "discrete-state-evolution" in html_path.read_text(encoding="utf-8")
     assert report_result.report_kind == "discrete-state-evolution"
-    assert report_result.machine_manifest["likelihood_method"] == "deterministic-node-probability"
+    assert (
+        report_result.machine_manifest["likelihood_method"]
+        == "deterministic-node-probability"
+    )
     assert "biogeographic-interpretation" in report_result.machine_manifest["sections"]
 
 
-def test_build_biogeographic_interpretation_report_separates_results_from_guidance() -> None:
+def test_build_biogeographic_interpretation_report_separates_results_from_guidance() -> (
+    None
+):
     report = build_biogeographic_interpretation_report(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -281,7 +311,9 @@ def test_build_biogeographic_interpretation_report_separates_results_from_guidan
     assert report.interpretation_guidance
 
 
-def test_write_transition_summary_table_exports_branch_state_changes(tmp_path: Path) -> None:
+def test_write_transition_summary_table_exports_branch_state_changes(
+    tmp_path: Path,
+) -> None:
     report = run_discrete_state_transition_model(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -293,11 +325,16 @@ def test_write_transition_summary_table_exports_branch_state_changes(tmp_path: P
     write_transition_summary_table(table_path, report)
 
     contents = table_path.read_text(encoding="utf-8")
-    assert "parent_node\tchild_node\tsource_state\ttarget_state\tchanged\tsupport\tstrongly_supported" in contents
+    assert (
+        "parent_node\tchild_node\tsource_state\ttarget_state\tchanged\tsupport\tstrongly_supported"
+        in contents
+    )
     assert "false" in contents or "true" in contents
 
 
-def test_write_discrete_model_comparison_table_exports_node_probabilities(tmp_path: Path) -> None:
+def test_write_discrete_model_comparison_table_exports_node_probabilities(
+    tmp_path: Path,
+) -> None:
     comparison = compare_discrete_state_models(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -312,14 +349,21 @@ def test_write_discrete_model_comparison_table_exports_node_probabilities(tmp_pa
     assert "right_probabilities" in contents
 
 
-def test_validate_discrete_transition_reference_examples_matches_expected_cases() -> None:
+def test_validate_discrete_transition_reference_examples_matches_expected_cases() -> (
+    None
+):
     report = validate_discrete_transition_reference_examples()
     assert report.case_count == 3
     assert report.all_passed is True
-    assert all(observation.max_rate_delta <= report.tolerance for observation in report.observations)
+    assert all(
+        observation.max_rate_delta <= report.tolerance
+        for observation in report.observations
+    )
 
 
-def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(tmp_path: Path) -> None:
+def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(
+    tmp_path: Path,
+) -> None:
     report = simulate_discrete_stochastic_maps(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -341,4 +385,6 @@ def test_simulate_discrete_stochastic_maps_reports_uncertainty_and_roundtrips(tm
     assert report.summary.mean_total_transition_count >= 0.0
     assert reloaded.summary.replicate_count == 8
     assert reloaded.maps[0].branch_histories
-    assert "transition\tmean_count\tlower_95_interval" in summary_path.read_text(encoding="utf-8")
+    assert "transition\tmean_count\tlower_95_interval" in summary_path.read_text(
+        encoding="utf-8"
+    )

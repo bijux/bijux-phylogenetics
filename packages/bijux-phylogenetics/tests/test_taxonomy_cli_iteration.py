@@ -5,7 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.cli import main
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 

@@ -1,0 +1,41 @@
+{
+  "input_checksums": {
+    "tests/fixtures/trees/example_tree.nwk": "8bec6d2798df67bd94a91356871351c073434512a2281a73bb4540ebb6f1e5fd"
+  },
+  "input_ledger": [
+    {
+      "checksum": "8bec6d2798df67bd94a91356871351c073434512a2281a73bb4540ebb6f1e5fd",
+      "path": "tests/fixtures/trees/example_tree.nwk",
+      "role": "tree",
+      "taxa_count": 4,
+      "usage": [
+        "tree_validation",
+        "tree_inspection",
+        "tree_forensic"
+      ]
+    }
+  ],
+  "input_paths": [
+    "tests/fixtures/trees/example_tree.nwk"
+  ],
+  "limitations": [],
+  "metrics": {
+    "clade_count": 3,
+    "node_count": 7,
+    "tip_count": 4
+  },
+  "report_kind": "tree",
+  "reviewer_summary": [
+    "tree validity decision: valid",
+    "tree quality score: 100.0",
+    "tree is currently safe for publication-oriented use"
+  ],
+  "sections": [
+    "reviewer-summary",
+    "tree-validation",
+    "tree-inspection",
+    "tree-forensic",
+    "limitations"
+  ],
+  "title": "Bijux Tree Report"
+}

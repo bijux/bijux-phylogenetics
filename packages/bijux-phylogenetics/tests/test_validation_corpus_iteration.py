@@ -11,16 +11,15 @@ from bijux_phylogenetics.validation_corpus import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
     build_memory_benchmark_dashboard,
+    build_messy_benchmark_corpus,
     build_method_accuracy_dashboard,
     build_method_limitation_registry,
-    build_messy_benchmark_corpus,
     build_regression_dataset_corpus,
     build_runtime_benchmark_dashboard,
     build_scientific_validation_report,
     validate_simulation_reproducibility,
     write_validation_corpus_json,
 )
-
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -45,9 +44,14 @@ def test_build_broken_benchmark_corpus_preserves_expected_failure_signatures() -
     assert report.passed is True
     observed = {case.name: case for case in report.cases}
     assert observed["duplicate_tip_tree"].observed_code == "duplicate_taxon_error"
-    assert observed["invalid_alignment_lengths"].observed_code == "invalid_alignment_error"
+    assert (
+        observed["invalid_alignment_lengths"].observed_code == "invalid_alignment_error"
+    )
     assert observed["dataset_missing_metadata_taxon"].readiness_decision == "blocked"
-    assert "metadata table is missing one or more tree taxa" in observed["dataset_missing_metadata_taxon"].blockers
+    assert (
+        "metadata table is missing one or more tree taxa"
+        in observed["dataset_missing_metadata_taxon"].blockers
+    )
 
 
 def test_build_messy_benchmark_corpus_captures_multi_surface_warning_cases() -> None:
@@ -57,10 +61,19 @@ def test_build_messy_benchmark_corpus_captures_multi_surface_warning_cases() -> 
     assert report.passed is True
     observed = {case.name: case for case in report.cases}
     first = observed["reordered_alignment_extra_taxa_invalid_dates_and_calibrations"]
-    assert "calibration table contains invalid fossil calibration targets or ages" in first.blockers
-    assert "one or more dataset surfaces silently reorder shared taxa relative to the tree" in first.warnings
+    assert (
+        "calibration table contains invalid fossil calibration targets or ages"
+        in first.blockers
+    )
+    assert (
+        "one or more dataset surfaces silently reorder shared taxa relative to the tree"
+        in first.warnings
+    )
     second = observed["low_information_alignment_with_trait_mismatch"]
-    assert "alignment is not currently safe for core inference workflows" in second.blockers
+    assert (
+        "alignment is not currently safe for core inference workflows"
+        in second.blockers
+    )
     assert "alignment contains near-duplicate sequences" in second.warnings
 
 
@@ -76,7 +89,9 @@ def test_build_regression_dataset_corpus_matches_checked_in_summaries() -> None:
 
 
 def test_benchmark_alignment_site_scaling_reports_site_axis_observations() -> None:
-    report = benchmark_alignment_site_scaling(replicates=1, site_counts=[24, 48], sequence_count=4)
+    report = benchmark_alignment_site_scaling(
+        replicates=1, site_counts=[24, 48], sequence_count=4
+    )
 
     assert report.sequence_count == 4
     assert [row.item_count for row in report.observations] == [24, 48]
@@ -89,7 +104,9 @@ def test_benchmark_tree_set_consensus_reports_tree_count_scaling() -> None:
     assert [row.item_count for row in report.observations] == [4, 8]
 
 
-def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> None:
+def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> (
+    None
+):
     report = build_method_accuracy_dashboard(fixtures_root=FIXTURES)
 
     assert report.goal_id == 246
@@ -99,17 +116,29 @@ def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rate
     assert surfaces["regression-dataset-corpus"].failed_count == 0
 
 
-def test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples() -> None:
+def test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples() -> (
+    None
+):
     runtime = build_runtime_benchmark_dashboard(replicates=1)
     memory = build_memory_benchmark_dashboard(replicates=1)
 
     assert runtime.goal_id == 247
     assert memory.goal_id == 248
-    assert {row.scaling_axis for row in runtime.rows} >= {"sites", "posterior_samples", "taxa"}
-    assert {row.scaling_axis for row in memory.rows} >= {"sites", "posterior_samples", "taxa"}
+    assert {row.scaling_axis for row in runtime.rows} >= {
+        "sites",
+        "posterior_samples",
+        "taxa",
+    }
+    assert {row.scaling_axis for row in memory.rows} >= {
+        "sites",
+        "posterior_samples",
+        "taxa",
+    }
 
 
-def test_build_method_limitation_registry_marks_experimental_and_validated_surfaces() -> None:
+def test_build_method_limitation_registry_marks_experimental_and_validated_surfaces() -> (
+    None
+):
     report = build_method_limitation_registry()
 
     assert report.goal_id == 250
@@ -136,17 +165,27 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
 
 
 def test_package_root_exports_validation_corpus_surfaces() -> None:
-    assert bijux_phylogenetics.build_clean_benchmark_corpus is build_clean_benchmark_corpus
-    assert bijux_phylogenetics.build_method_limitation_registry is build_method_limitation_registry
-    assert bijux_phylogenetics.validate_simulation_reproducibility is validate_simulation_reproducibility
+    assert (
+        bijux_phylogenetics.build_clean_benchmark_corpus is build_clean_benchmark_corpus
+    )
+    assert (
+        bijux_phylogenetics.build_method_limitation_registry
+        is build_method_limitation_registry
+    )
+    assert (
+        bijux_phylogenetics.validate_simulation_reproducibility
+        is validate_simulation_reproducibility
+    )
 
 
-def test_write_validation_corpus_json_serializes_report_payloads(tmp_path: Path) -> None:
+def test_write_validation_corpus_json_serializes_report_payloads(
+    tmp_path: Path,
+) -> None:
     path = write_validation_corpus_json(
         tmp_path / "validation.json",
         build_clean_benchmark_corpus(fixtures_root=FIXTURES),
     )
 
     text = path.read_text(encoding="utf-8")
-    assert "\"goal_id\": 242" in text
-    assert "\"corpus\": \"clean-benchmark-corpus\"" in text
+    assert '"goal_id": 242' in text
+    assert '"corpus": "clean-benchmark-corpus"' in text

@@ -12,7 +12,6 @@ from bijux_phylogenetics.bayesian import (
     summarize_mrbayes_posterior_trees,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
@@ -62,7 +61,9 @@ print("warning: mrbayes fixture posterior run", file=sys.stderr)
     )
 
 
-def test_prepare_mrbayes_analysis_writes_nexus_with_run_settings(tmp_path: Path) -> None:
+def test_prepare_mrbayes_analysis_writes_nexus_with_run_settings(
+    tmp_path: Path,
+) -> None:
     alignment_path = fixture("alignments/example_alignment.fasta")
     nexus_path = tmp_path / "analysis.nex"
 
@@ -91,11 +92,17 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     nexus_path = tmp_path / "analysis.nex"
     prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
 
-    run_report = run_mrbayes_posterior_inference(nexus_path, executable=executable, resume=False)
-    resumed = run_mrbayes_posterior_inference(nexus_path, executable=executable, resume=True)
+    run_report = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=False
+    )
+    resumed = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=True
+    )
     posterior_tree_path = run_report.output_paths["posterior_trees"]
 
-    consensus_tree, summary = summarize_mrbayes_posterior_trees(posterior_tree_path, burnin_fraction=0.25)
+    consensus_tree, summary = summarize_mrbayes_posterior_trees(
+        posterior_tree_path, burnin_fraction=0.25
+    )
 
     assert run_report.run.warning_lines == ["warning: mrbayes fixture posterior run"]
     assert resumed.resumed is True
@@ -107,11 +114,15 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     assert consensus_tree.tip_count == 4
 
 
-def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(tmp_path: Path) -> None:
+def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(
+    tmp_path: Path,
+) -> None:
     executable = _fake_mrbayes(tmp_path / "mb-fixture")
     nexus_path = tmp_path / "analysis.nex"
     prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
-    run_report = run_mrbayes_posterior_inference(nexus_path, executable=executable, resume=False)
+    run_report = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=False
+    )
     trace_path = run_report.output_paths["parameter_traces"]
 
     trace_report = parse_mrbayes_parameter_traces(trace_path)
@@ -121,30 +132,50 @@ def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(tmp_path: Path)
     assert trace_report.columns == ["LnL", "TL", "alpha"]
     assert trace_report.rows[1].generation == 100
     assert ess_report.sample_count == 4
-    assert [row.parameter for row in ess_report.effective_sample_sizes] == ["LnL", "TL", "alpha"]
-    assert all(row.effective_sample_size > 0 for row in ess_report.effective_sample_sizes)
+    assert [row.parameter for row in ess_report.effective_sample_sizes] == [
+        "LnL",
+        "TL",
+        "alpha",
+    ]
+    assert all(
+        row.effective_sample_size > 0 for row in ess_report.effective_sample_sizes
+    )
 
 
-def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(tmp_path: Path) -> None:
+def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(
+    tmp_path: Path,
+) -> None:
     executable = _fake_mrbayes(tmp_path / "mb-fixture")
     nexus_path = tmp_path / "analysis.nex"
     prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
-    run_report = run_mrbayes_posterior_inference(nexus_path, executable=executable, resume=False)
+    run_report = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=False
+    )
     trace_path = run_report.output_paths["parameter_traces"]
 
-    report = assess_mrbayes_convergence(trace_path, ess_threshold=5.0, mean_shift_threshold=0.1)
+    report = assess_mrbayes_convergence(
+        trace_path, ess_threshold=5.0, mean_shift_threshold=0.1
+    )
 
     assert report.sample_count == 4
     assert report.converged is False
     assert {warning["code"] for warning in report.warnings} == {"low-ess", "mean-drift"}
-    assert [summary["parameter"] for summary in report.parameter_summaries] == ["LnL", "TL", "alpha"]
+    assert [summary["parameter"] for summary in report.parameter_summaries] == [
+        "LnL",
+        "TL",
+        "alpha",
+    ]
 
 
-def test_render_bayesian_posterior_report_writes_consensus_and_convergence_sections(tmp_path: Path) -> None:
+def test_render_bayesian_posterior_report_writes_consensus_and_convergence_sections(
+    tmp_path: Path,
+) -> None:
     executable = _fake_mrbayes(tmp_path / "mb-fixture")
     nexus_path = tmp_path / "analysis.nex"
     prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
-    run_report = run_mrbayes_posterior_inference(nexus_path, executable=executable, resume=False)
+    run_report = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=False
+    )
     output_path = tmp_path / "posterior-report.html"
 
     report = render_bayesian_posterior_report(
