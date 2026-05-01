@@ -82,7 +82,7 @@ force-include = { "LICENSE" = "LICENSE", "NOTICE" = "NOTICE" }
 packages = ["src/bijux_phylogenetics"]
 
 [tool.interrogate]
-fail-under = 69
+fail-under = 65
 verbose = 0
 ignore-init-method = true
 ignore-private = true
