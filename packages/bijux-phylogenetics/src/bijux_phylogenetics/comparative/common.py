@@ -6,8 +6,8 @@ from pathlib import Path
 
 from bijux_phylogenetics.comparative._math import stable_covariance
 from bijux_phylogenetics.core.metadata import load_taxon_table
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.traits import validate_traits_table
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
 
@@ -75,9 +75,13 @@ def summarize_numeric_trait_readiness(
     if trait not in table.columns:
         raise ComparativeMethodError(f"trait table does not contain column '{trait}'")
     trait_report = validate_traits_table(traits_path, taxon_column=taxon_column)
-    trait_column = next((column for column in trait_report.trait_columns if column.name == trait), None)
+    trait_column = next(
+        (column for column in trait_report.trait_columns if column.name == trait), None
+    )
     if trait_column is None:
-        raise ComparativeMethodError(f"trait column '{trait}' is not available for validation")
+        raise ComparativeMethodError(
+            f"trait column '{trait}' is not available for validation"
+        )
 
     tree_taxa = set(tree.tip_names)
     table_taxa = set(table.taxa)
@@ -109,24 +113,38 @@ def summarize_numeric_trait_readiness(
     blockers: list[str] = []
     warnings: list[str] = []
     rooted = len(tree.root.children) == 2
-    binary = all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes())
+    binary = all(
+        node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()
+    )
     complete_branch_lengths = _has_complete_branch_lengths(tree)
     if trait_column.kind != "numeric":
-        blockers.append(f"trait column '{trait}' must be numeric for comparative analysis")
+        blockers.append(
+            f"trait column '{trait}' must be numeric for comparative analysis"
+        )
     if not rooted:
         blockers.append("tree must be rooted for comparative analysis")
     if not complete_branch_lengths:
-        blockers.append("tree requires complete branch lengths for comparative analysis")
+        blockers.append(
+            "tree requires complete branch lengths for comparative analysis"
+        )
     if len(analysis_taxa) < 3:
-        blockers.append("comparative analysis requires at least three taxa with numeric trait values")
+        blockers.append(
+            "comparative analysis requires at least three taxa with numeric trait values"
+        )
     if missing_from_traits:
-        warnings.append("trait table is missing one or more tree taxa and those taxa will be pruned")
+        warnings.append(
+            "trait table is missing one or more tree taxa and those taxa will be pruned"
+        )
     if extra_trait_taxa:
         warnings.append("trait table contains taxa absent from the tree")
     if pruned_missing_value_taxa:
-        warnings.append("one or more overlapping taxa have missing trait values and will be pruned")
+        warnings.append(
+            "one or more overlapping taxa have missing trait values and will be pruned"
+        )
     if pruned_non_numeric_taxa:
-        warnings.append("one or more overlapping taxa have non-numeric trait values and will be pruned")
+        warnings.append(
+            "one or more overlapping taxa have non-numeric trait values and will be pruned"
+        )
 
     return ComparativeReadinessReport(
         tree_path=tree_path,
@@ -163,7 +181,9 @@ def summarize_numeric_trait(
         taxon_column=taxon_column,
     )
     if len(readiness.analysis_taxa) < 2:
-        raise ComparativeMethodError("at least two taxa are required to summarize a numeric trait")
+        raise ComparativeMethodError(
+            "at least two taxa are required to summarize a numeric trait"
+        )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     values_by_taxon = {
         row[table.taxon_column]: float(row[trait])
@@ -204,11 +224,17 @@ def load_comparative_dataset(
     if require_rooted and not readiness.rooted:
         raise ComparativeMethodError("tree must be rooted for this comparative method")
     if not readiness.complete_branch_lengths:
-        raise ComparativeMethodError("tree must contain complete branch lengths for this comparative method")
+        raise ComparativeMethodError(
+            "tree must contain complete branch lengths for this comparative method"
+        )
     if require_binary and not readiness.binary:
-        raise ComparativeMethodError("tree must be strictly binary for this comparative method")
+        raise ComparativeMethodError(
+            "tree must be strictly binary for this comparative method"
+        )
     if len(readiness.analysis_taxa) < minimum_taxa:
-        raise ComparativeMethodError(f"this comparative method requires at least {minimum_taxa} taxa")
+        raise ComparativeMethodError(
+            f"this comparative method requires at least {minimum_taxa} taxa"
+        )
 
     tree = load_tree(tree_path)
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
@@ -232,7 +258,9 @@ def load_comparative_dataset(
     )
 
 
-def build_brownian_covariance_matrix(tree: PhyloTree, taxa: list[str]) -> list[list[float]]:
+def build_brownian_covariance_matrix(
+    tree: PhyloTree, taxa: list[str]
+) -> list[list[float]]:
     """Build the Brownian shared-path covariance matrix for an ordered tip list."""
     leaf_paths = _leaf_ancestor_depths(tree)
     matrix: list[list[float]] = []
@@ -251,13 +279,12 @@ def build_brownian_covariance_matrix(tree: PhyloTree, taxa: list[str]) -> list[l
 def tip_root_depths(tree: PhyloTree, taxa: list[str]) -> dict[str, float]:
     """Return root-to-tip path lengths for an explicit ordered taxon set."""
     leaf_paths = _leaf_ancestor_depths(tree)
-    return {
-        taxon: max(leaf_paths[taxon].values())
-        for taxon in taxa
-    }
+    return {taxon: max(leaf_paths[taxon].values()) for taxon in taxa}
 
 
-def build_ou_covariance_matrix(tree: PhyloTree, taxa: list[str], *, alpha: float) -> list[list[float]]:
+def build_ou_covariance_matrix(
+    tree: PhyloTree, taxa: list[str], *, alpha: float
+) -> list[list[float]]:
     """Build a stationary-root OU covariance matrix for an ordered tip list."""
     if alpha <= 0.0:
         raise ComparativeMethodError("OU alpha must be positive")
@@ -277,7 +304,10 @@ def build_ou_covariance_matrix(tree: PhyloTree, taxa: list[str], *, alpha: float
                 covariance = (1.0 - math.exp(-2.0 * alpha * left_depth)) / (2.0 * alpha)
             else:
                 covariance = (
-                    math.exp(-alpha * ((left_depth - shared_depth) + (right_depth - shared_depth)))
+                    math.exp(
+                        -alpha
+                        * ((left_depth - shared_depth) + (right_depth - shared_depth))
+                    )
                     * (1.0 - math.exp(-2.0 * alpha * shared_depth))
                     / (2.0 * alpha)
                 )
@@ -329,7 +359,11 @@ def lambda_transform_covariance(
 
 
 def _has_complete_branch_lengths(tree: PhyloTree) -> bool:
-    return all(node.branch_length is not None for node in tree.iter_nodes() if node is not tree.root)
+    return all(
+        node.branch_length is not None
+        for node in tree.iter_nodes()
+        if node is not tree.root
+    )
 
 
 def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:
@@ -338,7 +372,9 @@ def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:
     def visit(node: TreeNode, ancestors: dict[int, float], depth: float) -> None:
         if node is not tree.root:
             if node.branch_length is None:
-                raise ComparativeMethodError("tree must contain complete branch lengths for comparative analysis")
+                raise ComparativeMethodError(
+                    "tree must contain complete branch lengths for comparative analysis"
+                )
             depth += node.branch_length
         current_ancestors = dict(ancestors)
         current_ancestors[id(node)] = depth

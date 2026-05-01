@@ -5,8 +5,8 @@ from pathlib import Path
 
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.traits import validate_traits_table
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
@@ -80,17 +80,32 @@ def load_continuous_dataset(
     """Load a rooted-tree continuous-trait dataset over overlapping usable taxa."""
     tree = load_tree(tree_path)
     if len(tree.root.children) != 2:
-        raise AncestralReconstructionError("ancestral-state reconstruction requires a rooted tree")
-    if any(node.branch_length is None for node in tree.iter_nodes() if node is not tree.root):
-        raise AncestralReconstructionError("continuous ancestral reconstruction requires complete branch lengths")
+        raise AncestralReconstructionError(
+            "ancestral-state reconstruction requires a rooted tree"
+        )
+    if any(
+        node.branch_length is None
+        for node in tree.iter_nodes()
+        if node is not tree.root
+    ):
+        raise AncestralReconstructionError(
+            "continuous ancestral reconstruction requires complete branch lengths"
+        )
 
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     if trait not in table.columns:
-        raise AncestralReconstructionError(f"trait table does not contain column '{trait}'")
+        raise AncestralReconstructionError(
+            f"trait table does not contain column '{trait}'"
+        )
     trait_report = validate_traits_table(traits_path, taxon_column=taxon_column)
-    column_kind = next((column.kind for column in trait_report.trait_columns if column.name == trait), None)
+    column_kind = next(
+        (column.kind for column in trait_report.trait_columns if column.name == trait),
+        None,
+    )
     if column_kind != "numeric":
-        raise AncestralReconstructionError(f"trait column '{trait}' must be numeric for continuous ancestral reconstruction")
+        raise AncestralReconstructionError(
+            f"trait column '{trait}' must be numeric for continuous ancestral reconstruction"
+        )
 
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     kept_taxa: list[str] = []
@@ -104,12 +119,14 @@ def load_continuous_dataset(
             continue
         try:
             values_by_taxon[taxon] = float(row[trait])
-        except ValueError as error:
+        except ValueError:
             dropped_non_numeric_taxa.append(taxon)
             continue
         kept_taxa.append(taxon)
     if len(kept_taxa) < 2:
-        raise AncestralReconstructionError("continuous ancestral reconstruction requires at least two taxa with usable numeric trait values")
+        raise AncestralReconstructionError(
+            "continuous ancestral reconstruction requires at least two taxa with usable numeric trait values"
+        )
 
     pruned_tree, _ = prune_tree_to_requested_taxa(tree_path, kept_taxa)
     warnings: list[str] = []
@@ -118,9 +135,13 @@ def load_continuous_dataset(
             f"continuous trait reconstruction is using only {len(kept_taxa)} taxa; results may be unstable"
         )
     if dropped_missing_taxa:
-        warnings.append("one or more taxa were excluded because the continuous trait value was missing")
+        warnings.append(
+            "one or more taxa were excluded because the continuous trait value was missing"
+        )
     if dropped_non_numeric_taxa:
-        warnings.append("one or more taxa were excluded because the continuous trait value was not numeric")
+        warnings.append(
+            "one or more taxa were excluded because the continuous trait value was not numeric"
+        )
     return AncestralContinuousDataset(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -145,11 +166,15 @@ def load_discrete_dataset(
     """Load a rooted-tree discrete-trait dataset over overlapping usable taxa."""
     tree = load_tree(tree_path)
     if len(tree.root.children) != 2:
-        raise AncestralReconstructionError("ancestral-state reconstruction requires a rooted tree")
+        raise AncestralReconstructionError(
+            "ancestral-state reconstruction requires a rooted tree"
+        )
 
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     if trait not in table.columns:
-        raise AncestralReconstructionError(f"trait table does not contain column '{trait}'")
+        raise AncestralReconstructionError(
+            f"trait table does not contain column '{trait}'"
+        )
 
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     kept_taxa: list[str] = []
@@ -165,9 +190,13 @@ def load_discrete_dataset(
         kept_taxa.append(taxon)
     observed_states = sorted(set(states_by_taxon.values()))
     if len(kept_taxa) < 2:
-        raise AncestralReconstructionError("discrete ancestral reconstruction requires at least two taxa with observed states")
+        raise AncestralReconstructionError(
+            "discrete ancestral reconstruction requires at least two taxa with observed states"
+        )
     if len(observed_states) < 2:
-        raise AncestralReconstructionError("discrete ancestral reconstruction requires at least two observed states")
+        raise AncestralReconstructionError(
+            "discrete ancestral reconstruction requires at least two observed states"
+        )
 
     pruned_tree, _ = prune_tree_to_requested_taxa(tree_path, kept_taxa)
     state_counts = {
@@ -177,7 +206,9 @@ def load_discrete_dataset(
     sparse_states = sorted(state for state, count in state_counts.items() if count < 2)
     warnings: list[str] = []
     if dropped_missing_taxa:
-        warnings.append("one or more taxa were excluded because the discrete trait state was missing")
+        warnings.append(
+            "one or more taxa were excluded because the discrete trait state was missing"
+        )
     if sparse_states:
         warnings.append(
             "one or more discrete states are represented by fewer than two taxa and should be interpreted cautiously"
@@ -198,7 +229,9 @@ def load_discrete_dataset(
     )
 
 
-def write_ancestral_rows(path: Path, *, columns: list[str], rows: list[dict[str, str]]) -> Path:
+def write_ancestral_rows(
+    path: Path, *, columns: list[str], rows: list[dict[str, str]]
+) -> Path:
     """Write a deterministic ancestral-state table."""
     return write_taxon_rows(path, columns=columns, rows=rows)
 

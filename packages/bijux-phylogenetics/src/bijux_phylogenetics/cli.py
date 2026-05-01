@@ -31,7 +31,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point."""
     parser = build_parser()
     args = parser.parse_args(argv)
-    setattr(args, "_argv", list(argv) if argv is not None else list(sys.argv[1:]))
+    args._argv = list(argv) if argv is not None else list(sys.argv[1:])
     return run_command(args, parser=parser)
 
 

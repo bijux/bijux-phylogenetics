@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-import random
 from pathlib import Path
+import random
 
-from bijux_phylogenetics.comparative._math import invert_matrix, log_determinant, quadratic_form
+from bijux_phylogenetics.comparative._math import (
+    invert_matrix,
+    log_determinant,
+    quadratic_form,
+)
 from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     lambda_transform_covariance,
@@ -98,7 +102,7 @@ def compute_phylogenetic_independent_contrasts(
         require_rooted=True,
         require_binary=True,
     )
-    lookup = {taxon: value for taxon, value in zip(dataset.taxa, dataset.trait_values, strict=True)}
+    lookup = dict(zip(dataset.taxa, dataset.trait_values, strict=True))
     contrasts, root_estimate, _ = _compute_node_contrasts(dataset.tree.root, lookup)
     return IndependentContrastReport(
         tree_path=tree_path,
@@ -129,16 +133,20 @@ def compute_blombergs_k(
     inverse_covariance = invert_matrix(dataset.covariance_matrix)
     generalized_mean = _generalized_mean(dataset.trait_values, inverse_covariance)
     residuals = [value - generalized_mean for value in dataset.trait_values]
-    observed_mean_square = sum(value * value for value in residuals) / (len(residuals) - 1)
-    phylogenetic_mean_square = quadratic_form(residuals, inverse_covariance) / (len(residuals) - 1)
+    observed_mean_square = sum(value * value for value in residuals) / (
+        len(residuals) - 1
+    )
+    phylogenetic_mean_square = quadratic_form(residuals, inverse_covariance) / (
+        len(residuals) - 1
+    )
     sum_inverse = sum(sum(row) for row in inverse_covariance)
     expected_mean_square_ratio = (
-        (
-            sum(dataset.covariance_matrix[index][index] for index in range(len(dataset.covariance_matrix)))
-            - (len(dataset.trait_values) / sum_inverse)
+        sum(
+            dataset.covariance_matrix[index][index]
+            for index in range(len(dataset.covariance_matrix))
         )
-        / (len(dataset.trait_values) - 1)
-    )
+        - (len(dataset.trait_values) / sum_inverse)
+    ) / (len(dataset.trait_values) - 1)
     k = (observed_mean_square / phylogenetic_mean_square) / expected_mean_square_ratio
     return BlombergKReport(
         tree_path=tree_path,
@@ -173,14 +181,20 @@ def estimate_pagels_lambda(
     )
     coarse_values = _grid_values(0.0, 1.0, coarse_step)
     coarse_best_lambda, coarse_best_log_likelihood = max(
-        ((_lambda, _lambda_log_likelihood(dataset, _lambda)) for _lambda in coarse_values),
+        (
+            (_lambda, _lambda_log_likelihood(dataset, _lambda))
+            for _lambda in coarse_values
+        ),
         key=lambda item: item[1],
     )
     fine_start = max(0.0, coarse_best_lambda - coarse_step)
     fine_stop = min(1.0, coarse_best_lambda + coarse_step)
     fine_values = _grid_values(fine_start, fine_stop, fine_step)
     lambda_value, log_likelihood = max(
-        ((_lambda, _lambda_log_likelihood(dataset, _lambda)) for _lambda in fine_values),
+        (
+            (_lambda, _lambda_log_likelihood(dataset, _lambda))
+            for _lambda in fine_values
+        ),
         key=lambda item: item[1],
     )
     return PagelLambdaReport(
@@ -220,7 +234,7 @@ def compute_phylogenetic_signal_test(
         trait=trait,
         taxon_column=taxon_column,
     ).lambda_value
-    randomizer = random.Random(seed)
+    randomizer = random.Random(seed)  # nosec B311
     exceed_count = 0
     permuted_values = list(dataset.trait_values)
     for _ in range(permutations):
@@ -252,7 +266,9 @@ def compute_phylogenetic_signal_test(
     )
 
 
-def _compute_node_contrasts(node, values_by_taxon: dict[str, float]) -> tuple[list[IndependentContrast], float, float]:
+def _compute_node_contrasts(
+    node, values_by_taxon: dict[str, float]
+) -> tuple[list[IndependentContrast], float, float]:
     if node.is_leaf():
         if node.name is None:
             raise ValueError("leaf taxon name is required for comparative contrasts")
@@ -262,26 +278,40 @@ def _compute_node_contrasts(node, values_by_taxon: dict[str, float]) -> tuple[li
     if len(node.children) != 2:
         raise ValueError("independent contrasts require a strictly binary tree")
 
-    left_contrasts, left_value, left_variance = _compute_node_contrasts(node.children[0], values_by_taxon)
-    right_contrasts, right_value, right_variance = _compute_node_contrasts(node.children[1], values_by_taxon)
+    left_contrasts, left_value, left_variance = _compute_node_contrasts(
+        node.children[0], values_by_taxon
+    )
+    right_contrasts, right_value, right_variance = _compute_node_contrasts(
+        node.children[1], values_by_taxon
+    )
     expected_variance = left_variance + right_variance
     contrast = (left_value - right_value) / math.sqrt(expected_variance)
     ancestral_value = (
         (left_value / left_variance) + (right_value / right_variance)
     ) / ((1.0 / left_variance) + (1.0 / right_variance))
-    propagated_variance = (left_variance * right_variance) / (left_variance + right_variance)
+    propagated_variance = (left_variance * right_variance) / (
+        left_variance + right_variance
+    )
     if node.branch_length is not None:
         propagated_variance += node.branch_length
 
     report = IndependentContrast(
-        node="|".join(sorted(set(_leaf_names(node.children[0])) | set(_leaf_names(node.children[1])))),
+        node="|".join(
+            sorted(
+                set(_leaf_names(node.children[0])) | set(_leaf_names(node.children[1]))
+            )
+        ),
         left_taxa=_leaf_names(node.children[0]),
         right_taxa=_leaf_names(node.children[1]),
         contrast=contrast,
         expected_variance=expected_variance,
         ancestral_value=ancestral_value,
     )
-    return left_contrasts + right_contrasts + [report], ancestral_value, propagated_variance
+    return (
+        left_contrasts + right_contrasts + [report],
+        ancestral_value,
+        propagated_variance,
+    )
 
 
 def _leaf_names(node) -> list[str]:
@@ -293,8 +323,9 @@ def _leaf_names(node) -> list[str]:
     return sorted(taxa)
 
 
-def _generalized_mean(values: list[float], inverse_covariance: list[list[float]]) -> float:
-    ones = [1.0] * len(values)
+def _generalized_mean(
+    values: list[float], inverse_covariance: list[list[float]]
+) -> float:
     numerator = sum(
         left * value
         for left, value in zip(
@@ -311,17 +342,23 @@ def _compute_blombergs_k_from_dataset(dataset: ComparativeDataset) -> float:
     inverse_covariance = invert_matrix(dataset.covariance_matrix)
     generalized_mean = _generalized_mean(dataset.trait_values, inverse_covariance)
     residuals = [value - generalized_mean for value in dataset.trait_values]
-    observed_mean_square = sum(value * value for value in residuals) / (len(residuals) - 1)
-    phylogenetic_mean_square = quadratic_form(residuals, inverse_covariance) / (len(residuals) - 1)
+    observed_mean_square = sum(value * value for value in residuals) / (
+        len(residuals) - 1
+    )
+    phylogenetic_mean_square = quadratic_form(residuals, inverse_covariance) / (
+        len(residuals) - 1
+    )
     sum_inverse = sum(sum(row) for row in inverse_covariance)
     expected_mean_square_ratio = (
-        (
-            sum(dataset.covariance_matrix[index][index] for index in range(len(dataset.covariance_matrix)))
-            - (len(dataset.trait_values) / sum_inverse)
+        sum(
+            dataset.covariance_matrix[index][index]
+            for index in range(len(dataset.covariance_matrix))
         )
-        / (len(dataset.trait_values) - 1)
-    )
-    return (observed_mean_square / phylogenetic_mean_square) / expected_mean_square_ratio
+        - (len(dataset.trait_values) / sum_inverse)
+    ) / (len(dataset.trait_values) - 1)
+    return (
+        observed_mean_square / phylogenetic_mean_square
+    ) / expected_mean_square_ratio
 
 
 def _lambda_log_likelihood(dataset: ComparativeDataset, lambda_value: float) -> float:
@@ -329,7 +366,9 @@ def _lambda_log_likelihood(dataset: ComparativeDataset, lambda_value: float) -> 
     inverse_covariance = invert_matrix(covariance)
     generalized_mean = _generalized_mean(dataset.trait_values, inverse_covariance)
     residuals = [value - generalized_mean for value in dataset.trait_values]
-    sigma_squared = quadratic_form(residuals, inverse_covariance) / len(dataset.trait_values)
+    sigma_squared = quadratic_form(residuals, inverse_covariance) / len(
+        dataset.trait_values
+    )
     return -0.5 * (
         len(dataset.trait_values) * math.log(2.0 * math.pi * sigma_squared)
         + log_determinant(covariance)

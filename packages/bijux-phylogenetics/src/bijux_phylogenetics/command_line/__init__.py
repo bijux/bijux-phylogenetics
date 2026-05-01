@@ -1,13 +1,25 @@
 from __future__ import annotations
 
 import argparse
-import json
-import sys
 from dataclasses import asdict, is_dataclass
+import json
 from pathlib import Path
+import sys
 from typing import Any
 
 from bijux_phylogenetics import __version__
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
+from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
+from bijux_phylogenetics.ancestral.service import (
+    compare_continuous_ancestral_models,
+    render_ancestral_state_report,
+    render_ancestral_state_tree,
+    write_ancestral_state_table,
+)
 from bijux_phylogenetics.bayesian import (
     assess_beast_convergence,
     assess_mrbayes_convergence,
@@ -18,8 +30,8 @@ from bijux_phylogenetics.bayesian import (
     parse_mrbayes_parameter_traces,
     prepare_beast_time_tree_analysis,
     prepare_mrbayes_analysis,
-    render_calibration_audit_report,
     render_bayesian_posterior_report,
+    render_calibration_audit_report,
     run_mrbayes_posterior_inference,
     summarize_mrbayes_posterior_trees,
     validate_fossil_calibration_table,
@@ -32,17 +44,11 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
-from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
-from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
-from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
-from bijux_phylogenetics.ancestral.service import (
-    compare_continuous_ancestral_models,
-    render_ancestral_state_report,
-    render_ancestral_state_tree,
-    write_ancestral_state_table,
+from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
+from bijux_phylogenetics.comparative.common import (
+    summarize_numeric_trait,
+    summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.comparative.common import summarize_numeric_trait, summarize_numeric_trait_readiness
 from bijux_phylogenetics.comparative.models import (
     assess_comparative_method_maturity,
     audit_comparative_parameter_uncertainty,
@@ -53,7 +59,11 @@ from bijux_phylogenetics.comparative.models import (
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
-from bijux_phylogenetics.comparative.pgls import inspect_pgls_inputs, run_pgls, run_pgls_multiple_testing
+from bijux_phylogenetics.comparative.pgls import (
+    inspect_pgls_inputs,
+    run_pgls,
+    run_pgls_multiple_testing,
+)
 from bijux_phylogenetics.comparative.reporting import (
     build_comparative_method_report,
     build_trait_influence_report,
@@ -67,57 +77,7 @@ from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
 )
-from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
-from bijux_phylogenetics.core.environment import inspect_environment
-from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.diagnostics.root_to_tip import (
-    compute_root_to_tip_distances,
-    diagnose_ultrametricity,
-    write_root_to_tip_tsv,
-)
-from bijux_phylogenetics.io.fasta import (
-    assess_alignment_low_information,
-    build_ambiguous_alignment_column_report,
-    build_alignment_forensic_report,
-    build_alignment_quality_report,
-    build_duplicate_sequence_policy_report,
-    build_sequence_quality_ranking,
-    clean_alignment_with_profile,
-    classify_alignment_sequences,
-    compare_alignment_versions,
-    infer_alignment_alphabet,
-    link_alignment_to_tree,
-    list_alignment_filter_profiles,
-    load_fasta_alignment,
-    summarise_fasta,
-    summarize_alignment_readiness,
-    summarize_alignment_windows,
-)
-from bijux_phylogenetics.io.fasta import (
-    compute_pairwise_sequence_identity_matrix,
-    detect_identical_duplicate_sequences,
-    detect_invalid_alignment_characters,
-    detect_near_duplicate_sequences,
-    detect_composition_outlier_sequences,
-    detect_over_aligned_regions,
-    detect_sequence_length_outliers,
-    detect_under_aligned_regions,
-    inspect_coding_alignment,
-    translate_coding_alignment,
-    trim_alignment,
-    write_sequence_identity_matrix,
-    write_fasta_alignment,
-)
-from bijux_phylogenetics.core.metadata import inspect_metadata_table
-from bijux_phylogenetics.core.pruning import (
-    drop_tree_taxa,
-    prune_tree_to_requested_taxa,
-    prune_tree_to_taxa,
-    write_pruned_taxa,
-)
-from bijux_phylogenetics.core.traits import link_tree_to_traits, prune_traits_to_tree, validate_traits_table
-from bijux_phylogenetics.core.traits import detect_missing_trait_values
+from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_clade_sets,
@@ -127,31 +87,58 @@ from bijux_phylogenetics.compare.topology import (
     prune_trees_to_shared_taxa,
     write_tree_comparison_table,
 )
-from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.core.demo import run_capability_demo
-from bijux_phylogenetics.diagnostics.validation import diagnose_tree_path, inspect_tree_path, validate_tree_path
+from bijux_phylogenetics.core.environment import inspect_environment
+from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
+from bijux_phylogenetics.core.metadata import (
+    inspect_metadata_table,
+    load_taxon_table,
+    write_taxon_rows,
+)
+from bijux_phylogenetics.core.pruning import (
+    drop_tree_taxa,
+    prune_tree_to_requested_taxa,
+    prune_tree_to_taxa,
+    write_pruned_taxa,
+)
+from bijux_phylogenetics.core.taxon_workflows import (
+    build_taxon_stability_report,
+    build_taxon_workflow_loss_report,
+    load_taxon_run_source,
+)
+from bijux_phylogenetics.core.taxonomy import (
+    audit_tree_taxon_synonyms,
+    build_taxon_audit_report,
+    export_tree_accepted_names,
+    inspect_tree_taxon_namespaces,
+    inspect_tree_taxon_rank_consistency,
+    normalize_tree_taxa,
+    resolve_tree_taxon_synonyms,
+    write_accepted_name_mapping,
+    write_synonym_resolution_mapping,
+    write_taxon_mapping,
+)
+from bijux_phylogenetics.core.topology import (
+    reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
+    unroot_tree,
+)
+from bijux_phylogenetics.core.traits import (
+    detect_missing_trait_values,
+    link_tree_to_traits,
+    prune_traits_to_tree,
+    validate_traits_table,
+)
 from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
-from bijux_phylogenetics.distance import (
-    assess_distance_method_maturity,
-    assess_distance_method_assumptions,
-    assess_imported_distance_method_assumptions,
-    bootstrap_distance_trees,
-    build_distance_method_report,
-    build_distance_tree,
-    build_tree_from_imported_distance_matrix,
-    compare_distance_gap_policies,
-    compare_distance_models,
-    compare_distance_tree_to_reference_tree,
-    compare_distance_tree_topologies,
-    compute_pairwise_genetic_distance_matrix,
-    inspect_imported_distance_matrix_quality,
-    inspect_distance_matrix_quality,
-    summarize_distance_bootstrap_support,
-    validate_distance_reference_examples,
-    validate_imported_distance_matrix,
-    write_distance_bootstrap_support,
-    write_distance_reproducibility_bundle,
-    write_genetic_distance_matrix,
+from bijux_phylogenetics.diagnostics.root_to_tip import (
+    compute_root_to_tip_distances,
+    diagnose_ultrametricity,
+    write_root_to_tip_tsv,
+)
+from bijux_phylogenetics.diagnostics.validation import (
+    diagnose_tree_path,
+    inspect_tree_path,
+    validate_tree_path,
 )
 from bijux_phylogenetics.discrete_evolution import (
     compare_discrete_state_models,
@@ -162,13 +149,35 @@ from bijux_phylogenetics.discrete_evolution import (
     render_tree_with_geographic_states,
     simulate_discrete_stochastic_maps,
     summarize_discrete_stochastic_maps,
-    validate_discrete_transition_reference_examples,
     validate_discrete_state_coding,
+    validate_discrete_transition_reference_examples,
     write_discrete_model_comparison_table,
     write_node_state_probability_table,
     write_stochastic_map_collection,
     write_stochastic_map_summary_table,
     write_transition_summary_table,
+)
+from bijux_phylogenetics.distance import (
+    assess_distance_method_assumptions,
+    assess_distance_method_maturity,
+    assess_imported_distance_method_assumptions,
+    bootstrap_distance_trees,
+    build_distance_method_report,
+    build_distance_tree,
+    build_tree_from_imported_distance_matrix,
+    compare_distance_gap_policies,
+    compare_distance_models,
+    compare_distance_tree_to_reference_tree,
+    compare_distance_tree_topologies,
+    compute_pairwise_genetic_distance_matrix,
+    inspect_distance_matrix_quality,
+    inspect_imported_distance_matrix_quality,
+    summarize_distance_bootstrap_support,
+    validate_distance_reference_examples,
+    validate_imported_distance_matrix,
+    write_distance_bootstrap_support,
+    write_distance_reproducibility_bundle,
+    write_genetic_distance_matrix,
 )
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
@@ -184,8 +193,8 @@ from bijux_phylogenetics.diversification import (
 )
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
-    render_inference_workflow_report,
     read_engine_version,
+    render_inference_workflow_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -194,30 +203,52 @@ from bijux_phylogenetics.engines import (
     run_model_selection,
     run_multiple_sequence_alignment,
 )
+from bijux_phylogenetics.errors import (
+    EngineUnavailableError,
+    EvidenceContractError,
+    MetadataJoinError,
+    PhylogeneticsError,
+)
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
-from bijux_phylogenetics.errors import EngineUnavailableError, EvidenceContractError, MetadataJoinError, PhylogeneticsError
-from bijux_phylogenetics.core.taxonomy import (
-    audit_tree_taxon_synonyms,
-    build_taxon_audit_report,
-    export_tree_accepted_names,
-    inspect_tree_taxon_rank_consistency,
-    inspect_tree_taxon_namespaces,
-    normalize_tree_taxa,
-    resolve_tree_taxon_synonyms,
-    write_accepted_name_mapping,
-    write_synonym_resolution_mapping,
-    write_taxon_mapping,
+from bijux_phylogenetics.io.fasta import (
+    assess_alignment_low_information,
+    build_alignment_forensic_report,
+    build_alignment_quality_report,
+    build_ambiguous_alignment_column_report,
+    build_duplicate_sequence_policy_report,
+    build_sequence_quality_ranking,
+    classify_alignment_sequences,
+    clean_alignment_with_profile,
+    compare_alignment_versions,
+    compute_pairwise_sequence_identity_matrix,
+    detect_composition_outlier_sequences,
+    detect_identical_duplicate_sequences,
+    detect_invalid_alignment_characters,
+    detect_near_duplicate_sequences,
+    detect_over_aligned_regions,
+    detect_sequence_length_outliers,
+    detect_under_aligned_regions,
+    infer_alignment_alphabet,
+    inspect_coding_alignment,
+    link_alignment_to_tree,
+    list_alignment_filter_profiles,
+    load_fasta_alignment,
+    summarise_fasta,
+    summarize_alignment_readiness,
+    summarize_alignment_windows,
+    translate_coding_alignment,
+    trim_alignment,
+    write_fasta_alignment,
+    write_sequence_identity_matrix,
 )
-from bijux_phylogenetics.core.taxon_workflows import (
-    build_taxon_stability_report,
-    build_taxon_workflow_loss_report,
-    load_taxon_run_source,
-)
-from bijux_phylogenetics.core.topology import reroot_tree_by_midpoint, root_tree_on_outgroup, unroot_tree
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.render.package import build_tree_figure_package
-from bijux_phylogenetics.render.svg import AnnotationStrip, audit_support_label_rendering, render_tree_svg
+from bijux_phylogenetics.render.svg import (
+    AnnotationStrip,
+    audit_support_label_rendering,
+    render_tree_svg,
+)
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     distance_method_limitations,
@@ -227,11 +258,12 @@ from bijux_phylogenetics.reports.service import (
     render_level_one_release_gate_report,
     render_phylo_inputs_report,
     render_taxon_report,
-    render_tree_uncertainty_report,
     render_tree_report,
+    render_tree_uncertainty_report,
     render_workflow_validation_report,
     write_annotation_report,
 )
+from bijux_phylogenetics.results import build_command_result, build_error_result
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
     simulate_brownian_traits,
@@ -262,7 +294,6 @@ from bijux_phylogenetics.tree_set import (
     write_consensus_tree,
     write_tree_distance_matrix,
 )
-from bijux_phylogenetics.results import build_command_result, build_error_result
 
 
 def _json_ready(value: Any) -> Any:
@@ -300,7 +331,9 @@ def _parse_assignment_map(raw: str | None) -> dict[str, str]:
             raise ValueError(f"mapping item must be KEY=VALUE, got '{item}'")
         key, value = item.split("=", 1)
         if not key.strip() or not value.strip():
-            raise ValueError(f"mapping item must include both KEY and VALUE, got '{item}'")
+            raise ValueError(
+                f"mapping item must include both KEY and VALUE, got '{item}'"
+            )
         assignments[key.strip()] = value.strip()
     return assignments
 
@@ -314,21 +347,34 @@ def _parse_labelled_run(raw: str) -> tuple[str, Path]:
     return label.strip(), Path(raw_path.strip())
 
 
-def _validate_ancestral_discrete_model_arguments(args: Any, parser: argparse.ArgumentParser) -> None:
-    if getattr(args, "kind", None) == "discrete" and getattr(args, "state_ordering", "unordered") == "ordered":
+def _validate_ancestral_discrete_model_arguments(
+    args: Any, parser: argparse.ArgumentParser
+) -> None:
+    if (
+        getattr(args, "kind", None) == "discrete"
+        and getattr(args, "state_ordering", "unordered") == "ordered"
+    ):
         resolved_model = getattr(args, "model", None) or "fitch"
         if resolved_model == "fitch":
-            parser.error("ordered ancestral discrete reconstruction requires a likelihood model")
+            parser.error(
+                "ordered ancestral discrete reconstruction requires a likelihood model"
+            )
 
 
 def _build_annotation_strips(table, columns: list[str]) -> list[AnnotationStrip]:
     missing_columns = [column for column in columns if column not in table.columns]
     if missing_columns:
-        raise MetadataJoinError(f"table does not contain columns: {', '.join(missing_columns)}")
+        raise MetadataJoinError(
+            f"table does not contain columns: {', '.join(missing_columns)}"
+        )
     return [
         AnnotationStrip(
             name=column,
-            values={row[table.taxon_column]: row[column] for row in table.rows if row[column]},
+            values={
+                row[table.taxon_column]: row[column]
+                for row in table.rows
+                if row[column]
+            },
         )
         for column in columns
     ]
@@ -345,7 +391,9 @@ def _build_numeric_trait_map(table, column: str) -> dict[str, float]:
         try:
             values[row[table.taxon_column]] = float(raw)
         except ValueError as error:
-            raise MetadataJoinError(f"column '{column}' contains a non-numeric value for taxon '{row[table.taxon_column]}'") from error
+            raise MetadataJoinError(
+                f"column '{column}' contains a non-numeric value for taxon '{row[table.taxon_column]}'"
+            ) from error
     return values
 
 
@@ -375,7 +423,11 @@ def _json_requested(args: Any) -> bool:
 
 
 def _add_manifest_argument(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--manifest", type=Path, help="Write a reproducibility manifest to this JSON path.")
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        help="Write a reproducibility manifest to this JSON path.",
+    )
 
 
 def _adapter_version_args(engine_name: str) -> tuple[str, ...]:
@@ -592,55 +644,93 @@ def _command_inputs(args: Any) -> list[Path | str]:
 def build_parser() -> argparse.ArgumentParser:
     """Build the repository CLI parser."""
     parser = argparse.ArgumentParser(prog="bijux-phylogenetics")
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    commands = subparsers.add_parser("commands", help="List the registered command taxonomy.")
+    commands = subparsers.add_parser(
+        "commands", help="List the registered command taxonomy."
+    )
     commands.add_argument("--format", choices=("text", "json"), default="text")
 
-    env = subparsers.add_parser(get_command_spec("env").name, help=get_command_spec("env").summary)
+    env = subparsers.add_parser(
+        get_command_spec("env").name, help=get_command_spec("env").summary
+    )
     env_subparsers = env.add_subparsers(dest="env_command", required=True)
-    env_inspect = env_subparsers.add_parser("inspect", help="Inspect runtime dependency availability.")
-    env_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    env_inspect = env_subparsers.add_parser(
+        "inspect", help="Inspect runtime dependency availability."
+    )
+    env_inspect.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(env_inspect)
 
-    metadata = subparsers.add_parser(get_command_spec("metadata").name, help=get_command_spec("metadata").summary)
-    metadata_subparsers = metadata.add_subparsers(dest="metadata_command", required=True)
-    metadata_inspect = metadata_subparsers.add_parser("inspect", help="Inspect a metadata table keyed by taxon.")
+    metadata = subparsers.add_parser(
+        get_command_spec("metadata").name, help=get_command_spec("metadata").summary
+    )
+    metadata_subparsers = metadata.add_subparsers(
+        dest="metadata_command", required=True
+    )
+    metadata_inspect = metadata_subparsers.add_parser(
+        "inspect", help="Inspect a metadata table keyed by taxon."
+    )
     metadata_inspect.add_argument("table", type=Path)
     metadata_inspect.add_argument("--taxon-column")
-    metadata_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    metadata_inspect.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(metadata_inspect)
 
-    traits = subparsers.add_parser(get_command_spec("traits").name, help=get_command_spec("traits").summary)
+    traits = subparsers.add_parser(
+        get_command_spec("traits").name, help=get_command_spec("traits").summary
+    )
     traits_subparsers = traits.add_subparsers(dest="traits_command", required=True)
-    traits_validate = traits_subparsers.add_parser("validate", help="Validate a traits table keyed by taxon.")
+    traits_validate = traits_subparsers.add_parser(
+        "validate", help="Validate a traits table keyed by taxon."
+    )
     traits_validate.add_argument("table", type=Path)
     traits_validate.add_argument("--taxon-column")
-    traits_validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    traits_validate.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(traits_validate)
-    traits_missing = traits_subparsers.add_parser("missing", help="List missing trait values by taxon and column.")
+    traits_missing = traits_subparsers.add_parser(
+        "missing", help="List missing trait values by taxon and column."
+    )
     traits_missing.add_argument("table", type=Path)
     traits_missing.add_argument("--taxon-column")
-    traits_missing.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    traits_missing.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(traits_missing)
-    traits_link = traits_subparsers.add_parser("link", help="Link tree tips to a traits table.")
+    traits_link = traits_subparsers.add_parser(
+        "link", help="Link tree tips to a traits table."
+    )
     traits_link.add_argument("tree", type=Path)
     traits_link.add_argument("table", type=Path)
     traits_link.add_argument("--taxon-column")
     traits_link.add_argument("--strict", action="store_true")
-    traits_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    traits_link.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(traits_link)
-    traits_prune = traits_subparsers.add_parser("prune", help="Prune a traits table to tree taxa.")
+    traits_prune = traits_subparsers.add_parser(
+        "prune", help="Prune a traits table to tree taxa."
+    )
     traits_prune.add_argument("tree", type=Path)
     traits_prune.add_argument("table", type=Path)
     traits_prune.add_argument("--taxon-column")
     traits_prune.add_argument("--out", required=True, type=Path)
-    traits_prune.add_argument("--json", action="store_true", help="Emit the pruning report as JSON.")
+    traits_prune.add_argument(
+        "--json", action="store_true", help="Emit the pruning report as JSON."
+    )
     _add_manifest_argument(traits_prune)
 
-    prune = subparsers.add_parser(get_command_spec("prune").name, help=get_command_spec("prune").summary)
+    prune = subparsers.add_parser(
+        get_command_spec("prune").name, help=get_command_spec("prune").summary
+    )
     prune.add_argument("tree", type=Path)
     prune_targets = prune.add_mutually_exclusive_group(required=True)
     prune_targets.add_argument("--keep-from", type=Path)
@@ -652,36 +742,60 @@ def build_parser() -> argparse.ArgumentParser:
     prune.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(prune)
 
-    alignment = subparsers.add_parser(get_command_spec("alignment").name, help=get_command_spec("alignment").summary)
-    alignment_subparsers = alignment.add_subparsers(dest="alignment_command", required=True)
-    alignment_alphabet = alignment_subparsers.add_parser("alphabet", help="Infer the alignment sequence alphabet.")
+    alignment = subparsers.add_parser(
+        get_command_spec("alignment").name, help=get_command_spec("alignment").summary
+    )
+    alignment_subparsers = alignment.add_subparsers(
+        dest="alignment_command", required=True
+    )
+    alignment_alphabet = alignment_subparsers.add_parser(
+        "alphabet", help="Infer the alignment sequence alphabet."
+    )
     alignment_alphabet.add_argument("alignment", type=Path)
-    alignment_alphabet.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_alphabet.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_alphabet)
     alignment_profiles = alignment_subparsers.add_parser(
         "profiles",
         help="List the supported named alignment-cleaning profiles.",
     )
-    alignment_profiles.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_profiles.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_profiles)
-    alignment_gc = alignment_subparsers.add_parser("gc", help="Report per-sequence and whole-alignment GC content.")
+    alignment_gc = alignment_subparsers.add_parser(
+        "gc", help="Report per-sequence and whole-alignment GC content."
+    )
     alignment_gc.add_argument("alignment", type=Path)
-    alignment_gc.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_gc.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_gc)
-    alignment_inspect = alignment_subparsers.add_parser("inspect", help="Inspect an aligned FASTA file.")
+    alignment_inspect = alignment_subparsers.add_parser(
+        "inspect", help="Inspect an aligned FASTA file."
+    )
     alignment_inspect.add_argument("alignment", type=Path)
-    alignment_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_inspect.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_inspect)
     alignment_classify = alignment_subparsers.add_parser(
         "classify",
         help="Classify whether a FASTA input is aligned, raw, or shape-ambiguous.",
     )
     alignment_classify.add_argument("alignment", type=Path)
-    alignment_classify.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_classify.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_classify)
-    alignment_quality = alignment_subparsers.add_parser("quality", help="Generate a higher-level alignment quality report.")
+    alignment_quality = alignment_subparsers.add_parser(
+        "quality", help="Generate a higher-level alignment quality report."
+    )
     alignment_quality.add_argument("alignment", type=Path)
-    alignment_quality.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_quality.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_quality)
     alignment_windows = alignment_subparsers.add_parser(
         "windows",
@@ -690,36 +804,48 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_windows.add_argument("alignment", type=Path)
     alignment_windows.add_argument("--window-size", type=int, default=30)
     alignment_windows.add_argument("--step-size", type=int, default=10)
-    alignment_windows.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_windows.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_windows)
     alignment_readiness = alignment_subparsers.add_parser(
         "readiness",
         help="Classify whether an alignment is ready for distance, ML, Bayesian, coding, or protein workflows.",
     )
     alignment_readiness.add_argument("alignment", type=Path)
-    alignment_readiness.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_readiness.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_readiness)
     alignment_forensic = alignment_subparsers.add_parser(
         "forensic",
         help="Build a reviewer-facing alignment forensic report.",
     )
     alignment_forensic.add_argument("alignment", type=Path)
-    alignment_forensic.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_forensic.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_forensic)
     alignment_composition = alignment_subparsers.add_parser(
         "composition",
         help="Inspect inferred alphabet, composition, and GC content.",
     )
     alignment_composition.add_argument("alignment", type=Path)
-    alignment_composition.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_composition.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_composition)
     alignment_invalid = alignment_subparsers.add_parser(
         "invalid",
         help="List alignment characters invalid for a declared alphabet.",
     )
     alignment_invalid.add_argument("alignment", type=Path)
-    alignment_invalid.add_argument("--alphabet", choices=("dna", "rna", "protein"), required=True)
-    alignment_invalid.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_invalid.add_argument(
+        "--alphabet", choices=("dna", "rna", "protein"), required=True
+    )
+    alignment_invalid.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_invalid)
     alignment_duplicates = alignment_subparsers.add_parser(
         "duplicates",
@@ -727,15 +853,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_duplicates.add_argument("alignment", type=Path)
     alignment_duplicates.add_argument("--identity-threshold", type=float, default=0.95)
-    alignment_duplicates.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_duplicates.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_duplicates)
     alignment_duplicate_policy = alignment_subparsers.add_parser(
         "duplicate-policy",
         help="Recommend how exact and near-duplicate sequences should be handled before inference.",
     )
     alignment_duplicate_policy.add_argument("alignment", type=Path)
-    alignment_duplicate_policy.add_argument("--identity-threshold", type=float, default=0.99)
-    alignment_duplicate_policy.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_duplicate_policy.add_argument(
+        "--identity-threshold", type=float, default=0.99
+    )
+    alignment_duplicate_policy.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_duplicate_policy)
     alignment_outliers = alignment_subparsers.add_parser(
         "outliers",
@@ -743,21 +875,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_outliers.add_argument("alignment", type=Path)
     alignment_outliers.add_argument("--deviation-threshold", type=float, default=0.25)
-    alignment_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_outliers.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_outliers)
     alignment_length_outliers = alignment_subparsers.add_parser(
         "length-outliers",
         help="Report raw sequence length outliers before alignment assumptions are imposed.",
     )
     alignment_length_outliers.add_argument("alignment", type=Path)
-    alignment_length_outliers.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_length_outliers.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_length_outliers)
     alignment_low_information = alignment_subparsers.add_parser(
         "low-information",
         help="Report whether an alignment has enough informative sites for defensible inference.",
     )
     alignment_low_information.add_argument("alignment", type=Path)
-    alignment_low_information.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_low_information.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_low_information)
     alignment_ambiguous_columns = alignment_subparsers.add_parser(
         "ambiguous-columns",
@@ -765,25 +903,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_ambiguous_columns.add_argument("alignment", type=Path)
     alignment_ambiguous_columns.add_argument("--threshold", type=float, default=0.5)
-    alignment_ambiguous_columns.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_ambiguous_columns.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_ambiguous_columns)
     alignment_sequence_ranking = alignment_subparsers.add_parser(
         "sequence-ranking",
         help="Rank sequences by missingness, ambiguity, gap burden, composition, and duplicate status.",
     )
     alignment_sequence_ranking.add_argument("alignment", type=Path)
-    alignment_sequence_ranking.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_sequence_ranking.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_sequence_ranking)
     alignment_filter = alignment_subparsers.add_parser(
         "filter",
         help="Clean an alignment through one named profile and report what changed.",
     )
     alignment_filter.add_argument("alignment", type=Path)
-    alignment_filter.add_argument("--profile", required=True, choices=tuple(profile.name for profile in list_alignment_filter_profiles()))
+    alignment_filter.add_argument(
+        "--profile",
+        required=True,
+        choices=tuple(profile.name for profile in list_alignment_filter_profiles()),
+    )
     alignment_filter.add_argument("--out", required=True, type=Path)
     alignment_filter.add_argument("--group-table", type=Path)
     alignment_filter.add_argument("--group-columns")
-    alignment_filter.add_argument("--json", action="store_true", help="Emit the cleaning report as JSON.")
+    alignment_filter.add_argument(
+        "--json", action="store_true", help="Emit the cleaning report as JSON."
+    )
     _add_manifest_argument(alignment_filter)
     alignment_compare = alignment_subparsers.add_parser(
         "compare",
@@ -791,7 +939,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_compare.add_argument("left_alignment", type=Path)
     alignment_compare.add_argument("right_alignment", type=Path)
-    alignment_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    alignment_compare.add_argument(
+        "--json", action="store_true", help="Emit the comparison report as JSON."
+    )
     _add_manifest_argument(alignment_compare)
     alignment_trim = alignment_subparsers.add_parser(
         "trim",
@@ -803,7 +953,9 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_trim.add_argument("--keep-all-missing-sites", action="store_true")
     alignment_trim.add_argument("--site-missingness-threshold", type=float)
     alignment_trim.add_argument("--sequence-missingness-threshold", type=float)
-    alignment_trim.add_argument("--json", action="store_true", help="Emit the trimming report as JSON.")
+    alignment_trim.add_argument(
+        "--json", action="store_true", help="Emit the trimming report as JSON."
+    )
     _add_manifest_argument(alignment_trim)
     alignment_identity = alignment_subparsers.add_parser(
         "identity-matrix",
@@ -811,7 +963,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_identity.add_argument("alignment", type=Path)
     alignment_identity.add_argument("--out", type=Path, help="Write the matrix as TSV.")
-    alignment_identity.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_identity.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_identity)
     alignment_distance = alignment_subparsers.add_parser(
         "distance-matrix",
@@ -820,7 +974,12 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance.add_argument("alignment", type=Path)
     alignment_distance.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance.add_argument(
@@ -834,7 +993,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="ignore",
     )
     alignment_distance.add_argument("--out", type=Path, help="Write the matrix as TSV.")
-    alignment_distance.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_distance.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_distance)
     alignment_distance_quality = alignment_subparsers.add_parser(
         "distance-quality",
@@ -843,7 +1004,12 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_quality.add_argument("alignment", type=Path)
     alignment_distance_quality.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance_quality.add_argument(
@@ -856,7 +1022,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
-    alignment_distance_quality.add_argument("--json", action="store_true", help="Emit the diagnostics as JSON.")
+    alignment_distance_quality.add_argument(
+        "--json", action="store_true", help="Emit the diagnostics as JSON."
+    )
     _add_manifest_argument(alignment_distance_quality)
     alignment_distance_assumptions = alignment_subparsers.add_parser(
         "distance-assumptions",
@@ -865,7 +1033,12 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_assumptions.add_argument("alignment", type=Path)
     alignment_distance_assumptions.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance_assumptions.add_argument(
@@ -878,17 +1051,26 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
-    alignment_distance_assumptions.add_argument("--json", action="store_true", help="Emit the assumption audit as JSON.")
+    alignment_distance_assumptions.add_argument(
+        "--json", action="store_true", help="Emit the assumption audit as JSON."
+    )
     _add_manifest_argument(alignment_distance_assumptions)
     alignment_build_tree = alignment_subparsers.add_parser(
         "build-tree",
         help="Build a neighbor-joining or UPGMA tree from a DNA distance matrix.",
     )
     alignment_build_tree.add_argument("alignment", type=Path)
-    alignment_build_tree.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_build_tree.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     alignment_build_tree.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_build_tree.add_argument(
@@ -902,7 +1084,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="ignore",
     )
     alignment_build_tree.add_argument("--out", required=True, type=Path)
-    alignment_build_tree.add_argument("--json", action="store_true", help="Emit the build report as JSON.")
+    alignment_build_tree.add_argument(
+        "--json", action="store_true", help="Emit the build report as JSON."
+    )
     _add_manifest_argument(alignment_build_tree)
     alignment_compare_distance_trees = alignment_subparsers.add_parser(
         "compare-distance-trees",
@@ -911,7 +1095,12 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_compare_distance_trees.add_argument("alignment", type=Path)
     alignment_compare_distance_trees.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_compare_distance_trees.add_argument(
@@ -924,7 +1113,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
-    alignment_compare_distance_trees.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    alignment_compare_distance_trees.add_argument(
+        "--json", action="store_true", help="Emit the comparison as JSON."
+    )
     _add_manifest_argument(alignment_compare_distance_trees)
     alignment_compare_distance_reference = alignment_subparsers.add_parser(
         "compare-distance-to-tree",
@@ -932,10 +1123,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_compare_distance_reference.add_argument("alignment", type=Path)
     alignment_compare_distance_reference.add_argument("reference_tree", type=Path)
-    alignment_compare_distance_reference.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_compare_distance_reference.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     alignment_compare_distance_reference.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_compare_distance_reference.add_argument(
@@ -948,17 +1146,26 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
-    alignment_compare_distance_reference.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    alignment_compare_distance_reference.add_argument(
+        "--json", action="store_true", help="Emit the comparison as JSON."
+    )
     _add_manifest_argument(alignment_compare_distance_reference)
     alignment_bootstrap_tree = alignment_subparsers.add_parser(
         "bootstrap-tree",
         help="Bootstrap a distance tree by resampling alignment sites with replacement.",
     )
     alignment_bootstrap_tree.add_argument("alignment", type=Path)
-    alignment_bootstrap_tree.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_bootstrap_tree.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     alignment_bootstrap_tree.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_bootstrap_tree.add_argument(
@@ -973,19 +1180,32 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_bootstrap_tree.add_argument("--replicates", type=int, default=100)
     alignment_bootstrap_tree.add_argument("--seed", type=int, default=1)
-    alignment_bootstrap_tree.add_argument("--support-out", type=Path, help="Write bootstrap clade support as TSV.")
-    alignment_bootstrap_tree.add_argument("--tree-set-out", type=Path, help="Write bootstrap replicate trees as Newick.")
-    alignment_bootstrap_tree.add_argument("--json", action="store_true", help="Emit the bootstrap report as JSON.")
+    alignment_bootstrap_tree.add_argument(
+        "--support-out", type=Path, help="Write bootstrap clade support as TSV."
+    )
+    alignment_bootstrap_tree.add_argument(
+        "--tree-set-out", type=Path, help="Write bootstrap replicate trees as Newick."
+    )
+    alignment_bootstrap_tree.add_argument(
+        "--json", action="store_true", help="Emit the bootstrap report as JSON."
+    )
     _add_manifest_argument(alignment_bootstrap_tree)
     alignment_bootstrap_summary = alignment_subparsers.add_parser(
         "distance-support-summary",
         help="Summarize consensus clade support across distance-bootstrap replicates.",
     )
     alignment_bootstrap_summary.add_argument("alignment", type=Path)
-    alignment_bootstrap_summary.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_bootstrap_summary.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     alignment_bootstrap_summary.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_bootstrap_summary.add_argument(
@@ -1000,7 +1220,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_bootstrap_summary.add_argument("--replicates", type=int, default=25)
     alignment_bootstrap_summary.add_argument("--seed", type=int, default=1)
-    alignment_bootstrap_summary.add_argument("--json", action="store_true", help="Emit the support summary as JSON.")
+    alignment_bootstrap_summary.add_argument(
+        "--json", action="store_true", help="Emit the support summary as JSON."
+    )
     _add_manifest_argument(alignment_bootstrap_summary)
     alignment_distance_models = alignment_subparsers.add_parser(
         "distance-models",
@@ -1017,7 +1239,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
-    alignment_distance_models.add_argument("--json", action="store_true", help="Emit the model comparison as JSON.")
+    alignment_distance_models.add_argument(
+        "--json", action="store_true", help="Emit the model comparison as JSON."
+    )
     _add_manifest_argument(alignment_distance_models)
     alignment_distance_gap = alignment_subparsers.add_parser(
         "distance-gap-sensitivity",
@@ -1026,7 +1250,12 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_gap.add_argument("alignment", type=Path)
     alignment_distance_gap.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance_gap.add_argument(
@@ -1034,7 +1263,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
-    alignment_distance_gap.add_argument("--json", action="store_true", help="Emit the gap-policy sensitivity as JSON.")
+    alignment_distance_gap.add_argument(
+        "--json", action="store_true", help="Emit the gap-policy sensitivity as JSON."
+    )
     _add_manifest_argument(alignment_distance_gap)
     alignment_distance_suitability = alignment_subparsers.add_parser(
         "distance-suitability",
@@ -1043,7 +1274,12 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_suitability.add_argument("alignment", type=Path)
     alignment_distance_suitability.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance_suitability.add_argument(
@@ -1056,17 +1292,26 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ignore", "partial-match", "strict-mismatch", "report-only"),
         default="ignore",
     )
-    alignment_distance_suitability.add_argument("--json", action="store_true", help="Emit the suitability decision as JSON.")
+    alignment_distance_suitability.add_argument(
+        "--json", action="store_true", help="Emit the suitability decision as JSON."
+    )
     _add_manifest_argument(alignment_distance_suitability)
     alignment_distance_method_report = alignment_subparsers.add_parser(
         "distance-method-report",
         help="Build a structured distance-method report with support, model, and gap-sensitivity sections.",
     )
     alignment_distance_method_report.add_argument("alignment", type=Path)
-    alignment_distance_method_report.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_distance_method_report.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     alignment_distance_method_report.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance_method_report.add_argument(
@@ -1081,17 +1326,26 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_method_report.add_argument("--replicates", type=int, default=25)
     alignment_distance_method_report.add_argument("--seed", type=int, default=1)
-    alignment_distance_method_report.add_argument("--json", action="store_true", help="Emit the structured report as JSON.")
+    alignment_distance_method_report.add_argument(
+        "--json", action="store_true", help="Emit the structured report as JSON."
+    )
     _add_manifest_argument(alignment_distance_method_report)
     alignment_distance_maturity = alignment_subparsers.add_parser(
         "distance-maturity",
         help="Run the distance-method maturity gate for one alignment.",
     )
     alignment_distance_maturity.add_argument("alignment", type=Path)
-    alignment_distance_maturity.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_distance_maturity.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     alignment_distance_maturity.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance_maturity.add_argument(
@@ -1106,17 +1360,26 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_distance_maturity.add_argument("--replicates", type=int, default=25)
     alignment_distance_maturity.add_argument("--seed", type=int, default=1)
-    alignment_distance_maturity.add_argument("--json", action="store_true", help="Emit the maturity gate as JSON.")
+    alignment_distance_maturity.add_argument(
+        "--json", action="store_true", help="Emit the maturity gate as JSON."
+    )
     _add_manifest_argument(alignment_distance_maturity)
     alignment_distance_bundle = alignment_subparsers.add_parser(
         "distance-bundle",
         help="Write a reproducibility bundle for one distance-analysis workflow.",
     )
     alignment_distance_bundle.add_argument("alignment", type=Path)
-    alignment_distance_bundle.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    alignment_distance_bundle.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     alignment_distance_bundle.add_argument(
         "--model",
-        choices=("p-distance", "jukes-cantor", "kimura-2-parameter", "amino-acid-p-distance"),
+        choices=(
+            "p-distance",
+            "jukes-cantor",
+            "kimura-2-parameter",
+            "amino-acid-p-distance",
+        ),
         default="p-distance",
     )
     alignment_distance_bundle.add_argument(
@@ -1132,14 +1395,18 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_distance_bundle.add_argument("--replicates", type=int, default=100)
     alignment_distance_bundle.add_argument("--seed", type=int, default=1)
     alignment_distance_bundle.add_argument("--out-dir", required=True, type=Path)
-    alignment_distance_bundle.add_argument("--json", action="store_true", help="Emit the bundle report as JSON.")
+    alignment_distance_bundle.add_argument(
+        "--json", action="store_true", help="Emit the bundle report as JSON."
+    )
     _add_manifest_argument(alignment_distance_bundle)
     alignment_coding = alignment_subparsers.add_parser(
         "coding",
         help="Inspect a nucleotide coding alignment for frameshift-like lengths and stop codons.",
     )
     alignment_coding.add_argument("alignment", type=Path)
-    alignment_coding.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_coding.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_coding)
     alignment_translate = alignment_subparsers.add_parser(
         "translate",
@@ -1147,20 +1414,28 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_translate.add_argument("alignment", type=Path)
     alignment_translate.add_argument("--out", required=True, type=Path)
-    alignment_translate.add_argument("--json", action="store_true", help="Emit the translation report as JSON.")
+    alignment_translate.add_argument(
+        "--json", action="store_true", help="Emit the translation report as JSON."
+    )
     _add_manifest_argument(alignment_translate)
-    alignment_link = alignment_subparsers.add_parser("link", help="Link tree tips to an aligned FASTA file.")
+    alignment_link = alignment_subparsers.add_parser(
+        "link", help="Link tree tips to an aligned FASTA file."
+    )
     alignment_link.add_argument("tree", type=Path)
     alignment_link.add_argument("alignment", type=Path)
     alignment_link.add_argument("--strict", action="store_true")
-    alignment_link.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    alignment_link.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(alignment_link)
 
     comparative = subparsers.add_parser(
         get_command_spec("comparative").name,
         help=get_command_spec("comparative").summary,
     )
-    comparative_subparsers = comparative.add_subparsers(dest="comparative_command", required=True)
+    comparative_subparsers = comparative.add_subparsers(
+        dest="comparative_command", required=True
+    )
     comparative_readiness = comparative_subparsers.add_parser(
         "readiness",
         help="Check whether a rooted tree and numeric trait are ready for comparative analysis.",
@@ -1169,7 +1444,9 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_readiness.add_argument("table", type=Path)
     comparative_readiness.add_argument("--trait", required=True)
     comparative_readiness.add_argument("--taxon-column")
-    comparative_readiness.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    comparative_readiness.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(comparative_readiness)
     comparative_summarize = comparative_subparsers.add_parser(
         "summarize",
@@ -1179,7 +1456,9 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_summarize.add_argument("table", type=Path)
     comparative_summarize.add_argument("--trait", required=True)
     comparative_summarize.add_argument("--taxon-column")
-    comparative_summarize.add_argument("--json", action="store_true", help="Emit the summary as JSON.")
+    comparative_summarize.add_argument(
+        "--json", action="store_true", help="Emit the summary as JSON."
+    )
     _add_manifest_argument(comparative_summarize)
     comparative_contrasts = comparative_subparsers.add_parser(
         "contrasts",
@@ -1189,7 +1468,9 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_contrasts.add_argument("table", type=Path)
     comparative_contrasts.add_argument("--trait", required=True)
     comparative_contrasts.add_argument("--taxon-column")
-    comparative_contrasts.add_argument("--json", action="store_true", help="Emit the contrast report as JSON.")
+    comparative_contrasts.add_argument(
+        "--json", action="store_true", help="Emit the contrast report as JSON."
+    )
     _add_manifest_argument(comparative_contrasts)
     comparative_signal = comparative_subparsers.add_parser(
         "signal",
@@ -1201,7 +1482,9 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_signal.add_argument("--taxon-column")
     comparative_signal.add_argument("--permutations", type=int, default=199)
     comparative_signal.add_argument("--seed", type=int, default=1)
-    comparative_signal.add_argument("--json", action="store_true", help="Emit the signal report as JSON.")
+    comparative_signal.add_argument(
+        "--json", action="store_true", help="Emit the signal report as JSON."
+    )
     _add_manifest_argument(comparative_signal)
     comparative_brownian = comparative_subparsers.add_parser(
         "brownian",
@@ -1211,7 +1494,9 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_brownian.add_argument("table", type=Path)
     comparative_brownian.add_argument("--trait", required=True)
     comparative_brownian.add_argument("--taxon-column")
-    comparative_brownian.add_argument("--json", action="store_true", help="Emit the Brownian model fit as JSON.")
+    comparative_brownian.add_argument(
+        "--json", action="store_true", help="Emit the Brownian model fit as JSON."
+    )
     _add_manifest_argument(comparative_brownian)
     comparative_ou = comparative_subparsers.add_parser(
         "ou",
@@ -1221,7 +1506,9 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_ou.add_argument("table", type=Path)
     comparative_ou.add_argument("--trait", required=True)
     comparative_ou.add_argument("--taxon-column")
-    comparative_ou.add_argument("--json", action="store_true", help="Emit the OU model fit as JSON.")
+    comparative_ou.add_argument(
+        "--json", action="store_true", help="Emit the OU model fit as JSON."
+    )
     _add_manifest_argument(comparative_ou)
     comparative_compare_models = comparative_subparsers.add_parser(
         "compare-models",
@@ -1231,13 +1518,17 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_compare_models.add_argument("table", type=Path)
     comparative_compare_models.add_argument("--trait", required=True)
     comparative_compare_models.add_argument("--taxon-column")
-    comparative_compare_models.add_argument("--json", action="store_true", help="Emit the model comparison as JSON.")
+    comparative_compare_models.add_argument(
+        "--json", action="store_true", help="Emit the model comparison as JSON."
+    )
     _add_manifest_argument(comparative_compare_models)
     comparative_validate_reference = comparative_subparsers.add_parser(
         "validate-reference",
         help="Validate built-in Brownian-motion and OU reference examples.",
     )
-    comparative_validate_reference.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    comparative_validate_reference.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
     _add_manifest_argument(comparative_validate_reference)
     comparative_sensitivity = comparative_subparsers.add_parser(
         "sensitivity",
@@ -1246,9 +1537,13 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_sensitivity.add_argument("tree", type=Path)
     comparative_sensitivity.add_argument("table", type=Path)
     comparative_sensitivity.add_argument("--trait", required=True)
-    comparative_sensitivity.add_argument("--model", choices=("brownian", "ou"), required=True)
+    comparative_sensitivity.add_argument(
+        "--model", choices=("brownian", "ou"), required=True
+    )
     comparative_sensitivity.add_argument("--taxon-column")
-    comparative_sensitivity.add_argument("--json", action="store_true", help="Emit the sensitivity report as JSON.")
+    comparative_sensitivity.add_argument(
+        "--json", action="store_true", help="Emit the sensitivity report as JSON."
+    )
     _add_manifest_argument(comparative_sensitivity)
     comparative_maturity = comparative_subparsers.add_parser(
         "maturity",
@@ -1258,14 +1553,19 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_maturity.add_argument("table", type=Path)
     comparative_maturity.add_argument("--response")
     comparative_maturity.add_argument("--predictors", nargs="+")
-    comparative_maturity.add_argument("--formula", help="Formula-style specification such as 'response ~ body_mass * habitat'.")
+    comparative_maturity.add_argument(
+        "--formula",
+        help="Formula-style specification such as 'response ~ body_mass * habitat'.",
+    )
     comparative_maturity.add_argument("--taxon-column")
     comparative_maturity.add_argument(
         "--lambda-value",
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
     )
-    comparative_maturity.add_argument("--json", action="store_true", help="Emit the maturity audit as JSON.")
+    comparative_maturity.add_argument(
+        "--json", action="store_true", help="Emit the maturity audit as JSON."
+    )
     _add_manifest_argument(comparative_maturity)
     comparative_pgls = comparative_subparsers.add_parser(
         "pgls",
@@ -1275,14 +1575,19 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_pgls.add_argument("table", type=Path)
     comparative_pgls.add_argument("--response")
     comparative_pgls.add_argument("--predictors", nargs="+")
-    comparative_pgls.add_argument("--formula", help="Formula-style specification such as 'response ~ body_mass * habitat'.")
+    comparative_pgls.add_argument(
+        "--formula",
+        help="Formula-style specification such as 'response ~ body_mass * habitat'.",
+    )
     comparative_pgls.add_argument("--taxon-column")
     comparative_pgls.add_argument(
         "--lambda-value",
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
     )
-    comparative_pgls.add_argument("--json", action="store_true", help="Emit the model result as JSON.")
+    comparative_pgls.add_argument(
+        "--json", action="store_true", help="Emit the model result as JSON."
+    )
     _add_manifest_argument(comparative_pgls)
     comparative_multiple_testing = comparative_subparsers.add_parser(
         "multiple-testing",
@@ -1298,7 +1603,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
     )
-    comparative_multiple_testing.add_argument("--json", action="store_true", help="Emit the correction report as JSON.")
+    comparative_multiple_testing.add_argument(
+        "--json", action="store_true", help="Emit the correction report as JSON."
+    )
     _add_manifest_argument(comparative_multiple_testing)
     comparative_report = comparative_subparsers.add_parser(
         "report",
@@ -1316,7 +1623,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
     )
-    comparative_report.add_argument("--json", action="store_true", help="Emit the comparative report as JSON.")
+    comparative_report.add_argument(
+        "--json", action="store_true", help="Emit the comparative report as JSON."
+    )
     _add_manifest_argument(comparative_report)
     comparative_influence = comparative_subparsers.add_parser(
         "influence",
@@ -1333,7 +1642,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
     )
-    comparative_influence.add_argument("--json", action="store_true", help="Emit the influence report as JSON.")
+    comparative_influence.add_argument(
+        "--json", action="store_true", help="Emit the influence report as JSON."
+    )
     _add_manifest_argument(comparative_influence)
     comparative_compare_trees = comparative_subparsers.add_parser(
         "compare-trees",
@@ -1351,7 +1662,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
     )
-    comparative_compare_trees.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    comparative_compare_trees.add_argument(
+        "--json", action="store_true", help="Emit the comparison as JSON."
+    )
     _add_manifest_argument(comparative_compare_trees)
     comparative_compare_pruning = comparative_subparsers.add_parser(
         "compare-pruning",
@@ -1370,14 +1683,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
     )
-    comparative_compare_pruning.add_argument("--json", action="store_true", help="Emit the pruning comparison as JSON.")
+    comparative_compare_pruning.add_argument(
+        "--json", action="store_true", help="Emit the pruning comparison as JSON."
+    )
     _add_manifest_argument(comparative_compare_pruning)
 
     ancestral = subparsers.add_parser(
         get_command_spec("ancestral").name,
         help=get_command_spec("ancestral").summary,
     )
-    ancestral_subparsers = ancestral.add_subparsers(dest="ancestral_command", required=True)
+    ancestral_subparsers = ancestral.add_subparsers(
+        dest="ancestral_command", required=True
+    )
     ancestral_continuous = ancestral_subparsers.add_parser(
         "continuous",
         help="Reconstruct ancestral states for a continuous trait.",
@@ -1386,10 +1703,14 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_continuous.add_argument("table", type=Path)
     ancestral_continuous.add_argument("--trait", required=True)
     ancestral_continuous.add_argument("--taxon-column")
-    ancestral_continuous.add_argument("--model", choices=("brownian", "ou"), default="brownian")
+    ancestral_continuous.add_argument(
+        "--model", choices=("brownian", "ou"), default="brownian"
+    )
     ancestral_continuous.add_argument("--alpha", type=float, default=1.0)
     ancestral_continuous.add_argument("--table-out", type=Path)
-    ancestral_continuous.add_argument("--json", action="store_true", help="Emit the reconstruction as JSON.")
+    ancestral_continuous.add_argument(
+        "--json", action="store_true", help="Emit the reconstruction as JSON."
+    )
     _add_manifest_argument(ancestral_continuous)
     ancestral_discrete = ancestral_subparsers.add_parser(
         "discrete",
@@ -1399,11 +1720,21 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_discrete.add_argument("table", type=Path)
     ancestral_discrete.add_argument("--trait", required=True)
     ancestral_discrete.add_argument("--taxon-column")
-    ancestral_discrete.add_argument("--model", choices=("fitch", "equal-rates", "symmetric", "all-rates-different"), default="fitch")
-    ancestral_discrete.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    ancestral_discrete.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    ancestral_discrete.add_argument(
+        "--model",
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+        default="fitch",
+    )
+    ancestral_discrete.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    ancestral_discrete.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     ancestral_discrete.add_argument("--table-out", type=Path)
-    ancestral_discrete.add_argument("--json", action="store_true", help="Emit the reconstruction as JSON.")
+    ancestral_discrete.add_argument(
+        "--json", action="store_true", help="Emit the reconstruction as JSON."
+    )
     _add_manifest_argument(ancestral_discrete)
     ancestral_compare = ancestral_subparsers.add_parser(
         "compare",
@@ -1413,11 +1744,17 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_compare.add_argument("table", type=Path)
     ancestral_compare.add_argument("--trait", required=True)
     ancestral_compare.add_argument("--taxon-column")
-    ancestral_compare.add_argument("--left-model", choices=("brownian", "ou"), default="brownian")
-    ancestral_compare.add_argument("--right-model", choices=("brownian", "ou"), default="ou")
+    ancestral_compare.add_argument(
+        "--left-model", choices=("brownian", "ou"), default="brownian"
+    )
+    ancestral_compare.add_argument(
+        "--right-model", choices=("brownian", "ou"), default="ou"
+    )
     ancestral_compare.add_argument("--left-alpha", type=float, default=1.0)
     ancestral_compare.add_argument("--right-alpha", type=float, default=1.0)
-    ancestral_compare.add_argument("--json", action="store_true", help="Emit the comparison as JSON.")
+    ancestral_compare.add_argument(
+        "--json", action="store_true", help="Emit the comparison as JSON."
+    )
     _add_manifest_argument(ancestral_compare)
     ancestral_sensitivity = ancestral_subparsers.add_parser(
         "sensitivity",
@@ -1426,17 +1763,28 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_sensitivity.add_argument("tree", type=Path)
     ancestral_sensitivity.add_argument("table", type=Path)
     ancestral_sensitivity.add_argument("--trait", required=True)
-    ancestral_sensitivity.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_sensitivity.add_argument(
+        "--kind", choices=("continuous", "discrete"), required=True
+    )
     ancestral_sensitivity.add_argument("--taxon-column")
     ancestral_sensitivity.add_argument("--model")
-    ancestral_sensitivity.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    ancestral_sensitivity.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    ancestral_sensitivity.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    ancestral_sensitivity.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     ancestral_sensitivity.add_argument("--alpha", type=float, default=1.0)
     ancestral_sensitivity.add_argument("--compare-model")
     ancestral_sensitivity.add_argument("--compare-tree", type=Path)
     ancestral_sensitivity.add_argument("--drop-taxa", nargs="+")
-    ancestral_sensitivity.add_argument("--coding-map", help="Comma-delimited KEY=VALUE recoding map for discrete traits.")
-    ancestral_sensitivity.add_argument("--json", action="store_true", help="Emit the sensitivity report as JSON.")
+    ancestral_sensitivity.add_argument(
+        "--coding-map",
+        help="Comma-delimited KEY=VALUE recoding map for discrete traits.",
+    )
+    ancestral_sensitivity.add_argument(
+        "--json", action="store_true", help="Emit the sensitivity report as JSON."
+    )
     _add_manifest_argument(ancestral_sensitivity)
     ancestral_render = ancestral_subparsers.add_parser(
         "render",
@@ -1445,15 +1793,25 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_render.add_argument("tree", type=Path)
     ancestral_render.add_argument("table", type=Path)
     ancestral_render.add_argument("--trait", required=True)
-    ancestral_render.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_render.add_argument(
+        "--kind", choices=("continuous", "discrete"), required=True
+    )
     ancestral_render.add_argument("--taxon-column")
     ancestral_render.add_argument("--model")
-    ancestral_render.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    ancestral_render.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    ancestral_render.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    ancestral_render.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     ancestral_render.add_argument("--alpha", type=float, default=1.0)
-    ancestral_render.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
+    ancestral_render.add_argument(
+        "--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram"
+    )
     ancestral_render.add_argument("--out", required=True, type=Path)
-    ancestral_render.add_argument("--json", action="store_true", help="Emit the render result as JSON.")
+    ancestral_render.add_argument(
+        "--json", action="store_true", help="Emit the render result as JSON."
+    )
     _add_manifest_argument(ancestral_render)
     ancestral_report = ancestral_subparsers.add_parser(
         "report",
@@ -1462,18 +1820,29 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_report.add_argument("tree", type=Path)
     ancestral_report.add_argument("table", type=Path)
     ancestral_report.add_argument("--trait", required=True)
-    ancestral_report.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_report.add_argument(
+        "--kind", choices=("continuous", "discrete"), required=True
+    )
     ancestral_report.add_argument("--taxon-column")
     ancestral_report.add_argument("--model")
-    ancestral_report.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    ancestral_report.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    ancestral_report.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    ancestral_report.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     ancestral_report.add_argument("--alpha", type=float, default=1.0)
     ancestral_report.add_argument("--compare-model")
     ancestral_report.add_argument("--compare-tree", type=Path)
     ancestral_report.add_argument("--drop-taxa", nargs="+")
-    ancestral_report.add_argument("--coding-map", help="Comma-delimited KEY=VALUE recoding map for discrete traits.")
+    ancestral_report.add_argument(
+        "--coding-map",
+        help="Comma-delimited KEY=VALUE recoding map for discrete traits.",
+    )
     ancestral_report.add_argument("--out", required=True, type=Path)
-    ancestral_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    ancestral_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(ancestral_report)
     ancestral_package = ancestral_subparsers.add_parser(
         "package",
@@ -1482,15 +1851,25 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_package.add_argument("tree", type=Path)
     ancestral_package.add_argument("table", type=Path)
     ancestral_package.add_argument("--trait", required=True)
-    ancestral_package.add_argument("--kind", choices=("continuous", "discrete"), required=True)
+    ancestral_package.add_argument(
+        "--kind", choices=("continuous", "discrete"), required=True
+    )
     ancestral_package.add_argument("--taxon-column")
     ancestral_package.add_argument("--model")
-    ancestral_package.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    ancestral_package.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    ancestral_package.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    ancestral_package.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     ancestral_package.add_argument("--alpha", type=float, default=1.0)
-    ancestral_package.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
+    ancestral_package.add_argument(
+        "--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram"
+    )
     ancestral_package.add_argument("--out-dir", required=True, type=Path)
-    ancestral_package.add_argument("--json", action="store_true", help="Emit the package build result as JSON.")
+    ancestral_package.add_argument(
+        "--json", action="store_true", help="Emit the package build result as JSON."
+    )
     _add_manifest_argument(ancestral_package)
 
     discrete_evolution = subparsers.add_parser(
@@ -1513,9 +1892,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, accept any single token state label.",
     )
-    discrete_validate.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    discrete_validate.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
-    discrete_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    discrete_validate.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    discrete_validate.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
+    discrete_validate.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
     _add_manifest_argument(discrete_validate)
     discrete_imbalance = discrete_evolution_subparsers.add_parser(
         "imbalance",
@@ -1525,13 +1910,19 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_imbalance.add_argument("table", type=Path)
     discrete_imbalance.add_argument("--trait", required=True)
     discrete_imbalance.add_argument("--taxon-column")
-    discrete_imbalance.add_argument("--json", action="store_true", help="Emit the imbalance report as JSON.")
+    discrete_imbalance.add_argument(
+        "--json", action="store_true", help="Emit the imbalance report as JSON."
+    )
     _add_manifest_argument(discrete_imbalance)
     discrete_reference = discrete_evolution_subparsers.add_parser(
         "reference",
         help="Validate deterministic discrete-state transition examples against built-in reference expectations.",
     )
-    discrete_reference.add_argument("--json", action="store_true", help="Emit the reference-validation report as JSON.")
+    discrete_reference.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the reference-validation report as JSON.",
+    )
     _add_manifest_argument(discrete_reference)
     discrete_model = discrete_evolution_subparsers.add_parser(
         "model",
@@ -1541,16 +1932,30 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_model.add_argument("table", type=Path)
     discrete_model.add_argument("--trait", required=True)
     discrete_model.add_argument("--taxon-column")
-    discrete_model.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
-    discrete_model.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    discrete_model.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    discrete_model.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+    )
+    discrete_model.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    discrete_model.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     discrete_model.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
     )
-    discrete_model.add_argument("--node-table-out", type=Path, help="Write node-state probabilities as TSV.")
-    discrete_model.add_argument("--transitions-out", type=Path, help="Write branch transition summaries as TSV.")
-    discrete_model.add_argument("--json", action="store_true", help="Emit the model report as JSON.")
+    discrete_model.add_argument(
+        "--node-table-out", type=Path, help="Write node-state probabilities as TSV."
+    )
+    discrete_model.add_argument(
+        "--transitions-out", type=Path, help="Write branch transition summaries as TSV."
+    )
+    discrete_model.add_argument(
+        "--json", action="store_true", help="Emit the model report as JSON."
+    )
     _add_manifest_argument(discrete_model)
     discrete_compare = discrete_evolution_subparsers.add_parser(
         "compare-models",
@@ -1560,20 +1965,32 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_compare.add_argument("table", type=Path)
     discrete_compare.add_argument("--trait", required=True)
     discrete_compare.add_argument("--taxon-column")
-    discrete_compare.add_argument("--left-model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
+    discrete_compare.add_argument(
+        "--left-model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+    )
     discrete_compare.add_argument(
         "--right-model",
         choices=("equal-rates", "symmetric", "all-rates-different"),
         default="all-rates-different",
     )
-    discrete_compare.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    discrete_compare.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    discrete_compare.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    discrete_compare.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     discrete_compare.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
     )
-    discrete_compare.add_argument("--table-out", type=Path, help="Write node-wise model differences as TSV.")
-    discrete_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    discrete_compare.add_argument(
+        "--table-out", type=Path, help="Write node-wise model differences as TSV."
+    )
+    discrete_compare.add_argument(
+        "--json", action="store_true", help="Emit the comparison report as JSON."
+    )
     _add_manifest_argument(discrete_compare)
     discrete_stochastic = discrete_evolution_subparsers.add_parser(
         "stochastic-map",
@@ -1583,26 +2000,46 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_stochastic.add_argument("table", type=Path)
     discrete_stochastic.add_argument("--trait", required=True)
     discrete_stochastic.add_argument("--taxon-column")
-    discrete_stochastic.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
-    discrete_stochastic.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    discrete_stochastic.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    discrete_stochastic.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+    )
+    discrete_stochastic.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    discrete_stochastic.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     discrete_stochastic.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
     )
     discrete_stochastic.add_argument("--replicates", type=int, default=100)
     discrete_stochastic.add_argument("--seed", type=int, default=0)
-    discrete_stochastic.add_argument("--collection-out", type=Path, help="Write stochastic maps as JSON.")
-    discrete_stochastic.add_argument("--summary-out", type=Path, help="Write stochastic-map summary as TSV.")
-    discrete_stochastic.add_argument("--json", action="store_true", help="Emit the stochastic-map collection as JSON.")
+    discrete_stochastic.add_argument(
+        "--collection-out", type=Path, help="Write stochastic maps as JSON."
+    )
+    discrete_stochastic.add_argument(
+        "--summary-out", type=Path, help="Write stochastic-map summary as TSV."
+    )
+    discrete_stochastic.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the stochastic-map collection as JSON.",
+    )
     _add_manifest_argument(discrete_stochastic)
     discrete_summarize_maps = discrete_evolution_subparsers.add_parser(
         "summarize-maps",
         help="Summarize a previously written stochastic-map collection.",
     )
     discrete_summarize_maps.add_argument("input_path", type=Path)
-    discrete_summarize_maps.add_argument("--summary-out", type=Path, help="Write stochastic-map summary as TSV.")
-    discrete_summarize_maps.add_argument("--json", action="store_true", help="Emit the stochastic-map summary as JSON.")
+    discrete_summarize_maps.add_argument(
+        "--summary-out", type=Path, help="Write stochastic-map summary as TSV."
+    )
+    discrete_summarize_maps.add_argument(
+        "--json", action="store_true", help="Emit the stochastic-map summary as JSON."
+    )
     _add_manifest_argument(discrete_summarize_maps)
     discrete_render = discrete_evolution_subparsers.add_parser(
         "render",
@@ -1612,16 +2049,28 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_render.add_argument("table", type=Path)
     discrete_render.add_argument("--trait", required=True)
     discrete_render.add_argument("--taxon-column")
-    discrete_render.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
-    discrete_render.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    discrete_render.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    discrete_render.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+    )
+    discrete_render.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    discrete_render.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     discrete_render.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
     )
-    discrete_render.add_argument("--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram")
+    discrete_render.add_argument(
+        "--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram"
+    )
     discrete_render.add_argument("--out", required=True, type=Path)
-    discrete_render.add_argument("--json", action="store_true", help="Emit the render result as JSON.")
+    discrete_render.add_argument(
+        "--json", action="store_true", help="Emit the render result as JSON."
+    )
     _add_manifest_argument(discrete_render)
     discrete_report = discrete_evolution_subparsers.add_parser(
         "report",
@@ -1631,30 +2080,48 @@ def build_parser() -> argparse.ArgumentParser:
     discrete_report.add_argument("table", type=Path)
     discrete_report.add_argument("--trait", required=True)
     discrete_report.add_argument("--taxon-column")
-    discrete_report.add_argument("--model", choices=("equal-rates", "symmetric", "all-rates-different"), default="equal-rates")
-    discrete_report.add_argument("--state-ordering", choices=("unordered", "ordered"), default="unordered")
-    discrete_report.add_argument("--ordered-states", help="Comma-delimited explicit ordered state vocabulary.")
+    discrete_report.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+    )
+    discrete_report.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    discrete_report.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
     discrete_report.add_argument(
         "--allowed-states",
         help="Comma-delimited allowed state vocabulary. When omitted, infer observed states from the table.",
     )
-    discrete_report.add_argument("--compare-model", choices=("equal-rates", "symmetric", "all-rates-different"))
+    discrete_report.add_argument(
+        "--compare-model", choices=("equal-rates", "symmetric", "all-rates-different")
+    )
     discrete_report.add_argument("--out", required=True, type=Path)
-    discrete_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    discrete_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(discrete_report)
 
     diversification = subparsers.add_parser(
         get_command_spec("diversification").name,
         help=get_command_spec("diversification").summary,
     )
-    diversification_subparsers = diversification.add_subparsers(dest="diversification_command", required=True)
+    diversification_subparsers = diversification.add_subparsers(
+        dest="diversification_command", required=True
+    )
     diversification_ltt = diversification_subparsers.add_parser(
         "ltt",
         help="Compute a lineage-through-time curve for one rooted ultrametric tree.",
     )
     diversification_ltt.add_argument("tree", type=Path)
-    diversification_ltt.add_argument("--out", type=Path, help="Write the lineage-through-time table as TSV.")
-    diversification_ltt.add_argument("--json", action="store_true", help="Emit the LTT report as JSON.")
+    diversification_ltt.add_argument(
+        "--out", type=Path, help="Write the lineage-through-time table as TSV."
+    )
+    diversification_ltt.add_argument(
+        "--json", action="store_true", help="Emit the LTT report as JSON."
+    )
     _add_manifest_argument(diversification_ltt)
     diversification_sampling = diversification_subparsers.add_parser(
         "sampling",
@@ -1664,7 +2131,9 @@ def build_parser() -> argparse.ArgumentParser:
     diversification_sampling.add_argument("table", type=Path)
     diversification_sampling.add_argument("--taxon-column")
     diversification_sampling.add_argument("--sampling-column")
-    diversification_sampling.add_argument("--json", action="store_true", help="Emit the sampling report as JSON.")
+    diversification_sampling.add_argument(
+        "--json", action="store_true", help="Emit the sampling report as JSON."
+    )
     _add_manifest_argument(diversification_sampling)
     diversification_estimate = diversification_subparsers.add_parser(
         "estimate",
@@ -1674,8 +2143,12 @@ def build_parser() -> argparse.ArgumentParser:
     diversification_estimate.add_argument("--metadata", type=Path)
     diversification_estimate.add_argument("--taxon-column")
     diversification_estimate.add_argument("--sampling-column")
-    diversification_estimate.add_argument("--model", choices=("yule", "birth-death"), default="birth-death")
-    diversification_estimate.add_argument("--json", action="store_true", help="Emit the diversification estimate as JSON.")
+    diversification_estimate.add_argument(
+        "--model", choices=("yule", "birth-death"), default="birth-death"
+    )
+    diversification_estimate.add_argument(
+        "--json", action="store_true", help="Emit the diversification estimate as JSON."
+    )
     _add_manifest_argument(diversification_estimate)
     diversification_compare = diversification_subparsers.add_parser(
         "compare-models",
@@ -1685,17 +2158,25 @@ def build_parser() -> argparse.ArgumentParser:
     diversification_compare.add_argument("--metadata", type=Path)
     diversification_compare.add_argument("--taxon-column")
     diversification_compare.add_argument("--sampling-column")
-    diversification_compare.add_argument("--json", action="store_true", help="Emit the model comparison as JSON.")
+    diversification_compare.add_argument(
+        "--json", action="store_true", help="Emit the model comparison as JSON."
+    )
     _add_manifest_argument(diversification_compare)
     diversification_clades = diversification_subparsers.add_parser(
         "clades",
         help="Detect clades with unusually high or low diversification.",
     )
     diversification_clades.add_argument("tree", type=Path)
-    diversification_clades.add_argument("--model", choices=("yule", "birth-death"), default="birth-death")
+    diversification_clades.add_argument(
+        "--model", choices=("yule", "birth-death"), default="birth-death"
+    )
     diversification_clades.add_argument("--min-tip-count", type=int, default=2)
-    diversification_clades.add_argument("--out", type=Path, help="Write the clade diversification table as TSV.")
-    diversification_clades.add_argument("--json", action="store_true", help="Emit the clade scan report as JSON.")
+    diversification_clades.add_argument(
+        "--out", type=Path, help="Write the clade diversification table as TSV."
+    )
+    diversification_clades.add_argument(
+        "--json", action="store_true", help="Emit the clade scan report as JSON."
+    )
     _add_manifest_argument(diversification_clades)
     diversification_trait = diversification_subparsers.add_parser(
         "trait-dependent",
@@ -1705,8 +2186,14 @@ def build_parser() -> argparse.ArgumentParser:
     diversification_trait.add_argument("table", type=Path)
     diversification_trait.add_argument("--trait", required=True)
     diversification_trait.add_argument("--taxon-column")
-    diversification_trait.add_argument("--out", type=Path, help="Write the trait-dependent diversification table as TSV.")
-    diversification_trait.add_argument("--json", action="store_true", help="Emit the trait-dependent report as JSON.")
+    diversification_trait.add_argument(
+        "--out",
+        type=Path,
+        help="Write the trait-dependent diversification table as TSV.",
+    )
+    diversification_trait.add_argument(
+        "--json", action="store_true", help="Emit the trait-dependent report as JSON."
+    )
     _add_manifest_argument(diversification_trait)
     diversification_report = diversification_subparsers.add_parser(
         "report",
@@ -1719,37 +2206,55 @@ def build_parser() -> argparse.ArgumentParser:
     diversification_report.add_argument("--traits", type=Path)
     diversification_report.add_argument("--trait")
     diversification_report.add_argument("--out", required=True, type=Path)
-    diversification_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    diversification_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(diversification_report)
 
-    distance = subparsers.add_parser(get_command_spec("distance").name, help=get_command_spec("distance").summary)
-    distance_subparsers = distance.add_subparsers(dest="distance_command", required=True)
-    distance_validate = distance_subparsers.add_parser("validate", help="Validate an imported long-form distance matrix.")
+    distance = subparsers.add_parser(
+        get_command_spec("distance").name, help=get_command_spec("distance").summary
+    )
+    distance_subparsers = distance.add_subparsers(
+        dest="distance_command", required=True
+    )
+    distance_validate = distance_subparsers.add_parser(
+        "validate", help="Validate an imported long-form distance matrix."
+    )
     distance_validate.add_argument("matrix", type=Path)
-    distance_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    distance_validate.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
     _add_manifest_argument(distance_validate)
     distance_quality = distance_subparsers.add_parser(
         "quality",
         help="Audit structural, saturation, and low-information risks for an imported distance matrix.",
     )
     distance_quality.add_argument("matrix", type=Path)
-    distance_quality.add_argument("--json", action="store_true", help="Emit the quality report as JSON.")
+    distance_quality.add_argument(
+        "--json", action="store_true", help="Emit the quality report as JSON."
+    )
     _add_manifest_argument(distance_quality)
     distance_assumptions = distance_subparsers.add_parser(
         "assumptions",
         help="Audit NJ and UPGMA assumptions for an imported distance matrix.",
     )
     distance_assumptions.add_argument("matrix", type=Path)
-    distance_assumptions.add_argument("--json", action="store_true", help="Emit the assumption audit as JSON.")
+    distance_assumptions.add_argument(
+        "--json", action="store_true", help="Emit the assumption audit as JSON."
+    )
     _add_manifest_argument(distance_assumptions)
     distance_build_tree = distance_subparsers.add_parser(
         "build-tree",
         help="Build a Neighbor-Joining or UPGMA tree from an imported distance matrix.",
     )
     distance_build_tree.add_argument("matrix", type=Path)
-    distance_build_tree.add_argument("--method", choices=("neighbor-joining", "upgma"), required=True)
+    distance_build_tree.add_argument(
+        "--method", choices=("neighbor-joining", "upgma"), required=True
+    )
     distance_build_tree.add_argument("--out", required=True, type=Path)
-    distance_build_tree.add_argument("--json", action="store_true", help="Emit the build report as JSON.")
+    distance_build_tree.add_argument(
+        "--json", action="store_true", help="Emit the build report as JSON."
+    )
     _add_manifest_argument(distance_build_tree)
     distance_report = distance_subparsers.add_parser(
         "report",
@@ -1757,30 +2262,42 @@ def build_parser() -> argparse.ArgumentParser:
     )
     distance_report.add_argument("matrix", type=Path)
     distance_report.add_argument("--out", required=True, type=Path)
-    distance_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    distance_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(distance_report)
     distance_explain = distance_subparsers.add_parser(
         "explain",
         help="Explain why distance-based tree building is approximate.",
     )
     distance_explain.add_argument("matrix", type=Path)
-    distance_explain.add_argument("--json", action="store_true", help="Emit the explanation as JSON.")
+    distance_explain.add_argument(
+        "--json", action="store_true", help="Emit the explanation as JSON."
+    )
     _add_manifest_argument(distance_explain)
     distance_reference = distance_subparsers.add_parser(
         "reference",
         help="Validate built-in reference examples for core distance calculations.",
     )
-    distance_reference.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    distance_reference.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
     _add_manifest_argument(distance_reference)
 
-    tree_set = subparsers.add_parser(get_command_spec("tree-set").name, help=get_command_spec("tree-set").summary)
-    tree_set_subparsers = tree_set.add_subparsers(dest="tree_set_command", required=True)
+    tree_set = subparsers.add_parser(
+        get_command_spec("tree-set").name, help=get_command_spec("tree-set").summary
+    )
+    tree_set_subparsers = tree_set.add_subparsers(
+        dest="tree_set_command", required=True
+    )
     tree_set_inspect = tree_set_subparsers.add_parser(
         "inspect",
         help="Inspect a tree set for tree count and topology diversity.",
     )
     tree_set_inspect.add_argument("tree_set", type=Path)
-    tree_set_inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    tree_set_inspect.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(tree_set_inspect)
     tree_set_consensus = tree_set_subparsers.add_parser(
         "consensus",
@@ -1788,44 +2305,60 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tree_set_consensus.add_argument("tree_set", type=Path)
     tree_set_consensus.add_argument("--out", required=True, type=Path)
-    tree_set_consensus.add_argument("--json", action="store_true", help="Emit the consensus report as JSON.")
+    tree_set_consensus.add_argument(
+        "--json", action="store_true", help="Emit the consensus report as JSON."
+    )
     _add_manifest_argument(tree_set_consensus)
     tree_set_clades = tree_set_subparsers.add_parser(
         "clade-frequencies",
         help="Compute clade support frequencies across a tree set.",
     )
     tree_set_clades.add_argument("tree_set", type=Path)
-    tree_set_clades.add_argument("--out", type=Path, help="Write the clade-frequency table as TSV.")
-    tree_set_clades.add_argument("--json", action="store_true", help="Emit the clade-frequency report as JSON.")
+    tree_set_clades.add_argument(
+        "--out", type=Path, help="Write the clade-frequency table as TSV."
+    )
+    tree_set_clades.add_argument(
+        "--json", action="store_true", help="Emit the clade-frequency report as JSON."
+    )
     _add_manifest_argument(tree_set_clades)
     tree_set_distances = tree_set_subparsers.add_parser(
         "distance-matrix",
         help="Compute pairwise RF distances across a tree set.",
     )
     tree_set_distances.add_argument("tree_set", type=Path)
-    tree_set_distances.add_argument("--out", type=Path, help="Write the pairwise distance table as TSV.")
-    tree_set_distances.add_argument("--json", action="store_true", help="Emit the distance report as JSON.")
+    tree_set_distances.add_argument(
+        "--out", type=Path, help="Write the pairwise distance table as TSV."
+    )
+    tree_set_distances.add_argument(
+        "--json", action="store_true", help="Emit the distance report as JSON."
+    )
     _add_manifest_argument(tree_set_distances)
     tree_set_clusters = tree_set_subparsers.add_parser(
         "cluster",
         help="Cluster trees by identical rooted topology signatures.",
     )
     tree_set_clusters.add_argument("tree_set", type=Path)
-    tree_set_clusters.add_argument("--json", action="store_true", help="Emit the cluster report as JSON.")
+    tree_set_clusters.add_argument(
+        "--json", action="store_true", help="Emit the cluster report as JSON."
+    )
     _add_manifest_argument(tree_set_clusters)
     tree_set_unstable_taxa = tree_set_subparsers.add_parser(
         "unstable-taxa",
         help="Detect taxa with inconsistent placements across a tree set.",
     )
     tree_set_unstable_taxa.add_argument("tree_set", type=Path)
-    tree_set_unstable_taxa.add_argument("--json", action="store_true", help="Emit the instability report as JSON.")
+    tree_set_unstable_taxa.add_argument(
+        "--json", action="store_true", help="Emit the instability report as JSON."
+    )
     _add_manifest_argument(tree_set_unstable_taxa)
     tree_set_unstable_clades = tree_set_subparsers.add_parser(
         "unstable-clades",
         help="Detect non-unanimous and conflicting clades across a tree set.",
     )
     tree_set_unstable_clades.add_argument("tree_set", type=Path)
-    tree_set_unstable_clades.add_argument("--json", action="store_true", help="Emit the instability report as JSON.")
+    tree_set_unstable_clades.add_argument(
+        "--json", action="store_true", help="Emit the instability report as JSON."
+    )
     _add_manifest_argument(tree_set_unstable_clades)
     tree_set_compare = tree_set_subparsers.add_parser(
         "compare",
@@ -1833,7 +2366,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tree_set_compare.add_argument("left", type=Path)
     tree_set_compare.add_argument("right", type=Path)
-    tree_set_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    tree_set_compare.add_argument(
+        "--json", action="store_true", help="Emit the comparison report as JSON."
+    )
     _add_manifest_argument(tree_set_compare)
     tree_set_diversity = tree_set_subparsers.add_parser(
         "diversity-compare",
@@ -1841,7 +2376,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tree_set_diversity.add_argument("left", type=Path)
     tree_set_diversity.add_argument("right", type=Path)
-    tree_set_diversity.add_argument("--json", action="store_true", help="Emit the diversity report as JSON.")
+    tree_set_diversity.add_argument(
+        "--json", action="store_true", help="Emit the diversity report as JSON."
+    )
     _add_manifest_argument(tree_set_diversity)
     tree_set_multimodality = tree_set_subparsers.add_parser(
         "multimodality",
@@ -1850,7 +2387,9 @@ def build_parser() -> argparse.ArgumentParser:
     tree_set_multimodality.add_argument("tree_set", type=Path)
     tree_set_multimodality.add_argument("--min-mode-frequency", type=float, default=0.2)
     tree_set_multimodality.add_argument("--min-mode-count", type=int, default=2)
-    tree_set_multimodality.add_argument("--json", action="store_true", help="Emit the multimodality report as JSON.")
+    tree_set_multimodality.add_argument(
+        "--json", action="store_true", help="Emit the multimodality report as JSON."
+    )
     _add_manifest_argument(tree_set_multimodality)
     tree_set_conflicts = tree_set_subparsers.add_parser(
         "clade-conflicts",
@@ -1858,7 +2397,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tree_set_conflicts.add_argument("tree_set", type=Path)
     tree_set_conflicts.add_argument("--credibility-threshold", type=float, default=0.5)
-    tree_set_conflicts.add_argument("--json", action="store_true", help="Emit the clade-conflict report as JSON.")
+    tree_set_conflicts.add_argument(
+        "--json", action="store_true", help="Emit the clade-conflict report as JSON."
+    )
     _add_manifest_argument(tree_set_conflicts)
     tree_set_summary = tree_set_subparsers.add_parser(
         "conclusion-summary",
@@ -1869,7 +2410,9 @@ def build_parser() -> argparse.ArgumentParser:
     tree_set_summary.add_argument("--uncertain-min-frequency", type=float, default=0.3)
     tree_set_summary.add_argument("--uncertain-max-frequency", type=float, default=0.7)
     tree_set_summary.add_argument("--credibility-threshold", type=float, default=0.5)
-    tree_set_summary.add_argument("--json", action="store_true", help="Emit the conclusion summary as JSON.")
+    tree_set_summary.add_argument(
+        "--json", action="store_true", help="Emit the conclusion summary as JSON."
+    )
     _add_manifest_argument(tree_set_summary)
     tree_set_package = tree_set_subparsers.add_parser(
         "package",
@@ -1878,7 +2421,9 @@ def build_parser() -> argparse.ArgumentParser:
     tree_set_package.add_argument("tree_set", type=Path)
     tree_set_package.add_argument("--out-dir", required=True, type=Path)
     tree_set_package.add_argument("--layout", default="phylogram")
-    tree_set_package.add_argument("--json", action="store_true", help="Emit the package result as JSON.")
+    tree_set_package.add_argument(
+        "--json", action="store_true", help="Emit the package result as JSON."
+    )
     _add_manifest_argument(tree_set_package)
     tree_set_report = tree_set_subparsers.add_parser(
         "report",
@@ -1886,11 +2431,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tree_set_report.add_argument("tree_set", type=Path)
     tree_set_report.add_argument("--out", required=True, type=Path)
-    tree_set_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    tree_set_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(tree_set_report)
 
-    simulate = subparsers.add_parser(get_command_spec("simulate").name, help=get_command_spec("simulate").summary)
-    simulate_subparsers = simulate.add_subparsers(dest="simulate_command", required=True)
+    simulate = subparsers.add_parser(
+        get_command_spec("simulate").name, help=get_command_spec("simulate").summary
+    )
+    simulate_subparsers = simulate.add_subparsers(
+        dest="simulate_command", required=True
+    )
     simulate_birth_death = simulate_subparsers.add_parser(
         "tree-birth-death",
         help="Simulate one or more trees under a birth-death process.",
@@ -1901,7 +2452,9 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_birth_death.add_argument("--death-rate", type=float, default=0.25)
     simulate_birth_death.add_argument("--seed", type=int, default=1)
     simulate_birth_death.add_argument("--out", required=True, type=Path)
-    simulate_birth_death.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    simulate_birth_death.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
     _add_manifest_argument(simulate_birth_death)
     simulate_coalescent = simulate_subparsers.add_parser(
         "tree-coalescent",
@@ -1912,7 +2465,9 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_coalescent.add_argument("--population-size", type=float, default=1.0)
     simulate_coalescent.add_argument("--seed", type=int, default=1)
     simulate_coalescent.add_argument("--out", required=True, type=Path)
-    simulate_coalescent.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    simulate_coalescent.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
     _add_manifest_argument(simulate_coalescent)
     simulate_brownian = simulate_subparsers.add_parser(
         "traits-brownian",
@@ -1923,7 +2478,9 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_brownian.add_argument("--sigma", type=float, default=1.0)
     simulate_brownian.add_argument("--seed", type=int, default=1)
     simulate_brownian.add_argument("--out", required=True, type=Path)
-    simulate_brownian.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    simulate_brownian.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
     _add_manifest_argument(simulate_brownian)
     simulate_ou = simulate_subparsers.add_parser(
         "traits-ou",
@@ -1936,7 +2493,9 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_ou.add_argument("--theta", type=float, default=0.0)
     simulate_ou.add_argument("--seed", type=int, default=1)
     simulate_ou.add_argument("--out", required=True, type=Path)
-    simulate_ou.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    simulate_ou.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
     _add_manifest_argument(simulate_ou)
     simulate_discrete = simulate_subparsers.add_parser(
         "traits-discrete",
@@ -1948,7 +2507,9 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_discrete.add_argument("--root-state")
     simulate_discrete.add_argument("--seed", type=int, default=1)
     simulate_discrete.add_argument("--out", required=True, type=Path)
-    simulate_discrete.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    simulate_discrete.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
     _add_manifest_argument(simulate_discrete)
     simulate_dna = simulate_subparsers.add_parser(
         "alignment-dna",
@@ -1959,7 +2520,9 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_dna.add_argument("--substitution-rate", type=float, default=1.0)
     simulate_dna.add_argument("--seed", type=int, default=1)
     simulate_dna.add_argument("--out", required=True, type=Path)
-    simulate_dna.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    simulate_dna.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
     _add_manifest_argument(simulate_dna)
     simulate_protein = simulate_subparsers.add_parser(
         "alignment-protein",
@@ -1970,24 +2533,34 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_protein.add_argument("--substitution-rate", type=float, default=1.0)
     simulate_protein.add_argument("--seed", type=int, default=1)
     simulate_protein.add_argument("--out", required=True, type=Path)
-    simulate_protein.add_argument("--json", action="store_true", help="Emit the simulation report as JSON.")
+    simulate_protein.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
     _add_manifest_argument(simulate_protein)
 
-    benchmark = subparsers.add_parser(get_command_spec("benchmark").name, help=get_command_spec("benchmark").summary)
-    benchmark_subparsers = benchmark.add_subparsers(dest="benchmark_command", required=True)
+    benchmark = subparsers.add_parser(
+        get_command_spec("benchmark").name, help=get_command_spec("benchmark").summary
+    )
+    benchmark_subparsers = benchmark.add_subparsers(
+        dest="benchmark_command", required=True
+    )
     benchmark_validate = benchmark_subparsers.add_parser(
         "tree-validation",
         help="Benchmark tree validation across size classes.",
     )
     benchmark_validate.add_argument("--replicates", type=int, default=3)
-    benchmark_validate.add_argument("--json", action="store_true", help="Emit the benchmark report as JSON.")
+    benchmark_validate.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
     _add_manifest_argument(benchmark_validate)
     benchmark_compare = benchmark_subparsers.add_parser(
         "tree-comparison",
         help="Benchmark tree comparison across increasing taxon counts.",
     )
     benchmark_compare.add_argument("--replicates", type=int, default=3)
-    benchmark_compare.add_argument("--json", action="store_true", help="Emit the benchmark report as JSON.")
+    benchmark_compare.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
     _add_manifest_argument(benchmark_compare)
     benchmark_alignment = benchmark_subparsers.add_parser(
         "alignment-diagnostics",
@@ -1995,10 +2568,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     benchmark_alignment.add_argument("--replicates", type=int, default=3)
     benchmark_alignment.add_argument("--sequence-length", type=int, default=128)
-    benchmark_alignment.add_argument("--json", action="store_true", help="Emit the benchmark report as JSON.")
+    benchmark_alignment.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
     _add_manifest_argument(benchmark_alignment)
 
-    validate = subparsers.add_parser(get_command_spec("validate").name, help=get_command_spec("validate").summary)
+    validate = subparsers.add_parser(
+        get_command_spec("validate").name, help=get_command_spec("validate").summary
+    )
     validate.add_argument("tree", type=Path)
     validate.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     validate.add_argument("--allow-duplicates", action="store_true")
@@ -2006,20 +2583,28 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--require-rooted", action="store_true")
     validate.add_argument("--require-ultrametric", action="store_true")
     validate.add_argument("--strict", action="store_true")
-    validate.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    validate.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(validate)
 
-    inspect = subparsers.add_parser(get_command_spec("inspect").name, help=get_command_spec("inspect").summary)
+    inspect = subparsers.add_parser(
+        get_command_spec("inspect").name, help=get_command_spec("inspect").summary
+    )
     inspect.add_argument("tree", type=Path)
     inspect.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     inspect.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(inspect)
 
-    normalize = subparsers.add_parser(get_command_spec("normalize").name, help=get_command_spec("normalize").summary)
+    normalize = subparsers.add_parser(
+        get_command_spec("normalize").name, help=get_command_spec("normalize").summary
+    )
     normalize.add_argument("tree", type=Path)
     normalize.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     normalize.add_argument("--out", required=True, type=Path)
-    normalize.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
+    normalize.add_argument(
+        "--json", action="store_true", help="Emit the normalization result as JSON."
+    )
     _add_manifest_argument(normalize)
 
     normalize_taxa = subparsers.add_parser(
@@ -2028,14 +2613,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     normalize_taxa.add_argument("tree", type=Path)
     normalize_taxa.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    normalize_taxa.add_argument("--policy", choices=("spaces-to-underscores",), required=True)
+    normalize_taxa.add_argument(
+        "--policy", choices=("spaces-to-underscores",), required=True
+    )
     normalize_taxa.add_argument("--out", required=True, type=Path)
     normalize_taxa.add_argument("--mapping-out", type=Path)
-    normalize_taxa.add_argument("--json", action="store_true", help="Emit the normalization result as JSON.")
+    normalize_taxa.add_argument(
+        "--json", action="store_true", help="Emit the normalization result as JSON."
+    )
     _add_manifest_argument(normalize_taxa)
 
-    taxonomy = subparsers.add_parser(get_command_spec("taxonomy").name, help=get_command_spec("taxonomy").summary)
-    taxonomy_subparsers = taxonomy.add_subparsers(dest="taxonomy_command", required=True)
+    taxonomy = subparsers.add_parser(
+        get_command_spec("taxonomy").name, help=get_command_spec("taxonomy").summary
+    )
+    taxonomy_subparsers = taxonomy.add_subparsers(
+        dest="taxonomy_command", required=True
+    )
     taxonomy_synonyms = taxonomy_subparsers.add_parser(
         "synonyms",
         help="Audit a tree against a configurable taxon synonym table.",
@@ -2043,7 +2636,9 @@ def build_parser() -> argparse.ArgumentParser:
     taxonomy_synonyms.add_argument("tree", type=Path)
     taxonomy_synonyms.add_argument("--synonym-table", required=True, type=Path)
     taxonomy_synonyms.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    taxonomy_synonyms.add_argument("--json", action="store_true", help="Emit the audit as JSON.")
+    taxonomy_synonyms.add_argument(
+        "--json", action="store_true", help="Emit the audit as JSON."
+    )
     _add_manifest_argument(taxonomy_synonyms)
     taxonomy_resolve = taxonomy_subparsers.add_parser(
         "resolve-synonyms",
@@ -2052,18 +2647,26 @@ def build_parser() -> argparse.ArgumentParser:
     taxonomy_resolve.add_argument("tree", type=Path)
     taxonomy_resolve.add_argument("--synonym-table", required=True, type=Path)
     taxonomy_resolve.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    taxonomy_resolve.add_argument("--resolution-policy", choices=("reject-ambiguous",), default="reject-ambiguous")
+    taxonomy_resolve.add_argument(
+        "--resolution-policy", choices=("reject-ambiguous",), default="reject-ambiguous"
+    )
     taxonomy_resolve.add_argument("--out", required=True, type=Path)
     taxonomy_resolve.add_argument("--mapping-out", type=Path)
-    taxonomy_resolve.add_argument("--json", action="store_true", help="Emit the resolution report as JSON.")
+    taxonomy_resolve.add_argument(
+        "--json", action="store_true", help="Emit the resolution report as JSON."
+    )
     _add_manifest_argument(taxonomy_resolve)
     taxonomy_namespaces = taxonomy_subparsers.add_parser(
         "namespaces",
         help="Classify tree tip labels into accession, species, sample, isolate, or user-defined namespaces.",
     )
     taxonomy_namespaces.add_argument("tree", type=Path)
-    taxonomy_namespaces.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    taxonomy_namespaces.add_argument("--json", action="store_true", help="Emit the namespace report as JSON.")
+    taxonomy_namespaces.add_argument(
+        "--format", choices=("newick", "nexus", "phyloxml")
+    )
+    taxonomy_namespaces.add_argument(
+        "--json", action="store_true", help="Emit the namespace report as JSON."
+    )
     _add_manifest_argument(taxonomy_namespaces)
     taxonomy_ranks = taxonomy_subparsers.add_parser(
         "rank-consistency",
@@ -2071,7 +2674,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     taxonomy_ranks.add_argument("tree", type=Path)
     taxonomy_ranks.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    taxonomy_ranks.add_argument("--json", action="store_true", help="Emit the rank audit as JSON.")
+    taxonomy_ranks.add_argument(
+        "--json", action="store_true", help="Emit the rank audit as JSON."
+    )
     _add_manifest_argument(taxonomy_ranks)
     taxonomy_accepted = taxonomy_subparsers.add_parser(
         "accepted-names",
@@ -2081,7 +2686,9 @@ def build_parser() -> argparse.ArgumentParser:
     taxonomy_accepted.add_argument("--synonym-table", required=True, type=Path)
     taxonomy_accepted.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
     taxonomy_accepted.add_argument("--out", type=Path)
-    taxonomy_accepted.add_argument("--json", action="store_true", help="Emit the accepted-name export as JSON.")
+    taxonomy_accepted.add_argument(
+        "--json", action="store_true", help="Emit the accepted-name export as JSON."
+    )
     _add_manifest_argument(taxonomy_accepted)
     taxonomy_audit = taxonomy_subparsers.add_parser(
         "audit",
@@ -2090,7 +2697,9 @@ def build_parser() -> argparse.ArgumentParser:
     taxonomy_audit.add_argument("tree", type=Path)
     taxonomy_audit.add_argument("--synonym-table", type=Path)
     taxonomy_audit.add_argument("--format", choices=("newick", "nexus", "phyloxml"))
-    taxonomy_audit.add_argument("--json", action="store_true", help="Emit the taxon audit as JSON.")
+    taxonomy_audit.add_argument(
+        "--json", action="store_true", help="Emit the taxon audit as JSON."
+    )
     _add_manifest_argument(taxonomy_audit)
     taxonomy_loss = taxonomy_subparsers.add_parser(
         "loss",
@@ -2103,7 +2712,9 @@ def build_parser() -> argparse.ArgumentParser:
     taxonomy_loss.add_argument("--filtered-alignment", type=Path)
     taxonomy_loss.add_argument("--inference-tree", type=Path)
     taxonomy_loss.add_argument("--reported-taxa", type=Path)
-    taxonomy_loss.add_argument("--json", action="store_true", help="Emit the workflow loss report as JSON.")
+    taxonomy_loss.add_argument(
+        "--json", action="store_true", help="Emit the workflow loss report as JSON."
+    )
     _add_manifest_argument(taxonomy_loss)
     taxonomy_stability = taxonomy_subparsers.add_parser(
         "stability",
@@ -2116,29 +2727,49 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="LABEL=PATH",
         help="Named run source in the form label=/path/to/tree_or_alignment_or_table",
     )
-    taxonomy_stability.add_argument("--json", action="store_true", help="Emit the stability report as JSON.")
+    taxonomy_stability.add_argument(
+        "--json", action="store_true", help="Emit the stability report as JSON."
+    )
     _add_manifest_argument(taxonomy_stability)
 
-    topology = subparsers.add_parser(get_command_spec("topology").name, help=get_command_spec("topology").summary)
-    topology_subparsers = topology.add_subparsers(dest="topology_command", required=True)
-    topology_outgroup = topology_subparsers.add_parser("root-outgroup", help="Root a tree on explicit outgroup taxa.")
+    topology = subparsers.add_parser(
+        get_command_spec("topology").name, help=get_command_spec("topology").summary
+    )
+    topology_subparsers = topology.add_subparsers(
+        dest="topology_command", required=True
+    )
+    topology_outgroup = topology_subparsers.add_parser(
+        "root-outgroup", help="Root a tree on explicit outgroup taxa."
+    )
     topology_outgroup.add_argument("tree", type=Path)
     topology_outgroup.add_argument("--taxa", nargs="+", required=True)
     topology_outgroup.add_argument("--out", required=True, type=Path)
-    topology_outgroup.add_argument("--json", action="store_true", help="Emit the rooting report as JSON.")
+    topology_outgroup.add_argument(
+        "--json", action="store_true", help="Emit the rooting report as JSON."
+    )
     _add_manifest_argument(topology_outgroup)
-    topology_midpoint = topology_subparsers.add_parser("reroot-midpoint", help="Reroot a tree by midpoint.")
+    topology_midpoint = topology_subparsers.add_parser(
+        "reroot-midpoint", help="Reroot a tree by midpoint."
+    )
     topology_midpoint.add_argument("tree", type=Path)
     topology_midpoint.add_argument("--out", required=True, type=Path)
-    topology_midpoint.add_argument("--json", action="store_true", help="Emit the rerooting report as JSON.")
+    topology_midpoint.add_argument(
+        "--json", action="store_true", help="Emit the rerooting report as JSON."
+    )
     _add_manifest_argument(topology_midpoint)
-    topology_unroot = topology_subparsers.add_parser("unroot", help="Convert a rooted tree into an explicit unrooted trifurcation.")
+    topology_unroot = topology_subparsers.add_parser(
+        "unroot", help="Convert a rooted tree into an explicit unrooted trifurcation."
+    )
     topology_unroot.add_argument("tree", type=Path)
     topology_unroot.add_argument("--out", required=True, type=Path)
-    topology_unroot.add_argument("--json", action="store_true", help="Emit the unrooting report as JSON.")
+    topology_unroot.add_argument(
+        "--json", action="store_true", help="Emit the unrooting report as JSON."
+    )
     _add_manifest_argument(topology_unroot)
 
-    compare = subparsers.add_parser(get_command_spec("compare").name, help=get_command_spec("compare").summary)
+    compare = subparsers.add_parser(
+        get_command_spec("compare").name, help=get_command_spec("compare").summary
+    )
     compare.add_argument("left")
     compare.add_argument("right")
     compare.add_argument("third", nargs="?")
@@ -2146,32 +2777,44 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(compare)
 
-    annotate = subparsers.add_parser(get_command_spec("annotate").name, help=get_command_spec("annotate").summary)
+    annotate = subparsers.add_parser(
+        get_command_spec("annotate").name, help=get_command_spec("annotate").summary
+    )
     annotate.add_argument("tree", type=Path)
     annotate.add_argument("--metadata", required=True, type=Path)
     annotate.add_argument("--taxon-column")
     annotate.add_argument("--out", type=Path)
     annotate.add_argument("--joined-out", type=Path)
-    annotate.add_argument("--json", action="store_true", help="Emit the linkage report as JSON.")
+    annotate.add_argument(
+        "--json", action="store_true", help="Emit the linkage report as JSON."
+    )
     _add_manifest_argument(annotate)
 
-    diagnose = subparsers.add_parser(get_command_spec("diagnose").name, help=get_command_spec("diagnose").summary)
+    diagnose = subparsers.add_parser(
+        get_command_spec("diagnose").name, help=get_command_spec("diagnose").summary
+    )
     diagnose.add_argument("target")
     diagnose.add_argument("tree", nargs="?", type=Path)
     diagnose.add_argument("--metadata", type=Path)
     diagnose.add_argument("--taxon-column")
     diagnose.add_argument("--out", type=Path)
     diagnose.add_argument("--tolerance", type=float, default=1e-6)
-    diagnose.add_argument("--json", action="store_true", help="Emit the report as JSON.")
+    diagnose.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
     _add_manifest_argument(diagnose)
 
-    render = subparsers.add_parser(get_command_spec("render").name, help=get_command_spec("render").summary)
+    render = subparsers.add_parser(
+        get_command_spec("render").name, help=get_command_spec("render").summary
+    )
     render.add_argument("tree", type=Path)
     render.add_argument("--metadata", type=Path)
     render.add_argument("--traits", type=Path)
     render.add_argument("--taxon-column")
     render.add_argument("--label-column")
-    render.add_argument("--layout", choices=["cladogram", "phylogram", "circular"], default="cladogram")
+    render.add_argument(
+        "--layout", choices=["cladogram", "phylogram", "circular"], default="cladogram"
+    )
     render.add_argument("--support-labels", action="store_true")
     render.add_argument("--categorical-column")
     render.add_argument("--continuous-column")
@@ -2180,11 +2823,17 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("--collapse-clades")
     render.add_argument("--package-dir", type=Path)
     render.add_argument("--out", required=True, type=Path)
-    render.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    render.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(render)
 
-    evidence = subparsers.add_parser(get_command_spec("evidence").name, help=get_command_spec("evidence").summary)
-    evidence_subparsers = evidence.add_subparsers(dest="evidence_command", required=True)
+    evidence = subparsers.add_parser(
+        get_command_spec("evidence").name, help=get_command_spec("evidence").summary
+    )
+    evidence_subparsers = evidence.add_subparsers(
+        dest="evidence_command", required=True
+    )
     evidence_bundle = evidence_subparsers.add_parser(
         "bundle",
         help="Bundle explicit phylogenetics inputs and outputs as evidence.",
@@ -2192,26 +2841,44 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_bundle.add_argument("--inputs", nargs="+", required=True, type=Path)
     evidence_bundle.add_argument("--outputs", nargs="+", required=True, type=Path)
     evidence_bundle.add_argument("--out", required=True, type=Path)
-    evidence_bundle.add_argument("--json", action="store_true", help="Emit the bundle report as JSON.")
+    evidence_bundle.add_argument(
+        "--json", action="store_true", help="Emit the bundle report as JSON."
+    )
     _add_manifest_argument(evidence_bundle)
-    evidence_validate = evidence_subparsers.add_parser("validate", help="Validate an existing evidence bundle.")
+    evidence_validate = evidence_subparsers.add_parser(
+        "validate", help="Validate an existing evidence bundle."
+    )
     evidence_validate.add_argument("bundle_root", type=Path)
-    evidence_validate.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    evidence_validate.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
     _add_manifest_argument(evidence_validate)
 
-    report = subparsers.add_parser(get_command_spec("report").name, help=get_command_spec("report").summary)
+    report = subparsers.add_parser(
+        get_command_spec("report").name, help=get_command_spec("report").summary
+    )
     report_subparsers = report.add_subparsers(dest="report_command", required=True)
-    report_tree = report_subparsers.add_parser("tree", help="Render a deterministic single-tree HTML report.")
+    report_tree = report_subparsers.add_parser(
+        "tree", help="Render a deterministic single-tree HTML report."
+    )
     report_tree.add_argument("tree", type=Path)
     report_tree.add_argument("--out", required=True, type=Path)
-    report_tree.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    report_tree.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(report_tree)
-    report_alignment = report_subparsers.add_parser("alignment", help="Render an alignment-only HTML diagnostic report.")
+    report_alignment = report_subparsers.add_parser(
+        "alignment", help="Render an alignment-only HTML diagnostic report."
+    )
     report_alignment.add_argument("--alignment", required=True, type=Path)
     report_alignment.add_argument("--out", required=True, type=Path)
-    report_alignment.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    report_alignment.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(report_alignment)
-    report_dataset = report_subparsers.add_parser("dataset", help="Render a tree plus table dataset HTML report.")
+    report_dataset = report_subparsers.add_parser(
+        "dataset", help="Render a tree plus table dataset HTML report."
+    )
     report_dataset.add_argument("--tree", required=True, type=Path)
     report_dataset.add_argument("--metadata", required=True, type=Path)
     report_dataset.add_argument("--traits", type=Path)
@@ -2219,7 +2886,9 @@ def build_parser() -> argparse.ArgumentParser:
     report_dataset.add_argument("--tip-dates", type=Path)
     report_dataset.add_argument("--calibrations", type=Path)
     report_dataset.add_argument("--out", required=True, type=Path)
-    report_dataset.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    report_dataset.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(report_dataset)
     report_phylo_inputs = report_subparsers.add_parser(
         "phylo-inputs",
@@ -2228,9 +2897,13 @@ def build_parser() -> argparse.ArgumentParser:
     report_phylo_inputs.add_argument("--tree", required=True, type=Path)
     report_phylo_inputs.add_argument("--alignment", required=True, type=Path)
     report_phylo_inputs.add_argument("--out", required=True, type=Path)
-    report_phylo_inputs.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    report_phylo_inputs.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(report_phylo_inputs)
-    report_taxonomy = report_subparsers.add_parser("taxonomy", help="Render a reviewer-facing taxon audit HTML report.")
+    report_taxonomy = report_subparsers.add_parser(
+        "taxonomy", help="Render a reviewer-facing taxon audit HTML report."
+    )
     report_taxonomy.add_argument("--tree", required=True, type=Path)
     report_taxonomy.add_argument("--synonym-table", type=Path)
     report_taxonomy.add_argument("--metadata", type=Path)
@@ -2240,7 +2913,9 @@ def build_parser() -> argparse.ArgumentParser:
     report_taxonomy.add_argument("--inference-tree", type=Path)
     report_taxonomy.add_argument("--reported-taxa", type=Path)
     report_taxonomy.add_argument("--out", required=True, type=Path)
-    report_taxonomy.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    report_taxonomy.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(report_taxonomy)
     report_workflow_validation = report_subparsers.add_parser(
         "workflow-validation",
@@ -2248,7 +2923,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     report_workflow_validation.add_argument("--fixtures-root", type=Path)
     report_workflow_validation.add_argument("--out", required=True, type=Path)
-    report_workflow_validation.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    report_workflow_validation.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(report_workflow_validation)
     report_release_gate = report_subparsers.add_parser(
         "release-gate",
@@ -2256,88 +2933,148 @@ def build_parser() -> argparse.ArgumentParser:
     )
     report_release_gate.add_argument("--fixtures-root", type=Path)
     report_release_gate.add_argument("--out", required=True, type=Path)
-    report_release_gate.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    report_release_gate.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(report_release_gate)
 
-    demo = subparsers.add_parser(get_command_spec("demo").name, help=get_command_spec("demo").summary)
+    demo = subparsers.add_parser(
+        get_command_spec("demo").name, help=get_command_spec("demo").summary
+    )
     demo_subparsers = demo.add_subparsers(dest="demo_command", required=True)
-    demo_run = demo_subparsers.add_parser("run", help="Run the repository capability demo workflow.")
+    demo_run = demo_subparsers.add_parser(
+        "run", help="Run the repository capability demo workflow."
+    )
     demo_run.add_argument("--out", required=True, type=Path)
-    demo_run.add_argument("--json", action="store_true", help="Emit the demo result as JSON.")
+    demo_run.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
     _add_manifest_argument(demo_run)
 
-    adapter = subparsers.add_parser(get_command_spec("adapter").name, help=get_command_spec("adapter").summary)
+    adapter = subparsers.add_parser(
+        get_command_spec("adapter").name, help=get_command_spec("adapter").summary
+    )
     adapter_subparsers = adapter.add_subparsers(dest="adapter_command", required=True)
-    adapter_inspect = adapter_subparsers.add_parser("inspect", help="Report external engine version metadata.")
-    adapter_inspect.add_argument("engine_name", choices=("mafft", "trimal", "iqtree", "FastTree", "MrBayes"))
+    adapter_inspect = adapter_subparsers.add_parser(
+        "inspect", help="Report external engine version metadata."
+    )
+    adapter_inspect.add_argument(
+        "engine_name", choices=("mafft", "trimal", "iqtree", "FastTree", "MrBayes")
+    )
     adapter_inspect.add_argument("--executable", type=str)
-    adapter_inspect.add_argument("--json", action="store_true", help="Emit the adapter report as JSON.")
+    adapter_inspect.add_argument(
+        "--json", action="store_true", help="Emit the adapter report as JSON."
+    )
     _add_manifest_argument(adapter_inspect)
-    adapter_report = adapter_subparsers.add_parser("report", help="Render an HTML report from an engine workflow manifest.")
+    adapter_report = adapter_subparsers.add_parser(
+        "report", help="Render an HTML report from an engine workflow manifest."
+    )
     adapter_report.add_argument("manifest_path", type=Path)
     adapter_report.add_argument("--out", required=True, type=Path)
-    adapter_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    adapter_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(adapter_report)
-    adapter_align = adapter_subparsers.add_parser("align", help="Run multiple-sequence alignment on unaligned FASTA.")
+    adapter_align = adapter_subparsers.add_parser(
+        "align", help="Run multiple-sequence alignment on unaligned FASTA."
+    )
     adapter_align.add_argument("input_path", type=Path)
     adapter_align.add_argument("--out", required=True, type=Path)
     adapter_align.add_argument("--executable", type=str)
-    adapter_align.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_align.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_align)
-    adapter_trim = adapter_subparsers.add_parser("trim", help="Run external alignment trimming.")
+    adapter_trim = adapter_subparsers.add_parser(
+        "trim", help="Run external alignment trimming."
+    )
     adapter_trim.add_argument("input_path", type=Path)
     adapter_trim.add_argument("--out", required=True, type=Path)
     adapter_trim.add_argument("--gap-threshold", type=float, default=0.1)
     adapter_trim.add_argument("--executable", type=str)
-    adapter_trim.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_trim.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_trim)
-    adapter_model = adapter_subparsers.add_parser("model-select", help="Run external sequence-model selection.")
+    adapter_model = adapter_subparsers.add_parser(
+        "model-select", help="Run external sequence-model selection."
+    )
     adapter_model.add_argument("input_path", type=Path)
     adapter_model.add_argument("--out-dir", required=True, type=Path)
     adapter_model.add_argument("--prefix", default="model-selection")
-    adapter_model.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_model.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
     adapter_model.add_argument("--executable", type=str)
-    adapter_model.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_model.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_model)
-    adapter_ml = adapter_subparsers.add_parser("infer-ml", help="Run maximum-likelihood tree inference.")
+    adapter_ml = adapter_subparsers.add_parser(
+        "infer-ml", help="Run maximum-likelihood tree inference."
+    )
     adapter_ml.add_argument("input_path", type=Path)
     adapter_ml.add_argument("--out-dir", required=True, type=Path)
     adapter_ml.add_argument("--model", required=True)
     adapter_ml.add_argument("--prefix", default="maximum-likelihood")
-    adapter_ml.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_ml.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
     adapter_ml.add_argument("--executable", type=str)
-    adapter_ml.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_ml.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_ml)
-    adapter_bootstrap = adapter_subparsers.add_parser("bootstrap", help="Run bootstrap support estimation.")
+    adapter_bootstrap = adapter_subparsers.add_parser(
+        "bootstrap", help="Run bootstrap support estimation."
+    )
     adapter_bootstrap.add_argument("input_path", type=Path)
     adapter_bootstrap.add_argument("--out-dir", required=True, type=Path)
     adapter_bootstrap.add_argument("--model", required=True)
     adapter_bootstrap.add_argument("--replicates", type=int, default=1000)
     adapter_bootstrap.add_argument("--prefix", default="bootstrap-support")
-    adapter_bootstrap.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_bootstrap.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
     adapter_bootstrap.add_argument("--executable", type=str)
-    adapter_bootstrap.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_bootstrap.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_bootstrap)
-    adapter_consensus = adapter_subparsers.add_parser("consensus", help="Build a consensus tree from bootstrap trees.")
+    adapter_consensus = adapter_subparsers.add_parser(
+        "consensus", help="Build a consensus tree from bootstrap trees."
+    )
     adapter_consensus.add_argument("input_path", type=Path)
     adapter_consensus.add_argument("--out-dir", required=True, type=Path)
     adapter_consensus.add_argument("--prefix", default="bootstrap-consensus")
     adapter_consensus.add_argument("--minimum-support", type=float, default=0.5)
     adapter_consensus.add_argument("--executable", type=str)
-    adapter_consensus.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_consensus.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_consensus)
-    adapter_fast = adapter_subparsers.add_parser("infer-fast", help="Run fast approximate tree inference.")
+    adapter_fast = adapter_subparsers.add_parser(
+        "infer-fast", help="Run fast approximate tree inference."
+    )
     adapter_fast.add_argument("input_path", type=Path)
     adapter_fast.add_argument("--out", required=True, type=Path)
-    adapter_fast.add_argument("--sequence-type", choices=("dna", "rna", "protein", "unknown"))
+    adapter_fast.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
     adapter_fast.add_argument("--executable", type=str)
-    adapter_fast.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_fast.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_fast)
-    adapter_compare = adapter_subparsers.add_parser("compare", help="Compare fast approximate and ML trees.")
+    adapter_compare = adapter_subparsers.add_parser(
+        "compare", help="Compare fast approximate and ML trees."
+    )
     adapter_compare.add_argument("--fast-tree", required=True, type=Path)
     adapter_compare.add_argument("--ml-tree", required=True, type=Path)
     adapter_compare.add_argument("--out", required=True, type=Path)
-    adapter_compare.add_argument("--json", action="store_true", help="Emit the comparison report as JSON.")
+    adapter_compare.add_argument(
+        "--json", action="store_true", help="Emit the comparison report as JSON."
+    )
     _add_manifest_argument(adapter_compare)
     adapter_mrbayes_prepare = adapter_subparsers.add_parser(
         "mrbayes-prepare",
@@ -2352,7 +3089,9 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_mrbayes_prepare.add_argument("--samplefreq", type=int, default=100)
     adapter_mrbayes_prepare.add_argument("--printfreq", type=int, default=100)
     adapter_mrbayes_prepare.add_argument("--burnin-fraction", type=float, default=0.25)
-    adapter_mrbayes_prepare.add_argument("--json", action="store_true", help="Emit the preparation report as JSON.")
+    adapter_mrbayes_prepare.add_argument(
+        "--json", action="store_true", help="Emit the preparation report as JSON."
+    )
     _add_manifest_argument(adapter_mrbayes_prepare)
     adapter_mrbayes_run = adapter_subparsers.add_parser(
         "mrbayes-run",
@@ -2361,38 +3100,54 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_mrbayes_run.add_argument("input_path", type=Path)
     adapter_mrbayes_run.add_argument("--executable", type=str)
     adapter_mrbayes_run.add_argument("--resume", action="store_true")
-    adapter_mrbayes_run.add_argument("--json", action="store_true", help="Emit the workflow report as JSON.")
+    adapter_mrbayes_run.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
     _add_manifest_argument(adapter_mrbayes_run)
     adapter_mrbayes_summarize = adapter_subparsers.add_parser(
         "mrbayes-summarize",
         help="Summarize MrBayes posterior trees after burn-in removal.",
     )
     adapter_mrbayes_summarize.add_argument("input_path", type=Path)
-    adapter_mrbayes_summarize.add_argument("--burnin-fraction", type=float, default=0.25)
-    adapter_mrbayes_summarize.add_argument("--json", action="store_true", help="Emit the posterior summary as JSON.")
+    adapter_mrbayes_summarize.add_argument(
+        "--burnin-fraction", type=float, default=0.25
+    )
+    adapter_mrbayes_summarize.add_argument(
+        "--json", action="store_true", help="Emit the posterior summary as JSON."
+    )
     _add_manifest_argument(adapter_mrbayes_summarize)
     adapter_mrbayes_traces = adapter_subparsers.add_parser(
         "mrbayes-traces",
         help="Parse a MrBayes parameter trace table.",
     )
     adapter_mrbayes_traces.add_argument("input_path", type=Path)
-    adapter_mrbayes_traces.add_argument("--json", action="store_true", help="Emit the trace report as JSON.")
+    adapter_mrbayes_traces.add_argument(
+        "--json", action="store_true", help="Emit the trace report as JSON."
+    )
     _add_manifest_argument(adapter_mrbayes_traces)
     adapter_mrbayes_ess = adapter_subparsers.add_parser(
         "mrbayes-ess",
         help="Compute effective sample sizes from a MrBayes trace table.",
     )
     adapter_mrbayes_ess.add_argument("input_path", type=Path)
-    adapter_mrbayes_ess.add_argument("--json", action="store_true", help="Emit the ESS report as JSON.")
+    adapter_mrbayes_ess.add_argument(
+        "--json", action="store_true", help="Emit the ESS report as JSON."
+    )
     _add_manifest_argument(adapter_mrbayes_ess)
     adapter_mrbayes_convergence = adapter_subparsers.add_parser(
         "mrbayes-convergence",
         help="Assess MrBayes trace convergence from ESS and trace drift.",
     )
     adapter_mrbayes_convergence.add_argument("input_path", type=Path)
-    adapter_mrbayes_convergence.add_argument("--ess-threshold", type=float, default=200.0)
-    adapter_mrbayes_convergence.add_argument("--mean-shift-threshold", type=float, default=0.5)
-    adapter_mrbayes_convergence.add_argument("--json", action="store_true", help="Emit the convergence report as JSON.")
+    adapter_mrbayes_convergence.add_argument(
+        "--ess-threshold", type=float, default=200.0
+    )
+    adapter_mrbayes_convergence.add_argument(
+        "--mean-shift-threshold", type=float, default=0.5
+    )
+    adapter_mrbayes_convergence.add_argument(
+        "--json", action="store_true", help="Emit the convergence report as JSON."
+    )
     _add_manifest_argument(adapter_mrbayes_convergence)
     adapter_mrbayes_report = adapter_subparsers.add_parser(
         "mrbayes-report",
@@ -2403,8 +3158,12 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_mrbayes_report.add_argument("--out", required=True, type=Path)
     adapter_mrbayes_report.add_argument("--burnin-fraction", type=float, default=0.25)
     adapter_mrbayes_report.add_argument("--ess-threshold", type=float, default=200.0)
-    adapter_mrbayes_report.add_argument("--mean-shift-threshold", type=float, default=0.5)
-    adapter_mrbayes_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    adapter_mrbayes_report.add_argument(
+        "--mean-shift-threshold", type=float, default=0.5
+    )
+    adapter_mrbayes_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(adapter_mrbayes_report)
     adapter_beast_prepare = adapter_subparsers.add_parser(
         "beast-prepare",
@@ -2419,7 +3178,9 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_beast_prepare.add_argument("--tree-prior", default="yule")
     adapter_beast_prepare.add_argument("--chain-length", type=int, default=1000000)
     adapter_beast_prepare.add_argument("--log-every", type=int, default=1000)
-    adapter_beast_prepare.add_argument("--json", action="store_true", help="Emit the preparation report as JSON.")
+    adapter_beast_prepare.add_argument(
+        "--json", action="store_true", help="Emit the preparation report as JSON."
+    )
     _add_manifest_argument(adapter_beast_prepare)
     adapter_beast_calibrations = adapter_subparsers.add_parser(
         "beast-calibrations",
@@ -2427,7 +3188,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     adapter_beast_calibrations.add_argument("tree_path", type=Path)
     adapter_beast_calibrations.add_argument("calibration_path", type=Path)
-    adapter_beast_calibrations.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    adapter_beast_calibrations.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
     _add_manifest_argument(adapter_beast_calibrations)
     adapter_beast_tip_dates = adapter_subparsers.add_parser(
         "beast-tip-dates",
@@ -2437,14 +3200,18 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_beast_tip_dates.add_argument("tip_dates_path", type=Path)
     adapter_beast_tip_dates.add_argument("--alignment", type=Path)
     adapter_beast_tip_dates.add_argument("--date-column", default="date")
-    adapter_beast_tip_dates.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
+    adapter_beast_tip_dates.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
     _add_manifest_argument(adapter_beast_tip_dates)
     adapter_beast_log = adapter_subparsers.add_parser(
         "beast-log",
         help="Parse a BEAST log file into a deterministic numeric trace table.",
     )
     adapter_beast_log.add_argument("input_path", type=Path)
-    adapter_beast_log.add_argument("--json", action="store_true", help="Emit the parsed log report as JSON.")
+    adapter_beast_log.add_argument(
+        "--json", action="store_true", help="Emit the parsed log report as JSON."
+    )
     _add_manifest_argument(adapter_beast_log)
     adapter_beast_convergence = adapter_subparsers.add_parser(
         "beast-convergence",
@@ -2452,8 +3219,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     adapter_beast_convergence.add_argument("input_path", type=Path)
     adapter_beast_convergence.add_argument("--ess-threshold", type=float, default=200.0)
-    adapter_beast_convergence.add_argument("--mean-shift-threshold", type=float, default=0.5)
-    adapter_beast_convergence.add_argument("--json", action="store_true", help="Emit the convergence report as JSON.")
+    adapter_beast_convergence.add_argument(
+        "--mean-shift-threshold", type=float, default=0.5
+    )
+    adapter_beast_convergence.add_argument(
+        "--json", action="store_true", help="Emit the convergence report as JSON."
+    )
     _add_manifest_argument(adapter_beast_convergence)
     adapter_beast_calibration_report = adapter_subparsers.add_parser(
         "beast-calibration-report",
@@ -2465,20 +3236,36 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_beast_calibration_report.add_argument("--tip-dates", type=Path)
     adapter_beast_calibration_report.add_argument("--alignment", type=Path)
     adapter_beast_calibration_report.add_argument("--date-column", default="date")
-    adapter_beast_calibration_report.add_argument("--json", action="store_true", help="Emit the report build result as JSON.")
+    adapter_beast_calibration_report.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
     _add_manifest_argument(adapter_beast_calibration_report)
     adapter_bayesian_evidence = adapter_subparsers.add_parser(
         "bayesian-evidence",
         help="Bundle Bayesian configs, trees, logs, diagnostics, and reports into one evidence package.",
     )
     adapter_bayesian_evidence.add_argument("--out-dir", required=True, type=Path)
-    adapter_bayesian_evidence.add_argument("--inputs", nargs="+", required=True, type=Path)
-    adapter_bayesian_evidence.add_argument("--configs", nargs="+", required=True, type=Path)
-    adapter_bayesian_evidence.add_argument("--trees", nargs="+", required=True, type=Path)
-    adapter_bayesian_evidence.add_argument("--logs", nargs="+", required=True, type=Path)
-    adapter_bayesian_evidence.add_argument("--diagnostics", nargs="+", required=True, type=Path)
-    adapter_bayesian_evidence.add_argument("--reports", nargs="+", required=True, type=Path)
-    adapter_bayesian_evidence.add_argument("--json", action="store_true", help="Emit the evidence-package report as JSON.")
+    adapter_bayesian_evidence.add_argument(
+        "--inputs", nargs="+", required=True, type=Path
+    )
+    adapter_bayesian_evidence.add_argument(
+        "--configs", nargs="+", required=True, type=Path
+    )
+    adapter_bayesian_evidence.add_argument(
+        "--trees", nargs="+", required=True, type=Path
+    )
+    adapter_bayesian_evidence.add_argument(
+        "--logs", nargs="+", required=True, type=Path
+    )
+    adapter_bayesian_evidence.add_argument(
+        "--diagnostics", nargs="+", required=True, type=Path
+    )
+    adapter_bayesian_evidence.add_argument(
+        "--reports", nargs="+", required=True, type=Path
+    )
+    adapter_bayesian_evidence.add_argument(
+        "--json", action="store_true", help="Emit the evidence-package report as JSON."
+    )
     _add_manifest_argument(adapter_bayesian_evidence)
     adapter_bayesian_table = adapter_subparsers.add_parser(
         "bayesian-diagnostics-table",
@@ -2488,11 +3275,19 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_bayesian_table.add_argument("--log", required=True, type=Path)
     adapter_bayesian_table.add_argument("--additional-logs", nargs="*", type=Path)
     adapter_bayesian_table.add_argument("--out", required=True, type=Path)
-    adapter_bayesian_table.add_argument("--burnin-fractions", nargs="+", type=float, default=[0.1, 0.25, 0.5])
+    adapter_bayesian_table.add_argument(
+        "--burnin-fractions", nargs="+", type=float, default=[0.1, 0.25, 0.5]
+    )
     adapter_bayesian_table.add_argument("--ess-threshold", type=float, default=200.0)
-    adapter_bayesian_table.add_argument("--mean-shift-threshold", type=float, default=0.5)
-    adapter_bayesian_table.add_argument("--cross-chain-mean-shift-threshold", type=float, default=0.75)
-    adapter_bayesian_table.add_argument("--json", action="store_true", help="Emit the diagnostics-table result as JSON.")
+    adapter_bayesian_table.add_argument(
+        "--mean-shift-threshold", type=float, default=0.5
+    )
+    adapter_bayesian_table.add_argument(
+        "--cross-chain-mean-shift-threshold", type=float, default=0.75
+    )
+    adapter_bayesian_table.add_argument(
+        "--json", action="store_true", help="Emit the diagnostics-table result as JSON."
+    )
     _add_manifest_argument(adapter_bayesian_table)
     adapter_bayesian_methods = adapter_subparsers.add_parser(
         "bayesian-methods",
@@ -2506,11 +3301,19 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_bayesian_methods.add_argument("--clock-model", default="unspecified")
     adapter_bayesian_methods.add_argument("--calibration-path", type=Path)
     adapter_bayesian_methods.add_argument("--tip-dates-path", type=Path)
-    adapter_bayesian_methods.add_argument("--burnin-fractions", nargs="+", type=float, default=[0.1, 0.25, 0.5])
+    adapter_bayesian_methods.add_argument(
+        "--burnin-fractions", nargs="+", type=float, default=[0.1, 0.25, 0.5]
+    )
     adapter_bayesian_methods.add_argument("--ess-threshold", type=float, default=200.0)
-    adapter_bayesian_methods.add_argument("--mean-shift-threshold", type=float, default=0.5)
-    adapter_bayesian_methods.add_argument("--cross-chain-mean-shift-threshold", type=float, default=0.75)
-    adapter_bayesian_methods.add_argument("--json", action="store_true", help="Emit the methods-summary result as JSON.")
+    adapter_bayesian_methods.add_argument(
+        "--mean-shift-threshold", type=float, default=0.5
+    )
+    adapter_bayesian_methods.add_argument(
+        "--cross-chain-mean-shift-threshold", type=float, default=0.75
+    )
+    adapter_bayesian_methods.add_argument(
+        "--json", action="store_true", help="Emit the methods-summary result as JSON."
+    )
     _add_manifest_argument(adapter_bayesian_methods)
 
     return parser
@@ -2556,7 +3359,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "traits":
             if args.traits_command == "validate":
-                report = validate_traits_table(args.table, taxon_column=args.taxon_column)
+                report = validate_traits_table(
+                    args.table, taxon_column=args.taxon_column
+                )
                 outputs = _finalize_outputs(args, command="traits", inputs=[args.table])
                 _print_result(
                     build_command_result(
@@ -2573,7 +3378,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.traits_command == "missing":
-                report = detect_missing_trait_values(args.table, taxon_column=args.taxon_column)
+                report = detect_missing_trait_values(
+                    args.table, taxon_column=args.taxon_column
+                )
                 outputs = _finalize_outputs(args, command="traits", inputs=[args.table])
                 _print_result(
                     build_command_result(
@@ -2593,7 +3400,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                 )
                 table = load_taxon_table(args.table, taxon_column=args.taxon_column)
-                output_path = write_taxon_rows(args.out, columns=table.columns, rows=rows)
+                output_path = write_taxon_rows(
+                    args.out, columns=table.columns, rows=rows
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="traits",
@@ -2621,7 +3430,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 taxon_column=args.taxon_column,
                 strict=args.strict,
             )
-            outputs = _finalize_outputs(args, command="traits", inputs=[args.tree, args.table])
+            outputs = _finalize_outputs(
+                args, command="traits", inputs=[args.tree, args.table]
+            )
             _print_result(
                 build_command_result(
                     command="traits",
@@ -2661,11 +3472,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "syntax_valid": report.syntax_valid,
                         "biologically_safe": report.biologically_safe,
                         "polytomy_count": report.polytomy_count,
-                        "missing_internal_branch_count": len(report.missing_internal_branch_nodes),
-                        "missing_terminal_branch_count": len(report.missing_terminal_branch_taxa),
-                        "singleton_internal_node_count": len(report.singleton_internal_nodes),
+                        "missing_internal_branch_count": len(
+                            report.missing_internal_branch_nodes
+                        ),
+                        "missing_terminal_branch_count": len(
+                            report.missing_terminal_branch_taxa
+                        ),
+                        "singleton_internal_node_count": len(
+                            report.singleton_internal_nodes
+                        ),
                         "integrity_issue_count": len(report.integrity_issues),
-                        "unsafe_external_label_count": len(report.unsafe_external_labels),
+                        "unsafe_external_label_count": len(
+                            report.unsafe_external_labels
+                        ),
                     },
                     data=report,
                 ),
@@ -2674,7 +3493,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "prune":
             if args.keep_from is not None:
-                tree, report = prune_tree_to_taxa(args.tree, args.keep_from, taxon_column=args.taxon_column)
+                tree, report = prune_tree_to_taxa(
+                    args.tree, args.keep_from, taxon_column=args.taxon_column
+                )
                 prune_inputs = [args.tree, args.keep_from]
             elif args.exclude_taxa is not None:
                 tree, report = drop_tree_taxa(args.tree, list(args.exclude_taxa))
@@ -2683,7 +3504,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 tree, report = prune_tree_to_requested_taxa(args.tree, list(args.taxa))
                 prune_inputs = [args.tree]
             output_path = write_newick(args.out, tree)
-            pruned_taxa_path = args.pruned_taxa_out or args.out.with_name("pruned_taxa.tsv")
+            pruned_taxa_path = args.pruned_taxa_out or args.out.with_name(
+                "pruned_taxa.tsv"
+            )
             write_pruned_taxa(pruned_taxa_path, report.removed_taxa)
             outputs = _finalize_outputs(
                 args,
@@ -2709,14 +3532,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.alignment_command == "alphabet":
                 records = load_fasta_alignment(args.alignment)
                 alphabet = infer_alignment_alphabet(records)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
                         inputs=[args.alignment],
                         outputs=outputs,
                         metrics={"alphabet": alphabet, "sequence_count": len(records)},
-                        data={"alignment_path": args.alignment, "inferred_alphabet": alphabet},
+                        data={
+                            "alignment_path": args.alignment,
+                            "inferred_alphabet": alphabet,
+                        },
                     ),
                     json_output=args.json,
                 )
@@ -2737,7 +3565,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "gc":
                 report = summarise_fasta(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2759,7 +3589,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "inspect":
                 report = summarise_fasta(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2772,8 +3604,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "parsimony_informative_site_count": report.parsimony_informative_site_count,
                             "alphabet": report.inferred_alphabet,
                             "invalid_character_count": len(report.invalid_characters),
-                            "composition_outlier_count": len(report.composition_outliers),
-                            "duplicate_group_count": len(report.duplicate_sequence_groups),
+                            "composition_outlier_count": len(
+                                report.composition_outliers
+                            ),
+                            "duplicate_group_count": len(
+                                report.duplicate_sequence_groups
+                            ),
                             "near_duplicate_count": len(report.near_duplicate_pairs),
                         },
                         data=report,
@@ -2783,7 +3619,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "classify":
                 report = classify_alignment_sequences(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2802,7 +3640,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "quality":
                 report = build_alignment_quality_report(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2811,9 +3651,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.warnings,
                         metrics={
                             "invalid_character_count": len(report.invalid_characters),
-                            "composition_outlier_count": len(report.composition_outliers),
-                            "sequence_length_outlier_count": len(report.sequence_length_outliers),
-                            "duplicate_group_count": len(report.duplicate_sequence_groups),
+                            "composition_outlier_count": len(
+                                report.composition_outliers
+                            ),
+                            "sequence_length_outlier_count": len(
+                                report.sequence_length_outliers
+                            ),
+                            "duplicate_group_count": len(
+                                report.duplicate_sequence_groups
+                            ),
                             "near_duplicate_count": len(report.near_duplicate_pairs),
                         },
                         data=report,
@@ -2837,13 +3683,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     window_size=args.window_size,
                     step_size=args.step_size,
                 )
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
                         inputs=[args.alignment],
                         outputs=outputs,
-                        warnings=[region.note for region in over_aligned + under_aligned],
+                        warnings=[
+                            region.note for region in over_aligned + under_aligned
+                        ],
                         metrics={
                             "window_count": len(windows),
                             "over_aligned_region_count": len(over_aligned),
@@ -2860,7 +3710,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "readiness":
                 report = summarize_alignment_readiness(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2870,8 +3722,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "sequence_count": report.sequence_count,
                             "alignment_length": report.alignment_length,
-                            "ready_method_count": sum(1 for method in report.methods if method.ready),
-                            "blocked_method_count": sum(1 for method in report.methods if not method.ready),
+                            "ready_method_count": sum(
+                                1 for method in report.methods if method.ready
+                            ),
+                            "blocked_method_count": sum(
+                                1 for method in report.methods if not method.ready
+                            ),
                         },
                         data=report,
                     ),
@@ -2880,7 +3736,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "forensic":
                 report = build_alignment_forensic_report(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2902,7 +3760,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "composition":
                 report = summarise_fasta(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2926,14 +3786,21 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.alignment_command == "invalid":
-                report = detect_invalid_alignment_characters(args.alignment, alphabet=args.alphabet)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                report = detect_invalid_alignment_characters(
+                    args.alignment, alphabet=args.alphabet
+                )
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
                         inputs=[args.alignment],
                         outputs=outputs,
-                        metrics={"invalid_character_count": len(report), "alphabet": args.alphabet},
+                        metrics={
+                            "invalid_character_count": len(report),
+                            "alphabet": args.alphabet,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -2945,7 +3812,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.alignment,
                     identity_threshold=args.identity_threshold,
                 )
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2969,7 +3838,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.alignment,
                     near_duplicate_threshold=args.identity_threshold,
                 )
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -2977,8 +3848,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=report.warnings,
                         metrics={
-                            "exact_duplicate_group_count": len(report.exact_duplicate_groups),
-                            "near_duplicate_pair_count": len(report.near_duplicate_pairs),
+                            "exact_duplicate_group_count": len(
+                                report.exact_duplicate_groups
+                            ),
+                            "near_duplicate_pair_count": len(
+                                report.near_duplicate_pairs
+                            ),
                             "policy_action_count": len(report.policy_actions),
                         },
                         data=report,
@@ -2991,7 +3866,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.alignment,
                     deviation_threshold=args.deviation_threshold,
                 )
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -3008,7 +3885,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "length-outliers":
                 report = detect_sequence_length_outliers(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -3022,7 +3901,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "low-information":
                 report = assess_alignment_low_information(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -3044,7 +3925,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.alignment,
                     threshold=args.threshold,
                 )
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -3062,7 +3945,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "sequence-ranking":
                 report = build_sequence_quality_ranking(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
@@ -3071,8 +3956,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.warnings,
                         metrics={
                             "sequence_count": len(report.rows),
-                            "lowest_score": None if not report.rows else report.rows[0].score,
-                            "highest_score": None if not report.rows else report.rows[-1].score,
+                            "lowest_score": None
+                            if not report.rows
+                            else report.rows[0].score,
+                            "highest_score": None
+                            if not report.rows
+                            else report.rows[-1].score,
                         },
                         data=report,
                     ),
@@ -3080,7 +3969,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.alignment_command == "filter":
-                group_columns = None if not args.group_columns else [column.strip() for column in args.group_columns.split(",") if column.strip()]
+                group_columns = (
+                    None
+                    if not args.group_columns
+                    else [
+                        column.strip()
+                        for column in args.group_columns.split(",")
+                        if column.strip()
+                    ]
+                )
                 records, report = clean_alignment_with_profile(
                     args.alignment,
                     profile_name=args.profile,
@@ -3088,7 +3985,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     group_columns=group_columns,
                 )
                 output_path = write_fasta_alignment(args.out, records)
-                filter_inputs = [args.alignment, *([args.group_table] if args.group_table is not None else [])]
+                filter_inputs = [
+                    args.alignment,
+                    *([args.group_table] if args.group_table is not None else []),
+                ]
                 outputs = _finalize_outputs(
                     args,
                     command="alignment",
@@ -3113,7 +4013,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.alignment_command == "compare":
-                report = compare_alignment_versions(args.left_alignment, args.right_alignment)
+                report = compare_alignment_versions(
+                    args.left_alignment, args.right_alignment
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="alignment",
@@ -3248,7 +4150,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "taxon_count": report.taxon_count,
                             "saturated_pair_count": len(report.saturated_pairs),
-                            "low_information_pair_count": len(report.low_information_pairs),
+                            "low_information_pair_count": len(
+                                report.low_information_pairs
+                            ),
                             "decision": report.method_assessment.decision,
                         },
                         data=report,
@@ -3304,7 +4208,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "taxon_count": report.taxon_count,
                             "ultrametric_compatible": report.ultrametric_compatible,
-                            "upgma_violation_count": len(report.upgma_ultrametric_violations),
+                            "upgma_violation_count": len(
+                                report.upgma_ultrametric_violations
+                            ),
                         },
                         data=report,
                     ),
@@ -3412,7 +4318,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 outputs: list[Path | str] = []
                 if args.support_out is not None:
-                    outputs.append(write_distance_bootstrap_support(args.support_out, report))
+                    outputs.append(
+                        write_distance_bootstrap_support(args.support_out, report)
+                    )
                 if args.tree_set_out is not None:
                     outputs.append(write_tree_set(args.tree_set_out, trees))
                 outputs = _finalize_outputs(
@@ -3617,14 +4525,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.alignment_command == "coding":
                 report = inspect_coding_alignment(args.alignment)
-                outputs = _finalize_outputs(args, command="alignment", inputs=[args.alignment])
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
                 _print_result(
                     build_command_result(
                         command="alignment",
                         inputs=[args.alignment],
                         outputs=outputs,
                         metrics={
-                            "frameshift_like_sequence_count": len(report.frameshift_like_sequences),
+                            "frameshift_like_sequence_count": len(
+                                report.frameshift_like_sequences
+                            ),
                             "stop_codon_count": len(report.stop_codons),
                         },
                         data=report,
@@ -3656,8 +4568,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-            report = link_alignment_to_tree(args.tree, args.alignment, strict=args.strict)
-            outputs = _finalize_outputs(args, command="alignment", inputs=[args.tree, args.alignment])
+            report = link_alignment_to_tree(
+                args.tree, args.alignment, strict=args.strict
+            )
+            outputs = _finalize_outputs(
+                args, command="alignment", inputs=[args.tree, args.alignment]
+            )
             _print_result(
                 build_command_result(
                     command="alignment",
@@ -3681,7 +4597,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3705,7 +4623,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3728,7 +4648,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3764,7 +4686,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     permutations=args.permutations,
                     seed=args.seed,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3792,7 +4716,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3817,7 +4743,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3825,7 +4753,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=[
                             *report.residual_diagnostics.warnings,
-                            *[warning.message for warning in report.identifiability_warnings],
+                            *[
+                                warning.message
+                                for warning in report.identifiability_warnings
+                            ],
                         ],
                         metrics={
                             "taxon_count": report.taxon_count,
@@ -3845,7 +4776,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3882,7 +4815,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             *(
                                 []
                                 if identifiability_audit.all_expected_warning_kinds_detected
-                                else ["one or more expected OU warning modes were not detected on the reference fixtures"]
+                                else [
+                                    "one or more expected OU warning modes were not detected on the reference fixtures"
+                                ]
                             ),
                         ],
                         data={
@@ -3902,7 +4837,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     model=args.model,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3936,7 +4873,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     lambda_value=lambda_value,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3946,7 +4885,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "selected_model": report.selected_model,
                             "residual_surface_count": len(report.residual_diagnostics),
-                            "influential_taxa": len(report.sensitivity.influential_taxa),
+                            "influential_taxa": len(
+                                report.sensitivity.influential_taxa
+                            ),
                             "reference_validation_passed": report.reference_validation_passed,
                         },
                         data=report,
@@ -3963,7 +4904,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     lambda_value=lambda_value,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -3974,7 +4917,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "test_count": len(report.rows),
                             "family_size": report.family_size,
                             "raw_significant_count": report.raw_significant_count,
-                            "significant_count": sum(1 for row in report.rows if row.significant),
+                            "significant_count": sum(
+                                1 for row in report.rows if row.significant
+                            ),
                         },
                         data=report,
                     ),
@@ -4008,7 +4953,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "taxon_count": report.snapshot.pgls_model.taxon_count,
                             "selected_model": report.snapshot.model_comparison.better_model,
                             "audit_row_count": len(report.snapshot.audit_rows),
-                            "excluded_taxa": len(report.snapshot.pgls_inputs.formula_audit.excluded_taxa),
+                            "excluded_taxa": len(
+                                report.snapshot.pgls_inputs.formula_audit.excluded_taxa
+                            ),
                             "limitation_count": len(report.snapshot.limitations),
                         },
                         data=report,
@@ -4026,7 +4973,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     lambda_value=lambda_value,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -4056,7 +5005,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     lambda_value=lambda_value,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.left_tree, args.right_tree, args.table])
+                outputs = _finalize_outputs(
+                    args,
+                    command="comparative",
+                    inputs=[args.left_tree, args.right_tree, args.table],
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -4087,7 +5040,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     lambda_value=lambda_value,
                 )
-                outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="comparative",
@@ -4123,22 +5078,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 taxon_column=args.taxon_column,
                 lambda_value=lambda_value,
             )
-            outputs = _finalize_outputs(args, command="comparative", inputs=[args.tree, args.table])
+            outputs = _finalize_outputs(
+                args, command="comparative", inputs=[args.tree, args.table]
+            )
             _print_result(
                 build_command_result(
                     command="comparative",
                     inputs=[args.tree, args.table],
-                        outputs=outputs,
-                        warnings=input_report.warnings,
-                        metrics={
-                            "taxon_count": report.taxon_count,
-                            "predictor_count": len(report.predictors),
-                            "encoded_predictor_count": len(report.encoded_columns) - 1,
-                            "categorical_predictor_count": len(input_report.categorical_predictors),
-                            "transformed_term_count": len(input_report.formula_audit.transformed_terms),
-                            "lambda_value": report.lambda_value,
-                            "r_squared": report.r_squared,
-                        },
+                    outputs=outputs,
+                    warnings=input_report.warnings,
+                    metrics={
+                        "taxon_count": report.taxon_count,
+                        "predictor_count": len(report.predictors),
+                        "encoded_predictor_count": len(report.encoded_columns) - 1,
+                        "categorical_predictor_count": len(
+                            input_report.categorical_predictors
+                        ),
+                        "transformed_term_count": len(
+                            input_report.formula_audit.transformed_terms
+                        ),
+                        "lambda_value": report.lambda_value,
+                        "r_squared": report.r_squared,
+                    },
                     data={
                         "inputs": input_report,
                         "model": report,
@@ -4184,7 +5145,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.ancestral_command == "discrete":
                 if args.state_ordering == "ordered" and args.model == "fitch":
-                    parser.error("ordered ancestral discrete reconstruction requires a likelihood model")
+                    parser.error(
+                        "ordered ancestral discrete reconstruction requires a likelihood model"
+                    )
                 report = reconstruct_discrete_ancestral_states(
                     args.tree,
                     args.table,
@@ -4230,7 +5193,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     left_alpha=args.left_alpha,
                     right_alpha=args.right_alpha,
                 )
-                outputs = _finalize_outputs(args, command="ancestral", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="ancestral", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="ancestral",
@@ -4247,7 +5212,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.ancestral_command == "sensitivity":
                 _validate_ancestral_discrete_model_arguments(args, parser)
-                resolved_model = args.model or ("brownian" if args.kind == "continuous" else "fitch")
+                resolved_model = args.model or (
+                    "brownian" if args.kind == "continuous" else "fitch"
+                )
                 report = build_ancestral_sensitivity_report(
                     tree_path=args.tree,
                     traits_path=args.table,
@@ -4263,7 +5230,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     drop_taxa=args.drop_taxa,
                     coding_map=_parse_assignment_map(args.coding_map) or None,
                 )
-                outputs = _finalize_outputs(args, command="ancestral", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="ancestral", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="ancestral",
@@ -4271,10 +5240,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "baseline_node_count": report.baseline_node_count,
-                            "has_model_sensitivity": report.model_sensitivity is not None,
+                            "has_model_sensitivity": report.model_sensitivity
+                            is not None,
                             "has_tree_sensitivity": report.tree_sensitivity is not None,
-                            "has_pruning_sensitivity": report.pruning_sensitivity is not None,
-                            "has_trait_coding_sensitivity": report.trait_coding_sensitivity is not None,
+                            "has_pruning_sensitivity": report.pruning_sensitivity
+                            is not None,
+                            "has_trait_coding_sensitivity": report.trait_coding_sensitivity
+                            is not None,
                         },
                         data=report,
                     ),
@@ -4335,7 +5307,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-            resolved_model = args.model or ("brownian" if args.kind == "continuous" else "fitch")
+            resolved_model = args.model or (
+                "brownian" if args.kind == "continuous" else "fitch"
+            )
             if args.ancestral_command == "package":
                 _validate_ancestral_discrete_model_arguments(args, parser)
                 result = build_ancestral_figure_package(
@@ -4417,7 +5391,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "discrete-evolution":
-            allowed_states = _split_csv_values(args.allowed_states) if hasattr(args, "allowed_states") else []
+            allowed_states = (
+                _split_csv_values(args.allowed_states)
+                if hasattr(args, "allowed_states")
+                else []
+            )
             if args.discrete_evolution_command == "validate-coding":
                 report = validate_discrete_state_coding(
                     args.tree,
@@ -4428,7 +5406,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     state_ordering=args.state_ordering,
                     ordered_states=_split_csv_values(args.ordered_states) or None,
                 )
-                outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="discrete-evolution", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="discrete-evolution",
@@ -4452,7 +5432,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
-                outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="discrete-evolution", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="discrete-evolution",
@@ -4471,7 +5453,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.discrete_evolution_command == "reference":
                 report = validate_discrete_transition_reference_examples()
-                outputs = _finalize_outputs(args, command="discrete-evolution", inputs=[])
+                outputs = _finalize_outputs(
+                    args, command="discrete-evolution", inputs=[]
+                )
                 _print_result(
                     build_command_result(
                         command="discrete-evolution",
@@ -4499,9 +5483,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 outputs: list[Path | str] = []
                 if args.node_table_out is not None:
-                    outputs.append(write_node_state_probability_table(args.node_table_out, report))
+                    outputs.append(
+                        write_node_state_probability_table(args.node_table_out, report)
+                    )
                 if args.transitions_out is not None:
-                    outputs.append(write_transition_summary_table(args.transitions_out, report))
+                    outputs.append(
+                        write_transition_summary_table(args.transitions_out, report)
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="discrete-evolution",
@@ -4542,9 +5530,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 outputs: list[Path | str] = []
                 if args.collection_out is not None:
-                    outputs.append(write_stochastic_map_collection(args.collection_out, report))
+                    outputs.append(
+                        write_stochastic_map_collection(args.collection_out, report)
+                    )
                 if args.summary_out is not None:
-                    outputs.append(write_stochastic_map_summary_table(args.summary_out, report.summary))
+                    outputs.append(
+                        write_stochastic_map_summary_table(
+                            args.summary_out, report.summary
+                        )
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="discrete-evolution",
@@ -4573,7 +5567,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 report = summarize_discrete_stochastic_maps(collection)
                 outputs: list[Path | str] = []
                 if args.summary_out is not None:
-                    outputs.append(write_stochastic_map_summary_table(args.summary_out, report))
+                    outputs.append(
+                        write_stochastic_map_summary_table(args.summary_out, report)
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="discrete-evolution",
@@ -4686,7 +5682,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             outputs: list[Path | str] = []
             if args.table_out is not None:
-                outputs.append(write_discrete_model_comparison_table(args.table_out, comparison))
+                outputs.append(
+                    write_discrete_model_comparison_table(args.table_out, comparison)
+                )
             outputs = _finalize_outputs(
                 args,
                 command="discrete-evolution",
@@ -4701,7 +5699,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     metrics={
                         "better_model": comparison.better_model,
                         "model_count": len(comparison.rows),
-                        "differing_node_count": sum(1 for row in comparison.node_differences if row.differs),
+                        "differing_node_count": sum(
+                            1 for row in comparison.node_differences if row.differs
+                        ),
                         "state_ordering": args.state_ordering,
                     },
                     data=comparison,
@@ -4743,7 +5743,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     sampling_column=args.sampling_column,
                 )
-                outputs = _finalize_outputs(args, command="diversification", inputs=[args.tree, args.table])
+                outputs = _finalize_outputs(
+                    args, command="diversification", inputs=[args.tree, args.table]
+                )
                 _print_result(
                     build_command_result(
                         command="diversification",
@@ -4772,7 +5774,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     sampling_column=args.sampling_column,
                     model=args.model,
                 )
-                outputs = _finalize_outputs(args, command="diversification", inputs=inputs)
+                outputs = _finalize_outputs(
+                    args, command="diversification", inputs=inputs
+                )
                 _print_result(
                     build_command_result(
                         command="diversification",
@@ -4800,7 +5804,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     taxon_column=args.taxon_column,
                     sampling_column=args.sampling_column,
                 )
-                outputs = _finalize_outputs(args, command="diversification", inputs=inputs)
+                outputs = _finalize_outputs(
+                    args, command="diversification", inputs=inputs
+                )
                 _print_result(
                     build_command_result(
                         command="diversification",
@@ -4855,7 +5861,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 outputs: list[Path | str] = []
                 if args.out is not None:
-                    outputs.append(write_trait_dependent_diversification_table(args.out, report))
+                    outputs.append(
+                        write_trait_dependent_diversification_table(args.out, report)
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="diversification",
@@ -4870,7 +5878,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.warnings,
                         metrics={
                             "state_count": len(report.states),
-                            "monophyletic_state_count": sum(1 for row in report.states if row.monophyletic),
+                            "monophyletic_state_count": sum(
+                                1 for row in report.states if row.monophyletic
+                            ),
                         },
                         data=report,
                     ),
@@ -4930,7 +5940,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.distance_command == "assumptions":
                 report = assess_imported_distance_method_assumptions(args.matrix)
-                outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+                outputs = _finalize_outputs(
+                    args, command="distance", inputs=[args.matrix]
+                )
                 _print_result(
                     build_command_result(
                         command="distance",
@@ -4940,7 +5952,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "taxon_count": report.taxon_count,
                             "ultrametric_compatible": report.ultrametric_compatible,
-                            "upgma_violation_count": len(report.upgma_ultrametric_violations),
+                            "upgma_violation_count": len(
+                                report.upgma_ultrametric_violations
+                            ),
                         },
                         data=report,
                     ),
@@ -4949,7 +5963,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.distance_command == "validate":
                 report = validate_imported_distance_matrix(args.matrix)
-                outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+                outputs = _finalize_outputs(
+                    args, command="distance", inputs=[args.matrix]
+                )
                 _print_result(
                     build_command_result(
                         command="distance",
@@ -4961,7 +5977,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "pair_count": report.pair_count,
                             "complete": report.complete,
                             "symmetric": report.symmetric,
-                            "nonmetric_observation_count": len(report.nonmetric_observations),
+                            "nonmetric_observation_count": len(
+                                report.nonmetric_observations
+                            ),
                         },
                         data=report,
                     ),
@@ -4970,7 +5988,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.distance_command == "quality":
                 report = inspect_imported_distance_matrix_quality(args.matrix)
-                outputs = _finalize_outputs(args, command="distance", inputs=[args.matrix])
+                outputs = _finalize_outputs(
+                    args, command="distance", inputs=[args.matrix]
+                )
                 _print_result(
                     build_command_result(
                         command="distance",
@@ -4981,7 +6001,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "taxon_count": len(report.validation.identifiers),
                             "missing_pair_count": len(report.validation.missing_pairs),
                             "saturated_pair_count": len(report.saturated_pairs),
-                            "low_information_pair_count": len(report.low_information_pairs),
+                            "low_information_pair_count": len(
+                                report.low_information_pairs
+                            ),
                             "saturation_audit_scale": report.saturation_audit_scale,
                         },
                         data=report,
@@ -4990,7 +6012,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.distance_command == "build-tree":
-                tree, report = build_tree_from_imported_distance_matrix(args.matrix, method=args.method)
+                tree, report = build_tree_from_imported_distance_matrix(
+                    args.matrix, method=args.method
+                )
                 output_path = write_newick(args.out, tree)
                 outputs = _finalize_outputs(
                     args,
@@ -5014,7 +6038,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.distance_command == "report":
-                report = render_distance_report(out_path=args.out, matrix_path=args.matrix)
+                report = render_distance_report(
+                    out_path=args.out, matrix_path=args.matrix
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="distance",
@@ -5026,7 +6052,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="distance",
                         inputs=[args.matrix],
                         outputs=outputs,
-                        metrics={"section_count": len(report.machine_manifest["sections"])},
+                        metrics={
+                            "section_count": len(report.machine_manifest["sections"])
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5048,7 +6076,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "tree-set":
             if args.tree_set_command == "inspect":
                 report = load_tree_set(args.tree_set)
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.tree_set]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
@@ -5079,7 +6109,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "shared_taxon_count": len(report.shared_taxa)},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "shared_taxon_count": len(report.shared_taxa),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5101,7 +6134,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "clade_count": len(report.clade_frequencies)},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "clade_count": len(report.clade_frequencies),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5123,7 +6159,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "pair_count": len(report.pairs)},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "pair_count": len(report.pairs),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5131,13 +6170,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.tree_set_command == "cluster":
                 report = cluster_trees_by_topology(args.tree_set)
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.tree_set]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "cluster_count": len(report.clusters)},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "cluster_count": len(report.clusters),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5145,13 +6189,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.tree_set_command == "unstable-taxa":
                 report = detect_unstable_taxa(args.tree_set)
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.tree_set]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "unstable_taxon_count": len(report.taxa)},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "unstable_taxon_count": len(report.taxa),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5159,13 +6208,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.tree_set_command == "unstable-clades":
                 report = detect_unstable_clades(args.tree_set)
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.tree_set]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "unstable_clade_count": len(report.clades)},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "unstable_clade_count": len(report.clades),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5173,7 +6227,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.tree_set_command == "compare":
                 report = compare_posterior_tree_sets(args.left, args.right)
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.left, args.right])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.left, args.right]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
@@ -5191,7 +6247,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.tree_set_command == "diversity-compare":
                 report = compare_posterior_topological_diversity(args.left, args.right)
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.left, args.right])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.left, args.right]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
@@ -5212,13 +6270,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     min_mode_frequency=args.min_mode_frequency,
                     min_mode_count=args.min_mode_count,
                 )
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.tree_set]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"mode_count": report.mode_count, "multimodal": report.multimodal},
+                        metrics={
+                            "mode_count": report.mode_count,
+                            "multimodal": report.multimodal,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5229,7 +6292,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.tree_set,
                     credibility_threshold=args.credibility_threshold,
                 )
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.tree_set]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
@@ -5249,7 +6314,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     uncertain_max_frequency=args.uncertain_max_frequency,
                     credibility_threshold=args.credibility_threshold,
                 )
-                outputs = _finalize_outputs(args, command="tree-set", inputs=[args.tree_set])
+                outputs = _finalize_outputs(
+                    args, command="tree-set", inputs=[args.tree_set]
+                )
                 _print_result(
                     build_command_result(
                         command="tree-set",
@@ -5296,7 +6363,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-            report = render_tree_uncertainty_report(tree_set_path=args.tree_set, out_path=args.out)
+            report = render_tree_uncertainty_report(
+                tree_set_path=args.tree_set, out_path=args.out
+            )
             outputs = _finalize_outputs(
                 args,
                 command="tree-set",
@@ -5308,7 +6377,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     command="tree-set",
                     inputs=[args.tree_set],
                     outputs=outputs,
-                    metrics={"tree_count": report.tree_count, "section_count": len(report.machine_manifest["sections"])},
+                    metrics={
+                        "tree_count": report.tree_count,
+                        "section_count": len(report.machine_manifest["sections"]),
+                    },
                     data=report,
                 ),
                 json_output=args.json,
@@ -5324,13 +6396,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     seed=args.seed,
                 )
                 output_path = write_tree_set(args.out, trees)
-                outputs = _finalize_outputs(args, command="simulate", inputs=[], outputs=[output_path])
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[], outputs=[output_path]
+                )
                 _print_result(
                     build_command_result(
                         command="simulate",
                         inputs=[],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "tip_count": report.tip_count},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "tip_count": report.tip_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5344,13 +6421,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     seed=args.seed,
                 )
                 output_path = write_tree_set(args.out, trees)
-                outputs = _finalize_outputs(args, command="simulate", inputs=[], outputs=[output_path])
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[], outputs=[output_path]
+                )
                 _print_result(
                     build_command_result(
                         command="simulate",
                         inputs=[],
                         outputs=outputs,
-                        metrics={"tree_count": report.tree_count, "tip_count": report.tip_count},
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "tip_count": report.tip_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5364,13 +6446,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     seed=args.seed,
                 )
                 output_path = write_continuous_trait_table(args.out, report)
-                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[args.tree], outputs=[output_path]
+                )
                 _print_result(
                     build_command_result(
                         command="simulate",
                         inputs=[args.tree],
                         outputs=outputs,
-                        metrics={"tip_count": report.tip_count, "trait_count": len(report.traits)},
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "trait_count": len(report.traits),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5386,13 +6473,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     seed=args.seed,
                 )
                 output_path = write_continuous_trait_table(args.out, report)
-                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[args.tree], outputs=[output_path]
+                )
                 _print_result(
                     build_command_result(
                         command="simulate",
                         inputs=[args.tree],
                         outputs=outputs,
-                        metrics={"tip_count": report.tip_count, "trait_count": len(report.traits)},
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "trait_count": len(report.traits),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5407,13 +6499,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     seed=args.seed,
                 )
                 output_path = write_discrete_trait_table(args.out, report)
-                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[args.tree], outputs=[output_path]
+                )
                 _print_result(
                     build_command_result(
                         command="simulate",
                         inputs=[args.tree],
                         outputs=outputs,
-                        metrics={"tip_count": report.tip_count, "trait_count": len(report.traits)},
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "trait_count": len(report.traits),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5427,13 +6524,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     seed=args.seed,
                 )
                 output_path = write_simulated_alignment(args.out, report)
-                outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[args.tree], outputs=[output_path]
+                )
                 _print_result(
                     build_command_result(
                         command="simulate",
                         inputs=[args.tree],
                         outputs=outputs,
-                        metrics={"tip_count": report.tip_count, "sequence_length": report.sequence_length},
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "sequence_length": report.sequence_length,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -5446,13 +6548,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 seed=args.seed,
             )
             output_path = write_simulated_alignment(args.out, report)
-            outputs = _finalize_outputs(args, command="simulate", inputs=[args.tree], outputs=[output_path])
+            outputs = _finalize_outputs(
+                args, command="simulate", inputs=[args.tree], outputs=[output_path]
+            )
             _print_result(
                 build_command_result(
                     command="simulate",
                     inputs=[args.tree],
                     outputs=outputs,
-                    metrics={"tip_count": report.tip_count, "sequence_length": report.sequence_length},
+                    metrics={
+                        "tip_count": report.tip_count,
+                        "sequence_length": report.sequence_length,
+                    },
                     data=report,
                 ),
                 json_output=args.json,
@@ -5474,7 +6581,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     command="benchmark",
                     inputs=[],
                     outputs=outputs,
-                    metrics={"observation_count": len(report.observations), "replicates": report.replicates},
+                    metrics={
+                        "observation_count": len(report.observations),
+                        "replicates": report.replicates,
+                    },
                     data=report,
                 ),
                 json_output=args.json,
@@ -5505,17 +6615,31 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "tree_quality_score": report.tree_quality_score,
                         "zero_length_branch_count": report.zero_length_branch_count,
                         "cherry_count": report.cherry_count,
-                        "missing_internal_branch_count": len(report.missing_internal_branch_nodes),
-                        "missing_terminal_branch_count": len(report.missing_terminal_branch_taxa),
-                        "singleton_internal_node_count": len(report.singleton_internal_nodes),
+                        "missing_internal_branch_count": len(
+                            report.missing_internal_branch_nodes
+                        ),
+                        "missing_terminal_branch_count": len(
+                            report.missing_terminal_branch_taxa
+                        ),
+                        "singleton_internal_node_count": len(
+                            report.singleton_internal_nodes
+                        ),
                         "long_branch_outlier_count": len(report.long_branch_outliers),
                         "short_branch_outlier_count": len(report.short_branch_outliers),
                         "likely_support_label_count": len(report.likely_support_labels),
-                        "likely_named_internal_label_count": len(report.likely_named_internal_labels),
-                        "suspicious_support_range_count": len(report.suspicious_support_value_ranges),
+                        "likely_named_internal_label_count": len(
+                            report.likely_named_internal_labels
+                        ),
+                        "suspicious_support_range_count": len(
+                            report.suspicious_support_value_ranges
+                        ),
                         "root_classification": report.root_state_confidence.classification,
-                        "internal_label_conflict_count": len(report.internal_label_conflicts),
-                        "unsafe_external_label_count": len(report.unsafe_external_labels),
+                        "internal_label_conflict_count": len(
+                            report.internal_label_conflicts
+                        ),
+                        "unsafe_external_label_count": len(
+                            report.unsafe_external_labels
+                        ),
                     },
                     data=report,
                 ),
@@ -5525,7 +6649,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "normalize":
             tree = load_tree(args.tree, source_format=args.format)
             output_path = write_newick(args.out, tree)
-            outputs = _finalize_outputs(args, command="normalize", inputs=[args.tree], outputs=[output_path])
+            outputs = _finalize_outputs(
+                args, command="normalize", inputs=[args.tree], outputs=[output_path]
+            )
             if args.json:
                 _print_result(
                     build_command_result(
@@ -5533,7 +6659,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.tree],
                         outputs=outputs,
                         metrics={"tip_count": tree.tip_count},
-                        data={"source_format": tree.source_format, "output_format": "newick"},
+                        data={
+                            "source_format": tree.source_format,
+                            "output_format": "newick",
+                        },
                     ),
                     json_output=True,
                 )
@@ -5544,7 +6673,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             tree = load_tree(args.tree, source_format=args.format)
             normalized_tree, report = normalize_tree_taxa(tree, policy=args.policy)
             output_path = write_newick(args.out, normalized_tree)
-            mapping_path = args.mapping_out or args.out.with_suffix(f"{args.out.suffix}.mapping.tsv")
+            mapping_path = args.mapping_out or args.out.with_suffix(
+                f"{args.out.suffix}.mapping.tsv"
+            )
             write_taxon_mapping(mapping_path, report.renamed_taxa)
             outputs = _finalize_outputs(
                 args,
@@ -5570,7 +6701,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.taxonomy_command == "synonyms":
                 tree = load_tree(args.tree, source_format=args.format)
                 report = audit_tree_taxon_synonyms(tree, args.synonym_table)
-                outputs = _finalize_outputs(args, command="taxonomy", inputs=[args.tree, args.synonym_table])
+                outputs = _finalize_outputs(
+                    args, command="taxonomy", inputs=[args.tree, args.synonym_table]
+                )
                 _print_result(
                     build_command_result(
                         command="taxonomy",
@@ -5594,7 +6727,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     resolution_policy=args.resolution_policy,
                 )
                 output_path = write_newick(args.out, resolved_tree)
-                mapping_path = args.mapping_out or args.out.with_suffix(f"{args.out.suffix}.synonyms.tsv")
+                mapping_path = args.mapping_out or args.out.with_suffix(
+                    f"{args.out.suffix}.synonyms.tsv"
+                )
                 write_synonym_resolution_mapping(mapping_path, report)
                 outputs = _finalize_outputs(
                     args,
@@ -5611,7 +6746,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "renamed_taxa": len(report.renamed_taxa),
                             "ambiguous_mapping_count": len(report.ambiguous_mappings),
-                            "duplicate_resolved_label_count": len(report.duplicate_resolved_labels),
+                            "duplicate_resolved_label_count": len(
+                                report.duplicate_resolved_labels
+                            ),
                         },
                         data=report,
                     ),
@@ -5621,7 +6758,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.taxonomy_command == "namespaces":
                 tree = load_tree(args.tree, source_format=args.format)
                 report = inspect_tree_taxon_namespaces(tree)
-                outputs = _finalize_outputs(args, command="taxonomy", inputs=[args.tree])
+                outputs = _finalize_outputs(
+                    args, command="taxonomy", inputs=[args.tree]
+                )
                 _print_result(
                     build_command_result(
                         command="taxonomy",
@@ -5640,7 +6779,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.taxonomy_command == "rank-consistency":
                 tree = load_tree(args.tree, source_format=args.format)
                 report = inspect_tree_taxon_rank_consistency(tree)
-                outputs = _finalize_outputs(args, command="taxonomy", inputs=[args.tree])
+                outputs = _finalize_outputs(
+                    args, command="taxonomy", inputs=[args.tree]
+                )
                 _print_result(
                     build_command_result(
                         command="taxonomy",
@@ -5676,8 +6817,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.warnings,
                         metrics={
                             "row_count": len(report.rows),
-                            "ambiguous_count": sum(1 for row in report.rows if row.status == "ambiguous"),
-                            "resolved_count": sum(1 for row in report.rows if row.status == "resolved"),
+                            "ambiguous_count": sum(
+                                1 for row in report.rows if row.status == "ambiguous"
+                            ),
+                            "resolved_count": sum(
+                                1 for row in report.rows if row.status == "resolved"
+                            ),
                         },
                         data=report,
                     ),
@@ -5688,7 +6833,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.taxonomy_command == "audit":
                 tree = load_tree(args.tree, source_format=args.format)
-                report = build_taxon_audit_report(tree, synonym_table_path=args.synonym_table)
+                report = build_taxon_audit_report(
+                    tree, synonym_table_path=args.synonym_table
+                )
                 inputs = [args.tree]
                 if args.synonym_table is not None:
                     inputs.append(args.synonym_table)
@@ -5702,7 +6849,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "tree_tip_count": report.tree_tip_count,
                             "status": report.status,
-                            "mapping_conflict_count": len(report.mapping_conflicts.rows),
+                            "mapping_conflict_count": len(
+                                report.mapping_conflicts.rows
+                            ),
                         },
                         data=report,
                     ),
@@ -5720,7 +6869,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     reported_taxa_path=args.reported_taxa,
                 )
                 inputs = [args.tree, args.metadata, args.traits]
-                for optional_path in (args.alignment, args.filtered_alignment, args.inference_tree, args.reported_taxa):
+                for optional_path in (
+                    args.alignment,
+                    args.filtered_alignment,
+                    args.inference_tree,
+                    args.reported_taxa,
+                ):
                     if optional_path is not None:
                         inputs.append(optional_path)
                 outputs = _finalize_outputs(args, command="taxonomy", inputs=inputs)
@@ -5762,7 +6916,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "topology":
             if args.topology_command == "root-outgroup":
-                tree, report = root_tree_on_outgroup(args.tree, outgroup_taxa=list(args.taxa))
+                tree, report = root_tree_on_outgroup(
+                    args.tree, outgroup_taxa=list(args.taxa)
+                )
             elif args.topology_command == "reroot-midpoint":
                 tree, report = reroot_tree_by_midpoint(args.tree)
             else:
@@ -5792,13 +6948,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "diagnose":
             if args.target == "distances":
                 if args.tree is None:
-                    parser.exit(status=2, message="diagnose distances requires a tree path\n")
+                    parser.exit(
+                        status=2, message="diagnose distances requires a tree path\n"
+                    )
                 report = compute_root_to_tip_distances(args.tree)
                 outputs: list[Path | str] = []
                 if args.out is not None:
                     output_path = write_root_to_tip_tsv(args.out, report)
                     outputs.append(output_path)
-                outputs = _finalize_outputs(args, command="diagnose", inputs=[args.tree], outputs=outputs)
+                outputs = _finalize_outputs(
+                    args, command="diagnose", inputs=[args.tree], outputs=outputs
+                )
                 _print_result(
                     build_command_result(
                         command="diagnose",
@@ -5812,9 +6972,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.target == "ultrametric":
                 if args.tree is None:
-                    parser.exit(status=2, message="diagnose ultrametric requires a tree path\n")
+                    parser.exit(
+                        status=2, message="diagnose ultrametric requires a tree path\n"
+                    )
                 report = diagnose_ultrametricity(args.tree, tolerance=args.tolerance)
-                outputs = _finalize_outputs(args, command="diagnose", inputs=[args.tree])
+                outputs = _finalize_outputs(
+                    args, command="diagnose", inputs=[args.tree]
+                )
                 _print_result(
                     build_command_result(
                         command="diagnose",
@@ -5832,7 +6996,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.target == "assumptions":
                 if args.tree is None:
-                    parser.exit(status=2, message="diagnose assumptions requires a tree path\n")
+                    parser.exit(
+                        status=2, message="diagnose assumptions requires a tree path\n"
+                    )
                 report = assess_tree_assumptions(
                     args.tree,
                     metadata_path=args.metadata,
@@ -5841,7 +7007,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 diagnose_inputs: list[Path | str] = [args.tree]
                 if args.metadata is not None:
                     diagnose_inputs.append(args.metadata)
-                outputs = _finalize_outputs(args, command="diagnose", inputs=diagnose_inputs)
+                outputs = _finalize_outputs(
+                    args, command="diagnose", inputs=diagnose_inputs
+                )
                 _print_result(
                     build_command_result(
                         command="diagnose",
@@ -5849,7 +7017,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=report.warnings,
                         metrics={
-                            "standardized_support_count": len(report.standardized_support_labels),
+                            "standardized_support_count": len(
+                                report.standardized_support_labels
+                            ),
                             "time_tree_compatible": report.time_tree_compatible,
                             "substitution_tree_compatible": report.substitution_tree_compatible,
                         },
@@ -5886,13 +7056,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
         if args.command == "compare":
             if args.left == "report":
                 if args.third is None:
-                    parser.exit(status=2, message="compare report requires two tree paths\n")
+                    parser.exit(
+                        status=2, message="compare report requires two tree paths\n"
+                    )
                 if args.out is None:
                     parser.exit(status=2, message="compare report requires --out\n")
                 left_path = Path(args.right)
                 right_path = Path(args.third)
-                report = build_tree_comparison_report(left_path, right_path, out_path=args.out)
-                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path], outputs=[args.out])
+                report = build_tree_comparison_report(
+                    left_path, right_path, out_path=args.out
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="compare",
+                    inputs=[left_path, right_path],
+                    outputs=[args.out],
+                )
                 _print_result(
                     build_command_result(
                         command="compare",
@@ -5906,11 +7085,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.left == "support":
                 if args.third is None:
-                    parser.exit(status=2, message="compare support requires two tree paths\n")
+                    parser.exit(
+                        status=2, message="compare support requires two tree paths\n"
+                    )
                 left_path = Path(args.right)
                 right_path = Path(args.third)
                 report = compare_support_values(left_path, right_path)
-                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                outputs = _finalize_outputs(
+                    args, command="compare", inputs=[left_path, right_path]
+                )
                 _print_result(
                     build_command_result(
                         command="compare",
@@ -5924,11 +7107,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.left == "clades":
                 if args.third is None:
-                    parser.exit(status=2, message="compare clades requires two tree paths\n")
+                    parser.exit(
+                        status=2, message="compare clades requires two tree paths\n"
+                    )
                 left_path = Path(args.right)
                 right_path = Path(args.third)
                 report = compare_clade_sets(left_path, right_path)
-                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                outputs = _finalize_outputs(
+                    args, command="compare", inputs=[left_path, right_path]
+                )
                 _print_result(
                     build_command_result(
                         command="compare",
@@ -5946,12 +7133,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.left == "prune":
                 if args.third is None:
-                    parser.exit(status=2, message="compare prune requires two tree paths\n")
+                    parser.exit(
+                        status=2, message="compare prune requires two tree paths\n"
+                    )
                 if args.out is None:
-                    parser.exit(status=2, message="compare prune requires --out as an output directory\n")
+                    parser.exit(
+                        status=2,
+                        message="compare prune requires --out as an output directory\n",
+                    )
                 left_path = Path(args.right)
                 right_path = Path(args.third)
-                pruned_left, pruned_right, report = prune_trees_to_shared_taxa(left_path, right_path)
+                pruned_left, pruned_right, report = prune_trees_to_shared_taxa(
+                    left_path, right_path
+                )
                 args.out.mkdir(parents=True, exist_ok=True)
                 left_out = write_newick(args.out / "left-shared.nwk", pruned_left)
                 right_out = write_newick(args.out / "right-shared.nwk", pruned_right)
@@ -5974,11 +7168,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.left == "changes":
                 if args.third is None:
-                    parser.exit(status=2, message="compare changes requires two tree paths\n")
+                    parser.exit(
+                        status=2, message="compare changes requires two tree paths\n"
+                    )
                 left_path = Path(args.right)
                 right_path = Path(args.third)
                 report = detect_clade_changes(left_path, right_path)
-                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                outputs = _finalize_outputs(
+                    args, command="compare", inputs=[left_path, right_path]
+                )
                 _print_result(
                     build_command_result(
                         command="compare",
@@ -5995,11 +7193,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.left == "branch-lengths":
                 if args.third is None:
-                    parser.exit(status=2, message="compare branch-lengths requires two tree paths\n")
+                    parser.exit(
+                        status=2,
+                        message="compare branch-lengths requires two tree paths\n",
+                    )
                 left_path = Path(args.right)
                 right_path = Path(args.third)
                 report = compare_branch_lengths(left_path, right_path)
-                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+                outputs = _finalize_outputs(
+                    args, command="compare", inputs=[left_path, right_path]
+                )
                 _print_result(
                     build_command_result(
                         command="compare",
@@ -6013,19 +7216,35 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.left == "table":
                 if args.third is None:
-                    parser.exit(status=2, message="compare table requires two tree paths\n")
+                    parser.exit(
+                        status=2, message="compare table requires two tree paths\n"
+                    )
                 if args.out is None:
                     parser.exit(status=2, message="compare table requires --out\n")
                 left_path = Path(args.right)
                 right_path = Path(args.third)
-                output_path = write_tree_comparison_table(args.out, left_path, right_path)
-                outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path], outputs=[output_path])
+                output_path = write_tree_comparison_table(
+                    args.out, left_path, right_path
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="compare",
+                    inputs=[left_path, right_path],
+                    outputs=[output_path],
+                )
                 _print_result(
                     build_command_result(
                         command="compare",
                         inputs=[left_path, right_path],
                         outputs=outputs,
-                        metrics={"table_rows": sum(1 for _ in output_path.read_text(encoding='utf-8').splitlines()[1:])},
+                        metrics={
+                            "table_rows": sum(
+                                1
+                                for _ in output_path.read_text(
+                                    encoding="utf-8"
+                                ).splitlines()[1:]
+                            )
+                        },
                         data={"table_path": output_path},
                     ),
                     json_output=args.json,
@@ -6034,7 +7253,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             left_path = Path(args.left)
             right_path = Path(args.right)
             report = compare_tree_paths(left_path, right_path)
-            outputs = _finalize_outputs(args, command="compare", inputs=[left_path, right_path])
+            outputs = _finalize_outputs(
+                args, command="compare", inputs=[left_path, right_path]
+            )
             _print_result(
                 build_command_result(
                     command="compare",
@@ -6050,7 +7271,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "annotate":
-            report = annotate_tree_against_table(args.tree, args.metadata, taxon_column=args.taxon_column)
+            report = annotate_tree_against_table(
+                args.tree, args.metadata, taxon_column=args.taxon_column
+            )
             outputs: list[Path | str] = []
             if args.out is not None:
                 outputs.append(write_annotation_report(args.out, report))
@@ -6059,18 +7282,35 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 outputs.append(
                     write_taxon_rows(
                         args.joined_out,
-                        columns=["taxon", "matched", *[column for column in table.columns if column != table.taxon_column]],
+                        columns=[
+                            "taxon",
+                            "matched",
+                            *[
+                                column
+                                for column in table.columns
+                                if column != table.taxon_column
+                            ],
+                        ],
                         rows=[
                             {
                                 "taxon": row.taxon,
                                 "matched": str(row.matched).lower(),
-                                **{column: row.values.get(column, "") for column in table.columns if column != table.taxon_column},
+                                **{
+                                    column: row.values.get(column, "")
+                                    for column in table.columns
+                                    if column != table.taxon_column
+                                },
                             }
                             for row in report.joined_rows
                         ],
                     )
                 )
-            outputs = _finalize_outputs(args, command="annotate", inputs=[args.tree, args.metadata], outputs=outputs)
+            outputs = _finalize_outputs(
+                args,
+                command="annotate",
+                inputs=[args.tree, args.metadata],
+                outputs=outputs,
+            )
             _print_result(
                 build_command_result(
                     command="annotate",
@@ -6087,12 +7327,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "render":
-            metadata_table = load_taxon_table(args.metadata, taxon_column=args.taxon_column) if args.metadata is not None else None
-            traits_table = load_taxon_table(args.traits, taxon_column=args.taxon_column) if args.traits is not None else None
+            metadata_table = (
+                load_taxon_table(args.metadata, taxon_column=args.taxon_column)
+                if args.metadata is not None
+                else None
+            )
+            traits_table = (
+                load_taxon_table(args.traits, taxon_column=args.taxon_column)
+                if args.traits is not None
+                else None
+            )
             labels: dict[str, str] | None = None
             if metadata_table is not None and args.label_column is not None:
                 if args.label_column not in metadata_table.columns:
-                    raise MetadataJoinError(f"metadata table does not contain label column '{args.label_column}'")
+                    raise MetadataJoinError(
+                        f"metadata table does not contain label column '{args.label_column}'"
+                    )
                 labels = {
                     row[metadata_table.taxon_column]: row[args.label_column]
                     for row in metadata_table.rows
@@ -6109,30 +7359,43 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 else None
             )
             metadata_strips = (
-                _build_annotation_strips(metadata_table, _split_csv_values(args.metadata_strip_columns))
+                _build_annotation_strips(
+                    metadata_table, _split_csv_values(args.metadata_strip_columns)
+                )
                 if metadata_table is not None
                 else []
             )
             heatmap_columns = (
-                _build_annotation_strips(traits_table, _split_csv_values(args.heatmap_columns))
+                _build_annotation_strips(
+                    traits_table, _split_csv_values(args.heatmap_columns)
+                )
                 if traits_table is not None
                 else []
             )
             collapsed_clades = _split_csv_values(args.collapse_clades)
-            support_audit = audit_support_label_rendering(args.tree) if args.support_labels else None
+            support_audit = (
+                audit_support_label_rendering(args.tree)
+                if args.support_labels
+                else None
+            )
             result = render_tree_svg(
                 args.tree,
                 out_path=args.out,
                 labels=labels,
                 layout=args.layout,
-                show_support_values=args.support_labels and (support_audit.validated if support_audit is not None else False),
+                show_support_values=args.support_labels
+                and (support_audit.validated if support_audit is not None else False),
                 categorical_traits=categorical_traits,
                 continuous_traits=continuous_traits,
                 metadata_strips=metadata_strips,
                 heatmap_columns=heatmap_columns,
                 collapsed_clades=collapsed_clades,
-                validated_support_labels={} if support_audit is None else support_audit.labels_by_node,
-                support_validation_warnings=[] if support_audit is None else support_audit.warnings,
+                validated_support_labels={}
+                if support_audit is None
+                else support_audit.labels_by_node,
+                support_validation_warnings=[]
+                if support_audit is None
+                else support_audit.warnings,
             )
             inputs = [args.tree]
             if args.metadata is not None:
@@ -6155,14 +7418,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     collapsed_clades=collapsed_clades,
                 )
                 outputs.append(package_result.output_dir)
-            outputs = _finalize_outputs(args, command="render", inputs=inputs, outputs=outputs)
+            outputs = _finalize_outputs(
+                args, command="render", inputs=inputs, outputs=outputs
+            )
             if args.json:
                 _print_result(
                     build_command_result(
                         command="render",
                         inputs=inputs,
                         outputs=outputs,
-                        warnings=result.missing_metadata_labels + ([] if support_audit is None else support_audit.warnings),
+                        warnings=result.missing_metadata_labels
+                        + ([] if support_audit is None else support_audit.warnings),
                         metrics={
                             "tip_count": result.tip_count,
                             "visible_tip_count": result.visible_tip_count,
@@ -6176,8 +7442,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         },
                         data={
                             "render": result,
-                            "figure_package_dir": package_result.output_dir if package_result is not None else None,
-                            "figure_package_audit": None if package_result is None else package_result.audit,
+                            "figure_package_dir": package_result.output_dir
+                            if package_result is not None
+                            else None,
+                            "figure_package_audit": None
+                            if package_result is None
+                            else package_result.audit,
                             "support_audit": support_audit,
                         },
                     ),
@@ -6190,7 +7460,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.evidence_command == "bundle":
                 report = bundle_directory(args.inputs, args.outputs, args.out)
                 inputs = [*args.inputs, *args.outputs]
-                outputs = _finalize_outputs(args, command="evidence", inputs=inputs, outputs=[args.out])
+                outputs = _finalize_outputs(
+                    args, command="evidence", inputs=inputs, outputs=[args.out]
+                )
                 _print_result(
                     build_command_result(
                         command="evidence",
@@ -6208,8 +7480,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             report = validate_bundle(args.bundle_root)
             if not report.valid:
-                raise EvidenceContractError(f"evidence bundle validation failed with {len(report.mismatches)} mismatch(es)")
-            outputs = _finalize_outputs(args, command="evidence", inputs=[args.bundle_root])
+                raise EvidenceContractError(
+                    f"evidence bundle validation failed with {len(report.mismatches)} mismatch(es)"
+                )
+            outputs = _finalize_outputs(
+                args, command="evidence", inputs=[args.bundle_root]
+            )
             _print_result(
                 build_command_result(
                     command="evidence",
@@ -6267,7 +7543,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             command="report",
                             inputs=[args.tree],
                             outputs=outputs,
-                            warnings=result.validation.warnings + result.inspection.warnings,
+                            warnings=result.validation.warnings
+                            + result.inspection.warnings,
                             metrics={"tip_count": result.inspection.tip_count},
                             data=result,
                         ),
@@ -6277,7 +7554,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 print(result.output_path)
                 return 0
             if args.report_command == "alignment":
-                result = render_alignment_report(alignment_path=args.alignment, out_path=args.out)
+                result = render_alignment_report(
+                    alignment_path=args.alignment, out_path=args.out
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="report",
@@ -6295,7 +7574,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "sequence_count": result.alignment.sequence_count,
                                 "alignment_length": result.alignment.alignment_length,
                                 "quality_score": result.alignment_quality.quality_score,
-                                "warning_count": len(result.alignment_forensic.warnings),
+                                "warning_count": len(
+                                    result.alignment_forensic.warnings
+                                ),
                             },
                             data=result,
                         ),
@@ -6335,14 +7616,23 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             command="report",
                             inputs=inputs,
                             outputs=outputs,
-                            warnings=result.validation.warnings + result.inspection.warnings,
+                            warnings=result.validation.warnings
+                            + result.inspection.warnings,
                             metrics={
                                 "tip_count": result.inspection.tip_count,
                                 "linked_taxa": result.metadata_linkage.linked_taxa,
-                                "readiness_decision": None if result.dataset_audit is None else result.dataset_audit.readiness_decision,
-                                "excluded_taxa": 0 if result.dataset_audit is None else len(result.dataset_audit.exclusion_table.rows),
-                                "blocked_analysis_count": 0 if result.dataset_audit is None else len(result.dataset_audit.blocked_analyses),
-                                "risky_analysis_count": 0 if result.dataset_audit is None else sum(
+                                "readiness_decision": None
+                                if result.dataset_audit is None
+                                else result.dataset_audit.readiness_decision,
+                                "excluded_taxa": 0
+                                if result.dataset_audit is None
+                                else len(result.dataset_audit.exclusion_table.rows),
+                                "blocked_analysis_count": 0
+                                if result.dataset_audit is None
+                                else len(result.dataset_audit.blocked_analyses),
+                                "risky_analysis_count": 0
+                                if result.dataset_audit is None
+                                else sum(
                                     1
                                     for row in result.dataset_audit.analysis_decisions
                                     if row.decision == "risky"
@@ -6374,7 +7664,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             command="report",
                             inputs=inputs,
                             outputs=outputs,
-                            warnings=result.validation.warnings + result.inspection.warnings,
+                            warnings=result.validation.warnings
+                            + result.inspection.warnings,
                             metrics={
                                 "tip_count": result.inspection.tip_count,
                                 "alignment_length": result.alignment.alignment_length,
@@ -6399,7 +7690,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     reported_taxa_path=args.reported_taxa,
                     out_path=args.out,
                 )
-                inputs = [args.tree, *([args.synonym_table] if args.synonym_table is not None else [])]
+                inputs = [
+                    args.tree,
+                    *([args.synonym_table] if args.synonym_table is not None else []),
+                ]
                 if args.metadata is not None:
                     inputs.append(args.metadata)
                 if args.traits is not None:
@@ -6428,7 +7722,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             metrics={
                                 "tree_tip_count": result.taxon_audit.tree_tip_count,
                                 "status": result.taxon_audit.status,
-                                "conflict_count": len(result.taxon_audit.mapping_conflicts.rows),
+                                "conflict_count": len(
+                                    result.taxon_audit.mapping_conflicts.rows
+                                ),
                             },
                             data=result,
                         ),
@@ -6488,9 +7784,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             warnings=result.release_gate.dataset_warnings,
                             metrics={
                                 "decision": result.release_gate.gate.decision,
-                                "retained_taxa": len(result.release_gate.gate.retained_taxa),
-                                "excluded_taxa": len(result.release_gate.gate.excluded_taxa),
-                                "blocked_analysis_count": len(result.release_gate.gate.blocked_analyses),
+                                "retained_taxa": len(
+                                    result.release_gate.gate.retained_taxa
+                                ),
+                                "excluded_taxa": len(
+                                    result.release_gate.gate.excluded_taxa
+                                ),
+                                "blocked_analysis_count": len(
+                                    result.release_gate.gate.blocked_analyses
+                                ),
                             },
                             data=result,
                         ),
@@ -6499,7 +7801,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     return 0
                 print(result.output_path)
                 return 0
-            raise NotImplementedError(f"unsupported report command: {args.report_command}")
+            raise NotImplementedError(
+                f"unsupported report command: {args.report_command}"
+            )
         if args.command == "adapter":
             if args.adapter_command == "inspect":
                 executable = args.executable or args.engine_name
@@ -6508,7 +7812,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     executable,
                     version_args=_adapter_version_args(args.engine_name),
                 )
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.engine_name])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.engine_name]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
@@ -6521,7 +7827,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.adapter_command == "report":
-                report = render_inference_workflow_report(manifest_path=args.manifest_path, out_path=args.out)
+                report = render_inference_workflow_report(
+                    manifest_path=args.manifest_path, out_path=args.out
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="adapter",
@@ -6743,7 +8051,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="adapter",
                         inputs=[args.input_path],
                         outputs=outputs,
-                        metrics={"taxon_count": report.taxon_count, "character_count": report.character_count},
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "character_count": report.character_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6767,7 +8078,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.input_path],
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"warning_count": len(report.run.warning_lines), "resumed": report.resumed},
+                        metrics={
+                            "warning_count": len(report.run.warning_lines),
+                            "resumed": report.resumed,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6794,20 +8108,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "rooted_topology_count": report.rooted_topology_count,
                             "tip_count": consensus_tree.tip_count,
                         },
-                        data={"summary": report, "consensus_newick": report.consensus_newick},
+                        data={
+                            "summary": report,
+                            "consensus_newick": report.consensus_newick,
+                        },
                     ),
                     json_output=args.json,
                 )
                 return 0
             if args.adapter_command == "mrbayes-traces":
                 report = parse_mrbayes_parameter_traces(args.input_path)
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=[args.input_path],
                         outputs=outputs,
-                        metrics={"row_count": report.row_count, "column_count": len(report.columns)},
+                        metrics={
+                            "row_count": report.row_count,
+                            "column_count": len(report.columns),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6815,7 +8137,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.adapter_command == "mrbayes-ess":
                 report = compute_mrbayes_effective_sample_sizes(args.input_path)
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
@@ -6833,14 +8157,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     ess_threshold=args.ess_threshold,
                     mean_shift_threshold=args.mean_shift_threshold,
                 )
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=[args.input_path],
                         outputs=outputs,
                         warnings=[warning["message"] for warning in report.warnings],
-                        metrics={"warning_count": len(report.warnings), "converged": report.converged},
+                        metrics={
+                            "warning_count": len(report.warnings),
+                            "converged": report.converged,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6866,7 +8195,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="adapter",
                         inputs=[args.posterior_trees, args.traces],
                         outputs=outputs,
-                        metrics={"kept_tree_count": report.kept_tree_count, "warning_count": report.warning_count},
+                        metrics={
+                            "kept_tree_count": report.kept_tree_count,
+                            "warning_count": report.warning_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6884,27 +8216,45 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     chain_length=args.chain_length,
                     log_every=args.log_every,
                 )
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path], outputs=[args.out])
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[args.out],
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=[args.input_path],
                         outputs=outputs,
-                        metrics={"taxon_count": report.taxon_count, "calibration_count": report.calibration_count, "tip_date_count": report.tip_date_count},
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "calibration_count": report.calibration_count,
+                            "tip_date_count": report.tip_date_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
                 )
                 return 0
             if args.adapter_command == "beast-calibrations":
-                report = validate_fossil_calibration_table(args.tree_path, args.calibration_path)
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.tree_path, args.calibration_path])
+                report = validate_fossil_calibration_table(
+                    args.tree_path, args.calibration_path
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.tree_path, args.calibration_path],
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=[args.tree_path, args.calibration_path],
                         outputs=outputs,
-                        metrics={"calibration_count": report.calibration_count, "invalid_calibration_count": report.invalid_calibration_count},
+                        metrics={
+                            "calibration_count": report.calibration_count,
+                            "invalid_calibration_count": report.invalid_calibration_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6917,14 +8267,21 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     alignment_path=args.alignment,
                     date_column=args.date_column,
                 )
-                inputs = [args.tree_path, args.tip_dates_path, *([args.alignment] if args.alignment is not None else [])]
+                inputs = [
+                    args.tree_path,
+                    args.tip_dates_path,
+                    *([args.alignment] if args.alignment is not None else []),
+                ]
                 outputs = _finalize_outputs(args, command="adapter", inputs=inputs)
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=inputs,
                         outputs=outputs,
-                        metrics={"valid_tip_count": report.valid_tip_count, "invalid_tip_count": report.invalid_tip_count},
+                        metrics={
+                            "valid_tip_count": report.valid_tip_count,
+                            "invalid_tip_count": report.invalid_tip_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6932,13 +8289,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.adapter_command == "beast-log":
                 report = parse_beast_log(args.input_path)
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=[args.input_path],
                         outputs=outputs,
-                        metrics={"row_count": report.row_count, "column_count": len(report.columns)},
+                        metrics={
+                            "row_count": report.row_count,
+                            "column_count": len(report.columns),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6950,14 +8312,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     ess_threshold=args.ess_threshold,
                     mean_shift_threshold=args.mean_shift_threshold,
                 )
-                outputs = _finalize_outputs(args, command="adapter", inputs=[args.input_path])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=[args.input_path],
                         outputs=outputs,
                         warnings=[warning["message"] for warning in report.warnings],
-                        metrics={"warning_count": len(report.warnings), "converged": report.converged},
+                        metrics={
+                            "warning_count": len(report.warnings),
+                            "converged": report.converged,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6972,14 +8339,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     alignment_path=args.alignment,
                     date_column=args.date_column,
                 )
-                inputs = [args.tree_path, args.calibration_path, *([args.tip_dates] if args.tip_dates is not None else []), *([args.alignment] if args.alignment is not None else [])]
-                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[report.output_path])
+                inputs = [
+                    args.tree_path,
+                    args.calibration_path,
+                    *([args.tip_dates] if args.tip_dates is not None else []),
+                    *([args.alignment] if args.alignment is not None else []),
+                ]
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=inputs, outputs=[report.output_path]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=inputs,
                         outputs=outputs,
-                        metrics={"invalid_calibration_count": report.invalid_calibration_count, "warning_count": report.warning_count},
+                        metrics={
+                            "invalid_calibration_count": report.invalid_calibration_count,
+                            "warning_count": report.warning_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -6995,14 +8372,26 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     diagnostic_paths=args.diagnostics,
                     report_paths=args.reports,
                 )
-                inputs = [*args.inputs, *args.configs, *args.trees, *args.logs, *args.diagnostics, *args.reports]
-                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[args.out_dir])
+                inputs = [
+                    *args.inputs,
+                    *args.configs,
+                    *args.trees,
+                    *args.logs,
+                    *args.diagnostics,
+                    *args.reports,
+                ]
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=inputs, outputs=[args.out_dir]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=inputs,
                         outputs=outputs,
-                        metrics={"file_count": report.file_count, "valid": report.valid},
+                        metrics={
+                            "file_count": report.file_count,
+                            "valid": report.valid,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -7020,13 +8409,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     cross_chain_mean_shift_threshold=args.cross_chain_mean_shift_threshold,
                 )
                 inputs = [args.posterior_trees, args.log, *(args.additional_logs or [])]
-                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[args.out])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=inputs, outputs=[args.out]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
                         inputs=inputs,
                         outputs=outputs,
-                        metrics={"row_count": report.row_count, "warning_count": report.warning_count},
+                        metrics={
+                            "row_count": report.row_count,
+                            "warning_count": report.warning_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -7048,7 +8442,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     cross_chain_mean_shift_threshold=args.cross_chain_mean_shift_threshold,
                 )
                 inputs = [args.posterior_trees, args.log, *(args.additional_logs or [])]
-                outputs = _finalize_outputs(args, command="adapter", inputs=inputs, outputs=[args.out])
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=inputs, outputs=[args.out]
+                )
                 _print_result(
                     build_command_result(
                         command="adapter",
@@ -7061,7 +8457,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.adapter_command == "compare":
-                report = compare_fast_and_ml_trees(args.fast_tree, args.ml_tree, out_path=args.out)
+                report = compare_fast_and_ml_trees(
+                    args.fast_tree, args.ml_tree, out_path=args.out
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="adapter",
@@ -7074,7 +8472,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.fast_tree, args.ml_tree],
                         outputs=outputs,
                         metrics={
-                            "shared_taxa": len(report.comparison_report.topology.shared_taxa),
+                            "shared_taxa": len(
+                                report.comparison_report.topology.shared_taxa
+                            ),
                             "robinson_foulds_distance": report.comparison_report.topology.robinson_foulds_distance,
                         },
                         data=report,
@@ -7082,11 +8482,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-            raise EngineUnavailableError(f"unsupported adapter command: {args.adapter_command}")
+            raise EngineUnavailableError(
+                f"unsupported adapter command: {args.adapter_command}"
+            )
     except PhylogeneticsError as error:
         if _json_requested(args):
             _print_result(
-                build_error_result(command=args.command, inputs=_command_inputs(args), error=error),
+                build_error_result(
+                    command=args.command, inputs=_command_inputs(args), error=error
+                ),
                 json_output=True,
             )
             return 2

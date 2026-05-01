@@ -5,12 +5,18 @@ from pathlib import Path
 import tempfile
 
 from bijux_phylogenetics.ancestral.common import node_signature
-from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.errors import AncestralReconstructionError
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.simulation import simulate_brownian_traits, simulate_discrete_traits, simulate_ou_traits
+from bijux_phylogenetics.simulation import (
+    simulate_brownian_traits,
+    simulate_discrete_traits,
+    simulate_ou_traits,
+)
 
 
 @dataclass(slots=True)
@@ -117,7 +123,9 @@ def validate_continuous_ancestral_reconstruction(
                 seed=seed + replicate,
             )
         else:
-            raise ValueError(f"unsupported continuous simulation model: {simulation_model}")
+            raise ValueError(
+                f"unsupported continuous simulation model: {simulation_model}"
+            )
         trait_path = _write_continuous_trait_table(simulation)
         try:
             reconstruction = reconstruct_continuous_ancestral_states(
@@ -130,9 +138,7 @@ def validate_continuous_ancestral_reconstruction(
         finally:
             trait_path.unlink(missing_ok=True)
         truth_by_node = {
-            row.node: row
-            for row in simulation.node_values
-            if not row.is_tip
+            row.node: row for row in simulation.node_values if not row.is_tip
         }
         observations = [
             ContinuousValidationNodeObservation(
@@ -140,34 +146,45 @@ def validate_continuous_ancestral_reconstruction(
                 descendant_taxa=estimate.descendant_taxa,
                 true_value=truth_by_node[estimate.node].value,
                 estimated_value=estimate.estimate,
-                absolute_error=abs(estimate.estimate - truth_by_node[estimate.node].value),
+                absolute_error=abs(
+                    estimate.estimate - truth_by_node[estimate.node].value
+                ),
             )
             for estimate in reconstruction.estimates
             if not estimate.is_tip
         ]
-        root_error = next(row.absolute_error for row in observations if row.node == root_signature)
+        root_error = next(
+            row.absolute_error for row in observations if row.node == root_signature
+        )
         replicate_rows.append(
             ContinuousValidationReplicate(
                 replicate=replicate + 1,
                 simulation_model=simulation_model,
                 reconstruction_model=reconstruction_model,
                 observations=observations,
-                mean_absolute_error=sum(row.absolute_error for row in observations) / len(observations),
+                mean_absolute_error=sum(row.absolute_error for row in observations)
+                / len(observations),
                 root_absolute_error=root_error,
             )
         )
-    all_observations = [row for replicate in replicate_rows for row in replicate.observations]
+    all_observations = [
+        row for replicate in replicate_rows for row in replicate.observations
+    ]
     return ContinuousAncestralValidationReport(
         tree_path=tree_path,
         simulation_model=simulation_model,
         reconstruction_model=reconstruction_model,
         replicates=replicates,
         node_count=len(all_observations),
-        mean_absolute_error=sum(row.absolute_error for row in all_observations) / len(all_observations),
-        root_mean_absolute_error=sum(row.root_absolute_error for row in replicate_rows) / len(replicate_rows),
+        mean_absolute_error=sum(row.absolute_error for row in all_observations)
+        / len(all_observations),
+        root_mean_absolute_error=sum(row.root_absolute_error for row in replicate_rows)
+        / len(replicate_rows),
         root_mean_squared_error=(
-            sum(row.root_absolute_error**2 for row in replicate_rows) / len(replicate_rows)
-        ) ** 0.5,
+            sum(row.root_absolute_error**2 for row in replicate_rows)
+            / len(replicate_rows)
+        )
+        ** 0.5,
         replicate_rows=replicate_rows,
     )
 
@@ -217,9 +234,7 @@ def validate_discrete_ancestral_reconstruction(
                 "discrete ancestral validation could not generate a usable multi-state simulated replicate"
             )
         truth_by_node = {
-            row.node: row
-            for row in simulation.node_states
-            if not row.is_tip
+            row.node: row for row in simulation.node_states if not row.is_tip
         }
         observations = [
             DiscreteValidationNodeObservation(
@@ -227,15 +242,20 @@ def validate_discrete_ancestral_reconstruction(
                 descendant_taxa=estimate.descendant_taxa,
                 true_state=truth_by_node[estimate.node].state,
                 estimated_state=estimate.most_likely_state,
-                true_state_probability=estimate.state_probabilities.get(truth_by_node[estimate.node].state, 0.0),
-                correct=estimate.most_likely_state == truth_by_node[estimate.node].state,
+                true_state_probability=estimate.state_probabilities.get(
+                    truth_by_node[estimate.node].state, 0.0
+                ),
+                correct=estimate.most_likely_state
+                == truth_by_node[estimate.node].state,
                 ambiguous=estimate.ambiguous,
             )
             for estimate in reconstruction.estimates
             if not estimate.is_tip
         ]
         accuracy = sum(1 for row in observations if row.correct) / len(observations)
-        mean_true_probability = sum(row.true_state_probability for row in observations) / len(observations)
+        mean_true_probability = sum(
+            row.true_state_probability for row in observations
+        ) / len(observations)
         replicate_rows.append(
             DiscreteValidationReplicate(
                 replicate=replicate + 1,
@@ -247,9 +267,13 @@ def validate_discrete_ancestral_reconstruction(
                 calibration_gap=abs(mean_true_probability - accuracy),
             )
         )
-    all_observations = [row for replicate in replicate_rows for row in replicate.observations]
+    all_observations = [
+        row for replicate in replicate_rows for row in replicate.observations
+    ]
     accuracy = sum(1 for row in all_observations if row.correct) / len(all_observations)
-    mean_true_state_probability = sum(row.true_state_probability for row in all_observations) / len(all_observations)
+    mean_true_state_probability = sum(
+        row.true_state_probability for row in all_observations
+    ) / len(all_observations)
     return DiscreteAncestralValidationReport(
         tree_path=tree_path,
         simulation_model="symmetric-discrete",
@@ -264,7 +288,9 @@ def validate_discrete_ancestral_reconstruction(
 
 
 def _write_continuous_trait_table(simulation) -> Path:
-    path = Path(tempfile.mkstemp(prefix="bijux-ancestral-continuous-", suffix=".tsv")[1])
+    path = Path(
+        tempfile.mkstemp(prefix="bijux-ancestral-continuous-", suffix=".tsv")[1]
+    )
     write_taxon_rows(
         path,
         columns=["taxon", "value"],
@@ -281,9 +307,6 @@ def _write_discrete_trait_table(simulation) -> Path:
     write_taxon_rows(
         path,
         columns=["taxon", "state"],
-        rows=[
-            {"taxon": row.taxon, "state": row.state}
-            for row in simulation.traits
-        ],
+        rows=[{"taxon": row.taxon, "state": row.state} for row in simulation.traits],
     )
     return path

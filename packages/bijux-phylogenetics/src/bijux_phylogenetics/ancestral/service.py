@@ -3,11 +3,19 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
-from typing import cast
 
-from bijux_phylogenetics.ancestral.common import reconstruction_manifest, write_ancestral_rows
-from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport, reconstruct_continuous_ancestral_states
-from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport, reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.common import (
+    reconstruction_manifest,
+    write_ancestral_rows,
+)
+from bijux_phylogenetics.ancestral.continuous import (
+    ContinuousAncestralReport,
+    reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete import (
+    DiscreteAncestralReport,
+    reconstruct_discrete_ancestral_states,
+)
 from bijux_phylogenetics.discrete_evolution import run_discrete_state_transition_model
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
@@ -182,7 +190,8 @@ def compare_continuous_ancestral_models(
                 estimate_delta=right_estimate.estimate - left_estimate.estimate,
                 intervals_overlap=not (
                     left_estimate.upper_95_interval < right_estimate.lower_95_interval
-                    or right_estimate.upper_95_interval < left_estimate.lower_95_interval
+                    or right_estimate.upper_95_interval
+                    < left_estimate.lower_95_interval
                 ),
             )
         )
@@ -236,7 +245,9 @@ def compare_discrete_ancestral_models(
         DiscreteAncestralModelComparisonRow(
             model=model,
             parameter_count=transition_reports[model].transition_model.parameter_count,
-            pseudo_log_likelihood=transition_reports[model].transition_model.pseudo_log_likelihood,
+            pseudo_log_likelihood=transition_reports[
+                model
+            ].transition_model.pseudo_log_likelihood,
             aic=transition_reports[model].transition_model.aic,
             selected=False,
         )
@@ -246,7 +257,9 @@ def compare_discrete_ancestral_models(
     for row in rows:
         row.selected = row.model == selected_model
     selected_report = reconstructions[selected_model]
-    selected_by_node = {estimate.node: estimate for estimate in selected_report.estimates}
+    selected_by_node = {
+        estimate.node: estimate for estimate in selected_report.estimates
+    }
     node_differences: list[DiscreteAncestralModelDifference] = []
     for model, report in reconstructions.items():
         if model == selected_model:
@@ -260,7 +273,8 @@ def compare_discrete_ancestral_models(
                     descendant_taxa=estimate.descendant_taxa,
                     selected_state=selected_estimate.most_likely_state,
                     comparison_state=estimate.most_likely_state,
-                    differs=selected_estimate.most_likely_state != estimate.most_likely_state,
+                    differs=selected_estimate.most_likely_state
+                    != estimate.most_likely_state,
                 )
             )
     return DiscreteAncestralModelComparisonReport(
@@ -301,7 +315,9 @@ def compare_continuous_ancestral_trees(
         model=model,
         alpha=alpha,
     )
-    right_by_node = {estimate.node: estimate for estimate in right.estimates if not estimate.is_tip}
+    right_by_node = {
+        estimate.node: estimate for estimate in right.estimates if not estimate.is_tip
+    }
     rows = [
         ContinuousAncestralTreeComparisonRow(
             node=estimate.node,
@@ -353,14 +369,17 @@ def compare_discrete_ancestral_trees(
         state_ordering=state_ordering,
         ordered_states=ordered_states,
     )
-    right_by_node = {estimate.node: estimate for estimate in right.estimates if not estimate.is_tip}
+    right_by_node = {
+        estimate.node: estimate for estimate in right.estimates if not estimate.is_tip
+    }
     rows = [
         DiscreteAncestralTreeComparisonRow(
             node=estimate.node,
             descendant_taxa=estimate.descendant_taxa,
             left_state=estimate.most_likely_state,
             right_state=right_by_node[estimate.node].most_likely_state,
-            differs=estimate.most_likely_state != right_by_node[estimate.node].most_likely_state,
+            differs=estimate.most_likely_state
+            != right_by_node[estimate.node].most_likely_state,
             left_confidence=estimate.confidence,
             right_confidence=right_by_node[estimate.node].confidence,
         )
@@ -377,7 +396,9 @@ def compare_discrete_ancestral_trees(
     )
 
 
-def write_ancestral_state_table(path: Path, report: ContinuousAncestralReport | DiscreteAncestralReport) -> Path:
+def write_ancestral_state_table(
+    path: Path, report: ContinuousAncestralReport | DiscreteAncestralReport
+) -> Path:
     """Export an ancestral-state report as a deterministic TSV table."""
     if isinstance(report, ContinuousAncestralReport):
         rows = [
@@ -415,7 +436,9 @@ def write_ancestral_state_table(path: Path, report: ContinuousAncestralReport | 
             "descendant_taxa": ",".join(estimate.descendant_taxa),
             "most_likely_state": estimate.most_likely_state,
             "state_set": ",".join(estimate.state_set),
-            "state_probabilities": json.dumps(estimate.state_probabilities, sort_keys=True),
+            "state_probabilities": json.dumps(
+                estimate.state_probabilities, sort_keys=True
+            ),
             "ambiguous": str(estimate.ambiguous).lower(),
         }
         for estimate in report.estimates
@@ -452,7 +475,11 @@ def render_ancestral_state_tree(
             for estimate in report.estimates
             if not estimate.is_tip
         }
-        internal_annotation_colors = {estimate.node: "#6d28d9" for estimate in report.estimates if not estimate.is_tip}
+        internal_annotation_colors = {
+            estimate.node: "#6d28d9"
+            for estimate in report.estimates
+            if not estimate.is_tip
+        }
         continuous_traits = {
             estimate.node_name: estimate.estimate
             for estimate in report.estimates
@@ -468,7 +495,9 @@ def render_ancestral_state_tree(
         )
 
     internal_annotations = {
-        estimate.node: estimate.most_likely_state if not estimate.ambiguous else "/".join(estimate.state_set)
+        estimate.node: estimate.most_likely_state
+        if not estimate.ambiguous
+        else "/".join(estimate.state_set)
         for estimate in report.estimates
         if not estimate.is_tip
     }
@@ -477,14 +506,13 @@ def render_ancestral_state_tree(
         for estimate in report.estimates
         if estimate.is_tip and estimate.node_name is not None
     }
-    palette = {
-        state: color
-        for state, color in zip(
+    palette = dict(
+        zip(
             sorted(report.observed_states),
             ("#0f766e", "#1d4ed8", "#c2410c", "#7c3aed", "#b91c1c", "#047857"),
             strict=False,
         )
-    }
+    )
     internal_annotation_colors = {
         estimate.node: palette.get(estimate.most_likely_state, "#6d28d9")
         for estimate in report.estimates
@@ -564,7 +592,9 @@ def render_ancestral_state_report(
             if compare_model is not None and model != "fitch"
             else None
         )
-    from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
+    from bijux_phylogenetics.ancestral.sensitivity import (
+        build_ancestral_sensitivity_report,
+    )
 
     sensitivity = build_ancestral_sensitivity_report(
         tree_path=tree_path,
@@ -582,7 +612,9 @@ def render_ancestral_state_report(
         coding_map=coding_map,
     )
     render_path = out_path.with_suffix(".svg")
-    render_result = render_ancestral_state_tree(tree_path, report, out_path=render_path, layout="phylogram")
+    render_result = render_ancestral_state_tree(
+        tree_path, report, out_path=render_path, layout="phylogram"
+    )
     supplement_sections = [
         "ancestral-methods",
         "ancestral-exclusions",
@@ -591,16 +623,53 @@ def render_ancestral_state_report(
         "ancestral-sensitivity",
     ]
     sections = [
-        ("ancestral-reconstruction", json.dumps(asdict(report), indent=2, sort_keys=True, default=str)),
-        ("ancestral-render", json.dumps(asdict(render_result), indent=2, sort_keys=True, default=str)),
-        ("ancestral-methods", json.dumps(_report_methods(report, reconstruction_kind=reconstruction_kind), indent=2, sort_keys=True, default=str)),
-        ("ancestral-exclusions", json.dumps(_report_exclusions(report), indent=2, sort_keys=True, default=str)),
-        ("ancestral-node-table", json.dumps(_report_node_table(report), indent=2, sort_keys=True, default=str)),
-        ("ancestral-uncertainty", json.dumps(_report_uncertainty(report), indent=2, sort_keys=True, default=str)),
-        ("ancestral-sensitivity", json.dumps(asdict(sensitivity), indent=2, sort_keys=True, default=str)),
+        (
+            "ancestral-reconstruction",
+            json.dumps(asdict(report), indent=2, sort_keys=True, default=str),
+        ),
+        (
+            "ancestral-render",
+            json.dumps(asdict(render_result), indent=2, sort_keys=True, default=str),
+        ),
+        (
+            "ancestral-methods",
+            json.dumps(
+                _report_methods(report, reconstruction_kind=reconstruction_kind),
+                indent=2,
+                sort_keys=True,
+                default=str,
+            ),
+        ),
+        (
+            "ancestral-exclusions",
+            json.dumps(
+                _report_exclusions(report), indent=2, sort_keys=True, default=str
+            ),
+        ),
+        (
+            "ancestral-node-table",
+            json.dumps(
+                _report_node_table(report), indent=2, sort_keys=True, default=str
+            ),
+        ),
+        (
+            "ancestral-uncertainty",
+            json.dumps(
+                _report_uncertainty(report), indent=2, sort_keys=True, default=str
+            ),
+        ),
+        (
+            "ancestral-sensitivity",
+            json.dumps(asdict(sensitivity), indent=2, sort_keys=True, default=str),
+        ),
     ]
     if comparison is not None:
-        sections.append(("ancestral-comparison", json.dumps(asdict(comparison), indent=2, sort_keys=True, default=str)))
+        sections.append(
+            (
+                "ancestral-comparison",
+                json.dumps(asdict(comparison), indent=2, sort_keys=True, default=str),
+            )
+        )
     title = f"Bijux Ancestral State Report: {trait}"
     machine_manifest = reconstruction_manifest(
         report_kind="ancestral-state",
@@ -612,7 +681,12 @@ def render_ancestral_state_report(
         rendered_tree=str(render_path),
     )
     machine_manifest["supplement_sections"] = supplement_sections
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return AncestralStateReportBuildResult(
         output_path=out_path,
         report_kind="ancestral-state",
@@ -645,11 +719,18 @@ def _report_methods(
         payload["supports_explicit_models"] = ["brownian", "ou"]
     else:
         payload["observed_states"] = report.observed_states
-        payload["supports_explicit_models"] = ["fitch", "equal-rates", "symmetric", "all-rates-different"]
+        payload["supports_explicit_models"] = [
+            "fitch",
+            "equal-rates",
+            "symmetric",
+            "all-rates-different",
+        ]
     return payload
 
 
-def _report_exclusions(report: ContinuousAncestralReport | DiscreteAncestralReport) -> dict[str, object]:
+def _report_exclusions(
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+) -> dict[str, object]:
     payload: dict[str, object] = {
         "dropped_missing_taxa": report.dropped_missing_taxa,
         "warnings": report.warnings,
@@ -659,7 +740,9 @@ def _report_exclusions(report: ContinuousAncestralReport | DiscreteAncestralRepo
     return payload
 
 
-def _report_node_table(report: ContinuousAncestralReport | DiscreteAncestralReport) -> list[dict[str, object]]:
+def _report_node_table(
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+) -> list[dict[str, object]]:
     if isinstance(report, ContinuousAncestralReport):
         return [
             {
@@ -686,7 +769,9 @@ def _report_node_table(report: ContinuousAncestralReport | DiscreteAncestralRepo
     ]
 
 
-def _report_uncertainty(report: ContinuousAncestralReport | DiscreteAncestralReport) -> dict[str, object]:
+def _report_uncertainty(
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+) -> dict[str, object]:
     if isinstance(report, ContinuousAncestralReport):
         return {
             "unstable_nodes": report.unstable_nodes,

@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.compare.topology import compare_branch_lengths, compare_tree_paths
 from bijux_phylogenetics.bayesian.beast import assess_beast_convergence
 from bijux_phylogenetics.bayesian.mrbayes import assess_mrbayes_convergence
 from bijux_phylogenetics.bayesian.posterior import (
@@ -12,6 +11,10 @@ from bijux_phylogenetics.bayesian.posterior import (
     compare_bayesian_tree_sets,
     summarize_maximum_clade_credibility_tree,
     summarize_posterior_node_ages,
+)
+from bijux_phylogenetics.compare.topology import (
+    compare_branch_lengths,
+    compare_tree_paths,
 )
 
 
@@ -102,27 +105,45 @@ def compare_independent_bayesian_runs(
         ess_threshold=ess_threshold,
         mean_shift_threshold=mean_shift_threshold,
     )
-    left_parameters = {str(row["parameter"]): row for row in left_convergence.parameter_summaries}
-    right_parameters = {str(row["parameter"]): row for row in right_convergence.parameter_summaries}
+    left_parameters = {
+        str(row["parameter"]): row for row in left_convergence.parameter_summaries
+    }
+    right_parameters = {
+        str(row["parameter"]): row for row in right_convergence.parameter_summaries
+    }
     shared_parameters = sorted(left_parameters.keys() & right_parameters.keys())
     parameter_differences = [
         BayesianParameterDifference(
             parameter=parameter,
             left_mean=float(left_parameters[parameter]["mean"]),
             right_mean=float(right_parameters[parameter]["mean"]),
-            mean_delta=round(float(right_parameters[parameter]["mean"]) - float(left_parameters[parameter]["mean"]), 6),
-            left_effective_sample_size=float(left_parameters[parameter]["effective_sample_size"]),
-            right_effective_sample_size=float(right_parameters[parameter]["effective_sample_size"]),
+            mean_delta=round(
+                float(right_parameters[parameter]["mean"])
+                - float(left_parameters[parameter]["mean"]),
+                6,
+            ),
+            left_effective_sample_size=float(
+                left_parameters[parameter]["effective_sample_size"]
+            ),
+            right_effective_sample_size=float(
+                right_parameters[parameter]["effective_sample_size"]
+            ),
         )
         for parameter in shared_parameters
     ]
     warnings: list[str] = []
     if not tree_comparison.mcc_topology.topology_equal:
-        warnings.append("independent runs select different maximum clade credibility topologies")
+        warnings.append(
+            "independent runs select different maximum clade credibility topologies"
+        )
     if not left_convergence.converged or not right_convergence.converged:
-        warnings.append("one or more independent runs remain unconverged under the requested thresholds")
+        warnings.append(
+            "one or more independent runs remain unconverged under the requested thresholds"
+        )
     if any(abs(row.mean_delta) > 0.5 for row in parameter_differences):
-        warnings.append("one or more posterior parameter means differ materially across independent runs")
+        warnings.append(
+            "one or more posterior parameter means differ materially across independent runs"
+        )
     return BayesianIndependentRunComparisonReport(
         left_tree_set_path=left_tree_set_path,
         right_tree_set_path=right_tree_set_path,
@@ -190,8 +211,12 @@ def _compare_posterior_tree_sets_by_scenario(
         right_tree_set_path,
         burnin_fraction=burnin_fraction,
     )
-    left_ages = summarize_posterior_node_ages(left_tree_set_path, burnin_fraction=burnin_fraction)
-    right_ages = summarize_posterior_node_ages(right_tree_set_path, burnin_fraction=burnin_fraction)
+    left_ages = summarize_posterior_node_ages(
+        left_tree_set_path, burnin_fraction=burnin_fraction
+    )
+    right_ages = summarize_posterior_node_ages(
+        right_tree_set_path, burnin_fraction=burnin_fraction
+    )
     left_rows = {row.clade: row for row in left_ages.rows}
     right_rows = {row.clade: row for row in right_ages.rows}
     shared_clades = sorted(left_rows.keys() & right_rows.keys())
@@ -200,16 +225,22 @@ def _compare_posterior_tree_sets_by_scenario(
             clade=clade,
             left_mean_height=left_rows[clade].mean_height,
             right_mean_height=right_rows[clade].mean_height,
-            delta=round(right_rows[clade].mean_height - left_rows[clade].mean_height, 15),
+            delta=round(
+                right_rows[clade].mean_height - left_rows[clade].mean_height, 15
+            ),
         )
         for clade in shared_clades
     ]
     age_differences.sort(key=lambda row: (-abs(row.delta), row.clade))
     warnings: list[str] = []
     if not tree_comparison.mcc_topology.topology_equal:
-        warnings.append(f"{comparison_axis} comparison changes the maximum clade credibility topology")
+        warnings.append(
+            f"{comparison_axis} comparison changes the maximum clade credibility topology"
+        )
     if any(abs(row.delta) > 0.25 for row in age_differences):
-        warnings.append(f"{comparison_axis} comparison shifts one or more clade ages materially")
+        warnings.append(
+            f"{comparison_axis} comparison shifts one or more clade ages materially"
+        )
     return BayesianPosteriorScenarioComparisonReport(
         comparison_axis=comparison_axis,
         left_label=left_label,
@@ -234,18 +265,28 @@ def compare_ml_tree_to_bayesian_posterior(
         posterior_tree_set_path,
         burnin_fraction=burnin_fraction,
     )
-    mcc_tree_path = Path(tempfile.mkstemp(prefix=f"{posterior_tree_set_path.stem}.mcc-", suffix=".nwk")[1])
+    mcc_tree_path = Path(
+        tempfile.mkstemp(prefix=f"{posterior_tree_set_path.stem}.mcc-", suffix=".nwk")[
+            1
+        ]
+    )
     mcc_tree_path.write_text(mcc.mcc_newick + "\n", encoding="utf-8")
     try:
         topology = compare_tree_paths(ml_tree_path, mcc_tree_path)
         branch_lengths = compare_branch_lengths(ml_tree_path, mcc_tree_path)
         warnings: list[str] = []
         if not topology.topology_equal:
-            warnings.append("maximum-likelihood and Bayesian maximum clade credibility trees disagree in rooted topology")
+            warnings.append(
+                "maximum-likelihood and Bayesian maximum clade credibility trees disagree in rooted topology"
+            )
         if any(pair.delta not in {None, 0.0} for pair in branch_lengths.shared_splits):
-            warnings.append("shared clades differ in branch lengths between ML and Bayesian summaries")
+            warnings.append(
+                "shared clades differ in branch lengths between ML and Bayesian summaries"
+            )
         if topology.same_taxa_different_rooting:
-            warnings.append("ML and Bayesian summaries share taxa and unrooted topology but disagree in rooting")
+            warnings.append(
+                "ML and Bayesian summaries share taxa and unrooted topology but disagree in rooting"
+            )
         return BayesianMlTreeComparisonReport(
             ml_tree_path=ml_tree_path,
             posterior_tree_set_path=posterior_tree_set_path,

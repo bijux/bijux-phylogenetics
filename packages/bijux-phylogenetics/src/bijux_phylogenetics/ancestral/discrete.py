@@ -66,7 +66,9 @@ def reconstruct_discrete_ancestral_states(
     """Reconstruct discrete ancestral states under Fitch parsimony."""
     resolved_model = _resolve_discrete_model_name(model)
     if resolved_model == "fitch" and state_ordering != "unordered":
-        raise ValueError("ordered discrete ancestral reconstruction requires a likelihood model")
+        raise ValueError(
+            "ordered discrete ancestral reconstruction requires a likelihood model"
+        )
     dataset = load_discrete_dataset(
         tree_path,
         traits_path,
@@ -94,7 +96,11 @@ def reconstruct_discrete_ancestral_states(
             )
             for estimate in likelihood_report.estimates
         ]
-        unstable_nodes = [estimate.node for estimate in estimates if estimate.unstable and not estimate.is_tip]
+        unstable_nodes = [
+            estimate.node
+            for estimate in estimates
+            if estimate.unstable and not estimate.is_tip
+        ]
         weak_support_nodes = [
             estimate.node
             for estimate in estimates
@@ -102,9 +108,13 @@ def reconstruct_discrete_ancestral_states(
         ]
         warnings = list(dataset.warnings)
         if unstable_nodes:
-            warnings.append("one or more discrete ancestral nodes remain unstable across candidate states")
+            warnings.append(
+                "one or more discrete ancestral nodes remain unstable across candidate states"
+            )
         if weak_support_nodes:
-            warnings.append("low-confidence ancestral state assignments should not be overinterpreted as definitive transitions")
+            warnings.append(
+                "low-confidence ancestral state assignments should not be overinterpreted as definitive transitions"
+            )
         return DiscreteAncestralReport(
             tree_path=tree_path,
             traits_path=traits_path,
@@ -141,8 +151,7 @@ def reconstruct_discrete_ancestral_states(
         return candidate
 
     candidate_sets = {
-        node_signature(node): downpass(node)
-        for node in dataset.tree.iter_nodes()
+        node_signature(node): downpass(node) for node in dataset.tree.iter_nodes()
     }
 
     for node in dataset.tree.iter_nodes():
@@ -165,7 +174,11 @@ def reconstruct_discrete_ancestral_states(
                 state_probabilities=probabilities,
             )
         )
-    unstable_nodes = [estimate.node for estimate in estimates if estimate.unstable and not estimate.is_tip]
+    unstable_nodes = [
+        estimate.node
+        for estimate in estimates
+        if estimate.unstable and not estimate.is_tip
+    ]
     weak_support_nodes = [
         estimate.node
         for estimate in estimates
@@ -173,9 +186,13 @@ def reconstruct_discrete_ancestral_states(
     ]
     warnings = list(dataset.warnings)
     if unstable_nodes:
-        warnings.append("one or more discrete ancestral nodes remain unstable across candidate states")
+        warnings.append(
+            "one or more discrete ancestral nodes remain unstable across candidate states"
+        )
     if weak_support_nodes:
-        warnings.append("low-confidence ancestral state assignments should not be overinterpreted as definitive transitions")
+        warnings.append(
+            "low-confidence ancestral state assignments should not be overinterpreted as definitive transitions"
+        )
 
     return DiscreteAncestralReport(
         tree_path=tree_path,

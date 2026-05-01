@@ -4,14 +4,20 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.diagnostics import TraceConvergenceReport, summarize_trace_convergence
-from bijux_phylogenetics.bayesian.posterior import summarize_maximum_clade_credibility_tree
+from bijux_phylogenetics.bayesian.diagnostics import (
+    TraceConvergenceReport,
+    summarize_trace_convergence,
+)
+from bijux_phylogenetics.bayesian.posterior import (
+    summarize_maximum_clade_credibility_tree,
+)
 from bijux_phylogenetics.comparative.common import descendant_taxa
 from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.engines.workflows import _ensure_inference_ready_alignment
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
-from bijux_phylogenetics.engines.workflows import _ensure_inference_ready_alignment
 
 
 @dataclass(slots=True)
@@ -229,7 +235,10 @@ def _read_delimited_rows(path: Path) -> list[dict[str, str]]:
         reader = csv.DictReader(handle, delimiter=delimiter)
         if reader.fieldnames is None:
             raise ValueError(f"calibration table contains no header: {path}")
-        return [{key: value or "" for key, value in row.items() if key is not None} for row in reader]
+        return [
+            {key: value or "" for key, value in row.items() if key is not None}
+            for row in reader
+        ]
 
 
 def _named_clades(tree: PhyloTree) -> dict[str, list[str]]:
@@ -256,7 +265,13 @@ def _parse_target_taxa(raw: str) -> list[str]:
     return sorted({token.strip() for token in normalized.split("|") if token.strip()})
 
 
-def _parse_age(raw: str, *, calibration_id: str, field_name: str, issues: list[CalibrationValidationIssue]) -> float | None:
+def _parse_age(
+    raw: str,
+    *,
+    calibration_id: str,
+    field_name: str,
+    issues: list[CalibrationValidationIssue],
+) -> float | None:
     if not raw.strip():
         return None
     try:
@@ -273,7 +288,9 @@ def _parse_age(raw: str, *, calibration_id: str, field_name: str, issues: list[C
     return value
 
 
-def validate_fossil_calibration_table(tree_path: Path, calibration_path: Path) -> FossilCalibrationValidationReport:
+def validate_fossil_calibration_table(
+    tree_path: Path, calibration_path: Path
+) -> FossilCalibrationValidationReport:
     """Validate fossil calibration targets and age constraints against one tree."""
     tree = load_tree(tree_path)
     rows = _read_delimited_rows(calibration_path)
@@ -289,8 +306,18 @@ def validate_fossil_calibration_table(tree_path: Path, calibration_path: Path) -
         clade_name = row.get("clade_name", "").strip()
         taxa = _parse_target_taxa(row.get("taxa", ""))
         distribution = row.get("distribution", "").strip() or "uniform"
-        minimum_age = _parse_age(row.get("minimum_age", ""), calibration_id=calibration_id, field_name="minimum_age", issues=issues)
-        maximum_age = _parse_age(row.get("maximum_age", ""), calibration_id=calibration_id, field_name="maximum_age", issues=issues)
+        minimum_age = _parse_age(
+            row.get("minimum_age", ""),
+            calibration_id=calibration_id,
+            field_name="minimum_age",
+            issues=issues,
+        )
+        maximum_age = _parse_age(
+            row.get("maximum_age", ""),
+            calibration_id=calibration_id,
+            field_name="maximum_age",
+            issues=issues,
+        )
 
         target_kind = "taxa"
         target_label = clade_name or "|".join(taxa)
@@ -358,7 +385,11 @@ def validate_fossil_calibration_table(tree_path: Path, calibration_path: Path) -
                     message="maximum calibration age cannot be negative",
                 )
             )
-        if minimum_age is not None and maximum_age is not None and minimum_age > maximum_age:
+        if (
+            minimum_age is not None
+            and maximum_age is not None
+            and minimum_age > maximum_age
+        ):
             valid = False
             issues.append(
                 CalibrationValidationIssue(
@@ -403,7 +434,9 @@ def validate_fossil_calibration_table(tree_path: Path, calibration_path: Path) -
     )
 
 
-def detect_impossible_calibration_constraints(tree_path: Path, calibration_path: Path) -> ImpossibleCalibrationConstraintReport:
+def detect_impossible_calibration_constraints(
+    tree_path: Path, calibration_path: Path
+) -> ImpossibleCalibrationConstraintReport:
     """Return calibrations with impossible target or age constraints."""
     report = validate_fossil_calibration_table(tree_path, calibration_path)
     impossible_codes = {
@@ -427,7 +460,9 @@ def detect_impossible_calibration_constraints(tree_path: Path, calibration_path:
         tree_path=tree_path,
         calibration_path=calibration_path,
         impossible_calibration_ids=impossible_ids,
-        issues=[issue for issue in report.issues if issue.calibration_id in impossible_ids],
+        issues=[
+            issue for issue in report.issues if issue.calibration_id in impossible_ids
+        ],
     )
 
 
@@ -439,7 +474,9 @@ def _tree_root_age(tree_path: Path) -> float:
     return round(max(float(length) for length in lengths), 15)
 
 
-def assess_calibration_dominance(tree_path: Path, calibration_path: Path) -> CalibrationDominanceReport:
+def assess_calibration_dominance(
+    tree_path: Path, calibration_path: Path
+) -> CalibrationDominanceReport:
     """Flag cases where one calibration contributes a disproportionate share of the dated-tree age range."""
     report = validate_fossil_calibration_table(tree_path, calibration_path)
     root_age = _tree_root_age(tree_path)
@@ -452,14 +489,26 @@ def assess_calibration_dominance(tree_path: Path, calibration_path: Path) -> Cal
         span_fraction: float | None = None
         dominates_root_age = False
         warning: str | None = None
-        if calibration.minimum_age is not None and calibration.maximum_age is not None and root_age > 0.0:
-            span_fraction = round((calibration.maximum_age - calibration.minimum_age) / root_age, 15)
+        if (
+            calibration.minimum_age is not None
+            and calibration.maximum_age is not None
+            and root_age > 0.0
+        ):
+            span_fraction = round(
+                (calibration.maximum_age - calibration.minimum_age) / root_age, 15
+            )
             dominates_root_age = span_fraction >= 0.5
             if dominates_root_age:
                 warning = "calibration age span covers at least half of the current root-age scale"
         elif root_age > 0.0 and (
-            (calibration.minimum_age is not None and calibration.minimum_age / root_age >= 0.8)
-            or (calibration.maximum_age is not None and calibration.maximum_age / root_age >= 0.8)
+            (
+                calibration.minimum_age is not None
+                and calibration.minimum_age / root_age >= 0.8
+            )
+            or (
+                calibration.maximum_age is not None
+                and calibration.maximum_age / root_age >= 0.8
+            )
         ):
             dominates_root_age = True
             warning = "single-sided calibration bound lies close to the current root-age scale"
@@ -477,10 +526,18 @@ def assess_calibration_dominance(tree_path: Path, calibration_path: Path) -> Cal
             )
         )
     if report.valid_calibration_count == 1 and report.calibrations:
-        only_calibration = next((calibration for calibration in report.calibrations if calibration.valid), None)
-        if only_calibration is not None and only_calibration.calibration_id not in dominant_calibration_ids:
+        only_calibration = next(
+            (calibration for calibration in report.calibrations if calibration.valid),
+            None,
+        )
+        if (
+            only_calibration is not None
+            and only_calibration.calibration_id not in dominant_calibration_ids
+        ):
             dominant_calibration_ids.append(only_calibration.calibration_id)
-        warnings.append("only one valid calibration remains, so time estimates are effectively driven by a single calibration target")
+        warnings.append(
+            "only one valid calibration remains, so time estimates are effectively driven by a single calibration target"
+        )
     return CalibrationDominanceReport(
         tree_path=tree_path,
         calibration_path=calibration_path,
@@ -506,7 +563,9 @@ def validate_tip_dating_metadata(
     alignment_taxa: set[str] | None = None
     if alignment_path is not None:
         _ensure_inference_ready_alignment(alignment_path)
-        alignment_taxa = {record.identifier for record in load_fasta_alignment(alignment_path)}
+        alignment_taxa = {
+            record.identifier for record in load_fasta_alignment(alignment_path)
+        }
     table = load_taxon_table(tip_dates_path, taxon_column=taxon_column)
     if date_column not in table.columns:
         raise ValueError(f"tip-dating table does not contain column '{date_column}'")
@@ -515,7 +574,9 @@ def validate_tip_dating_metadata(
     tip_dates: list[ValidatedTipDate] = []
     extra_tip_taxa = sorted(set(table.taxa) - tree_taxa)
     missing_tree_taxa = sorted(tree_taxa - set(table.taxa))
-    extra_alignment_taxa = sorted(set(table.taxa) - alignment_taxa) if alignment_taxa is not None else []
+    extra_alignment_taxa = (
+        sorted(set(table.taxa) - alignment_taxa) if alignment_taxa is not None else []
+    )
     for row in table.rows:
         taxon = row[table.taxon_column]
         raw_date = row.get(date_column, "")
@@ -523,19 +584,43 @@ def validate_tip_dating_metadata(
         parsed_date: float | None = None
         if taxon not in tree_taxa:
             valid = False
-            issues.append(TipDatingValidationIssue(taxon=taxon, code="taxon-missing-from-tree", message="dated tip is absent from the tree"))
+            issues.append(
+                TipDatingValidationIssue(
+                    taxon=taxon,
+                    code="taxon-missing-from-tree",
+                    message="dated tip is absent from the tree",
+                )
+            )
         if alignment_taxa is not None and taxon not in alignment_taxa:
             valid = False
-            issues.append(TipDatingValidationIssue(taxon=taxon, code="taxon-missing-from-alignment", message="dated tip is absent from the alignment"))
+            issues.append(
+                TipDatingValidationIssue(
+                    taxon=taxon,
+                    code="taxon-missing-from-alignment",
+                    message="dated tip is absent from the alignment",
+                )
+            )
         if not raw_date.strip():
             valid = False
-            issues.append(TipDatingValidationIssue(taxon=taxon, code="missing-date", message="dated tip requires a numeric date value"))
+            issues.append(
+                TipDatingValidationIssue(
+                    taxon=taxon,
+                    code="missing-date",
+                    message="dated tip requires a numeric date value",
+                )
+            )
         else:
             try:
                 parsed_date = float(raw_date)
             except ValueError:
                 valid = False
-                issues.append(TipDatingValidationIssue(taxon=taxon, code="invalid-date", message="dated tip value must be numeric"))
+                issues.append(
+                    TipDatingValidationIssue(
+                        taxon=taxon,
+                        code="invalid-date",
+                        message="dated tip value must be numeric",
+                    )
+                )
         tip_dates.append(ValidatedTipDate(taxon=taxon, date=parsed_date, valid=valid))
 
     valid_tip_count = sum(1 for tip in tip_dates if tip.valid)
@@ -577,10 +662,16 @@ def assess_time_tree_readiness(
     calibration_report = None
     calibration_dominance = None
     if calibration_path is not None:
-        calibration_report = validate_fossil_calibration_table(tree_path, calibration_path)
+        calibration_report = validate_fossil_calibration_table(
+            tree_path, calibration_path
+        )
         if calibration_report.invalid_calibration_count:
-            blockers.append("calibration table contains invalid fossil calibration targets or ages")
-        calibration_dominance = assess_calibration_dominance(tree_path, calibration_path)
+            blockers.append(
+                "calibration table contains invalid fossil calibration targets or ages"
+            )
+        calibration_dominance = assess_calibration_dominance(
+            tree_path, calibration_path
+        )
         warnings.extend(calibration_dominance.warnings)
     tip_date_report = None
     if tip_dates_path is not None:
@@ -592,9 +683,13 @@ def assess_time_tree_readiness(
             date_column=date_column,
         )
         if tip_date_report.invalid_tip_count:
-            blockers.append("tip-date table contains missing, invalid, or mismatched dated taxa")
+            blockers.append(
+                "tip-date table contains missing, invalid, or mismatched dated taxa"
+            )
     if calibration_path is None and tip_dates_path is None:
-        warnings.append("no calibrations or tip dates were supplied, so the tree cannot be dated by the current workflow")
+        warnings.append(
+            "no calibrations or tip dates were supplied, so the tree cannot be dated by the current workflow"
+        )
     decision = "ready"
     if blockers:
         decision = "blocked"
@@ -640,7 +735,9 @@ def prepare_beast_time_tree_analysis(
         else None
     )
     if calibration_report is not None and calibration_report.invalid_calibration_count:
-        raise ValueError("BEAST preparation requires all fossil calibrations to validate successfully")
+        raise ValueError(
+            "BEAST preparation requires all fossil calibrations to validate successfully"
+        )
     tip_date_report = (
         validate_tip_dating_metadata(
             tree_path or alignment_path,
@@ -653,9 +750,13 @@ def prepare_beast_time_tree_analysis(
         else None
     )
     if tip_dates_path is not None and tree_path is None:
-        raise ValueError("BEAST preparation requires tree_path when tip_dates_path is provided")
+        raise ValueError(
+            "BEAST preparation requires tree_path when tip_dates_path is provided"
+        )
     if tip_date_report is not None and tip_date_report.invalid_tip_count:
-        raise ValueError("BEAST preparation requires all tip dates to validate successfully")
+        raise ValueError(
+            "BEAST preparation requires all tip dates to validate successfully"
+        )
 
     sequence_block = "\n".join(
         f'    <sequence taxon="{record.identifier}" value="{record.sequence}" />'
@@ -679,7 +780,9 @@ def prepare_beast_time_tree_analysis(
             )
             for calibration in calibration_report.calibrations
         ]
-        calibration_block = "\n".join(["  <calibrations>", *calibration_lines, "  </calibrations>"])
+        calibration_block = "\n".join(
+            ["  <calibrations>", *calibration_lines, "  </calibrations>"]
+        )
     xml = "\n".join(
         [
             '<?xml version="1.0" encoding="UTF-8"?>',
@@ -689,8 +792,8 @@ def prepare_beast_time_tree_analysis(
             "  </alignment>",
             f'  <clockModel name="{clock_model}" />',
             f'  <treePrior name="{tree_prior}" />',
-            *( [tip_date_block] if tip_date_block else [] ),
-            *( [calibration_block] if calibration_block else [] ),
+            *([tip_date_block] if tip_date_block else []),
+            *([calibration_block] if calibration_block else []),
             f'  <run chainLength="{chain_length}" logEvery="{log_every}" />',
             "</beast>",
             "",
@@ -711,15 +814,23 @@ def prepare_beast_time_tree_analysis(
         tree_prior=tree_prior,
         chain_length=chain_length,
         log_every=log_every,
-        calibration_count=0 if calibration_report is None else calibration_report.calibration_count,
-        tip_date_count=0 if tip_date_report is None else tip_date_report.valid_tip_count,
+        calibration_count=0
+        if calibration_report is None
+        else calibration_report.calibration_count,
+        tip_date_count=0
+        if tip_date_report is None
+        else tip_date_report.valid_tip_count,
     )
 
 
 def parse_beast_log(path: Path) -> BeastLogReport:
     """Parse a BEAST-style log table into deterministic numeric rows."""
     with path.open(encoding="utf-8", newline="") as handle:
-        filtered_lines = [line for line in handle if line.strip() and not line.lstrip().startswith("#")]
+        filtered_lines = [
+            line
+            for line in handle
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
     reader = csv.DictReader(filtered_lines, delimiter="\t")
     if reader.fieldnames is None:
         raise ValueError(f"BEAST log contains no header: {path}")
@@ -748,10 +859,18 @@ def validate_beast_posterior_log(
     """Validate that a BEAST posterior log contains the required fields and monotonic sampled states."""
     issues: list[BeastLogValidationIssue] = []
     with path.open(encoding="utf-8", newline="") as handle:
-        filtered_lines = [line for line in handle if line.strip() and not line.lstrip().startswith("#")]
+        filtered_lines = [
+            line
+            for line in handle
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
     reader = csv.DictReader(filtered_lines, delimiter="\t")
     if reader.fieldnames is None:
-        issues.append(BeastLogValidationIssue(code="missing-header", message="BEAST log contains no header row"))
+        issues.append(
+            BeastLogValidationIssue(
+                code="missing-header", message="BEAST log contains no header row"
+            )
+        )
         return BeastPosteriorLogValidationReport(
             path=path,
             row_count=0,
@@ -762,13 +881,31 @@ def validate_beast_posterior_log(
             issues=issues,
             valid=False,
         )
-    state_field = "state" if "state" in reader.fieldnames else "State" if "State" in reader.fieldnames else None
+    state_field = (
+        "state"
+        if "state" in reader.fieldnames
+        else "State"
+        if "State" in reader.fieldnames
+        else None
+    )
     observed_columns = [field for field in reader.fieldnames if field]
     if state_field is None:
-        issues.append(BeastLogValidationIssue(code="missing-state-column", message="BEAST log lacks a state column"))
-    missing_columns = [column for column in required_columns if column not in observed_columns]
+        issues.append(
+            BeastLogValidationIssue(
+                code="missing-state-column", message="BEAST log lacks a state column"
+            )
+        )
+    missing_columns = [
+        column for column in required_columns if column not in observed_columns
+    ]
     for column in missing_columns:
-        issues.append(BeastLogValidationIssue(code="missing-required-column", message=f"missing required BEAST log column '{column}'", column=column))
+        issues.append(
+            BeastLogValidationIssue(
+                code="missing-required-column",
+                message=f"missing required BEAST log column '{column}'",
+                column=column,
+            )
+        )
     previous_state: int | None = None
     row_count = 0
     state_count = 0
@@ -777,29 +914,68 @@ def validate_beast_posterior_log(
         if state_field is not None:
             raw_state = row.get(state_field, "")
             if not raw_state:
-                issues.append(BeastLogValidationIssue(code="missing-state-value", message="row is missing a sampled state", row=row_index, column=state_field))
+                issues.append(
+                    BeastLogValidationIssue(
+                        code="missing-state-value",
+                        message="row is missing a sampled state",
+                        row=row_index,
+                        column=state_field,
+                    )
+                )
             else:
                 try:
                     state_value = int(float(raw_state))
                     state_count += 1
                     if previous_state is not None and state_value <= previous_state:
-                        issues.append(BeastLogValidationIssue(code="nonmonotonic-state", message="sampled states must increase strictly through the log", row=row_index, column=state_field))
+                        issues.append(
+                            BeastLogValidationIssue(
+                                code="nonmonotonic-state",
+                                message="sampled states must increase strictly through the log",
+                                row=row_index,
+                                column=state_field,
+                            )
+                        )
                     previous_state = state_value
                 except ValueError:
-                    issues.append(BeastLogValidationIssue(code="invalid-state-value", message="sampled state must be numeric", row=row_index, column=state_field))
+                    issues.append(
+                        BeastLogValidationIssue(
+                            code="invalid-state-value",
+                            message="sampled state must be numeric",
+                            row=row_index,
+                            column=state_field,
+                        )
+                    )
         for column in observed_columns:
             if column == state_field:
                 continue
             raw_value = row.get(column, "")
             if raw_value in {None, ""}:
-                issues.append(BeastLogValidationIssue(code="missing-parameter-value", message=f"missing sampled value for '{column}'", row=row_index, column=column))
+                issues.append(
+                    BeastLogValidationIssue(
+                        code="missing-parameter-value",
+                        message=f"missing sampled value for '{column}'",
+                        row=row_index,
+                        column=column,
+                    )
+                )
                 continue
             try:
                 float(raw_value)
             except ValueError:
-                issues.append(BeastLogValidationIssue(code="invalid-parameter-value", message=f"sampled value for '{column}' must be numeric", row=row_index, column=column))
+                issues.append(
+                    BeastLogValidationIssue(
+                        code="invalid-parameter-value",
+                        message=f"sampled value for '{column}' must be numeric",
+                        row=row_index,
+                        column=column,
+                    )
+                )
     if row_count == 0:
-        issues.append(BeastLogValidationIssue(code="missing-rows", message="BEAST log contains no sampled rows"))
+        issues.append(
+            BeastLogValidationIssue(
+                code="missing-rows", message="BEAST log contains no sampled rows"
+            )
+        )
     return BeastPosteriorLogValidationReport(
         path=path,
         row_count=row_count,
@@ -838,9 +1014,21 @@ def assess_beast_burnin_sensitivity(
             burnin_row_count = int(log_report.row_count * fraction)
             kept_rows = log_report.rows[burnin_row_count:]
             if kept_rows:
-                posterior_values = [row.values["posterior"] for row in kept_rows if "posterior" in row.values]
-                likelihood_values = [row.values["likelihood"] for row in kept_rows if "likelihood" in row.values]
-                tree_height_values = [row.values["treeHeight"] for row in kept_rows if "treeHeight" in row.values]
+                posterior_values = [
+                    row.values["posterior"]
+                    for row in kept_rows
+                    if "posterior" in row.values
+                ]
+                likelihood_values = [
+                    row.values["likelihood"]
+                    for row in kept_rows
+                    if "likelihood" in row.values
+                ]
+                tree_height_values = [
+                    row.values["treeHeight"]
+                    for row in kept_rows
+                    if "treeHeight" in row.values
+                ]
                 posterior_mean = _mean_or_none(posterior_values)
                 likelihood_mean = _mean_or_none(likelihood_values)
                 tree_height_mean = _mean_or_none(tree_height_values)
@@ -862,9 +1050,13 @@ def assess_beast_burnin_sensitivity(
         previous_newick = mcc_report.mcc_newick
     warnings: list[str] = []
     if changed_mcc_count:
-        warnings.append("maximum clade credibility topology changes across tested burn-in fractions")
+        warnings.append(
+            "maximum clade credibility topology changes across tested burn-in fractions"
+        )
     if len({row.rooted_topology_count for row in slices}) > 1:
-        warnings.append("rooted topology diversity changes across tested burn-in fractions")
+        warnings.append(
+            "rooted topology diversity changes across tested burn-in fractions"
+        )
     return BeastBurninSensitivityReport(
         posterior_tree_path=posterior_tree_path,
         log_path=log_path,
@@ -907,7 +1099,9 @@ def assess_beast_chain_mixing(
                 )
             )
         for parameter_summary in summary.parameter_summaries:
-            span = float(parameter_summary["maximum"]) - float(parameter_summary["minimum"])
+            span = float(parameter_summary["maximum"]) - float(
+                parameter_summary["minimum"]
+            )
             if span <= stuck_parameter_span_threshold:
                 issues.append(
                     BeastChainMixingIssue(
@@ -922,9 +1116,9 @@ def assess_beast_chain_mixing(
     parameter_to_means: dict[str, list[tuple[Path, float]]] = {}
     for summary in chain_summaries:
         for parameter_summary in summary.parameter_summaries:
-            parameter_to_means.setdefault(str(parameter_summary["parameter"]), []).append(
-                (summary.path, float(parameter_summary["mean"]))
-            )
+            parameter_to_means.setdefault(
+                str(parameter_summary["parameter"]), []
+            ).append((summary.path, float(parameter_summary["mean"])))
     for parameter, chain_means in parameter_to_means.items():
         if len(chain_means) < 2:
             continue
@@ -968,7 +1162,9 @@ def assess_beast_convergence(
     return _build_beast_convergence_report(convergence)
 
 
-def _build_beast_convergence_report(convergence: TraceConvergenceReport) -> BeastConvergenceReport:
+def _build_beast_convergence_report(
+    convergence: TraceConvergenceReport,
+) -> BeastConvergenceReport:
     return BeastConvergenceReport(
         path=convergence.path,
         sample_count=convergence.sample_count,

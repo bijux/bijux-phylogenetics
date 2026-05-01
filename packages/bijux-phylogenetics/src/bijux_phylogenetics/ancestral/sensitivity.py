@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.ancestral.continuous import reconstruct_continuous_ancestral_states
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
@@ -192,21 +194,33 @@ def _model_sensitivity_summary(
             changed_node_count=changed,
             notes=[f"compared continuous models {model} and {compare_model}"],
         )
-    comparison = compare_discrete_ancestral_models(
-        tree_path,
-        traits_path,
-        trait=trait,
-        taxon_column=taxon_column,
-        models=(model, compare_model, "all-rates-different" if compare_model != "all-rates-different" else "equal-rates"),
-        state_ordering=state_ordering,
-        ordered_states=ordered_states,
-    ) if model != "fitch" and compare_model != "fitch" else None
+    comparison = (
+        compare_discrete_ancestral_models(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+            models=(
+                model,
+                compare_model,
+                "all-rates-different"
+                if compare_model != "all-rates-different"
+                else "equal-rates",
+            ),
+            state_ordering=state_ordering,
+            ordered_states=ordered_states,
+        )
+        if model != "fitch" and compare_model != "fitch"
+        else None
+    )
     if comparison is not None:
         changed = sum(1 for row in comparison.node_differences if row.differs)
         return AncestralSensitivitySummary(
             label="model",
             changed_node_count=changed,
-            notes=[f"selected discrete model {comparison.selected_model} from {', '.join(row.model for row in comparison.rows)}"],
+            notes=[
+                f"selected discrete model {comparison.selected_model} from {', '.join(row.model for row in comparison.rows)}"
+            ],
         )
     baseline = reconstruct_discrete_ancestral_states(
         tree_path,
@@ -226,13 +240,18 @@ def _model_sensitivity_summary(
         state_ordering=state_ordering,
         ordered_states=ordered_states,
     )
-    alternative_by_node = {estimate.node: estimate for estimate in alternative.estimates if not estimate.is_tip}
+    alternative_by_node = {
+        estimate.node: estimate
+        for estimate in alternative.estimates
+        if not estimate.is_tip
+    }
     changed = sum(
         1
         for estimate in baseline.estimates
         if not estimate.is_tip
         and estimate.node in alternative_by_node
-        and estimate.most_likely_state != alternative_by_node[estimate.node].most_likely_state
+        and estimate.most_likely_state
+        != alternative_by_node[estimate.node].most_likely_state
     )
     return AncestralSensitivitySummary(
         label="model",
@@ -302,11 +321,22 @@ def _pruning_sensitivity_summary(
     tree = load_tree(tree_path)
     kept_taxa = [taxon for taxon in tree.tip_names if taxon not in set(drop_taxa)]
     pruned_tree, pruning_report = prune_tree_to_requested_taxa(tree_path, kept_taxa)
-    pruned_tree_path = Path(tempfile.mkstemp(prefix="bijux-ancestral-pruned-", suffix=".nwk")[1])
-    pruned_traits_path = Path(tempfile.mkstemp(prefix="bijux-ancestral-pruned-", suffix=Path(traits_path).suffix)[1])
+    pruned_tree_path = Path(
+        tempfile.mkstemp(prefix="bijux-ancestral-pruned-", suffix=".nwk")[1]
+    )
+    pruned_traits_path = Path(
+        tempfile.mkstemp(
+            prefix="bijux-ancestral-pruned-", suffix=Path(traits_path).suffix
+        )[1]
+    )
     try:
         write_newick(pruned_tree_path, pruned_tree)
-        _write_filtered_trait_table(traits_path, pruned_traits_path, kept_taxa=pruning_report.kept_taxa, taxon_column=taxon_column)
+        _write_filtered_trait_table(
+            traits_path,
+            pruned_traits_path,
+            kept_taxa=pruning_report.kept_taxa,
+            taxon_column=taxon_column,
+        )
         if reconstruction_kind == "continuous":
             comparison = compare_continuous_ancestral_trees(
                 tree_path,
@@ -317,7 +347,9 @@ def _pruning_sensitivity_summary(
                 model=model,
                 alpha=alpha,
             )
-            changed = sum(1 for row in comparison.rows if abs(row.estimate_delta) > 1e-9)
+            changed = sum(
+                1 for row in comparison.rows if abs(row.estimate_delta) > 1e-9
+            )
         else:
             comparison = compare_discrete_ancestral_trees(
                 tree_path,
@@ -352,7 +384,11 @@ def _trait_coding_sensitivity_summary(
 ) -> AncestralSensitivitySummary | None:
     if reconstruction_kind != "discrete" or not coding_map:
         return None
-    recoded_path = Path(tempfile.mkstemp(prefix="bijux-ancestral-coding-", suffix=Path(traits_path).suffix)[1])
+    recoded_path = Path(
+        tempfile.mkstemp(
+            prefix="bijux-ancestral-coding-", suffix=Path(traits_path).suffix
+        )[1]
+    )
     try:
         _write_recoded_trait_table(
             traits_path,
@@ -377,18 +413,23 @@ def _trait_coding_sensitivity_summary(
         )
     finally:
         recoded_path.unlink(missing_ok=True)
-    recoded_by_node = {estimate.node: estimate for estimate in recoded.estimates if not estimate.is_tip}
+    recoded_by_node = {
+        estimate.node: estimate for estimate in recoded.estimates if not estimate.is_tip
+    }
     changed = sum(
         1
         for estimate in baseline.estimates
         if not estimate.is_tip
         and estimate.node in recoded_by_node
-        and estimate.most_likely_state != recoded_by_node[estimate.node].most_likely_state
+        and estimate.most_likely_state
+        != recoded_by_node[estimate.node].most_likely_state
     )
     return AncestralSensitivitySummary(
         label="trait-coding",
         changed_node_count=changed,
-        notes=[f"recoded {len(coding_map)} raw states into {len(set(coding_map.values()))} labels"],
+        notes=[
+            f"recoded {len(coding_map)} raw states into {len(set(coding_map.values()))} labels"
+        ],
     )
 
 

@@ -33,19 +33,35 @@ def build_bayesian_evidence_package(
     if not input_paths:
         raise ValueError("bayesian evidence package requires at least one input path")
     if not config_paths:
-        raise ValueError("bayesian evidence package requires at least one config artifact")
+        raise ValueError(
+            "bayesian evidence package requires at least one config artifact"
+        )
     if not tree_paths:
-        raise ValueError("bayesian evidence package requires at least one tree artifact")
+        raise ValueError(
+            "bayesian evidence package requires at least one tree artifact"
+        )
     if not log_paths:
-        raise ValueError("bayesian evidence package requires at least one log or trace artifact")
+        raise ValueError(
+            "bayesian evidence package requires at least one log or trace artifact"
+        )
     if not diagnostic_paths:
-        raise ValueError("bayesian evidence package requires at least one diagnostic artifact")
+        raise ValueError(
+            "bayesian evidence package requires at least one diagnostic artifact"
+        )
     if not report_paths:
-        raise ValueError("bayesian evidence package requires at least one rendered report artifact")
+        raise ValueError(
+            "bayesian evidence package requires at least one rendered report artifact"
+        )
 
     bundle = bundle_file_paths(
         input_paths=input_paths,
-        output_paths=[*config_paths, *tree_paths, *log_paths, *diagnostic_paths, *report_paths],
+        output_paths=[
+            *config_paths,
+            *tree_paths,
+            *log_paths,
+            *diagnostic_paths,
+            *report_paths,
+        ],
         bundle_root=bundle_root,
     )
     validation = validate_bundle(bundle_root)

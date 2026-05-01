@@ -66,16 +66,26 @@ def reconstruct_continuous_ancestral_states(
     if model not in {"brownian", "ou"}:
         raise ValueError(f"unsupported continuous ancestral model: {model}")
     if alpha <= 0:
-        raise ValueError(f"alpha must be positive for continuous ancestral reconstruction, got {alpha}")
+        raise ValueError(
+            f"alpha must be positive for continuous ancestral reconstruction, got {alpha}"
+        )
     dataset = load_continuous_dataset(
         tree_path,
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
     )
-    global_mean = sum(dataset.values_by_taxon[taxon] for taxon in dataset.taxa) / len(dataset.taxa)
-    sigma = _sample_standard_deviation([dataset.values_by_taxon[taxon] for taxon in dataset.taxa])
-    trait_range = max(dataset.values_by_taxon.values()) - min(dataset.values_by_taxon.values()) if dataset.values_by_taxon else 0.0
+    global_mean = sum(dataset.values_by_taxon[taxon] for taxon in dataset.taxa) / len(
+        dataset.taxa
+    )
+    sigma = _sample_standard_deviation(
+        [dataset.values_by_taxon[taxon] for taxon in dataset.taxa]
+    )
+    trait_range = (
+        max(dataset.values_by_taxon.values()) - min(dataset.values_by_taxon.values())
+        if dataset.values_by_taxon
+        else 0.0
+    )
     estimates: list[ContinuousAncestralEstimate] = []
 
     def visit(node) -> tuple[float, float]:
@@ -110,20 +120,32 @@ def reconstruct_continuous_ancestral_states(
                 propagated_variance = child_variance + branch_length
             else:
                 shrink = math.exp(-alpha * branch_length)
-                transformed_estimate = shrink * child_estimate + (1.0 - shrink) * global_mean
-                stationary_variance = ((sigma**2) / (2.0 * alpha)) * (1.0 - math.exp(-2.0 * alpha * branch_length))
-                propagated_variance = (child_variance * math.exp(-2.0 * alpha * branch_length)) + stationary_variance
-            child_payloads.append((transformed_estimate, max(propagated_variance, 1e-12)))
+                transformed_estimate = (
+                    shrink * child_estimate + (1.0 - shrink) * global_mean
+                )
+                stationary_variance = ((sigma**2) / (2.0 * alpha)) * (
+                    1.0 - math.exp(-2.0 * alpha * branch_length)
+                )
+                propagated_variance = (
+                    child_variance * math.exp(-2.0 * alpha * branch_length)
+                ) + stationary_variance
+            child_payloads.append(
+                (transformed_estimate, max(propagated_variance, 1e-12))
+            )
 
         weight_sum = sum(1.0 / variance for _, variance in child_payloads)
-        estimate = sum((value / variance) for value, variance in child_payloads) / weight_sum
+        estimate = (
+            sum((value / variance) for value, variance in child_payloads) / weight_sum
+        )
         variance = 1.0 / weight_sum
         standard_error = math.sqrt(variance)
         lower = estimate - 1.96 * standard_error
         upper = estimate + 1.96 * standard_error
         uncertainty_width = max(0.0, upper - lower)
         confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
-        interpretation = _continuous_interpretation(uncertainty_width, trait_range, unstable=unstable)
+        interpretation = _continuous_interpretation(
+            uncertainty_width, trait_range, unstable=unstable
+        )
         estimates.append(
             ContinuousAncestralEstimate(
                 node=node_signature(node),
@@ -157,9 +179,13 @@ def reconstruct_continuous_ancestral_states(
     ]
     warnings = list(dataset.warnings)
     if unstable_nodes:
-        warnings.append("one or more continuous ancestral estimates have broad uncertainty intervals")
+        warnings.append(
+            "one or more continuous ancestral estimates have broad uncertainty intervals"
+        )
     if weak_support_nodes:
-        warnings.append("low-confidence ancestral estimates should not be overinterpreted for evolutionary timing or trait polarity")
+        warnings.append(
+            "low-confidence ancestral estimates should not be overinterpreted for evolutionary timing or trait polarity"
+        )
     return ContinuousAncestralReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -197,7 +223,9 @@ def _ordered_estimates(
     return sorted(estimates, key=lambda estimate: node_order[estimate.node])
 
 
-def _continuous_confidence(uncertainty_width: float, trait_range: float) -> tuple[float, bool]:
+def _continuous_confidence(
+    uncertainty_width: float, trait_range: float
+) -> tuple[float, bool]:
     if uncertainty_width == 0.0:
         return 1.0, False
     scale = max(trait_range, 1e-12)
@@ -206,7 +234,9 @@ def _continuous_confidence(uncertainty_width: float, trait_range: float) -> tupl
     return stable_value(confidence), relative_width > 0.6 or confidence < 0.55
 
 
-def _continuous_interpretation(uncertainty_width: float, trait_range: float, *, unstable: bool) -> str:
+def _continuous_interpretation(
+    uncertainty_width: float, trait_range: float, *, unstable: bool
+) -> str:
     if uncertainty_width == 0.0:
         return "observed tip value"
     scale = max(trait_range, 1e-12)

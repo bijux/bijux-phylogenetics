@@ -27,7 +27,6 @@ from bijux_phylogenetics.comparative.signal import (
     estimate_pagels_lambda,
 )
 
-
 _Z_95 = 1.959963984540054
 
 
@@ -287,10 +286,14 @@ def fit_brownian_motion_model(
         require_rooted=True,
         require_binary=False,
     )
-    covariance = stable_covariance(build_brownian_covariance_matrix(dataset.tree, dataset.taxa))
+    covariance = stable_covariance(
+        build_brownian_covariance_matrix(dataset.tree, dataset.taxa)
+    )
     fit = _fit_intercept_only_model(dataset, covariance)
     intervals = _brownian_parameter_intervals(fit.theta, fit.sigma_squared, covariance)
-    residual_diagnostics = _build_residual_diagnostics(dataset, covariance, fit.residuals, fit.sigma_squared)
+    residual_diagnostics = _build_residual_diagnostics(
+        dataset, covariance, fit.residuals, fit.sigma_squared
+    )
     return BrownianMotionFitReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -334,15 +337,24 @@ def fit_ornstein_uhlenbeck_model(
     best_fit: _InterceptOnlyFit | None = None
     profile: list[tuple[float, float]] = []
     for alpha in alpha_grid:
-        covariance = stable_covariance(build_ou_covariance_matrix(dataset.tree, dataset.taxa, alpha=alpha))
+        covariance = stable_covariance(
+            build_ou_covariance_matrix(dataset.tree, dataset.taxa, alpha=alpha)
+        )
         fit = _fit_intercept_only_model(dataset, covariance)
         profile.append((alpha, fit.log_likelihood))
         if best_fit is None or fit.log_likelihood > best_fit.log_likelihood:
             best_alpha = alpha
             best_fit = fit
-    assert best_fit is not None
-    best_covariance = stable_covariance(build_ou_covariance_matrix(dataset.tree, dataset.taxa, alpha=best_alpha))
-    intervals = _ou_parameter_intervals(best_alpha, best_fit.theta, best_fit.sigma_squared, best_covariance, profile)
+    if best_fit is None:
+        raise ValueError(
+            "failed to fit OU intercept-only model for the provided alpha grid"
+        )
+    best_covariance = stable_covariance(
+        build_ou_covariance_matrix(dataset.tree, dataset.taxa, alpha=best_alpha)
+    )
+    intervals = _ou_parameter_intervals(
+        best_alpha, best_fit.theta, best_fit.sigma_squared, best_covariance, profile
+    )
     identifiability_warnings = _ou_identifiability_warnings(
         dataset,
         best_alpha,
@@ -424,7 +436,9 @@ def validate_comparative_reference_examples() -> ComparativeReferenceValidationR
     tree = root / "trees/example_tree.nwk"
     traits = root / "metadata/example_traits_comparative.tsv"
 
-    contrasts = compute_phylogenetic_independent_contrasts(tree, traits, trait="response")
+    contrasts = compute_phylogenetic_independent_contrasts(
+        tree, traits, trait="response"
+    )
     contrast_lookup = {row.node: row.contrast for row in contrasts.contrasts}
     pgls = run_pgls(
         tree,
@@ -450,8 +464,7 @@ def validate_comparative_reference_examples() -> ComparativeReferenceValidationR
             "log_likelihood": ou.log_likelihood,
         },
         "pic-example-tree": {
-            node: contrast_lookup[node]
-            for node in ("A|B", "C|D", "A|B|C|D")
+            node: contrast_lookup[node] for node in ("A|B", "C|D", "A|B|C|D")
         },
         "pgls-example-tree-brownian": {
             "intercept": pgls.coefficients[0].estimate,
@@ -476,7 +489,9 @@ def validate_comparative_reference_examples() -> ComparativeReferenceValidationR
         observed = observed_by_case[example["case"]]
         tolerance = float(example["tolerance"])
         passed = all(
-            math.isclose(observed[name], expected_value, rel_tol=tolerance, abs_tol=tolerance)
+            math.isclose(
+                observed[name], expected_value, rel_tol=tolerance, abs_tol=tolerance
+            )
             for name, expected_value in example["expected_parameters"].items()
         )
         observations.append(
@@ -505,7 +520,10 @@ def validate_comparative_reference_examples() -> ComparativeReferenceValidationR
 
 def audit_comparative_parameter_uncertainty() -> ComparativeParameterUncertaintyAudit:
     """Audit BM/OU parameter intervals against external reference estimates."""
-    reference = {observation.case: observation for observation in validate_comparative_reference_examples().observations}
+    reference = {
+        observation.case: observation
+        for observation in validate_comparative_reference_examples().observations
+    }
     root = Path(__file__).resolve().parents[3] / "tests/fixtures"
     tree = root / "trees/example_tree.nwk"
     traits = root / "metadata/example_traits_comparative.tsv"
@@ -514,7 +532,9 @@ def audit_comparative_parameter_uncertainty() -> ComparativeParameterUncertainty
 
     rows: list[ComparativeParameterIntervalAuditRow] = []
     for interval in brownian.confidence_intervals:
-        reference_estimate = reference["brownian-example-tree"].expected_parameters[interval.name]
+        reference_estimate = reference["brownian-example-tree"].expected_parameters[
+            interval.name
+        ]
         rows.append(
             ComparativeParameterIntervalAuditRow(
                 model="brownian",
@@ -524,7 +544,9 @@ def audit_comparative_parameter_uncertainty() -> ComparativeParameterUncertainty
                 upper_95=interval.upper_95,
                 reference_estimate=reference_estimate,
                 interval_method=interval.method,
-                contains_reference=interval.lower_95 <= reference_estimate <= interval.upper_95,
+                contains_reference=interval.lower_95
+                <= reference_estimate
+                <= interval.upper_95,
                 reaches_search_boundary=False,
                 boundary_note=None,
             )
@@ -532,8 +554,12 @@ def audit_comparative_parameter_uncertainty() -> ComparativeParameterUncertainty
     for interval in ou.confidence_intervals:
         if interval.name not in {"alpha", "theta"}:
             continue
-        reference_estimate = reference["ou-example-tree-grid"].expected_parameters[interval.name]
-        reaches_boundary = interval.name == "alpha" and math.isclose(interval.upper_95, interval.estimate, abs_tol=1e-9)
+        reference_estimate = reference["ou-example-tree-grid"].expected_parameters[
+            interval.name
+        ]
+        reaches_boundary = interval.name == "alpha" and math.isclose(
+            interval.upper_95, interval.estimate, abs_tol=1e-9
+        )
         boundary_note = (
             "supported alpha interval reaches the upper grid boundary and should be interpreted with the boundary warning"
             if reaches_boundary
@@ -548,7 +574,9 @@ def audit_comparative_parameter_uncertainty() -> ComparativeParameterUncertainty
                 upper_95=interval.upper_95,
                 reference_estimate=reference_estimate,
                 interval_method=interval.method,
-                contains_reference=interval.lower_95 <= reference_estimate <= interval.upper_95,
+                contains_reference=interval.lower_95
+                <= reference_estimate
+                <= interval.upper_95,
                 reaches_search_boundary=reaches_boundary,
                 boundary_note=boundary_note,
             )
@@ -624,8 +652,12 @@ def assess_comparative_method_maturity(
         formula=formula,
         taxon_column=taxon_column,
     )
-    brownian = fit_brownian_motion_model(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
-    ou = fit_ornstein_uhlenbeck_model(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
+    brownian = fit_brownian_motion_model(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
+    ou = fit_ornstein_uhlenbeck_model(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
     model_comparison = compare_brownian_and_ou_models(
         tree_path,
         traits_path,
@@ -659,7 +691,9 @@ def assess_comparative_method_maturity(
             trait=pgls_dataset.trait,
             taxa=pgls.taxa,
             trait_values=[0.0] * len(pgls.taxa),
-            covariance_matrix=_subset_covariance(pgls_dataset.covariance_matrix, pgls_dataset.taxa, pgls.taxa),
+            covariance_matrix=_subset_covariance(
+                pgls_dataset.covariance_matrix, pgls_dataset.taxa, pgls.taxa
+            ),
             readiness=pgls_dataset.readiness,
         ),
         pgls.residuals,
@@ -677,7 +711,9 @@ def assess_comparative_method_maturity(
             max_abs_standardized_residual=brownian.residual_diagnostics.max_abs_standardized_residual,
             phylogenetic_residual_lambda=brownian.residual_diagnostics.phylogenetic_residual_lambda,
             max_leverage=None,
-            outlier_taxa=[row.taxon for row in brownian.residual_diagnostics.outlier_taxa],
+            outlier_taxa=[
+                row.taxon for row in brownian.residual_diagnostics.outlier_taxa
+            ],
             high_leverage_taxa=[],
             warnings=list(brownian.residual_diagnostics.warnings),
         ),
@@ -698,8 +734,7 @@ def assess_comparative_method_maturity(
             analysis="pgls",
             residual_variance=pgls.residual_variance,
             max_abs_standardized_residual=max(
-                abs(row.standardized_residual)
-                for row in pgls.diagnostics.leverage_rows
+                abs(row.standardized_residual) for row in pgls.diagnostics.leverage_rows
             ),
             phylogenetic_residual_lambda=residual_lambda,
             max_leverage=max(row.leverage for row in pgls.diagnostics.leverage_rows),
@@ -722,8 +757,12 @@ def assess_comparative_method_maturity(
     sensitivity_summary = ComparativeSensitivitySummary(
         model=sensitivity.model,
         influential_taxa=sensitivity.most_influential_taxa,
-        max_abs_delta_log_likelihood=max(abs(row.delta_log_likelihood) for row in sensitivity.rows),
-        max_abs_delta_primary_parameter=max(abs(row.delta_primary_parameter) for row in sensitivity.rows),
+        max_abs_delta_log_likelihood=max(
+            abs(row.delta_log_likelihood) for row in sensitivity.rows
+        ),
+        max_abs_delta_primary_parameter=max(
+            abs(row.delta_primary_parameter) for row in sensitivity.rows
+        ),
     )
     warnings = sorted(
         {
@@ -757,15 +796,25 @@ def run_comparative_sensitivity_analysis(
     """Quantify leave-one-taxon-out sensitivity for a standalone BM or OU fit."""
     if model not in {"brownian", "ou"}:
         raise ValueError(f"unsupported comparative sensitivity model: {model}")
-    baseline_bm = fit_brownian_motion_model(tree_path, traits_path, trait=trait, taxon_column=taxon_column)
-    baseline_ou = None if model == "brownian" else fit_ornstein_uhlenbeck_model(
-        tree_path,
-        traits_path,
-        trait=trait,
-        taxon_column=taxon_column,
+    baseline_bm = fit_brownian_motion_model(
+        tree_path, traits_path, trait=trait, taxon_column=taxon_column
+    )
+    baseline_ou = (
+        None
+        if model == "brownian"
+        else fit_ornstein_uhlenbeck_model(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+        )
     )
     baseline_primary = baseline_bm.rate if model == "brownian" else baseline_ou.alpha
-    baseline_log_likelihood = baseline_bm.log_likelihood if model == "brownian" else baseline_ou.log_likelihood
+    baseline_log_likelihood = (
+        baseline_bm.log_likelihood
+        if model == "brownian"
+        else baseline_ou.log_likelihood
+    )
     dataset = load_comparative_dataset(
         tree_path,
         traits_path,
@@ -779,14 +828,28 @@ def run_comparative_sensitivity_analysis(
     root = Path(tree_path)
     table = Path(traits_path)
     for dropped_taxon in dataset.taxa:
-        reduced_tree, _ = _write_reduced_comparative_inputs(root, dataset.taxa, dropped_taxon)
-        reduced_traits = _write_reduced_trait_table(table, dataset.taxa, dropped_taxon, taxon_column=dataset.taxon_column)
+        reduced_tree, _ = _write_reduced_comparative_inputs(
+            root, dataset.taxa, dropped_taxon
+        )
+        reduced_traits = _write_reduced_trait_table(
+            table, dataset.taxa, dropped_taxon, taxon_column=dataset.taxon_column
+        )
         try:
             if model == "brownian":
-                reduced = fit_brownian_motion_model(reduced_tree, reduced_traits, trait=trait, taxon_column=dataset.taxon_column)
+                reduced = fit_brownian_motion_model(
+                    reduced_tree,
+                    reduced_traits,
+                    trait=trait,
+                    taxon_column=dataset.taxon_column,
+                )
                 primary = reduced.rate
             else:
-                reduced = fit_ornstein_uhlenbeck_model(reduced_tree, reduced_traits, trait=trait, taxon_column=dataset.taxon_column)
+                reduced = fit_ornstein_uhlenbeck_model(
+                    reduced_tree,
+                    reduced_traits,
+                    trait=trait,
+                    taxon_column=dataset.taxon_column,
+                )
                 primary = reduced.alpha
             rows.append(
                 LeaveOneTaxonOutRow(
@@ -795,7 +858,8 @@ def run_comparative_sensitivity_analysis(
                     primary_parameter=primary,
                     delta_primary_parameter=primary - baseline_primary,
                     log_likelihood=reduced.log_likelihood,
-                    delta_log_likelihood=reduced.log_likelihood - baseline_log_likelihood,
+                    delta_log_likelihood=reduced.log_likelihood
+                    - baseline_log_likelihood,
                 )
             )
         finally:
@@ -841,13 +905,23 @@ def _fit_intercept_only_model(
     inverse_covariance = invert_matrix(covariance)
     ones = [1.0] * len(dataset.trait_values)
     denom = quadratic_form(ones, inverse_covariance)
-    theta = sum(
-        ones[row_index] * sum(inverse_covariance[row_index][column_index] * dataset.trait_values[column_index] for column_index in range(len(dataset.trait_values)))
-        for row_index in range(len(dataset.trait_values))
-    ) / denom
+    theta = (
+        sum(
+            ones[row_index]
+            * sum(
+                inverse_covariance[row_index][column_index]
+                * dataset.trait_values[column_index]
+                for column_index in range(len(dataset.trait_values))
+            )
+            for row_index in range(len(dataset.trait_values))
+        )
+        / denom
+    )
     fitted_values = [theta] * len(dataset.trait_values)
     residuals = [value - theta for value in dataset.trait_values]
-    sigma_squared = quadratic_form(residuals, inverse_covariance) / len(dataset.trait_values)
+    sigma_squared = quadratic_form(residuals, inverse_covariance) / len(
+        dataset.trait_values
+    )
     log_likelihood = -0.5 * (
         len(dataset.trait_values) * math.log(2.0 * math.pi * sigma_squared)
         + log_determinant(covariance)
@@ -909,7 +983,11 @@ def _ou_parameter_intervals(
         degrees_of_freedom=max(1, len(covariance) - 1),
     )
     best_log_likelihood = max(log_likelihood for _, log_likelihood in profile)
-    supported = [candidate for candidate, log_likelihood in profile if log_likelihood >= best_log_likelihood - 1.92]
+    supported = [
+        candidate
+        for candidate, log_likelihood in profile
+        if log_likelihood >= best_log_likelihood - 1.92
+    ]
     return [
         ComparativeParameterInterval(
             name="alpha",
@@ -935,7 +1013,9 @@ def _ou_parameter_intervals(
     ]
 
 
-def _variance_interval(sigma_squared: float, *, degrees_of_freedom: int) -> tuple[float, float]:
+def _variance_interval(
+    sigma_squared: float, *, degrees_of_freedom: int
+) -> tuple[float, float]:
     chi_upper = _chi_square_quantile(0.975, degrees_of_freedom)
     chi_lower = _chi_square_quantile(0.025, degrees_of_freedom)
     lower = (degrees_of_freedom * sigma_squared) / chi_upper
@@ -945,16 +1025,27 @@ def _variance_interval(sigma_squared: float, *, degrees_of_freedom: int) -> tupl
 
 def _chi_square_quantile(probability: float, degrees_of_freedom: int) -> float:
     if probability not in {0.025, 0.975}:
-        raise ValueError("supported chi-square approximation probabilities are 0.025 and 0.975")
+        raise ValueError(
+            "supported chi-square approximation probabilities are 0.025 and 0.975"
+        )
     z = -_Z_95 if probability < 0.5 else _Z_95
-    factor = 1.0 - (2.0 / (9.0 * degrees_of_freedom)) + z * math.sqrt(2.0 / (9.0 * degrees_of_freedom))
+    factor = (
+        1.0
+        - (2.0 / (9.0 * degrees_of_freedom))
+        + z * math.sqrt(2.0 / (9.0 * degrees_of_freedom))
+    )
     return degrees_of_freedom * (factor**3)
 
 
 def _alpha_grid(dataset: ComparativeDataset) -> list[float]:
-    max_depth = max(max(row) for row in build_brownian_covariance_matrix(dataset.tree, dataset.taxa))
+    max_depth = max(
+        max(row) for row in build_brownian_covariance_matrix(dataset.tree, dataset.taxa)
+    )
     scale = 1.0 / max(max_depth, 1e-6)
-    coarse = [round(scale * multiplier, 6) for multiplier in (0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0)]
+    coarse = [
+        round(scale * multiplier, 6)
+        for multiplier in (0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0)
+    ]
     return sorted({value for value in coarse if value > 0.0})
 
 
@@ -972,7 +1063,9 @@ def _ou_identifiability_warnings(
             )
         )
     ordered_alphas = sorted(candidate for candidate, _ in profile)
-    if math.isclose(alpha, ordered_alphas[0], rel_tol=0.0, abs_tol=1e-9) or math.isclose(alpha, ordered_alphas[-1], rel_tol=0.0, abs_tol=1e-9):
+    if math.isclose(
+        alpha, ordered_alphas[0], rel_tol=0.0, abs_tol=1e-9
+    ) or math.isclose(alpha, ordered_alphas[-1], rel_tol=0.0, abs_tol=1e-9):
         warnings.append(
             OUIdentifiabilityWarning(
                 kind="boundary_alpha",
@@ -980,7 +1073,9 @@ def _ou_identifiability_warnings(
             )
         )
     best_log_likelihood = max(log_likelihood for _, log_likelihood in profile)
-    second_best = sorted((log_likelihood for _, log_likelihood in profile), reverse=True)[1]
+    second_best = sorted(
+        (log_likelihood for _, log_likelihood in profile), reverse=True
+    )[1]
     if best_log_likelihood - second_best < 0.5:
         warnings.append(
             OUIdentifiabilityWarning(
@@ -1005,13 +1100,15 @@ def _build_residual_diagnostics(
     sigma_squared: float,
 ) -> ComparativeResidualSummary:
     residual_mean = sum(residuals) / len(residuals)
-    residual_variance = sum((value - residual_mean) ** 2 for value in residuals) / max(1, len(residuals) - 1)
+    residual_variance = sum((value - residual_mean) ** 2 for value in residuals) / max(
+        1, len(residuals) - 1
+    )
     residual_skewness = 0.0
     if residual_variance > 0.0:
         residual_sd = math.sqrt(residual_variance)
-        residual_skewness = (
-            sum(((value - residual_mean) / residual_sd) ** 3 for value in residuals) / len(residuals)
-        )
+        residual_skewness = sum(
+            ((value - residual_mean) / residual_sd) ** 3 for value in residuals
+        ) / len(residuals)
     inverse_covariance = invert_matrix(covariance)
     residual_lambda = _estimate_lambda_for_values(dataset, residuals)
     standardized_rows = _standardized_residual_rows(
@@ -1076,7 +1173,9 @@ def _hat_matrix(
     return matrix_multiply(design, matrix_multiply(xt_vinv_x_inverse, xt_vinv))
 
 
-def _estimate_lambda_for_values(dataset: ComparativeDataset, values: list[float]) -> float:
+def _estimate_lambda_for_values(
+    dataset: ComparativeDataset, values: list[float]
+) -> float:
     candidates = [index / 20.0 for index in range(21)]
     best_lambda = 0.0
     best_score = -math.inf
@@ -1092,10 +1191,17 @@ def _estimate_lambda_for_values(dataset: ComparativeDataset, values: list[float]
         inverse_covariance = invert_matrix(covariance)
         ones = [1.0] * len(values)
         denom = quadratic_form(ones, inverse_covariance)
-        mean_value = sum(
-            ones[row_index] * sum(inverse_covariance[row_index][column_index] * values[column_index] for column_index in range(len(values)))
-            for row_index in range(len(values))
-        ) / denom
+        mean_value = (
+            sum(
+                ones[row_index]
+                * sum(
+                    inverse_covariance[row_index][column_index] * values[column_index]
+                    for column_index in range(len(values))
+                )
+                for row_index in range(len(values))
+            )
+            / denom
+        )
         residuals = [value - mean_value for value in values]
         sigma_squared = quadratic_form(residuals, inverse_covariance) / len(values)
         score = -0.5 * (
@@ -1109,12 +1215,17 @@ def _estimate_lambda_for_values(dataset: ComparativeDataset, values: list[float]
     return best_lambda
 
 
-def _comparison_row(model: str, parameter_count: int, log_likelihood: float, sample_size: int) -> ComparativeModelComparisonRow:
+def _comparison_row(
+    model: str, parameter_count: int, log_likelihood: float, sample_size: int
+) -> ComparativeModelComparisonRow:
     aic = (2.0 * parameter_count) - (2.0 * log_likelihood)
     if sample_size <= parameter_count + 1:
         aicc = math.inf
     else:
-        aicc = aic + ((2.0 * parameter_count * (parameter_count + 1)) / (sample_size - parameter_count - 1))
+        aicc = aic + (
+            (2.0 * parameter_count * (parameter_count + 1))
+            / (sample_size - parameter_count - 1)
+        )
     return ComparativeModelComparisonRow(
         model=model,
         parameter_count=parameter_count,
@@ -1126,7 +1237,10 @@ def _comparison_row(model: str, parameter_count: int, log_likelihood: float, sam
 
 
 def _load_comparative_reference_fixture() -> dict[str, object]:
-    fixture_path = Path(__file__).resolve().parents[3] / "tests/fixtures/expected/comparative_reference_validation.json"
+    fixture_path = (
+        Path(__file__).resolve().parents[3]
+        / "tests/fixtures/expected/comparative_reference_validation.json"
+    )
     return json.loads(fixture_path.read_text(encoding="utf-8"))
 
 
@@ -1137,7 +1251,10 @@ def _subset_covariance(
 ) -> list[list[float]]:
     positions = {taxon: index for index, taxon in enumerate(source_taxa)}
     return [
-        [covariance_matrix[positions[left_taxon]][positions[right_taxon]] for right_taxon in target_taxa]
+        [
+            covariance_matrix[positions[left_taxon]][positions[right_taxon]]
+            for right_taxon in target_taxa
+        ]
         for left_taxon in target_taxa
     ]
 
@@ -1154,17 +1271,23 @@ def _build_pgls_residual_warnings(
     if outlier_taxa:
         warnings.append("PGLS residual diagnostics identify one or more outlier taxa")
     if high_leverage_taxa:
-        warnings.append("PGLS leverage diagnostics identify one or more high-leverage taxa")
+        warnings.append(
+            "PGLS leverage diagnostics identify one or more high-leverage taxa"
+        )
     return warnings
 
 
-def _write_reduced_comparative_inputs(tree_path: Path, taxa: list[str], dropped_taxon: str) -> tuple[Path, list[str]]:
+def _write_reduced_comparative_inputs(
+    tree_path: Path, taxa: list[str], dropped_taxon: str
+) -> tuple[Path, list[str]]:
     from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
     from bijux_phylogenetics.io.newick import write_newick
 
     kept_taxa = [taxon for taxon in taxa if taxon != dropped_taxon]
     reduced_tree, _ = prune_tree_to_requested_taxa(tree_path, kept_taxa)
-    out_path = Path(tempfile.mkstemp(prefix=f"bijux-comparative-{dropped_taxon}-", suffix=".nwk")[1])
+    out_path = Path(
+        tempfile.mkstemp(prefix=f"bijux-comparative-{dropped_taxon}-", suffix=".nwk")[1]
+    )
     write_newick(out_path, reduced_tree)
     return out_path, kept_taxa
 
@@ -1181,6 +1304,10 @@ def _write_reduced_trait_table(
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     kept_taxa = {taxon for taxon in taxa if taxon != dropped_taxon}
     rows = [row for row in table.rows if row[table.taxon_column] in kept_taxa]
-    out_path = Path(tempfile.mkstemp(prefix=f"bijux-comparative-{dropped_taxon}-", suffix=traits_path.suffix)[1])
+    out_path = Path(
+        tempfile.mkstemp(
+            prefix=f"bijux-comparative-{dropped_taxon}-", suffix=traits_path.suffix
+        )[1]
+    )
     write_taxon_rows(out_path, columns=table.columns, rows=rows)
     return out_path

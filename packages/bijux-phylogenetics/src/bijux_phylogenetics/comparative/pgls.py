@@ -4,17 +4,22 @@ from dataclasses import dataclass
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative._math import invert_matrix, log_determinant, matrix_multiply, transpose
+from bijux_phylogenetics.comparative._math import (
+    invert_matrix,
+    log_determinant,
+    matrix_multiply,
+    transpose,
+)
 from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     lambda_transform_covariance,
     load_comparative_dataset,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.traits import validate_traits_table
 from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.io.trees import load_tree
 
 
 @dataclass(slots=True)
@@ -222,7 +227,9 @@ def inspect_pgls_inputs(
     )
     response_descriptor = _parse_term_descriptor(specification.response)
     if response_descriptor.transformation is not None:
-        raise ComparativeMethodError("transformed response terms are not supported for PGLS")
+        raise ComparativeMethodError(
+            "transformed response terms are not supported for PGLS"
+        )
     readiness = summarize_numeric_trait_readiness(
         tree_path,
         traits_path,
@@ -241,9 +248,13 @@ def inspect_pgls_inputs(
     if not readiness.complete_branch_lengths:
         blockers.append("PGLS requires complete tree branch lengths")
     if response_descriptor.source_column not in column_kinds:
-        blockers.append(f"trait table does not contain response column '{response_descriptor.source_column}'")
+        blockers.append(
+            f"trait table does not contain response column '{response_descriptor.source_column}'"
+        )
     elif column_kinds[response_descriptor.source_column] != "numeric":
-        blockers.append(f"response column '{response_descriptor.source_column}' must be numeric for PGLS")
+        blockers.append(
+            f"response column '{response_descriptor.source_column}' must be numeric for PGLS"
+        )
 
     predictor_reports: list[PGLSPredictorClassification] = []
     categorical_predictors: list[str] = []
@@ -252,7 +263,9 @@ def inspect_pgls_inputs(
         term_descriptor = _parse_term_descriptor(predictor)
         kind = column_kinds.get(term_descriptor.source_column)
         if kind is None:
-            blockers.append(f"trait table does not contain predictor column '{term_descriptor.source_column}'")
+            blockers.append(
+                f"trait table does not contain predictor column '{term_descriptor.source_column}'"
+            )
             continue
         if kind != "numeric" and term_descriptor.transformation is not None:
             blockers.append(
@@ -281,19 +294,23 @@ def inspect_pgls_inputs(
             {
                 row[term_descriptor.source_column]
                 for row in table.rows
-                if row[table.taxon_column] in tree.tip_names and row.get(term_descriptor.source_column, "")
+                if row[table.taxon_column] in tree.tip_names
+                and row.get(term_descriptor.source_column, "")
             }
         )
         level_counts = {
             level: sum(
                 1
                 for row in table.rows
-                if row[table.taxon_column] in tree.tip_names and row.get(term_descriptor.source_column, "") == level
+                if row[table.taxon_column] in tree.tip_names
+                and row.get(term_descriptor.source_column, "") == level
             )
             for level in levels
         }
         if len(levels) < 2:
-            blockers.append(f"categorical predictor '{term_descriptor.source_column}' requires at least two observed levels")
+            blockers.append(
+                f"categorical predictor '{term_descriptor.source_column}' requires at least two observed levels"
+            )
             predictor_reports.append(
                 PGLSPredictorClassification(
                     name=predictor,
@@ -324,7 +341,7 @@ def inspect_pgls_inputs(
                 observed_levels=levels,
                 level_counts=level_counts,
             )
-            )
+        )
 
     report_by_name = {report.name: report for report in predictor_reports}
     interaction_audits: list[PGLSInteractionAudit] = []
@@ -363,10 +380,11 @@ def inspect_pgls_inputs(
             )
             continue
         required_columns = [response_descriptor.source_column] + [
-            report.source_column or report.name
-            for report in predictor_reports
+            report.source_column or report.name for report in predictor_reports
         ]
-        missing_columns = [column for column in required_columns if not row.get(column, "")]
+        missing_columns = [
+            column for column in required_columns if not row.get(column, "")
+        ]
         if missing_columns:
             excluded_taxa.append(
                 PGLSTaxonExclusion(
@@ -377,13 +395,19 @@ def inspect_pgls_inputs(
             )
             continue
         try:
-            _coerce_numeric_value(row[response_descriptor.source_column], descriptor=response_descriptor)
+            _coerce_numeric_value(
+                row[response_descriptor.source_column], descriptor=response_descriptor
+            )
             for predictor_report in predictor_reports:
                 if predictor_report.kind == "numeric":
-                    source_column = predictor_report.source_column or predictor_report.name
+                    source_column = (
+                        predictor_report.source_column or predictor_report.name
+                    )
                     _coerce_numeric_value(
                         row[source_column],
-                        descriptor=_parse_term_descriptor(predictor_report.raw_term or predictor_report.name),
+                        descriptor=_parse_term_descriptor(
+                            predictor_report.raw_term or predictor_report.name
+                        ),
                     )
         except ValueError:
             excluded_taxa.append(
@@ -396,14 +420,18 @@ def inspect_pgls_inputs(
             continue
         analysis_taxa.append(taxon)
     if missing_tree_taxa:
-        blockers.append("PGLS requires all analyzed taxa to be resolved against the trait table")
+        blockers.append(
+            "PGLS requires all analyzed taxa to be resolved against the trait table"
+        )
     residual_degrees_of_freedom = len(analysis_taxa) - len(encoded_columns)
     if residual_degrees_of_freedom <= 0:
         blockers.append(
             "PGLS overfit guard requires at least one residual degree of freedom after predictor encoding"
         )
     elif residual_degrees_of_freedom == 1:
-        warnings.append("PGLS has only one residual degree of freedom after predictor encoding")
+        warnings.append(
+            "PGLS has only one residual degree of freedom after predictor encoding"
+        )
     transformed_terms = sorted(
         [
             predictor_report.name
@@ -479,9 +507,14 @@ def run_pgls(
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     taxa = list(input_report.analysis_taxa)
-    response_descriptor = _parse_term_descriptor(input_report.formula_audit.response_term)
+    response_descriptor = _parse_term_descriptor(
+        input_report.formula_audit.response_term
+    )
     response_values = [
-        _coerce_numeric_value(rows_by_taxon[taxon][input_report.formula_audit.response_column], descriptor=response_descriptor)
+        _coerce_numeric_value(
+            rows_by_taxon[taxon][input_report.formula_audit.response_column],
+            descriptor=response_descriptor,
+        )
         for taxon in taxa
     ]
     design_matrix, encoded_columns = _build_design_matrix(
@@ -499,19 +532,30 @@ def run_pgls(
         trait=dataset.trait,
         taxa=taxa,
         trait_values=response_values,
-        covariance_matrix=_subset_covariance(dataset.covariance_matrix, dataset.taxa, taxa),
+        covariance_matrix=_subset_covariance(
+            dataset.covariance_matrix, dataset.taxa, taxa
+        ),
         readiness=dataset.readiness,
     )
     resolved_lambda = _resolve_lambda(dataset, lambda_value)
     covariance = lambda_transform_covariance(dataset.covariance_matrix, resolved_lambda)
     inverse_covariance = invert_matrix(covariance)
-    coefficients, covariance_of_betas, fitted_values = _fit_gls(design_matrix, response_values, inverse_covariance)
-    residuals = [observed - fitted for observed, fitted in zip(response_values, fitted_values, strict=True)]
+    coefficients, covariance_of_betas, fitted_values = _fit_gls(
+        design_matrix, response_values, inverse_covariance
+    )
+    residuals = [
+        observed - fitted
+        for observed, fitted in zip(response_values, fitted_values, strict=True)
+    ]
     degrees_of_freedom = len(response_values) - len(coefficients)
-    residual_variance = _quadratic_form(residuals, inverse_covariance) / degrees_of_freedom
+    residual_variance = (
+        _quadratic_form(residuals, inverse_covariance) / degrees_of_freedom
+    )
     coefficient_reports: list[PGLSCoefficient] = []
     for index, name in enumerate(encoded_columns):
-        standard_error = math.sqrt(max(covariance_of_betas[index][index] * residual_variance, 0.0))
+        standard_error = math.sqrt(
+            max(covariance_of_betas[index][index] * residual_variance, 0.0)
+        )
         z_score = coefficients[index] / standard_error if standard_error else 0.0
         p_value = 2.0 * (1.0 - _normal_cdf(abs(z_score)))
         coefficient_reports.append(
@@ -524,9 +568,15 @@ def run_pgls(
             )
         )
     mean_response = sum(response_values) / len(response_values)
-    total_sum_of_squares = sum((value - mean_response) ** 2 for value in response_values)
+    total_sum_of_squares = sum(
+        (value - mean_response) ** 2 for value in response_values
+    )
     residual_sum_of_squares = sum(value * value for value in residuals)
-    r_squared = 1.0 - (residual_sum_of_squares / total_sum_of_squares) if total_sum_of_squares else 1.0
+    r_squared = (
+        1.0 - (residual_sum_of_squares / total_sum_of_squares)
+        if total_sum_of_squares
+        else 1.0
+    )
     log_likelihood = _gls_log_likelihood(
         response_values,
         residuals,
@@ -574,9 +624,13 @@ def run_pgls_multiple_testing(
 ) -> ComparativeMultipleTestingReport:
     """Run repeated PGLS fits and adjust coefficient p-values across the family of tests."""
     if not responses:
-        raise ComparativeMethodError("multiple-testing analysis requires at least one response trait")
+        raise ComparativeMethodError(
+            "multiple-testing analysis requires at least one response trait"
+        )
     if adjustment_method != "benjamini-hochberg":
-        raise ComparativeMethodError("supported multiple-testing adjustment is 'benjamini-hochberg'")
+        raise ComparativeMethodError(
+            "supported multiple-testing adjustment is 'benjamini-hochberg'"
+        )
     rows: list[ComparativeHypothesisTestRow] = []
     for response in responses:
         report = run_pgls(
@@ -683,7 +737,9 @@ def _parse_term_descriptor(raw_term: str) -> _FormulaTermDescriptor:
             transformation=None,
         )
     if not raw_term.endswith(")") or raw_term.count("(") != 1:
-        raise ComparativeMethodError(f"unsupported comparative term syntax '{raw_term}'")
+        raise ComparativeMethodError(
+            f"unsupported comparative term syntax '{raw_term}'"
+        )
     transformation, inner = raw_term.split("(", 1)
     transformation = transformation.strip()
     source_column = inner[:-1].strip()
@@ -692,7 +748,9 @@ def _parse_term_descriptor(raw_term: str) -> _FormulaTermDescriptor:
             f"unsupported comparative transformation '{transformation}' in term '{raw_term}'"
         )
     if not source_column:
-        raise ComparativeMethodError(f"comparative transformation term '{raw_term}' is missing a source column")
+        raise ComparativeMethodError(
+            f"comparative transformation term '{raw_term}' is missing a source column"
+        )
     return _FormulaTermDescriptor(
         raw_term=raw_term,
         source_column=source_column,
@@ -700,7 +758,9 @@ def _parse_term_descriptor(raw_term: str) -> _FormulaTermDescriptor:
     )
 
 
-def _coerce_numeric_value(raw_value: str, *, descriptor: _FormulaTermDescriptor) -> float:
+def _coerce_numeric_value(
+    raw_value: str, *, descriptor: _FormulaTermDescriptor
+) -> float:
     value = float(raw_value)
     if descriptor.transformation is None:
         return value
@@ -716,7 +776,9 @@ def _coerce_numeric_value(raw_value: str, *, descriptor: _FormulaTermDescriptor)
         if value < 0.0:
             raise ValueError("sqrt transformation requires non-negative values")
         return math.sqrt(value)
-    raise ComparativeMethodError(f"unsupported transformation '{descriptor.transformation}'")
+    raise ComparativeMethodError(
+        f"unsupported transformation '{descriptor.transformation}'"
+    )
 
 
 def _resolve_formula_specification(
@@ -727,10 +789,14 @@ def _resolve_formula_specification(
 ) -> ComparativeFormulaSpecification:
     if formula:
         if response is not None or predictors:
-            raise ComparativeMethodError("provide either a formula or explicit response/predictors, not both")
+            raise ComparativeMethodError(
+                "provide either a formula or explicit response/predictors, not both"
+            )
         return _parse_formula(formula)
     if response is None:
-        raise ComparativeMethodError("PGLS requires a response column when no formula is provided")
+        raise ComparativeMethodError(
+            "PGLS requires a response column when no formula is provided"
+        )
     requested_predictors = list(predictors or [])
     if not requested_predictors:
         raise ComparativeMethodError("PGLS requires at least one predictor column")
@@ -747,17 +813,25 @@ def _parse_formula(formula: str) -> ComparativeFormulaSpecification:
         raise ComparativeMethodError("comparative formula must contain '~'")
     response, right_hand_side = [part.strip() for part in formula.split("~", 1)]
     if not response:
-        raise ComparativeMethodError("comparative formula requires a response on the left-hand side")
+        raise ComparativeMethodError(
+            "comparative formula requires a response on the left-hand side"
+        )
     raw_terms = [term.strip() for term in right_hand_side.split("+") if term.strip()]
     if not raw_terms:
-        raise ComparativeMethodError("comparative formula requires at least one predictor term")
+        raise ComparativeMethodError(
+            "comparative formula requires at least one predictor term"
+        )
     predictors: list[str] = []
     interaction_terms: list[str] = []
     for raw_term in raw_terms:
         if "*" in raw_term:
-            factors = [factor.strip() for factor in raw_term.split("*") if factor.strip()]
+            factors = [
+                factor.strip() for factor in raw_term.split("*") if factor.strip()
+            ]
             if len(factors) < 2:
-                raise ComparativeMethodError(f"invalid interaction expansion '{raw_term}'")
+                raise ComparativeMethodError(
+                    f"invalid interaction expansion '{raw_term}'"
+                )
             for factor in factors:
                 if factor not in predictors:
                     predictors.append(factor)
@@ -766,7 +840,9 @@ def _parse_formula(formula: str) -> ComparativeFormulaSpecification:
                 interaction_terms.append(interaction)
             continue
         if ":" in raw_term:
-            factors = [factor.strip() for factor in raw_term.split(":") if factor.strip()]
+            factors = [
+                factor.strip() for factor in raw_term.split(":") if factor.strip()
+            ]
             if len(factors) < 2:
                 raise ComparativeMethodError(f"invalid interaction term '{raw_term}'")
             interaction = ":".join(factors)
@@ -813,7 +889,9 @@ def _interaction_values(
         expanded: list[tuple[str, float]] = []
         for left_name, left_value in values:
             for right_name, right_value in encoded_main_effects[factor]:
-                expanded.append((f"{left_name}:{right_name}".strip(":"), left_value * right_value))
+                expanded.append(
+                    (f"{left_name}:{right_name}".strip(":"), left_value * right_value)
+                )
         values = expanded
     return values
 
@@ -827,7 +905,12 @@ def _fit_gls(
     xt_vinv = matrix_multiply(x_transposed, inverse_covariance)
     xt_vinv_x = matrix_multiply(xt_vinv, design_matrix)
     xt_vinv_x_inverse = invert_matrix(xt_vinv_x)
-    xt_vinv_y = [sum(row[index] * response_values[index] for index in range(len(response_values))) for row in xt_vinv]
+    xt_vinv_y = [
+        sum(
+            row[index] * response_values[index] for index in range(len(response_values))
+        )
+        for row in xt_vinv
+    ]
     coefficients = [
         sum(row[index] * xt_vinv_y[index] for index in range(len(xt_vinv_y)))
         for row in xt_vinv_x_inverse
@@ -897,10 +980,14 @@ def _resolve_lambda(
 ) -> float:
     if isinstance(lambda_value, (float, int)):
         if not 0.0 <= lambda_value <= 1.0:
-            raise ComparativeMethodError("PGLS lambda must be between 0 and 1 inclusive")
+            raise ComparativeMethodError(
+                "PGLS lambda must be between 0 and 1 inclusive"
+            )
         return float(lambda_value)
     if lambda_value != "estimate":
-        raise ComparativeMethodError("PGLS lambda must be 'estimate' or a numeric value")
+        raise ComparativeMethodError(
+            "PGLS lambda must be 'estimate' or a numeric value"
+        )
     return _estimate_lambda_for_dataset(dataset)
 
 
@@ -911,7 +998,10 @@ def _subset_covariance(
 ) -> list[list[float]]:
     positions = {taxon: index for index, taxon in enumerate(source_taxa)}
     return [
-        [covariance_matrix[positions[left_taxon]][positions[right_taxon]] for right_taxon in target_taxa]
+        [
+            covariance_matrix[positions[left_taxon]][positions[right_taxon]]
+            for right_taxon in target_taxa
+        ]
         for left_taxon in target_taxa
     ]
 
@@ -919,7 +1009,9 @@ def _subset_covariance(
 def _quadratic_form(vector: list[float], matrix: list[list[float]]) -> float:
     total = 0.0
     for row_index, row in enumerate(matrix):
-        total += vector[row_index] * sum(value * vector[column_index] for column_index, value in enumerate(row))
+        total += vector[row_index] * sum(
+            value * vector[column_index] for column_index, value in enumerate(row)
+        )
     return total
 
 
@@ -933,7 +1025,9 @@ def _gls_log_likelihood(
     inverse_covariance: list[list[float]],
     covariance: list[list[float]],
 ) -> float:
-    sigma_squared = _quadratic_form(residuals, inverse_covariance) / len(response_values)
+    sigma_squared = _quadratic_form(residuals, inverse_covariance) / len(
+        response_values
+    )
     return -0.5 * (
         len(response_values) * math.log(2.0 * math.pi * sigma_squared)
         + log_determinant(covariance)
@@ -948,13 +1042,17 @@ def _estimate_lambda_for_dataset(
     fine_step: float = 0.005,
 ) -> float:
     coarse_values = _grid_values(0.0, 1.0, coarse_step)
-    coarse_best_lambda = max(coarse_values, key=lambda candidate: _lambda_log_likelihood(dataset, candidate))
+    coarse_best_lambda = max(
+        coarse_values, key=lambda candidate: _lambda_log_likelihood(dataset, candidate)
+    )
     fine_values = _grid_values(
         max(0.0, coarse_best_lambda - coarse_step),
         min(1.0, coarse_best_lambda + coarse_step),
         fine_step,
     )
-    return max(fine_values, key=lambda candidate: _lambda_log_likelihood(dataset, candidate))
+    return max(
+        fine_values, key=lambda candidate: _lambda_log_likelihood(dataset, candidate)
+    )
 
 
 def _lambda_log_likelihood(dataset: ComparativeDataset, lambda_value: float) -> float:
@@ -970,7 +1068,9 @@ def _lambda_log_likelihood(dataset: ComparativeDataset, lambda_value: float) -> 
         observed - fitted
         for observed, fitted in zip(dataset.trait_values, fitted_values, strict=True)
     ]
-    return _gls_log_likelihood(dataset.trait_values, residuals, inverse_covariance, covariance)
+    return _gls_log_likelihood(
+        dataset.trait_values, residuals, inverse_covariance, covariance
+    )
 
 
 def _grid_values(start: float, stop: float, step: float) -> list[float]:

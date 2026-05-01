@@ -1,6 +1,12 @@
 """Comparative-analysis methods and helpers."""
 
-from .common import ComparativeDataset, ComparativeReadinessReport, NumericTraitSummary, summarize_numeric_trait, summarize_numeric_trait_readiness
+from .common import (
+    ComparativeDataset,
+    ComparativeReadinessReport,
+    NumericTraitSummary,
+    summarize_numeric_trait,
+    summarize_numeric_trait_readiness,
+)
 from .models import (
     BrownianMotionFitReport,
     ComparativeMethodMaturityReport,
@@ -36,8 +42,8 @@ from .pgls import (
     ComparativeMultipleTestingReport,
     PGLSCoefficient,
     PGLSDiagnosticsReport,
-    PGLSFormulaAudit,
     PGLSFittedObservation,
+    PGLSFormulaAudit,
     PGLSInputReport,
     PGLSInteractionAudit,
     PGLSLeverageRow,
@@ -46,8 +52,8 @@ from .pgls import (
     PGLSResult,
     PGLSTaxonExclusion,
     inspect_pgls_inputs,
-    run_pgls_multiple_testing,
     run_pgls,
+    run_pgls_multiple_testing,
 )
 from .reporting import (
     ComparativeAuditRow,

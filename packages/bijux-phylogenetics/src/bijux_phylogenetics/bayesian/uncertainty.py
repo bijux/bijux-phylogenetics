@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.bayesian.beast import (
@@ -104,7 +104,13 @@ def build_posterior_uncertainty_figure_package(
     )
     write_taxon_rows(
         unstable_taxa_table_path,
-        columns=["taxon", "unique_placements", "dominant_frequency", "instability_score", "placement_signatures"],
+        columns=[
+            "taxon",
+            "unique_placements",
+            "dominant_frequency",
+            "instability_score",
+            "placement_signatures",
+        ],
         rows=[
             {
                 "taxon": row.taxon,
@@ -141,7 +147,9 @@ def build_posterior_uncertainty_figure_package(
                     "clade_frequency_plot": str(clade_frequency_plot_path),
                     "unstable_taxa_table": str(unstable_taxa_table_path),
                     "topology_clusters_table": str(topology_clusters_table_path),
-                    "uncertainty_conclusions_table": str(uncertainty_conclusions_table_path),
+                    "uncertainty_conclusions_table": str(
+                        uncertainty_conclusions_table_path
+                    ),
                     "uncertainty_summary": str(conclusion_summary_path),
                 },
                 "consensus": asdict(consensus),
@@ -182,7 +190,9 @@ def write_supplementary_bayesian_diagnostics_table(
     cross_chain_mean_shift_threshold: float = 0.75,
 ) -> SupplementaryBayesianDiagnosticsTableResult:
     """Write a reviewer-facing supplementary diagnostics table for Bayesian posterior analysis."""
-    validation = validate_beast_posterior_log(primary_log_path, required_columns=required_columns)
+    validation = validate_beast_posterior_log(
+        primary_log_path, required_columns=required_columns
+    )
     burnin = assess_beast_burnin_sensitivity(
         posterior_tree_path,
         log_path=primary_log_path,
@@ -220,9 +230,15 @@ def write_supplementary_bayesian_diagnostics_table(
                 "burnin_fraction": format(burnin_slice.burnin_fraction, ".15g"),
                 "effective_sample_size": "",
                 "mean": "",
-                "posterior_mean": "" if burnin_slice.posterior_mean is None else format(burnin_slice.posterior_mean, ".15g"),
-                "likelihood_mean": "" if burnin_slice.likelihood_mean is None else format(burnin_slice.likelihood_mean, ".15g"),
-                "tree_height_mean": "" if burnin_slice.tree_height_mean is None else format(burnin_slice.tree_height_mean, ".15g"),
+                "posterior_mean": ""
+                if burnin_slice.posterior_mean is None
+                else format(burnin_slice.posterior_mean, ".15g"),
+                "likelihood_mean": ""
+                if burnin_slice.likelihood_mean is None
+                else format(burnin_slice.likelihood_mean, ".15g"),
+                "tree_height_mean": ""
+                if burnin_slice.tree_height_mean is None
+                else format(burnin_slice.tree_height_mean, ".15g"),
                 "warning_code": "",
                 "details": (
                     f"selected_tree_index={burnin_slice.selected_tree_index}; "
@@ -240,7 +256,9 @@ def write_supplementary_bayesian_diagnostics_table(
                     "chain": f"chain_{chain_index}",
                     "parameter": str(parameter_summary["parameter"]),
                     "burnin_fraction": "",
-                    "effective_sample_size": format(float(parameter_summary["effective_sample_size"]), ".15g"),
+                    "effective_sample_size": format(
+                        float(parameter_summary["effective_sample_size"]), ".15g"
+                    ),
                     "mean": format(float(parameter_summary["mean"]), ".15g"),
                     "posterior_mean": "",
                     "likelihood_mean": "",
@@ -273,7 +291,9 @@ def write_supplementary_bayesian_diagnostics_table(
         output_path=path,
         row_count=len(rows),
         chain_count=len(log_paths),
-        warning_count=len(validation.issues) + len(burnin.warnings) + len(mixing.issues),
+        warning_count=len(validation.issues)
+        + len(burnin.warnings)
+        + len(mixing.issues),
     )
 
 
@@ -294,7 +314,9 @@ def write_bayesian_methods_summary_text(
     tip_dates_path: Path | None = None,
 ) -> BayesianMethodsSummaryTextResult:
     """Write reviewer-facing methods text for one Bayesian posterior analysis."""
-    validation = validate_beast_posterior_log(primary_log_path, required_columns=required_columns)
+    validation = validate_beast_posterior_log(
+        primary_log_path, required_columns=required_columns
+    )
     burnin = assess_beast_burnin_sensitivity(
         posterior_tree_path,
         log_path=primary_log_path,
@@ -317,7 +339,9 @@ def write_bayesian_methods_summary_text(
     )
     calibration_text = "No calibration table was provided."
     if calibration_path is not None:
-        calibration_text = f"Calibration constraints were supplied from `{calibration_path.name}`."
+        calibration_text = (
+            f"Calibration constraints were supplied from `{calibration_path.name}`."
+        )
     tip_date_text = "No tip-date table was supplied."
     if tip_dates_path is not None:
         tip_date_text = f"Tip dates were supplied from `{tip_dates_path.name}`."
@@ -394,7 +418,9 @@ def write_bayesian_limitations_text(
     if burnin.warnings:
         limitations.extend(burnin.warnings)
     if mixing.issues:
-        limitations.append("one or more chains show ESS, drift, or cross-chain mixing concerns that limit confidence in posterior summaries")
+        limitations.append(
+            "one or more chains show ESS, drift, or cross-chain mixing concerns that limit confidence in posterior summaries"
+        )
     if dominance is not None and dominance.warnings:
         limitations.extend(dominance.warnings)
     if readiness is not None:
@@ -402,9 +428,11 @@ def write_bayesian_limitations_text(
             limitations.extend(readiness.blockers)
         if readiness.warnings:
             limitations.extend(readiness.warnings)
-    text = "# Bayesian Analysis Limitations\n\n" + "\n".join(
-        f"- {line}" for line in sorted(dict.fromkeys(limitations))
-    ) + "\n"
+    text = (
+        "# Bayesian Analysis Limitations\n\n"
+        + "\n".join(f"- {line}" for line in sorted(dict.fromkeys(limitations)))
+        + "\n"
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return BayesianLimitationsTextResult(
@@ -460,7 +488,9 @@ def _uncertainty_summary_markdown(
 ) -> str:
     robust = ", ".join(row.clade for row in conclusions.robust_clades) or "none"
     uncertain = ", ".join(row.clade for row in conclusions.uncertain_clades) or "none"
-    conflicting = ", ".join(row.clade for row in conclusions.conflicting_clades) or "none"
+    conflicting = (
+        ", ".join(row.clade for row in conclusions.conflicting_clades) or "none"
+    )
     return (
         "# Posterior Uncertainty Summary\n\n"
         f"- Consensus tree: `{consensus_newick}`\n"

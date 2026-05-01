@@ -5,7 +5,12 @@ import json
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.comparative.common import ComparativeReadinessReport, NumericTraitSummary, summarize_numeric_trait, summarize_numeric_trait_readiness
+from bijux_phylogenetics.comparative.common import (
+    ComparativeReadinessReport,
+    NumericTraitSummary,
+    summarize_numeric_trait,
+    summarize_numeric_trait_readiness,
+)
 from bijux_phylogenetics.comparative.models import (
     BrownianMotionFitReport,
     ComparativeMethodMaturityReport,
@@ -18,8 +23,21 @@ from bijux_phylogenetics.comparative.models import (
     fit_ornstein_uhlenbeck_model,
     run_comparative_sensitivity_analysis,
 )
-from bijux_phylogenetics.comparative.pgls import ComparativeFormulaSpecification, PGLSInputReport, PGLSResult, inspect_pgls_inputs, run_pgls
-from bijux_phylogenetics.comparative.signal import BlombergKReport, IndependentContrastReport, PagelLambdaReport, compute_blombergs_k, compute_phylogenetic_independent_contrasts, estimate_pagels_lambda
+from bijux_phylogenetics.comparative.pgls import (
+    ComparativeFormulaSpecification,
+    PGLSInputReport,
+    PGLSResult,
+    inspect_pgls_inputs,
+    run_pgls,
+)
+from bijux_phylogenetics.comparative.signal import (
+    BlombergKReport,
+    IndependentContrastReport,
+    PagelLambdaReport,
+    compute_blombergs_k,
+    compute_phylogenetic_independent_contrasts,
+    estimate_pagels_lambda,
+)
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.io.newick import write_newick
@@ -192,7 +210,9 @@ def build_comparative_method_report(
     return ComparativeMethodReport(snapshot=snapshot, influence=influence)
 
 
-def write_comparative_method_report(path: Path, report: ComparativeMethodReport) -> Path:
+def write_comparative_method_report(
+    path: Path, report: ComparativeMethodReport
+) -> Path:
     """Render the comparative-method report to a standalone HTML artifact."""
     sections = [
         ("readiness", str(asdict(report.snapshot.readiness))),
@@ -257,16 +277,18 @@ def build_trait_influence_report(
     leverage_by_taxon = {
         row.taxon: row for row in snapshot.pgls_model.diagnostics.leverage_rows
     }
-    sensitivity_by_taxon = {
-        row.dropped_taxon: row for row in snapshot.sensitivity.rows
-    }
+    sensitivity_by_taxon = {row.dropped_taxon: row for row in snapshot.sensitivity.rows}
     taxon_rows = [
         ComparativeTaxonInfluenceRow(
             taxon=taxon,
             leverage=leverage_by_taxon[taxon].leverage,
             standardized_residual=leverage_by_taxon[taxon].standardized_residual,
-            sensitivity_delta_log_likelihood=sensitivity_by_taxon[taxon].delta_log_likelihood,
-            sensitivity_delta_primary_parameter=sensitivity_by_taxon[taxon].delta_primary_parameter,
+            sensitivity_delta_log_likelihood=sensitivity_by_taxon[
+                taxon
+            ].delta_log_likelihood,
+            sensitivity_delta_primary_parameter=sensitivity_by_taxon[
+                taxon
+            ].delta_primary_parameter,
             influence_score=(
                 abs(leverage_by_taxon[taxon].standardized_residual)
                 + leverage_by_taxon[taxon].leverage
@@ -280,11 +302,22 @@ def build_trait_influence_report(
     top_taxa = [row.taxon for row in taxon_rows[:3]]
     warnings: list[str] = []
     if any(row.significant for row in predictor_rows):
-        warnings.append("one or more predictor terms show nominal coefficient-level significance")
+        warnings.append(
+            "one or more predictor terms show nominal coefficient-level significance"
+        )
     if any(abs(row.standardized_residual) >= 2.0 for row in taxon_rows):
-        warnings.append("one or more taxa contribute large standardized residuals to the fitted model")
-    if any(row.leverage >= (2.0 * len(snapshot.pgls_model.encoded_columns)) / len(snapshot.pgls_model.taxa) for row in taxon_rows):
-        warnings.append("one or more taxa have high leverage relative to model complexity")
+        warnings.append(
+            "one or more taxa contribute large standardized residuals to the fitted model"
+        )
+    if any(
+        row.leverage
+        >= (2.0 * len(snapshot.pgls_model.encoded_columns))
+        / len(snapshot.pgls_model.taxa)
+        for row in taxon_rows
+    ):
+        warnings.append(
+            "one or more taxa have high leverage relative to model complexity"
+        )
     return ComparativeInfluenceReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -335,7 +368,8 @@ def compare_comparative_results_across_trees(
         right_selected_model=right.model_comparison.better_model,
         sign_changed_terms=sign_changed_terms,
         delta_blombergs_k=right.signal_k.k - left.signal_k.k,
-        delta_pagels_lambda=right.signal_lambda.lambda_value - left.signal_lambda.lambda_value,
+        delta_pagels_lambda=right.signal_lambda.lambda_value
+        - left.signal_lambda.lambda_value,
         change_context="alternative-tree comparison",
     )
     return ComparativeTreeComparisonReport(
@@ -346,13 +380,15 @@ def compare_comparative_results_across_trees(
         left_selected_model=left.model_comparison.better_model,
         right_selected_model=right.model_comparison.better_model,
         delta_blombergs_k=right.signal_k.k - left.signal_k.k,
-        delta_pagels_lambda=right.signal_lambda.lambda_value - left.signal_lambda.lambda_value,
+        delta_pagels_lambda=right.signal_lambda.lambda_value
+        - left.signal_lambda.lambda_value,
         delta_brownian_rate=right.brownian.rate - left.brownian.rate,
         delta_ou_alpha=right.ou.alpha - left.ou.alpha,
         coefficient_deltas=coefficient_deltas,
         sign_changed_terms=sign_changed_terms,
         conclusion_changed=bool(
-            sign_changed_terms or left.model_comparison.better_model != right.model_comparison.better_model
+            sign_changed_terms
+            or left.model_comparison.better_model != right.model_comparison.better_model
         ),
         warnings=warnings,
     )
@@ -372,7 +408,9 @@ def compare_comparative_results_across_pruning(
 ) -> ComparativePruningComparisonReport:
     """Compare comparative fits before and after explicit tree/trait pruning."""
     if bool(drop_taxa) == bool(keep_taxa):
-        raise ValueError("provide exactly one of drop_taxa or keep_taxa for pruning comparison")
+        raise ValueError(
+            "provide exactly one of drop_taxa or keep_taxa for pruning comparison"
+        )
     baseline = _build_snapshot(
         tree_path,
         traits_path,
@@ -385,8 +423,14 @@ def compare_comparative_results_across_pruning(
     tree = load_tree(tree_path)
     kept_taxa = sorted(set(keep_taxa or tree.tip_names) - set(drop_taxa or []))
     pruned_tree, pruning_report = prune_tree_to_requested_taxa(tree_path, kept_taxa)
-    pruned_tree_path = Path(tempfile.mkstemp(prefix="bijux-comparative-pruned-", suffix=".nwk")[1])
-    pruned_traits_path = Path(tempfile.mkstemp(prefix="bijux-comparative-pruned-", suffix=Path(traits_path).suffix)[1])
+    pruned_tree_path = Path(
+        tempfile.mkstemp(prefix="bijux-comparative-pruned-", suffix=".nwk")[1]
+    )
+    pruned_traits_path = Path(
+        tempfile.mkstemp(
+            prefix="bijux-comparative-pruned-", suffix=Path(traits_path).suffix
+        )[1]
+    )
     try:
         write_newick(pruned_tree_path, pruned_tree)
         _write_pruned_trait_table(
@@ -414,7 +458,8 @@ def compare_comparative_results_across_pruning(
         right_selected_model=pruned.model_comparison.better_model,
         sign_changed_terms=sign_changed_terms,
         delta_blombergs_k=pruned.signal_k.k - baseline.signal_k.k,
-        delta_pagels_lambda=pruned.signal_lambda.lambda_value - baseline.signal_lambda.lambda_value,
+        delta_pagels_lambda=pruned.signal_lambda.lambda_value
+        - baseline.signal_lambda.lambda_value,
         change_context="taxon-pruning comparison",
     )
     return ComparativePruningComparisonReport(
@@ -423,15 +468,20 @@ def compare_comparative_results_across_pruning(
         predictors=baseline.formula.predictors,
         baseline_taxa=baseline.pgls_model.taxa,
         pruned_taxa=pruned.pgls_model.taxa,
-        dropped_taxa=sorted(set(baseline.pgls_model.taxa) - set(pruned.pgls_model.taxa)),
+        dropped_taxa=sorted(
+            set(baseline.pgls_model.taxa) - set(pruned.pgls_model.taxa)
+        ),
         delta_blombergs_k=pruned.signal_k.k - baseline.signal_k.k,
-        delta_pagels_lambda=pruned.signal_lambda.lambda_value - baseline.signal_lambda.lambda_value,
+        delta_pagels_lambda=pruned.signal_lambda.lambda_value
+        - baseline.signal_lambda.lambda_value,
         coefficient_deltas=coefficient_deltas,
         baseline_selected_model=baseline.model_comparison.better_model,
         pruned_selected_model=pruned.model_comparison.better_model,
         sign_changed_terms=sign_changed_terms,
         conclusion_changed=bool(
-            sign_changed_terms or baseline.model_comparison.better_model != pruned.model_comparison.better_model
+            sign_changed_terms
+            or baseline.model_comparison.better_model
+            != pruned.model_comparison.better_model
         ),
         warnings=warnings,
     )
@@ -467,12 +517,24 @@ def _build_snapshot(
         trait=pgls_inputs.response,
         taxon_column=taxon_column,
     )
-    signal_k = compute_blombergs_k(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
-    signal_lambda = estimate_pagels_lambda(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
-    contrasts = compute_phylogenetic_independent_contrasts(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
-    brownian = fit_brownian_motion_model(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
-    ou = fit_ornstein_uhlenbeck_model(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
-    model_comparison = compare_brownian_and_ou_models(tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column)
+    signal_k = compute_blombergs_k(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
+    signal_lambda = estimate_pagels_lambda(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
+    contrasts = compute_phylogenetic_independent_contrasts(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
+    brownian = fit_brownian_motion_model(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
+    ou = fit_ornstein_uhlenbeck_model(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
+    model_comparison = compare_brownian_and_ou_models(
+        tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
+    )
     pgls_model = run_pgls(
         tree_path,
         traits_path,
@@ -562,7 +624,8 @@ def _build_audit_rows(
                 "PGLS assumes the specified predictors explain trait variation on the supplied phylogeny",
                 "PGLS relies on dummy encoding for categorical predictors and explicit interaction expansion",
             ],
-            warnings=pgls_inputs.warnings + [f"residual_mean={pgls_model.diagnostics.residual_mean:.6f}"],
+            warnings=pgls_inputs.warnings
+            + [f"residual_mean={pgls_model.diagnostics.residual_mean:.6f}"],
         ),
     ]
 
@@ -585,24 +648,44 @@ def _build_limitations(
     limitations.extend(ou.residual_diagnostics.warnings)
     limitations.extend(warning.message for warning in ou.identifiability_warnings)
     if pgls_inputs.residual_degrees_of_freedom <= 1:
-        limitations.append("PGLS residual degrees of freedom are minimal, so coefficient uncertainty is fragile")
-        limitations.append("do not treat coefficient signs or p-values as robust when the model is close to saturation")
+        limitations.append(
+            "PGLS residual degrees of freedom are minimal, so coefficient uncertainty is fragile"
+        )
+        limitations.append(
+            "do not treat coefficient signs or p-values as robust when the model is close to saturation"
+        )
     if pgls_inputs.categorical_predictors:
-        limitations.append("categorical predictors are interpreted relative to explicit reference levels")
-        limitations.append("do not compare categorical coefficients as if they were absolute trait differences outside their encoded reference-level context")
+        limitations.append(
+            "categorical predictors are interpreted relative to explicit reference levels"
+        )
+        limitations.append(
+            "do not compare categorical coefficients as if they were absolute trait differences outside their encoded reference-level context"
+        )
     if pgls_model.lambda_value in {0.0, 1.0}:
-        limitations.append("estimated or supplied lambda lies on the boundary of the supported search interval")
-        limitations.append("do not over-interpret the phylogenetic dependence strength when lambda is supported only at a boundary value")
+        limitations.append(
+            "estimated or supplied lambda lies on the boundary of the supported search interval"
+        )
+        limitations.append(
+            "do not over-interpret the phylogenetic dependence strength when lambda is supported only at a boundary value"
+        )
     if pgls_inputs.formula_audit.transformed_terms:
-        limitations.append("transformed predictor terms are interpreted on transformed scales and should not be read as raw-unit effect sizes")
+        limitations.append(
+            "transformed predictor terms are interpreted on transformed scales and should not be read as raw-unit effect sizes"
+        )
     if pgls_inputs.formula_audit.excluded_taxa:
-        limitations.append("excluded taxa can materially change comparative conclusions and should be reviewed before publication use")
+        limitations.append(
+            "excluded taxa can materially change comparative conclusions and should be reviewed before publication use"
+        )
     if ou.identifiability_warnings:
-        limitations.append("do not interpret apparent OU preference as strong evidence of stabilizing selection when OU identifiability warnings are present")
+        limitations.append(
+            "do not interpret apparent OU preference as strong evidence of stabilizing selection when OU identifiability warnings are present"
+        )
     return sorted(set(limitations))
 
 
-def _coefficient_delta_rows(left: PGLSResult, right: PGLSResult) -> list[ComparativeCoefficientDeltaRow]:
+def _coefficient_delta_rows(
+    left: PGLSResult, right: PGLSResult
+) -> list[ComparativeCoefficientDeltaRow]:
     left_coefficients = {row.name: row.estimate for row in left.coefficients}
     right_coefficients = {row.name: row.estimate for row in right.coefficients}
     rows: list[ComparativeCoefficientDeltaRow] = []
@@ -615,7 +698,9 @@ def _coefficient_delta_rows(left: PGLSResult, right: PGLSResult) -> list[Compara
         sign_changed = False
         if left_estimate is not None and right_estimate is not None:
             delta = right_estimate - left_estimate
-            sign_changed = (left_estimate < 0.0 < right_estimate) or (right_estimate < 0.0 < left_estimate)
+            sign_changed = (left_estimate < 0.0 < right_estimate) or (
+                right_estimate < 0.0 < left_estimate
+            )
         rows.append(
             ComparativeCoefficientDeltaRow(
                 term=term,

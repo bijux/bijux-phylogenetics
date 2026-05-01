@@ -47,7 +47,10 @@ def autocorrelation(series: list[float], lag: int) -> float:
     denominator = sum((value - average) ** 2 for value in series)
     if denominator == 0.0:
         return 0.0
-    numerator = sum((series[index] - average) * (series[index + lag] - average) for index in range(sample_count - lag))
+    numerator = sum(
+        (series[index] - average) * (series[index + lag] - average)
+        for index in range(sample_count - lag)
+    )
     return numerator / denominator
 
 
@@ -79,7 +82,7 @@ def standardized_mean_shift(series: list[float]) -> float:
     variance = sum((value - average) ** 2 for value in series) / sample_count
     if variance <= 0.0:
         return 0.0
-    return round(abs(mean(left) - mean(right)) / (variance ** 0.5), 6)
+    return round(abs(mean(left) - mean(right)) / (variance**0.5), 6)
 
 
 def summarize_trace_convergence(

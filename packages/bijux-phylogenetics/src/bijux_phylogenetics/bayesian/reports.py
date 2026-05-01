@@ -1,21 +1,23 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
 import tempfile
 
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
-    assess_calibration_dominance,
     assess_time_tree_readiness,
     detect_impossible_calibration_constraints,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
-from bijux_phylogenetics.bayesian.comparison import compare_independent_bayesian_runs, compare_ml_tree_to_bayesian_posterior
+from bijux_phylogenetics.bayesian.comparison import (
+    compare_independent_bayesian_runs,
+    compare_ml_tree_to_bayesian_posterior,
+)
 from bijux_phylogenetics.bayesian.mrbayes import (
     assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
@@ -124,14 +126,35 @@ def render_bayesian_posterior_report(
         ess_threshold=ess_threshold,
         mean_shift_threshold=mean_shift_threshold,
     )
-    clade_frequencies = compute_clade_frequency_table(posterior_summary.filtered_tree_set_path)
+    clade_frequencies = compute_clade_frequency_table(
+        posterior_summary.filtered_tree_set_path
+    )
     title = "Bijux Bayesian Posterior Report"
     sections = [
-        ("posterior-summary", json.dumps(asdict(posterior_summary), default=str, indent=2, sort_keys=True)),
-        ("trace-summary", json.dumps(asdict(trace_report), default=str, indent=2, sort_keys=True)),
-        ("effective-sample-sizes", json.dumps(asdict(ess_report), default=str, indent=2, sort_keys=True)),
-        ("convergence", json.dumps(asdict(convergence), default=str, indent=2, sort_keys=True)),
-        ("clade-frequencies", json.dumps(asdict(clade_frequencies), default=str, indent=2, sort_keys=True)),
+        (
+            "posterior-summary",
+            json.dumps(
+                asdict(posterior_summary), default=str, indent=2, sort_keys=True
+            ),
+        ),
+        (
+            "trace-summary",
+            json.dumps(asdict(trace_report), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "effective-sample-sizes",
+            json.dumps(asdict(ess_report), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "convergence",
+            json.dumps(asdict(convergence), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "clade-frequencies",
+            json.dumps(
+                asdict(clade_frequencies), default=str, indent=2, sort_keys=True
+            ),
+        ),
     ]
     machine_manifest = {
         "report_kind": "bayesian-posterior",
@@ -143,7 +166,12 @@ def render_bayesian_posterior_report(
         "warning_count": len(convergence.warnings),
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return BayesianPosteriorReportBuildResult(
         output_path=out_path,
         report_kind="bayesian-posterior",
@@ -182,12 +210,27 @@ def render_calibration_audit_report(
     )
     title = "Bijux Calibration Audit Report"
     sections = [
-        ("fossil-calibrations", json.dumps(asdict(calibration_report), default=str, indent=2, sort_keys=True)),
-        ("impossible-constraints", json.dumps(asdict(impossible), default=str, indent=2, sort_keys=True)),
+        (
+            "fossil-calibrations",
+            json.dumps(
+                asdict(calibration_report), default=str, indent=2, sort_keys=True
+            ),
+        ),
+        (
+            "impossible-constraints",
+            json.dumps(asdict(impossible), default=str, indent=2, sort_keys=True),
+        ),
     ]
     if tip_dates is not None:
-        sections.append(("tip-dates", json.dumps(asdict(tip_dates), default=str, indent=2, sort_keys=True)))
-    warning_count = len(impossible.issues) + (0 if tip_dates is None else len(tip_dates.issues))
+        sections.append(
+            (
+                "tip-dates",
+                json.dumps(asdict(tip_dates), default=str, indent=2, sort_keys=True),
+            )
+        )
+    warning_count = len(impossible.issues) + (
+        0 if tip_dates is None else len(tip_dates.issues)
+    )
     machine_manifest = {
         "report_kind": "calibration-audit",
         "title": title,
@@ -198,7 +241,12 @@ def render_calibration_audit_report(
         "warning_count": warning_count,
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return CalibrationAuditReportBuildResult(
         output_path=out_path,
         report_kind="calibration-audit",
@@ -237,11 +285,45 @@ def render_bayesian_run_comparison_report(
     )
     title = "Bijux Bayesian Run Comparison Report"
     sections = [
-        ("run-comparison", json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True)),
-        ("tree-comparison", json.dumps(asdict(comparison.tree_comparison), default=str, indent=2, sort_keys=True)),
-        ("left-convergence", json.dumps(asdict(comparison.left_convergence), default=str, indent=2, sort_keys=True)),
-        ("right-convergence", json.dumps(asdict(comparison.right_convergence), default=str, indent=2, sort_keys=True)),
-        ("parameter-differences", json.dumps([asdict(row) for row in comparison.parameter_differences], indent=2, sort_keys=True)),
+        (
+            "run-comparison",
+            json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "tree-comparison",
+            json.dumps(
+                asdict(comparison.tree_comparison),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            ),
+        ),
+        (
+            "left-convergence",
+            json.dumps(
+                asdict(comparison.left_convergence),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            ),
+        ),
+        (
+            "right-convergence",
+            json.dumps(
+                asdict(comparison.right_convergence),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            ),
+        ),
+        (
+            "parameter-differences",
+            json.dumps(
+                [asdict(row) for row in comparison.parameter_differences],
+                indent=2,
+                sort_keys=True,
+            ),
+        ),
     ]
     machine_manifest = {
         "report_kind": "bayesian-run-comparison",
@@ -254,7 +336,12 @@ def render_bayesian_run_comparison_report(
         "warning_count": len(comparison.warnings),
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return BayesianRunComparisonReportBuildResult(
         output_path=out_path,
         report_kind="bayesian-run-comparison",
@@ -288,7 +375,9 @@ def render_bayesian_diagnostics_report(
     cross_chain_mean_shift_threshold: float = 0.75,
 ) -> BayesianDiagnosticsReportBuildResult:
     """Render a reviewer-facing Bayesian diagnostics report for posterior logs and calibrations."""
-    validation = validate_beast_posterior_log(primary_log_path, required_columns=required_columns)
+    validation = validate_beast_posterior_log(
+        primary_log_path, required_columns=required_columns
+    )
     burnin = assess_beast_burnin_sensitivity(
         posterior_tree_path,
         log_path=primary_log_path,
@@ -305,8 +394,12 @@ def render_bayesian_diagnostics_report(
     impossible_report = None
     tip_date_report = None
     if tree_path is not None and calibration_path is not None:
-        calibration_report = validate_fossil_calibration_table(tree_path, calibration_path)
-        impossible_report = detect_impossible_calibration_constraints(tree_path, calibration_path)
+        calibration_report = validate_fossil_calibration_table(
+            tree_path, calibration_path
+        )
+        impossible_report = detect_impossible_calibration_constraints(
+            tree_path, calibration_path
+        )
     if tree_path is not None and tip_dates_path is not None:
         tip_date_report = validate_tip_dating_metadata(
             tree_path,
@@ -315,8 +408,12 @@ def render_bayesian_diagnostics_report(
             taxon_column=taxon_column,
             date_column=date_column,
         )
-    supplementary_table_path = Path(tempfile.mkstemp(prefix="bijux-bayesian-diagnostics-", suffix=".tsv")[1])
-    methods_text_path = Path(tempfile.mkstemp(prefix="bijux-bayesian-methods-", suffix=".md")[1])
+    supplementary_table_path = Path(
+        tempfile.mkstemp(prefix="bijux-bayesian-diagnostics-", suffix=".tsv")[1]
+    )
+    methods_text_path = Path(
+        tempfile.mkstemp(prefix="bijux-bayesian-methods-", suffix=".md")[1]
+    )
     supplementary_table = write_supplementary_bayesian_diagnostics_table(
         supplementary_table_path,
         posterior_tree_path=posterior_tree_path,
@@ -340,7 +437,9 @@ def render_bayesian_diagnostics_report(
         calibration_path=calibration_path,
         tip_dates_path=tip_dates_path,
     )
-    limitations_text_path = Path(tempfile.mkstemp(prefix="bijux-bayesian-limitations-", suffix=".md")[1])
+    limitations_text_path = Path(
+        tempfile.mkstemp(prefix="bijux-bayesian-limitations-", suffix=".md")[1]
+    )
     limitations_summary = write_bayesian_limitations_text(
         limitations_text_path,
         posterior_tree_path=posterior_tree_path,
@@ -357,22 +456,55 @@ def render_bayesian_diagnostics_report(
     )
     title = "Bijux Bayesian Diagnostics Report"
     sections = [
-        ("posterior-log-validation", json.dumps(asdict(validation), default=str, indent=2, sort_keys=True)),
-        ("burnin-sensitivity", json.dumps(asdict(burnin), default=str, indent=2, sort_keys=True)),
-        ("chain-mixing", json.dumps(asdict(mixing), default=str, indent=2, sort_keys=True)),
-        ("supplementary-diagnostics-table", supplementary_table.output_path.read_text(encoding="utf-8")),
+        (
+            "posterior-log-validation",
+            json.dumps(asdict(validation), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "burnin-sensitivity",
+            json.dumps(asdict(burnin), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "chain-mixing",
+            json.dumps(asdict(mixing), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "supplementary-diagnostics-table",
+            supplementary_table.output_path.read_text(encoding="utf-8"),
+        ),
         ("methods-summary-text", methods_summary.text),
         ("limitations-text", limitations_summary.text),
     ]
     warning_count = len(validation.issues) + len(burnin.warnings) + len(mixing.issues)
     if calibration_report is not None:
-        sections.append(("fossil-calibrations", json.dumps(asdict(calibration_report), default=str, indent=2, sort_keys=True)))
+        sections.append(
+            (
+                "fossil-calibrations",
+                json.dumps(
+                    asdict(calibration_report), default=str, indent=2, sort_keys=True
+                ),
+            )
+        )
         warning_count += calibration_report.invalid_calibration_count
     if impossible_report is not None:
-        sections.append(("impossible-constraints", json.dumps(asdict(impossible_report), default=str, indent=2, sort_keys=True)))
+        sections.append(
+            (
+                "impossible-constraints",
+                json.dumps(
+                    asdict(impossible_report), default=str, indent=2, sort_keys=True
+                ),
+            )
+        )
         warning_count += len(impossible_report.issues)
     if tip_date_report is not None:
-        sections.append(("tip-dates", json.dumps(asdict(tip_date_report), default=str, indent=2, sort_keys=True)))
+        sections.append(
+            (
+                "tip-dates",
+                json.dumps(
+                    asdict(tip_date_report), default=str, indent=2, sort_keys=True
+                ),
+            )
+        )
         warning_count += len(tip_date_report.issues)
     machine_manifest = {
         "report_kind": "bayesian-diagnostics",
@@ -383,7 +515,12 @@ def render_bayesian_diagnostics_report(
         "warning_count": warning_count,
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     supplementary_table_path.unlink(missing_ok=True)
     methods_text_path.unlink(missing_ok=True)
     limitations_text_path.unlink(missing_ok=True)
@@ -414,9 +551,22 @@ def render_ml_vs_bayesian_tree_report(
     )
     title = "Bijux ML Versus Bayesian Tree Report"
     sections = [
-        ("ml-versus-bayesian-summary", json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True)),
-        ("topology-comparison", json.dumps(asdict(comparison.topology), default=str, indent=2, sort_keys=True)),
-        ("branch-length-comparison", json.dumps(asdict(comparison.branch_lengths), default=str, indent=2, sort_keys=True)),
+        (
+            "ml-versus-bayesian-summary",
+            json.dumps(asdict(comparison), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "topology-comparison",
+            json.dumps(
+                asdict(comparison.topology), default=str, indent=2, sort_keys=True
+            ),
+        ),
+        (
+            "branch-length-comparison",
+            json.dumps(
+                asdict(comparison.branch_lengths), default=str, indent=2, sort_keys=True
+            ),
+        ),
     ]
     machine_manifest = {
         "report_kind": "ml-vs-bayesian-tree",
@@ -426,7 +576,12 @@ def render_ml_vs_bayesian_tree_report(
         "warning_count": len(comparison.warnings),
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return BayesianMlComparisonReportBuildResult(
         output_path=out_path,
         report_kind="ml-vs-bayesian-tree",
@@ -460,19 +615,59 @@ def render_time_tree_readiness_report(
     limitations: list[str] = []
     if readiness.calibration_dominance is not None:
         limitations.extend(readiness.calibration_dominance.warnings)
-    if readiness.tip_date_report is not None and readiness.tip_date_report.invalid_tip_count:
-        limitations.append("tip-date metadata requires correction before the dated-tree workflow can be trusted")
+    if (
+        readiness.tip_date_report is not None
+        and readiness.tip_date_report.invalid_tip_count
+    ):
+        limitations.append(
+            "tip-date metadata requires correction before the dated-tree workflow can be trusted"
+        )
     title = "Bijux Time-Tree Readiness Report"
     sections = [
-        ("readiness", json.dumps(asdict(readiness), default=str, indent=2, sort_keys=True)),
+        (
+            "readiness",
+            json.dumps(asdict(readiness), default=str, indent=2, sort_keys=True),
+        ),
     ]
     if readiness.calibration_report is not None:
-        sections.append(("fossil-calibrations", json.dumps(asdict(readiness.calibration_report), default=str, indent=2, sort_keys=True)))
+        sections.append(
+            (
+                "fossil-calibrations",
+                json.dumps(
+                    asdict(readiness.calibration_report),
+                    default=str,
+                    indent=2,
+                    sort_keys=True,
+                ),
+            )
+        )
     if readiness.calibration_dominance is not None:
-        sections.append(("calibration-dominance", json.dumps(asdict(readiness.calibration_dominance), default=str, indent=2, sort_keys=True)))
+        sections.append(
+            (
+                "calibration-dominance",
+                json.dumps(
+                    asdict(readiness.calibration_dominance),
+                    default=str,
+                    indent=2,
+                    sort_keys=True,
+                ),
+            )
+        )
     if readiness.tip_date_report is not None:
-        sections.append(("tip-dates", json.dumps(asdict(readiness.tip_date_report), default=str, indent=2, sort_keys=True)))
-    sections.append(("limitations", json.dumps(sorted(dict.fromkeys(limitations)), indent=2)))
+        sections.append(
+            (
+                "tip-dates",
+                json.dumps(
+                    asdict(readiness.tip_date_report),
+                    default=str,
+                    indent=2,
+                    sort_keys=True,
+                ),
+            )
+        )
+    sections.append(
+        ("limitations", json.dumps(sorted(dict.fromkeys(limitations)), indent=2))
+    )
     warning_count = len(readiness.blockers) + len(readiness.warnings)
     machine_manifest = {
         "report_kind": "time-tree-readiness",
@@ -482,7 +677,12 @@ def render_time_tree_readiness_report(
         "warning_count": warning_count,
         "sections": [name for name, _ in sections],
     }
-    write_html_report(title=title, sections=sections, out_path=out_path, embedded_json=machine_manifest)
+    write_html_report(
+        title=title,
+        sections=sections,
+        out_path=out_path,
+        embedded_json=machine_manifest,
+    )
     return TimeTreeReadinessReportBuildResult(
         output_path=out_path,
         report_kind="time-tree-readiness",

@@ -1,13 +1,22 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import write_ancestral_rows
-from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport, reconstruct_continuous_ancestral_states
-from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport, reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.service import render_ancestral_state_tree, write_ancestral_state_table
+from bijux_phylogenetics.ancestral.continuous import (
+    ContinuousAncestralReport,
+    reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete import (
+    DiscreteAncestralReport,
+    reconstruct_discrete_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.service import (
+    render_ancestral_state_tree,
+    write_ancestral_state_table,
+)
 
 
 @dataclass(slots=True)
@@ -39,13 +48,15 @@ def build_ancestral_figure_package(
     """Build a publication-ready package for one ancestral-state reconstruction."""
     out_dir.mkdir(parents=True, exist_ok=True)
     if reconstruction_kind == "continuous":
-        report: ContinuousAncestralReport | DiscreteAncestralReport = reconstruct_continuous_ancestral_states(
-            tree_path,
-            traits_path,
-            trait=trait,
-            taxon_column=taxon_column,
-            model=model,
-            alpha=alpha,
+        report: ContinuousAncestralReport | DiscreteAncestralReport = (
+            reconstruct_continuous_ancestral_states(
+                tree_path,
+                traits_path,
+                trait=trait,
+                taxon_column=taxon_column,
+                model=model,
+                alpha=alpha,
+            )
         )
     else:
         report = reconstruct_discrete_ancestral_states(
@@ -117,7 +128,14 @@ def _write_uncertainty_table(
     if isinstance(report, ContinuousAncestralReport):
         return write_ancestral_rows(
             path,
-            columns=["node", "descendant_taxa", "standard_error", "lower_95_interval", "upper_95_interval", "interpretation"],
+            columns=[
+                "node",
+                "descendant_taxa",
+                "standard_error",
+                "lower_95_interval",
+                "upper_95_interval",
+                "interpretation",
+            ],
             rows=[
                 {
                     "node": estimate.node,
@@ -133,7 +151,14 @@ def _write_uncertainty_table(
         )
     return write_ancestral_rows(
         path,
-        columns=["node", "descendant_taxa", "most_likely_state", "confidence", "unstable", "interpretation"],
+        columns=[
+            "node",
+            "descendant_taxa",
+            "most_likely_state",
+            "confidence",
+            "unstable",
+            "interpretation",
+        ],
         rows=[
             {
                 "node": estimate.node,
@@ -149,7 +174,9 @@ def _write_uncertainty_table(
     )
 
 
-def _legend_markdown(report: ContinuousAncestralReport | DiscreteAncestralReport) -> str:
+def _legend_markdown(
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+) -> str:
     if isinstance(report, ContinuousAncestralReport):
         return (
             "# Legend\n\n"
@@ -166,7 +193,9 @@ def _legend_markdown(report: ContinuousAncestralReport | DiscreteAncestralReport
     )
 
 
-def _model_description(report: ContinuousAncestralReport | DiscreteAncestralReport) -> str:
+def _model_description(
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+) -> str:
     if isinstance(report, ContinuousAncestralReport):
         return (
             "# Model Description\n\n"
@@ -184,7 +213,9 @@ def _model_description(report: ContinuousAncestralReport | DiscreteAncestralRepo
     )
 
 
-def _caption_markdown(report: ContinuousAncestralReport | DiscreteAncestralReport, *, layout: str) -> str:
+def _caption_markdown(
+    report: ContinuousAncestralReport | DiscreteAncestralReport, *, layout: str
+) -> str:
     return (
         f"# Ancestral State Figure: {report.trait}\n\n"
         f"- Layout: `{layout}`\n"

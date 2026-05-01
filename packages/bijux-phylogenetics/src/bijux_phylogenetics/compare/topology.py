@@ -7,8 +7,8 @@ from pathlib import Path
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Clade, Tree
 
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.trees import detect_tree_format
 
@@ -159,7 +159,9 @@ def _unrooted_splits(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[st
     return splits
 
 
-def _informative_clade_nodes(tree: PhyloTree, shared_taxa: set[str]) -> dict[frozenset[str], TreeNode]:
+def _informative_clade_nodes(
+    tree: PhyloTree, shared_taxa: set[str]
+) -> dict[frozenset[str], TreeNode]:
     clades: dict[frozenset[str], TreeNode] = {}
 
     def visit(node: TreeNode) -> set[str]:
@@ -191,7 +193,9 @@ def _load_biophylo_tree(path: Path) -> Tree:
     return Phylo.read(path, detect_tree_format(path))
 
 
-def _compare_tree_objects(left: PhyloTree, right: PhyloTree) -> InMemoryTopologyComparison:
+def _compare_tree_objects(
+    left: PhyloTree, right: PhyloTree
+) -> InMemoryTopologyComparison:
     left_taxa = set(left.tip_names)
     right_taxa = set(right.tip_names)
     shared_taxa = left_taxa & right_taxa
@@ -204,8 +208,12 @@ def _compare_tree_objects(left: PhyloTree, right: PhyloTree) -> InMemoryTopology
     denominator = len(left_clades) + len(right_clades)
     normalized = 0.0 if denominator == 0 else len(symmetric_difference) / denominator
     topology_equal = len(symmetric_difference) == 0
-    same_unrooted_topology = _unrooted_splits(left, shared_taxa) == _unrooted_splits(right, shared_taxa)
-    same_taxa_different_rooting = left_taxa == right_taxa and same_unrooted_topology and not topology_equal
+    same_unrooted_topology = _unrooted_splits(left, shared_taxa) == _unrooted_splits(
+        right, shared_taxa
+    )
+    same_taxa_different_rooting = (
+        left_taxa == right_taxa and same_unrooted_topology and not topology_equal
+    )
     return InMemoryTopologyComparison(
         shared_taxa=sorted(shared_taxa),
         left_only_taxa=sorted(left_taxa - right_taxa),
@@ -220,7 +228,9 @@ def _compare_tree_objects(left: PhyloTree, right: PhyloTree) -> InMemoryTopology
     )
 
 
-def _compare_branch_lengths_for_trees(left: PhyloTree, right: PhyloTree) -> InMemoryBranchLengthComparison:
+def _compare_branch_lengths_for_trees(
+    left: PhyloTree, right: PhyloTree
+) -> InMemoryBranchLengthComparison:
     left_taxa = set(left.tip_names)
     right_taxa = set(right.tip_names)
     shared_taxa = left_taxa & right_taxa
@@ -229,12 +239,18 @@ def _compare_branch_lengths_for_trees(left: PhyloTree, right: PhyloTree) -> InMe
 
     left_clades = _informative_clade_nodes(left, shared_taxa)
     right_clades = _informative_clade_nodes(right, shared_taxa)
-    shared_clade_ids = sorted(left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item))
+    shared_clade_ids = sorted(
+        left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item)
+    )
     pairs: list[BranchLengthPair] = []
     for clade_id in shared_clade_ids:
         left_length = left_clades[clade_id].branch_length
         right_length = right_clades[clade_id].branch_length
-        delta = None if left_length is None or right_length is None else right_length - left_length
+        delta = (
+            None
+            if left_length is None or right_length is None
+            else right_length - left_length
+        )
         ratio = None
         if left_length not in {None, 0} and right_length is not None:
             ratio = right_length / left_length
@@ -247,10 +263,14 @@ def _compare_branch_lengths_for_trees(left: PhyloTree, right: PhyloTree) -> InMe
                 ratio=ratio,
             )
         )
-    return InMemoryBranchLengthComparison(shared_taxa=sorted(shared_taxa), shared_splits=pairs)
+    return InMemoryBranchLengthComparison(
+        shared_taxa=sorted(shared_taxa), shared_splits=pairs
+    )
 
 
-def _informative_biophylo_clades(tree: Tree, shared_taxa: set[str]) -> dict[frozenset[str], Clade]:
+def _informative_biophylo_clades(
+    tree: Tree, shared_taxa: set[str]
+) -> dict[frozenset[str], Clade]:
     clades: dict[frozenset[str], Clade] = {}
 
     def visit(clade: Clade) -> set[str]:
@@ -284,12 +304,16 @@ def prune_trees_to_shared_taxa(
 
     pruned_left, _ = prune_tree_to_requested_taxa(left_path, shared_taxa)
     pruned_right, _ = prune_tree_to_requested_taxa(right_path, shared_taxa)
-    return pruned_left, pruned_right, SharedTaxaPruningReport(
-        left_path=left_path,
-        right_path=right_path,
-        shared_taxa=shared_taxa,
-        left_only_taxa=sorted(left_taxa - right_taxa),
-        right_only_taxa=sorted(right_taxa - left_taxa),
+    return (
+        pruned_left,
+        pruned_right,
+        SharedTaxaPruningReport(
+            left_path=left_path,
+            right_path=right_path,
+            shared_taxa=shared_taxa,
+            left_only_taxa=sorted(left_taxa - right_taxa),
+            right_only_taxa=sorted(right_taxa - left_taxa),
+        ),
     )
 
 
@@ -333,8 +357,7 @@ def compare_tree_paths(left_path: Path, right_path: Path) -> TreeComparisonRepor
     comparison = _compare_tree_objects(left, right)
     branch_report = _compare_branch_lengths_for_trees(left, right)
     same_topology_different_branch_lengths = comparison.topology_equal and any(
-        row.left_length != row.right_length
-        for row in branch_report.shared_splits
+        row.left_length != row.right_length for row in branch_report.shared_splits
     )
     return TreeComparisonReport(
         left_path=left_path,
@@ -353,7 +376,9 @@ def compare_tree_paths(left_path: Path, right_path: Path) -> TreeComparisonRepor
     )
 
 
-def compare_support_values(left_path: Path, right_path: Path) -> SupportComparisonReport:
+def compare_support_values(
+    left_path: Path, right_path: Path
+) -> SupportComparisonReport:
     """Compare internal clade support values across two trees with shared taxa."""
     left = _load_biophylo_tree(left_path)
     right = _load_biophylo_tree(right_path)
@@ -365,7 +390,9 @@ def compare_support_values(left_path: Path, right_path: Path) -> SupportComparis
 
     left_clades = _informative_biophylo_clades(left, shared_taxa)
     right_clades = _informative_biophylo_clades(right, shared_taxa)
-    shared_clade_ids = sorted(left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item))
+    shared_clade_ids = sorted(
+        left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item)
+    )
     return SupportComparisonReport(
         left_path=left_path,
         right_path=right_path,
@@ -373,15 +400,21 @@ def compare_support_values(left_path: Path, right_path: Path) -> SupportComparis
         shared_clades=[
             CladeSupportPair(
                 split_id="|".join(sorted(clade_id)),
-                left_support=_parse_support(left_clades[clade_id].confidence or left_clades[clade_id].name),
-                right_support=_parse_support(right_clades[clade_id].confidence or right_clades[clade_id].name),
+                left_support=_parse_support(
+                    left_clades[clade_id].confidence or left_clades[clade_id].name
+                ),
+                right_support=_parse_support(
+                    right_clades[clade_id].confidence or right_clades[clade_id].name
+                ),
             )
             for clade_id in shared_clade_ids
         ],
     )
 
 
-def compare_branch_lengths(left_path: Path, right_path: Path) -> BranchLengthComparisonReport:
+def compare_branch_lengths(
+    left_path: Path, right_path: Path
+) -> BranchLengthComparisonReport:
     """Compare branch lengths across matching informative splits."""
     left = _load_tree(left_path)
     right = _load_tree(right_path)
@@ -441,12 +474,24 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
                     "split_id": split_id,
                     "comparison_status": status,
                     "shared_clade": str(split_id in clades.shared_clades).lower(),
-                    "left_support": "" if support_row is None or support_row.left_support is None else support_row.left_support,
-                    "right_support": "" if support_row is None or support_row.right_support is None else support_row.right_support,
-                    "left_length": "" if branch_row is None or branch_row.left_length is None else branch_row.left_length,
-                    "right_length": "" if branch_row is None or branch_row.right_length is None else branch_row.right_length,
-                    "length_delta": "" if branch_row is None or branch_row.delta is None else branch_row.delta,
-                    "length_ratio": "" if branch_row is None or branch_row.ratio is None else branch_row.ratio,
+                    "left_support": ""
+                    if support_row is None or support_row.left_support is None
+                    else support_row.left_support,
+                    "right_support": ""
+                    if support_row is None or support_row.right_support is None
+                    else support_row.right_support,
+                    "left_length": ""
+                    if branch_row is None or branch_row.left_length is None
+                    else branch_row.left_length,
+                    "right_length": ""
+                    if branch_row is None or branch_row.right_length is None
+                    else branch_row.right_length,
+                    "length_delta": ""
+                    if branch_row is None or branch_row.delta is None
+                    else branch_row.delta,
+                    "length_ratio": ""
+                    if branch_row is None or branch_row.ratio is None
+                    else branch_row.ratio,
                 }
             )
     return path

@@ -74,7 +74,9 @@ def summarize_maximum_clade_credibility_tree(
     """Summarize one posterior tree set by selecting the maximum clade credibility tree."""
     filtered = _filter_tree_set(tree_set_path, burnin_fraction=burnin_fraction)
     clade_frequencies = _clade_frequency_map(filtered.trees)
-    selected_tree, selected_index, score = _select_mcc_tree(filtered.trees, clade_frequencies)
+    selected_tree, selected_index, score = _select_mcc_tree(
+        filtered.trees, clade_frequencies
+    )
     summary = load_tree_set(filtered.filtered_tree_set_path)
     report = MaximumCladeCredibilityTreeReport(
         source_path=tree_set_path,
@@ -101,7 +103,9 @@ def thin_posterior_tree_set(
 ) -> PosteriorTreeSetThinningReport:
     """Thin a posterior tree set after optional burn-in removal."""
     if thinning_interval < 1:
-        raise ValueError(f"thinning_interval must be at least 1, got {thinning_interval}")
+        raise ValueError(
+            f"thinning_interval must be at least 1, got {thinning_interval}"
+        )
     filtered = _filter_tree_set(tree_set_path, burnin_fraction=burnin_fraction)
     retained = filtered.trees[::thinning_interval]
     if not retained:
@@ -111,7 +115,13 @@ def thin_posterior_tree_set(
         "".join(dumps_newick(tree) + "\n" for tree in retained),
         encoding="utf-8",
     )
-    retained_indices = list(range(filtered.burnin_tree_count + 1, filtered.total_tree_count + 1, thinning_interval))
+    retained_indices = list(
+        range(
+            filtered.burnin_tree_count + 1,
+            filtered.total_tree_count + 1,
+            thinning_interval,
+        )
+    )
     return PosteriorTreeSetThinningReport(
         source_path=tree_set_path,
         output_path=output_path,
@@ -161,8 +171,12 @@ def compare_bayesian_tree_sets(
     burnin_fraction: float = 0.25,
 ) -> BayesianRunTreeComparison:
     """Compare two posterior tree sets after the same burn-in fraction."""
-    left_tree, left_mcc = summarize_maximum_clade_credibility_tree(left_tree_set_path, burnin_fraction=burnin_fraction)
-    right_tree, right_mcc = summarize_maximum_clade_credibility_tree(right_tree_set_path, burnin_fraction=burnin_fraction)
+    left_tree, left_mcc = summarize_maximum_clade_credibility_tree(
+        left_tree_set_path, burnin_fraction=burnin_fraction
+    )
+    right_tree, right_mcc = summarize_maximum_clade_credibility_tree(
+        right_tree_set_path, burnin_fraction=burnin_fraction
+    )
     tree_set_comparison = compare_posterior_tree_sets(
         left_mcc.filtered_tree_set_path,
         right_mcc.filtered_tree_set_path,
@@ -187,18 +201,28 @@ class _FilteredPosteriorTreeSet:
     trees: list[PhyloTree]
 
 
-def _filter_tree_set(tree_set_path: Path, *, burnin_fraction: float) -> _FilteredPosteriorTreeSet:
+def _filter_tree_set(
+    tree_set_path: Path, *, burnin_fraction: float
+) -> _FilteredPosteriorTreeSet:
     if not 0.0 <= burnin_fraction < 1.0:
-        raise ValueError(f"burnin_fraction must be between 0 and 1, got {burnin_fraction}")
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
     tree_format = detect_tree_format(tree_set_path)
     bio_trees = list(Phylo.parse(tree_set_path, tree_format))
     if not bio_trees:
-        raise EngineWorkflowError(f"posterior tree set contains no trees: {tree_set_path}")
+        raise EngineWorkflowError(
+            f"posterior tree set contains no trees: {tree_set_path}"
+        )
     burnin_tree_count = int(len(bio_trees) * burnin_fraction)
     kept_bio_trees = bio_trees[burnin_tree_count:]
     if not kept_bio_trees:
-        raise EngineWorkflowError(f"posterior tree set is empty after burn-in filtering: {tree_set_path}")
-    trees = [tree_from_biophylo(tree, source_format=tree_format) for tree in kept_bio_trees]
+        raise EngineWorkflowError(
+            f"posterior tree set is empty after burn-in filtering: {tree_set_path}"
+        )
+    trees = [
+        tree_from_biophylo(tree, source_format=tree_format) for tree in kept_bio_trees
+    ]
     filtered_tree_set_path = Path(
         tempfile.mkstemp(
             prefix=f"{tree_set_path.stem}.burnin-{_fraction_token(burnin_fraction)}-",
@@ -220,16 +244,15 @@ def _filter_tree_set(tree_set_path: Path, *, burnin_fraction: float) -> _Filtere
 def _clade_frequency_map(trees: list[PhyloTree]) -> dict[frozenset[str], float]:
     taxa_sets = {frozenset(tree.tip_names) for tree in trees}
     if len(taxa_sets) != 1:
-        raise InvalidAlignmentError("posterior tree summaries require all trees to share the exact same taxon set")
+        raise InvalidAlignmentError(
+            "posterior tree summaries require all trees to share the exact same taxon set"
+        )
     shared_taxa = set(next(iter(taxa_sets)))
     counts: dict[frozenset[str], int] = {}
     for tree in trees:
         for clade in _informative_clades(tree, shared_taxa):
             counts[clade] = counts.get(clade, 0) + 1
-    return {
-        clade: count / len(trees)
-        for clade, count in counts.items()
-    }
+    return {clade: count / len(trees) for clade, count in counts.items()}
 
 
 def _select_mcc_tree(
@@ -244,26 +267,37 @@ def _select_mcc_tree(
             frequency = clade_frequencies.get(clade, 1e-12)
             score += math.log(max(frequency, 1e-12))
         scored.append((score, index, tree))
-    best_score, best_index, best_tree = max(scored, key=lambda item: (item[0], -item[1]))
+    best_score, best_index, best_tree = max(
+        scored, key=lambda item: (item[0], -item[1])
+    )
     return best_tree, best_index, best_score
 
 
 def _quantile(sorted_values: list[float], fraction: float) -> float:
     if len(sorted_values) == 1:
         return round(sorted_values[0], 15)
-    position = max(0, min(len(sorted_values) - 1, int(round(fraction * (len(sorted_values) - 1)))))
+    position = max(
+        0, min(len(sorted_values) - 1, int(round(fraction * (len(sorted_values) - 1))))
+    )
     return round(sorted_values[position], 15)
 
 
 def _summarize_clade_heights(trees: list[PhyloTree]) -> list[PosteriorCladeAgeSummary]:
     taxa_sets = {frozenset(tree.tip_names) for tree in trees}
     if len(taxa_sets) != 1:
-        raise InvalidAlignmentError("posterior age summaries require all trees to share the exact same taxon set")
+        raise InvalidAlignmentError(
+            "posterior age summaries require all trees to share the exact same taxon set"
+        )
     shared_taxa = set(next(iter(taxa_sets)))
     clade_heights: dict[frozenset[str], list[float]] = {}
     for tree in trees:
-        _collect_clade_heights(tree.root, shared_taxa=shared_taxa, current_height=0.0, clade_heights=clade_heights)
-    rows = [
+        _collect_clade_heights(
+            tree.root,
+            shared_taxa=shared_taxa,
+            current_height=0.0,
+            clade_heights=clade_heights,
+        )
+    return [
         PosteriorCladeAgeSummary(
             clade="|".join(sorted(clade)),
             mean_height=round(sum(ordered := sorted(heights)) / len(ordered), 15),
@@ -274,9 +308,10 @@ def _summarize_clade_heights(trees: list[PhyloTree]) -> list[PosteriorCladeAgeSu
             upper_95_credible_interval=_quantile(ordered, 0.975),
             tree_count=len(ordered),
         )
-        for clade, heights in sorted(clade_heights.items(), key=lambda item: (len(item[0]), sorted(item[0])))
+        for clade, heights in sorted(
+            clade_heights.items(), key=lambda item: (len(item[0]), sorted(item[0]))
+        )
     ]
-    return rows
 
 
 def _collect_clade_heights(

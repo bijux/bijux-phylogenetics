@@ -6,18 +6,24 @@ from pathlib import Path
 
 from Bio import Phylo
 
+from bijux_phylogenetics.bayesian.diagnostics import (
+    TraceConvergenceReport,
+    summarize_trace_convergence,
+)
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.bayesian.diagnostics import TraceConvergenceReport, summarize_trace_convergence
-from bijux_phylogenetics.engines.common import build_file_checksums
+from bijux_phylogenetics.engines.common import (
+    build_file_checksums,
+    execute_engine_command,
+    read_engine_version,
+    resolve_engine_executable,
+)
 from bijux_phylogenetics.engines.workflows import (
     EngineWorkflowReport,
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
-    _prefix_path,
     _resume_existing_workflow,
 )
-from bijux_phylogenetics.engines.common import EngineRunReport, execute_engine_command, read_engine_version, resolve_engine_executable
 from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
@@ -103,10 +109,14 @@ def _mrbayes_datatype(alphabet: AlignmentAlphabet) -> str:
         return "dna"
     if alphabet == "protein":
         return "protein"
-    raise EngineWorkflowError(f"MrBayes preparation requires a recognized alignment alphabet, got {alphabet}")
+    raise EngineWorkflowError(
+        f"MrBayes preparation requires a recognized alignment alphabet, got {alphabet}"
+    )
 
 
-def _mrbayes_model_commands(*, alphabet: AlignmentAlphabet, model: str, rates: str) -> list[str]:
+def _mrbayes_model_commands(
+    *, alphabet: AlignmentAlphabet, model: str, rates: str
+) -> list[str]:
     normalized_model = model.lower()
     normalized_rates = rates.lower()
     if alphabet in {"dna", "rna"}:
@@ -151,12 +161,18 @@ def prepare_mrbayes_analysis(
     """Prepare a MrBayes NEXUS analysis specification from an aligned FASTA file."""
     _ensure_inference_ready_alignment(alignment_path)
     if not 0.0 <= burnin_fraction < 1.0:
-        raise ValueError(f"burnin_fraction must be between 0 and 1, got {burnin_fraction}")
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
     records = load_fasta_alignment(alignment_path)
     alphabet = infer_alignment_alphabet(records)
     datatype = _mrbayes_datatype(alphabet)
-    model_commands = _mrbayes_model_commands(alphabet=alphabet, model=model, rates=rates)
-    matrix_lines = "\n".join(f"{record.identifier} {record.sequence}" for record in records)
+    model_commands = _mrbayes_model_commands(
+        alphabet=alphabet, model=model, rates=rates
+    )
+    matrix_lines = "\n".join(
+        f"{record.identifier} {record.sequence}" for record in records
+    )
     command_block = "\n".join(
         [
             "begin mrbayes;",
@@ -255,7 +271,9 @@ def run_mrbayes_posterior_inference(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([nexus_path]),
         output_checksums={},
-        notes=["MrBayes posterior trees and parameter traces validated after engine execution"],
+        notes=[
+            "MrBayes posterior trees and parameter traces validated after engine execution"
+        ],
     )
     return _persist_workflow_report(report)
 
@@ -264,7 +282,11 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
     """Parse a MrBayes parameter trace table into deterministic numeric rows."""
     rows: list[MrBayesTraceRow] = []
     with path.open(encoding="utf-8", newline="") as handle:
-        filtered_lines = [line for line in handle if line.strip() and not line.lstrip().startswith("[")]
+        filtered_lines = [
+            line
+            for line in handle
+            if line.strip() and not line.lstrip().startswith("[")
+        ]
     reader = csv.DictReader(filtered_lines, delimiter="\t")
     if reader.fieldnames is None:
         raise EngineWorkflowError(f"MrBayes trace file contains no header: {path}")
@@ -278,10 +300,16 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
             for column in columns
             if raw_row.get(column) not in {None, ""}
         }
-        rows.append(MrBayesTraceRow(generation=int(float(generation_text)), values=values))
+        rows.append(
+            MrBayesTraceRow(generation=int(float(generation_text)), values=values)
+        )
     if not rows:
-        raise EngineWorkflowError(f"MrBayes trace file contains no sampled rows: {path}")
-    return MrBayesTraceReport(path=path, row_count=len(rows), columns=columns, rows=rows)
+        raise EngineWorkflowError(
+            f"MrBayes trace file contains no sampled rows: {path}"
+        )
+    return MrBayesTraceReport(
+        path=path, row_count=len(rows), columns=columns, rows=rows
+    )
 
 
 def compute_mrbayes_effective_sample_sizes(path: Path) -> MrBayesESSReport:
@@ -325,7 +353,9 @@ def assess_mrbayes_convergence(
     return _build_mrbayes_convergence_report(convergence)
 
 
-def _build_mrbayes_convergence_report(convergence: TraceConvergenceReport) -> MrBayesConvergenceReport:
+def _build_mrbayes_convergence_report(
+    convergence: TraceConvergenceReport,
+) -> MrBayesConvergenceReport:
     return MrBayesConvergenceReport(
         path=convergence.path,
         sample_count=convergence.sample_count,
@@ -366,18 +396,27 @@ def summarize_mrbayes_posterior_trees(
 ) -> tuple[PhyloTree, MrBayesPosteriorSummaryReport]:
     """Summarize MrBayes posterior trees after discarding a burn-in fraction."""
     if not 0.0 <= burnin_fraction < 1.0:
-        raise ValueError(f"burnin_fraction must be between 0 and 1, got {burnin_fraction}")
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
     tree_format = detect_tree_format(tree_set_path)
     bio_trees = list(Phylo.parse(tree_set_path, tree_format))
     if not bio_trees:
-        raise EngineWorkflowError(f"MrBayes posterior tree file contains no trees: {tree_set_path}")
+        raise EngineWorkflowError(
+            f"MrBayes posterior tree file contains no trees: {tree_set_path}"
+        )
     burnin_tree_count = int(len(bio_trees) * burnin_fraction)
     kept_trees = bio_trees[burnin_tree_count:]
     if not kept_trees:
-        raise EngineWorkflowError(f"MrBayes posterior tree file is empty after burn-in filtering: {tree_set_path}")
+        raise EngineWorkflowError(
+            f"MrBayes posterior tree file is empty after burn-in filtering: {tree_set_path}"
+        )
     filtered_tree_set_path = tree_set_path.with_suffix(".postburnin.nwk")
     filtered_tree_set_path.write_text(
-        "".join(dumps_newick(tree_from_biophylo(tree, source_format="newick")) + "\n" for tree in kept_trees),
+        "".join(
+            dumps_newick(tree_from_biophylo(tree, source_format="newick")) + "\n"
+            for tree in kept_trees
+        ),
         encoding="utf-8",
     )
     summary = load_tree_set(filtered_tree_set_path)
