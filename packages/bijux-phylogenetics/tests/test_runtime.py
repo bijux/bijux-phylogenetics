@@ -348,6 +348,7 @@ def test_package_identity_matches_canonical_names() -> None:
     assert IDENTITY.import_name == "bijux_phylogenetics"
     assert IDENTITY.cli_name == "bijux-phylogenetics"
     assert IDENTITY.umbrella_command == "bijux phylogenetics"
+    assert IDENTITY.cli_aliases == ("bijux phylo",)
 
 
 def test_public_package_exports_alignment_and_topology_workflows() -> None:

@@ -12,8 +12,8 @@ last_reviewed: 2026-04-28
 `docs/badges.md` is the single source of truth for shared badge templates
 across the managed documentation surfaces in this repository. Update the named
 templates here, then run `make sync-badges` so the root README, docs landing
-page, runtime package README, alias package README, and maintainer package
-README publish the same badge contract.
+page, runtime package README, and maintainer package README publish the same
+badge contract.
 
 ## Repository Summary
 
@@ -71,4 +71,3 @@ README publish the same badge contract.
 <!-- bijux-phylogenetics-badges:family-docs-badge:start -->
 [![{{ docs_badge_alt }}](https://img.shields.io/badge/docs-{{ docs_badge_label }}-2563EB?logo=materialformkdocs&logoColor=white)]({{ docs_url }})
 <!-- bijux-phylogenetics-badges:family-docs-badge:end -->
-

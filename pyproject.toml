@@ -20,7 +20,6 @@ Security = "https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md"
 [dependency-groups]
 dev = [
     "bijux-phylogenetics[dev]",
-    "phylogenetics[dev]",
     "bijux-phylogenetics-dev[dev]",
     "mkdocs-redirects>=1.2.1,<2.0",
     "PyYAML>=6.0,<7.0",
@@ -40,7 +39,6 @@ update_changelog_on_bump = false
 api_dir = "apis"
 packages = [
     "bijux-phylogenetics",
-    "phylogenetics",
     "bijux-phylogenetics-dev",
 ]
 docs_package = "bijux-phylogenetics-dev"
@@ -49,7 +47,6 @@ make_dir = "makes"
 
 [tool.uv.sources]
 bijux-phylogenetics = { workspace = true }
-phylogenetics = { workspace = true }
 bijux-phylogenetics-dev = { workspace = true }
 
 [tool.uv.workspace]
