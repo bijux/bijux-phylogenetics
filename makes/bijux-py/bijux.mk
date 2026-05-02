@@ -1,5 +1,5 @@
 BIJUX_PY_WORKSPACE_DIR ?= $(abspath $(PROJECT_DIR)/..)
-BIJUX_PY_REPOS ?= bijux-canon bijux-proteomics bijux-phylogenetics
+BIJUX_PY_REPOS ?= bijux-canon bijux-proteomics bijux-pollenomics
 BIJUX_PY_SYSTEM_REL ?= shared/bijux-makes-py
 BIJUX_PY_LOCAL_REL ?= makes/bijux-py
 BIJUX_STANDARD_SHARED_DIR ?= $(if $(wildcard $(PROJECT_DIR)/.bijux/shared/bijux-gh),.bijux/shared/bijux-gh,shared/bijux-gh)
