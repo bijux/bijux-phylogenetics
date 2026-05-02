@@ -4,8 +4,6 @@ respect-gitignore = true
 src = [
   "packages/bijux-phylogenetics/src",
   "packages/bijux-phylogenetics/tests",
-  "packages/phylogenetics/src",
-  "packages/phylogenetics/tests",
   "packages/bijux-phylogenetics-dev/src",
   "packages/bijux-phylogenetics-dev/tests",
 ]

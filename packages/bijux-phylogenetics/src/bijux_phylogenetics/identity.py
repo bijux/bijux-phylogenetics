@@ -7,7 +7,7 @@ IMPORT_NAME = "bijux_phylogenetics"
 PRODUCT_NAME = "Bijux Phylogenetics"
 CLI_NAME = "bijux-phylogenetics"
 UMBRELLA_COMMAND = "bijux phylogenetics"
-CLI_ALIASES = ("phylogenetics", "bijux phylo")
+CLI_ALIASES = ("bijux phylo",)
 
 
 @dataclass(frozen=True, slots=True)
