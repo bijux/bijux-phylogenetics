@@ -90,6 +90,13 @@ What does not exist today:
 - `make docs-serve` to serve the docs locally at `http://127.0.0.1:8000/`
 - `make sync-badges` to render the shared badge catalog into managed README surfaces
 
+## Local Artifact Contract
+
+- transient local outputs belong under `artifacts/`, not as ad hoc root-level
+  cache or build directories
+- the shared root environment lives at `artifacts/root/check-venv/`
+- the MkDocs site builds to `artifacts/root/docs/site/`
+
 ## Repository Layout
 
 The root keeps repository-owned concerns explicit:
