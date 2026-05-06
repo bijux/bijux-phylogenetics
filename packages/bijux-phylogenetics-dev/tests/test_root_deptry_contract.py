@@ -16,3 +16,5 @@ def test_root_deptry_configuration_uses_supported_dev_group_contract() -> None:
 
     assert deptry_config["optional_dependencies_dev_groups"] == ["dev"]
     assert "pep621_dev_dependency_groups" not in deptry_config
+    assert deptry_config["ignore"] == ["DEP002", "DEP003"]
+    assert deptry_config["extend_exclude"] == ["docs", "apis", "artifacts", "site"]
