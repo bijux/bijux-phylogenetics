@@ -13,6 +13,8 @@ from bijux_phylogenetics.ancestral.common import (
     stable_value,
 )
 
+_NORMAL_95_CRITICAL = 1.959963984540054
+
 
 @dataclass(slots=True)
 class ContinuousAncestralEstimate:
@@ -91,7 +93,6 @@ def reconstruct_continuous_ancestral_states(
     def visit(node) -> tuple[float, float]:
         if node.is_leaf():
             estimate = dataset.values_by_taxon[node.name]
-            standard_error = 0.0
             estimates.append(
                 ContinuousAncestralEstimate(
                     node=node_signature(node),
@@ -109,16 +110,38 @@ def reconstruct_continuous_ancestral_states(
                     downstream_risks=[],
                 )
             )
-            return estimate, standard_error**2
+            return estimate, float(node.branch_length or 0.0)
 
-        child_payloads: list[tuple[float, float]] = []
-        for child in node.children:
-            child_estimate, child_variance = visit(child)
-            branch_length = float(child.branch_length or 0.0)
-            if model == "brownian":
-                transformed_estimate = child_estimate
-                propagated_variance = child_variance + branch_length
-            else:
+        if len(node.children) != 2:
+            raise ValueError(
+                "continuous ancestral reconstruction requires a fully dichotomous rooted tree"
+            )
+
+        left_child, right_child = node.children
+        left_estimate, left_working_length = visit(left_child)
+        right_estimate, right_working_length = visit(right_child)
+
+        if model == "brownian":
+            sum_working_lengths = max(
+                left_working_length + right_working_length,
+                1e-12,
+            )
+            estimate = (
+                left_estimate * right_working_length
+                + right_estimate * left_working_length
+            ) / sum_working_lengths
+            variance = sum_working_lengths
+            returned_length = (
+                float(node.branch_length or 0.0)
+                + (left_working_length * right_working_length) / sum_working_lengths
+            )
+        else:
+            child_payloads: list[tuple[float, float]] = []
+            for child, child_estimate, child_variance in (
+                (left_child, left_estimate, left_working_length),
+                (right_child, right_estimate, right_working_length),
+            ):
+                branch_length = float(child.branch_length or 0.0)
                 shrink = math.exp(-alpha * branch_length)
                 transformed_estimate = (
                     shrink * child_estimate + (1.0 - shrink) * global_mean
@@ -129,18 +152,20 @@ def reconstruct_continuous_ancestral_states(
                 propagated_variance = (
                     child_variance * math.exp(-2.0 * alpha * branch_length)
                 ) + stationary_variance
-            child_payloads.append(
-                (transformed_estimate, max(propagated_variance, 1e-12))
+                child_payloads.append(
+                    (transformed_estimate, max(propagated_variance, 1e-12))
+                )
+            weight_sum = sum(1.0 / child_variance for _, child_variance in child_payloads)
+            estimate = (
+                sum((value / child_variance) for value, child_variance in child_payloads)
+                / weight_sum
             )
+            variance = 1.0 / weight_sum
+            returned_length = variance
 
-        weight_sum = sum(1.0 / variance for _, variance in child_payloads)
-        estimate = (
-            sum((value / variance) for value, variance in child_payloads) / weight_sum
-        )
-        variance = 1.0 / weight_sum
-        standard_error = math.sqrt(variance)
-        lower = estimate - 1.96 * standard_error
-        upper = estimate + 1.96 * standard_error
+        standard_error = math.sqrt(max(variance, 0.0))
+        lower = estimate - _NORMAL_95_CRITICAL * standard_error
+        upper = estimate + _NORMAL_95_CRITICAL * standard_error
         uncertainty_width = max(0.0, upper - lower)
         confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
         interpretation = _continuous_interpretation(
@@ -163,7 +188,7 @@ def reconstruct_continuous_ancestral_states(
                 downstream_risks=_continuous_downstream_risks(unstable),
             )
         )
-        return estimate, variance
+        return estimate, returned_length
 
     visit(dataset.tree.root)
     ordered_estimates = _ordered_estimates(dataset, estimates)
