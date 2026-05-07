@@ -1,0 +1,8 @@
+{
+  "block_id": "phytools-tree-plotting",
+  "script_lines": "165-166",
+  "title": "Phytools tree plotting exploration",
+  "status": "plot_only",
+  "note": "The `phytools::plotTree()` surface is tracked, but no rendered-figure claim is made here.",
+  "evidence": {}
+}

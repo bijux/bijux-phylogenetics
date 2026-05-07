@@ -1,0 +1,31 @@
+{
+  "study_id": "phylogenetic-101",
+  "example_id": "primate-longevity-signal-workflow",
+  "evidence_id": "accepted-tool-parity",
+  "source_script": "/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Rcripts/PCM1_plots_signal.R",
+  "reference_tools": [
+    "ape",
+    "geiger",
+    "phytools",
+    "treeio",
+    "tidytree"
+  ],
+  "coverage": {
+    "executable_line_count": 185,
+    "covered_executable_line_count": 185,
+    "uncovered_executable_lines": []
+  },
+  "status_counts": {
+    "workflow_only": 1,
+    "verified": 10,
+    "artifact_only": 2,
+    "plot_only": 10,
+    "seeded_input_only": 1,
+    "verified_with_tolerance": 6
+  },
+  "honesty_contract": {
+    "agreement_rule": "mark verified or verified_with_tolerance only when the compared outputs align within stated tolerance",
+    "deviation_rule": "mark plot_only, artifact_only, seeded_input_only, or workflow_only when the block is tracked but not claimed as analytical equivalence",
+    "disclosure_rule": "report discrepancies directly rather than smoothing them away"
+  }
+}

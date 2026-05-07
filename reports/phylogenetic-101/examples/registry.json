@@ -1,0 +1,20 @@
+{
+  "study_id": "phylogenetic-101",
+  "corpus_kind": "cross_reference_examples",
+  "examples": [
+    {
+      "example_id": "primate-longevity-signal-workflow",
+      "title": "Primate lifespan signal workflow",
+      "evidence_id": "accepted-tool-parity",
+      "source_script": "/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Rcripts/PCM1_plots_signal.R",
+      "reference_tools": [
+        "ape",
+        "geiger",
+        "phytools",
+        "treeio",
+        "tidytree"
+      ],
+      "current_evidence_readme": "examples/primate-longevity-signal-workflow/accepted-tool-parity/README.md"
+    }
+  ]
+}

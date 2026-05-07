@@ -1,0 +1,13 @@
+{
+  "block_id": "primate-longevity-vector-assembly",
+  "script_lines": "340-341",
+  "title": "Primate longevity vector assembly",
+  "status": "verified",
+  "note": "The longevity vector is aligned to the trimmed tree tip order.",
+  "evidence": {
+    "r_vector_length": 75,
+    "bijux_vector_length": 75,
+    "r_names_match_tip_order": true,
+    "bijux_names_match_tip_order": true
+  }
+}

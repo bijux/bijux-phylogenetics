@@ -1,0 +1,79 @@
+{
+  "study_id": "phylogenetic-101",
+  "example_id": "primate-longevity-signal-workflow",
+  "evidence_id": "accepted-tool-parity",
+  "registry_goal_id": 250,
+  "methods": [
+    {
+      "method": "tree-validation",
+      "maturity": "validated",
+      "validated_by": [
+        "level1-reference-validation",
+        "broken-benchmark-corpus"
+      ],
+      "limitations": [
+        "validation does not by itself prove biological interpretation or engine compatibility beyond audited surfaces"
+      ]
+    },
+    {
+      "method": "dataset-audit",
+      "maturity": "validated",
+      "validated_by": [
+        "clean-benchmark-corpus",
+        "messy-benchmark-corpus",
+        "regression-dataset-corpus"
+      ],
+      "limitations": [
+        "dataset readiness is reviewer-facing triage, not a substitute for downstream method-specific validation"
+      ]
+    },
+    {
+      "method": "distance-methods",
+      "maturity": "validated",
+      "validated_by": [
+        "distance reference fixtures",
+        "runtime benchmark dashboard"
+      ],
+      "limitations": [
+        "distance trees remain approximations and can disagree with likelihood or Bayesian inference"
+      ]
+    },
+    {
+      "method": "comparative-models",
+      "maturity": "validated",
+      "validated_by": [
+        "comparative reference fixtures",
+        "level1-reference-validation"
+      ],
+      "limitations": [
+        "validated examples do not remove the need for biological judgment about causality or model adequacy"
+      ]
+    },
+    {
+      "method": "ancestral-reconstruction",
+      "maturity": "experimental",
+      "validated_by": [
+        "simulation validation surfaces",
+        "ancestral reference examples"
+      ],
+      "limitations": [
+        "external tool comparison and maturity gates are still incomplete for every reconstruction mode"
+      ]
+    },
+    {
+      "method": "bayesian-time-tree",
+      "maturity": "experimental",
+      "validated_by": [
+        "tip-date validation",
+        "calibration validation",
+        "BEAST and MrBayes workflow surfaces"
+      ],
+      "limitations": [
+        "workflow support exists, but cross-environment reproducibility and broader benchmark validation remain incomplete"
+      ]
+    }
+  ],
+  "limitations": [
+    "registry statuses summarize the current checked-in evidence and should move only when new validation surfaces are added or removed"
+  ]
+}

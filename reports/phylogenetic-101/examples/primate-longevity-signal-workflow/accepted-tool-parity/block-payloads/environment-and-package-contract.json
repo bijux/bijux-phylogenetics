@@ -1,0 +1,18 @@
+{
+  "block_id": "environment-and-package-contract",
+  "script_lines": "1-22",
+  "title": "Environment, package loading, and citation workflow",
+  "status": "workflow_only",
+  "note": "This setup block is documented for reproducibility, but it is not an analysis-equivalence target.",
+  "evidence": {
+    "r_packages": {
+      "ape": "5.8.1",
+      "geiger": "2.0.11",
+      "phytools": "2.5.2",
+      "treeio": "1.35.0",
+      "tidytree": "0.4.7",
+      "openxlsx": "4.2.8.1"
+    },
+    "python_reference_script": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/reference/primate_lifespan_signal_reference_bijux.py"
+  }
+}

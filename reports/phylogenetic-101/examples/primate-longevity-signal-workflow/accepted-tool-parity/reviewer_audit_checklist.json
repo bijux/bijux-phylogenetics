@@ -1,0 +1,32 @@
+{
+  "study_id": "phylogenetic-101",
+  "example_id": "primate-longevity-signal-workflow",
+  "evidence_id": "accepted-tool-parity",
+  "checklist": [
+    {
+      "item": "checked_in_reference_scripts",
+      "pass": true,
+      "detail": "R and Python comparative scripts are checked in."
+    },
+    {
+      "item": "full_executable_line_coverage",
+      "pass": true,
+      "detail": "185 / 185 executable lines are covered."
+    },
+    {
+      "item": "analytical_blocks_validated",
+      "pass": true,
+      "detail": "10 verified and 6 tolerance-validated blocks."
+    },
+    {
+      "item": "unclaimed_visual_scope_disclosed",
+      "pass": true,
+      "detail": "10 plot-only blocks are disclosed explicitly."
+    },
+    {
+      "item": "deviation_surface_present",
+      "pass": true,
+      "detail": "Tolerance-based and non-analytical blocks are separated rather than hidden."
+    }
+  ]
+}

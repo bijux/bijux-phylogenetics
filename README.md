@@ -78,7 +78,7 @@ What exists today:
 What does not exist today:
 
 - a native maximum-likelihood or Bayesian inference engine implemented inside this repository
-- a checked-in repository data or report corpus that defines the project through tracked root outputs
+- a broad checked-in benchmark corpus that replaces external method validation; targeted comparative trust reports may live under `reports/`
 - a claim that one passing workflow is sufficient scientific evidence on its own
 
 ## Common Commands
@@ -94,6 +94,8 @@ What does not exist today:
 
 - transient local outputs belong under `artifacts/`, not as ad hoc root-level
   cache or build directories
+- curated checked-in comparative trust reports belong under `reports/`; they are
+  repository evidence bundles rather than transient execution products
 - the shared root environment lives at `artifacts/root/check-venv/`
 - the MkDocs site builds to `artifacts/root/docs/site/`
 
@@ -105,6 +107,7 @@ The root keeps repository-owned concerns explicit:
 - `configs/` for shared tool configuration
 - `docs/` for the repository handbook and package handbook index
 - `makes/` for automation and orchestration
+- `reports/` for checked-in comparative validation studies and trust reports
 - `.github/workflows/` for CI, release, and docs deployment pipelines
 - `packages/` for publishable package boundaries and maintainer tooling
 - `artifacts/` for transient local outputs such as built docs, package bundles, and test products

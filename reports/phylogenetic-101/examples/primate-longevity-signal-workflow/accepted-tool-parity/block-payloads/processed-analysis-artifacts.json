@@ -1,0 +1,11 @@
+{
+  "block_id": "processed-analysis-artifacts",
+  "script_lines": "122-134",
+  "title": "Save processed files for later analysis",
+  "status": "artifact_only",
+  "note": "This block writes the processed CSV and trimmed tree that the Python evidence pass later consumes.",
+  "evidence": {
+    "processed_csv_path": "/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Data/primate.csv",
+    "trimmed_tree_path": "/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Data/trimmed_primatetree.nex"
+  }
+}

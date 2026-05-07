@@ -1,0 +1,8 @@
+{
+  "block_id": "ape-longevity-overlay",
+  "script_lines": "242-245",
+  "title": "APE tip overlay with longevity",
+  "status": "plot_only",
+  "note": "This is a rendered trait-overlay surface and is tracked separately from ordering correctness.",
+  "evidence": {}
+}

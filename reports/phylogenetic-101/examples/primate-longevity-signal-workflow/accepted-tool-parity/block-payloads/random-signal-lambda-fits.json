@@ -1,0 +1,84 @@
+{
+  "block_id": "random-signal-lambda-fits",
+  "script_lines": "324-331",
+  "title": "Random-data lambda fits",
+  "status": "verified_with_tolerance",
+  "note": "The report checks the explicit random-data fit calls and extends the implied checks to the other generated examples.",
+  "evidence": {
+    "random_data": {
+      "r": {
+        "name": "random_data",
+        "traits_path": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/random_data.csv",
+        "lambda_value": 0.9999681477851246,
+        "log_likelihood": 14.548576310159607,
+        "tip_count": 30
+      },
+      "bijux": {
+        "name": "random_data",
+        "lambda_value": 1.0,
+        "log_likelihood": 14.547675504883657,
+        "tip_count": 30
+      }
+    },
+    "random_data2": {
+      "r": {
+        "name": "random_data2",
+        "traits_path": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/random_data2.csv",
+        "lambda_value": 1,
+        "log_likelihood": 10.521183753157139,
+        "tip_count": 30
+      },
+      "bijux": {
+        "name": "random_data2",
+        "lambda_value": 1.0,
+        "log_likelihood": 10.521183027795132,
+        "tip_count": 30
+      }
+    },
+    "random_data3": {
+      "r": {
+        "name": "random_data3",
+        "traits_path": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/random_data3.csv",
+        "lambda_value": 1,
+        "log_likelihood": -63.70410151227996,
+        "tip_count": 30
+      },
+      "bijux": {
+        "name": "random_data3",
+        "lambda_value": 1.0,
+        "log_likelihood": -63.70410540969894,
+        "tip_count": 30
+      }
+    },
+    "random_data4": {
+      "r": {
+        "name": "random_data4",
+        "traits_path": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/random_data4.csv",
+        "lambda_value": 1,
+        "log_likelihood": -62.16342457427131,
+        "tip_count": 30
+      },
+      "bijux": {
+        "name": "random_data4",
+        "lambda_value": 1.0,
+        "log_likelihood": -62.16342973511061,
+        "tip_count": 30
+      }
+    },
+    "random_data5": {
+      "r": {
+        "name": "random_data5",
+        "traits_path": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/random_data5.csv",
+        "lambda_value": 1,
+        "log_likelihood": -45.10037017189111,
+        "tip_count": 30
+      },
+      "bijux": {
+        "name": "random_data5",
+        "lambda_value": 1.0,
+        "log_likelihood": -45.10037250885125,
+        "tip_count": 30
+      }
+    }
+  }
+}

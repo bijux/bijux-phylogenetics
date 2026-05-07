@@ -1,0 +1,8 @@
+{
+  "block_id": "joined-ggtree-trait-plotting",
+  "script_lines": "265-276",
+  "title": "Joined ggtree trait plotting",
+  "status": "plot_only",
+  "note": "Joined-data `ggtree` figures are tracked here as visual outputs only.",
+  "evidence": {}
+}

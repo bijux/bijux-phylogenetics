@@ -1,0 +1,8 @@
+{
+  "block_id": "lambda-zero-visual-comparison",
+  "script_lines": "357-371",
+  "title": "Lambda-zero visual tree comparison",
+  "status": "plot_only",
+  "note": "The side-by-side real-tree versus lambda=0 plots are tracked as visual outputs only.",
+  "evidence": {}
+}

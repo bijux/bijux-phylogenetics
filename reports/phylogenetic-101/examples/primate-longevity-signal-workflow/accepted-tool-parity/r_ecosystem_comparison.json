@@ -1,0 +1,113 @@
+{
+  "study_id": "phylogenetic-101",
+  "example_id": "primate-longevity-signal-workflow",
+  "evidence_id": "accepted-tool-parity",
+  "comparison_scope": "accepted_r_tool_reproduction",
+  "reference_tools": [
+    "ape",
+    "geiger",
+    "phytools",
+    "treeio",
+    "tidytree"
+  ],
+  "analytical_block_count": 16,
+  "plot_only_block_count": 10,
+  "analytical_blocks": [
+    {
+      "block_id": "primate-data-preprocessing",
+      "status": "verified",
+      "title": "Raw primate preprocessing to checked-in analysis table",
+      "script_lines": "23-79"
+    },
+    {
+      "block_id": "tree-import-and-pruning",
+      "status": "verified",
+      "title": "Tree import, checking, node labels, and pruning",
+      "script_lines": "80-120"
+    },
+    {
+      "block_id": "unrooted-tree-demo",
+      "status": "verified",
+      "title": "Unrooted tree demo",
+      "script_lines": "159"
+    },
+    {
+      "block_id": "extract-clade-node-77",
+      "status": "verified",
+      "title": "Extract clade descended from R node 77",
+      "script_lines": "168-170"
+    },
+    {
+      "block_id": "rotate-nodes-behavior",
+      "status": "verified",
+      "title": "Rotate-nodes teaching demo",
+      "script_lines": "172-192"
+    },
+    {
+      "block_id": "tip-order-alignment",
+      "status": "verified",
+      "title": "Tip-order alignment for joining data to the tree",
+      "script_lines": "222-240"
+    },
+    {
+      "block_id": "treeio-node-mapping-and-join",
+      "status": "verified",
+      "title": "Treeio node mapping and joined tree-data object",
+      "script_lines": "248-263"
+    },
+    {
+      "block_id": "random-signal-lambda-fits",
+      "status": "verified_with_tolerance",
+      "title": "Random-data lambda fits",
+      "script_lines": "324-331"
+    },
+    {
+      "block_id": "primate-longevity-vector-assembly",
+      "status": "verified",
+      "title": "Primate longevity vector assembly",
+      "script_lines": "340-341"
+    },
+    {
+      "block_id": "primate-lambda-fit",
+      "status": "verified_with_tolerance",
+      "title": "Primate longevity lambda fit",
+      "script_lines": "347-354"
+    },
+    {
+      "block_id": "lambda-zero-covariance-and-lrt",
+      "status": "verified_with_tolerance",
+      "title": "Lambda-zero covariance and likelihood-ratio test",
+      "script_lines": "375-388"
+    },
+    {
+      "block_id": "continuous-ancestral-point-estimates",
+      "status": "verified_with_tolerance",
+      "title": "Continuous ancestral point estimates",
+      "script_lines": "395-399"
+    },
+    {
+      "block_id": "continuous-ancestral-intervals",
+      "status": "verified_with_tolerance",
+      "title": "Continuous ancestral 95% intervals",
+      "script_lines": "400"
+    },
+    {
+      "block_id": "ancestral-table-assembly",
+      "status": "verified",
+      "title": "Assemble ancestral table and node mapping",
+      "script_lines": "404-412"
+    },
+    {
+      "block_id": "bonobo-gibbon-mrca-estimate",
+      "status": "verified_with_tolerance",
+      "title": "Bonobo/Gibbon MRCA estimate",
+      "script_lines": "421-429"
+    },
+    {
+      "block_id": "lifespan-increase-counts",
+      "status": "verified",
+      "title": "How many times lifespan increased across primates",
+      "script_lines": "431-448"
+    }
+  ]
+}

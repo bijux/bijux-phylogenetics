@@ -1,0 +1,61 @@
+{
+  "block_id": "continuous-ancestral-point-estimates",
+  "script_lines": "395-399",
+  "title": "Continuous ancestral point estimates",
+  "status": "verified_with_tolerance",
+  "note": "Clade-aligned ancestral point estimates match to floating-point noise.",
+  "evidence": {
+    "shared_node_count": 74,
+    "point_max_abs_diff": 5.115907697472721e-13,
+    "top_point_discrepancies": [
+      {
+        "signature": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+        "r_estimate": 324.7381266561625,
+        "bijux_estimate": 324.738126656163,
+        "abs_diff": 5.115907697472721e-13
+      },
+      {
+        "signature": "Cercocebus_galeritus|Lophocebus_albigena|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+        "r_estimate": 404.9328409386655,
+        "bijux_estimate": 404.932840938665,
+        "abs_diff": 5.115907697472721e-13
+      },
+      {
+        "signature": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Cheirogaleus_major|Cheirogaleus_medius|Colobus_guereza|Colobus_polykomos|Daubentonia_madagascariensis|Erythrocebus_patas|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Hylobates_lar|Hylobates_pileatus|Lemur_catta|Leontopithecus_rosalia|Lepilemur_leucopus|Lepilemur_mustelinus|Lophocebus_albigena|Loris_tardigradus|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Microcebus_murinus|Microcebus_rufus|Miopithecus_talapoin|Mirza_coquereli|Nasalis_larvatus|Nomascus_concolor|Otolemur_crassicaudatus|Otolemur_garnettii|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+        "r_estimate": 262.3500224997105,
+        "bijux_estimate": 262.350022499711,
+        "abs_diff": 4.547473508864641e-13
+      },
+      {
+        "signature": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+        "r_estimate": 295.39223782333556,
+        "bijux_estimate": 295.392237823336,
+        "abs_diff": 4.547473508864641e-13
+      },
+      {
+        "signature": "Aotus_trivirgatus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+        "r_estimate": 332.2629988479225,
+        "bijux_estimate": 332.262998847923,
+        "abs_diff": 4.547473508864641e-13
+      },
+      {
+        "signature": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+        "r_estimate": 339.18007733470256,
+        "bijux_estimate": 339.180077334703,
+        "abs_diff": 4.547473508864641e-13
+      },
+      {
+        "signature": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Symphalangus_syndactylus",
+        "r_estimate": 480.04749511392856,
+        "bijux_estimate": 480.047495113929,
+        "abs_diff": 4.547473508864641e-13
+      },
+      {
+        "signature": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica",
+        "r_estimate": 427.50028993632753,
+        "bijux_estimate": 427.500289936328,
+        "abs_diff": 4.547473508864641e-13
+      }
+    ]
+  }
+}

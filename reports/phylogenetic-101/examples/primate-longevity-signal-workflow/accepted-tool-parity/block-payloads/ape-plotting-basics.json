@@ -1,0 +1,8 @@
+{
+  "block_id": "ape-plotting-basics",
+  "script_lines": "141-155",
+  "title": "APE plotting basics",
+  "status": "plot_only",
+  "note": "This is a visual exploration block; the current report does not claim figure-equivalence for base `ape` plots.",
+  "evidence": {}
+}

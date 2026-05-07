@@ -1,0 +1,12 @@
+{
+  "block_id": "tip-order-alignment",
+  "script_lines": "222-240",
+  "title": "Tip-order alignment for joining data to the tree",
+  "status": "verified",
+  "note": "The aligned species order matches the trimmed tree tip order.",
+  "evidence": {
+    "r_aligned_equals_tip_order": true,
+    "bijux_aligned_equals_tip_order": true,
+    "first_six_species_match": true
+  }
+}
