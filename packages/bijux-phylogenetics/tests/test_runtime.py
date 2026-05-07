@@ -114,6 +114,8 @@ from bijux_phylogenetics.core.topology import (
     extract_named_clade,
     ladderize_tree,
     reroot_tree_by_midpoint,
+    rotate_all_internal_nodes,
+    rotate_named_node,
     root_tree_on_outgroup,
     sort_tree_tips_alphabetically,
     unroot_tree,
@@ -1125,6 +1127,8 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
     assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
     assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
+    assert bijux_phylogenetics.rotate_named_node is rotate_named_node
+    assert bijux_phylogenetics.rotate_all_internal_nodes is rotate_all_internal_nodes
     assert bijux_phylogenetics.unroot_tree is unroot_tree
     assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
 
@@ -1468,6 +1472,11 @@ def test_normalize_tree_taxa_reports_rename_mapping() -> None:
         ("Homo sapiens", "Homo_sapiens"),
         ("Mus musculus", "Mus_musculus"),
     ]
+    assert report.original_tip_count == 3
+    assert report.normalized_tip_count == 3
+    assert report.unchanged_taxa == ["A"]
+    assert report.topology_preserved is True
+    assert report.branch_lengths_preserved is True
 
 
 def test_taxon_safety_reports_unsafe_labels_and_normalization_collisions(
@@ -1830,6 +1839,27 @@ def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
     assert report.missing_requested_descendants == []
     assert report.unexpected_retained_taxa == []
     assert report.summary.removed_taxa == ["C", "D"]
+
+
+def test_rotate_named_node_reverses_child_order_without_changing_topology() -> None:
+    tree, report = rotate_named_node(
+        fixture("example_tree_named_clades.nwk"),
+        clade_name="Mammals",
+    )
+    assert tree.tip_names == ["B", "A", "C", "D"]
+    assert report.strategy == "rotate:Mammals"
+    assert report.tip_order == ["B", "A", "C", "D"]
+    assert report.rooted_topology_preserved is True
+    assert report.unrooted_topology_preserved is True
+
+
+def test_rotate_all_internal_nodes_reverses_every_internal_child_order() -> None:
+    tree, report = rotate_all_internal_nodes(fixture("example_tree_named_clades.nwk"))
+    assert tree.tip_names == ["D", "C", "B", "A"]
+    assert report.strategy == "rotate-all"
+    assert report.tip_order == ["D", "C", "B", "A"]
+    assert report.rooted_topology_preserved is True
+    assert report.unrooted_topology_preserved is True
 
 
 def test_collapse_branches_below_length_turns_short_internal_edges_into_polytomies() -> (
@@ -3740,23 +3770,33 @@ def test_inspect_tree_path_classifies_internal_support_and_name_labels() -> None
     support = inspect_tree_path(fixture("example_tree_support_mixed.nwk"))
     names = inspect_tree_path(fixture("example_tree_named_clades.nwk"))
     assert [
-        (row.node, row.label, row.numeric_value)
+        (row.node, row.label, row.interpretation, row.numeric_value)
         for row in support.likely_support_labels
     ] == [
-        ("A|B", "0.95", 0.95),
-        ("A|B|C|D", "99", 99.0),
-        ("C|D", "88", 88.0),
+        ("A|B", "0.95", "fractional_support", 0.95),
+        ("A|B|C|D", "99", "percentage_support", 99.0),
+        ("C|D", "88", "percentage_support", 88.0),
     ]
     assert support.likely_named_internal_labels == []
     assert [
         (row.node, row.label, row.interpretation)
         for row in names.likely_named_internal_labels
     ] == [
-        ("A|B", "Mammals", "name"),
-        ("A|B|C|D", "Root", "name"),
-        ("C|D", "Birds", "name"),
+        ("A|B", "Mammals", "named_internal_label"),
+        ("A|B|C|D", "Root", "named_internal_label"),
+        ("C|D", "Birds", "named_internal_label"),
     ]
     assert names.likely_support_labels == []
+
+    invalid = inspect_tree_path(fixture("example_tree_support_invalid.nwk"))
+    assert [
+        (row.label, row.interpretation)
+        for row in invalid.likely_support_labels
+    ] == [
+        ("120", "out_of_range_support"),
+        ("101", "out_of_range_support"),
+        ("-5", "out_of_range_support"),
+    ]
 
 
 def test_inspect_tree_path_detects_suspicious_and_mixed_support_scales() -> None:
@@ -4019,6 +4059,14 @@ def test_detect_tree_format_uses_filename_suffixes() -> None:
     assert detect_tree_format(Path("x.nwk")) == "newick"
     assert detect_tree_format(Path("x.nex")) == "nexus"
     assert detect_tree_format(Path("x.phyloxml")) == "phyloxml"
+
+
+def test_detect_tree_format_prefers_file_content_over_misleading_suffix(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "tree.nex"
+    path.write_text("(A:1,B:1);\n", encoding="utf-8")
+    assert detect_tree_format(path) == "newick"
 
 
 def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -> None:
