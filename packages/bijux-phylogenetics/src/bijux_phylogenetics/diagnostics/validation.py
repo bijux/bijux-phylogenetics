@@ -807,12 +807,25 @@ def _internal_label_diagnostics(
     for node in tree.iter_nodes():
         if node.is_leaf() or node.name is None or not node.name.strip():
             continue
-        numeric_value = _parse_internal_label_numeric(node.name.strip())
+        stripped = node.name.strip()
+        numeric_value = _parse_internal_label_numeric(stripped)
+        if numeric_value is None:
+            interpretation = (
+                "ambiguous_alphanumeric_label"
+                if any(character.isdigit() for character in stripped)
+                else "named_internal_label"
+            )
+        elif numeric_value < 0 or numeric_value > 100:
+            interpretation = "out_of_range_support"
+        elif 0.0 <= numeric_value <= 1.0:
+            interpretation = "fractional_support"
+        else:
+            interpretation = "percentage_support"
         interpretation = InternalLabelInterpretation(
             node=_node_signature(node),
             node_id=_node_signature(node),
             label=node.name,
-            interpretation="support" if numeric_value is not None else "name",
+            interpretation=interpretation,
             numeric_value=None if numeric_value is None else round(numeric_value, 15),
         )
         if numeric_value is not None:

@@ -42,6 +42,11 @@ class TaxonNormalizationReport:
 
     policy: str
     renamed_taxa: list[TaxonRename]
+    original_tip_count: int
+    normalized_tip_count: int
+    unchanged_taxa: list[str]
+    topology_preserved: bool
+    branch_lengths_preserved: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -1168,7 +1173,18 @@ def normalize_tree_taxa(
         rooted=tree.rooted,
     )
     return normalized_tree, TaxonNormalizationReport(
-        policy=policy, renamed_taxa=renames
+        policy=policy,
+        renamed_taxa=renames,
+        original_tip_count=tree.tip_count,
+        normalized_tip_count=normalized_tree.tip_count,
+        unchanged_taxa=sorted(
+            label
+            for label in tree.tip_names
+            if label not in {rename.raw_label for rename in renames}
+        ),
+        topology_preserved=True,
+        branch_lengths_preserved=tree.branch_lengths()
+        == normalized_tree.branch_lengths(),
     )
 
 
