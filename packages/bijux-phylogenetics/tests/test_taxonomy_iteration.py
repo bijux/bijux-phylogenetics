@@ -150,6 +150,20 @@ def test_build_taxon_audit_report_combines_rank_namespace_and_mapping_reviews() 
     assert report.summary
 
 
+def test_build_taxon_audit_report_surfaces_identity_variant_summary_and_warnings() -> (
+    None
+):
+    tree = load_tree(fixture("example_tree_identity.nwk"))
+    report = build_taxon_audit_report(tree)
+
+    assert any(
+        "spelling or formatting collision pairs" in line for line in report.summary
+    )
+    assert any("near-duplicate taxon label pairs" in line for line in report.summary)
+    assert any("differ only by spacing" in warning for warning in report.warnings)
+    assert any("near-duplicate taxon labels" in warning for warning in report.warnings)
+
+
 def test_prune_tree_to_taxa_reports_information_loss() -> None:
     _, report = prune_tree_to_taxa(
         fixture("example_taxon_workflow_tree.nwk"),

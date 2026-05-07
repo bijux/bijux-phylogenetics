@@ -1088,6 +1088,26 @@ def build_taxon_audit_report(
         + list(duplicate_identities.warnings)
         + list(mapping_conflicts.warnings)
     )
+    identity_variant_pairs = (
+        len(identity.spelling_variants)
+        + len(identity.whitespace_variants)
+        + len(identity.underscore_space_collisions)
+        + len(identity.case_collisions)
+    )
+    if identity_variant_pairs:
+        warnings.append(
+            "one or more taxon labels differ only by spacing, punctuation, or case and should be reviewed before normalization"
+        )
+        summary.append(
+            f"{identity_variant_pairs} spelling or formatting collision pairs were detected across taxon labels"
+        )
+    if identity.suspicious_near_duplicates:
+        warnings.append(
+            "one or more near-duplicate taxon labels may represent the same biological identity"
+        )
+        summary.append(
+            f"{len(identity.suspicious_near_duplicates)} near-duplicate taxon label pairs need manual review"
+        )
     if safety.unsafe_taxa:
         warnings.append(
             "one or more taxon labels are unsafe for downstream external engines"
