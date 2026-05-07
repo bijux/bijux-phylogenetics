@@ -7725,6 +7725,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "conflict_count": len(
                                     result.taxon_audit.mapping_conflicts.rows
                                 ),
+                                "crosswalk_rows": 0
+                                if result.taxon_crosswalk is None
+                                else len(result.taxon_crosswalk.rows),
+                                "excluded_taxa": 0
+                                if result.taxon_exclusions is None
+                                else len(result.taxon_exclusions.rows),
+                                "loss_stage_count": 0
+                                if result.taxon_workflow_loss is None
+                                else len(result.taxon_workflow_loss.loss_stage_counts),
+                                "unstable_taxa": 0
+                                if result.taxon_stability is None
+                                else len(result.taxon_stability.unstable_taxa),
                             },
                             data=result,
                         ),

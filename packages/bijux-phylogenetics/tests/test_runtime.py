@@ -5686,6 +5686,67 @@ def test_render_taxon_report_writes_taxon_sections(tmp_path: Path) -> None:
     assert "Bijux Taxon Audit Report" in text
 
 
+def test_render_taxon_report_includes_crosswalk_exclusions_loss_stability_and_input_ledger(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "taxonomy-report-workflow.html"
+    result = render_taxon_report(
+        tree_path=fixture("example_taxon_workflow_tree.nwk"),
+        metadata_path=fixture("example_taxon_workflow_metadata.csv"),
+        traits_path=fixture("example_taxon_workflow_traits.csv"),
+        alignment_path=fixture("example_taxon_workflow_alignment.fasta"),
+        filtered_alignment_path=fixture(
+            "example_taxon_workflow_filtered_alignment.fasta"
+        ),
+        inference_tree_path=fixture("example_taxon_workflow_inference.nwk"),
+        reported_taxa_path=fixture("example_taxon_workflow_reported.csv"),
+        out_path=output,
+    )
+
+    sidecar = json.loads(result.machine_manifest_path.read_text(encoding="utf-8"))
+    assert result.taxon_crosswalk is not None
+    assert result.taxon_exclusions is not None
+    assert result.taxon_workflow_loss is not None
+    assert result.taxon_stability is not None
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "taxon-audit",
+        "taxon-identity",
+        "taxon-safety",
+        "taxon-namespaces",
+        "taxon-rank-consistency",
+        "taxon-duplicate-identities",
+        "taxon-mapping-conflicts",
+        "taxon-crosswalk",
+        "taxon-exclusions",
+        "taxon-loss",
+        "taxon-loss-events",
+        "taxon-stability",
+        "limitations",
+    ]
+    assert sidecar["metrics"]["crosswalk_rows"] == 4
+    assert sidecar["metrics"]["excluded_taxa"] == 2
+    assert sidecar["metrics"]["loss_stage_count"] == 3
+    assert sidecar["metrics"]["unstable_taxa"] == 3
+    assert [row["role"] for row in sidecar["input_ledger"]] == [
+        "tree",
+        "metadata",
+        "traits",
+        "alignment",
+        "filtered_alignment",
+        "inference_tree",
+        "reported_taxa",
+    ]
+    assert any(
+        line == "excluded taxa with explicit causes: 2"
+        for line in sidecar["reviewer_summary"]
+    )
+    assert any(
+        line == "unstable taxa across linked sources: 3"
+        for line in sidecar["reviewer_summary"]
+    )
+
+
 def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(
     tmp_path: Path,
 ) -> None:
