@@ -17,3 +17,7 @@ Current tracked studies:
   validation against established R phylogenetics packages
   Registry: [`examples/registry.json`](./phylogenetic-101/examples/registry.json)
   Current example: [`primate-longevity-signal-workflow`](./phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/README.md)
+- [`taxon-trust`](./taxon-trust/): reviewer-facing evidence for taxon identity,
+  normalization, crosswalk, exclusion, loss, and stability behavior
+  Registry: [`examples/registry.json`](./taxon-trust/examples/registry.json)
+  Current example: [`taxon-identity-and-retention-workflow`](./taxon-trust/examples/taxon-identity-and-retention-workflow/reviewer-evidence/README.md)

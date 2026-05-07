@@ -1,0 +1,24 @@
+{
+  "study_id": "taxon-trust",
+  "corpus_kind": "reviewer_evidence_examples",
+  "examples": [
+    {
+      "example_id": "taxon-identity-and-retention-workflow",
+      "title": "Taxon identity and retention workflow",
+      "evidence_id": "reviewer-evidence",
+      "current_evidence_readme": "examples/taxon-identity-and-retention-workflow/reviewer-evidence/README.md",
+      "goals": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    }
+  ]
+}
