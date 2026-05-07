@@ -241,6 +241,9 @@ def _goal_payloads() -> list[dict[str, object]]:
             "goal_name": GOAL_NAMES[21],
             "verdict": "verified",
             "fixture_paths": [_rel(IDENTITY_TREE)],
+            "summary_lines": [
+                "3 underscore/space collision pairs, 1 case collision, and 1 near-duplicate pair were detected."
+            ],
             "python_block": PYTHON_BLOCKS[21],
             "observed": {
                 "spelling_variants": _pair_rows(identity_report.spelling_variants),
@@ -259,6 +262,9 @@ def _goal_payloads() -> list[dict[str, object]]:
             "goal_name": GOAL_NAMES[22],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE), _rel(SYNONYM_TABLE)],
+            "summary_lines": [
+                "1 configured synonym candidate was found and 1 raw label was blocked as ambiguous."
+            ],
             "python_block": PYTHON_BLOCKS[22],
             "observed": {
                 "candidates": [asdict(row) for row in synonym_audit.candidates],
@@ -273,6 +279,9 @@ def _goal_payloads() -> list[dict[str, object]]:
             "goal_name": GOAL_NAMES[23],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE), _rel(SYNONYM_TABLE)],
+            "summary_lines": [
+                "Felis_concolor resolves to Puma_concolor with explicit provenance and reversible mapping rows."
+            ],
             "python_block": PYTHON_BLOCKS[23],
             "observed": {
                 "renamed_taxa": [asdict(row) for row in synonym_resolution.renamed_taxa],
@@ -285,6 +294,9 @@ def _goal_payloads() -> list[dict[str, object]]:
             "goal_name": GOAL_NAMES[24],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE), _rel(SYNONYM_TABLE)],
+            "summary_lines": [
+                "Jaguar remains unresolved because the synonym table maps it to both Panthera_onca and Panthera_pardus."
+            ],
             "python_block": PYTHON_BLOCKS[24],
             "observed": {
                 "ambiguous_mappings": [
@@ -305,6 +317,9 @@ def _goal_payloads() -> list[dict[str, object]]:
             "goal_name": GOAL_NAMES[25],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE)],
+            "summary_lines": [
+                "The taxonomy tree includes species_name, accession_id, sample_id, and isolate_id labels."
+            ],
             "python_block": PYTHON_BLOCKS[25],
             "observed": {
                 "assignments": [asdict(row) for row in namespace_report.assignments],
@@ -317,6 +332,9 @@ def _goal_payloads() -> list[dict[str, object]]:
             "goal_name": GOAL_NAMES[26],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE)],
+            "summary_lines": [
+                "mixed_namespaces is true and the report warns against automation without a crosswalk."
+            ],
             "python_block": PYTHON_BLOCKS[26],
             "observed": {
                 "mixed_namespaces": namespace_report.mixed_namespaces,
@@ -333,6 +351,9 @@ def _goal_payloads() -> list[dict[str, object]]:
                 _rel(WORKFLOW_TRAITS),
                 _rel(WORKFLOW_ALIGNMENT),
             ],
+            "summary_lines": [
+                "The crosswalk exposes 4 taxa across tree, metadata, traits, and alignment surfaces."
+            ],
             "python_block": PYTHON_BLOCKS[27],
             "observed": {
                 "row_count": len(crosswalk.rows),
@@ -348,6 +369,9 @@ def _goal_payloads() -> list[dict[str, object]]:
                 _rel(WORKFLOW_METADATA),
                 _rel(WORKFLOW_TRAITS),
                 _rel(WORKFLOW_ALIGNMENT),
+            ],
+            "summary_lines": [
+                "B is excluded by metadata absence; D is excluded by alignment absence, with affected analyses recorded explicitly."
             ],
             "python_block": PYTHON_BLOCKS[28],
             "observed": {
@@ -367,6 +391,9 @@ def _goal_payloads() -> list[dict[str, object]]:
                 _rel(WORKFLOW_INFERENCE),
                 _rel(WORKFLOW_REPORTED),
             ],
+            "summary_lines": [
+                "First-loss stages are B at alignment_filtering, C at trait_missingness, and D at alignment."
+            ],
             "python_block": PYTHON_BLOCKS[29],
             "observed": {
                 "loss_stage_counts": workflow_loss.loss_stage_counts,
@@ -385,6 +412,9 @@ def _goal_payloads() -> list[dict[str, object]]:
                 _rel(WORKFLOW_FILTERED_ALIGNMENT),
                 _rel(WORKFLOW_INFERENCE),
                 _rel(WORKFLOW_REPORTED),
+            ],
+            "summary_lines": [
+                "A is stable across all seven sources; B, C, and D are unstable."
             ],
             "python_block": PYTHON_BLOCKS[30],
             "observed": {
@@ -445,6 +475,9 @@ def _write_bundle_readme(
         )
         for fixture_path in payload["fixture_paths"]:
             lines.append(f"- `{fixture_path}`")
+        lines.extend(["", "Highlights:"])
+        for summary_line in payload["summary_lines"]:
+            lines.append(f"- {summary_line}")
         lines.extend(
             [
                 "",
@@ -478,6 +511,7 @@ def main() -> None:
             "goal_name": payload["goal_name"],
             "verdict": payload["verdict"],
             "fixture_paths": payload["fixture_paths"],
+            "summary_lines": payload["summary_lines"],
         }
         for payload in goal_payloads
     ]

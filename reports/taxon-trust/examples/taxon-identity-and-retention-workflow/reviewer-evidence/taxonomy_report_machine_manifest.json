@@ -1,0 +1,128 @@
+{
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta": "07284e4f291c4fe056d44a6ba4659c2775d592003535604f2b4614c5aad201fa",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_filtered_alignment.fasta": "0e9a5dd195add94cb3e6040deb840974a4b040dfa107b0754021c1ef53da9fec",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv": "4eae72e39b5c590b273d12f52523b9a1bbb5a074de1aed9abf63dae7c35ed8d5",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv": "1e02144db5044f1a488ef57851860d1aeac1059c6109c95981a562cc7cdc4b8f",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv": "f457a5da8917f98d772c50bb708a1fd904afbf96944e32186e95379c9cb0b367",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk": "943502b6b277adc2cff3fb16c6f2ef2023c6b5eefc711e92f757b5b2f0d7bde0",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk": "e23d9f972b025c5272b4355cf370f4413929901d61838e86124fc816db8e5816"
+  },
+  "input_ledger": [
+    {
+      "checksum": "e23d9f972b025c5272b4355cf370f4413929901d61838e86124fc816db8e5816",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
+      "role": "tree",
+      "taxa_count": 4,
+      "usage": [
+        "taxon_audit",
+        "taxon_stability"
+      ]
+    },
+    {
+      "checksum": "4eae72e39b5c590b273d12f52523b9a1bbb5a074de1aed9abf63dae7c35ed8d5",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
+      "role": "metadata",
+      "taxa_count": 3,
+      "usage": [
+        "taxon_crosswalk",
+        "taxon_exclusions"
+      ]
+    },
+    {
+      "checksum": "f457a5da8917f98d772c50bb708a1fd904afbf96944e32186e95379c9cb0b367",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
+      "role": "traits",
+      "taxa_count": 4,
+      "usage": [
+        "taxon_crosswalk",
+        "taxon_exclusions"
+      ]
+    },
+    {
+      "checksum": "07284e4f291c4fe056d44a6ba4659c2775d592003535604f2b4614c5aad201fa",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta",
+      "role": "alignment",
+      "taxa_count": 3,
+      "usage": [
+        "taxon_crosswalk",
+        "taxon_loss"
+      ]
+    },
+    {
+      "checksum": "0e9a5dd195add94cb3e6040deb840974a4b040dfa107b0754021c1ef53da9fec",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_filtered_alignment.fasta",
+      "role": "filtered_alignment",
+      "taxa_count": 2,
+      "usage": [
+        "taxon_loss",
+        "taxon_stability"
+      ]
+    },
+    {
+      "checksum": "943502b6b277adc2cff3fb16c6f2ef2023c6b5eefc711e92f757b5b2f0d7bde0",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk",
+      "role": "inference_tree",
+      "taxa_count": 3,
+      "usage": [
+        "taxon_loss",
+        "taxon_stability"
+      ]
+    },
+    {
+      "checksum": "1e02144db5044f1a488ef57851860d1aeac1059c6109c95981a562cc7cdc4b8f",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv",
+      "role": "reported_taxa",
+      "taxa_count": 1,
+      "usage": [
+        "taxon_loss",
+        "taxon_stability"
+      ]
+    }
+  ],
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_filtered_alignment.fasta",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv"
+  ],
+  "limitations": [],
+  "metrics": {
+    "conflict_count": 0,
+    "crosswalk_rows": 4,
+    "excluded_taxa": 2,
+    "loss_stage_count": 3,
+    "tree_tip_count": 4,
+    "unstable_taxa": 3,
+    "warning_count": 0
+  },
+  "report_kind": "taxonomy",
+  "reviewer_summary": [
+    "taxon audit status: ready",
+    "tree tip count: 4",
+    "crosswalk rows: 4 across linked dataset surfaces",
+    "excluded taxa with explicit causes: 2",
+    "workflow loss stages observed: 3",
+    "unstable taxa across linked sources: 3"
+  ],
+  "sections": [
+    "reviewer-summary",
+    "taxon-audit",
+    "taxon-identity",
+    "taxon-safety",
+    "taxon-namespaces",
+    "taxon-rank-consistency",
+    "taxon-duplicate-identities",
+    "taxon-mapping-conflicts",
+    "taxon-crosswalk",
+    "taxon-exclusions",
+    "taxon-loss",
+    "taxon-loss-events",
+    "taxon-stability",
+    "limitations"
+  ],
+  "title": "Bijux Taxon Audit Report"
+}

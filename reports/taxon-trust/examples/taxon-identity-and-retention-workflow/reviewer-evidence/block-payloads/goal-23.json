@@ -1,0 +1,39 @@
+{
+  "fixture_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
+  ],
+  "goal_id": 23,
+  "goal_name": "Controlled synonym resolution",
+  "observed": {
+    "renamed_taxa": [
+      {
+        "accepted_label": "Puma_concolor",
+        "authority": "MammalDB",
+        "provenance": "mammal_catalog",
+        "raw_label": "Felis_concolor",
+        "resolved_label": "Puma_concolor"
+      }
+    ],
+    "resolved_tip_names": [
+      "AB123456",
+      "Homo_sapiens",
+      "Jaguar",
+      "Puma_concolor",
+      "sample-01",
+      "strain_alpha"
+    ],
+    "unchanged_taxa": [
+      "AB123456",
+      "Homo_sapiens",
+      "Jaguar",
+      "sample-01",
+      "strain_alpha"
+    ]
+  },
+  "python_block": "from pathlib import Path\n\nfrom bijux_phylogenetics.core.taxonomy import resolve_tree_taxon_synonyms\nfrom bijux_phylogenetics.io.trees import load_tree\n\ntree = load_tree(Path(\"packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk\"))\nresolved_tree, report = resolve_tree_taxon_synonyms(\n    tree,\n    synonym_table_path=Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv\"),\n)",
+  "summary_lines": [
+    "Felis_concolor resolves to Puma_concolor with explicit provenance and reversible mapping rows."
+  ],
+  "verdict": "verified"
+}

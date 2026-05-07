@@ -1,0 +1,46 @@
+{
+  "fixture_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
+    "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta"
+  ],
+  "goal_id": 28,
+  "goal_name": "Taxon exclusion reasoning",
+  "observed": {
+    "rows": [
+      {
+        "affected_analyses": [
+          "comparative",
+          "publication",
+          "time_tree"
+        ],
+        "causes": [
+          "absent_from_metadata"
+        ],
+        "first_failed_surface": "metadata",
+        "taxon": "B"
+      },
+      {
+        "affected_analyses": [
+          "bayesian",
+          "coding",
+          "distance",
+          "maximum_likelihood",
+          "publication",
+          "time_tree"
+        ],
+        "causes": [
+          "absent_from_alignment"
+        ],
+        "first_failed_surface": "alignment",
+        "taxon": "D"
+      }
+    ]
+  },
+  "python_block": "from pathlib import Path\n\nfrom bijux_phylogenetics.core.dataset import audit_dataset_inputs\n\nreport = audit_dataset_inputs(\n    Path(\"packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk\"),\n    Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv\"),\n    Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv\"),\n    alignment_path=Path(\"packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta\"),\n)",
+  "summary_lines": [
+    "B is excluded by metadata absence; D is excluded by alignment absence, with affected analyses recorded explicitly."
+  ],
+  "verdict": "verified"
+}

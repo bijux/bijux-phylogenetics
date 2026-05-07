@@ -1,0 +1,19 @@
+{
+  "fixture_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk"
+  ],
+  "goal_id": 26,
+  "goal_name": "Mixed namespace detection",
+  "observed": {
+    "mixed_namespaces": true,
+    "warnings": [
+      "tree mixes multiple explicit taxon namespaces without an explicit mapping layer",
+      "tree mixes structured namespaces with arbitrary user-defined labels"
+    ]
+  },
+  "python_block": "from pathlib import Path\n\nfrom bijux_phylogenetics.core.taxonomy import inspect_tree_taxon_namespaces\nfrom bijux_phylogenetics.io.trees import load_tree\n\ntree = load_tree(Path(\"packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk\"))\nreport = inspect_tree_taxon_namespaces(tree)\nassert report.mixed_namespaces is True",
+  "summary_lines": [
+    "mixed_namespaces is true and the report warns against automation without a crosswalk."
+  ],
+  "verdict": "verified"
+}

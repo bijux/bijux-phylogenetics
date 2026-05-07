@@ -1,0 +1,32 @@
+{
+  "fixture_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
+  ],
+  "goal_id": 24,
+  "goal_name": "Ambiguous synonym rejection",
+  "observed": {
+    "ambiguous_mappings": [
+      {
+        "accepted_labels": [
+          "Panthera_onca",
+          "Panthera_pardus"
+        ],
+        "provenances": [
+          "common_name_catalog",
+          "legacy_field_sheet"
+        ],
+        "raw_label": "Jaguar"
+      }
+    ],
+    "duplicate_resolved_labels": [],
+    "retained_unresolved_labels": [
+      "Jaguar"
+    ]
+  },
+  "python_block": "from pathlib import Path\n\nfrom bijux_phylogenetics.core.taxonomy import resolve_tree_taxon_synonyms\nfrom bijux_phylogenetics.io.trees import load_tree\n\ntree = load_tree(Path(\"packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk\"))\nresolved_tree, report = resolve_tree_taxon_synonyms(\n    tree,\n    synonym_table_path=Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv\"),\n)\nassert \"Jaguar\" in resolved_tree.tip_names",
+  "summary_lines": [
+    "Jaguar remains unresolved because the synonym table maps it to both Panthera_onca and Panthera_pardus."
+  ],
+  "verdict": "verified"
+}

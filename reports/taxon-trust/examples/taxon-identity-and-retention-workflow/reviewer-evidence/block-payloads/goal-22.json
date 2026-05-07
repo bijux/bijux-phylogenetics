@@ -1,0 +1,40 @@
+{
+  "fixture_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
+  ],
+  "goal_id": 22,
+  "goal_name": "Taxonomic synonym candidate detection",
+  "observed": {
+    "ambiguous_mappings": [
+      {
+        "accepted_labels": [
+          "Panthera_onca",
+          "Panthera_pardus"
+        ],
+        "provenances": [
+          "common_name_catalog",
+          "legacy_field_sheet"
+        ],
+        "raw_label": "Jaguar"
+      }
+    ],
+    "candidates": [
+      {
+        "accepted_label": "Puma_concolor",
+        "authority": "MammalDB",
+        "provenance": "mammal_catalog",
+        "raw_label": "Felis_concolor"
+      }
+    ],
+    "warnings": [
+      "synonym table contains one or more raw labels that map to multiple accepted taxa",
+      "tree contains one or more labels with configured synonym candidates"
+    ]
+  },
+  "python_block": "from pathlib import Path\n\nfrom bijux_phylogenetics.core.taxonomy import audit_tree_taxon_synonyms\nfrom bijux_phylogenetics.io.trees import load_tree\n\ntree = load_tree(Path(\"packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk\"))\nreport = audit_tree_taxon_synonyms(\n    tree,\n    Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv\"),\n)",
+  "summary_lines": [
+    "1 configured synonym candidate was found and 1 raw label was blocked as ambiguous."
+  ],
+  "verdict": "verified"
+}

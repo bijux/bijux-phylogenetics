@@ -1,0 +1,90 @@
+{
+  "fixture_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
+    "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta",
+    "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_filtered_alignment.fasta",
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv"
+  ],
+  "goal_id": 29,
+  "goal_name": "Workflow taxon-loss report",
+  "observed": {
+    "loss_stage_counts": {
+      "alignment": 1,
+      "alignment_filtering": 1,
+      "trait_missingness": 1
+    },
+    "rows": [
+      {
+        "first_loss_stage": null,
+        "loss_events": [],
+        "present_in_tree": true,
+        "retained_for_reporting": true,
+        "taxon": "A"
+      },
+      {
+        "first_loss_stage": "alignment_filtering",
+        "loss_events": [
+          {
+            "reason": "removed_during_alignment_filtering",
+            "stage": "alignment_filtering"
+          },
+          {
+            "reason": "absent_from_metadata",
+            "stage": "metadata"
+          },
+          {
+            "reason": "absent_from_inference_tree",
+            "stage": "inference"
+          },
+          {
+            "reason": "absent_from_report_output",
+            "stage": "reporting"
+          }
+        ],
+        "present_in_tree": true,
+        "retained_for_reporting": false,
+        "taxon": "B"
+      },
+      {
+        "first_loss_stage": "trait_missingness",
+        "loss_events": [
+          {
+            "reason": "one_or_more_trait_values_missing",
+            "stage": "trait_missingness"
+          },
+          {
+            "reason": "absent_from_report_output",
+            "stage": "reporting"
+          }
+        ],
+        "present_in_tree": true,
+        "retained_for_reporting": false,
+        "taxon": "C"
+      },
+      {
+        "first_loss_stage": "alignment",
+        "loss_events": [
+          {
+            "reason": "absent_from_alignment",
+            "stage": "alignment"
+          },
+          {
+            "reason": "absent_from_report_output",
+            "stage": "reporting"
+          }
+        ],
+        "present_in_tree": true,
+        "retained_for_reporting": false,
+        "taxon": "D"
+      }
+    ]
+  },
+  "python_block": "from pathlib import Path\n\nfrom bijux_phylogenetics.core.taxon_workflows import build_taxon_workflow_loss_report\n\nreport = build_taxon_workflow_loss_report(\n    Path(\"packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk\"),\n    Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv\"),\n    Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv\"),\n    alignment_path=Path(\"packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta\"),\n    filtered_alignment_path=Path(\"packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_filtered_alignment.fasta\"),\n    inference_tree_path=Path(\"packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk\"),\n    reported_taxa_path=Path(\"packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv\"),\n)",
+  "summary_lines": [
+    "First-loss stages are B at alignment_filtering, C at trait_missingness, and D at alignment."
+  ],
+  "verdict": "verified"
+}
