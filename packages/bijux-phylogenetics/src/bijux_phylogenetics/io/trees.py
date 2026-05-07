@@ -23,11 +23,10 @@ _SUFFIX_FORMATS: dict[str, TreeFormat] = {
 
 def detect_tree_format(path: Path) -> TreeFormat:
     """Detect the tree format from filename and file content."""
-    suffix = path.suffix.lower()
-    if suffix in _SUFFIX_FORMATS:
-        return _SUFFIX_FORMATS[suffix]
-
     if not path.exists():
+        suffix = path.suffix.lower()
+        if suffix in _SUFFIX_FORMATS:
+            return _SUFFIX_FORMATS[suffix]
         raise FileNotFoundError(f"tree file not found: {path}")
 
     prefix = path.read_text(encoding="utf-8")[:256].lstrip().lower()
@@ -37,6 +36,9 @@ def detect_tree_format(path: Path) -> TreeFormat:
         return "phyloxml"
     if prefix.startswith("("):
         return "newick"
+    suffix = path.suffix.lower()
+    if suffix in _SUFFIX_FORMATS:
+        return _SUFFIX_FORMATS[suffix]
     raise UnsupportedTreeFormatError(f"unsupported tree format for {path}")
 
 
