@@ -12,6 +12,7 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
+from bijux_phylogenetics.core.tree import PhyloTree
 
 _NORMAL_95_CRITICAL = 1.959963984540054
 
@@ -77,6 +78,21 @@ def reconstruct_continuous_ancestral_states(
         trait=trait,
         taxon_column=taxon_column,
     )
+    return _reconstruct_continuous_from_dataset(
+        dataset,
+        working_tree=dataset.tree,
+        model=model,
+        alpha=alpha,
+    )
+
+
+def _reconstruct_continuous_from_dataset(
+    dataset: AncestralContinuousDataset,
+    *,
+    working_tree: PhyloTree,
+    model: str,
+    alpha: float,
+) -> ContinuousAncestralReport:
     global_mean = sum(dataset.values_by_taxon[taxon] for taxon in dataset.taxa) / len(
         dataset.taxa
     )
@@ -194,7 +210,7 @@ def reconstruct_continuous_ancestral_states(
         )
         return estimate, returned_length
 
-    visit(dataset.tree.root)
+    visit(working_tree.root)
     ordered_estimates = _ordered_estimates(dataset, estimates)
     unstable_nodes = [
         estimate.node
@@ -216,14 +232,14 @@ def reconstruct_continuous_ancestral_states(
             "low-confidence ancestral estimates should not be overinterpreted for evolutionary timing or trait polarity"
         )
     return ContinuousAncestralReport(
-        tree_path=tree_path,
-        traits_path=traits_path,
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
         taxon_column=dataset.taxon_column,
-        trait=trait,
+        trait=dataset.trait,
         model=model,
         alpha=stable_value(alpha),
         taxon_count=len(dataset.taxa),
-        analysis_tree_newick=dump_pruned_tree(dataset.tree),
+        analysis_tree_newick=dump_pruned_tree(working_tree),
         dropped_missing_taxa=dataset.dropped_missing_taxa,
         dropped_non_numeric_taxa=dataset.dropped_non_numeric_taxa,
         warnings=warnings,

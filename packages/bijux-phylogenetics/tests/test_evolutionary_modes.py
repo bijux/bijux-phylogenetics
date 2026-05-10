@@ -1,0 +1,101 @@
+from __future__ import annotations
+
+import math
+from pathlib import Path
+
+from bijux_phylogenetics.ancestral import (
+    reconstruct_continuous_evolutionary_mode_states,
+)
+from bijux_phylogenetics.comparative import (
+    compare_continuous_evolutionary_modes,
+    fit_continuous_evolutionary_mode,
+    rescale_tree_early_burst,
+    rescale_tree_ornstein_uhlenbeck,
+)
+
+
+FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures"
+EXAMPLE_TREE = FIXTURE_ROOT / "trees" / "example_tree.nwk"
+EXAMPLE_TRAITS = FIXTURE_ROOT / "metadata" / "example_traits_comparative.tsv"
+
+
+def test_rescale_tree_ornstein_uhlenbeck_reports_deterministic_branch_lengths() -> None:
+    report = rescale_tree_ornstein_uhlenbeck(EXAMPLE_TREE, alpha=1.0)
+
+    assert report.mode == "ornstein-uhlenbeck"
+    assert report.parameter_name == "alpha"
+    assert report.tip_count == 4
+    assert math.isclose(report.transformed_total_branch_length, 0.706662964349163)
+    assert report.branch_rows[0].node == "A"
+    assert math.isclose(report.branch_rows[0].parent_depth, 0.2)
+    assert math.isclose(report.branch_rows[0].child_depth, 0.3)
+    assert math.isclose(report.branch_rows[0].transformed_branch_length, 0.090634623461009)
+
+
+def test_rescale_tree_early_burst_zero_matches_original_tree_length() -> None:
+    baseline = rescale_tree_early_burst(EXAMPLE_TREE, rate_change=0.0)
+
+    assert baseline.mode == "early-burst"
+    assert math.isclose(
+        baseline.original_total_branch_length,
+        baseline.transformed_total_branch_length,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
+    fit = fit_continuous_evolutionary_mode(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+        mode="early-burst",
+    )
+
+    assert fit.mode == "early-burst"
+    assert fit.parameter_name == "rate_change"
+    assert fit.parameter_value is not None
+    assert fit.transformed_tree_newick.endswith(";")
+    assert fit.log_likelihood < 0.0
+    assert fit.aic > 0.0
+
+
+def test_compare_continuous_evolutionary_modes_reports_likelihood_ratios() -> None:
+    report = compare_continuous_evolutionary_modes(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+    )
+
+    assert report.better_model == "brownian"
+    assert [row.model for row in report.rows] == [
+        "brownian",
+        "ornstein-uhlenbeck",
+        "early-burst",
+    ]
+    assert sum(1 for row in report.rows if row.selected) == 1
+    assert [row.comparison_id for row in report.likelihood_ratio_tests] == [
+        "brownian-vs-ornstein-uhlenbeck",
+        "brownian-vs-early-burst",
+        "ornstein-uhlenbeck-vs-early-burst",
+    ]
+    assert all(row.degrees_of_freedom == 1 for row in report.likelihood_ratio_tests)
+    assert all(row.statistic >= 0.0 for row in report.likelihood_ratio_tests)
+
+
+def test_reconstruct_continuous_evolutionary_mode_states_supports_early_burst() -> None:
+    report = reconstruct_continuous_evolutionary_mode_states(
+        EXAMPLE_TREE,
+        EXAMPLE_TRAITS,
+        trait="response",
+        mode="early-burst",
+        rate_change=0.5,
+    )
+
+    assert report.mode == "early-burst"
+    assert report.parameter_name == "rate_change"
+    assert math.isclose(report.parameter_value or 0.0, 0.5)
+    assert report.transformed_tree_newick.endswith(";")
+    assert report.reconstruction.analysis_tree_newick == report.transformed_tree_newick
+    assert report.reconstruction.model == "brownian"
+    assert len(report.reconstruction.estimates) >= 4
