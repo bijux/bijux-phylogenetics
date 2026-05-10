@@ -34,7 +34,8 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 .PHONY: \
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
-	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot
+	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
+	report-publish-readiness check-publish-readiness
 
 check: sync-license-assets lock-check check-config-ssot lint test quality security docs build sbom ## Run the full repository verification flow
 
@@ -50,6 +51,14 @@ sync-license-assets: root-check-env ## Sync package LICENSE and NOTICE links fro
 check-config-ssot: root-check-env ## Validate repository-owned config source-of-truth rules
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.config_ssot check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/config-ssot-audit.json"
 .PHONY: check-config-ssot
+
+report-publish-readiness: root-check-env ## Build the repository publish-readiness scorecard
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.publish_readiness --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/publish-readiness.json"
+.PHONY: report-publish-readiness
+
+check-publish-readiness: root-check-env ## Fail when the repository is not publish-ready
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.publish_readiness --check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/publish-readiness.json"
+.PHONY: check-publish-readiness
 
 package-check: build ## Validate built distributions with twine
 	@"$(ROOT_CHECK_PYTHON)" -m twine check "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.whl "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.tar.gz

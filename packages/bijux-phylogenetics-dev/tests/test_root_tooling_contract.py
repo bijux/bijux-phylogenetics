@@ -16,6 +16,8 @@ PROTEOMICS_ONLY_EXTENSION_COMMANDS = {
 }
 REQUIRED_ROOT_TARGET_SNIPPETS = {
     "check-config-ssot:",
+    "report-publish-readiness:",
+    "check-publish-readiness:",
     "check: sync-license-assets lock-check check-config-ssot lint test quality security docs build sbom",
 }
 
