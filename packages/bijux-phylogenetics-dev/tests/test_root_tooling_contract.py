@@ -14,6 +14,10 @@ PROTEOMICS_ONLY_EXTENSION_COMMANDS = {
     "openapi-drift:",
     "architecture-check:",
 }
+REQUIRED_ROOT_TARGET_SNIPPETS = {
+    "check-config-ssot:",
+    "check: sync-license-assets lock-check check-config-ssot lint test quality security docs build sbom",
+}
 
 
 def _root_pyproject() -> dict[str, Any]:
@@ -49,3 +53,9 @@ def test_root_make_does_not_declare_proteomics_only_extensions() -> None:
     assert not any(
         command in root_make for command in PROTEOMICS_ONLY_EXTENSION_COMMANDS
     )
+
+
+def test_root_make_wires_config_ssot_into_repository_checks() -> None:
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+
+    assert all(snippet in root_make for snippet in REQUIRED_ROOT_TARGET_SNIPPETS)
