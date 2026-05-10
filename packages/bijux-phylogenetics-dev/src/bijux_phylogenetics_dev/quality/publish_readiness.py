@@ -12,6 +12,11 @@ import tomllib
 from typing import Any
 
 from .config_ssot import build_config_ssot_report
+from .evidence_inputs import INPUT_MANIFEST_FILENAME, check_inputs_manifests
+from .package_bundles import (
+    build_dependency_policy_report,
+    load_publication_readiness_settings,
+)
 
 TomlTable = dict[str, Any]
 JsonObject = dict[str, object]
@@ -74,6 +79,12 @@ def _output_classification(path: Path) -> str:
     if path.suffix in {".json", ".csv", ".tsv", ".nwk", ".txt"}:
         return "machine-or-reference-output"
     return "other-governed-output"
+
+
+def _as_str_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [entry for entry in value if isinstance(entry, str)]
 
 
 def iter_study_roots(repo_root: Path) -> list[Path]:
@@ -149,18 +160,36 @@ def scan_governed_junk(repo_root: Path) -> list[ReadinessIssue]:
     return issues
 
 
-def build_evidence_reproducibility_inventory(repo_root: Path) -> JsonObject:
+def build_evidence_reproducibility_inventory(
+    repo_root: Path,
+    *,
+    publication_settings: JsonObject | None = None,
+) -> JsonObject:
     """Summarize study metadata, dataset registries, and checksum coverage."""
+    publication_settings = publication_settings or {}
+    required_input_manifest = str(
+        publication_settings.get(
+            "required_evidence_input_manifest",
+            INPUT_MANIFEST_FILENAME,
+        )
+    )
+    required_bundle_code_files = tuple(
+        _as_str_list(publication_settings.get("required_evidence_bundle_code_files"))
+    )
     studies: list[JsonObject] = []
     issues: list[ReadinessIssue] = []
     repo_dataset_checksum_count = 0
     evidence_manifest_count = 0
+    evidence_input_manifest_count = 0
     evidence_output_checksum_count = 0
+    missing_bundle_code_file_count = 0
+    missing_input_manifest_count = 0
     output_classification_counts = {
         "human-report": 0,
         "machine-or-reference-output": 0,
         "other-governed-output": 0,
     }
+    stale_input_manifest_issues = check_inputs_manifests(repo_root)
 
     for study_root in iter_study_roots(repo_root):
         study = _study_payload(study_root)
@@ -368,6 +397,36 @@ def build_evidence_reproducibility_inventory(repo_root: Path) -> JsonObject:
                 continue
             evidence_manifest_count += 1
             manifest = _load_json(manifest_path)
+            input_manifest_path = evidence_root / required_input_manifest
+            if input_manifest_path.is_file():
+                evidence_input_manifest_count += 1
+            else:
+                missing_input_manifest_count += 1
+                issues.append(
+                    ReadinessIssue(
+                        code="missing-evidence-input-manifest",
+                        path=input_manifest_path.relative_to(repo_root).as_posix(),
+                        message="evidence bundle is missing the governed input manifest companion file",
+                    )
+                )
+            bundle_code_files: list[JsonObject] = []
+            for code_file in required_bundle_code_files:
+                code_path = evidence_root / code_file
+                bundle_code_files.append(
+                    {
+                        "path": code_path.relative_to(repo_root).as_posix(),
+                        "present": code_path.is_file(),
+                    }
+                )
+                if not code_path.is_file():
+                    missing_bundle_code_file_count += 1
+                    issues.append(
+                        ReadinessIssue(
+                            code="missing-evidence-bundle-code-file",
+                            path=code_path.relative_to(repo_root).as_posix(),
+                            message="evidence bundle is missing one of the required side-by-side code files",
+                        )
+                    )
             local_output_checksums: dict[str, str] = {}
             local_output_classification_counts = {
                 "human-report": 0,
@@ -388,6 +447,8 @@ def build_evidence_reproducibility_inventory(repo_root: Path) -> JsonObject:
             evidence_entries.append(
                 {
                     "evidence_id": manifest.get("evidence_id", evidence_root.name),
+                    "bundle_code_files": bundle_code_files,
+                    "has_input_manifest": input_manifest_path.is_file(),
                     "output_classification_counts": local_output_classification_counts,
                     "output_checksum_count": len(local_output_checksums),
                     "output_checksums": local_output_checksums,
@@ -409,15 +470,28 @@ def build_evidence_reproducibility_inventory(repo_root: Path) -> JsonObject:
 
     junk_issues = scan_governed_junk(repo_root)
     issues.extend(junk_issues)
+    for mismatch in stale_input_manifest_issues:
+        path_text, _, detail = mismatch.partition(": ")
+        issues.append(
+            ReadinessIssue(
+                code="stale-evidence-input-manifest",
+                path=path_text,
+                message=detail or "governed input manifest is stale",
+            )
+        )
 
     return {
         "evidence_manifest_count": evidence_manifest_count,
+        "evidence_input_manifest_count": evidence_input_manifest_count,
         "evidence_output_checksum_count": evidence_output_checksum_count,
         "governed_junk_issue_count": len(junk_issues),
         "issues": [asdict(issue) for issue in issues],
+        "missing_bundle_code_file_count": missing_bundle_code_file_count,
+        "missing_input_manifest_count": missing_input_manifest_count,
         "output_classification_counts": output_classification_counts,
         "repo_dataset_checksum_count": repo_dataset_checksum_count,
         "schema_version": 1,
+        "stale_input_manifest_count": len(stale_input_manifest_issues),
         "study_count": len(studies),
         "studies": studies,
     }
@@ -442,11 +516,18 @@ def check_publish_readiness(
 def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     """Build the repository publish-readiness report and scorecards."""
     repo_root = repo_root.resolve()
+    publication_settings = load_publication_readiness_settings(repo_root)
     package_payloads = _package_pyprojects(repo_root)
+    dependency_policy = build_dependency_policy_report(repo_root)
     config_report = build_config_ssot_report(repo_root)
-    evidence_inventory = build_evidence_reproducibility_inventory(repo_root)
+    evidence_inventory = build_evidence_reproducibility_inventory(
+        repo_root,
+        publication_settings=publication_settings,
+    )
 
     package_issues: list[ReadinessIssue] = []
+    standards_issues: list[ReadinessIssue] = []
+    shape_issues: list[ReadinessIssue] = []
     runtime = _as_dict(package_payloads.get("bijux-phylogenetics"))
     alias = _as_dict(package_payloads.get("phylogenetic"))
     dev = _as_dict(package_payloads.get("bijux-phylogenetics-dev"))
@@ -493,6 +574,70 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 )
             )
 
+    package_issues.extend(
+        ReadinessIssue(**issue) for issue in dependency_policy["issues"]  # type: ignore[index]
+    )
+
+    expected_publishable_packages = sorted(
+        _as_str_list(publication_settings.get("expected_publishable_packages"))
+    )
+    actual_package_names = sorted(package_payloads)
+    if sorted(actual_package_names) != expected_publishable_packages:
+        package_issues.append(
+            ReadinessIssue(
+                code="publishable-package-set-drift",
+                path="packages",
+                message="observed repository packages do not match the governed publishable package set",
+            )
+        )
+
+    target_shape_packages = sorted(
+        _as_str_list(publication_settings.get("target_shape_packages"))
+    )
+    missing_target_shape_packages = sorted(
+        set(target_shape_packages).difference(actual_package_names)
+    )
+    for package_name in missing_target_shape_packages:
+        shape_issues.append(
+            ReadinessIssue(
+                code="missing-target-shape-package",
+                path=f"packages/{package_name}",
+                message="target repository shape requires an owned package that does not exist yet",
+            )
+        )
+
+    root_make_path = repo_root / "makes" / "root.mk"
+    root_make_text = (
+        root_make_path.read_text(encoding="utf-8") if root_make_path.is_file() else ""
+    )
+    for target in _as_str_list(publication_settings.get("required_root_make_targets")):
+        if target not in root_make_text:
+            standards_issues.append(
+                ReadinessIssue(
+                    code="missing-root-make-target",
+                    path="makes/root.mk",
+                    message=f"repository root make surface must declare {target}",
+                )
+            )
+
+    runtime_src_root = repo_root / "packages" / "bijux-phylogenetics" / "src" / "bijux_phylogenetics"
+    observed_runtime_subpackages: list[str] = []
+    if runtime_src_root.is_dir():
+        observed_runtime_subpackages = sorted(
+            path.name for path in runtime_src_root.iterdir() if path.is_dir()
+        )
+        for package_name in _as_str_list(
+            publication_settings.get("forbidden_runtime_subpackages")
+        ):
+            if (runtime_src_root / package_name).is_dir():
+                shape_issues.append(
+                    ReadinessIssue(
+                        code="runtime-owns-forbidden-subpackage",
+                        path=f"packages/bijux-phylogenetics/src/bijux_phylogenetics/{package_name}",
+                        message="runtime package still owns a subpackage that belongs in a separate consumer layer",
+                    )
+                )
+
     evidence_issues = [
         issue
         for issue in evidence_inventory["issues"]  # type: ignore[index]
@@ -506,65 +651,190 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
 
     package_scorecard = Scorecard(
         name="package-boundaries",
-        status="ready" if not package_issues else "blocked",
-        score=max(0, 3 - len(package_issues)),
-        max_score=3,
-        summary="Package metadata keeps runtime, alias, and maintainer responsibilities separated.",
+        status="ready" if not package_issues and not shape_issues else "blocked",
+        score=max(0, 4 - len(package_issues) - len(shape_issues)),
+        max_score=4,
+        summary="Package metadata, publishable package boundaries, and runtime ownership must align with the governed repository shape.",
         issue_count=len(package_issues),
     )
     evidence_scorecard = Scorecard(
         name="evidence-program",
-        status="ready" if not evidence_issues else "needs-work",
-        score=max(0, 4 - len(evidence_issues)),
-        max_score=4,
-        summary="Evidence studies expose provenance descriptors, dataset registries, and evidence manifests for publish-time review.",
+        status="ready" if not evidence_issues else "blocked",
+        score=max(0, 5 - len(evidence_issues)),
+        max_score=5,
+        summary="Evidence bundles must expose provenance, governed inputs, and side-by-side code surfaces before publication claims are allowed.",
         issue_count=len(evidence_issues),
     )
     config_scorecard = Scorecard(
         name="config-and-standards",
-        status="ready" if config_report.issue_count == 0 else "blocked",
-        score=1 if config_report.issue_count == 0 else 0,
-        max_score=1,
-        summary="Repository-owned config SSOT audit is clean.",
-        issue_count=config_report.issue_count,
+        status="ready"
+        if config_report.issue_count == 0 and not standards_issues
+        else "blocked",
+        score=2 if config_report.issue_count == 0 and not standards_issues else 0,
+        max_score=2,
+        summary="Repository-owned config and make surfaces must satisfy the governed standards contract.",
+        issue_count=config_report.issue_count + len(standards_issues),
     )
     provenance_scorecard = Scorecard(
         name="reproducibility-and-provenance",
         status="ready"
-        if not junk_issues and evidence_inventory["repo_dataset_checksum_count"]  # type: ignore[index]
+        if not junk_issues
+        and evidence_inventory["repo_dataset_checksum_count"]  # type: ignore[index]
+        and evidence_inventory["evidence_input_manifest_count"]  # type: ignore[index]
+        and not evidence_inventory["stale_input_manifest_count"]  # type: ignore[index]
         else "needs-work",
-        score=2 if not junk_issues else 1,
-        max_score=2,
-        summary="Study datasets and evidence outputs are traceable and governed surfaces are free from junk files.",
-        issue_count=len(junk_issues),
+        score=3
+        if not junk_issues and evidence_inventory["repo_dataset_checksum_count"]  # type: ignore[index]
+        else 1,
+        max_score=3,
+        summary="Study datasets, governed local inputs, and evidence outputs must remain traceable and free from junk or stale manifest drift.",
+        issue_count=len(junk_issues)
+        + int(evidence_inventory["stale_input_manifest_count"])  # type: ignore[arg-type,index]
+        + int(evidence_inventory["missing_input_manifest_count"]),  # type: ignore[arg-type,index]
+    )
+    blocker_register = [
+        asdict(issue)
+        for issue in (
+            package_issues
+            + standards_issues
+            + shape_issues
+            + [ReadinessIssue(**issue) for issue in evidence_issues]
+        )
+    ]
+    runtime_closure_blockers = [
+        issue["code"]
+        for issue in blocker_register
+        if issue["code"]
+        in {
+            "runtime-depends-on-alias",
+            "alias-dependency-drift",
+            "dev-package-runtime-dependency",
+            "missing-build-targets",
+            "dependency-policy-drift",
+            "publishable-package-set-drift",
+            "runtime-owns-forbidden-subpackage",
+        }
+    ]
+    evidence_closure_blockers = [
+        issue["code"]
+        for issue in blocker_register
+        if issue["code"]
+        in {
+            "missing-study-provenance",
+            "missing-study-provenance-file",
+            "missing-dataset-registry",
+            "missing-dataset-registry-file",
+            "missing-evidence-manifest",
+            "missing-evidence-input-manifest",
+            "stale-evidence-input-manifest",
+            "missing-evidence-bundle-code-file",
+        }
+    ]
+    standards_closure_blockers = [
+        issue["code"]
+        for issue in blocker_register
+        if issue["code"] in {"missing-root-make-target"} or issue["code"].startswith("config-")
+    ]
+    closure_criteria = {
+        "runtime_publishable": {
+            "status": "ready" if not runtime_closure_blockers else "blocked",
+            "pass_when": [
+                "canonical runtime, alias, and maintainer package boundaries match governed dependency policy",
+                "runtime package no longer owns subpackages reserved for a separate evidence consumer layer",
+                "all governed publishable packages declare wheel and sdist targets",
+            ],
+            "blocker_codes": runtime_closure_blockers,
+        },
+        "evidence_program_publishable": {
+            "status": "ready" if not evidence_closure_blockers else "blocked",
+            "pass_when": [
+                "every evidence bundle has a governed input manifest",
+                "every evidence bundle carries side-by-side reference and python code surfaces",
+                "study provenance and dataset registries resolve cleanly",
+            ],
+            "blocker_codes": evidence_closure_blockers,
+        },
+        "repository_standards_aligned": {
+            "status": "ready" if not standards_closure_blockers and config_report.issue_count == 0 else "blocked",
+            "pass_when": [
+                "repository-owned config SSOT audit is clean",
+                "root make surface exposes the governed publish-readiness commands",
+            ],
+            "blocker_codes": standards_closure_blockers,
+        },
+    }
+    release_gate = {
+        "status": "ready" if not blocker_register else "blocked",
+        "publish_allowed": not blocker_register,
+        "superficial_completion_refused": bool(blocker_register),
+        "blocked_by": [issue["code"] for issue in blocker_register],
+        "summary": (
+            "publication claims are refused until package boundaries, evidence decomposition, and standards closure are all real"
+            if blocker_register
+            else "publication claims are supported by governed repository evidence"
+        ),
+    }
+    publication_scorecard = Scorecard(
+        name="publication-closure",
+        status=release_gate["status"],
+        score=1 if release_gate["status"] == "ready" else 0,
+        max_score=1,
+        summary="The repository must refuse superficial publication claims until the governed closure criteria are met.",
+        issue_count=len(blocker_register),
+    )
+    overall_status = (
+        "blocked"
+        if blocker_register
+        else "ready"
+        if all(
+            score.status == "ready"
+            for score in (
+                package_scorecard,
+                evidence_scorecard,
+                config_scorecard,
+                provenance_scorecard,
+                publication_scorecard,
+            )
+        )
+        else "needs-work"
     )
 
     return {
         "package_count": len(package_payloads),
         "package_names": sorted(package_payloads),
+        "publication_settings": publication_settings,
         "package_issues": [asdict(issue) for issue in package_issues],
+        "dependency_policy": dependency_policy,
         "config_ssot": config_report.to_dict(),
         "evidence_inventory": evidence_inventory,
+        "repository_shape": {
+            "actual_package_names": actual_package_names,
+            "expected_publishable_packages": expected_publishable_packages,
+            "target_shape_packages": target_shape_packages,
+            "missing_target_shape_packages": missing_target_shape_packages,
+            "observed_runtime_subpackages": observed_runtime_subpackages,
+        },
+        "closure_criteria": closure_criteria,
+        "blocker_register": {
+            "issue_count": len(blocker_register),
+            "issues": blocker_register,
+        },
+        "release_gate": release_gate,
         "scorecards": {
             "package_boundaries": asdict(package_scorecard),
             "evidence_program": asdict(evidence_scorecard),
             "config_and_standards": asdict(config_scorecard),
             "reproducibility_and_provenance": asdict(provenance_scorecard),
+            "publication_closure": asdict(publication_scorecard),
         },
         "summary": {
-            "overall_status": "ready"
-            if all(
-                score.status == "ready"
-                for score in (
-                    package_scorecard,
-                    evidence_scorecard,
-                    config_scorecard,
-                    provenance_scorecard,
-                )
-            )
-            else "needs-work",
+            "overall_status": overall_status,
+            "blocker_count": len(blocker_register),
             "study_count": evidence_inventory["study_count"],
             "evidence_manifest_count": evidence_inventory["evidence_manifest_count"],
+            "evidence_input_manifest_count": evidence_inventory[
+                "evidence_input_manifest_count"
+            ],
         },
     }
 
