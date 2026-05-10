@@ -6,6 +6,7 @@ import pytest
 
 from bijux_phylogenetics_dev.quality.evidence_cleanroom import (
     build_evidence_cleanroom_report,
+    build_selected_evidence_cleanroom_reports,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -32,3 +33,12 @@ def test_cleanroom_rerun_requires_an_explicit_evidence_selection() -> None:
             study_id="primate-longevity-signal",
             evidence_ids=[],
         )
+
+
+def test_repository_selected_cleanroom_reruns_keep_governed_selections_clean() -> None:
+    report = build_selected_evidence_cleanroom_reports(REPO_ROOT)
+
+    assert report.selection_count >= 1
+    assert all(entry.validation_issue_count == 0 for entry in report.reports)
+    assert all(entry.artifact_issue_count == 0 for entry in report.reports)
+    assert all(entry.worktree_clean for entry in report.reports)

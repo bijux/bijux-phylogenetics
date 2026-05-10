@@ -10,9 +10,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tomllib
 from uuid import uuid4
 
 DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/evidence-cleanroom")
+EXECUTION_POLICY_PATH = Path("configs/execution_surfaces.toml")
 
 
 @dataclass(frozen=True)
@@ -28,6 +30,12 @@ class EvidenceCleanroomReport:
     validation_issue_count: int
     artifact_issue_count: int
     status_entries: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class SelectedEvidenceCleanroomReport:
+    selection_count: int
+    reports: tuple[EvidenceCleanroomReport, ...]
 
 
 def _run(
@@ -51,6 +59,31 @@ def _json_payload(output: str) -> dict[str, object]:
     if not isinstance(payload, dict):
         raise ValueError("expected JSON object output")
     return payload
+
+
+def _load_selected_cleanroom_runs(repo_root: Path) -> list[tuple[str, list[str]]]:
+    with (repo_root / EXECUTION_POLICY_PATH).open("rb") as handle:
+        payload = tomllib.load(handle)
+    tool = payload.get("tool", {})
+    workspace = tool.get("bijux_phylogenetics", {}) if isinstance(tool, dict) else {}
+    policy = (
+        workspace.get("execution_surfaces", {})
+        if isinstance(workspace, dict)
+        else {}
+    )
+    selections = policy.get("cleanroom_selections", []) if isinstance(policy, dict) else []
+    results: list[tuple[str, list[str]]] = []
+    for selection in selections:
+        if not isinstance(selection, dict):
+            continue
+        study_id = selection.get("study_id")
+        evidence_ids = selection.get("evidence_ids", [])
+        if not isinstance(study_id, str) or not isinstance(evidence_ids, list):
+            continue
+        normalized_ids = [evidence_id for evidence_id in evidence_ids if isinstance(evidence_id, str)]
+        if normalized_ids:
+            results.append((study_id, normalized_ids))
+    return results
 
 
 def build_evidence_cleanroom_report(
@@ -168,6 +201,27 @@ def build_evidence_cleanroom_report(
             shutil.rmtree(cleanroom_root, ignore_errors=True)
 
 
+def build_selected_evidence_cleanroom_reports(
+    repo_root: Path,
+    *,
+    artifacts_root: Path | None = None,
+) -> SelectedEvidenceCleanroomReport:
+    repo_root = repo_root.resolve()
+    reports = tuple(
+        build_evidence_cleanroom_report(
+            repo_root,
+            study_id=study_id,
+            evidence_ids=evidence_ids,
+            artifacts_root=artifacts_root,
+        )
+        for study_id, evidence_ids in _load_selected_cleanroom_runs(repo_root)
+    )
+    return SelectedEvidenceCleanroomReport(
+        selection_count=len(reports),
+        reports=reports,
+    )
+
+
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -179,9 +233,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run an evidence rerun in a detached clean-room worktree."
     )
-    parser.add_argument("command", choices=("report", "check"))
+    parser.add_argument("command", choices=("report", "check", "report-selected", "check-selected"))
     parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--study-id", required=True)
+    parser.add_argument("--study-id")
     parser.add_argument("--evidence-id", dest="evidence_ids", action="append", default=[])
     parser.add_argument("--artifacts-root", default=str(DEFAULT_ARTIFACTS_ROOT))
     parser.add_argument("--json-out", default="")
@@ -194,20 +248,33 @@ def main() -> int:
     artifacts_root = Path(args.artifacts_root)
     if not artifacts_root.is_absolute():
         artifacts_root = repo_root / artifacts_root
-    report = build_evidence_cleanroom_report(
-        repo_root,
-        study_id=args.study_id,
-        evidence_ids=args.evidence_ids,
-        artifacts_root=artifacts_root,
-    )
-    payload = asdict(report)
+    if args.command in {"report-selected", "check-selected"}:
+        report = build_selected_evidence_cleanroom_reports(
+            repo_root,
+            artifacts_root=artifacts_root,
+        )
+        payload: dict[str, object] = {
+            "selection_count": report.selection_count,
+            "reports": [asdict(entry) for entry in report.reports],
+        }
+    else:
+        if not args.study_id:
+            raise SystemExit("--study-id is required for single-selection clean-room runs")
+        report = build_evidence_cleanroom_report(
+            repo_root,
+            study_id=args.study_id,
+            evidence_ids=args.evidence_ids,
+            artifacts_root=artifacts_root,
+        )
+        payload = asdict(report)
     json_out = args.json_out
     if json_out:
         json_path = Path(json_out)
         if not json_path.is_absolute():
             json_path = repo_root / json_path
     else:
-        json_path = artifacts_root / f"{args.study_id}-cleanroom.json"
+        stem = args.study_id if args.study_id else "selected-evidence"
+        json_path = artifacts_root / f"{stem}-cleanroom.json"
     _write_json(json_path, payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     if args.command == "check":
@@ -217,6 +284,14 @@ def main() -> int:
             raise SystemExit("evidence clean-room artifact validation failed")
         if not report.worktree_clean:
             raise SystemExit("evidence clean-room rerun produced repository drift")
+    if args.command == "check-selected":
+        for entry in report.reports:
+            if entry.validation_issue_count:
+                raise SystemExit("evidence clean-room validation failed")
+            if entry.artifact_issue_count:
+                raise SystemExit("evidence clean-room artifact validation failed")
+            if not entry.worktree_clean:
+                raise SystemExit("evidence clean-room rerun produced repository drift")
     return 0
 
 

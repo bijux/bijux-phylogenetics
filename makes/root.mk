@@ -35,15 +35,16 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
-	list-evidence-studies build-evidence-book build-evidence-study validate-evidence-book rerun-evidence-cleanroom \
-	sync-evidence-artifacts check-evidence-artifacts report-artifact-governance check-artifact-governance \
+	list-evidence-studies build-evidence-book build-evidence-study validate-evidence-book rerun-evidence-cleanroom rerun-governed-evidence-cleanroom \
+	sync-evidence-artifacts check-evidence-artifacts report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
+	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces \
 	report-package-boundaries check-package-boundaries report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
 	report-release-readiness check-release-readiness
 
 EVIDENCE_STUDY_ID ?=
 EVIDENCE_IDS ?=
 
-check: sync-license-assets lock-check check-config-ssot validate-evidence-book check-evidence-artifacts check-artifact-governance check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
+check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
 
 sync-badges: root-check-env ## Render shared badge blocks into managed README surfaces
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.docs.badge_sync sync
@@ -83,6 +84,28 @@ check-evidence-artifacts: root-check-env ## Validate governed local artifact sur
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts check --repo-root "$(CURDIR)"
 .PHONY: check-evidence-artifacts
 
+report-evidence-completeness: root-check-env ## Audit evidence bundle completeness into repository artifacts
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_completeness report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"
+.PHONY: report-evidence-completeness
+
+check-evidence-completeness: root-check-env ## Fail when any evidence bundle is structurally incomplete
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_completeness check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"
+.PHONY: check-evidence-completeness
+
+report-evidence-governance: root-check-env ## Build evidence governance report surfaces without package-quality checks
+	@$(MAKE) validate-evidence-book
+	@$(MAKE) check-evidence-artifacts
+	@$(MAKE) report-evidence-completeness
+	@$(MAKE) report-artifact-governance
+.PHONY: report-evidence-governance
+
+check-evidence-governance: root-check-env ## Enforce evidence-only governance checks
+	@$(MAKE) validate-evidence-book
+	@$(MAKE) check-evidence-artifacts
+	@$(MAKE) check-evidence-completeness
+	@$(MAKE) check-artifact-governance
+.PHONY: check-evidence-governance
+
 rerun-evidence-cleanroom: root-check-env ## Re-run one governed evidence selection inside a detached clean-room worktree
 	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
 	@set -- $(EVIDENCE_IDS); \
@@ -93,6 +116,10 @@ rerun-evidence-cleanroom: root-check-env ## Re-run one governed evidence selecti
 	$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_cleanroom check --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" $$ids --artifacts-root "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom/$(EVIDENCE_STUDY_ID)-cleanroom.json"
 .PHONY: rerun-evidence-cleanroom
 
+rerun-governed-evidence-cleanroom: root-check-env ## Re-run the repository-governed clean-room evidence selections
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_cleanroom check-selected --repo-root "$(CURDIR)" --artifacts-root "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom/selected-evidence-cleanroom.json"
+.PHONY: rerun-governed-evidence-cleanroom
+
 report-artifact-governance: root-check-env ## Audit tox, make, and workflow artifact output discipline
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.artifact_governance report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
 .PHONY: report-artifact-governance
@@ -100,6 +127,14 @@ report-artifact-governance: root-check-env ## Audit tox, make, and workflow arti
 check-artifact-governance: root-check-env ## Fail when repo execution surfaces drift from governed artifact output discipline
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.artifact_governance check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
 .PHONY: check-artifact-governance
+
+report-execution-surfaces: root-check-env ## Audit make, tox, and workflow execution-surface ownership
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.execution_surfaces report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json"
+.PHONY: report-execution-surfaces
+
+check-execution-surfaces: root-check-env ## Fail when repository execution surfaces mix ownership or governance concerns
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.execution_surfaces check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json"
+.PHONY: check-execution-surfaces
 
 report-package-boundaries: root-check-env ## Audit package ownership, exports, and cross-package boundary contracts
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.package_boundaries report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json"
@@ -127,9 +162,8 @@ check-publish-readiness: root-check-env ## Fail when the repository is not publi
 
 report-release-readiness: root-check-env ## Build the full release-readiness evidence and governance report surface
 	@$(MAKE) check-config-ssot
-	@$(MAKE) validate-evidence-book
-	@$(MAKE) check-evidence-artifacts
-	@$(MAKE) report-artifact-governance
+	@$(MAKE) report-evidence-governance
+	@$(MAKE) report-execution-surfaces
 	@$(MAKE) report-package-boundaries
 	@$(MAKE) report-package-bundles
 	@$(MAKE) report-publish-readiness
@@ -137,9 +171,8 @@ report-release-readiness: root-check-env ## Build the full release-readiness evi
 
 check-release-readiness: root-check-env ## Enforce the full release-readiness gate
 	@$(MAKE) check-config-ssot
-	@$(MAKE) validate-evidence-book
-	@$(MAKE) check-evidence-artifacts
-	@$(MAKE) check-artifact-governance
+	@$(MAKE) check-evidence-governance
+	@$(MAKE) check-execution-surfaces
 	@$(MAKE) check-package-boundaries
 	@$(MAKE) check-package-bundles
 	@$(MAKE) check-publish-readiness
