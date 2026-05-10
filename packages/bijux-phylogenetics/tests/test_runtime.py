@@ -331,6 +331,7 @@ from bijux_phylogenetics.tree_set import (
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def fixture(name: str) -> Path:
@@ -6179,6 +6180,71 @@ def test_cli_evidence_bundle_and_validate_json_output(tmp_path: Path, capsys) ->
     assert exit_code == 0
     assert validate_payload["status"] == "ok"
     assert validate_payload["data"]["valid"] is True
+
+
+def test_cli_evidence_book_studies_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(["evidence", "book", "studies", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["study_count"] == 4
+    assert payload["metrics"]["partial_rerun_capable_count"] == 3
+    assert payload["data"]["studies"][0]["study_id"] == "comparative-trust-boundaries"
+
+
+def test_cli_evidence_book_validate_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(["evidence", "book", "validate", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["data"]["valid"] is True
+    assert payload["metrics"]["bundle_count"] == 19
+    assert payload["metrics"]["coverage_gap_count"] >= 1
+
+
+def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(["evidence", "book", "build", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["reviewer_summary_count"] == 19
+    assert payload["metrics"]["updated_path_count"] >= 1
+    assert payload["metrics"]["bundle_count"] == 19
+
+
+def test_cli_evidence_book_rerun_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(
+        [
+            "evidence",
+            "book",
+            "rerun",
+            "primate-pgls-and-signal",
+            "evidence-002",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["selected_evidence_count"] == 1
+    assert payload["data"]["rerun_report"]["study_id"] == "primate-pgls-and-signal"
+    assert payload["data"]["rerun_report"]["selected_evidence_ids"] == ["evidence-002"]
 
 
 def test_cli_demo_run_json_output_reports_generated_artifacts(

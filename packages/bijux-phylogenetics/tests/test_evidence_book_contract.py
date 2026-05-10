@@ -26,6 +26,22 @@ from bijux_phylogenetics.evidence.book import (
     validate_evidence_book,
     write_evidence_book_index,
 )
+from bijux_phylogenetics.evidence.coverage import (
+    build_evidence_coverage_gap_report,
+    render_evidence_coverage_gap_report,
+)
+from bijux_phylogenetics.evidence.freshness import (
+    build_evidence_freshness_report,
+    render_evidence_freshness_report,
+)
+from bijux_phylogenetics.evidence.integrity import (
+    build_evidence_integrity_report,
+    render_evidence_integrity_report,
+)
+from bijux_phylogenetics.evidence.workbench import (
+    DOCS_EVIDENCE_OVERVIEW,
+    refresh_evidence_book,
+)
 
 
 def _write_book_fixture(root: Path) -> Path:
@@ -126,7 +142,7 @@ def _write_book_fixture(root: Path) -> Path:
 
 def test_validate_evidence_book_accepts_governed_layout(tmp_path: Path) -> None:
     repo_root = _write_book_fixture(tmp_path)
-    write_evidence_book_index(repo_root)
+    refresh_evidence_book(repo_root)
 
     report = validate_evidence_book(repo_root)
 
@@ -158,9 +174,53 @@ def test_validate_evidence_book_rejects_missing_manifest_fields(tmp_path: Path) 
     assert any("missing keys: verdict" in issue.message for issue in report.issues)
 
 
+def test_validate_evidence_book_rejects_missing_reviewer_summary(
+    tmp_path: Path,
+) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+    refresh_evidence_book(repo_root)
+    reviewer_summary_path = (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "taxon-trust"
+        / "evidence-001"
+        / "reviewer-summary.json"
+    )
+    reviewer_summary_path.unlink()
+
+    report = validate_evidence_book(repo_root)
+
+    assert report.valid is False
+    assert any(
+        "reviewer-summary.json" in issue.message
+        or "reviewer-summary.json" in issue.path.as_posix()
+        for issue in report.issues
+    )
+
+
+def test_validate_evidence_book_rejects_missing_freshness_report(
+    tmp_path: Path,
+) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+    refresh_evidence_book(repo_root)
+    freshness_report_path = (
+        repo_root / "evidence-book" / "index" / "freshness-report.json"
+    )
+    freshness_report_path.unlink()
+
+    report = validate_evidence_book(repo_root)
+
+    assert report.valid is False
+    assert any(
+        "freshness-report.json" in issue.path.as_posix() for issue in report.issues
+    )
+
+
 def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) -> None:
     repo_root = _write_book_fixture(tmp_path)
 
+    refresh_evidence_book(repo_root)
     index_path, catalog_path = write_evidence_book_index(repo_root)
     payload = build_evidence_book_index(repo_root)
     catalog = render_evidence_catalog(payload)
@@ -173,25 +233,93 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     scientific_debt_register = build_evidence_scientific_debt_register(repo_root)
     portability_audit = build_evidence_portability_audit(repo_root)
     regeneration_contract = build_evidence_regeneration_contract(repo_root)
+    freshness_report = build_evidence_freshness_report(repo_root)
+    integrity_report = build_evidence_integrity_report(repo_root)
+    coverage_gap_report = build_evidence_coverage_gap_report(repo_root)
     claim_map_path = repo_root / "evidence-book" / "index" / "claim-map.json"
-    parity_dashboard_path = repo_root / "evidence-book" / "index" / "parity-dashboard.json"
+    parity_dashboard_path = (
+        repo_root / "evidence-book" / "index" / "parity-dashboard.json"
+    )
     parity_summary_path = repo_root / "evidence-book" / "index" / "parity-dashboard.md"
-    mismatch_archive_path = repo_root / "evidence-book" / "index" / "mismatch-archive.json"
-    mismatch_summary_path = repo_root / "evidence-book" / "index" / "mismatch-archive.md"
-    verdict_workflows_path = repo_root / "evidence-book" / "index" / "verdict-workflows.json"
-    verdict_workflows_summary_path = repo_root / "evidence-book" / "index" / "verdict-workflows.md"
-    false_confidence_audit_path = repo_root / "evidence-book" / "index" / "false-confidence-audit.json"
-    false_confidence_summary_path = repo_root / "evidence-book" / "index" / "false-confidence-audit.md"
-    scientific_debt_path = repo_root / "evidence-book" / "index" / "scientific-debt-register.json"
-    scientific_debt_summary_path = repo_root / "evidence-book" / "index" / "scientific-debt-register.md"
+    mismatch_archive_path = (
+        repo_root / "evidence-book" / "index" / "mismatch-archive.json"
+    )
+    mismatch_summary_path = (
+        repo_root / "evidence-book" / "index" / "mismatch-archive.md"
+    )
+    verdict_workflows_path = (
+        repo_root / "evidence-book" / "index" / "verdict-workflows.json"
+    )
+    verdict_workflows_summary_path = (
+        repo_root / "evidence-book" / "index" / "verdict-workflows.md"
+    )
+    false_confidence_audit_path = (
+        repo_root / "evidence-book" / "index" / "false-confidence-audit.json"
+    )
+    false_confidence_summary_path = (
+        repo_root / "evidence-book" / "index" / "false-confidence-audit.md"
+    )
+    scientific_debt_path = (
+        repo_root / "evidence-book" / "index" / "scientific-debt-register.json"
+    )
+    scientific_debt_summary_path = (
+        repo_root / "evidence-book" / "index" / "scientific-debt-register.md"
+    )
     portability_path = repo_root / "evidence-book" / "index" / "portability-audit.json"
-    portability_summary_path = repo_root / "evidence-book" / "index" / "portability-audit.md"
-    fragile_example_path = repo_root / "evidence-book" / "index" / "fragile-example-audit.json"
-    fragile_example_summary_path = repo_root / "evidence-book" / "index" / "fragile-example-audit.md"
-    regeneration_path = repo_root / "evidence-book" / "index" / "regeneration-contract.json"
-    regeneration_summary_path = repo_root / "evidence-book" / "index" / "regeneration-contract.md"
-    teaching_migration_path = repo_root / "evidence-book" / "index" / "teaching-and-migration.json"
-    teaching_migration_summary_path = repo_root / "evidence-book" / "index" / "teaching-and-migration.md"
+    portability_summary_path = (
+        repo_root / "evidence-book" / "index" / "portability-audit.md"
+    )
+    fragile_example_path = (
+        repo_root / "evidence-book" / "index" / "fragile-example-audit.json"
+    )
+    fragile_example_summary_path = (
+        repo_root / "evidence-book" / "index" / "fragile-example-audit.md"
+    )
+    regeneration_path = (
+        repo_root / "evidence-book" / "index" / "regeneration-contract.json"
+    )
+    regeneration_summary_path = (
+        repo_root / "evidence-book" / "index" / "regeneration-contract.md"
+    )
+    teaching_migration_path = (
+        repo_root / "evidence-book" / "index" / "teaching-and-migration.json"
+    )
+    teaching_migration_summary_path = (
+        repo_root / "evidence-book" / "index" / "teaching-and-migration.md"
+    )
+    freshness_report_path = (
+        repo_root / "evidence-book" / "index" / "freshness-report.json"
+    )
+    freshness_summary_path = (
+        repo_root / "evidence-book" / "index" / "freshness-report.md"
+    )
+    integrity_report_path = (
+        repo_root / "evidence-book" / "index" / "integrity-report.json"
+    )
+    integrity_summary_path = (
+        repo_root / "evidence-book" / "index" / "integrity-report.md"
+    )
+    coverage_gap_path = repo_root / "evidence-book" / "index" / "coverage-gaps.json"
+    coverage_gap_summary_path = (
+        repo_root / "evidence-book" / "index" / "coverage-gaps.md"
+    )
+    reviewer_summary_json_path = (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "taxon-trust"
+        / "evidence-001"
+        / "reviewer-summary.json"
+    )
+    reviewer_summary_markdown_path = (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "taxon-trust"
+        / "evidence-001"
+        / "reviewer-summary.md"
+    )
+    docs_evidence_path = repo_root / DOCS_EVIDENCE_OVERVIEW
 
     assert index_path.exists()
     assert catalog_path.exists()
@@ -214,30 +342,52 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert regeneration_summary_path.exists()
     assert teaching_migration_path.exists()
     assert teaching_migration_summary_path.exists()
+    assert freshness_report_path.exists()
+    assert freshness_summary_path.exists()
+    assert integrity_report_path.exists()
+    assert integrity_summary_path.exists()
+    assert coverage_gap_path.exists()
+    assert coverage_gap_summary_path.exists()
+    assert reviewer_summary_json_path.exists()
+    assert reviewer_summary_markdown_path.exists()
+    assert docs_evidence_path.exists()
     assert payload["study_count"] == 1
     assert payload["evidence_count"] == 1
     assert "Taxon Trust" in catalog
     assert catalog_path.read_text(encoding="utf-8") == catalog
     assert json.loads(claim_map_path.read_text(encoding="utf-8")) == claim_map
-    assert json.loads(parity_dashboard_path.read_text(encoding="utf-8")) == parity_dashboard
-    assert parity_summary_path.read_text(encoding="utf-8") == render_evidence_parity_dashboard(
-        parity_dashboard
+    assert (
+        json.loads(parity_dashboard_path.read_text(encoding="utf-8"))
+        == parity_dashboard
     )
-    assert json.loads(mismatch_archive_path.read_text(encoding="utf-8")) == mismatch_archive
-    assert mismatch_summary_path.read_text(encoding="utf-8") == render_evidence_mismatch_archive(
-        mismatch_archive
+    assert parity_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_parity_dashboard(parity_dashboard)
+    assert (
+        json.loads(mismatch_archive_path.read_text(encoding="utf-8"))
+        == mismatch_archive
     )
-    assert json.loads(verdict_workflows_path.read_text(encoding="utf-8")) == verdict_workflows
+    assert mismatch_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_mismatch_archive(mismatch_archive)
+    assert (
+        json.loads(verdict_workflows_path.read_text(encoding="utf-8"))
+        == verdict_workflows
+    )
     assert verdict_workflows_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_verdict_workflows(verdict_workflows)
-    assert json.loads(
-        false_confidence_audit_path.read_text(encoding="utf-8")
-    ) == false_confidence_audit
+    assert (
+        json.loads(false_confidence_audit_path.read_text(encoding="utf-8"))
+        == false_confidence_audit
+    )
     assert false_confidence_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_false_confidence_audit(false_confidence_audit)
-    assert json.loads(scientific_debt_path.read_text(encoding="utf-8")) == scientific_debt_register
+    assert (
+        json.loads(scientific_debt_path.read_text(encoding="utf-8"))
+        == scientific_debt_register
+    )
     assert scientific_debt_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_scientific_debt_register(scientific_debt_register)
@@ -245,11 +395,37 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert portability_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_portability_audit(portability_audit)
-    assert json.loads(fragile_example_path.read_text(encoding="utf-8")) == fragile_example_audit
+    assert (
+        json.loads(fragile_example_path.read_text(encoding="utf-8"))
+        == fragile_example_audit
+    )
     assert fragile_example_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_fragile_example_audit(fragile_example_audit)
-    assert json.loads(regeneration_path.read_text(encoding="utf-8")) == regeneration_contract
+    assert (
+        json.loads(regeneration_path.read_text(encoding="utf-8"))
+        == regeneration_contract
+    )
     assert regeneration_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_regeneration_contract(regeneration_contract)
+    assert (
+        json.loads(freshness_report_path.read_text(encoding="utf-8"))
+        == freshness_report
+    )
+    assert freshness_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_freshness_report(freshness_report)
+    assert (
+        json.loads(integrity_report_path.read_text(encoding="utf-8"))
+        == integrity_report
+    )
+    assert integrity_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_integrity_report(integrity_report)
+    assert (
+        json.loads(coverage_gap_path.read_text(encoding="utf-8")) == coverage_gap_report
+    )
+    assert coverage_gap_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_coverage_gap_report(coverage_gap_report)

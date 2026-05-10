@@ -25,6 +25,18 @@ from bijux_phylogenetics.evidence.book import (
     render_evidence_verdict_workflows,
     validate_evidence_book,
 )
+from bijux_phylogenetics.evidence.coverage import (
+    build_evidence_coverage_gap_report,
+    render_evidence_coverage_gap_report,
+)
+from bijux_phylogenetics.evidence.freshness import (
+    build_evidence_freshness_report,
+    render_evidence_freshness_report,
+)
+from bijux_phylogenetics.evidence.integrity import (
+    build_evidence_integrity_report,
+    render_evidence_integrity_report,
+)
 from bijux_phylogenetics.evidence.teaching import (
     build_migration_guide,
     build_student_safe_reproducibility_contract,
@@ -52,22 +64,66 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     index_path = REPO_ROOT / "evidence-book" / "index" / "evidence-index.json"
     catalog_path = REPO_ROOT / "evidence-book" / "index" / "catalog.md"
     claim_map_path = REPO_ROOT / "evidence-book" / "index" / "claim-map.json"
-    parity_dashboard_path = REPO_ROOT / "evidence-book" / "index" / "parity-dashboard.json"
+    parity_dashboard_path = (
+        REPO_ROOT / "evidence-book" / "index" / "parity-dashboard.json"
+    )
     parity_summary_path = REPO_ROOT / "evidence-book" / "index" / "parity-dashboard.md"
-    mismatch_archive_path = REPO_ROOT / "evidence-book" / "index" / "mismatch-archive.json"
-    mismatch_summary_path = REPO_ROOT / "evidence-book" / "index" / "mismatch-archive.md"
-    verdict_workflows_path = REPO_ROOT / "evidence-book" / "index" / "verdict-workflows.json"
-    verdict_workflows_summary_path = REPO_ROOT / "evidence-book" / "index" / "verdict-workflows.md"
-    false_confidence_audit_path = REPO_ROOT / "evidence-book" / "index" / "false-confidence-audit.json"
-    false_confidence_summary_path = REPO_ROOT / "evidence-book" / "index" / "false-confidence-audit.md"
-    scientific_debt_path = REPO_ROOT / "evidence-book" / "index" / "scientific-debt-register.json"
-    scientific_debt_summary_path = REPO_ROOT / "evidence-book" / "index" / "scientific-debt-register.md"
+    mismatch_archive_path = (
+        REPO_ROOT / "evidence-book" / "index" / "mismatch-archive.json"
+    )
+    mismatch_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "mismatch-archive.md"
+    )
+    verdict_workflows_path = (
+        REPO_ROOT / "evidence-book" / "index" / "verdict-workflows.json"
+    )
+    verdict_workflows_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "verdict-workflows.md"
+    )
+    false_confidence_audit_path = (
+        REPO_ROOT / "evidence-book" / "index" / "false-confidence-audit.json"
+    )
+    false_confidence_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "false-confidence-audit.md"
+    )
+    scientific_debt_path = (
+        REPO_ROOT / "evidence-book" / "index" / "scientific-debt-register.json"
+    )
+    scientific_debt_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "scientific-debt-register.md"
+    )
     portability_path = REPO_ROOT / "evidence-book" / "index" / "portability-audit.json"
-    portability_summary_path = REPO_ROOT / "evidence-book" / "index" / "portability-audit.md"
-    fragile_example_path = REPO_ROOT / "evidence-book" / "index" / "fragile-example-audit.json"
-    fragile_example_summary_path = REPO_ROOT / "evidence-book" / "index" / "fragile-example-audit.md"
-    regeneration_path = REPO_ROOT / "evidence-book" / "index" / "regeneration-contract.json"
-    regeneration_summary_path = REPO_ROOT / "evidence-book" / "index" / "regeneration-contract.md"
+    portability_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "portability-audit.md"
+    )
+    fragile_example_path = (
+        REPO_ROOT / "evidence-book" / "index" / "fragile-example-audit.json"
+    )
+    fragile_example_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "fragile-example-audit.md"
+    )
+    regeneration_path = (
+        REPO_ROOT / "evidence-book" / "index" / "regeneration-contract.json"
+    )
+    regeneration_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "regeneration-contract.md"
+    )
+    freshness_report_path = (
+        REPO_ROOT / "evidence-book" / "index" / "freshness-report.json"
+    )
+    freshness_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "freshness-report.md"
+    )
+    integrity_report_path = (
+        REPO_ROOT / "evidence-book" / "index" / "integrity-report.json"
+    )
+    integrity_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "integrity-report.md"
+    )
+    coverage_gap_path = REPO_ROOT / "evidence-book" / "index" / "coverage-gaps.json"
+    coverage_gap_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "coverage-gaps.md"
+    )
 
     payload = build_evidence_book_index(REPO_ROOT)
     catalog = render_evidence_catalog(payload)
@@ -80,29 +136,45 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     scientific_debt_register = build_evidence_scientific_debt_register(REPO_ROOT)
     portability_audit = build_evidence_portability_audit(REPO_ROOT)
     regeneration_contract = build_evidence_regeneration_contract(REPO_ROOT)
+    freshness_report = build_evidence_freshness_report(REPO_ROOT)
+    integrity_report = build_evidence_integrity_report(REPO_ROOT)
+    coverage_gap_report = build_evidence_coverage_gap_report(REPO_ROOT)
 
     assert json.loads(index_path.read_text(encoding="utf-8")) == payload
     assert catalog_path.read_text(encoding="utf-8") == catalog
     assert json.loads(claim_map_path.read_text(encoding="utf-8")) == claim_map
-    assert json.loads(parity_dashboard_path.read_text(encoding="utf-8")) == parity_dashboard
-    assert parity_summary_path.read_text(encoding="utf-8") == render_evidence_parity_dashboard(
-        parity_dashboard
+    assert (
+        json.loads(parity_dashboard_path.read_text(encoding="utf-8"))
+        == parity_dashboard
     )
-    assert json.loads(mismatch_archive_path.read_text(encoding="utf-8")) == mismatch_archive
-    assert mismatch_summary_path.read_text(encoding="utf-8") == render_evidence_mismatch_archive(
-        mismatch_archive
+    assert parity_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_parity_dashboard(parity_dashboard)
+    assert (
+        json.loads(mismatch_archive_path.read_text(encoding="utf-8"))
+        == mismatch_archive
     )
-    assert json.loads(verdict_workflows_path.read_text(encoding="utf-8")) == verdict_workflows
+    assert mismatch_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_mismatch_archive(mismatch_archive)
+    assert (
+        json.loads(verdict_workflows_path.read_text(encoding="utf-8"))
+        == verdict_workflows
+    )
     assert verdict_workflows_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_verdict_workflows(verdict_workflows)
-    assert json.loads(
-        false_confidence_audit_path.read_text(encoding="utf-8")
-    ) == false_confidence_audit
+    assert (
+        json.loads(false_confidence_audit_path.read_text(encoding="utf-8"))
+        == false_confidence_audit
+    )
     assert false_confidence_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_false_confidence_audit(false_confidence_audit)
-    assert json.loads(scientific_debt_path.read_text(encoding="utf-8")) == scientific_debt_register
+    assert (
+        json.loads(scientific_debt_path.read_text(encoding="utf-8"))
+        == scientific_debt_register
+    )
     assert scientific_debt_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_scientific_debt_register(scientific_debt_register)
@@ -110,14 +182,40 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     assert portability_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_portability_audit(portability_audit)
-    assert json.loads(fragile_example_path.read_text(encoding="utf-8")) == fragile_example_audit
+    assert (
+        json.loads(fragile_example_path.read_text(encoding="utf-8"))
+        == fragile_example_audit
+    )
     assert fragile_example_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_fragile_example_audit(fragile_example_audit)
-    assert json.loads(regeneration_path.read_text(encoding="utf-8")) == regeneration_contract
+    assert (
+        json.loads(regeneration_path.read_text(encoding="utf-8"))
+        == regeneration_contract
+    )
     assert regeneration_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_regeneration_contract(regeneration_contract)
+    assert (
+        json.loads(freshness_report_path.read_text(encoding="utf-8"))
+        == freshness_report
+    )
+    assert freshness_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_freshness_report(freshness_report)
+    assert (
+        json.loads(integrity_report_path.read_text(encoding="utf-8"))
+        == integrity_report
+    )
+    assert integrity_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_integrity_report(integrity_report)
+    assert (
+        json.loads(coverage_gap_path.read_text(encoding="utf-8")) == coverage_gap_report
+    )
+    assert coverage_gap_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_coverage_gap_report(coverage_gap_report)
 
 
 def test_repository_teaching_and_migration_surfaces_match_generated_payloads() -> None:
@@ -131,8 +229,12 @@ def test_repository_teaching_and_migration_surfaces_match_generated_payloads() -
 
     for study_id in study_ids:
         study_root = REPO_ROOT / "evidence-book" / "studies" / study_id
-        study_manifest = json.loads((study_root / "study.json").read_text(encoding="utf-8"))
-        family_index = json.loads((study_root / "family-index.json").read_text(encoding="utf-8"))
+        study_manifest = json.loads(
+            (study_root / "study.json").read_text(encoding="utf-8")
+        )
+        family_index = json.loads(
+            (study_root / "family-index.json").read_text(encoding="utf-8")
+        )
         source_fragment_map = json.loads(
             (study_root / "source-fragment-map.json").read_text(encoding="utf-8")
         )
@@ -155,23 +257,30 @@ def test_repository_teaching_and_migration_surfaces_match_generated_payloads() -
             study_manifest
         )
 
-        assert json.loads(
-            (study_root / "teaching-guide.json").read_text(encoding="utf-8")
-        ) == teaching_payload
+        assert (
+            json.loads((study_root / "teaching-guide.json").read_text(encoding="utf-8"))
+            == teaching_payload
+        )
         assert (study_root / "teaching-guide.md").read_text(
             encoding="utf-8"
         ) == render_teaching_guide_markdown(teaching_payload)
-        assert json.loads(
-            (study_root / "migration-guide.json").read_text(encoding="utf-8")
-        ) == migration_payload
+        assert (
+            json.loads(
+                (study_root / "migration-guide.json").read_text(encoding="utf-8")
+            )
+            == migration_payload
+        )
         assert (study_root / "migration-guide.md").read_text(
             encoding="utf-8"
         ) == render_migration_guide_markdown(migration_payload)
-        assert json.loads(
-            (study_root / "student-safe-reproducibility.json").read_text(
-                encoding="utf-8"
+        assert (
+            json.loads(
+                (study_root / "student-safe-reproducibility.json").read_text(
+                    encoding="utf-8"
+                )
             )
-        ) == reproducibility_payload
+            == reproducibility_payload
+        )
         assert (study_root / "student-safe-reproducibility.md").read_text(
             encoding="utf-8"
         ) == render_student_safe_reproducibility_markdown(reproducibility_payload)
@@ -187,9 +296,12 @@ def test_repository_teaching_and_migration_surfaces_match_generated_payloads() -
     )
     landing_root = REPO_ROOT / "evidence-book" / "index"
 
-    assert json.loads(
-        (landing_root / "teaching-and-migration.json").read_text(encoding="utf-8")
-    ) == landing_payload
+    assert (
+        json.loads(
+            (landing_root / "teaching-and-migration.json").read_text(encoding="utf-8")
+        )
+        == landing_payload
+    )
     assert (landing_root / "teaching-and-migration.md").read_text(
         encoding="utf-8"
     ) == render_teaching_and_migration_index_markdown(landing_payload)
