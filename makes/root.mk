@@ -35,10 +35,15 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
-	sync-evidence-artifacts check-evidence-artifacts \
-	report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness
+	list-evidence-studies build-evidence-book build-evidence-study validate-evidence-book rerun-evidence-cleanroom \
+	sync-evidence-artifacts check-evidence-artifacts report-artifact-governance check-artifact-governance \
+	report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
+	report-release-readiness check-release-readiness
 
-check: sync-license-assets lock-check check-config-ssot check-evidence-artifacts lint test quality security docs build sbom ## Run the full repository verification flow
+EVIDENCE_STUDY_ID ?=
+EVIDENCE_IDS ?=
+
+check: sync-license-assets lock-check check-config-ssot validate-evidence-book check-evidence-artifacts check-artifact-governance lint test quality security docs build sbom ## Run the full repository verification flow
 
 sync-badges: root-check-env ## Render shared badge blocks into managed README surfaces
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.docs.badge_sync sync
@@ -53,6 +58,23 @@ check-config-ssot: root-check-env ## Validate repository-owned config source-of-
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.config_ssot check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/config-ssot-audit.json"
 .PHONY: check-config-ssot
 
+list-evidence-studies: root-check-env ## Report registered evidence studies into repository artifacts
+	@"$(CLI)" evidence book studies --json > "$(ROOT_ARTIFACTS_DIR)/evidence-studies.json"
+.PHONY: list-evidence-studies
+
+build-evidence-book: root-check-env ## Refresh the full evidence-book and store the governed build report
+	@"$(CLI)" evidence book build --json > "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json"
+.PHONY: build-evidence-book
+
+build-evidence-study: root-check-env ## Refresh one governed evidence study selected by EVIDENCE_STUDY_ID
+	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
+	@"$(CLI)" evidence book build --study-id "$(EVIDENCE_STUDY_ID)" --json > "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json"
+.PHONY: build-evidence-study
+
+validate-evidence-book: root-check-env ## Validate the governed evidence-book structure and index surfaces
+	@"$(CLI)" evidence book validate --json > "$(ROOT_ARTIFACTS_DIR)/evidence-book-validation.json"
+.PHONY: validate-evidence-book
+
 sync-evidence-artifacts: root-check-env ## Render governed local artifact surfaces for every evidence bundle
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts sync --repo-root "$(CURDIR)"
 .PHONY: sync-evidence-artifacts
@@ -60,6 +82,24 @@ sync-evidence-artifacts: root-check-env ## Render governed local artifact surfac
 check-evidence-artifacts: root-check-env ## Validate governed local artifact surfaces for every evidence bundle
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts check --repo-root "$(CURDIR)"
 .PHONY: check-evidence-artifacts
+
+rerun-evidence-cleanroom: root-check-env ## Re-run one governed evidence selection inside a detached clean-room worktree
+	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
+	@set -- $(EVIDENCE_IDS); \
+	ids=""; \
+	for evidence_id in $$@; do \
+	  ids="$$ids --evidence-id $$evidence_id"; \
+	done; \
+	$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_cleanroom check --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" $$ids --artifacts-root "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom/$(EVIDENCE_STUDY_ID)-cleanroom.json"
+.PHONY: rerun-evidence-cleanroom
+
+report-artifact-governance: root-check-env ## Audit tox, make, and workflow artifact output discipline
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.artifact_governance report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
+.PHONY: report-artifact-governance
+
+check-artifact-governance: root-check-env ## Fail when repo execution surfaces drift from governed artifact output discipline
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.artifact_governance check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
+.PHONY: check-artifact-governance
 
 report-package-bundles: root-check-env ## Build package bundle audit reports for all publishable packages
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.package_bundles report --repo-root "$(CURDIR)" --artifacts-root "$(ROOT_ARTIFACTS_DIR)/package-bundles" --json-out "$(ROOT_ARTIFACTS_DIR)/package-bundles.json"
@@ -76,6 +116,24 @@ report-publish-readiness: root-check-env ## Build the repository publish-readine
 check-publish-readiness: root-check-env ## Fail when the repository is not publish-ready
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.publish_readiness --check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/publish-readiness.json"
 .PHONY: check-publish-readiness
+
+report-release-readiness: root-check-env ## Build the full release-readiness evidence and governance report surface
+	@$(MAKE) check-config-ssot
+	@$(MAKE) validate-evidence-book
+	@$(MAKE) check-evidence-artifacts
+	@$(MAKE) report-artifact-governance
+	@$(MAKE) report-package-bundles
+	@$(MAKE) report-publish-readiness
+.PHONY: report-release-readiness
+
+check-release-readiness: root-check-env ## Enforce the full release-readiness gate
+	@$(MAKE) check-config-ssot
+	@$(MAKE) validate-evidence-book
+	@$(MAKE) check-evidence-artifacts
+	@$(MAKE) check-artifact-governance
+	@$(MAKE) check-package-bundles
+	@$(MAKE) check-publish-readiness
+.PHONY: check-release-readiness
 
 package-check: build ## Validate built distributions with twine
 	@"$(ROOT_CHECK_PYTHON)" -m twine check "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.whl "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.tar.gz

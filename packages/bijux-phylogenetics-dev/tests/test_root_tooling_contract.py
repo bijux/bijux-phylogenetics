@@ -15,14 +15,23 @@ PROTEOMICS_ONLY_EXTENSION_COMMANDS = {
     "architecture-check:",
 }
 REQUIRED_ROOT_TARGET_SNIPPETS = {
+    "list-evidence-studies:",
+    "build-evidence-book:",
+    "build-evidence-study:",
+    "validate-evidence-book:",
     "sync-evidence-artifacts:",
     "check-evidence-artifacts:",
+    "rerun-evidence-cleanroom:",
+    "report-artifact-governance:",
+    "check-artifact-governance:",
     "report-package-bundles:",
     "check-package-bundles:",
     "check-config-ssot:",
     "report-publish-readiness:",
     "check-publish-readiness:",
-    "check: sync-license-assets lock-check check-config-ssot check-evidence-artifacts lint test quality security docs build sbom",
+    "report-release-readiness:",
+    "check-release-readiness:",
+    "check: sync-license-assets lock-check check-config-ssot validate-evidence-book check-evidence-artifacts check-artifact-governance lint test quality security docs build sbom",
 }
 
 
