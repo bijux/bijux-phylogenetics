@@ -84,6 +84,66 @@
     {
       "entries": [
         {
+          "archive_id": "primate-pgls-and-signal-evidence-001-ancestral-eb-first-five",
+          "bijux_value": [
+            260.1962,
+            285.3532,
+            371.7088,
+            415.4058,
+            334.0808
+          ],
+          "evidence_id": "evidence-001",
+          "explanation_kind": null,
+          "method_family": "ancestral-reconstruction",
+          "metric_name": "early_burst_first_five_estimates",
+          "observed_abs_diff": null,
+          "r_value": [
+            282.721,
+            336.8289,
+            355.3926,
+            386.4737,
+            341.7363
+          ],
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "resolution_state": "open",
+          "row_id": "ancestral-eb-first-five",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "tolerance_abs_diff": 0.0,
+          "verdict": "mismatch_unexplained",
+          "verdict_explanation": null
+        },
+        {
+          "archive_id": "primate-pgls-and-signal-evidence-001-ancestral-eb-recent-five",
+          "bijux_value": [
+            192.7689,
+            190.2801,
+            171.5387,
+            174.0,
+            214.8
+          ],
+          "evidence_id": "evidence-001",
+          "explanation_kind": null,
+          "method_family": "ancestral-reconstruction",
+          "metric_name": "early_burst_recent_five_estimates",
+          "observed_abs_diff": null,
+          "r_value": [
+            190.3015,
+            187.9457,
+            171.7538,
+            174,
+            214.8
+          ],
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "resolution_state": "open",
+          "row_id": "ancestral-eb-recent-five",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "tolerance_abs_diff": 0.0,
+          "verdict": "mismatch_unexplained",
+          "verdict_explanation": null
+        },
+        {
           "archive_id": "primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation",
           "bijux_value": 0.112199761717797,
           "evidence_id": "evidence-001",
@@ -102,7 +162,7 @@
           "verdict_explanation": null
         }
       ],
-      "entry_count": 1,
+      "entry_count": 3,
       "verdict_status": "mismatch_unexplained",
       "workflow_rule": "Keep the row visible, treat it as open scientific debt, and require explicit closure rather than silent tolerance inflation."
     },
@@ -159,19 +219,16 @@
         },
         {
           "claim_id": "pcm2-coverage-boundary-explicit",
-          "claim_title": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit",
-          "entry_id": "primate-pgls-and-signal-evidence-006-pcm2-coverage-boundary-explicit",
-          "evidence_id": "evidence-006",
-          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "claim_title": "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit",
+          "entry_id": "primate-pgls-and-signal-evidence-010-pcm2-coverage-boundary-explicit",
+          "evidence_id": "evidence-010",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-010",
           "source_fragments": [
-            "transformed-tree-workflows",
-            "continuous-model-comparison",
-            "ancestral-mode-comparison",
             "mode-linked-intercept-models"
           ],
           "study_id": "primate-pgls-and-signal",
           "study_title": "Primate PGLS and signal evidence study",
-          "summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied."
+          "summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
         }
       ],
       "entry_count": 4,

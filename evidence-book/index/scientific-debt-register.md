@@ -3,7 +3,7 @@
 This register centralizes unresolved parity gaps, explicit coverage
 boundaries, and reviewer-visible trust weaknesses across the evidence-book.
 
-- debt entries: `30`
+- debt entries: `32`
 
 ## Debt Kinds
 
@@ -15,7 +15,7 @@ boundaries, and reviewer-visible trust weaknesses across the evidence-book.
 - `plot_only`: `10`
 - `seeded_input_only`: `1`
 - `tolerance_validated`: `6`
-- `unresolved_mismatch`: `1`
+- `unresolved_mismatch`: `3`
 - `unsafe`: `1`
 - `unvalidated`: `1`
 - `workflow_only`: `1`
@@ -91,12 +91,18 @@ boundaries, and reviewer-visible trust weaknesses across the evidence-book.
 - `primate-longevity-visual-inspection` — `plot_only`
   Path: `studies/primate-longevity-signal/evidence-001/scientific_debt_register.json`
   Detail: These are visual inspection surfaces only.
+- `primate-pgls-and-signal-evidence-001-ancestral-eb-first-five` — `unresolved_mismatch`
+  Path: `studies/primate-pgls-and-signal/evidence-001`
+  Detail: early_burst_first_five_estimates remains unresolved with observed absolute difference None.
+- `primate-pgls-and-signal-evidence-001-ancestral-eb-recent-five` — `unresolved_mismatch`
+  Path: `studies/primate-pgls-and-signal/evidence-001`
+  Detail: early_burst_recent_five_estimates remains unresolved with observed absolute difference None.
 - `primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation` — `unresolved_mismatch`
   Path: `studies/primate-pgls-and-signal/evidence-001`
   Detail: abs_residual_fitted_correlation remains unresolved with observed absolute difference 0.093400238282203.
-- `primate-pgls-and-signal-evidence-006-pcm2-coverage-boundary-explicit` — `coverage_gap`
-  Path: `studies/primate-pgls-and-signal/evidence-006`
-  Detail: Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied.
+- `primate-pgls-and-signal-evidence-010-pcm2-coverage-boundary-explicit` — `coverage_gap`
+  Path: `studies/primate-pgls-and-signal/evidence-010`
+  Detail: The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles.
 - `processed-analysis-artifacts` — `artifact_only`
   Path: `studies/primate-longevity-signal/evidence-001/scientific_debt_register.json`
   Detail: This block writes the processed CSV and trimmed tree that the Python evidence pass later consumes.

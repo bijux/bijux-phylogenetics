@@ -1,5 +1,5 @@
 {
-  "claim_count": 37,
+  "claim_count": 41,
   "claims": [
     {
       "claim_id": "ambiguous-synonym-rejection",
@@ -433,6 +433,24 @@
       ]
     },
     {
+      "claim_id": "pcm2-ancestral-parity",
+      "claim_title": "PCM2 Brownian and early-burst ancestral reconstructions agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-009",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-009",
+          "source_fragments": [
+            "ancestral-mode-comparison"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study"
+        }
+      ]
+    },
+    {
       "claim_id": "pcm2-baseline-gls-parity",
       "claim_title": "PCM2 baseline GLS outputs match before phylogenetic correction",
       "evidence": [
@@ -452,18 +470,15 @@
     },
     {
       "claim_id": "pcm2-coverage-boundary-explicit",
-      "claim_title": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit",
+      "claim_title": "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit",
       "evidence": [
         {
           "bundle_verdict_status": "not_comparable",
           "claim_verdict": "not_comparable",
-          "evidence_id": "evidence-006",
+          "evidence_id": "evidence-010",
           "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-010",
           "source_fragments": [
-            "transformed-tree-workflows",
-            "continuous-model-comparison",
-            "ancestral-mode-comparison",
             "mode-linked-intercept-models"
           ],
           "study_id": "primate-pgls-and-signal",
@@ -484,6 +499,42 @@
           "source_fragments": [
             "baseline-gls-diagnostics",
             "estimated-lambda-diagnostics"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-fitcontinuous-parity",
+      "claim_title": "PCM2 fitContinuous-style evolutionary mode fits agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-007",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-007",
+          "source_fragments": [
+            "continuous-model-comparison"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-likelihood-ratio-parity",
+      "claim_title": "PCM2 likelihood-ratio model comparisons agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-008",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-008",
+          "source_fragments": [
+            "evolutionary-mode-likelihood-ratios"
           ],
           "study_id": "primate-pgls-and-signal",
           "study_title": "Primate PGLS and signal evidence study"
@@ -538,6 +589,24 @@
           "relative_path": "studies/primate-pgls-and-signal/evidence-001",
           "source_fragments": [
             "workspace-reload-contract"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-transformed-tree-parity",
+      "claim_title": "PCM2 transformed-tree workflows match on governed branch summaries",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-006",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "source_fragments": [
+            "transformed-tree-workflows"
           ],
           "study_id": "primate-pgls-and-signal",
           "study_title": "Primate PGLS and signal evidence study"

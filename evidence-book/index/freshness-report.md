@@ -1,10 +1,10 @@
 # Evidence Freshness Report
 
-- bundles: `19`
+- bundles: `23`
 
 ## Status Counts
 
-- `current`: `19`
+- `current`: `23`
 
 ## Bundles
 
@@ -43,6 +43,14 @@
 - `primate-pgls-and-signal/evidence-005` — `current`
   Generated: `2026-05-10`; latest governed change: `2026-05-10`
 - `primate-pgls-and-signal/evidence-006` — `current`
+  Generated: `2026-05-10`; latest governed change: `2026-05-10`
+- `primate-pgls-and-signal/evidence-007` — `current`
+  Generated: `2026-05-10`; latest governed change: `2026-05-10`
+- `primate-pgls-and-signal/evidence-008` — `current`
+  Generated: `2026-05-10`; latest governed change: `2026-05-10`
+- `primate-pgls-and-signal/evidence-009` — `current`
+  Generated: `2026-05-10`; latest governed change: `2026-05-10`
+- `primate-pgls-and-signal/evidence-010` — `current`
   Generated: `2026-05-10`; latest governed change: `2026-05-10`
 - `taxon-trust/evidence-001` — `current`
   Generated: `2026-05-10`; latest governed change: `2026-05-10`

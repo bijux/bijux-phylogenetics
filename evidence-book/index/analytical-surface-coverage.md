@@ -97,7 +97,7 @@ Linked evidence:
 - `primate-pgls-and-signal/evidence-003` — `matched_with_tolerance`
 - `primate-pgls-and-signal/evidence-004` — `matched_with_tolerance`
 - `primate-pgls-and-signal/evidence-005` — `matched_with_tolerance`
-- `primate-pgls-and-signal/evidence-006` — `not_comparable`
+- `primate-pgls-and-signal/evidence-006` — `matched`
 - `comparative-trust-boundaries/evidence-001` — `matched`
 - `comparative-trust-boundaries/evidence-002` — `matched_with_tolerance`
 - `comparative-trust-boundaries/evidence-003` — `matched`

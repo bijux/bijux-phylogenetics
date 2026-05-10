@@ -63,9 +63,9 @@ coverage boundaries.
 - `primate-longevity-visual-inspection` — `plot_only`
   Path: `studies/primate-longevity-signal/evidence-001/scientific_debt_register.json`
   Detail: These are visual inspection surfaces only.
-- `primate-pgls-and-signal-evidence-006-pcm2-coverage-boundary-explicit` — `coverage_gap`
-  Path: `studies/primate-pgls-and-signal/evidence-006`
-  Detail: Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied.
+- `primate-pgls-and-signal-evidence-010-pcm2-coverage-boundary-explicit` — `coverage_gap`
+  Path: `studies/primate-pgls-and-signal/evidence-010`
+  Detail: The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles.
 - `processed-analysis-artifacts` — `artifact_only`
   Path: `studies/primate-longevity-signal/evidence-001/scientific_debt_register.json`
   Detail: This block writes the processed CSV and trimmed tree that the Python evidence pass later consumes.

@@ -26,8 +26,12 @@ Keep the row visible, record the explanation kind explicitly, and do not promote
 
 Keep the row visible, treat it as open scientific debt, and require explicit closure rather than silent tolerance inflation.
 
-- entries: `1`
+- entries: `3`
 
+- `primate-pgls-and-signal-evidence-001-ancestral-eb-first-five`
+  Path: `studies/primate-pgls-and-signal/evidence-001`
+- `primate-pgls-and-signal-evidence-001-ancestral-eb-recent-five`
+  Path: `studies/primate-pgls-and-signal/evidence-001`
 - `primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation`
   Path: `studies/primate-pgls-and-signal/evidence-001`
 
@@ -46,6 +50,6 @@ Keep the boundary explicit, point to the governing claim and evidence bundle, an
 - `primate-longevity-signal-evidence-001-pcm1-visual-surface-tracking`
   Path: `studies/primate-longevity-signal/evidence-001`
   Claim: PCM1 visual surfaces are tracked without false equivalence claims
-- `primate-pgls-and-signal-evidence-006-pcm2-coverage-boundary-explicit`
-  Path: `studies/primate-pgls-and-signal/evidence-006`
-  Claim: PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit
+- `primate-pgls-and-signal-evidence-010-pcm2-coverage-boundary-explicit`
+  Path: `studies/primate-pgls-and-signal/evidence-010`
+  Claim: PCM2 remaining intercept-mode likelihood sweep boundary stays explicit

@@ -13,10 +13,10 @@ The evidence-book is the repository trust surface for governed parity,
 teaching, migration, and explicit coverage boundaries.
 
 - studies: `4`
-- evidence bundles: `19`
+- evidence bundles: `23`
 - teaching studies: `2`
 - migration studies: `2`
-- freshness statuses: `current=19`
+- freshness statuses: `current=23`
 - coverage gaps: `4` debt entries
 - foundational numerical trust: `bounded`
 - reviewer readiness: `bounded`
@@ -56,7 +56,7 @@ teaching, migration, and explicit coverage boundaries.
 
 - study id: `primate-pgls-and-signal`
 - categories: `teaching-study, migration-study`
-- bundles: `6`
+- bundles: `10`
 - study manifest: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/study.json)
 
 ### Taxon Trust
@@ -68,7 +68,7 @@ teaching, migration, and explicit coverage boundaries.
 
 ## Integrity
 
-- tracked bundles: `19`
+- tracked bundles: `23`
 - action required: `0`
 
 ## Coverage

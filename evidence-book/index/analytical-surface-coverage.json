@@ -175,10 +175,10 @@
         },
         {
           "evidence_id": "evidence-006",
-          "evidence_title": "Primate coverage boundary bundle",
+          "evidence_title": "Primate transformed tree parity bundle",
           "relative_path": "studies/primate-pgls-and-signal/evidence-006",
           "study_id": "primate-pgls-and-signal",
-          "verdict_status": "not_comparable"
+          "verdict_status": "matched"
         },
         {
           "evidence_id": "evidence-001",

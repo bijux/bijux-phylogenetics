@@ -1,22 +1,22 @@
 {
   "comparison_kind_counts": {
-    "exact_answer": 3,
+    "exact_answer": 14,
     "scientific_equivalence": 4,
-    "tolerance": 14
+    "tolerance": 24
   },
   "parity_expectation_counts": {
-    "exact": 5,
+    "exact": 6,
     "near_exact": 1,
     "not_comparable": 4,
     "scientific_equivalence": 1,
-    "statistical_tolerance": 3
+    "statistical_tolerance": 6
   },
-  "scalar_row_count": 52,
+  "scalar_row_count": 73,
   "scalar_verdict_counts": {
-    "matched": 19,
-    "matched_with_tolerance": 28,
+    "matched": 35,
+    "matched_with_tolerance": 31,
     "mismatch_explained": 4,
-    "mismatch_unexplained": 1
+    "mismatch_unexplained": 3
   },
   "schema_version": 1,
   "studies": [
@@ -76,15 +76,31 @@
     {
       "bundle_verdict_status": "matched",
       "comparison_kind_counts": {
-        "exact_answer": 3,
+        "exact_answer": 14,
         "scientific_equivalence": 4,
-        "tolerance": 14
+        "tolerance": 24
       },
       "evidence_id": "evidence-001",
       "family_verdicts": [
         {
           "family_id": "workflow-contracts",
           "family_verdict": "matched"
+        },
+        {
+          "family_id": "transformed-tree-workflows",
+          "family_verdict": "matched"
+        },
+        {
+          "family_id": "continuous-model-fitting",
+          "family_verdict": "matched_with_tolerance"
+        },
+        {
+          "family_id": "likelihood-ratio-tests",
+          "family_verdict": "matched_with_tolerance"
+        },
+        {
+          "family_id": "ancestral-reconstruction",
+          "family_verdict": "matched_with_tolerance"
         },
         {
           "family_id": "baseline-regression",
@@ -108,18 +124,18 @@
         }
       ],
       "parity_expectation_counts": {
-        "exact": 2,
+        "exact": 3,
         "not_comparable": 1,
         "scientific_equivalence": 1,
-        "statistical_tolerance": 2
+        "statistical_tolerance": 5
       },
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
-      "scalar_row_count": 21,
+      "scalar_row_count": 42,
       "scalar_verdict_counts": {
-        "matched": 3,
-        "matched_with_tolerance": 13,
+        "matched": 19,
+        "matched_with_tolerance": 16,
         "mismatch_explained": 4,
-        "mismatch_unexplained": 1
+        "mismatch_unexplained": 3
       },
       "study_id": "primate-pgls-and-signal",
       "study_title": "Primate PGLS and signal evidence study"

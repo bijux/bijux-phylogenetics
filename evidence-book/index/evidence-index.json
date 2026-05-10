@@ -291,18 +291,86 @@
     {
       "claim_tags": [
         "teaching",
-        "coverage-gap",
-        "not-comparable"
+        "parity",
+        "transformed-tree",
+        "evolutionary-modes"
       ],
       "comparison_mode": "direct_parity",
       "evidence_id": "evidence-006",
-      "evidence_title": "Primate coverage boundary bundle",
+      "evidence_title": "Primate transformed tree parity bundle",
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-006",
       "study_id": "primate-pgls-and-signal",
       "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched",
+      "verdict_summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "fitcontinuous",
+        "evolutionary-modes"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-007",
+      "evidence_title": "Primate evolutionary mode fit parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-007",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "likelihood-ratio",
+        "evolutionary-modes"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-008",
+      "evidence_title": "Primate likelihood-ratio parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-008",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "ancestral-reconstruction",
+        "early-burst"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-009",
+      "evidence_title": "Primate ancestral mode parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-009",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "coverage-gap",
+        "not-comparable"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-010",
+      "evidence_title": "Primate intercept sweep coverage boundary bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-010",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
       "verdict_status": "not_comparable",
-      "verdict_summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied."
+      "verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
     },
     {
       "claim_tags": [
@@ -321,7 +389,7 @@
       "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
     }
   ],
-  "evidence_count": 19,
+  "evidence_count": 23,
   "root": "evidence-book",
   "schema_version": 1,
   "studies": [
@@ -554,7 +622,7 @@
       "summary": "Checked-in parity study for the Lund primate longevity signal teaching workflow."
     },
     {
-      "bundle_count": 6,
+      "bundle_count": 10,
       "evidence": [
         {
           "claim_tags": [
@@ -644,18 +712,86 @@
         {
           "claim_tags": [
             "teaching",
-            "coverage-gap",
-            "not-comparable"
+            "parity",
+            "transformed-tree",
+            "evolutionary-modes"
           ],
           "comparison_mode": "direct_parity",
           "evidence_id": "evidence-006",
-          "evidence_title": "Primate coverage boundary bundle",
+          "evidence_title": "Primate transformed tree parity bundle",
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-006",
           "study_id": "primate-pgls-and-signal",
           "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched",
+          "verdict_summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "fitcontinuous",
+            "evolutionary-modes"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-007",
+          "evidence_title": "Primate evolutionary mode fit parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-007",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "likelihood-ratio",
+            "evolutionary-modes"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-008",
+          "evidence_title": "Primate likelihood-ratio parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-008",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "ancestral-reconstruction",
+            "early-burst"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-009",
+          "evidence_title": "Primate ancestral mode parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-009",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "coverage-gap",
+            "not-comparable"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-010",
+          "evidence_title": "Primate intercept sweep coverage boundary bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-010",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
           "verdict_status": "not_comparable",
-          "verdict_summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied."
+          "verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
         }
       ],
       "owner_package": "bijux-phylogenetics",
@@ -665,7 +801,7 @@
       ],
       "study_id": "primate-pgls-and-signal",
       "study_title": "Primate PGLS and signal evidence study",
-      "summary": "Governed parity study for the regression and signal sections of the Lund primate comparative lecture, with explicit coverage boundaries for the remaining EB and ancestral fragments."
+      "summary": "Governed parity study for the regression, transformed-tree, evolutionary-mode fit, and ancestral sections of the Lund primate comparative lecture, with an explicit remaining intercept-mode boundary."
     },
     {
       "bundle_count": 1,
@@ -698,8 +834,8 @@
   ],
   "study_count": 4,
   "verdict_counts": {
-    "matched": 13,
-    "matched_with_tolerance": 5,
+    "matched": 14,
+    "matched_with_tolerance": 8,
     "not_comparable": 1
   }
 }
