@@ -1731,7 +1731,8 @@
               "package_slug": "bijux-phylogenetics"
             },
             {
-              "package_slug": "phylogenetic"
+              "package_slug": "phylogenetic",
+              "publish_auth": "token"
             }
           ]
         },
@@ -2146,7 +2147,8 @@
                     {
                       "package_slug": "phylogenetic",
                       "package_dir": "packages/phylogenetic",
-                      "artifacts_dir": "artifacts/phylogenetic"
+                      "artifacts_dir": "artifacts/phylogenetic",
+                      "check_targets": "[\"quality\", \"security\", \"build\", \"sbom\"]"
                     },
                     {
                       "package_slug": "bijux-phylogenetics-dev",

@@ -79,6 +79,7 @@ jobs:
           - package_slug: phylogenetic
             package_dir: packages/phylogenetic
             artifacts_dir: artifacts/phylogenetic
+            check_targets: "[\"quality\", \"security\", \"build\", \"sbom\"]"
           - package_slug: bijux-phylogenetics-dev
             package_dir: packages/bijux-phylogenetics-dev
             artifacts_dir: artifacts/bijux-phylogenetics-dev
