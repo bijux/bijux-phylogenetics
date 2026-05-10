@@ -5,7 +5,6 @@ from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
-from bijux_phylogenetics.evidence.bundles import bundle_directory
 from bijux_phylogenetics.reports.service import (
     render_dataset_report,
     render_phylo_inputs_report,
@@ -22,16 +21,15 @@ class DemoRunResult:
     dataset_report: Path
     phylo_inputs_report: Path
     comparison_report: Path
-    evidence_bundle: Path
     capability_summary: Path
 
 
-def _fixture_root() -> Path:
-    return Path(__file__).resolve().parents[3] / "tests" / "fixtures"
+def _example_resource_root() -> Path:
+    return Path(__file__).resolve().parents[1] / "resources" / "examples"
 
 
 def _copy_demo_inputs(destination: Path) -> dict[str, Path]:
-    source_root = _fixture_root()
+    source_root = _example_resource_root()
     destination.mkdir(parents=True, exist_ok=True)
     selected = {
         "tree": source_root / "trees" / "example_tree.nwk",
@@ -63,7 +61,6 @@ def _write_capability_summary(path: Path, result: DemoRunResult) -> Path:
         f"- `dataset report`: `{result.dataset_report}`",
         f"- `phylo inputs report`: `{result.phylo_inputs_report}`",
         f"- `comparison report`: `{result.comparison_report}`",
-        f"- `evidence bundle`: `{result.evidence_bundle}`",
         "",
     ]
     path.write_text("\n".join(lines), encoding="utf-8")
@@ -98,9 +95,6 @@ def run_capability_demo(output_root: Path) -> DemoRunResult:
         inputs["alt_tree"],
         out_path=report_root / "comparison-report.html",
     ).output_path
-    evidence_bundle = bundle_directory(
-        [input_root], [report_root], output_root / "evidence-pack"
-    ).output_root
     capability_summary = _write_capability_summary(
         output_root / "capability-summary.md",
         DemoRunResult(
@@ -111,7 +105,6 @@ def run_capability_demo(output_root: Path) -> DemoRunResult:
             dataset_report=dataset_report,
             phylo_inputs_report=phylo_inputs_report,
             comparison_report=comparison_report,
-            evidence_bundle=evidence_bundle,
             capability_summary=output_root / "capability-summary.md",
         ),
     )
@@ -123,6 +116,5 @@ def run_capability_demo(output_root: Path) -> DemoRunResult:
         dataset_report=dataset_report,
         phylo_inputs_report=phylo_inputs_report,
         comparison_report=comparison_report,
-        evidence_bundle=evidence_bundle,
         capability_summary=capability_summary,
     )

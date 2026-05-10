@@ -7740,7 +7740,6 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.dataset_report,
                         result.phylo_inputs_report,
                         result.comparison_report,
-                        result.evidence_bundle,
                         result.capability_summary,
                     ],
                 )
@@ -7750,7 +7749,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             command="demo",
                             inputs=[],
                             outputs=outputs,
-                            metrics={"artifact_count": 6},
+                            metrics={"artifact_count": 5},
                             data=result,
                         ),
                         json_output=True,

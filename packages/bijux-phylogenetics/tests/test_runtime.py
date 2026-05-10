@@ -6141,7 +6141,6 @@ def test_run_capability_demo_creates_expected_artifacts(tmp_path: Path) -> None:
     assert result.dataset_report.exists()
     assert result.phylo_inputs_report.exists()
     assert result.comparison_report.exists()
-    assert result.evidence_bundle.exists()
     assert result.capability_summary.exists()
 
 
@@ -6262,11 +6261,11 @@ def test_cli_demo_run_json_output_reports_generated_artifacts(
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 6
+    assert payload["metrics"]["artifact_count"] == 5
     assert payload["data"]["tree_report"] == str(
         output / "reports" / "tree-report.html"
     )
-    assert payload["data"]["evidence_bundle"] == str(output / "evidence-pack")
+    assert payload["data"]["capability_summary"] == str(output / "capability-summary.md")
 
 
 def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> None:
