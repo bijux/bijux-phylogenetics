@@ -81,6 +81,21 @@ def _minimal_repo(tmp_path: Path) -> Path:
     )
     _write(bundle_root / "parity.json", '{"status": "ok"}\n')
     _write(bundle_root / "reference_table.csv", "species,value\nA,1\n")
+    _write(bundle_root / "results" / "README.md", "# Results\n")
+    _write(
+        bundle_root / "results" / "manifest.json",
+        json.dumps(
+            {
+                "schema_version": 1,
+                "study_id": "demo-study",
+                "evidence_id": "evidence-001",
+                "results_directory": "results",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+    )
     return repo_root
 
 
@@ -94,12 +109,26 @@ def test_sync_inputs_manifests_writes_bundle_companion_files(tmp_path: Path) -> 
     ]
     payload = json.loads(written[0].read_text(encoding="utf-8"))
     assert payload["source_input_count"] == 2
-    assert payload["governed_local_artifact_count"] == 2
+    assert payload["governed_local_artifact_count"] == 4
     assert payload["local_input_count"] == 1
     assert {entry["locator"] for entry in payload["local_inputs"]} == {
         "evidence-book/studies/demo-study/evidence-001/reference_table.csv",
     }
     assert payload["local_inputs"][0]["input_class"] == "copied-reference-fragment"
+
+
+def test_sync_inputs_manifests_supports_single_bundle_selection(tmp_path: Path) -> None:
+    repo_root = _minimal_repo(tmp_path)
+
+    written = sync_inputs_manifests(
+        repo_root,
+        study_id="demo-study",
+        evidence_id="evidence-001",
+    )
+
+    assert [path.relative_to(repo_root).as_posix() for path in written] == [
+        "evidence-book/studies/demo-study/evidence-001/inputs.manifest.json"
+    ]
 
 
 def test_check_inputs_manifests_flags_stale_bundle_companion_files(

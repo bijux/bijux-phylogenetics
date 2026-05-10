@@ -195,9 +195,32 @@ def iter_bundle_roots(repo_root: Path) -> list[Path]:
     return sorted(studies_root.glob("*/evidence-*"))
 
 
-def sync_inputs_manifests(repo_root: Path) -> list[Path]:
+def _selected_bundle_roots(
+    repo_root: Path,
+    *,
+    study_id: str | None = None,
+    evidence_id: str | None = None,
+) -> list[Path]:
+    roots = iter_bundle_roots(repo_root)
+    if study_id is not None:
+        roots = [root for root in roots if root.parent.name == study_id]
+    if evidence_id is not None:
+        roots = [root for root in roots if root.name == evidence_id]
+    return roots
+
+
+def sync_inputs_manifests(
+    repo_root: Path,
+    *,
+    study_id: str | None = None,
+    evidence_id: str | None = None,
+) -> list[Path]:
     written: list[Path] = []
-    for bundle_root in iter_bundle_roots(repo_root):
+    for bundle_root in _selected_bundle_roots(
+        repo_root,
+        study_id=study_id,
+        evidence_id=evidence_id,
+    ):
         payload = build_inputs_manifest(repo_root, bundle_root)
         target = bundle_root / INPUT_MANIFEST_FILENAME
         _write_json(target, payload)
@@ -205,9 +228,18 @@ def sync_inputs_manifests(repo_root: Path) -> list[Path]:
     return written
 
 
-def check_inputs_manifests(repo_root: Path) -> list[str]:
+def check_inputs_manifests(
+    repo_root: Path,
+    *,
+    study_id: str | None = None,
+    evidence_id: str | None = None,
+) -> list[str]:
     mismatches: list[str] = []
-    for bundle_root in iter_bundle_roots(repo_root):
+    for bundle_root in _selected_bundle_roots(
+        repo_root,
+        study_id=study_id,
+        evidence_id=evidence_id,
+    ):
         target = bundle_root / INPUT_MANIFEST_FILENAME
         expected = build_inputs_manifest(repo_root, bundle_root)
         if not target.is_file():
@@ -227,14 +259,22 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("command", choices=("sync", "check"))
     parser.add_argument("--repo-root", default=".")
+    parser.add_argument("--study-id", default="")
+    parser.add_argument("--evidence-id", default="")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
+    study_id = args.study_id or None
+    evidence_id = args.evidence_id or None
     if args.command == "sync":
-        written = sync_inputs_manifests(repo_root)
+        written = sync_inputs_manifests(
+            repo_root,
+            study_id=study_id,
+            evidence_id=evidence_id,
+        )
         print(
             json.dumps(
                 {
@@ -246,14 +286,27 @@ def main() -> int:
             )
         )
         return 0
-    mismatches = check_inputs_manifests(repo_root)
+    mismatches = check_inputs_manifests(
+        repo_root,
+        study_id=study_id,
+        evidence_id=evidence_id,
+    )
     if mismatches:
         raise SystemExit(
             "evidence input manifest check failed:\n" + "\n".join(mismatches)
         )
     print(
         json.dumps(
-            {"status": "ok", "bundle_count": len(iter_bundle_roots(repo_root))},
+            {
+                "status": "ok",
+                "bundle_count": len(
+                    _selected_bundle_roots(
+                        repo_root,
+                        study_id=study_id,
+                        evidence_id=evidence_id,
+                    )
+                ),
+            },
             indent=2,
         )
     )

@@ -35,13 +35,14 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
-	list-evidence-studies build-evidence-book build-evidence-study validate-evidence-book rerun-evidence-cleanroom rerun-governed-evidence-cleanroom \
-	sync-evidence-artifacts check-evidence-artifacts report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
+	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book rerun-evidence-cleanroom rerun-governed-evidence-cleanroom \
+	sync-evidence-artifacts sync-evidence-unit-artifacts check-evidence-artifacts check-evidence-unit-artifacts sync-evidence-unit-inputs check-evidence-unit-inputs report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
 	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces \
 	report-package-boundaries check-package-boundaries report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
 	report-release-readiness check-release-readiness
 
 EVIDENCE_STUDY_ID ?=
+EVIDENCE_ID ?=
 EVIDENCE_IDS ?=
 
 check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
@@ -69,8 +70,14 @@ build-evidence-book: root-check-env ## Refresh the full evidence-book and store 
 
 build-evidence-study: root-check-env ## Refresh one governed evidence study selected by EVIDENCE_STUDY_ID
 	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
-	@"$(CLI)" evidence book build --study-id "$(EVIDENCE_STUDY_ID)" --json > "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json"
+	@"$(CLI)" evidence book build "$(EVIDENCE_STUDY_ID)" --json > "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json"
 .PHONY: build-evidence-study
+
+build-evidence-unit: root-check-env ## Refresh one governed Evidence ID selected by EVIDENCE_STUDY_ID and EVIDENCE_ID
+	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
+	@test -n "$(EVIDENCE_ID)" || { echo "EVIDENCE_ID is required"; exit 2; }
+	@"$(CLI)" evidence book build "$(EVIDENCE_STUDY_ID)" --evidence-id "$(EVIDENCE_ID)" --json > "$(ROOT_ARTIFACTS_DIR)/evidence-unit-build.json"
+.PHONY: build-evidence-unit
 
 validate-evidence-book: root-check-env ## Validate the governed evidence-book structure and index surfaces
 	@"$(CLI)" evidence book validate --json > "$(ROOT_ARTIFACTS_DIR)/evidence-book-validation.json"
@@ -80,9 +87,33 @@ sync-evidence-artifacts: root-check-env ## Render governed local artifact surfac
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts sync --repo-root "$(CURDIR)"
 .PHONY: sync-evidence-artifacts
 
+sync-evidence-unit-artifacts: root-check-env ## Render governed local artifact surfaces for one Evidence ID
+	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
+	@test -n "$(EVIDENCE_ID)" || { echo "EVIDENCE_ID is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts sync --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" --evidence-id "$(EVIDENCE_ID)" > "$(ROOT_ARTIFACTS_DIR)/evidence-unit-artifacts.json"
+.PHONY: sync-evidence-unit-artifacts
+
 check-evidence-artifacts: root-check-env ## Validate governed local artifact surfaces for every evidence bundle
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts check --repo-root "$(CURDIR)"
 .PHONY: check-evidence-artifacts
+
+check-evidence-unit-artifacts: root-check-env ## Validate governed local artifact surfaces for one Evidence ID
+	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
+	@test -n "$(EVIDENCE_ID)" || { echo "EVIDENCE_ID is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts check --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" --evidence-id "$(EVIDENCE_ID)" > "$(ROOT_ARTIFACTS_DIR)/evidence-unit-artifacts.json"
+.PHONY: check-evidence-unit-artifacts
+
+sync-evidence-unit-inputs: root-check-env ## Render governed input manifests for one Evidence ID
+	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
+	@test -n "$(EVIDENCE_ID)" || { echo "EVIDENCE_ID is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_inputs sync --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" --evidence-id "$(EVIDENCE_ID)" > "$(ROOT_ARTIFACTS_DIR)/evidence-unit-inputs.json"
+.PHONY: sync-evidence-unit-inputs
+
+check-evidence-unit-inputs: root-check-env ## Validate governed input manifests for one Evidence ID
+	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
+	@test -n "$(EVIDENCE_ID)" || { echo "EVIDENCE_ID is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_inputs check --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" --evidence-id "$(EVIDENCE_ID)" > "$(ROOT_ARTIFACTS_DIR)/evidence-unit-inputs.json"
+.PHONY: check-evidence-unit-inputs
 
 report-evidence-completeness: root-check-env ## Audit evidence bundle completeness into repository artifacts
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_completeness report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"
