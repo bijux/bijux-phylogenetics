@@ -1,0 +1,159 @@
+{
+  "evidence_id": "evidence-001",
+  "policies": [
+    {
+      "family_id": "workflow-contracts",
+      "family_title": "Workflow contracts",
+      "metric_tolerances": [],
+      "parity_expectation": "not_comparable",
+      "rule": "Tracked for reviewer transparency without a numerical parity claim.",
+      "source_fragments": [
+        "environment-and-package-contract"
+      ]
+    },
+    {
+      "family_id": "data-preparation",
+      "family_title": "Data preparation",
+      "metric_tolerances": [
+        {
+          "metric_kind": "default",
+          "tolerance_abs_diff": 0.0
+        }
+      ],
+      "parity_expectation": "exact",
+      "rule": "Scalar counts, boolean checks, and frozen inputs must match exactly.",
+      "source_fragments": [
+        "primate-data-preprocessing",
+        "tip-order-alignment",
+        "primate-longevity-vector-assembly"
+      ]
+    },
+    {
+      "family_id": "tree-operations",
+      "family_title": "Tree operations",
+      "metric_tolerances": [
+        {
+          "metric_kind": "default",
+          "tolerance_abs_diff": 0.0
+        }
+      ],
+      "parity_expectation": "exact",
+      "rule": "Scalar counts, boolean checks, and frozen inputs must match exactly.",
+      "source_fragments": [
+        "tree-import-and-pruning",
+        "unrooted-tree-demo",
+        "extract-clade-node-77",
+        "rotate-nodes-behavior",
+        "treeio-node-mapping-and-join"
+      ]
+    },
+    {
+      "family_id": "visual-surfaces",
+      "family_title": "Visual surfaces",
+      "metric_tolerances": [],
+      "parity_expectation": "not_comparable",
+      "rule": "Tracked for reviewer transparency without a numerical parity claim.",
+      "source_fragments": [
+        "ape-plotting-basics",
+        "ape-alternate-layouts",
+        "phytools-tree-plotting",
+        "ggtree-tree-visualization",
+        "ape-longevity-overlay",
+        "joined-ggtree-trait-plotting",
+        "random-simulation-plotting",
+        "primate-longevity-visual-inspection",
+        "lambda-zero-visual-comparison",
+        "ancestral-colored-tree-plot"
+      ]
+    },
+    {
+      "family_id": "simulation-inputs",
+      "family_title": "Simulation inputs",
+      "metric_tolerances": [
+        {
+          "metric_kind": "default",
+          "tolerance_abs_diff": 0.0
+        }
+      ],
+      "parity_expectation": "exact",
+      "rule": "Scalar counts, boolean checks, and frozen inputs must match exactly.",
+      "source_fragments": [
+        "random-simulation-inputs"
+      ]
+    },
+    {
+      "family_id": "comparative-signal",
+      "family_title": "Comparative signal",
+      "metric_tolerances": [
+        {
+          "metric_kind": "lambda_value",
+          "tolerance_abs_diff": 0.001
+        },
+        {
+          "metric_kind": "log_likelihood",
+          "tolerance_abs_diff": 0.001
+        },
+        {
+          "metric_kind": "likelihood_ratio",
+          "tolerance_abs_diff": 0.0001
+        },
+        {
+          "metric_kind": "p_value",
+          "tolerance_abs_diff": 1e-12
+        },
+        {
+          "metric_kind": "covariance_entry",
+          "tolerance_abs_diff": 1e-08
+        }
+      ],
+      "parity_expectation": "statistical_tolerance",
+      "rule": "Likelihood-based metrics must stay within governed floating-point tolerance while preserving the same scientific conclusion.",
+      "source_fragments": [
+        "random-signal-lambda-fits",
+        "primate-lambda-fit",
+        "lambda-zero-covariance-and-lrt"
+      ]
+    },
+    {
+      "family_id": "ancestral-reconstruction",
+      "family_title": "Ancestral reconstruction",
+      "metric_tolerances": [
+        {
+          "metric_kind": "point_estimate",
+          "tolerance_abs_diff": 1e-09
+        },
+        {
+          "metric_kind": "interval_bound",
+          "tolerance_abs_diff": 1e-09
+        },
+        {
+          "metric_kind": "count",
+          "tolerance_abs_diff": 0.0
+        }
+      ],
+      "parity_expectation": "near_exact",
+      "rule": "Internal-node estimates may differ only by floating-point noise; derived counts must still match exactly.",
+      "source_fragments": [
+        "continuous-ancestral-point-estimates",
+        "continuous-ancestral-intervals",
+        "ancestral-table-assembly",
+        "bonobo-gibbon-mrca-estimate",
+        "lifespan-increase-counts"
+      ]
+    },
+    {
+      "family_id": "artifact-provenance",
+      "family_title": "Artifact provenance",
+      "metric_tolerances": [],
+      "parity_expectation": "not_comparable",
+      "rule": "Tracked for reviewer transparency without a numerical parity claim.",
+      "source_fragments": [
+        "processed-analysis-artifacts",
+        "final-workspace-artifact"
+      ]
+    }
+  ],
+  "policy_count": 8,
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}
