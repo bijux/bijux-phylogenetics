@@ -41,6 +41,7 @@ staged assets to the GitHub Release.
 
 - read the public docs home: [Documentation home](https://bijux.io/bijux-phylogenetics/)
 - inspect the runtime handbook: [Repository overview](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+- inspect the evidence trust surface: [Evidence Book](https://bijux.io/bijux-phylogenetics/02-evidence-book/)
 - inspect the maintainer handbook: [Maintainer overview](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
 - inspect the runtime package source: [`packages/bijux-phylogenetics`](packages/bijux-phylogenetics)
 
@@ -79,6 +80,15 @@ What exists today:
 - comparative trait analysis, ancestral-state workflows, and distance-based analysis
 - governed adapter surfaces for external tools such as alignment and inference engines
 - checked-in API contracts, package handbooks, and release automation
+
+Current evidence closure is narrower than raw runtime breadth. The governed
+status lives in the evidence-book:
+
+- analytical surface coverage: [`evidence-book/index/analytical-surface-coverage.md`](evidence-book/index/analytical-surface-coverage.md)
+- claim re-audit: [`evidence-book/index/claim-reaudit.md`](evidence-book/index/claim-reaudit.md)
+- closure criteria: [`evidence-book/index/closure-criteria.md`](evidence-book/index/closure-criteria.md)
+- maturity scorecard: [`evidence-book/index/evidence-maturity-scorecard.md`](evidence-book/index/evidence-maturity-scorecard.md)
+- completion gates: [`evidence-book/index/completion-gates.md`](evidence-book/index/completion-gates.md)
 
 What does not exist today:
 

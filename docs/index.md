@@ -47,6 +47,7 @@ surface and `phylogenetic` for the shorter compatibility alias.
 ## Read this next
 
 - runtime package handbook: [Repository overview](01-bijux-phylogenetics/index.md)
+- evidence trust surface: [Evidence Book](02-evidence-book/index.md)
 - maintainer handbook: [Maintainer overview](03-bijux-phylogenetics-maintain/index.md)
 
 
@@ -61,3 +62,11 @@ surface and `phylogenetic` for the shorter compatibility alias.
 - render cladogram, phylogram, and circular tree figures with support labels and branch-length scale bars
 - annotate trees with categorical tip traits, continuous tip traits, metadata strips, and aligned trait heatmaps
 - package review-ready tree figures with SVG output, caption drafts, manifests, and tip-annotation tables
+
+## Evidence Closure
+
+The runtime surface is broader than the currently closed evidence surface.
+The governed evidence-book records that difference explicitly:
+
+- start from the governed landing page: [Evidence Book](02-evidence-book/index.md)
+- review analytical surface coverage and closure status from the linked evidence-book index outputs there

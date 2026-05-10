@@ -23,6 +23,16 @@ Current tracked studies:
   [`index/integrity-report.md`](./index/integrity-report.md)
 - Coverage gaps:
   [`index/coverage-gaps.md`](./index/coverage-gaps.md)
+- Claim re-audit:
+  [`index/claim-reaudit.md`](./index/claim-reaudit.md)
+- Analytical surface coverage:
+  [`index/analytical-surface-coverage.md`](./index/analytical-surface-coverage.md)
+- Closure criteria:
+  [`index/closure-criteria.md`](./index/closure-criteria.md)
+- Maturity scorecard:
+  [`index/evidence-maturity-scorecard.md`](./index/evidence-maturity-scorecard.md)
+- Completion gates:
+  [`index/completion-gates.md`](./index/completion-gates.md)
 
 - [`primate-longevity-signal`](./studies/primate-longevity-signal/): block-by-block
   comparative parity against established R phylogenetics packages

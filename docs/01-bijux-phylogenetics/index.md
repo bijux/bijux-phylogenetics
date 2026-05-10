@@ -21,6 +21,13 @@ The repository intentionally does not reimplement inference engines. Its
 current product surface is the reproducible orchestration and evidence layer
 around trees, alignments, and trait tables.
 
+Evidence closure is narrower than raw runtime breadth. The current governed
+status is tracked in the evidence-book through:
+
+- the evidence landing page: [Evidence Book](../02-evidence-book/index.md)
+- analytical surface coverage and claim re-audit outputs linked from that page
+- closure criteria, maturity scorecard, and completion gates linked from that page
+
 ## Current CLI Surface
 
 - `bijux-phylogenetics validate tree.nwk`
