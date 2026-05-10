@@ -13,6 +13,7 @@ from typing import Any
 
 from .config_ssot import build_config_ssot_report
 from .evidence_inputs import INPUT_MANIFEST_FILENAME, check_inputs_manifests
+from .package_boundaries import build_package_boundary_report
 from .package_bundles import (
     build_dependency_policy_report,
     load_publication_readiness_settings,
@@ -520,6 +521,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     package_payloads = _package_pyprojects(repo_root)
     dependency_policy = build_dependency_policy_report(repo_root)
     config_report = build_config_ssot_report(repo_root)
+    package_boundaries = build_package_boundary_report(repo_root)
     evidence_inventory = build_evidence_reproducibility_inventory(
         repo_root,
         publication_settings=publication_settings,
@@ -576,6 +578,9 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
 
     package_issues.extend(
         ReadinessIssue(**issue) for issue in dependency_policy["issues"]  # type: ignore[index]
+    )
+    package_issues.extend(
+        ReadinessIssue(**issue) for issue in package_boundaries["issues"]  # type: ignore[index]
     )
 
     expected_publishable_packages = sorted(
@@ -709,6 +714,14 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "runtime-depends-on-alias",
             "alias-dependency-drift",
             "dev-package-runtime-dependency",
+            "dependency-role-drift",
+            "forbidden-runtime-top-level-export",
+            "alias-local-surface-drift",
+            "repo-import-boundary-drift",
+            "invalid-compatibility-locator",
+            "unsupported-compatibility-module",
+            "missing-compatibility-module",
+            "missing-compatibility-export",
             "missing-build-targets",
             "dependency-policy-drift",
             "publishable-package-set-drift",
@@ -740,6 +753,9 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "status": "ready" if not runtime_closure_blockers else "blocked",
             "pass_when": [
                 "canonical runtime, alias, and maintainer package boundaries match governed dependency policy",
+                "runtime top-level exports do not leak evidence-only helper surfaces",
+                "compatibility alias package remains a thin alias surface with no local scientific ownership",
+                "runtime-to-evidence compatibility is declared against supported public runtime locators",
                 "runtime package no longer owns subpackages reserved for a separate evidence consumer layer",
                 "all governed publishable packages declare wheel and sdist targets",
             ],
@@ -805,6 +821,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
         "publication_settings": publication_settings,
         "package_issues": [asdict(issue) for issue in package_issues],
         "dependency_policy": dependency_policy,
+        "package_boundaries": package_boundaries,
         "config_ssot": config_report.to_dict(),
         "evidence_inventory": evidence_inventory,
         "repository_shape": {

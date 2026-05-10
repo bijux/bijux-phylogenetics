@@ -30,6 +30,8 @@ required_root_make_targets = [
     "rerun-evidence-cleanroom:",
     "report-artifact-governance:",
     "check-artifact-governance:",
+    "report-package-boundaries:",
+    "check-package-boundaries:",
     "report-package-bundles:",
     "check-package-bundles:",
     "report-publish-readiness:",
