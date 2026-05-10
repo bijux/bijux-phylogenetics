@@ -7,14 +7,20 @@ from bijux_phylogenetics.evidence.book import (
     build_evidence_claim_map,
     build_evidence_book_index,
     build_evidence_false_confidence_audit,
+    build_evidence_fragile_example_audit,
     build_evidence_mismatch_archive,
     build_evidence_parity_dashboard,
+    build_evidence_portability_audit,
+    build_evidence_regeneration_contract,
     build_evidence_scientific_debt_register,
     build_evidence_verdict_workflows,
     render_evidence_catalog,
     render_evidence_false_confidence_audit,
+    render_evidence_fragile_example_audit,
     render_evidence_mismatch_archive,
     render_evidence_parity_dashboard,
+    render_evidence_portability_audit,
+    render_evidence_regeneration_contract,
     render_evidence_scientific_debt_register,
     render_evidence_verdict_workflows,
     validate_evidence_book,
@@ -161,7 +167,10 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     mismatch_archive = build_evidence_mismatch_archive(repo_root)
     verdict_workflows = build_evidence_verdict_workflows(repo_root)
     false_confidence_audit = build_evidence_false_confidence_audit(repo_root)
+    fragile_example_audit = build_evidence_fragile_example_audit(repo_root)
     scientific_debt_register = build_evidence_scientific_debt_register(repo_root)
+    portability_audit = build_evidence_portability_audit(repo_root)
+    regeneration_contract = build_evidence_regeneration_contract(repo_root)
     claim_map_path = repo_root / "evidence-book" / "index" / "claim-map.json"
     parity_dashboard_path = repo_root / "evidence-book" / "index" / "parity-dashboard.json"
     parity_summary_path = repo_root / "evidence-book" / "index" / "parity-dashboard.md"
@@ -173,6 +182,12 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     false_confidence_summary_path = repo_root / "evidence-book" / "index" / "false-confidence-audit.md"
     scientific_debt_path = repo_root / "evidence-book" / "index" / "scientific-debt-register.json"
     scientific_debt_summary_path = repo_root / "evidence-book" / "index" / "scientific-debt-register.md"
+    portability_path = repo_root / "evidence-book" / "index" / "portability-audit.json"
+    portability_summary_path = repo_root / "evidence-book" / "index" / "portability-audit.md"
+    fragile_example_path = repo_root / "evidence-book" / "index" / "fragile-example-audit.json"
+    fragile_example_summary_path = repo_root / "evidence-book" / "index" / "fragile-example-audit.md"
+    regeneration_path = repo_root / "evidence-book" / "index" / "regeneration-contract.json"
+    regeneration_summary_path = repo_root / "evidence-book" / "index" / "regeneration-contract.md"
 
     assert index_path.exists()
     assert catalog_path.exists()
@@ -187,6 +202,12 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert false_confidence_summary_path.exists()
     assert scientific_debt_path.exists()
     assert scientific_debt_summary_path.exists()
+    assert portability_path.exists()
+    assert portability_summary_path.exists()
+    assert fragile_example_path.exists()
+    assert fragile_example_summary_path.exists()
+    assert regeneration_path.exists()
+    assert regeneration_summary_path.exists()
     assert payload["study_count"] == 1
     assert payload["evidence_count"] == 1
     assert "Taxon Trust" in catalog
@@ -214,3 +235,15 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert scientific_debt_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_scientific_debt_register(scientific_debt_register)
+    assert json.loads(portability_path.read_text(encoding="utf-8")) == portability_audit
+    assert portability_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_portability_audit(portability_audit)
+    assert json.loads(fragile_example_path.read_text(encoding="utf-8")) == fragile_example_audit
+    assert fragile_example_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_fragile_example_audit(fragile_example_audit)
+    assert json.loads(regeneration_path.read_text(encoding="utf-8")) == regeneration_contract
+    assert regeneration_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_regeneration_contract(regeneration_contract)

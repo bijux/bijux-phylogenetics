@@ -6,6 +6,12 @@ import json
 from pathlib import Path
 import re
 
+from .portability import (
+    audit_payload_path_values,
+    classify_locator_kind,
+    render_portability_rules_markdown,
+)
+
 
 EVIDENCE_BOOK_DIRNAME = "evidence-book"
 EVIDENCE_STUDIES_DIRNAME = "studies"
@@ -25,6 +31,12 @@ EVIDENCE_FALSE_CONFIDENCE_AUDIT = "false-confidence-audit.json"
 EVIDENCE_FALSE_CONFIDENCE_SUMMARY = "false-confidence-audit.md"
 EVIDENCE_SCIENTIFIC_DEBT_REGISTER = "scientific-debt-register.json"
 EVIDENCE_SCIENTIFIC_DEBT_SUMMARY = "scientific-debt-register.md"
+EVIDENCE_PORTABILITY_AUDIT = "portability-audit.json"
+EVIDENCE_PORTABILITY_SUMMARY = "portability-audit.md"
+EVIDENCE_FRAGILE_EXAMPLE_AUDIT = "fragile-example-audit.json"
+EVIDENCE_FRAGILE_EXAMPLE_SUMMARY = "fragile-example-audit.md"
+EVIDENCE_REGENERATION_CONTRACT = "regeneration-contract.json"
+EVIDENCE_REGENERATION_SUMMARY = "regeneration-contract.md"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -546,6 +558,12 @@ def validate_evidence_book(
         false_confidence_summary_path = index_root / EVIDENCE_FALSE_CONFIDENCE_SUMMARY
         scientific_debt_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_REGISTER
         scientific_debt_summary_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_SUMMARY
+        portability_audit_path = index_root / EVIDENCE_PORTABILITY_AUDIT
+        portability_summary_path = index_root / EVIDENCE_PORTABILITY_SUMMARY
+        fragile_example_path = index_root / EVIDENCE_FRAGILE_EXAMPLE_AUDIT
+        fragile_example_summary_path = index_root / EVIDENCE_FRAGILE_EXAMPLE_SUMMARY
+        regeneration_contract_path = index_root / EVIDENCE_REGENERATION_CONTRACT
+        regeneration_summary_path = index_root / EVIDENCE_REGENERATION_SUMMARY
         if not parity_dashboard_path.exists():
             issues.append(
                 EvidenceBookValidationIssue(
@@ -616,6 +634,48 @@ def validate_evidence_book(
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_SCIENTIFIC_DEBT_SUMMARY}",
                 )
             )
+        if not portability_audit_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, portability_audit_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_PORTABILITY_AUDIT}",
+                )
+            )
+        if not portability_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, portability_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_PORTABILITY_SUMMARY}",
+                )
+            )
+        if not fragile_example_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, fragile_example_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_FRAGILE_EXAMPLE_AUDIT}",
+                )
+            )
+        if not fragile_example_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, fragile_example_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_FRAGILE_EXAMPLE_SUMMARY}",
+                )
+            )
+        if not regeneration_contract_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, regeneration_contract_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_REGENERATION_CONTRACT}",
+                )
+            )
+        if not regeneration_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, regeneration_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_REGENERATION_SUMMARY}",
+                )
+            )
         if index_path.exists():
             try:
                 index_payload = _load_json(index_path)
@@ -662,6 +722,24 @@ def validate_evidence_book(
                         EvidenceBookValidationIssue(
                             _relative_to(root, false_confidence_audit_path),
                             "false-confidence audit must not leave action_required entries unresolved",
+                        )
+                    )
+        if portability_audit_path.exists():
+            try:
+                portability_payload = _load_json(portability_audit_path)
+            except (ValueError, json.JSONDecodeError) as error:
+                issues.append(
+                    EvidenceBookValidationIssue(
+                        _relative_to(root, portability_audit_path),
+                        f"invalid portability audit: {error}",
+                    )
+                )
+            else:
+                if portability_payload.get("action_required_count") != 0:
+                    issues.append(
+                        EvidenceBookValidationIssue(
+                            _relative_to(root, portability_audit_path),
+                            "portability audit must not leave action_required entries unresolved",
                         )
                     )
 
@@ -1205,6 +1283,244 @@ def render_evidence_false_confidence_audit(payload: dict[str, object]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def build_evidence_portability_audit(repo_root: Path) -> dict[str, object]:
+    root = evidence_book_root(repo_root)
+    excluded_index_files = {
+        EVIDENCE_PORTABILITY_AUDIT,
+        EVIDENCE_PORTABILITY_SUMMARY,
+        EVIDENCE_FRAGILE_EXAMPLE_AUDIT,
+        EVIDENCE_FRAGILE_EXAMPLE_SUMMARY,
+        EVIDENCE_REGENERATION_CONTRACT,
+        EVIDENCE_REGENERATION_SUMMARY,
+    }
+    json_file_count = 0
+    locator_kind_counts: Counter[str] = Counter()
+    issues: list[dict[str, object]] = []
+    report_like_file_count = 0
+    for path in sorted(candidate for candidate in root.rglob("*") if candidate.is_file()):
+        if path.parent.name == EVIDENCE_INDEX_DIRNAME and path.name in excluded_index_files:
+            continue
+        relative_path = _relative_to(root, path).as_posix()
+        if path.suffix in {".json", ".md", ".csv", ".tsv", ".nwk"}:
+            report_like_file_count += 1
+        if path.suffix != ".json":
+            continue
+        json_file_count += 1
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, (dict, list)):
+            for issue in audit_payload_path_values(
+                payload,
+                relative_file_path=relative_path,
+            ):
+                issues.append(
+                    {
+                        "relative_file_path": issue.relative_file_path,
+                        "json_pointer": issue.json_pointer,
+                        "value": issue.value,
+                        "issue_kind": issue.issue_kind,
+                        "message": issue.message,
+                    }
+                )
+            if isinstance(payload, dict):
+                stack = [payload]
+            else:
+                stack = [payload]
+            while stack:
+                current = stack.pop()
+                if isinstance(current, dict):
+                    for value in current.values():
+                        if isinstance(value, str):
+                            locator_kind = classify_locator_kind(value)
+                            if locator_kind != "non_path_text":
+                                locator_kind_counts.update([locator_kind])
+                        elif isinstance(value, (dict, list)):
+                            stack.append(value)
+                elif isinstance(current, list):
+                    for value in current:
+                        if isinstance(value, str):
+                            locator_kind = classify_locator_kind(value)
+                            if locator_kind != "non_path_text":
+                                locator_kind_counts.update([locator_kind])
+                        elif isinstance(value, (dict, list)):
+                            stack.append(value)
+    return {
+        "schema_version": 1,
+        "rule_count": 3,
+        "rules_markdown": render_portability_rules_markdown(),
+        "audited_json_file_count": json_file_count,
+        "report_like_file_count": report_like_file_count,
+        "action_required_count": len(issues),
+        "locator_kind_counts": dict(sorted(locator_kind_counts.items())),
+        "issues": issues,
+    }
+
+
+def render_evidence_portability_audit(payload: dict[str, object]) -> str:
+    lines = [
+        "# Portability Audit",
+        "",
+        "This audit enforces portable path semantics for checked-in evidence payloads.",
+        "",
+        f"- audited json files: `{payload['audited_json_file_count']}`",
+        f"- report-like files: `{payload['report_like_file_count']}`",
+        f"- action required: `{payload['action_required_count']}`",
+        "",
+        "## Rules",
+        "",
+        *render_portability_rules_markdown().splitlines()[2:],
+        "",
+    ]
+    locator_kind_counts = payload.get("locator_kind_counts", {})
+    if isinstance(locator_kind_counts, dict) and locator_kind_counts:
+        lines.append("## Locator Kinds")
+        lines.append("")
+        for locator_kind, count in locator_kind_counts.items():
+            lines.append(f"- `{locator_kind}`: `{count}`")
+        lines.append("")
+    lines.append("## Issues")
+    lines.append("")
+    if not payload["issues"]:
+        lines.append("- none")
+    else:
+        for issue in payload["issues"]:
+            lines.append(
+                f"- `{issue['relative_file_path']}` `{issue['json_pointer']}` `{issue['issue_kind']}`"
+            )
+            lines.append(f"  Value: `{issue['value']}`")
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def build_evidence_fragile_example_audit(repo_root: Path) -> dict[str, object]:
+    scientific_debt = build_evidence_scientific_debt_register(repo_root)
+    fragile_kinds = {
+        "artifact_only",
+        "coverage_gap",
+        "instability",
+        "model-boundary",
+        "plot_only",
+        "seeded_input_only",
+        "workflow_only",
+    }
+    fragile_entries = [
+        debt
+        for debt in scientific_debt["debts"]
+        if debt["debt_kind"] in fragile_kinds
+    ]
+    counts = Counter(str(entry["debt_kind"]) for entry in fragile_entries)
+    return {
+        "schema_version": 1,
+        "fragile_example_count": len(fragile_entries),
+        "fragility_kind_counts": dict(sorted(counts.items())),
+        "examples": fragile_entries,
+    }
+
+
+def render_evidence_fragile_example_audit(payload: dict[str, object]) -> str:
+    lines = [
+        "# Fragile Example Audit",
+        "",
+        "This audit lists evidence bundles or bundle fragments that still depend on",
+        "narrow assumptions, seeded inputs, plot-only interpretations, or explicit",
+        "coverage boundaries.",
+        "",
+        f"- fragile examples: `{payload['fragile_example_count']}`",
+        "",
+    ]
+    counts = payload.get("fragility_kind_counts", {})
+    if isinstance(counts, dict) and counts:
+        lines.append("## Fragility Kinds")
+        lines.append("")
+        for kind, count in counts.items():
+            lines.append(f"- `{kind}`: `{count}`")
+        lines.append("")
+    lines.append("## Examples")
+    lines.append("")
+    for example in payload["examples"]:
+        lines.append(f"- `{example['debt_id']}` — `{example['debt_kind']}`")
+        if example.get("relative_path"):
+            lines.append(f"  Path: `{example['relative_path']}`")
+        if example.get("detail"):
+            lines.append(f"  Detail: {example['detail']}")
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def build_evidence_regeneration_contract(repo_root: Path) -> dict[str, object]:
+    root = evidence_book_root(repo_root)
+    studies: list[dict[str, object]] = []
+    for study_root in _study_paths(root):
+        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        build_script_path = study_root / "build_evidence.py"
+        source_paths: list[str] = []
+        generated_paths: list[str] = []
+        for path in sorted(candidate for candidate in study_root.rglob("*") if candidate.is_file()):
+            relative_path = _relative_to(Path(repo_root), path).as_posix()
+            if path.name == "build_evidence.py":
+                source_paths.append(relative_path)
+            elif any(parent.name in {"reference", "provenance", "data"} for parent in path.parents):
+                source_paths.append(relative_path)
+            else:
+                generated_paths.append(relative_path)
+        studies.append(
+            {
+                "study_id": study_manifest["study_id"],
+                "study_title": study_manifest["study_title"],
+                "build_script_path": None
+                if not build_script_path.exists()
+                else _relative_to(Path(repo_root), build_script_path).as_posix(),
+                "rerun_command": None
+                if not build_script_path.exists()
+                else (
+                    "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 "
+                    f"python {_relative_to(Path(repo_root), build_script_path).as_posix()}"
+                ),
+                "bundle_ids": [
+                    path.name
+                    for path in sorted(
+                        candidate
+                        for candidate in study_root.iterdir()
+                        if candidate.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(candidate.name)
+                    )
+                ],
+                "source_paths": source_paths,
+                "generated_paths": generated_paths,
+            }
+        )
+    return {
+        "schema_version": 1,
+        "study_count": len(studies),
+        "studies": studies,
+    }
+
+
+def render_evidence_regeneration_contract(payload: dict[str, object]) -> str:
+    lines = [
+        "# Regeneration Contract",
+        "",
+        "This contract records which study files are governed sources, which are",
+        "generated durable outputs, and how each study is rerun.",
+        "",
+        f"- studies: `{payload['study_count']}`",
+        "",
+    ]
+    for study in payload["studies"]:
+        lines.append(f"## {study['study_title']}")
+        lines.append("")
+        lines.append(f"- study id: `{study['study_id']}`")
+        lines.append(f"- build script: `{study['build_script_path']}`")
+        if study["rerun_command"] is not None:
+            lines.append(f"- rerun command: `{study['rerun_command']}`")
+        lines.append(f"- bundle ids: `{', '.join(study['bundle_ids'])}`")
+        lines.append(f"- source path count: `{len(study['source_paths'])}`")
+        lines.append(f"- generated path count: `{len(study['generated_paths'])}`")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def build_evidence_scientific_debt_register(repo_root: Path) -> dict[str, object]:
     root = evidence_book_root(repo_root)
     mismatch_archive = build_evidence_mismatch_archive(repo_root)
@@ -1461,6 +1777,8 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     verdict_workflows_payload = build_evidence_verdict_workflows(repo_root)
     false_confidence_payload = build_evidence_false_confidence_audit(repo_root)
     scientific_debt_payload = build_evidence_scientific_debt_register(repo_root)
+    fragile_examples_payload = build_evidence_fragile_example_audit(repo_root)
+    regeneration_payload = build_evidence_regeneration_contract(repo_root)
     index_path = index_root / EVIDENCE_INDEX
     catalog_path = index_root / EVIDENCE_CATALOG
     claim_map_path = index_root / EVIDENCE_CLAIM_MAP
@@ -1474,6 +1792,12 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     false_confidence_summary_path = index_root / EVIDENCE_FALSE_CONFIDENCE_SUMMARY
     scientific_debt_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_REGISTER
     scientific_debt_summary_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_SUMMARY
+    portability_path = index_root / EVIDENCE_PORTABILITY_AUDIT
+    portability_summary_path = index_root / EVIDENCE_PORTABILITY_SUMMARY
+    fragile_examples_path = index_root / EVIDENCE_FRAGILE_EXAMPLE_AUDIT
+    fragile_examples_summary_path = index_root / EVIDENCE_FRAGILE_EXAMPLE_SUMMARY
+    regeneration_path = index_root / EVIDENCE_REGENERATION_CONTRACT
+    regeneration_summary_path = index_root / EVIDENCE_REGENERATION_SUMMARY
     index_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -1523,6 +1847,31 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     )
     scientific_debt_summary_path.write_text(
         render_evidence_scientific_debt_register(scientific_debt_payload),
+        encoding="utf-8",
+    )
+    portability_payload = build_evidence_portability_audit(repo_root)
+    portability_path.write_text(
+        json.dumps(portability_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    portability_summary_path.write_text(
+        render_evidence_portability_audit(portability_payload),
+        encoding="utf-8",
+    )
+    fragile_examples_path.write_text(
+        json.dumps(fragile_examples_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    fragile_examples_summary_path.write_text(
+        render_evidence_fragile_example_audit(fragile_examples_payload),
+        encoding="utf-8",
+    )
+    regeneration_path.write_text(
+        json.dumps(regeneration_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    regeneration_summary_path.write_text(
+        render_evidence_regeneration_contract(regeneration_payload),
         encoding="utf-8",
     )
     return index_path, catalog_path

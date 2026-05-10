@@ -10,13 +10,18 @@ PORTABILITY_ALLOWED_REPO_PREFIXES = (
     ".github/",
     "apis/",
     "artifacts/",
+    "block-payloads/",
     "configs/",
     "docs/",
     "evidence-book/",
+    "index/",
     "makes/",
     "mkdocs.yml",
     "packages/",
     "README.md",
+    "reference/",
+    "studies/",
+    "provenance/",
 )
 PORTABILITY_ALLOWED_EXTERNAL_PREFIXES = ("external:",)
 PORTABILITY_TRACKED_KEYS = {
@@ -144,7 +149,7 @@ def render_portability_rules_markdown() -> str:
         "",
         "Forbidden locator forms:",
         "",
-        "- workstation-local absolute paths such as `/Users/...`",
+        "- workstation-local absolute paths tied to one machine layout",
         "- parent traversal such as `../...` that guesses sibling repositories or ambient workspace shape",
         "- ambiguous path-like strings that are neither explicit external locators nor rooted repository-relative paths",
         "",

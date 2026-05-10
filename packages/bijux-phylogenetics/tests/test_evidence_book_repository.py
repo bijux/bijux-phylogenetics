@@ -7,14 +7,20 @@ from bijux_phylogenetics.evidence.book import (
     build_evidence_claim_map,
     build_evidence_book_index,
     build_evidence_false_confidence_audit,
+    build_evidence_fragile_example_audit,
     build_evidence_mismatch_archive,
     build_evidence_parity_dashboard,
+    build_evidence_portability_audit,
+    build_evidence_regeneration_contract,
     build_evidence_scientific_debt_register,
     build_evidence_verdict_workflows,
     render_evidence_catalog,
     render_evidence_false_confidence_audit,
+    render_evidence_fragile_example_audit,
     render_evidence_mismatch_archive,
     render_evidence_parity_dashboard,
+    render_evidence_portability_audit,
+    render_evidence_regeneration_contract,
     render_evidence_scientific_debt_register,
     render_evidence_verdict_workflows,
     validate_evidence_book,
@@ -46,6 +52,12 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     false_confidence_summary_path = REPO_ROOT / "evidence-book" / "index" / "false-confidence-audit.md"
     scientific_debt_path = REPO_ROOT / "evidence-book" / "index" / "scientific-debt-register.json"
     scientific_debt_summary_path = REPO_ROOT / "evidence-book" / "index" / "scientific-debt-register.md"
+    portability_path = REPO_ROOT / "evidence-book" / "index" / "portability-audit.json"
+    portability_summary_path = REPO_ROOT / "evidence-book" / "index" / "portability-audit.md"
+    fragile_example_path = REPO_ROOT / "evidence-book" / "index" / "fragile-example-audit.json"
+    fragile_example_summary_path = REPO_ROOT / "evidence-book" / "index" / "fragile-example-audit.md"
+    regeneration_path = REPO_ROOT / "evidence-book" / "index" / "regeneration-contract.json"
+    regeneration_summary_path = REPO_ROOT / "evidence-book" / "index" / "regeneration-contract.md"
 
     payload = build_evidence_book_index(REPO_ROOT)
     catalog = render_evidence_catalog(payload)
@@ -54,7 +66,10 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     mismatch_archive = build_evidence_mismatch_archive(REPO_ROOT)
     verdict_workflows = build_evidence_verdict_workflows(REPO_ROOT)
     false_confidence_audit = build_evidence_false_confidence_audit(REPO_ROOT)
+    fragile_example_audit = build_evidence_fragile_example_audit(REPO_ROOT)
     scientific_debt_register = build_evidence_scientific_debt_register(REPO_ROOT)
+    portability_audit = build_evidence_portability_audit(REPO_ROOT)
+    regeneration_contract = build_evidence_regeneration_contract(REPO_ROOT)
 
     assert json.loads(index_path.read_text(encoding="utf-8")) == payload
     assert catalog_path.read_text(encoding="utf-8") == catalog
@@ -81,3 +96,15 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     assert scientific_debt_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_scientific_debt_register(scientific_debt_register)
+    assert json.loads(portability_path.read_text(encoding="utf-8")) == portability_audit
+    assert portability_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_portability_audit(portability_audit)
+    assert json.loads(fragile_example_path.read_text(encoding="utf-8")) == fragile_example_audit
+    assert fragile_example_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_fragile_example_audit(fragile_example_audit)
+    assert json.loads(regeneration_path.read_text(encoding="utf-8")) == regeneration_contract
+    assert regeneration_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_regeneration_contract(regeneration_contract)
