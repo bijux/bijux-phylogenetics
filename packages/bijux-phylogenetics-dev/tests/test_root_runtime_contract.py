@@ -24,6 +24,9 @@ def test_root_tox_keeps_the_shared_env_families_and_drops_proteomics_only_ones()
     envlist = _envlist()
 
     assert _tox_config()["tox"]["toxworkdir"] == "{tox_root}/artifacts/root/tox"
+    assert "repository-contracts" in envlist
+    assert "evidence-governance" in envlist
+    assert "publish-readiness" in envlist
     assert "security" in envlist
     assert "docs" in envlist
     assert "fmt-{dev,core}" not in envlist
@@ -37,6 +40,28 @@ def test_root_make_declares_shared_maintainer_commands() -> None:
     assert "check:" in root_make
     assert "sync-badges:" in root_make
     assert "check-badges:" in root_make
+    assert "validate-evidence-book:" in root_make
+    assert "report-release-readiness:" in root_make
+
+
+def test_root_tox_isolates_repository_evidence_and_publish_surfaces() -> None:
+    config = _tox_config()
+
+    assert config["testenv:repository-contracts"]["change_dir"] == "{tox_root}"
+    assert (
+        config["testenv:repository-contracts"]["commands"].strip()
+        == "make check-shared-bijux-py check-config-layout check-make-layout help"
+    )
+    assert config["testenv:evidence-governance"]["change_dir"] == "{tox_root}"
+    assert (
+        config["testenv:evidence-governance"]["commands"].strip()
+        == "make validate-evidence-book check-evidence-artifacts check-artifact-governance rerun-evidence-cleanroom EVIDENCE_STUDY_ID=primate-longevity-signal EVIDENCE_IDS=evidence-002"
+    )
+    assert config["testenv:publish-readiness"]["change_dir"] == "{tox_root}"
+    assert (
+        config["testenv:publish-readiness"]["commands"].strip()
+        == "make report-release-readiness"
+    )
 
 
 def test_phylogenetic_alias_security_audits_the_installed_environment() -> None:
