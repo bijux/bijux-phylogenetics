@@ -156,3 +156,34 @@ def test_top_level_runtime_exports_do_not_leak_evidence_book_helpers() -> None:
 
     assert "EvidenceBundleReport" not in exported_names
     assert "bundle_directory" not in exported_names
+
+
+def test_runtime_workflows_use_provenance_bundle_contracts_instead_of_evidence_modules() -> (
+    None
+):
+    runtime_paths = [
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "bayesian"
+        / "evidence.py",
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "engines"
+        / "evidence.py",
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "core"
+        / "demo.py",
+    ]
+    for path in runtime_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "bijux_phylogenetics.evidence.bundles" not in text
