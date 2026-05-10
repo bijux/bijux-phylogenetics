@@ -8,6 +8,7 @@
     "data-preparation",
     "tree-data-correspondence"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-008",
   "evidence_title": "Primate tree-data correspondence parity bundle",
   "freshness": {

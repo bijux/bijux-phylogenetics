@@ -8,6 +8,7 @@
     "ou",
     "identifiability"
   ],
+  "comparison_mode": "bijux_native_reinterpretation",
   "evidence_id": "evidence-003",
   "evidence_title": "OU identifiability warning bundle",
   "freshness": {

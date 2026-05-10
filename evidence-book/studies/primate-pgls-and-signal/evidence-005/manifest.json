@@ -8,6 +8,7 @@
     "diagnostics",
     "residuals"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-005",
   "evidence_title": "Primate residual diagnostics parity bundle",
   "freshness": {

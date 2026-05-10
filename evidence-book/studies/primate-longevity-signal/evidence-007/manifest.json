@@ -8,6 +8,7 @@
     "tree-operations",
     "tree-diagnostics"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-007",
   "evidence_title": "Primate tree diagnostics parity bundle",
   "freshness": {

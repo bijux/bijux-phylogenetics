@@ -16,6 +16,7 @@
     "teaching",
     "parity"
   ],
+  "comparison_mode": "direct_parity",
   "coverage": {
     "covered_executable_line_count": 185,
     "executable_line_count": 185,
@@ -23,15 +24,6 @@
   },
   "evidence_id": "evidence-001",
   "evidence_title": "Primate longevity signal parity bundle",
-  "honesty_contract": {
-    "agreement_rule": "mark verified or verified_with_tolerance only when the compared outputs align within stated tolerance",
-    "deviation_rule": "mark plot_only, artifact_only, seeded_input_only, or workflow_only when the block is tracked but not claimed as analytical equivalence",
-    "disclosure_rule": "report discrepancies directly rather than smoothing them away"
-  },
-  "limitations": [
-    "Rendered figure equivalence remains out of scope for plot-only blocks.",
-    "The checked-in bundle captures one governed PCM1 evidence family rather than the full lecture decomposition."
-  ],
   "freshness": {
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics",
@@ -43,6 +35,15 @@
       "evidence-book/studies/primate-longevity-signal/reference"
     ]
   },
+  "honesty_contract": {
+    "agreement_rule": "mark verified or verified_with_tolerance only when the compared outputs align within stated tolerance",
+    "deviation_rule": "mark plot_only, artifact_only, seeded_input_only, or workflow_only when the block is tracked but not claimed as analytical equivalence",
+    "disclosure_rule": "report discrepancies directly rather than smoothing them away"
+  },
+  "limitations": [
+    "Rendered figure equivalence remains out of scope for plot-only blocks.",
+    "The checked-in bundle captures one governed PCM1 evidence family rather than the full lecture decomposition."
+  ],
   "owner_package": "bijux-phylogenetics",
   "ownership": {
     "analytical_surfaces": [

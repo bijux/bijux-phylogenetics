@@ -84,6 +84,7 @@ def _write_book_fixture(root: Path) -> Path:
                     "analytical_surfaces": ["taxonomy"],
                 },
                 "claim_tags": ["taxonomy", "review"],
+                "comparison_mode": "bijux_native_reinterpretation",
                 "verdict": {
                     "status": "matched",
                     "summary": "Observed output matches the checked-in fixture expectations.",

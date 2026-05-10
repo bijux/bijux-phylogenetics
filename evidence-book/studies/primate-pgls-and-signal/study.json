@@ -4,11 +4,11 @@
     "evidence-006"
   ],
   "owner_package": "bijux-phylogenetics",
-  "study_id": "primate-pgls-and-signal",
   "study_categories": [
     "teaching-study",
     "migration-study"
   ],
+  "study_id": "primate-pgls-and-signal",
   "study_title": "Primate PGLS and signal evidence study",
   "summary": "Governed parity study for the regression and signal sections of the Lund primate comparative lecture, with explicit coverage boundaries for the remaining EB and ancestral fragments."
 }

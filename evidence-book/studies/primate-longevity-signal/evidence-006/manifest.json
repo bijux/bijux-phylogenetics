@@ -8,6 +8,7 @@
     "tree-operations",
     "tree-import"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-006",
   "evidence_title": "Primate tree import parity bundle",
   "freshness": {

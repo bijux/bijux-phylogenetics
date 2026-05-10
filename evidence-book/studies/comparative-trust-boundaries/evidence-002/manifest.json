@@ -8,6 +8,7 @@
     "comparative",
     "signal"
   ],
+  "comparison_mode": "bijux_native_reinterpretation",
   "evidence_id": "evidence-002",
   "evidence_title": "Weak signal instability bundle",
   "freshness": {

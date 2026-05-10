@@ -8,6 +8,7 @@
     "workflow",
     "reload-semantics"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-001",
   "evidence_title": "Primate reload semantics bundle",
   "freshness": {

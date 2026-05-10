@@ -7,6 +7,7 @@
         "comparative",
         "pgls"
       ],
+      "comparison_mode": "bijux_native_reinterpretation",
       "evidence_id": "evidence-001",
       "evidence_title": "Comparative input rejection bundle",
       "owner_package": "bijux-phylogenetics",
@@ -23,6 +24,7 @@
         "comparative",
         "signal"
       ],
+      "comparison_mode": "bijux_native_reinterpretation",
       "evidence_id": "evidence-002",
       "evidence_title": "Weak signal instability bundle",
       "owner_package": "bijux-phylogenetics",
@@ -39,6 +41,7 @@
         "ou",
         "identifiability"
       ],
+      "comparison_mode": "bijux_native_reinterpretation",
       "evidence_id": "evidence-003",
       "evidence_title": "OU identifiability warning bundle",
       "owner_package": "bijux-phylogenetics",
@@ -54,6 +57,7 @@
         "teaching",
         "parity"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-001",
       "evidence_title": "Primate longevity signal parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -70,6 +74,7 @@
         "data-preparation",
         "workbook-loading"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-002",
       "evidence_title": "Primate workbook loading parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -86,6 +91,7 @@
         "data-preparation",
         "type-repair"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-003",
       "evidence_title": "Primate type repair parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -102,6 +108,7 @@
         "data-preparation",
         "missing-data"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-004",
       "evidence_title": "Primate missing-data accounting parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -118,6 +125,7 @@
         "data-preparation",
         "duplicate-aggregation"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-005",
       "evidence_title": "Primate duplicate-species aggregation parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -134,6 +142,7 @@
         "tree-operations",
         "tree-import"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-006",
       "evidence_title": "Primate tree import parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -150,6 +159,7 @@
         "tree-operations",
         "tree-diagnostics"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-007",
       "evidence_title": "Primate tree diagnostics parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -166,6 +176,7 @@
         "data-preparation",
         "tree-data-correspondence"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-008",
       "evidence_title": "Primate tree-data correspondence parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -182,6 +193,7 @@
         "artifact-provenance",
         "processed-export"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-009",
       "evidence_title": "Primate processed export parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -198,6 +210,7 @@
         "workflow",
         "reload-semantics"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-001",
       "evidence_title": "Primate reload semantics bundle",
       "owner_package": "bijux-phylogenetics",
@@ -214,6 +227,7 @@
         "baseline-regression",
         "gls"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-002",
       "evidence_title": "Primate baseline GLS parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -230,6 +244,7 @@
         "phylogenetic-regression",
         "pagel-lambda"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-003",
       "evidence_title": "Primate Pagel-lambda regression parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -246,6 +261,7 @@
         "phylogenetic-signal",
         "lambda-zero"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-004",
       "evidence_title": "Primate phylogenetic signal parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -262,6 +278,7 @@
         "diagnostics",
         "residuals"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-005",
       "evidence_title": "Primate residual diagnostics parity bundle",
       "owner_package": "bijux-phylogenetics",
@@ -277,6 +294,7 @@
         "coverage-gap",
         "not-comparable"
       ],
+      "comparison_mode": "direct_parity",
       "evidence_id": "evidence-006",
       "evidence_title": "Primate coverage boundary bundle",
       "owner_package": "bijux-phylogenetics",
@@ -292,6 +310,7 @@
         "workflow-audit",
         "trust-surface"
       ],
+      "comparison_mode": "bijux_native_reinterpretation",
       "evidence_id": "evidence-001",
       "evidence_title": "Taxon workflow review bundle",
       "owner_package": "bijux-phylogenetics",
@@ -316,6 +335,7 @@
             "comparative",
             "pgls"
           ],
+          "comparison_mode": "bijux_native_reinterpretation",
           "evidence_id": "evidence-001",
           "evidence_title": "Comparative input rejection bundle",
           "owner_package": "bijux-phylogenetics",
@@ -332,6 +352,7 @@
             "comparative",
             "signal"
           ],
+          "comparison_mode": "bijux_native_reinterpretation",
           "evidence_id": "evidence-002",
           "evidence_title": "Weak signal instability bundle",
           "owner_package": "bijux-phylogenetics",
@@ -348,6 +369,7 @@
             "ou",
             "identifiability"
           ],
+          "comparison_mode": "bijux_native_reinterpretation",
           "evidence_id": "evidence-003",
           "evidence_title": "OU identifiability warning bundle",
           "owner_package": "bijux-phylogenetics",
@@ -375,6 +397,7 @@
             "teaching",
             "parity"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-001",
           "evidence_title": "Primate longevity signal parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -391,6 +414,7 @@
             "data-preparation",
             "workbook-loading"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-002",
           "evidence_title": "Primate workbook loading parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -407,6 +431,7 @@
             "data-preparation",
             "type-repair"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-003",
           "evidence_title": "Primate type repair parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -423,6 +448,7 @@
             "data-preparation",
             "missing-data"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-004",
           "evidence_title": "Primate missing-data accounting parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -439,6 +465,7 @@
             "data-preparation",
             "duplicate-aggregation"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-005",
           "evidence_title": "Primate duplicate-species aggregation parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -455,6 +482,7 @@
             "tree-operations",
             "tree-import"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-006",
           "evidence_title": "Primate tree import parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -471,6 +499,7 @@
             "tree-operations",
             "tree-diagnostics"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-007",
           "evidence_title": "Primate tree diagnostics parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -487,6 +516,7 @@
             "data-preparation",
             "tree-data-correspondence"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-008",
           "evidence_title": "Primate tree-data correspondence parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -503,6 +533,7 @@
             "artifact-provenance",
             "processed-export"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-009",
           "evidence_title": "Primate processed export parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -532,6 +563,7 @@
             "workflow",
             "reload-semantics"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-001",
           "evidence_title": "Primate reload semantics bundle",
           "owner_package": "bijux-phylogenetics",
@@ -548,6 +580,7 @@
             "baseline-regression",
             "gls"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-002",
           "evidence_title": "Primate baseline GLS parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -564,6 +597,7 @@
             "phylogenetic-regression",
             "pagel-lambda"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-003",
           "evidence_title": "Primate Pagel-lambda regression parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -580,6 +614,7 @@
             "phylogenetic-signal",
             "lambda-zero"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-004",
           "evidence_title": "Primate phylogenetic signal parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -596,6 +631,7 @@
             "diagnostics",
             "residuals"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-005",
           "evidence_title": "Primate residual diagnostics parity bundle",
           "owner_package": "bijux-phylogenetics",
@@ -611,6 +647,7 @@
             "coverage-gap",
             "not-comparable"
           ],
+          "comparison_mode": "direct_parity",
           "evidence_id": "evidence-006",
           "evidence_title": "Primate coverage boundary bundle",
           "owner_package": "bijux-phylogenetics",
@@ -639,6 +676,7 @@
             "workflow-audit",
             "trust-surface"
           ],
+          "comparison_mode": "bijux_native_reinterpretation",
           "evidence_id": "evidence-001",
           "evidence_title": "Taxon workflow review bundle",
           "owner_package": "bijux-phylogenetics",

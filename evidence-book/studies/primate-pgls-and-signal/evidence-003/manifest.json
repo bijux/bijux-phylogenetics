@@ -8,6 +8,7 @@
     "phylogenetic-regression",
     "pagel-lambda"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-003",
   "evidence_title": "Primate Pagel-lambda regression parity bundle",
   "freshness": {

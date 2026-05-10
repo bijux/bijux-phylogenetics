@@ -234,6 +234,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed representation of the lecture one-line primate workspace reload contract.",
         "claim_id": "pcm2-reload-contract-governed",
         "claim_tags": ["teaching", "parity", "workflow", "reload-semantics"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["workflow-contracts"],
         "source_fragments": ["workspace-reload-contract"],
         "limitations": [
@@ -247,6 +248,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed parity for the non-phylogenetic baseline regression before phylogenetic covariance enters the workflow.",
         "claim_id": "pcm2-baseline-gls-parity",
         "claim_tags": ["teaching", "parity", "baseline-regression", "gls"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["baseline-regression"],
         "source_fragments": ["baseline-gls-fit"],
         "limitations": [
@@ -260,6 +262,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed parity for fixed-lambda and estimated-lambda regression surfaces derived from the lecture workflow.",
         "claim_id": "pcm2-pagel-lambda-regression-parity",
         "claim_tags": ["teaching", "parity", "phylogenetic-regression", "pagel-lambda"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["phylogenetic-regression"],
         "source_fragments": ["pagel-lambda-regression"],
         "limitations": [
@@ -273,6 +276,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed parity for intercept-only signal testing and lambda-zero likelihood-ratio logic.",
         "claim_id": "pcm2-phylogenetic-signal-parity",
         "claim_tags": ["teaching", "parity", "phylogenetic-signal", "lambda-zero"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["phylogenetic-signal"],
         "source_fragments": ["phylogenetic-signal-test"],
         "limitations": [
@@ -286,6 +290,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed machine-readable residual diagnostics for the baseline and estimated-lambda regression surfaces.",
         "claim_id": "pcm2-diagnostics-parity",
         "claim_tags": ["teaching", "parity", "diagnostics", "residuals"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["diagnostics"],
         "source_fragments": [
             "baseline-gls-diagnostics",
@@ -302,6 +307,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed record of uncovered transformed-tree, EB, and ancestral fragments from the lecture workflow.",
         "claim_id": "pcm2-coverage-boundary-explicit",
         "claim_tags": ["teaching", "coverage-gap", "not-comparable"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["coverage-boundaries"],
         "source_fragments": [
             "transformed-tree-workflows",
@@ -1352,6 +1358,7 @@ def _manifest_for_bundle(
             "analytical_surfaces": definition["analytical_surfaces"],
         },
         "claim_tags": definition["claim_tags"],
+        "comparison_mode": definition["comparison_mode"],
         "verdict": {
             "status": claim["verdict"],
             "summary": claim["summary"],

@@ -127,6 +127,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed expected-failure cases for rootedness, complete branch lengths, and numeric-response requirements in PGLS workflows.",
         "claim_ids": ["comparative-input-rejection-governed"],
         "claim_tags": ["runtime-guard", "expected-failure", "comparative", "pgls"],
+        "comparison_mode": "bijux_native_reinterpretation",
         "analytical_surfaces": ["comparative-input-rejection", "pgls"],
         "source_fragments": ["pgls-input-rejection-guards"],
         "limitations": [
@@ -140,6 +141,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed weak-signal case showing that significance can cross the 0.05 boundary across fixed-seed permutation reruns.",
         "claim_ids": ["weak-signal-instability-visible"],
         "claim_tags": ["weak-signal", "instability", "comparative", "signal"],
+        "comparison_mode": "bijux_native_reinterpretation",
         "analytical_surfaces": ["weak-signal", "result-instability", "phylogenetic-signal"],
         "source_fragments": ["permutation-signal-instability"],
         "limitations": [
@@ -153,6 +155,7 @@ BUNDLE_DEFINITIONS = [
         "summary": "Governed audit of built-in reference cases that should trigger OU identifiability warnings.",
         "claim_ids": ["ou-identifiability-boundaries-detected"],
         "claim_tags": ["model-instability", "comparative", "ou", "identifiability"],
+        "comparison_mode": "bijux_native_reinterpretation",
         "analytical_surfaces": ["model-instability", "ou-identifiability"],
         "source_fragments": ["ou-identifiability-reference-audit"],
         "limitations": [
@@ -574,6 +577,7 @@ def _manifest_for_bundle(definition: dict[str, object], report_payload: dict[str
             "analytical_surfaces": definition["analytical_surfaces"],
         },
         "claim_tags": definition["claim_tags"],
+        "comparison_mode": definition["comparison_mode"],
         "verdict": {
             "status": verdict_status,
             "summary": _bundle_verdict_summary(evidence_id, report_payload),

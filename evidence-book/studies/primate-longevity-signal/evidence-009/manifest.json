@@ -8,6 +8,7 @@
     "artifact-provenance",
     "processed-export"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-009",
   "evidence_title": "Primate processed export parity bundle",
   "freshness": {

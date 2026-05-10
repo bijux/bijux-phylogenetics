@@ -16,8 +16,19 @@
     "workflow-audit",
     "trust-surface"
   ],
+  "comparison_mode": "bijux_native_reinterpretation",
   "evidence_id": "evidence-001",
   "evidence_title": "Taxon workflow review bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics",
+      "evidence-book/studies/taxon-trust/build_evidence.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "packages/bijux-phylogenetics/tests/fixtures"
+    ]
+  },
   "input_checksums": {
     "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta": "07284e4f291c4fe056d44a6ba4659c2775d592003535604f2b4614c5aad201fa",
     "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_filtered_alignment.fasta": "0e9a5dd195add94cb3e6040deb840974a4b040dfa107b0754021c1ef53da9fec",
@@ -33,16 +44,6 @@
   "limitations": [
     "Covers one governed taxon-workflow bundle rather than the full repository surface."
   ],
-  "freshness": {
-    "governed_code_paths": [
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics",
-      "evidence-book/studies/taxon-trust/build_evidence.py"
-    ],
-    "last_generated_on": "2026-05-10",
-    "source_basis_locators": [
-      "packages/bijux-phylogenetics/tests/fixtures"
-    ]
-  },
   "owner_package": "bijux-phylogenetics",
   "ownership": {
     "analytical_surfaces": [

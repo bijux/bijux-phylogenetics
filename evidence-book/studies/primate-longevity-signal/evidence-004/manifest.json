@@ -8,6 +8,7 @@
     "data-preparation",
     "missing-data"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-004",
   "evidence_title": "Primate missing-data accounting parity bundle",
   "freshness": {

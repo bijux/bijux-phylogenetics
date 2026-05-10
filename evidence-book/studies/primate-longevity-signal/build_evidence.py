@@ -1168,6 +1168,7 @@ def _build_manifest(
             "deviation_rule": "mark plot_only, artifact_only, seeded_input_only, or workflow_only when the block is tracked but not claimed as analytical equivalence",
             "disclosure_rule": "report discrepancies directly rather than smoothing them away",
         },
+        "comparison_mode": "direct_parity",
     }
 
 

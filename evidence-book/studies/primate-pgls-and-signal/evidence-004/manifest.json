@@ -8,6 +8,7 @@
     "phylogenetic-signal",
     "lambda-zero"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-004",
   "evidence_title": "Primate phylogenetic signal parity bundle",
   "freshness": {

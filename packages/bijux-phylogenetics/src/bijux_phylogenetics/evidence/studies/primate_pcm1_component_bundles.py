@@ -30,6 +30,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "data-preparation", "workbook-loading"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
             "The raw workbook remains an external teaching source; the Python-side review starts from the governed processed reference artifact."
@@ -59,6 +60,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "data-preparation", "type-repair"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
             "The Python-side review validates the repaired processed artifact rather than replaying the external workbook import directly."
@@ -83,6 +85,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "data-preparation", "missing-data"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
             "The raw workbook remains external, so the bundle records the governed missing-value contract at the processed artifact boundary."
@@ -107,6 +110,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "data-preparation", "duplicate-aggregation"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
             "The raw workbook is external, so duplicate consolidation is demonstrated through the governed row-count and species-count contract."
@@ -131,6 +135,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "tree-operations", "tree-import"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["tree-preprocessing"],
         "limitations": [
             "This bundle focuses on import and preserved tree shape; downstream correspondence and diagnostics are broken out separately."
@@ -160,6 +165,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "tree-operations", "tree-diagnostics"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["tree-validation"],
         "limitations": [
             "This bundle records the checked-in diagnostic contract; visual tree surfaces remain intentionally separate."
@@ -184,6 +190,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "data-preparation", "tree-data-correspondence"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["tree-data-alignment"],
         "limitations": [
             "This bundle covers correspondence and join readiness only; later lambda and ancestral-state results are separate evidence."
@@ -217,6 +224,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims.",
         "verdict": "matched",
         "claim_tags": ["teaching", "parity", "artifact-provenance", "processed-export"],
+        "comparison_mode": "direct_parity",
         "analytical_surfaces": ["artifact-provenance"],
         "limitations": [
             "The governed export contract records the downstream artifacts and their parity expectations, not the rendered plot outputs that consume them."
@@ -554,6 +562,7 @@ def _build_manifest(
             "analytical_surfaces": spec["analytical_surfaces"],
         },
         "claim_tags": spec["claim_tags"],
+        "comparison_mode": spec["comparison_mode"],
         "verdict": {
             "status": spec["verdict"],
             "summary": spec["claim_summary"],

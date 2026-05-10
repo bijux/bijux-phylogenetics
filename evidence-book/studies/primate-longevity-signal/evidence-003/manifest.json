@@ -8,6 +8,7 @@
     "data-preparation",
     "type-repair"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-003",
   "evidence_title": "Primate type repair parity bundle",
   "freshness": {

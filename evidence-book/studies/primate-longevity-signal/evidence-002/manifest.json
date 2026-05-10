@@ -8,6 +8,7 @@
     "data-preparation",
     "workbook-loading"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-002",
   "evidence_title": "Primate workbook loading parity bundle",
   "freshness": {

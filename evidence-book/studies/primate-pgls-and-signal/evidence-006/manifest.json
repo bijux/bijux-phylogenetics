@@ -7,6 +7,7 @@
     "coverage-gap",
     "not-comparable"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-006",
   "evidence_title": "Primate coverage boundary bundle",
   "freshness": {

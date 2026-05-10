@@ -1,0 +1,76 @@
+{
+  "comparison_mode_counts": {
+    "direct_parity": 9
+  },
+  "course_material_locator": "external:lund/pcm1-plots-signal/script",
+  "example_count": 4,
+  "examples": [
+    {
+      "bijux_locators": [
+        "bijux_phylogenetics.evidence.studies.primate_pcm1_component_bundles:build_primate_pcm1_component_bundles",
+        "bijux_phylogenetics.evidence.studies.primate_longevity_signal:build_primate_source_fragment_map"
+      ],
+      "bijux_summary": "Bijux records the cleaned primate table as a governed evidence surface instead of burying preprocessing behind later model output.",
+      "comparison_mode": "direct_parity",
+      "example_id": "pcm1-data-preparation",
+      "family_id": "data-preparation",
+      "fragment_id": "primate-data-preprocessing",
+      "r_fragment_title": "Raw primate preprocessing to checked-in analysis table",
+      "r_source_locators": [
+        "external:lund/pcm1-plots-signal/script#L23-L79"
+      ],
+      "why_migrate_note": "The Python-side evidence makes type repair, missing-data accounting, and grouped species decisions machine-checkable."
+    },
+    {
+      "bijux_locators": [
+        "bijux_phylogenetics.core.pruning:prune_tree_to_requested_taxa",
+        "bijux_phylogenetics.evidence.studies.primate_pcm1_component_bundles:build_primate_pcm1_component_bundles"
+      ],
+      "bijux_summary": "The tree-trimming and alignment surface is governed by structural parity outputs rather than visual inspection.",
+      "comparison_mode": "direct_parity",
+      "example_id": "pcm1-tree-operations",
+      "family_id": "tree-operations",
+      "fragment_id": "tree-import-and-pruning",
+      "r_fragment_title": "Tree import, checking, node labels, and pruning",
+      "r_source_locators": [
+        "external:lund/pcm1-plots-signal/script#L80-L120"
+      ],
+      "why_migrate_note": "Students can move from interactive R tree surgery to a scriptable tree-review workflow with explicit structural checks."
+    },
+    {
+      "bijux_locators": [
+        "bijux_phylogenetics.comparative.signal:estimate_pagels_lambda",
+        "bijux_phylogenetics.validation_corpus:build_scientific_validation_report"
+      ],
+      "bijux_summary": "Bijux turns the lecture's lambda-fitting path into a tracked parity bundle with explicit tolerance rules.",
+      "comparison_mode": "direct_parity",
+      "example_id": "pcm1-signal-fitting",
+      "family_id": "comparative-signal",
+      "fragment_id": "primate-lambda-fit",
+      "r_fragment_title": "Primate longevity lambda fit",
+      "r_source_locators": [
+        "external:lund/pcm1-plots-signal/script#L347-L354"
+      ],
+      "why_migrate_note": "The migration value is not shorter syntax; it is a governed record of where the fitted values align and where boundaries remain."
+    },
+    {
+      "bijux_locators": [
+        "bijux_phylogenetics.validation_corpus:build_scientific_validation_report",
+        "bijux_phylogenetics.evidence.studies.primate_longevity_signal:build_primate_scalar_parity_table"
+      ],
+      "bijux_summary": "Ancestral-state checks are rendered as parity rows and reviewable evidence rather than isolated notebook output.",
+      "comparison_mode": "direct_parity",
+      "example_id": "pcm1-ancestral-reconstruction",
+      "family_id": "ancestral-reconstruction",
+      "fragment_id": "continuous-ancestral-point-estimates",
+      "r_fragment_title": "Continuous ancestral point estimates",
+      "r_source_locators": [
+        "external:lund/pcm1-plots-signal/script#L395-L399"
+      ],
+      "why_migrate_note": "The Python-side evidence helps students compare node-level claims without manually reading long console output."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal"
+}

@@ -8,6 +8,7 @@
     "data-preparation",
     "duplicate-aggregation"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-005",
   "evidence_title": "Primate duplicate-species aggregation parity bundle",
   "freshness": {

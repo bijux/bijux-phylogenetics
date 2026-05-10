@@ -12,9 +12,14 @@ from .portability import (
     render_portability_rules_markdown,
 )
 from .teaching import (
+    ALLOWED_COMPARISON_MODES,
     TEACHING_GUIDE_FILENAME,
     TEACHING_GUIDE_MARKDOWN_FILENAME,
+    MIGRATION_GUIDE_FILENAME,
+    MIGRATION_GUIDE_MARKDOWN_FILENAME,
+    build_migration_guide,
     build_teaching_guide,
+    render_migration_guide_markdown,
     render_teaching_guide_markdown,
     teaching_study_ids,
 )
@@ -66,6 +71,7 @@ EVIDENCE_REQUIRED_KEYS = {
     "freshness",
     "ownership",
     "claim_tags",
+    "comparison_mode",
     "verdict",
     "limitations",
 }
@@ -501,6 +507,15 @@ def _validate_bundle_manifest(
                 "evidence manifest limitations must be a list",
             )
         )
+    comparison_mode = manifest.get("comparison_mode")
+    if comparison_mode not in ALLOWED_COMPARISON_MODES:
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, manifest_path),
+                "evidence manifest comparison_mode must be one of: "
+                + ", ".join(sorted(ALLOWED_COMPARISON_MODES)),
+            )
+        )
     return manifest
 
 
@@ -811,6 +826,7 @@ def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
                 "owner_package": manifest["owner_package"],
                 "relative_path": _relative_to(root, bundle_root).as_posix(),
                 "claim_tags": manifest["claim_tags"],
+                "comparison_mode": manifest["comparison_mode"],
                 "verdict_status": verdict["status"],
                 "verdict_summary": verdict["summary"],
             }
@@ -1814,12 +1830,33 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
             _load_json(family_index_path),
             _load_json(source_fragment_map_path),
         )
+        bundle_manifests = [
+            _load_json(bundle_root / EVIDENCE_BUNDLE_MANIFEST)
+            for bundle_root in sorted(
+                path
+                for path in study_root.iterdir()
+                if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
+            )
+        ]
         (study_root / TEACHING_GUIDE_FILENAME).write_text(
             json.dumps(teaching_guide_payload, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
         (study_root / TEACHING_GUIDE_MARKDOWN_FILENAME).write_text(
             render_teaching_guide_markdown(teaching_guide_payload),
+            encoding="utf-8",
+        )
+        migration_guide_payload = build_migration_guide(
+            study_manifest,
+            _load_json(source_fragment_map_path),
+            bundle_manifests,
+        )
+        (study_root / MIGRATION_GUIDE_FILENAME).write_text(
+            json.dumps(migration_guide_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        (study_root / MIGRATION_GUIDE_MARKDOWN_FILENAME).write_text(
+            render_migration_guide_markdown(migration_guide_payload),
             encoding="utf-8",
         )
     payload = build_evidence_book_index(repo_root)

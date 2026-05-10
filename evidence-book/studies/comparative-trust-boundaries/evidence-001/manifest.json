@@ -8,6 +8,7 @@
     "comparative",
     "pgls"
   ],
+  "comparison_mode": "bijux_native_reinterpretation",
   "evidence_id": "evidence-001",
   "evidence_title": "Comparative input rejection bundle",
   "freshness": {

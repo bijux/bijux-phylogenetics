@@ -8,6 +8,7 @@
     "baseline-regression",
     "gls"
   ],
+  "comparison_mode": "direct_parity",
   "evidence_id": "evidence-002",
   "evidence_title": "Primate baseline GLS parity bundle",
   "freshness": {
