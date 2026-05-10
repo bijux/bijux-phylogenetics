@@ -66,6 +66,10 @@ from bijux_phylogenetics.comparative import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
 )
+from bijux_phylogenetics.comparative.evidence_contract import (
+    SUPPORTED_EVIDENCE_API_LOCATORS,
+    resolve_supported_evidence_api,
+)
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
@@ -6133,6 +6137,18 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "evidence",
         "adapter",
     ]
+
+
+def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints() -> (
+    None
+):
+    resolved = {
+        locator: resolve_supported_evidence_api(locator)
+        for locator in SUPPORTED_EVIDENCE_API_LOCATORS
+    }
+
+    assert resolved["bijux_phylogenetics.comparative:inspect_pgls_inputs"] is inspect_pgls_inputs
+    assert resolved["bijux_phylogenetics.comparative:run_pgls"] is run_pgls
 
 
 def test_run_capability_demo_creates_expected_artifacts(tmp_path: Path) -> None:

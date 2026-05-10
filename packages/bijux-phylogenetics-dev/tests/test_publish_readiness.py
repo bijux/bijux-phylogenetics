@@ -300,6 +300,23 @@ __all__ = ["inspect_pgls_inputs", "run_pgls"]
         + "\n",
     )
     _write(
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "comparative"
+        / "evidence_contract.py",
+        """
+SUPPORTED_EVIDENCE_API_MODULES = ("bijux_phylogenetics.comparative",)
+SUPPORTED_EVIDENCE_API_LOCATORS = (
+    "bijux_phylogenetics.comparative:inspect_pgls_inputs",
+    "bijux_phylogenetics.comparative:run_pgls",
+)
+""".strip()
+        + "\n",
+    )
+    _write(
         repo_root / "packages" / "phylogenetic" / "pyproject.toml",
         """
 [project]

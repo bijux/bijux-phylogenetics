@@ -106,6 +106,20 @@ __all__ = ["run_pgls"]
         "def run_pgls() -> str:\n    return 'ok'\n",
     )
     _write(
+        repo_root
+        / "packages"
+        / "demo-runtime"
+        / "src"
+        / "demo_runtime"
+        / "comparative"
+        / "evidence_contract.py",
+        """
+SUPPORTED_EVIDENCE_API_MODULES = ("demo_runtime.api",)
+SUPPORTED_EVIDENCE_API_LOCATORS = ("demo_runtime.api:run_pgls",)
+""".strip()
+        + "\n",
+    )
+    _write(
         repo_root / "packages" / "demo-alias" / "src" / "demo_alias" / "__init__.py",
         "from demo_runtime import run_pgls\n",
     )
@@ -148,6 +162,9 @@ def test_build_package_boundary_report_accepts_governed_repo(tmp_path: Path) -> 
 
     assert report["issue_count"] == 0
     assert report["runtime_public_api"]["forbidden_top_level_exports_present"] == []
+    assert report["runtime_evidence_compatibility"]["contract_locators"] == [
+        "demo_runtime.api:run_pgls"
+    ]
 
 
 def test_build_package_boundary_report_flags_forbidden_runtime_exports(
@@ -178,6 +195,31 @@ def test_build_package_boundary_report_flags_cross_package_import_drift(
 
     issue_codes = {issue["code"] for issue in report["issues"]}
     assert "repo-import-boundary-drift" in issue_codes
+
+
+def test_build_package_boundary_report_flags_runtime_evidence_contract_drift(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    _write(
+        repo_root
+        / "packages"
+        / "demo-runtime"
+        / "src"
+        / "demo_runtime"
+        / "comparative"
+        / "evidence_contract.py",
+        """
+SUPPORTED_EVIDENCE_API_MODULES = ("demo_runtime.api",)
+SUPPORTED_EVIDENCE_API_LOCATORS = ("demo_runtime.api:missing_export",)
+""".strip()
+        + "\n",
+    )
+
+    report = build_package_boundary_report(repo_root)
+
+    issue_codes = {issue["code"] for issue in report["issues"]}
+    assert "runtime-evidence-locator-contract-drift" in issue_codes
 
 
 def test_repository_package_boundary_report_is_clean() -> None:

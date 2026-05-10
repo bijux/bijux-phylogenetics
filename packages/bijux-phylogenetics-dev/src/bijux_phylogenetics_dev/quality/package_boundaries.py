@@ -198,6 +198,26 @@ def _module_exports(module_path: Path) -> set[str]:
     return exports
 
 
+def _tuple_constant_strings(module_path: Path, constant_name: str) -> tuple[str, ...]:
+    module = ast.parse(module_path.read_text(encoding="utf-8"))
+    for node in module.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == constant_name
+            for target in node.targets
+        ):
+            continue
+        if not isinstance(node.value, (ast.Tuple, ast.List)):
+            continue
+        values: list[str] = []
+        for element in node.value.elts:
+            if isinstance(element, ast.Constant) and isinstance(element.value, str):
+                values.append(element.value)
+        return tuple(values)
+    return ()
+
+
 def _module_source_path(
     repo_root: Path,
     policy: PackageRolePolicy,
@@ -249,6 +269,36 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
                 code="forbidden-runtime-top-level-export",
                 path=runtime_init.relative_to(repo_root).as_posix(),
                 message=f"runtime top-level export {export} leaks evidence-only helper surface",
+            )
+        )
+    evidence_contract_module = (
+        repo_root
+        / runtime_policy.package_dir
+        / "src"
+        / runtime_policy.module_root
+        / "comparative"
+        / "evidence_contract.py"
+    )
+    contract_modules = _tuple_constant_strings(
+        evidence_contract_module, "SUPPORTED_EVIDENCE_API_MODULES"
+    )
+    contract_locators = _tuple_constant_strings(
+        evidence_contract_module, "SUPPORTED_EVIDENCE_API_LOCATORS"
+    )
+    if contract_modules != policy.runtime_evidence_compatibility.supported_api_modules:
+        issues.append(
+            BoundaryIssue(
+                code="runtime-evidence-module-contract-drift",
+                path=evidence_contract_module.relative_to(repo_root).as_posix(),
+                message="runtime evidence API module contract does not match the governed package-boundary policy",
+            )
+        )
+    if contract_locators != policy.runtime_evidence_compatibility.supported_api_locators:
+        issues.append(
+            BoundaryIssue(
+                code="runtime-evidence-locator-contract-drift",
+                path=evidence_contract_module.relative_to(repo_root).as_posix(),
+                message="runtime evidence API locator contract does not match the governed package-boundary policy",
             )
         )
 
@@ -414,6 +464,9 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
         "package_roles": package_reports,
         "target_package_roles": target_role_reports,
         "runtime_evidence_compatibility": {
+            "contract_module_path": evidence_contract_module.relative_to(repo_root).as_posix(),
+            "contract_modules": list(contract_modules),
+            "contract_locators": list(contract_locators),
             "runtime_version_spec": compatibility.runtime_version_spec,
             "supported_api_modules": list(compatibility.supported_api_modules),
             "supported_api_locators": list(compatibility.supported_api_locators),
