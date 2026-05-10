@@ -1709,6 +1709,12 @@
               "package_dir": "packages/bijux-phylogenetics",
               "artifacts_dir": "artifacts/bijux-phylogenetics",
               "build_targets": "build sbom"
+            },
+            {
+              "package_slug": "phylogenetic",
+              "package_dir": "packages/phylogenetic",
+              "artifacts_dir": "artifacts/phylogenetic",
+              "build_targets": "build sbom"
             }
           ]
         },
@@ -1723,6 +1729,9 @@
           "value": [
             {
               "package_slug": "bijux-phylogenetics"
+            },
+            {
+              "package_slug": "phylogenetic"
             }
           ]
         },
@@ -1732,6 +1741,9 @@
           "value": [
             {
               "package_slug": "bijux-phylogenetics"
+            },
+            {
+              "package_slug": "phylogenetic"
             }
           ]
         }
@@ -1790,6 +1802,18 @@
           {
             "package-ecosystem": "pip",
             "directory": "/packages/bijux-phylogenetics-dev",
+            "schedule": {
+              "interval": "weekly"
+            },
+            "open-pull-requests-limit": 10,
+            "labels": [
+              "dependencies",
+              "python"
+            ]
+          },
+          {
+            "package-ecosystem": "pip",
+            "directory": "/packages/phylogenetic",
             "schedule": {
               "interval": "weekly"
             },
@@ -2118,6 +2142,11 @@
                       "package_dir": "packages/bijux-phylogenetics",
                       "artifacts_dir": "artifacts/bijux-phylogenetics",
                       "check_targets": "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
+                    },
+                    {
+                      "package_slug": "phylogenetic",
+                      "package_dir": "packages/phylogenetic",
+                      "artifacts_dir": "artifacts/phylogenetic"
                     },
                     {
                       "package_slug": "bijux-phylogenetics-dev",

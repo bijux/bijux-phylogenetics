@@ -76,6 +76,9 @@ jobs:
             package_dir: packages/bijux-phylogenetics
             artifacts_dir: artifacts/bijux-phylogenetics
             check_targets: "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
+          - package_slug: phylogenetic
+            package_dir: packages/phylogenetic
+            artifacts_dir: artifacts/phylogenetic
           - package_slug: bijux-phylogenetics-dev
             package_dir: packages/bijux-phylogenetics-dev
             artifacts_dir: artifacts/bijux-phylogenetics-dev
