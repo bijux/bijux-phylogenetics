@@ -927,7 +927,7 @@ def build_scientific_validation_report(
             claim="cross-environment reproducibility is not yet claimed, and external R ecosystem comparisons remain narrower than the broader validation roadmap",
             evidence=[
                 "goal-252 remains outside this iteration",
-                "reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity demonstrates one checked-in R comparison bundle",
+                "evidence-book/studies/primate-longevity-signal/evidence-001 demonstrates one checked-in R comparison bundle",
             ],
         ),
         ScientificValidationClaim(

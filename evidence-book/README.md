@@ -1,13 +1,13 @@
-# Reports
+# Evidence Book
 
-This directory holds checked-in comparative trust reports and curated experiment
+This directory holds checked-in comparative trust studies and curated evidence
 bundles for `bijux-phylogenetics`.
 
 These files are intentionally different from transient local outputs under
 `artifacts/`:
 
-- `reports/` contains reviewed, versioned evidence summaries that are meant to
-  stay in the repository
+- `evidence-book/` contains reviewed, versioned evidence summaries that are
+  meant to stay in the repository
 - `artifacts/` contains scratch execution products, caches, and local build
   outputs that should not define repository trust on their own
 
