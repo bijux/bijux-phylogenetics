@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from bijux_phylogenetics.evidence.bundle_artifacts import REQUIRED_BUNDLE_LOCAL_ARTIFACTS
+
 INPUT_MANIFEST_FILENAME = "inputs.manifest.json"
 SKIP_BUNDLE_FILENAMES = {
     "manifest.json",
@@ -17,6 +19,7 @@ SKIP_BUNDLE_FILENAMES = {
     "claims.json",
     "claim_verdicts.json",
     INPUT_MANIFEST_FILENAME,
+    *REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
 }
 DATA_LIKE_EXTENSIONS = {
     ".csv",
