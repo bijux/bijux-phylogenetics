@@ -1,4 +1,5 @@
 {
+  "intake_policy": "read-only-external-source",
   "schema_version": 1,
   "source_count": 3,
   "sources": [
@@ -13,6 +14,7 @@
       "label": "Lund PCM2 modes and PGLS lecture script",
       "locator": "external:lund/pcm2-modes-pgls/script",
       "path_hint": "PCM2_modes_pgls/Lecture/R/Scripts/PCM2_modes_pgls.R",
+      "read_only": true,
       "source_id": "lund-pcm2-script"
     },
     {
@@ -23,6 +25,7 @@
         "primate",
         "primatetree"
       ],
+      "read_only": true,
       "source_id": "lund-primate-rdata"
     },
     {
@@ -33,6 +36,7 @@
         "reference_primate.csv",
         "reference_trimmed_primatetree.nwk"
       ],
+      "read_only": false,
       "source_id": "governed-primate-reference-artifacts"
     }
   ],

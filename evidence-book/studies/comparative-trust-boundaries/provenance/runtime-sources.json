@@ -1,40 +1,53 @@
 {
+  "intake_policy": "repository-owned-source",
   "schema_version": 1,
   "source_count": 6,
   "sources": [
     {
       "kind": "repository-fixture",
+      "label": "unrooted comparative tree fixture",
       "locator": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_unrooted.nwk",
+      "read_only": true,
       "role": "expected-failure-tree",
       "source_id": "example-tree-unrooted"
     },
     {
       "kind": "repository-fixture",
+      "label": "branch-length incomplete comparative tree fixture",
       "locator": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_no_lengths.nwk",
+      "read_only": true,
       "role": "expected-failure-tree",
       "source_id": "example-tree-no-lengths"
     },
     {
       "kind": "repository-fixture",
+      "label": "rooted comparative tree fixture",
       "locator": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk",
+      "read_only": true,
       "role": "expected-failure-tree",
       "source_id": "example-tree-rooted"
     },
     {
       "kind": "repository-fixture",
+      "label": "comparative traits fixture",
       "locator": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv",
+      "read_only": true,
       "role": "expected-failure-traits",
       "source_id": "example-traits-comparative"
     },
     {
       "kind": "repository-fixture",
+      "label": "six-taxa stability tree fixture",
       "locator": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_six_taxa.nwk",
+      "read_only": true,
       "role": "stability-tree",
       "source_id": "example-tree-six-taxa"
     },
     {
       "kind": "repository-evidence",
+      "label": "governed weak-signal traits table",
       "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-002/weak_signal_traits.tsv",
+      "read_only": false,
       "role": "stability-traits",
       "source_id": "weak-signal-governed-traits"
     }
