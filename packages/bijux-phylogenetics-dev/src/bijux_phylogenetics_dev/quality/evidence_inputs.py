@@ -31,6 +31,8 @@ DATA_LIKE_EXTENSIONS = {
     ".xlsx",
     ".rdata",
 }
+LOCAL_INPUT_EXTENSIONS = {".csv", ".tsv", ".nwk", ".nex", ".xlsx", ".rdata"}
+EXPLICIT_LOCAL_INPUT_FILENAMES = {"expected-failure-cases.json"}
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -86,7 +88,7 @@ def _source_inputs(
     return source_inputs
 
 
-def _local_inputs(
+def _governed_local_artifacts(
     manifest: dict[str, Any], bundle_root: Path, repo_root: Path
 ) -> list[dict[str, Any]]:
     manifest_locators = {
@@ -122,15 +124,47 @@ def _local_inputs(
     return local_inputs
 
 
+def _classify_local_input(entry: dict[str, Any]) -> str | None:
+    label = str(entry.get("label", ""))
+    suffix = Path(label).suffix.lower()
+    if label.startswith("reference_"):
+        return "copied-reference-fragment"
+    if label.startswith("random_"):
+        return "derived-local-input"
+    if label in EXPLICIT_LOCAL_INPUT_FILENAMES:
+        return "derived-local-input"
+    if suffix in LOCAL_INPUT_EXTENSIONS:
+        return "derived-local-input"
+    return None
+
+
+def _local_inputs(local_artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    local_inputs: list[dict[str, Any]] = []
+    for artifact in local_artifacts:
+        input_class = _classify_local_input(artifact)
+        if input_class is None:
+            continue
+        local_inputs.append(
+            {
+                **artifact,
+                "input_class": input_class,
+            }
+        )
+    return local_inputs
+
+
 def build_inputs_manifest(repo_root: Path, bundle_root: Path) -> dict[str, Any]:
     manifest = _load_json(bundle_root / "manifest.json")
     source_inputs = _source_inputs(manifest, bundle_root, repo_root)
-    local_inputs = _local_inputs(manifest, bundle_root, repo_root)
+    local_artifacts = _governed_local_artifacts(manifest, bundle_root, repo_root)
+    local_inputs = _local_inputs(local_artifacts)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "study_id": manifest["study_id"],
         "evidence_id": manifest["evidence_id"],
         "source_input_count": len(source_inputs),
+        "governed_local_artifact_count": len(local_artifacts),
+        "governed_local_artifacts": local_artifacts,
         "local_input_count": len(local_inputs),
         "source_inputs": source_inputs,
         "local_inputs": local_inputs,

@@ -94,11 +94,12 @@ def test_sync_inputs_manifests_writes_bundle_companion_files(tmp_path: Path) -> 
     ]
     payload = json.loads(written[0].read_text(encoding="utf-8"))
     assert payload["source_input_count"] == 2
-    assert payload["local_input_count"] == 2
+    assert payload["governed_local_artifact_count"] == 2
+    assert payload["local_input_count"] == 1
     assert {entry["locator"] for entry in payload["local_inputs"]} == {
-        "evidence-book/studies/demo-study/evidence-001/parity.json",
         "evidence-book/studies/demo-study/evidence-001/reference_table.csv",
     }
+    assert payload["local_inputs"][0]["input_class"] == "copied-reference-fragment"
 
 
 def test_check_inputs_manifests_flags_stale_bundle_companion_files(

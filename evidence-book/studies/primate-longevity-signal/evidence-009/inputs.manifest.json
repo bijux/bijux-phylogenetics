@@ -1,7 +1,7 @@
 {
   "evidence_id": "evidence-009",
-  "local_input_count": 1,
-  "local_inputs": [
+  "governed_local_artifact_count": 1,
+  "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
       "kind": "governed-local-input",
@@ -11,7 +11,9 @@
       "sha256": "b583117bd8b83cdba404b278e0f69ea0bde1010bffb358ff345616c3f7d778d1"
     }
   ],
-  "schema_version": 1,
+  "local_input_count": 0,
+  "local_inputs": [],
+  "schema_version": 2,
   "source_input_count": 3,
   "source_inputs": [
     {

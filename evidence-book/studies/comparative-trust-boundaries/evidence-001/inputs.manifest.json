@@ -1,7 +1,7 @@
 {
   "evidence_id": "evidence-001",
-  "local_input_count": 1,
-  "local_inputs": [
+  "governed_local_artifact_count": 1,
+  "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
       "kind": "governed-local-input",
@@ -11,7 +11,19 @@
       "sha256": "b1c96fba061204c1c142bee2626c9e17311f86ce330834ce9f3c16700bcf8754"
     }
   ],
-  "schema_version": 1,
+  "local_input_count": 1,
+  "local_inputs": [
+    {
+      "input_class": "derived-local-input",
+      "input_id": "local-input-001",
+      "kind": "governed-local-input",
+      "label": "expected-failure-cases.json",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-001/expected-failure-cases.json",
+      "read_only": false,
+      "sha256": "b1c96fba061204c1c142bee2626c9e17311f86ce330834ce9f3c16700bcf8754"
+    }
+  ],
+  "schema_version": 2,
   "source_input_count": 4,
   "source_inputs": [
     {
