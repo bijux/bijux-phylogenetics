@@ -25,6 +25,16 @@ from bijux_phylogenetics.evidence.book import (
     render_evidence_verdict_workflows,
     validate_evidence_book,
 )
+from bijux_phylogenetics.evidence.teaching import (
+    build_migration_guide,
+    build_student_safe_reproducibility_contract,
+    build_teaching_and_migration_index,
+    build_teaching_guide,
+    render_migration_guide_markdown,
+    render_student_safe_reproducibility_markdown,
+    render_teaching_and_migration_index_markdown,
+    render_teaching_guide_markdown,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -108,3 +118,78 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     assert regeneration_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_regeneration_contract(regeneration_contract)
+
+
+def test_repository_teaching_and_migration_surfaces_match_generated_payloads() -> None:
+    study_ids = [
+        "primate-longevity-signal",
+        "primate-pgls-and-signal",
+    ]
+    teaching_guides = []
+    migration_guides = []
+    reproducibility_contracts = []
+
+    for study_id in study_ids:
+        study_root = REPO_ROOT / "evidence-book" / "studies" / study_id
+        study_manifest = json.loads((study_root / "study.json").read_text(encoding="utf-8"))
+        family_index = json.loads((study_root / "family-index.json").read_text(encoding="utf-8"))
+        source_fragment_map = json.loads(
+            (study_root / "source-fragment-map.json").read_text(encoding="utf-8")
+        )
+        bundle_manifests = [
+            json.loads(path.read_text(encoding="utf-8"))
+            for path in sorted(study_root.glob("evidence-*/manifest.json"))
+        ]
+
+        teaching_payload = build_teaching_guide(
+            study_manifest,
+            family_index,
+            source_fragment_map,
+        )
+        migration_payload = build_migration_guide(
+            study_manifest,
+            source_fragment_map,
+            bundle_manifests,
+        )
+        reproducibility_payload = build_student_safe_reproducibility_contract(
+            study_manifest
+        )
+
+        assert json.loads(
+            (study_root / "teaching-guide.json").read_text(encoding="utf-8")
+        ) == teaching_payload
+        assert (study_root / "teaching-guide.md").read_text(
+            encoding="utf-8"
+        ) == render_teaching_guide_markdown(teaching_payload)
+        assert json.loads(
+            (study_root / "migration-guide.json").read_text(encoding="utf-8")
+        ) == migration_payload
+        assert (study_root / "migration-guide.md").read_text(
+            encoding="utf-8"
+        ) == render_migration_guide_markdown(migration_payload)
+        assert json.loads(
+            (study_root / "student-safe-reproducibility.json").read_text(
+                encoding="utf-8"
+            )
+        ) == reproducibility_payload
+        assert (study_root / "student-safe-reproducibility.md").read_text(
+            encoding="utf-8"
+        ) == render_student_safe_reproducibility_markdown(reproducibility_payload)
+
+        teaching_guides.append(teaching_payload)
+        migration_guides.append(migration_payload)
+        reproducibility_contracts.append(reproducibility_payload)
+
+    landing_payload = build_teaching_and_migration_index(
+        teaching_guides,
+        migration_guides,
+        reproducibility_contracts,
+    )
+    landing_root = REPO_ROOT / "evidence-book" / "index"
+
+    assert json.loads(
+        (landing_root / "teaching-and-migration.json").read_text(encoding="utf-8")
+    ) == landing_payload
+    assert (landing_root / "teaching-and-migration.md").read_text(
+        encoding="utf-8"
+    ) == render_teaching_and_migration_index_markdown(landing_payload)

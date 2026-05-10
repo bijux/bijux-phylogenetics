@@ -13,6 +13,7 @@ from .portability import (
 )
 from .teaching import (
     ALLOWED_COMPARISON_MODES,
+    ALLOWED_STUDY_CATEGORIES,
     TEACHING_GUIDE_FILENAME,
     TEACHING_GUIDE_MARKDOWN_FILENAME,
     MIGRATION_GUIDE_FILENAME,
@@ -29,6 +30,7 @@ from .teaching import (
     render_student_safe_reproducibility_markdown,
     render_migration_guide_markdown,
     render_teaching_guide_markdown,
+    study_metadata,
     teaching_study_ids,
 )
 
@@ -270,6 +272,23 @@ def _validate_study_manifest(
             EvidenceBookValidationIssue(
                 _relative_to(book_root, manifest_path),
                 "study manifest study_id must match directory name",
+            )
+        )
+    study_categories = manifest.get("study_categories")
+    if not isinstance(study_categories, list) or not study_categories or not all(
+        isinstance(value, str) and value for value in study_categories
+    ):
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, manifest_path),
+                "study manifest study_categories must be a non-empty list of strings",
+            )
+        )
+    elif not set(study_categories) <= ALLOWED_STUDY_CATEGORIES:
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, manifest_path),
+                "study manifest study_categories must use governed category names",
             )
         )
     return manifest
@@ -559,7 +578,37 @@ def validate_evidence_book(
 
     bundle_paths: list[Path] = []
     for study_root in _study_paths(root):
-        _validate_study_manifest(root, study_root, issues)
+        study_manifest = _validate_study_manifest(root, study_root, issues)
+        if (
+            isinstance(study_manifest, dict)
+            and str(study_manifest["study_id"]) in teaching_study_ids()
+        ):
+            expected_categories = set(
+                study_metadata(str(study_manifest["study_id"]))["study_categories"]
+            )
+            actual_categories = set(study_manifest.get("study_categories", []))
+            if actual_categories != expected_categories:
+                issues.append(
+                    EvidenceBookValidationIssue(
+                        _relative_to(root, study_root / EVIDENCE_STUDY_MANIFEST),
+                        "teaching study categories must match governed teaching metadata",
+                    )
+                )
+            for filename in (
+                TEACHING_GUIDE_FILENAME,
+                TEACHING_GUIDE_MARKDOWN_FILENAME,
+                MIGRATION_GUIDE_FILENAME,
+                MIGRATION_GUIDE_MARKDOWN_FILENAME,
+                STUDENT_SAFE_REPRODUCIBILITY_FILENAME,
+                STUDENT_SAFE_REPRODUCIBILITY_MARKDOWN_FILENAME,
+            ):
+                if not (study_root / filename).exists():
+                    issues.append(
+                        EvidenceBookValidationIssue(
+                            _relative_to(root, study_root / filename),
+                            "teaching study is missing a governed teaching or migration output",
+                        )
+                    )
         for child in sorted(path for path in study_root.iterdir() if path.is_dir()):
             if child.name in {"reference", "data", "figures", "provenance"}:
                 continue
@@ -615,6 +664,8 @@ def validate_evidence_book(
         fragile_example_summary_path = index_root / EVIDENCE_FRAGILE_EXAMPLE_SUMMARY
         regeneration_contract_path = index_root / EVIDENCE_REGENERATION_CONTRACT
         regeneration_summary_path = index_root / EVIDENCE_REGENERATION_SUMMARY
+        teaching_migration_path = index_root / TEACHING_AND_MIGRATION_INDEX_FILENAME
+        teaching_migration_summary_path = index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
         if not parity_dashboard_path.exists():
             issues.append(
                 EvidenceBookValidationIssue(
@@ -725,6 +776,20 @@ def validate_evidence_book(
                 EvidenceBookValidationIssue(
                     _relative_to(root, regeneration_summary_path),
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_REGENERATION_SUMMARY}",
+                )
+            )
+        if not teaching_migration_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, teaching_migration_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{TEACHING_AND_MIGRATION_INDEX_FILENAME}",
+                )
+            )
+        if not teaching_migration_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, teaching_migration_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{TEACHING_AND_MIGRATION_SUMMARY_FILENAME}",
                 )
             )
         if index_path.exists():

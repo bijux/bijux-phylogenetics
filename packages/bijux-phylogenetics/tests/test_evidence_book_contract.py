@@ -190,6 +190,8 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     fragile_example_summary_path = repo_root / "evidence-book" / "index" / "fragile-example-audit.md"
     regeneration_path = repo_root / "evidence-book" / "index" / "regeneration-contract.json"
     regeneration_summary_path = repo_root / "evidence-book" / "index" / "regeneration-contract.md"
+    teaching_migration_path = repo_root / "evidence-book" / "index" / "teaching-and-migration.json"
+    teaching_migration_summary_path = repo_root / "evidence-book" / "index" / "teaching-and-migration.md"
 
     assert index_path.exists()
     assert catalog_path.exists()
@@ -210,6 +212,8 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert fragile_example_summary_path.exists()
     assert regeneration_path.exists()
     assert regeneration_summary_path.exists()
+    assert teaching_migration_path.exists()
+    assert teaching_migration_summary_path.exists()
     assert payload["study_count"] == 1
     assert payload["evidence_count"] == 1
     assert "Taxon Trust" in catalog
