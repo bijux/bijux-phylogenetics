@@ -1,27 +1,27 @@
 {
   "authored_local_artifacts": [
     {
-      "artifact_kind": "reference.R",
+      "artifact_kind": "r-reference-program",
       "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-002/reference.R",
       "generation_mode": "governed-bundle-template"
     },
     {
-      "artifact_kind": "analysis.py",
+      "artifact_kind": "python-analysis-program",
       "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-002/analysis.py",
       "generation_mode": "governed-bundle-template"
     },
     {
-      "artifact_kind": "checks.json",
+      "artifact_kind": "machine-check-contract",
       "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-002/checks.json",
       "generation_mode": "governed-bundle-template"
     },
     {
-      "artifact_kind": "report.md",
+      "artifact_kind": "human-report",
       "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-002/report.md",
       "generation_mode": "governed-bundle-template"
     },
     {
-      "artifact_kind": "provenance.json",
+      "artifact_kind": "provenance-record",
       "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-002/provenance.json",
       "generation_mode": "governed-bundle-template"
     }
@@ -29,8 +29,18 @@
   "bundle_provenance_paths": [
     "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json"
   ],
+  "bundle_result_surfaces": [
+    {
+      "artifact_kind": "governed-result-surface",
+      "artifact_path": "results/README.md"
+    },
+    {
+      "artifact_kind": "governed-result-surface",
+      "artifact_path": "results/manifest.json"
+    }
+  ],
   "evidence_id": "evidence-002",
-  "schema_version": 1,
+  "schema_version": 2,
   "source_basis_locators": [
     "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
     "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",

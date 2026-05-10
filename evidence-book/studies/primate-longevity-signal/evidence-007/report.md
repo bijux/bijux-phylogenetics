@@ -7,6 +7,14 @@ Governed evidence for rootedness, binary-tree status, ultrametricity, and node-l
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-tree-diagnostics-parity`
@@ -16,9 +24,14 @@ Governed evidence for rootedness, binary-tree status, ultrametricity, and node-l
 - `evidence-book/studies/primate-longevity-signal/evidence-001/block-payloads/tree-import-and-pruning.json`
 - `evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-007/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-007/results/manifest.json`
 
 ## Limits
 

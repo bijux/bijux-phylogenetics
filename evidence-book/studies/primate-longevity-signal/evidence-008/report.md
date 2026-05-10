@@ -7,6 +7,14 @@ Governed evidence for missing-tip trimming, tip-order alignment, and node-aware 
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-tree-data-correspondence-parity`
@@ -17,9 +25,14 @@ Governed evidence for missing-tip trimming, tip-order alignment, and node-aware 
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-008/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-008/results/manifest.json`
 
 ## Limits
 

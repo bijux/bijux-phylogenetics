@@ -6,7 +6,10 @@ import json
 from pathlib import Path
 import re
 
-from .bundle_artifacts import REQUIRED_BUNDLE_LOCAL_ARTIFACTS
+from .bundle_contracts import (
+    REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
+    REQUIRED_BUNDLE_RESULT_ARTIFACTS,
+)
 from .portability import (
     audit_payload_path_values,
     classify_locator_kind,
@@ -377,6 +380,15 @@ def _validate_bundle_manifest(
                 EvidenceBookValidationIssue(
                     _relative_to(book_root, artifact_path),
                     f"evidence bundle must include governed local artifact {filename}",
+                )
+            )
+    for relative_path in REQUIRED_BUNDLE_RESULT_ARTIFACTS:
+        result_path = bundle_root / relative_path
+        if not result_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, result_path),
+                    f"evidence bundle must include governed result surface {relative_path}",
                 )
             )
     if require_generated_outputs:

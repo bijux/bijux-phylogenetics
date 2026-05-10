@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-001",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-001/expected-failure-cases.json",
       "read_only": false,
       "sha256": "b1c96fba061204c1c142bee2626c9e17311f86ce330834ce9f3c16700bcf8754"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-001/results/README.md",
+      "read_only": false,
+      "sha256": "28502199c4fa145cdfc1ef783498e11368b22daa073870a8dc3269e02881a249"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-001/results/manifest.json",
+      "read_only": false,
+      "sha256": "85d8edb09f18337d17ce066e872d5355dcc61e692a144b00813b2222bfa4cf06"
     }
   ],
   "local_input_count": 1,

@@ -7,6 +7,14 @@ Governed evidence for the factor and numeric coercion contract before grouped do
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-type-repair-parity`
@@ -16,9 +24,14 @@ Governed evidence for the factor and numeric coercion contract before grouped do
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-003/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-003/results/manifest.json`
 
 ## Limits
 

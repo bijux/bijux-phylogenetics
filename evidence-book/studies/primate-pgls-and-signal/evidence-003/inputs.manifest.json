@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-003",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json",
       "read_only": false,
       "sha256": "a0b04e048613c270e8e7f838e7d7ef3bf642dfee127d3ff81f27582e7016bce0"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/README.md",
+      "read_only": false,
+      "sha256": "83eca28b2daad811ac24ac3bf90735a17a7060d8872dcaadf6eff25787bd065b"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/manifest.json",
+      "read_only": false,
+      "sha256": "46a3e2a0b98361a5f970c88faf36efac2d9c998b8647b90c3a28851a0e0a3977"
     }
   ],
   "local_input_count": 0,

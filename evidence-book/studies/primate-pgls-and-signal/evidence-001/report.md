@@ -7,6 +7,14 @@ Governed representation of the lecture one-line primate workspace reload contrac
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm2-reload-contract-governed`
@@ -20,11 +28,16 @@ Governed representation of the lecture one-line primate workspace reload contrac
 - `evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.md`
+
+## Results Directory
+
+- `evidence-book/studies/primate-pgls-and-signal/evidence-001/results/README.md`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-001/results/manifest.json`
 
 ## Limits
 

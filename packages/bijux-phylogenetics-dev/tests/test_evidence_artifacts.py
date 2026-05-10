@@ -182,6 +182,11 @@ def test_sync_evidence_artifacts_writes_local_bundle_surfaces(tmp_path: Path) ->
     assert "evidence-book/studies/demo-study/evidence-001/checks.json" in written_paths
     assert "evidence-book/studies/demo-study/evidence-001/report.md" in written_paths
     assert "evidence-book/studies/demo-study/evidence-001/provenance.json" in written_paths
+    assert "evidence-book/studies/demo-study/evidence-001/results/README.md" in written_paths
+    assert (
+        "evidence-book/studies/demo-study/evidence-001/results/manifest.json"
+        in written_paths
+    )
 
 
 def test_check_evidence_artifacts_flags_stale_bundle_surface(tmp_path: Path) -> None:

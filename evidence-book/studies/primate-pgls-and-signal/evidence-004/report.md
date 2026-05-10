@@ -7,6 +7,14 @@ Governed parity for intercept-only signal testing and lambda-zero likelihood-rat
 - comparison mode: `direct_parity`
 - expected verdict: `matched_with_tolerance`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm2-phylogenetic-signal-parity`
@@ -19,9 +27,14 @@ Governed parity for intercept-only signal testing and lambda-zero likelihood-rat
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-004/phylogenetic-signal-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-pgls-and-signal/evidence-004/phylogenetic-signal-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-pgls-and-signal/evidence-004/results/README.md`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-004/results/manifest.json`
 
 ## Limits
 

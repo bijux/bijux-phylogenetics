@@ -6,8 +6,10 @@ suppressPackageStartupMessages({
 
 script_path <- sub("^--file=", "", commandArgs(trailingOnly = FALSE)[grep("^--file=", commandArgs(trailingOnly = FALSE))][1])
 bundle_root <- dirname(normalizePath(script_path, mustWork = TRUE))
+results_root <- file.path(bundle_root, "results")
+dir.create(results_root, recursive = TRUE, showWarnings = FALSE)
 args <- commandArgs(trailingOnly = TRUE)
-out_dir <- if (length(args) >= 1) normalizePath(args[[1]], mustWork = FALSE) else tempdir()
+out_dir <- if (length(args) >= 1) normalizePath(args[[1]], mustWork = FALSE) else results_root
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 payload <- list(

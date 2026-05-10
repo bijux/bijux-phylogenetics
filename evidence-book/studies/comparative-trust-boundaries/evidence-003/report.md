@@ -7,6 +7,14 @@ Governed audit of built-in reference cases that should trigger OU identifiabilit
 - comparison mode: `bijux_native_reinterpretation`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `ou-identifiability-boundaries-detected`
@@ -17,9 +25,14 @@ Governed audit of built-in reference cases that should trigger OU identifiabilit
 - `packages/bijux-phylogenetics/tests/fixtures`
 - `packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative/models.py`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/comparative-trust-boundaries/evidence-003/ou-identifiability-audit.json`
+
+## Results Directory
+
+- `evidence-book/studies/comparative-trust-boundaries/evidence-003/results/README.md`
+- `evidence-book/studies/comparative-trust-boundaries/evidence-003/results/manifest.json`
 
 ## Limits
 

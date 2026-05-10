@@ -7,6 +7,14 @@ Governed evidence for the exported processed CSV and trimmed tree artifacts cons
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-processed-export-parity`
@@ -17,9 +25,14 @@ Governed evidence for the exported processed CSV and trimmed tree artifacts cons
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-009/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-009/results/manifest.json`
 
 ## Limits
 

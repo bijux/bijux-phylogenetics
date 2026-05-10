@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-001",
-  "governed_local_artifact_count": 2,
+  "governed_local_artifact_count": 4,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -17,6 +17,22 @@
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
       "read_only": false,
       "sha256": "ed7541bd728fe38dc9e1c76fc132f2282d0d735a4ce9a9430e0f14743d5dc141"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/README.md",
+      "read_only": false,
+      "sha256": "e75d4b3efb9898763271a343ef2506967704c73e898060ec2492e7f234abd2c5"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/manifest.json",
+      "read_only": false,
+      "sha256": "29aed13a4d126835a3335d2403db37cd76daf3998802c6780df4f757867785c8"
     }
   ],
   "local_input_count": 0,

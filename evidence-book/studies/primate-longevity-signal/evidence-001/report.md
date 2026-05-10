@@ -7,6 +7,14 @@ Checked-in parity evidence for the Lund primate longevity signal workflow and th
 - comparison mode: `direct_parity`
 - expected verdict: `matched_with_tolerance`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-reproducibility-contract-tracked`
@@ -25,7 +33,7 @@ Checked-in parity evidence for the Lund primate longevity signal workflow and th
 - `external:lund/pcm1-plots-signal/script`
 - `evidence-book/studies/primate-longevity-signal/reference`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-001/bijux_reference_results.json`
 - `evidence-book/studies/primate-longevity-signal/evidence-001/comparative_reference_validation_suite.json`
@@ -47,6 +55,11 @@ Checked-in parity evidence for the Lund primate longevity signal workflow and th
 - `evidence-book/studies/primate-longevity-signal/evidence-001/scalar-parity-table.md`
 - `evidence-book/studies/primate-longevity-signal/evidence-001/scientific_debt_register.json`
 - `evidence-book/studies/primate-longevity-signal/evidence-001/trusted_examples_gallery.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-001/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-001/results/manifest.json`
 
 ## Limits
 

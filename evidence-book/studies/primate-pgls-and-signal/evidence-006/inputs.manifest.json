@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-006",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json",
       "read_only": false,
       "sha256": "567aa109665bfc19af021c24d9085934508e327a9d3928ae3ce4908eae047ddc"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/README.md",
+      "read_only": false,
+      "sha256": "ba958a0b48f132f4b7625a8cbea8698fb75949bba6e3399303e70043a6968473"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/manifest.json",
+      "read_only": false,
+      "sha256": "79677c191d374279974395de669d63ed659dc86474fb44a92e7e43b8393ca360"
     }
   ],
   "local_input_count": 0,

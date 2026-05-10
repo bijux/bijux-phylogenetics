@@ -8,7 +8,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.evidence.bundle_artifacts import REQUIRED_BUNDLE_LOCAL_ARTIFACTS
+from bijux_phylogenetics.evidence.bundle_contracts import (
+    REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
+    RESULTS_DIRNAME,
+)
 
 INPUT_MANIFEST_FILENAME = "inputs.manifest.json"
 SKIP_BUNDLE_FILENAMES = {
@@ -121,6 +124,22 @@ def _governed_local_artifacts(
                 "sha256": _sha256(child),
             }
         )
+    results_root = bundle_root / RESULTS_DIRNAME
+    if results_root.is_dir():
+        for child in sorted(results_root.iterdir()):
+            if not child.is_file():
+                continue
+            local_index += 1
+            local_inputs.append(
+                {
+                    "input_id": f"local-input-{local_index:03d}",
+                    "kind": "governed-result-surface",
+                    "label": f"{RESULTS_DIRNAME}/{child.name}",
+                    "locator": child.relative_to(repo_root).as_posix(),
+                    "read_only": False,
+                    "sha256": _sha256(child),
+                }
+            )
     return local_inputs
 
 

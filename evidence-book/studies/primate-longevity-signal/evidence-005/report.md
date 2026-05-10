@@ -7,6 +7,14 @@ Governed evidence for duplicate-species consolidation before processed trait ana
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-duplicate-species-aggregation-parity`
@@ -16,9 +24,14 @@ Governed evidence for duplicate-species consolidation before processed trait ana
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-005/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-005/results/manifest.json`
 
 ## Limits
 

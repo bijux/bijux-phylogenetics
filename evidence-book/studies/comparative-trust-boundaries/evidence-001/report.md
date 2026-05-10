@@ -7,6 +7,14 @@ Governed expected-failure cases for rootedness, complete branch lengths, and num
 - comparison mode: `bijux_native_reinterpretation`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `comparative-input-rejection-governed`
@@ -18,9 +26,14 @@ Governed expected-failure cases for rootedness, complete branch lengths, and num
 - `packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_no_lengths.nwk`
 - `packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/comparative-trust-boundaries/evidence-001/expected-failure-cases.json`
+
+## Results Directory
+
+- `evidence-book/studies/comparative-trust-boundaries/evidence-001/results/README.md`
+- `evidence-book/studies/comparative-trust-boundaries/evidence-001/results/manifest.json`
 
 ## Limits
 

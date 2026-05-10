@@ -7,6 +7,14 @@ Governed evidence for the raw workbook intake boundary and the resulting process
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-workbook-loading-parity`
@@ -17,9 +25,14 @@ Governed evidence for the raw workbook intake boundary and the resulting process
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-002/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-002/results/manifest.json`
 
 ## Limits
 

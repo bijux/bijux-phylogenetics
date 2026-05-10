@@ -8,11 +8,16 @@ from pathlib import Path
 from typing import Any
 
 from bijux_phylogenetics.evidence.bundle_artifacts import (
+    build_bundle_governed_artifacts,
+)
+from bijux_phylogenetics.evidence.bundle_contracts import (
     ARTIFACT_JSON_FILENAMES,
     REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
-    build_bundle_local_artifacts,
+    REQUIRED_BUNDLE_RESULT_ARTIFACTS,
+    RESULT_ARTIFACT_JSON_FILENAMES,
     iter_bundle_roots,
 )
+from bijux_phylogenetics.evidence.bundle_results import write_result_artifact
 
 
 def _write_text(path: Path, text: str) -> None:
@@ -60,14 +65,16 @@ def sync_evidence_artifacts(
     for bundle_root in _selected_bundle_roots(
         repo_root, study_id=study_id, evidence_id=evidence_id
     ):
-        artifacts = build_bundle_local_artifacts(repo_root, bundle_root)
-        for filename, payload in artifacts.items():
-            target = bundle_root / filename
-            if filename in ARTIFACT_JSON_FILENAMES:
+        artifacts = build_bundle_governed_artifacts(repo_root, bundle_root)
+        for relative_path, payload in artifacts.items():
+            target = bundle_root / relative_path
+            if relative_path in ARTIFACT_JSON_FILENAMES:
                 _write_json(target, payload)
+            elif relative_path in RESULT_ARTIFACT_JSON_FILENAMES:
+                write_result_artifact(target, payload)
             else:
                 if not isinstance(payload, str):
-                    raise TypeError(f"expected text payload for {filename}")
+                    raise TypeError(f"expected text payload for {relative_path}")
                 _write_text(target, payload)
             written.append(target)
     return written
@@ -84,25 +91,31 @@ def check_evidence_artifacts(
     for bundle_root in _selected_bundle_roots(
         repo_root, study_id=study_id, evidence_id=evidence_id
     ):
-        expected = build_bundle_local_artifacts(repo_root, bundle_root)
-        for filename in REQUIRED_BUNDLE_LOCAL_ARTIFACTS:
-            target = bundle_root / filename
+        expected = build_bundle_governed_artifacts(repo_root, bundle_root)
+        for relative_path in (
+            *REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
+            *REQUIRED_BUNDLE_RESULT_ARTIFACTS,
+        ):
+            target = bundle_root / relative_path
             if not target.is_file():
                 mismatches.append(
                     f"{target.relative_to(repo_root)}: missing governed local artifact"
                 )
                 continue
-            if filename in ARTIFACT_JSON_FILENAMES:
+            if (
+                relative_path in ARTIFACT_JSON_FILENAMES
+                or relative_path in RESULT_ARTIFACT_JSON_FILENAMES
+            ):
                 actual = _load_json(target)
-                if actual != expected[filename]:
+                if actual != expected[relative_path]:
                     mismatches.append(
                         f"{target.relative_to(repo_root)}: stale governed local artifact"
                     )
             else:
                 actual_text = target.read_text(encoding="utf-8")
-                expected_text = expected[filename]
+                expected_text = expected[relative_path]
                 if not isinstance(expected_text, str):
-                    raise TypeError(f"expected text payload for {filename}")
+                    raise TypeError(f"expected text payload for {relative_path}")
                 if actual_text != expected_text:
                     mismatches.append(
                         f"{target.relative_to(repo_root)}: stale governed local artifact"

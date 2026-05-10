@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-003",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json",
       "read_only": false,
       "sha256": "833169bf6c0586b5f9a1f04ec884fe349e584ef1f23535cd55bca16181d71379"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/README.md",
+      "read_only": false,
+      "sha256": "d4b83ef1b63d775ec391cc05b23de501fc8d37c8abac14869365a950eda3dbe0"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/manifest.json",
+      "read_only": false,
+      "sha256": "c7f322eef842f699fea89143cd01f7811cb22ae3157cebe4e6a9109f9e5a5aba"
     }
   ],
   "local_input_count": 0,

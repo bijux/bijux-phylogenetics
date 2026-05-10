@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-004",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/phylogenetic-signal-parity.json",
       "read_only": false,
       "sha256": "1c4e2774c63f2b6b4758b330e7976ce87072edb3e9987d689ad316c5203fe6e3"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/README.md",
+      "read_only": false,
+      "sha256": "79550d44f208ad17a9c72f8b9f4da12d30c8cefad8cc6ea32c1f2d7cb83c177b"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/manifest.json",
+      "read_only": false,
+      "sha256": "ae33d855d19b8d1fa44c8c24b1360425299cf45911fda9fa4680a6953450f53c"
     }
   ],
   "local_input_count": 0,

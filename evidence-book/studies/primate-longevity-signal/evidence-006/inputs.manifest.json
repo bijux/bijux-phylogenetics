@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-006",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json",
       "read_only": false,
       "sha256": "dd13ae2f46599bfbb00d56c2fd67512156edc7034df048d85adb08d0ff8d8073"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-006/results/README.md",
+      "read_only": false,
+      "sha256": "b7b4967b0b6e149f66f76a6daab71f0980deabc2f29779b7c9dc178e96df2635"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-006/results/manifest.json",
+      "read_only": false,
+      "sha256": "88172b393584783c62bc59512d7848e0f7738afec5d03b043a05c4ba59991858"
     }
   ],
   "local_input_count": 0,

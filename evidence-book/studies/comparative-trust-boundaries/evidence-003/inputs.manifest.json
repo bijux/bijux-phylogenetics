@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-003",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-003/ou-identifiability-audit.json",
       "read_only": false,
       "sha256": "440bada873a6c87fed755ad545385e1a38145ee9ef23f98ee89aa511fac33737"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-003/results/README.md",
+      "read_only": false,
+      "sha256": "883b0289a9b34509521e299070e37df8347f5e5d524daeabe96bf2b089855b2b"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-003/results/manifest.json",
+      "read_only": false,
+      "sha256": "104cd62d67277941174c2c16bac86815fb1bebe59f98b3789b1d8d3f97580d89"
     }
   ],
   "local_input_count": 0,

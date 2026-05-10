@@ -7,6 +7,14 @@ Governed parity for the non-phylogenetic baseline regression before phylogenetic
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm2-baseline-gls-parity`
@@ -19,9 +27,14 @@ Governed parity for the non-phylogenetic baseline regression before phylogenetic
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-002/baseline-gls-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-pgls-and-signal/evidence-002/baseline-gls-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-pgls-and-signal/evidence-002/results/README.md`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-002/results/manifest.json`
 
 ## Limits
 

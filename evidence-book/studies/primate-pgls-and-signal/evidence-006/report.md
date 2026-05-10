@@ -7,6 +7,14 @@ Governed record of uncovered transformed-tree, EB, and ancestral fragments from 
 - comparison mode: `direct_parity`
 - expected verdict: `not_comparable`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm2-coverage-boundary-explicit`
@@ -19,9 +27,14 @@ Governed record of uncovered transformed-tree, EB, and ancestral fragments from 
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-pgls-and-signal/evidence-006/results/README.md`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-006/results/manifest.json`
 
 ## Limits
 

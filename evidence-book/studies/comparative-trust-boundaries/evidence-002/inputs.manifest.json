@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-002",
-  "governed_local_artifact_count": 2,
+  "governed_local_artifact_count": 4,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -17,6 +17,22 @@
       "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-002/weak_signal_traits.tsv",
       "read_only": false,
       "sha256": "067720bb89d3d4da7dd0de653b20a4acbb513f4c37b68cd884a668cfe214891e"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-002/results/README.md",
+      "read_only": false,
+      "sha256": "4d38ecc95d69de280709047666f9818c05577de382487c0ae6be7fc24d6637d6"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-002/results/manifest.json",
+      "read_only": false,
+      "sha256": "532901704f6ed9028ec95f73b2c99caa823b895a6134ab51277d31bd11b15bfe"
     }
   ],
   "local_input_count": 1,

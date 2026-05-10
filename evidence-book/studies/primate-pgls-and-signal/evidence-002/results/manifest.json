@@ -1,0 +1,26 @@
+{
+  "bundle_local_artifacts": [
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/reference.R",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/analysis.py",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/checks.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/report.md",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/provenance.json"
+  ],
+  "evidence_id": "evidence-002",
+  "governed_primary_output_count": 1,
+  "governed_primary_outputs": [
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/baseline-gls-parity.json"
+  ],
+  "local_execution_products": [
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/reference-contract.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/analysis-run.json"
+  ],
+  "pass_when": [
+    "bundle-local authored artifacts remain separate from machine outputs",
+    "governed primary outputs stay inventoried explicitly for reviewers",
+    "local evidence scripts can write ephemeral execution products inside the evidence-owned results directory"
+  ],
+  "results_directory": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

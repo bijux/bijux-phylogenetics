@@ -7,6 +7,14 @@ Governed evidence for reading the primate tree and preserving the expected origi
 - comparison mode: `direct_parity`
 - expected verdict: `matched`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm1-tree-import-parity`
@@ -17,9 +25,14 @@ Governed evidence for reading the primate tree and preserving the expected origi
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-longevity-signal/evidence-006/results/README.md`
+- `evidence-book/studies/primate-longevity-signal/evidence-006/results/manifest.json`
 
 ## Limits
 

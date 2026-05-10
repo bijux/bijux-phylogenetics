@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-005",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json",
       "read_only": false,
       "sha256": "fede8bbfa3c71c861bcdf154e634e3206c6c6621bdaf9c27ee8ef7cf0a8a5ae4"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/results/README.md",
+      "read_only": false,
+      "sha256": "8a614c8d53e8f9654147923d8cd6c86a62646588681fe0e39afc76f965ede68d"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/results/manifest.json",
+      "read_only": false,
+      "sha256": "af673d42eb50bc6fe2c193539fd9dd43541ffa22e73d4ee84a977d226ade9607"
     }
   ],
   "local_input_count": 0,

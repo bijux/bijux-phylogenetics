@@ -2,134 +2,16 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
-REQUIRED_BUNDLE_LOCAL_ARTIFACTS = (
-    "reference.R",
-    "analysis.py",
-    "checks.json",
-    "report.md",
-    "provenance.json",
+from .bundle_contracts import (
+    ARTIFACT_JSON_FILENAMES,
+    LOCAL_ARTIFACT_PURPOSES,
+    REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
+    build_bundle_artifact_contract,
 )
-ARTIFACT_JSON_FILENAMES = {"checks.json", "provenance.json"}
-PRIMARY_OUTPUT_EXCLUDED_FILENAMES = {
-    "README.md",
-    "manifest.json",
-    "claims.json",
-    "claim_verdicts.json",
-    "reviewer-summary.json",
-    "reviewer-summary.md",
-    "inputs.manifest.json",
-    *REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
-}
-
-
-def _load_json(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"expected JSON object at {path}")
-    return payload
-
-
-def iter_bundle_roots(repo_root: Path) -> list[Path]:
-    studies_root = repo_root / "evidence-book" / "studies"
-    return sorted(path for path in studies_root.glob("*/evidence-*") if path.is_dir())
-
-
-def _relative(path: Path, repo_root: Path) -> str:
-    return path.relative_to(repo_root).as_posix()
-
-
-def _primary_output_paths(bundle_root: Path, repo_root: Path) -> list[str]:
-    output_paths: list[str] = []
-    for child in sorted(bundle_root.iterdir()):
-        if not child.is_file() or child.name in PRIMARY_OUTPUT_EXCLUDED_FILENAMES:
-            continue
-        output_paths.append(_relative(child, repo_root))
-    return output_paths
-
-
-def _study_manifest(study_root: Path) -> dict[str, Any]:
-    return _load_json(study_root / "study.json")
-
-
-def _bundle_manifest(bundle_root: Path) -> dict[str, Any]:
-    return _load_json(bundle_root / "manifest.json")
-
-
-def _study_support_scripts(study_root: Path, repo_root: Path) -> dict[str, Any]:
-    reference_root = study_root / "reference"
-    reference_r_scripts = [
-        _relative(path, repo_root)
-        for path in sorted(reference_root.glob("*.R"))
-        if path.is_file()
-    ]
-    reference_python_scripts = [
-        _relative(path, repo_root)
-        for path in sorted(reference_root.glob("*.py"))
-        if path.is_file()
-    ]
-    build_script_path = study_root / "build_evidence.py"
-    return {
-        "build_script_path": None
-        if not build_script_path.is_file()
-        else _relative(build_script_path, repo_root),
-        "reference_r_scripts": reference_r_scripts,
-        "reference_python_scripts": reference_python_scripts,
-    }
-
-
-def _source_basis_locators(bundle_manifest: dict[str, Any]) -> list[str]:
-    locators: list[str] = []
-    for entry in bundle_manifest.get("source_basis", []):
-        if isinstance(entry, dict):
-            locator = entry.get("locator")
-            if isinstance(locator, str) and locator:
-                locators.append(locator)
-    return locators
-
-
-def build_bundle_artifact_contract(repo_root: Path, bundle_root: Path) -> dict[str, Any]:
-    repo_root = repo_root.resolve()
-    bundle_root = bundle_root.resolve()
-    study_root = bundle_root.parent
-    study_manifest = _study_manifest(study_root)
-    bundle_manifest = _bundle_manifest(bundle_root)
-    support_scripts = _study_support_scripts(study_root, repo_root)
-    provenance_path = study_root / "provenance"
-    provenance_locators = [
-        _relative(path, repo_root)
-        for path in sorted(provenance_path.glob("*.json"))
-        if path.is_file()
-    ]
-    return {
-        "study_id": str(bundle_manifest["study_id"]),
-        "evidence_id": str(bundle_manifest["evidence_id"]),
-        "study_title": str(study_manifest["study_title"]),
-        "evidence_title": str(bundle_manifest["evidence_title"]),
-        "summary": str(bundle_manifest["summary"]),
-        "comparison_mode": str(bundle_manifest["comparison_mode"]),
-        "claim_ids": list(bundle_manifest.get("claim_ids", [])),
-        "claim_tags": list(bundle_manifest.get("claim_tags", [])),
-        "verdict": dict(bundle_manifest.get("verdict", {})),
-        "limitations": list(bundle_manifest.get("limitations", [])),
-        "source_intake_policy": str(study_manifest.get("source_intake_policy", "")),
-        "study_provenance_locator": str(
-            study_manifest.get("provenance_descriptor_locator", "")
-        ),
-        "study_dataset_registry_locator": str(
-            study_manifest.get("dataset_registry_locator", "")
-        ),
-        "source_basis_locators": _source_basis_locators(bundle_manifest),
-        "primary_output_paths": _primary_output_paths(bundle_root, repo_root),
-        "bundle_relative_path": _relative(bundle_root, repo_root),
-        "build_script_path": support_scripts["build_script_path"],
-        "reference_r_scripts": support_scripts["reference_r_scripts"],
-        "reference_python_scripts": support_scripts["reference_python_scripts"],
-        "bundle_provenance_paths": provenance_locators,
-    }
+from .bundle_results import build_bundle_result_artifacts
 
 
 def render_reference_r(contract: dict[str, Any]) -> str:
@@ -147,8 +29,10 @@ def render_reference_r(contract: dict[str, Any]) -> str:
         "",
         'script_path <- sub("^--file=", "", commandArgs(trailingOnly = FALSE)[grep("^--file=", commandArgs(trailingOnly = FALSE))][1])',
         "bundle_root <- dirname(normalizePath(script_path, mustWork = TRUE))",
+        "results_root <- file.path(bundle_root, \"results\")",
+        'dir.create(results_root, recursive = TRUE, showWarnings = FALSE)',
         'args <- commandArgs(trailingOnly = TRUE)',
-        'out_dir <- if (length(args) >= 1) normalizePath(args[[1]], mustWork = FALSE) else tempdir()',
+        "out_dir <- if (length(args) >= 1) normalizePath(args[[1]], mustWork = FALSE) else results_root",
         'dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)',
         "",
         "payload <- list(",
@@ -215,8 +99,9 @@ def render_analysis_py(contract: dict[str, Any]) -> str:
         "import subprocess",
         "import sys",
         "",
-        'REPO_ROOT = Path(__file__).resolve().parents[4]',
-        'BUNDLE_ROOT = Path(__file__).resolve().parent',
+        "REPO_ROOT = Path(__file__).resolve().parents[4]",
+        "BUNDLE_ROOT = Path(__file__).resolve().parent",
+        "RESULTS_ROOT = BUNDLE_ROOT / 'results'",
         f'STUDY_ID = "{contract["study_id"]}"',
         f'EVIDENCE_ID = "{contract["evidence_id"]}"',
         f'COMPARISON_MODE = "{contract["comparison_mode"]}"',
@@ -224,6 +109,7 @@ def render_analysis_py(contract: dict[str, Any]) -> str:
         f"BUILD_SCRIPT = {build_script!r}",
         "",
         "def main() -> None:",
+        "    RESULTS_ROOT.mkdir(parents=True, exist_ok=True)",
         "    payload = {",
         '        "study_id": STUDY_ID,',
         '        "evidence_id": EVIDENCE_ID,',
@@ -242,9 +128,14 @@ def render_analysis_py(contract: dict[str, Any]) -> str:
         '    payload["primary_outputs"] = [',
         "        path for path in PRIMARY_OUTPUTS if (REPO_ROOT / path).is_file()",
         "    ]",
+        "    output_path = RESULTS_ROOT / 'analysis-run.json'",
+        "    output_path.write_text(",
+        "        json.dumps(payload, indent=2, sort_keys=True) + '\\n',",
+        "        encoding='utf-8',",
+        "    )",
         "    print(json.dumps(payload, indent=2, sort_keys=True))",
         "",
-        'if __name__ == "__main__":',
+        "if __name__ == '__main__':",
         "    main()",
         "",
     ]
@@ -253,19 +144,25 @@ def render_analysis_py(contract: dict[str, Any]) -> str:
 
 def render_checks_json(contract: dict[str, Any]) -> dict[str, Any]:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "study_id": contract["study_id"],
         "evidence_id": contract["evidence_id"],
         "comparison_mode": contract["comparison_mode"],
         "expected_verdict_status": contract["verdict"].get("status"),
         "claim_ids": contract["claim_ids"],
         "required_local_artifacts": list(REQUIRED_BUNDLE_LOCAL_ARTIFACTS),
+        "required_result_artifacts": list(contract["required_result_artifacts"]),
+        "local_artifact_purposes": dict(LOCAL_ARTIFACT_PURPOSES),
         "primary_output_paths": contract["primary_output_paths"],
         "source_basis_locators": contract["source_basis_locators"],
         "validation_rules": [
             {
                 "rule_id": "bundle-local-artifacts-present",
                 "pass_when": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",
+            },
+            {
+                "rule_id": "results-directory-governed",
+                "pass_when": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs",
             },
             {
                 "rule_id": "primary-outputs-present",
@@ -290,9 +187,18 @@ def render_report_md(contract: dict[str, Any]) -> str:
         f"- comparison mode: `{contract['comparison_mode']}`",
         f"- expected verdict: `{contract['verdict'].get('status', 'unknown')}`",
         "",
-        "## Claims",
+        "## Local Artifacts",
         "",
     ]
+    for filename, purpose in LOCAL_ARTIFACT_PURPOSES.items():
+        lines.append(f"- `{filename}`: {purpose}")
+    lines.extend(
+        [
+            "",
+            "## Claims",
+            "",
+        ]
+    )
     for claim_id in contract["claim_ids"]:
         lines.append(f"- `{claim_id}`")
     lines.extend(
@@ -307,12 +213,21 @@ def render_report_md(contract: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "## Primary Outputs",
+            "## Governed Primary Outputs",
             "",
         ]
     )
     for path in contract["primary_output_paths"]:
         lines.append(f"- `{path}`")
+    lines.extend(
+        [
+            "",
+            "## Results Directory",
+            "",
+            f"- `{contract['results_relative_path']}/README.md`",
+            f"- `{contract['results_relative_path']}/manifest.json`",
+        ]
+    )
     if contract["limitations"]:
         lines.extend(
             [
@@ -329,7 +244,7 @@ def render_report_md(contract: dict[str, Any]) -> str:
 
 def render_provenance_json(contract: dict[str, Any]) -> dict[str, Any]:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "study_id": contract["study_id"],
         "evidence_id": contract["evidence_id"],
         "source_intake_policy": contract["source_intake_policy"],
@@ -340,10 +255,17 @@ def render_provenance_json(contract: dict[str, Any]) -> dict[str, Any]:
         "authored_local_artifacts": [
             {
                 "artifact_path": f"{contract['bundle_relative_path']}/{filename}",
-                "artifact_kind": filename,
+                "artifact_kind": LOCAL_ARTIFACT_PURPOSES[filename],
                 "generation_mode": "governed-bundle-template",
             }
             for filename in REQUIRED_BUNDLE_LOCAL_ARTIFACTS
+        ],
+        "bundle_result_surfaces": [
+            {
+                "artifact_path": path,
+                "artifact_kind": "governed-result-surface",
+            }
+            for path in contract["required_result_artifacts"]
         ],
         "study_support_scripts": {
             "build_script_path": contract["build_script_path"],
@@ -365,3 +287,13 @@ def build_bundle_local_artifacts(
         "report.md": render_report_md(contract),
         "provenance.json": render_provenance_json(contract),
     }
+
+
+def build_bundle_governed_artifacts(
+    repo_root: Path,
+    bundle_root: Path,
+) -> dict[str, str | dict[str, Any]]:
+    contract = build_bundle_artifact_contract(repo_root, bundle_root)
+    artifacts = build_bundle_local_artifacts(repo_root, bundle_root)
+    artifacts.update(build_bundle_result_artifacts(repo_root, bundle_root, contract))
+    return artifacts

@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-004",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json",
       "read_only": false,
       "sha256": "8c72a559ef819c26f11868c36ea292af97fe545d712cd0d0cdf65c16fabed4df"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/README.md",
+      "read_only": false,
+      "sha256": "00425bb3c27ad52d917a6a1c3db2a1178b8ccdb89164e6e34935c8e90b3ea8b2"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/manifest.json",
+      "read_only": false,
+      "sha256": "648806beb30412008ec7a0a07f86618c081c80d39c832f266c743315a90cbf0a"
     }
   ],
   "local_input_count": 0,

@@ -7,6 +7,14 @@ Governed machine-readable residual diagnostics for the baseline and estimated-la
 - comparison mode: `direct_parity`
 - expected verdict: `matched_with_tolerance`
 
+## Local Artifacts
+
+- `reference.R`: r-reference-program
+- `analysis.py`: python-analysis-program
+- `checks.json`: machine-check-contract
+- `report.md`: human-report
+- `provenance.json`: provenance-record
+
 ## Claims
 
 - `pcm2-diagnostics-parity`
@@ -19,9 +27,14 @@ Governed machine-readable residual diagnostics for the baseline and estimated-la
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json`
 
-## Primary Outputs
+## Governed Primary Outputs
 
 - `evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json`
+
+## Results Directory
+
+- `evidence-book/studies/primate-pgls-and-signal/evidence-005/results/README.md`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-005/results/manifest.json`
 
 ## Limits
 

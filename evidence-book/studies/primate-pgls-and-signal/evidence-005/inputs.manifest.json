@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-005",
-  "governed_local_artifact_count": 1,
+  "governed_local_artifact_count": 3,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
@@ -9,6 +9,22 @@
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json",
       "read_only": false,
       "sha256": "bed7a3490291e53d09aee1cab6e4da17a69530d44df0f854c9007dda681c3e44"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/README.md",
+      "read_only": false,
+      "sha256": "e20b99d03ef6ecc3a95df543c7a03f55175365b5da5e1045fc60cc439d4ba774"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/manifest.json",
+      "read_only": false,
+      "sha256": "3a59766256a743c53bc44630f4257b70515d3a1413f0c3ac50cf9e8ce8942d26"
     }
   ],
   "local_input_count": 0,
