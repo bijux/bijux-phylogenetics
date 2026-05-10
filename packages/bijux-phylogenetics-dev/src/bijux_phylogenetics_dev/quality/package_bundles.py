@@ -217,6 +217,7 @@ def build_package_bundle_report(
     *,
     artifacts_root: Path,
     build_artifacts: bool,
+    publish_artifacts: bool = True,
 ) -> dict[str, Any]:
     policies = load_package_bundle_policies(repo_root)
     target_policies = load_target_package_bundle_policies(repo_root)
@@ -298,7 +299,7 @@ def build_package_bundle_report(
                     text=True,
                 )
             report = audit_package_bundle_directory(policy, audit_dir)
-            if build_artifacts:
+            if build_artifacts and publish_artifacts:
                 shutil.rmtree(dist_dir, ignore_errors=True)
                 shutil.copytree(audit_dir, dist_dir)
                 report["wheel_path"] = str(dist_dir / Path(report["wheel_path"]).name)
@@ -332,6 +333,7 @@ def check_package_bundles(
         repo_root.resolve(),
         artifacts_root=(artifacts_root or repo_root / DEFAULT_ARTIFACTS_ROOT).resolve(),
         build_artifacts=True,
+        publish_artifacts=False,
     )
     if json_out is not None:
         _write_json(json_out, payload)

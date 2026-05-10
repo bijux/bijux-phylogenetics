@@ -6,6 +6,7 @@ import zipfile
 
 from bijux_phylogenetics_dev.quality.package_bundles import (
     audit_package_bundle_directory,
+    build_package_bundle_report,
     build_dependency_policy_report,
     check_package_bundles,
     load_publication_readiness_settings,
@@ -255,3 +256,24 @@ def test_check_package_bundles_rebuilds_cleanly_into_staged_output_directories(
     assert first_report["issue_count"] == 0
     assert second_report["issue_count"] == 0
     assert second_report["package_count"] == 2
+
+
+def test_check_package_bundles_keeps_published_bundle_outputs_unchanged(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    artifacts_root = repo_root / "artifacts" / "root" / "package-bundles"
+
+    published_report = build_package_bundle_report(
+        repo_root,
+        artifacts_root=artifacts_root,
+        build_artifacts=True,
+    )
+    sentinel = artifacts_root / "demo-runtime" / "sentinel.txt"
+    sentinel.write_text("keep\n", encoding="utf-8")
+
+    checked_report = check_package_bundles(repo_root, artifacts_root=artifacts_root)
+
+    assert published_report["issue_count"] == 0
+    assert checked_report["issue_count"] == 0
+    assert sentinel.read_text(encoding="utf-8") == "keep\n"
