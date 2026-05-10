@@ -6,7 +6,9 @@ from pathlib import Path
 from bijux_phylogenetics.evidence.book import (
     build_evidence_claim_map,
     build_evidence_book_index,
+    build_evidence_parity_dashboard,
     render_evidence_catalog,
+    render_evidence_parity_dashboard,
     validate_evidence_book,
     write_evidence_book_index,
 )
@@ -147,13 +149,22 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     payload = build_evidence_book_index(repo_root)
     catalog = render_evidence_catalog(payload)
     claim_map = build_evidence_claim_map(repo_root)
+    parity_dashboard = build_evidence_parity_dashboard(repo_root)
     claim_map_path = repo_root / "evidence-book" / "index" / "claim-map.json"
+    parity_dashboard_path = repo_root / "evidence-book" / "index" / "parity-dashboard.json"
+    parity_summary_path = repo_root / "evidence-book" / "index" / "parity-dashboard.md"
 
     assert index_path.exists()
     assert catalog_path.exists()
     assert claim_map_path.exists()
+    assert parity_dashboard_path.exists()
+    assert parity_summary_path.exists()
     assert payload["study_count"] == 1
     assert payload["evidence_count"] == 1
     assert "Taxon Trust" in catalog
     assert catalog_path.read_text(encoding="utf-8") == catalog
     assert json.loads(claim_map_path.read_text(encoding="utf-8")) == claim_map
+    assert json.loads(parity_dashboard_path.read_text(encoding="utf-8")) == parity_dashboard
+    assert parity_summary_path.read_text(encoding="utf-8") == render_evidence_parity_dashboard(
+        parity_dashboard
+    )

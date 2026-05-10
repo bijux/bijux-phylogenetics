@@ -5,8 +5,10 @@ from .book import (
     EvidenceBookValidationReport,
     build_evidence_claim_map,
     build_evidence_book_index,
+    build_evidence_parity_dashboard,
     evidence_book_root,
     render_evidence_catalog,
+    render_evidence_parity_dashboard,
     validate_evidence_book,
     write_evidence_book_index,
 )
@@ -16,8 +18,10 @@ __all__ = [
     "EvidenceBookValidationReport",
     "build_evidence_claim_map",
     "build_evidence_book_index",
+    "build_evidence_parity_dashboard",
     "evidence_book_root",
     "render_evidence_catalog",
+    "render_evidence_parity_dashboard",
     "validate_evidence_book",
     "write_evidence_book_index",
 ]

@@ -1,0 +1,69 @@
+{
+  "parity_expectation_counts": {
+    "exact": 3,
+    "near_exact": 1,
+    "not_comparable": 3,
+    "statistical_tolerance": 1
+  },
+  "scalar_row_count": 31,
+  "scalar_verdict_counts": {
+    "matched": 16,
+    "matched_with_tolerance": 15
+  },
+  "schema_version": 1,
+  "studies": [
+    {
+      "bundle_verdict_status": "matched_with_tolerance",
+      "evidence_id": "evidence-001",
+      "family_verdicts": [
+        {
+          "family_id": "workflow-contracts",
+          "family_verdict": "not_comparable"
+        },
+        {
+          "family_id": "data-preparation",
+          "family_verdict": "matched"
+        },
+        {
+          "family_id": "tree-operations",
+          "family_verdict": "matched"
+        },
+        {
+          "family_id": "visual-surfaces",
+          "family_verdict": "not_comparable"
+        },
+        {
+          "family_id": "simulation-inputs",
+          "family_verdict": "matched"
+        },
+        {
+          "family_id": "comparative-signal",
+          "family_verdict": "matched_with_tolerance"
+        },
+        {
+          "family_id": "ancestral-reconstruction",
+          "family_verdict": "matched_with_tolerance"
+        },
+        {
+          "family_id": "artifact-provenance",
+          "family_verdict": "not_comparable"
+        }
+      ],
+      "parity_expectation_counts": {
+        "exact": 3,
+        "near_exact": 1,
+        "not_comparable": 3,
+        "statistical_tolerance": 1
+      },
+      "relative_path": "studies/primate-longevity-signal/evidence-001",
+      "scalar_row_count": 31,
+      "scalar_verdict_counts": {
+        "matched": 16,
+        "matched_with_tolerance": 15
+      },
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal"
+    }
+  ],
+  "study_count": 1
+}

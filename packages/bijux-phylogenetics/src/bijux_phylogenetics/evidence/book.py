@@ -15,6 +15,8 @@ EVIDENCE_BUNDLE_MANIFEST = "manifest.json"
 EVIDENCE_CATALOG = "catalog.md"
 EVIDENCE_INDEX = "evidence-index.json"
 EVIDENCE_CLAIM_MAP = "claim-map.json"
+EVIDENCE_PARITY_DASHBOARD = "parity-dashboard.json"
+EVIDENCE_PARITY_SUMMARY = "parity-dashboard.md"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -526,6 +528,22 @@ def validate_evidence_book(
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CLAIM_MAP}",
                 )
             )
+        parity_dashboard_path = index_root / EVIDENCE_PARITY_DASHBOARD
+        parity_summary_path = index_root / EVIDENCE_PARITY_SUMMARY
+        if not parity_dashboard_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, parity_dashboard_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_PARITY_DASHBOARD}",
+                )
+            )
+        if not parity_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, parity_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_PARITY_SUMMARY}",
+                )
+            )
         if index_path.exists():
             try:
                 index_payload = _load_json(index_path)
@@ -672,6 +690,146 @@ def build_evidence_claim_map(repo_root: Path) -> dict[str, object]:
     }
 
 
+def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
+    root = evidence_book_root(repo_root)
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
+    if not report.valid:
+        messages = "; ".join(
+            f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues
+        )
+        raise ValueError(f"evidence-book is invalid: {messages}")
+
+    studies: list[dict[str, object]] = []
+    total_row_count = 0
+    verdict_counts: Counter[str] = Counter()
+    expectation_counts: Counter[str] = Counter()
+
+    for study_root in _study_paths(root):
+        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        parity_policy_path = study_root / "parity-policy.json"
+        family_index_path = study_root / "family-index.json"
+        parity_policy = _load_json(parity_policy_path) if parity_policy_path.exists() else None
+        family_index = _load_json(family_index_path) if family_index_path.exists() else None
+        for bundle_root in sorted(
+            path
+            for path in study_root.iterdir()
+            if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
+        ):
+            scalar_table_path = bundle_root / "scalar-parity-table.json"
+            if not scalar_table_path.exists():
+                continue
+            manifest = _load_json(bundle_root / EVIDENCE_BUNDLE_MANIFEST)
+            scalar_table = _load_json(scalar_table_path)
+            total_row_count += int(scalar_table.get("row_count", 0))
+            verdict_counts.update(
+                {
+                    verdict: int(count)
+                    for verdict, count in scalar_table.get("verdict_counts", {}).items()
+                }
+            )
+            if isinstance(parity_policy, dict):
+                expectation_counts.update(
+                    str(policy["parity_expectation"])
+                    for policy in parity_policy.get("policies", [])
+                    if isinstance(policy, dict)
+                )
+            studies.append(
+                {
+                    "study_id": study_manifest["study_id"],
+                    "study_title": study_manifest["study_title"],
+                    "evidence_id": manifest["evidence_id"],
+                    "relative_path": _relative_to(root, bundle_root).as_posix(),
+                    "bundle_verdict_status": manifest["verdict"]["status"],
+                    "scalar_row_count": scalar_table["row_count"],
+                    "scalar_verdict_counts": scalar_table["verdict_counts"],
+                    "parity_expectation_counts": {}
+                    if not isinstance(parity_policy, dict)
+                    else Counter(
+                        str(policy["parity_expectation"])
+                        for policy in parity_policy.get("policies", [])
+                        if isinstance(policy, dict)
+                    ),
+                    "family_verdicts": []
+                    if not isinstance(family_index, dict)
+                    else [
+                        {
+                            "family_id": family["family_id"],
+                            "family_verdict": family["family_verdict"],
+                        }
+                        for family in family_index.get("families", [])
+                        if isinstance(family, dict)
+                    ],
+                }
+            )
+
+    normalized_studies = []
+    for entry in studies:
+        expectation_counter = entry["parity_expectation_counts"]
+        normalized_studies.append(
+            {
+                **entry,
+                "parity_expectation_counts": dict(sorted(expectation_counter.items())),
+            }
+        )
+
+    return {
+        "schema_version": 1,
+        "study_count": len(normalized_studies),
+        "scalar_row_count": total_row_count,
+        "scalar_verdict_counts": dict(sorted(verdict_counts.items())),
+        "parity_expectation_counts": dict(sorted(expectation_counts.items())),
+        "studies": normalized_studies,
+    }
+
+
+def render_evidence_parity_dashboard(dashboard_payload: dict[str, object]) -> str:
+    lines = [
+        "# Evidence Parity Dashboard",
+        "",
+        f"- studies with scalar parity tables: `{dashboard_payload['study_count']}`",
+        f"- scalar parity rows: `{dashboard_payload['scalar_row_count']}`",
+        "",
+    ]
+    verdict_counts = dashboard_payload.get("scalar_verdict_counts", {})
+    if isinstance(verdict_counts, dict) and verdict_counts:
+        lines.append("## Scalar Verdict Counts")
+        lines.append("")
+        for verdict, count in verdict_counts.items():
+            lines.append(f"- `{verdict}`: `{count}`")
+        lines.append("")
+
+    expectation_counts = dashboard_payload.get("parity_expectation_counts", {})
+    if isinstance(expectation_counts, dict) and expectation_counts:
+        lines.append("## Parity Expectations")
+        lines.append("")
+        for expectation, count in expectation_counts.items():
+            lines.append(f"- `{expectation}`: `{count}`")
+        lines.append("")
+
+    lines.append("## Study Summary")
+    lines.append("")
+    for study in dashboard_payload["studies"]:
+        lines.append(f"### {study['study_title']}")
+        lines.append("")
+        lines.append(f"- evidence id: `{study['evidence_id']}`")
+        lines.append(f"- path: `{study['relative_path']}`")
+        lines.append(f"- bundle verdict: `{study['bundle_verdict_status']}`")
+        lines.append(f"- scalar rows: `{study['scalar_row_count']}`")
+        if study["scalar_verdict_counts"]:
+            counts = ", ".join(
+                f"{key}={value}" for key, value in study["scalar_verdict_counts"].items()
+            )
+            lines.append(f"- scalar verdict counts: {counts}")
+        if study["parity_expectation_counts"]:
+            counts = ", ".join(
+                f"{key}={value}"
+                for key, value in study["parity_expectation_counts"].items()
+            )
+            lines.append(f"- parity expectations: {counts}")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_evidence_catalog(index_payload: dict[str, object]) -> str:
     lines = [
         "# Evidence Catalog",
@@ -717,9 +875,12 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     index_root.mkdir(parents=True, exist_ok=True)
     payload = build_evidence_book_index(repo_root)
     claim_map_payload = build_evidence_claim_map(repo_root)
+    parity_dashboard_payload = build_evidence_parity_dashboard(repo_root)
     index_path = index_root / EVIDENCE_INDEX
     catalog_path = index_root / EVIDENCE_CATALOG
     claim_map_path = index_root / EVIDENCE_CLAIM_MAP
+    parity_dashboard_path = index_root / EVIDENCE_PARITY_DASHBOARD
+    parity_summary_path = index_root / EVIDENCE_PARITY_SUMMARY
     index_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -729,6 +890,14 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     )
     claim_map_path.write_text(
         json.dumps(claim_map_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    parity_dashboard_path.write_text(
+        json.dumps(parity_dashboard_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    parity_summary_path.write_text(
+        render_evidence_parity_dashboard(parity_dashboard_payload),
         encoding="utf-8",
     )
     return index_path, catalog_path
