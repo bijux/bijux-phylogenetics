@@ -18,6 +18,7 @@ governed evidence bundle in the repository evidence-book.
 
 - study id: `comparative-trust-boundaries`
 - owner package: `bijux-phylogenetics`
+- categories: `scientific-validation`
 - bundle count: `3`
 - summary: Governed evidence for expected comparative failures, weak-signal instability, and OU identifiability boundaries.
 
@@ -32,6 +33,7 @@ governed evidence bundle in the repository evidence-book.
 
 - study id: `primate-longevity-signal`
 - owner package: `bijux-phylogenetics`
+- categories: `teaching-study, migration-study`
 - bundle count: `9`
 - summary: Checked-in parity study for the Lund primate longevity signal teaching workflow.
 
@@ -58,6 +60,7 @@ governed evidence bundle in the repository evidence-book.
 
 - study id: `primate-pgls-and-signal`
 - owner package: `bijux-phylogenetics`
+- categories: `teaching-study, migration-study`
 - bundle count: `6`
 - summary: Governed parity study for the regression and signal sections of the Lund primate comparative lecture, with explicit coverage boundaries for the remaining EB and ancestral fragments.
 
@@ -78,6 +81,7 @@ governed evidence bundle in the repository evidence-book.
 
 - study id: `taxon-trust`
 - owner package: `bijux-phylogenetics`
+- categories: `scientific-validation`
 - bundle count: `1`
 - summary: Fixture-backed study for the repository taxon-trust workflow surfaces.
 

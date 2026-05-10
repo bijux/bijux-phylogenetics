@@ -746,6 +746,7 @@ def render_comparative_trust_boundaries_study_manifest() -> dict[str, object]:
         "study_title": "Comparative trust boundary evidence study",
         "summary": "Governed evidence for expected comparative failures, weak-signal instability, and OU identifiability boundaries.",
         "owner_package": OWNER_PACKAGE,
+        "study_categories": ["scientific-validation"],
         "confidence_posture": "trust-boundaries-explicit",
     }
 

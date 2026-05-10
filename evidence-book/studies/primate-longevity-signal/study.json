@@ -13,6 +13,10 @@
     }
   ],
   "study_id": "primate-longevity-signal",
+  "study_categories": [
+    "teaching-study",
+    "migration-study"
+  ],
   "study_title": "Primate Longevity Signal",
   "summary": "Checked-in parity study for the Lund primate longevity signal teaching workflow."
 }

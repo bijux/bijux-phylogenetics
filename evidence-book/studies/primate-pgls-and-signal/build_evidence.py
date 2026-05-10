@@ -45,6 +45,7 @@ def _study_manifest() -> dict[str, object]:
         "study_title": "Primate PGLS and signal evidence study",
         "summary": "Governed parity study for the regression and signal sections of the Lund primate comparative lecture, with explicit coverage boundaries for the remaining EB and ancestral fragments.",
         "owner_package": "bijux-phylogenetics",
+        "study_categories": ["teaching-study", "migration-study"],
         "confidence_posture": "governed-parity-in-progress",
         "coverage_boundary_evidence_ids": ["evidence-006"],
     }

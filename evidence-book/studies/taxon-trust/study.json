@@ -8,6 +8,9 @@
     }
   ],
   "study_id": "taxon-trust",
+  "study_categories": [
+    "scientific-validation"
+  ],
   "study_title": "Taxon Trust",
   "summary": "Fixture-backed study for the repository taxon-trust workflow surfaces."
 }

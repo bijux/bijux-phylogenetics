@@ -146,7 +146,9 @@
         "evidence-book/studies/primate-longevity-signal/source-fragment-map.json",
         "evidence-book/studies/primate-longevity-signal/structural-parity-table.json",
         "evidence-book/studies/primate-longevity-signal/structural-parity-table.md",
-        "evidence-book/studies/primate-longevity-signal/study.json"
+        "evidence-book/studies/primate-longevity-signal/study.json",
+        "evidence-book/studies/primate-longevity-signal/teaching-guide.json",
+        "evidence-book/studies/primate-longevity-signal/teaching-guide.md"
       ],
       "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python evidence-book/studies/primate-longevity-signal/build_evidence.py",
       "source_paths": [
@@ -200,7 +202,9 @@
         "evidence-book/studies/primate-pgls-and-signal/family-index.json",
         "evidence-book/studies/primate-pgls-and-signal/parity-policy.json",
         "evidence-book/studies/primate-pgls-and-signal/source-fragment-map.json",
-        "evidence-book/studies/primate-pgls-and-signal/study.json"
+        "evidence-book/studies/primate-pgls-and-signal/study.json",
+        "evidence-book/studies/primate-pgls-and-signal/teaching-guide.json",
+        "evidence-book/studies/primate-pgls-and-signal/teaching-guide.md"
       ],
       "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python evidence-book/studies/primate-pgls-and-signal/build_evidence.py",
       "source_paths": [

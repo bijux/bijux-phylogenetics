@@ -11,6 +11,13 @@ from .portability import (
     classify_locator_kind,
     render_portability_rules_markdown,
 )
+from .teaching import (
+    TEACHING_GUIDE_FILENAME,
+    TEACHING_GUIDE_MARKDOWN_FILENAME,
+    build_teaching_guide,
+    render_teaching_guide_markdown,
+    teaching_study_ids,
+)
 
 
 EVIDENCE_BOOK_DIRNAME = "evidence-book"
@@ -45,6 +52,7 @@ STUDY_REQUIRED_KEYS = {
     "study_title",
     "summary",
     "owner_package",
+    "study_categories",
 }
 EVIDENCE_REQUIRED_KEYS = {
     "schema_version",
@@ -814,6 +822,7 @@ def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
                 "study_title": study_manifest["study_title"],
                 "summary": study_manifest["summary"],
                 "owner_package": study_manifest["owner_package"],
+                "study_categories": study_manifest["study_categories"],
                 "bundle_count": len(study_entries),
                 "evidence": study_entries,
             }
@@ -1774,6 +1783,7 @@ def render_evidence_catalog(index_payload: dict[str, object]) -> str:
         lines.append("")
         lines.append(f"- study id: `{study['study_id']}`")
         lines.append(f"- owner package: `{study['owner_package']}`")
+        lines.append(f"- categories: `{', '.join(study['study_categories'])}`")
         lines.append(f"- bundle count: `{study['bundle_count']}`")
         lines.append(f"- summary: {study['summary']}")
         lines.append("")
@@ -1791,6 +1801,27 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     root = evidence_book_root(repo_root)
     index_root = root / EVIDENCE_INDEX_DIRNAME
     index_root.mkdir(parents=True, exist_ok=True)
+    for study_root in _study_paths(root):
+        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        if str(study_manifest["study_id"]) not in teaching_study_ids():
+            continue
+        family_index_path = study_root / "family-index.json"
+        source_fragment_map_path = study_root / "source-fragment-map.json"
+        if not family_index_path.exists() or not source_fragment_map_path.exists():
+            continue
+        teaching_guide_payload = build_teaching_guide(
+            study_manifest,
+            _load_json(family_index_path),
+            _load_json(source_fragment_map_path),
+        )
+        (study_root / TEACHING_GUIDE_FILENAME).write_text(
+            json.dumps(teaching_guide_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        (study_root / TEACHING_GUIDE_MARKDOWN_FILENAME).write_text(
+            render_teaching_guide_markdown(teaching_guide_payload),
+            encoding="utf-8",
+        )
     payload = build_evidence_book_index(repo_root)
     claim_map_payload = build_evidence_claim_map(repo_root)
     parity_dashboard_payload = build_evidence_parity_dashboard(repo_root)

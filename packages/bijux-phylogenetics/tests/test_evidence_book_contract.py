@@ -44,6 +44,7 @@ def _write_book_fixture(root: Path) -> Path:
                 "study_title": "Taxon Trust",
                 "summary": "Fixture-backed taxon evidence.",
                 "owner_package": "bijux-phylogenetics",
+                "study_categories": ["scientific-validation"],
             },
             indent=2,
             sort_keys=True,

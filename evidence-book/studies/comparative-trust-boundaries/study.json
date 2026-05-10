@@ -2,6 +2,9 @@
   "confidence_posture": "trust-boundaries-explicit",
   "owner_package": "bijux-phylogenetics",
   "study_id": "comparative-trust-boundaries",
+  "study_categories": [
+    "scientific-validation"
+  ],
   "study_title": "Comparative trust boundary evidence study",
   "summary": "Governed evidence for expected comparative failures, weak-signal instability, and OU identifiability boundaries."
 }

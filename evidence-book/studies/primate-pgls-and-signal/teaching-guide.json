@@ -1,0 +1,174 @@
+{
+  "concept_tags": [
+    "ancestral-gaps",
+    "baseline-model",
+    "course-context",
+    "coverage-boundary",
+    "diagnostics",
+    "eb",
+    "estimated-lambda",
+    "fixed-lambda",
+    "gls",
+    "heteroscedasticity",
+    "lambda-zero",
+    "likelihood-ratio",
+    "ou",
+    "pagel-lambda",
+    "pgls",
+    "phylogenetic-signal",
+    "qq",
+    "regression",
+    "reproducibility",
+    "residuals",
+    "workspace-reload"
+  ],
+  "course_material_label": "Lund PCM2 modes and PGLS lecture",
+  "course_material_locator": "external:lund/pcm2-modes-pgls/script",
+  "families": [
+    {
+      "concept_tags": [
+        "workspace-reload",
+        "course-context",
+        "reproducibility"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "family_id": "workflow-contracts",
+      "family_title": "Workflow contracts",
+      "family_verdict": "matched",
+      "fragment_ids": [
+        "workspace-reload-contract"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L8-L16"
+      ],
+      "teaching_narrative": "The lecture's one-line reload assumption is made explicit so students know which objects and paths the rest of the workflow depends on."
+    },
+    {
+      "concept_tags": [
+        "gls",
+        "baseline-model",
+        "regression"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-002"
+      ],
+      "family_id": "baseline-regression",
+      "family_title": "Baseline regression",
+      "family_verdict": "matched",
+      "fragment_ids": [
+        "baseline-gls-fit"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L122-L136"
+      ],
+      "teaching_narrative": "Baseline GLS is isolated before phylogenetic covariance is introduced, which makes the teaching sequence and the trust sequence line up."
+    },
+    {
+      "concept_tags": [
+        "pgls",
+        "pagel-lambda",
+        "fixed-lambda",
+        "estimated-lambda"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "family_id": "phylogenetic-regression",
+      "family_title": "Phylogenetic regression",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_ids": [
+        "pagel-lambda-regression"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L138-L179"
+      ],
+      "teaching_narrative": "Fixed-lambda and estimated-lambda regression are kept in one evidence family so the lecture transition from GLS to PGLS remains reviewable."
+    },
+    {
+      "concept_tags": [
+        "phylogenetic-signal",
+        "lambda-zero",
+        "likelihood-ratio"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-004"
+      ],
+      "family_id": "phylogenetic-signal",
+      "family_title": "Phylogenetic signal",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_ids": [
+        "phylogenetic-signal-test"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L181-L192"
+      ],
+      "teaching_narrative": "Signal testing is treated as its own teaching family so the lecture's intercept-only workflow does not get mixed into broader model-comparison claims."
+    },
+    {
+      "concept_tags": [
+        "residuals",
+        "qq",
+        "heteroscedasticity",
+        "diagnostics"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-005"
+      ],
+      "family_id": "diagnostics",
+      "family_title": "Diagnostics",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_ids": [
+        "baseline-gls-diagnostics",
+        "estimated-lambda-diagnostics"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L126-L133",
+        "external:lund/pcm2-modes-pgls/script#L168-L179"
+      ],
+      "teaching_narrative": "Residual and QQ diagnostics are converted into machine-recorded summary values so the teaching surface is auditable even without figure matching."
+    },
+    {
+      "concept_tags": [
+        "eb",
+        "ou",
+        "ancestral-gaps",
+        "coverage-boundary"
+      ],
+      "coverage_status": "coverage-gap",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "family_id": "coverage-boundaries",
+      "family_title": "Coverage boundaries",
+      "family_verdict": "not_comparable",
+      "fragment_ids": [
+        "transformed-tree-workflows",
+        "continuous-model-comparison",
+        "ancestral-mode-comparison",
+        "mode-linked-intercept-models"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L18-L34",
+        "external:lund/pcm2-modes-pgls/script#L36-L87",
+        "external:lund/pcm2-modes-pgls/script#L89-L111",
+        "external:lund/pcm2-modes-pgls/script#L194-L220"
+      ],
+      "teaching_narrative": "Open EB and ancestral-mode gaps stay explicit so students are not taught a false sense of completeness."
+    }
+  ],
+  "family_count": 6,
+  "schema_version": 1,
+  "study_categories": [
+    "teaching-study",
+    "migration-study"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS and signal evidence study"
+}

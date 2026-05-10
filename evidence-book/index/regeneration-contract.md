@@ -21,7 +21,7 @@ generated durable outputs, and how each study is rerun.
 - rerun command: `UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python evidence-book/studies/primate-longevity-signal/build_evidence.py`
 - bundle ids: `evidence-001, evidence-002, evidence-003, evidence-004, evidence-005, evidence-006, evidence-007, evidence-008, evidence-009`
 - source path count: `3`
-- generated path count: `96`
+- generated path count: `98`
 
 ## Primate PGLS and signal evidence study
 
@@ -30,7 +30,7 @@ generated durable outputs, and how each study is rerun.
 - rerun command: `UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python evidence-book/studies/primate-pgls-and-signal/build_evidence.py`
 - bundle ids: `evidence-001, evidence-002, evidence-003, evidence-004, evidence-005, evidence-006`
 - source path count: `4`
-- generated path count: `33`
+- generated path count: `35`
 
 ## Taxon Trust
 
