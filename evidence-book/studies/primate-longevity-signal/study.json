@@ -1,0 +1,18 @@
+{
+  "owner_package": "bijux-phylogenetics",
+  "source_basis": [
+    {
+      "kind": "external-course-material",
+      "label": "lund pcm1 plots signal script",
+      "locator": "external:lund/pcm1-plots-signal/script"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "checked-in primate signal reference scripts",
+      "locator": "evidence-book/studies/primate-longevity-signal/reference"
+    }
+  ],
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal",
+  "summary": "Checked-in parity study for the Lund primate longevity signal teaching workflow."
+}

@@ -1,14 +1,12 @@
-# Phylogenetic-101 Cross-Reference Study
+# Primate Longevity Signal
 
-This study holds reviewer-facing cross-reference examples for the lecture script
-[`PCM1_plots_signal.R`](/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Rcripts/PCM1_plots_signal.R)
-and the related `Phylogenetic-101` material.
+This study holds reviewer-facing parity evidence for the Lund `PCM1_plots_signal`
+teaching workflow and the corresponding `bijux-phylogenetics` reproductions.
 
 Study metadata:
 
-- study id: `phylogenetic-101`
-- current registered example: `primate-longevity-signal-workflow`
-- current evidence id: `accepted-tool-parity`
+- study id: `primate-longevity-signal`
+- current evidence id: `evidence-001`
 - current reviewer status: `analytical_alignment_complete`
 - evidence rule: report reproduction, deviation, and unclaimed scope explicitly
 
@@ -16,13 +14,12 @@ The checked-in reference sources for this study live here:
 
 - [R reference checks](./reference/primate_lifespan_signal_reference_r.R)
 - [Python `bijux-phylogenetics` checks](./reference/primate_lifespan_signal_reference_bijux.py)
-- [Report builder](./build_report.py)
+- [Evidence builder](./build_evidence.py)
 
-The durable example registry lives here:
+The governed study surfaces live here:
 
-- [Example registry](./examples/registry.json)
-- [Examples index](./examples/README.md)
-- [Current example bundle](./examples/primate-longevity-signal-workflow/accepted-tool-parity/README.md)
+- [Study manifest](./study.json)
+- [Current evidence bundle](./evidence-001/README.md)
 
 Current outcome at a glance:
 

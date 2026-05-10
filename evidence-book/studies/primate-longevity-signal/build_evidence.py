@@ -14,15 +14,12 @@ from bijux_phylogenetics.validation_corpus import (
 )
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 STUDY_ROOT = Path(__file__).resolve().parent
 REFERENCE_ROOT = STUDY_ROOT / "reference"
-STUDY_ID = "phylogenetic-101"
-EXAMPLE_ID = "primate-longevity-signal-workflow"
-EVIDENCE_ID = "accepted-tool-parity"
-EXAMPLES_ROOT = STUDY_ROOT / "examples"
-EXAMPLE_ROOT = EXAMPLES_ROOT / EXAMPLE_ID
-OUTPUT_ROOT = EXAMPLE_ROOT / EVIDENCE_ID
+STUDY_ID = "primate-longevity-signal"
+EVIDENCE_ID = "evidence-001"
+OUTPUT_ROOT = STUDY_ROOT / EVIDENCE_ID
 R_REPO_ROOT = REPO_ROOT.parent / "bijux-phylogenetics-r"
 SCRIPT_PATH = (
     R_REPO_ROOT
