@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 from bijux_phylogenetics_dev.quality.config_ssot import check_config_ssot
+from bijux_phylogenetics_dev.quality.package_bundles import check_package_bundles
 from bijux_phylogenetics_dev.quality.publish_readiness import check_publish_readiness
 
 from .version_resolver import resolve_version
@@ -41,6 +42,11 @@ def parse_args() -> argparse.Namespace:
         "--require-config-ssot",
         action="store_true",
         help="Require a clean repository config SSOT audit before publish checks pass.",
+    )
+    parser.add_argument(
+        "--require-package-bundles",
+        action="store_true",
+        help="Require a clean publish-artifact bundle audit before publish checks pass.",
     )
     parser.add_argument(
         "--require-publish-readiness",
@@ -118,10 +124,15 @@ def assert_publishable_repository(
     *,
     repo_root: Path | None = None,
     require_config_ssot: bool = False,
+    require_package_bundles: bool = False,
     require_publish_readiness: bool = False,
 ) -> None:
     """Reject repository states that are not safe to publish."""
-    if not require_config_ssot and not require_publish_readiness:
+    if (
+        not require_config_ssot
+        and not require_package_bundles
+        and not require_publish_readiness
+    ):
         return
     if repo_root is None:
         raise ValueError(
@@ -129,6 +140,8 @@ def assert_publishable_repository(
         )
     if require_config_ssot:
         check_config_ssot(repo_root)
+    if require_package_bundles:
+        check_package_bundles(repo_root)
     if require_publish_readiness:
         check_publish_readiness(repo_root)
 
@@ -148,6 +161,7 @@ def main() -> int:
     assert_publishable_repository(
         repo_root=repo_root,
         require_config_ssot=args.require_config_ssot,
+        require_package_bundles=args.require_package_bundles,
         require_publish_readiness=args.require_publish_readiness,
     )
     if args.dist_dir:

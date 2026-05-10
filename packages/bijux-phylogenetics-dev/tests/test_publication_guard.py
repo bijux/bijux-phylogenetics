@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import subprocess
 import sys
 
 import pytest
 
+from bijux_phylogenetics_dev.quality.evidence_inputs import build_inputs_manifest
 from bijux_phylogenetics_dev.release.publication_guard import (
     assert_publishable_repository,
 )
@@ -41,9 +43,47 @@ expected_mypy_config_path = "configs/mypy.ini"
 """.strip()
         + "\n",
     )
+    _write(
+        repo_root / "configs" / "publication_readiness.toml",
+        """
+[tool.bijux_phylogenetics.publication_readiness]
+required_evidence_input_manifest = "inputs.manifest.json"
+required_evidence_bundle_code_files = ["reference.R", "analysis.py"]
+expected_publishable_packages = [
+    "bijux-phylogenetics",
+    "phylogenetic",
+    "bijux-phylogenetics-dev",
+]
+target_shape_packages = [
+    "bijux-phylogenetics",
+    "phylogenetic",
+    "bijux-phylogenetics-dev",
+]
+forbidden_runtime_subpackages = ["evidence"]
+required_root_make_targets = [
+    "report-package-bundles:",
+    "check-package-bundles:",
+    "report-publish-readiness:",
+    "check-publish-readiness:",
+]
+""".strip()
+        + "\n",
+    )
     _write(repo_root / "configs" / "mypy.ini", "[mypy]\nstrict = true\n")
     _write(repo_root / "configs" / "pytest.ini", "[pytest]\naddopts = -ra\n")
     _write(repo_root / "tox.ini", "[tox]\nminversion = 4.11\n")
+    _write(
+        repo_root / "makes" / "root.mk",
+        "\n".join(
+            [
+                "report-package-bundles:",
+                "check-package-bundles:",
+                "report-publish-readiness:",
+                "check-publish-readiness:",
+            ]
+        )
+        + "\n",
+    )
     _write(
         repo_root / "makes" / "packages" / "runtime.mk",
         "MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini\n",
@@ -64,6 +104,15 @@ packages = ["src/bijux_phylogenetics"]
         + "\n",
     )
     _write(
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "__init__.py",
+        "__version__ = '0.1.0'\n",
+    )
+    _write(
         repo_root / "packages" / "phylogenetic" / "pyproject.toml",
         """
 [project]
@@ -79,6 +128,10 @@ packages = ["src/phylogenetic"]
         + "\n",
     )
     _write(
+        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "__init__.py",
+        "__version__ = '0.1.0'\n",
+    )
+    _write(
         repo_root / "packages" / "bijux-phylogenetics-dev" / "pyproject.toml",
         """
 [project]
@@ -92,6 +145,15 @@ include = ["src/bijux_phylogenetics_dev/**"]
 packages = ["src/bijux_phylogenetics_dev"]
 """.strip()
         + "\n",
+    )
+    _write(
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics-dev"
+        / "src"
+        / "bijux_phylogenetics_dev"
+        / "__init__.py",
+        "__version__ = '0.1.0'\n",
     )
     _write(
         repo_root / "evidence-book" / "studies" / "demo-study" / "study.json",
@@ -171,7 +233,64 @@ packages = ["src/bijux_phylogenetics_dev"]
         / "demo-study"
         / "evidence-001"
         / "manifest.json",
-        '{"evidence_id": "evidence-001"}\n',
+        """
+{
+  "evidence_id": "evidence-001",
+  "study_id": "demo-study",
+  "freshness": {
+    "governed_code_paths": ["packages/bijux-phylogenetics/src/bijux_phylogenetics"],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "packages/bijux-phylogenetics/tests/fixtures/demo.tsv",
+      "evidence-book/studies/demo-study/evidence-001/parity.json"
+    ]
+  },
+  "ownership": {
+    "analytical_surfaces": ["demo-analysis"],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "source_basis": [
+    {
+      "kind": "repository-fixture",
+      "label": "Demo fixture",
+      "locator": "packages/bijux-phylogenetics/tests/fixtures/demo.tsv"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Local parity payload",
+      "locator": "evidence-book/studies/demo-study/evidence-001/parity.json"
+    }
+  ]
+}
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "analysis.py",
+        "def run() -> dict[str, str]:\n    return {'status': 'ok'}\n",
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "reference.R",
+        "status <- 'ok'\n",
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "parity.json",
+        '{"status": "ok"}\n',
     )
     _write(
         repo_root
@@ -200,6 +319,12 @@ packages = ["src/bijux_phylogenetics_dev"]
         / "demo.tsv",
         "species\tvalue\nA\t1\n",
     )
+    bundle_root = repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
+    inputs_manifest = build_inputs_manifest(repo_root, bundle_root)
+    _write(
+        bundle_root / "inputs.manifest.json",
+        json.dumps(inputs_manifest, indent=2, sort_keys=True) + "\n",
+    )
     return repo_root
 
 
@@ -212,6 +337,14 @@ def test_assert_publishable_repository_allows_clean_config_ssot_repo(
         repo_root=repo_root,
         require_config_ssot=True,
         require_publish_readiness=True,
+    )
+
+
+def test_assert_publishable_repository_allows_clean_package_bundle_repo() -> None:
+    assert_publishable_repository(
+        repo_root=REPO_ROOT,
+        require_config_ssot=True,
+        require_package_bundles=True,
     )
 
 
@@ -269,7 +402,7 @@ def test_publication_guard_module_runs_without_runpy_warning() -> None:
             "--repo-root",
             str(REPO_ROOT),
             "--require-config-ssot",
-            "--require-publish-readiness",
+            "--require-package-bundles",
             "--allow-local-version",
             "--allow-prerelease",
         ],
