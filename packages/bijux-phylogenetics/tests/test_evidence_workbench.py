@@ -34,7 +34,7 @@ def test_list_registered_evidence_studies_reports_partial_rerun_support() -> Non
 def test_refresh_evidence_book_writes_docs_and_reviewer_outputs() -> None:
     report = refresh_evidence_book(REPO_ROOT)
 
-    assert report.reviewer_summary_count == 19
+    assert report.reviewer_summary_count == 23
     assert REPO_ROOT / DOCS_EVIDENCE_OVERVIEW in report.updated_paths
     assert (
         REPO_ROOT

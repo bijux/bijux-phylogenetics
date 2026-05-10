@@ -40,10 +40,13 @@ from .studies.primate_pgls_and_signal import (
     STUDY_ID as PRIMATE_PCM2_STUDY_ID,
     build_primate_pgls_signal_bundles,
     build_primate_pgls_signal_claim_registry,
+    build_primate_pgls_signal_evidence_registry,
     build_primate_pgls_signal_external_sources,
     build_primate_pgls_signal_family_index,
     build_primate_pgls_signal_parity_policy,
     build_primate_pgls_signal_source_fragment_map,
+    render_primate_pgls_signal_study_manifest,
+    render_primate_pgls_signal_study_readme,
 )
 
 
@@ -221,10 +224,23 @@ def _rerun_primate_pcm2_selection(
 ) -> list[str]:
     study_root = repo_root / "evidence-book" / "studies" / PRIMATE_PCM2_STUDY_ID
     updated_paths: list[str] = []
+    (study_root / "README.md").write_text(
+        render_primate_pgls_signal_study_readme(repo_root),
+        encoding="utf-8",
+    )
+    _write_json(
+        study_root / "study.json",
+        render_primate_pgls_signal_study_manifest(repo_root),
+    )
+    _write_json(
+        study_root / "evidence-registry.json",
+        build_primate_pgls_signal_evidence_registry(repo_root),
+    )
     bundles = build_primate_pgls_signal_bundles(repo_root)
     for evidence_id in evidence_ids:
         bundle = bundles[evidence_id]
         bundle_root = study_root / evidence_id
+        bundle_root.mkdir(parents=True, exist_ok=True)
         _write_json(bundle_root / "manifest.json", bundle["manifest"])
         _write_json(bundle_root / "claims.json", bundle["claims"])
         _write_json(bundle_root / bundle["report_filename"], bundle["report_payload"])
@@ -281,6 +297,9 @@ def _rerun_primate_pcm2_selection(
     )
     updated_paths.extend(
         [
+            "evidence-book/studies/primate-pgls-and-signal/README.md",
+            "evidence-book/studies/primate-pgls-and-signal/study.json",
+            "evidence-book/studies/primate-pgls-and-signal/evidence-registry.json",
             "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
             "evidence-book/studies/primate-pgls-and-signal/source-fragment-map.json",
             "evidence-book/studies/primate-pgls-and-signal/family-index.json",
