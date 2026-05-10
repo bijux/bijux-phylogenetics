@@ -11,6 +11,10 @@ from .portability import (
     classify_locator_kind,
     render_portability_rules_markdown,
 )
+from .coverage import COVERAGE_GAPS_JSON, COVERAGE_GAPS_MARKDOWN
+from .freshness import FRESHNESS_REPORT_JSON, FRESHNESS_REPORT_MARKDOWN
+from .integrity import INTEGRITY_REPORT_JSON, INTEGRITY_REPORT_MARKDOWN
+from .reviewer import REVIEWER_SUMMARY_JSON, REVIEWER_SUMMARY_MARKDOWN
 from .teaching import (
     ALLOWED_COMPARISON_MODES,
     ALLOWED_STUDY_CATEGORIES,
@@ -148,18 +152,10 @@ def _load_bundle_claim_rows(bundle_root: Path) -> list[dict[str, object]]:
         claims = payload.get("claims")
         if not isinstance(claims, list):
             raise ValueError("claims.json must contain a claims list")
-        return [
-            row
-            for row in claims
-            if isinstance(row, dict)
-        ]
+        return [row for row in claims if isinstance(row, dict)]
     if legacy_claim_verdicts_path.exists():
         rows = _load_json_list(legacy_claim_verdicts_path)
-        return [
-            row
-            for row in rows
-            if isinstance(row, dict)
-        ]
+        return [row for row in rows if isinstance(row, dict)]
     return []
 
 
@@ -186,7 +182,9 @@ def _bundle_paths(book_root: Path) -> list[Path]:
 def _scan_for_local_path_leaks(
     book_root: Path, issues: list[EvidenceBookValidationIssue]
 ) -> None:
-    for path in sorted(candidate for candidate in book_root.rglob("*") if candidate.is_file()):
+    for path in sorted(
+        candidate for candidate in book_root.rglob("*") if candidate.is_file()
+    ):
         try:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -203,7 +201,9 @@ def _scan_for_local_path_leaks(
 def _scan_for_portability_issues(
     book_root: Path, issues: list[EvidenceBookValidationIssue]
 ) -> None:
-    for path in sorted(candidate for candidate in book_root.rglob("*.json") if candidate.is_file()):
+    for path in sorted(
+        candidate for candidate in book_root.rglob("*.json") if candidate.is_file()
+    ):
         relative_path = _relative_to(book_root, path).as_posix()
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
@@ -211,7 +211,9 @@ def _scan_for_portability_issues(
             continue
         if not isinstance(payload, (dict, list)):
             continue
-        for issue in audit_payload_path_values(payload, relative_file_path=relative_path):
+        for issue in audit_payload_path_values(
+            payload, relative_file_path=relative_path
+        ):
             issues.append(
                 EvidenceBookValidationIssue(
                     Path(issue.relative_file_path),
@@ -275,8 +277,10 @@ def _validate_study_manifest(
             )
         )
     study_categories = manifest.get("study_categories")
-    if not isinstance(study_categories, list) or not study_categories or not all(
-        isinstance(value, str) and value for value in study_categories
+    if (
+        not isinstance(study_categories, list)
+        or not study_categories
+        or not all(isinstance(value, str) and value for value in study_categories)
     ):
         issues.append(
             EvidenceBookValidationIssue(
@@ -299,6 +303,8 @@ def _validate_bundle_manifest(
     study_root: Path,
     bundle_root: Path,
     issues: list[EvidenceBookValidationIssue],
+    *,
+    require_generated_outputs: bool,
 ) -> dict[str, object] | None:
     manifest_path = bundle_root / EVIDENCE_BUNDLE_MANIFEST
     readme_path = bundle_root / "README.md"
@@ -351,6 +357,23 @@ def _validate_bundle_manifest(
                 "evidence manifest evidence_id must match bundle directory name",
             )
         )
+    if require_generated_outputs:
+        reviewer_summary_json_path = bundle_root / REVIEWER_SUMMARY_JSON
+        reviewer_summary_markdown_path = bundle_root / REVIEWER_SUMMARY_MARKDOWN
+        if not reviewer_summary_json_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, reviewer_summary_json_path),
+                    "evidence bundle must include a governed reviewer-summary.json output",
+                )
+            )
+        if not reviewer_summary_markdown_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, reviewer_summary_markdown_path),
+                    "evidence bundle must include a governed reviewer-summary.md output",
+                )
+            )
 
     verdict = manifest.get("verdict")
     if not isinstance(verdict, dict):
@@ -397,8 +420,10 @@ def _validate_bundle_manifest(
             )
         )
     claim_ids = manifest.get("claim_ids")
-    if not isinstance(claim_ids, list) or not claim_ids or not all(
-        isinstance(value, str) and value for value in claim_ids
+    if (
+        not isinstance(claim_ids, list)
+        or not claim_ids
+        or not all(isinstance(value, str) and value for value in claim_ids)
     ):
         issues.append(
             EvidenceBookValidationIssue(
@@ -458,8 +483,12 @@ def _validate_bundle_manifest(
                 )
             )
         governed_code_paths = freshness.get("governed_code_paths")
-        if not isinstance(governed_code_paths, list) or not governed_code_paths or not all(
-            isinstance(value, str) and value for value in governed_code_paths
+        if (
+            not isinstance(governed_code_paths, list)
+            or not governed_code_paths
+            or not all(
+                isinstance(value, str) and value for value in governed_code_paths
+            )
         ):
             issues.append(
                 EvidenceBookValidationIssue(
@@ -468,8 +497,12 @@ def _validate_bundle_manifest(
                 )
             )
         source_basis_locators = freshness.get("source_basis_locators")
-        if not isinstance(source_basis_locators, list) or not source_basis_locators or not all(
-            isinstance(value, str) and value for value in source_basis_locators
+        if (
+            not isinstance(source_basis_locators, list)
+            or not source_basis_locators
+            or not all(
+                isinstance(value, str) and value for value in source_basis_locators
+            )
         ):
             issues.append(
                 EvidenceBookValidationIssue(
@@ -517,8 +550,12 @@ def _validate_bundle_manifest(
                 )
             )
         analytical_surfaces = ownership.get("analytical_surfaces")
-        if not isinstance(analytical_surfaces, list) or not analytical_surfaces or not all(
-            isinstance(value, str) and value for value in analytical_surfaces
+        if (
+            not isinstance(analytical_surfaces, list)
+            or not analytical_surfaces
+            or not all(
+                isinstance(value, str) and value for value in analytical_surfaces
+            )
         ):
             issues.append(
                 EvidenceBookValidationIssue(
@@ -547,13 +584,18 @@ def _validate_bundle_manifest(
 
 
 def validate_evidence_book(
-    repo_root: Path, *, require_index_outputs: bool = True
+    repo_root: Path,
+    *,
+    require_index_outputs: bool = True,
+    require_generated_bundle_outputs: bool = True,
 ) -> EvidenceBookValidationReport:
     root = evidence_book_root(repo_root)
     issues: list[EvidenceBookValidationIssue] = []
     if not root.exists():
         issues.append(
-            EvidenceBookValidationIssue(Path(EVIDENCE_BOOK_DIRNAME), "directory not found")
+            EvidenceBookValidationIssue(
+                Path(EVIDENCE_BOOK_DIRNAME), "directory not found"
+            )
         )
         return EvidenceBookValidationReport(
             root=root, valid=False, issues=issues, bundle_paths=[]
@@ -614,7 +656,13 @@ def validate_evidence_book(
                 continue
             if EVIDENCE_ID_PATTERN.fullmatch(child.name):
                 bundle_paths.append(child)
-                _validate_bundle_manifest(root, study_root, child, issues)
+                _validate_bundle_manifest(
+                    root,
+                    study_root,
+                    child,
+                    issues,
+                    require_generated_outputs=require_generated_bundle_outputs,
+                )
             elif child.name != "__pycache__":
                 issues.append(
                     EvidenceBookValidationIssue(
@@ -665,7 +713,15 @@ def validate_evidence_book(
         regeneration_contract_path = index_root / EVIDENCE_REGENERATION_CONTRACT
         regeneration_summary_path = index_root / EVIDENCE_REGENERATION_SUMMARY
         teaching_migration_path = index_root / TEACHING_AND_MIGRATION_INDEX_FILENAME
-        teaching_migration_summary_path = index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
+        teaching_migration_summary_path = (
+            index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
+        )
+        freshness_report_path = index_root / FRESHNESS_REPORT_JSON
+        freshness_summary_path = index_root / FRESHNESS_REPORT_MARKDOWN
+        integrity_report_path = index_root / INTEGRITY_REPORT_JSON
+        integrity_summary_path = index_root / INTEGRITY_REPORT_MARKDOWN
+        coverage_gaps_path = index_root / COVERAGE_GAPS_JSON
+        coverage_gaps_summary_path = index_root / COVERAGE_GAPS_MARKDOWN
         if not parity_dashboard_path.exists():
             issues.append(
                 EvidenceBookValidationIssue(
@@ -792,6 +848,48 @@ def validate_evidence_book(
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{TEACHING_AND_MIGRATION_SUMMARY_FILENAME}",
                 )
             )
+        if not freshness_report_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, freshness_report_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{FRESHNESS_REPORT_JSON}",
+                )
+            )
+        if not freshness_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, freshness_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{FRESHNESS_REPORT_MARKDOWN}",
+                )
+            )
+        if not integrity_report_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, integrity_report_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{INTEGRITY_REPORT_JSON}",
+                )
+            )
+        if not integrity_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, integrity_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{INTEGRITY_REPORT_MARKDOWN}",
+                )
+            )
+        if not coverage_gaps_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, coverage_gaps_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{COVERAGE_GAPS_JSON}",
+                )
+            )
+        if not coverage_gaps_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, coverage_gaps_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{COVERAGE_GAPS_MARKDOWN}",
+                )
+            )
         if index_path.exists():
             try:
                 index_payload = _load_json(index_path)
@@ -872,7 +970,11 @@ def validate_evidence_book(
 
 def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
     root = evidence_book_root(repo_root)
-    report = validate_evidence_book(repo_root, require_index_outputs=False)
+    report = validate_evidence_book(
+        repo_root,
+        require_index_outputs=False,
+        require_generated_bundle_outputs=False,
+    )
     if not report.valid:
         messages = "; ".join(
             f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues
@@ -917,9 +1019,7 @@ def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
             }
         )
 
-    verdict_counts = Counter(
-        str(entry["verdict_status"]) for entry in evidence_entries
-    )
+    verdict_counts = Counter(str(entry["verdict_status"]) for entry in evidence_entries)
     return {
         "schema_version": 1,
         "root": EVIDENCE_BOOK_DIRNAME,
@@ -933,7 +1033,11 @@ def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
 
 def build_evidence_claim_map(repo_root: Path) -> dict[str, object]:
     root = evidence_book_root(repo_root)
-    report = validate_evidence_book(repo_root, require_index_outputs=False)
+    report = validate_evidence_book(
+        repo_root,
+        require_index_outputs=False,
+        require_generated_bundle_outputs=False,
+    )
     if not report.valid:
         messages = "; ".join(
             f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues
@@ -982,7 +1086,11 @@ def build_evidence_claim_map(repo_root: Path) -> dict[str, object]:
 
 def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
     root = evidence_book_root(repo_root)
-    report = validate_evidence_book(repo_root, require_index_outputs=False)
+    report = validate_evidence_book(
+        repo_root,
+        require_index_outputs=False,
+        require_generated_bundle_outputs=False,
+    )
     if not report.valid:
         messages = "; ".join(
             f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues
@@ -999,8 +1107,12 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
         study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
         parity_policy_path = study_root / "parity-policy.json"
         family_index_path = study_root / "family-index.json"
-        parity_policy = _load_json(parity_policy_path) if parity_policy_path.exists() else None
-        family_index = _load_json(family_index_path) if family_index_path.exists() else None
+        parity_policy = (
+            _load_json(parity_policy_path) if parity_policy_path.exists() else None
+        )
+        family_index = (
+            _load_json(family_index_path) if family_index_path.exists() else None
+        )
         for bundle_root in sorted(
             path
             for path in study_root.iterdir()
@@ -1092,14 +1204,20 @@ def _iter_scalar_parity_tables(
     repo_root: Path,
 ) -> list[tuple[dict[str, object], dict[str, object], Path, dict[str, object]]]:
     root = evidence_book_root(repo_root)
-    report = validate_evidence_book(repo_root, require_index_outputs=False)
+    report = validate_evidence_book(
+        repo_root,
+        require_index_outputs=False,
+        require_generated_bundle_outputs=False,
+    )
     if not report.valid:
         messages = "; ".join(
             f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues
         )
         raise ValueError(f"evidence-book is invalid: {messages}")
 
-    tables: list[tuple[dict[str, object], dict[str, object], Path, dict[str, object]]] = []
+    tables: list[
+        tuple[dict[str, object], dict[str, object], Path, dict[str, object]]
+    ] = []
     for study_root in _study_paths(root):
         study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
         for bundle_root in sorted(
@@ -1125,9 +1243,12 @@ def build_evidence_mismatch_archive(repo_root: Path) -> dict[str, object]:
     root = evidence_book_root(repo_root)
     mismatches: list[dict[str, object]] = []
     verdict_counts: Counter[str] = Counter()
-    for study_manifest, manifest, bundle_root, scalar_table in _iter_scalar_parity_tables(
-        repo_root
-    ):
+    for (
+        study_manifest,
+        manifest,
+        bundle_root,
+        scalar_table,
+    ) in _iter_scalar_parity_tables(repo_root):
         for row in scalar_table.get("rows", []):
             if not isinstance(row, dict):
                 continue
@@ -1396,7 +1517,8 @@ def render_evidence_false_confidence_audit(payload: dict[str, object]) -> str:
         )
         if surface["matched_phrases"]:
             lines.append(
-                "  Matched phrases: " + ", ".join(f"`{phrase}`" for phrase in surface["matched_phrases"])
+                "  Matched phrases: "
+                + ", ".join(f"`{phrase}`" for phrase in surface["matched_phrases"])
             )
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"
@@ -1416,8 +1538,13 @@ def build_evidence_portability_audit(repo_root: Path) -> dict[str, object]:
     locator_kind_counts: Counter[str] = Counter()
     issues: list[dict[str, object]] = []
     report_like_file_count = 0
-    for path in sorted(candidate for candidate in root.rglob("*") if candidate.is_file()):
-        if path.parent.name == EVIDENCE_INDEX_DIRNAME and path.name in excluded_index_files:
+    for path in sorted(
+        candidate for candidate in root.rglob("*") if candidate.is_file()
+    ):
+        if (
+            path.parent.name == EVIDENCE_INDEX_DIRNAME
+            and path.name in excluded_index_files
+        ):
             continue
         relative_path = _relative_to(root, path).as_posix()
         if path.suffix in {".json", ".md", ".csv", ".tsv", ".nwk"}:
@@ -1525,9 +1652,7 @@ def build_evidence_fragile_example_audit(repo_root: Path) -> dict[str, object]:
         "workflow_only",
     }
     fragile_entries = [
-        debt
-        for debt in scientific_debt["debts"]
-        if debt["debt_kind"] in fragile_kinds
+        debt for debt in scientific_debt["debts"] if debt["debt_kind"] in fragile_kinds
     ]
     counts = Counter(str(entry["debt_kind"]) for entry in fragile_entries)
     return {
@@ -1576,11 +1701,16 @@ def build_evidence_regeneration_contract(repo_root: Path) -> dict[str, object]:
         build_script_path = study_root / "build_evidence.py"
         source_paths: list[str] = []
         generated_paths: list[str] = []
-        for path in sorted(candidate for candidate in study_root.rglob("*") if candidate.is_file()):
+        for path in sorted(
+            candidate for candidate in study_root.rglob("*") if candidate.is_file()
+        ):
             relative_path = _relative_to(Path(repo_root), path).as_posix()
             if path.name == "build_evidence.py":
                 source_paths.append(relative_path)
-            elif any(parent.name in {"reference", "provenance", "data"} for parent in path.parents):
+            elif any(
+                parent.name in {"reference", "provenance", "data"}
+                for parent in path.parents
+            ):
                 source_paths.append(relative_path)
             else:
                 generated_paths.append(relative_path)
@@ -1602,7 +1732,8 @@ def build_evidence_regeneration_contract(repo_root: Path) -> dict[str, object]:
                     for path in sorted(
                         candidate
                         for candidate in study_root.iterdir()
-                        if candidate.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(candidate.name)
+                        if candidate.is_dir()
+                        and EVIDENCE_ID_PATTERN.fullmatch(candidate.name)
                     )
                 ],
                 "source_paths": source_paths,
@@ -1716,13 +1847,19 @@ def build_evidence_scientific_debt_register(repo_root: Path) -> dict[str, object
                             "debt_kind": debt.get("debt_kind", "bundle-debt"),
                             "study_id": study_root.name,
                             "evidence_id": bundle_root.name,
-                            "relative_path": _relative_to(root, debt_register_path).as_posix(),
+                            "relative_path": _relative_to(
+                                root, debt_register_path
+                            ).as_posix(),
                             "detail": debt.get("detail"),
                             "evidence": debt.get("evidence", []),
                         }
                     )
             for json_path in sorted(bundle_root.glob("*.json")):
-                if json_path.name in {"manifest.json", "claims.json", "scientific_debt_register.json"}:
+                if json_path.name in {
+                    "manifest.json",
+                    "claims.json",
+                    "scientific_debt_register.json",
+                }:
                     continue
                 try:
                     payload = _load_json(json_path)
@@ -1827,7 +1964,8 @@ def render_evidence_parity_dashboard(dashboard_payload: dict[str, object]) -> st
         lines.append(f"- scalar rows: `{study['scalar_row_count']}`")
         if study["scalar_verdict_counts"]:
             counts = ", ".join(
-                f"{key}={value}" for key, value in study["scalar_verdict_counts"].items()
+                f"{key}={value}"
+                for key, value in study["scalar_verdict_counts"].items()
             )
             lines.append(f"- scalar verdict counts: {counts}")
         if study["comparison_kind_counts"]:
@@ -1950,7 +2088,9 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
         )
         reproducibility_contracts.append(reproducibility_payload)
     teaching_migration_path = index_root / TEACHING_AND_MIGRATION_INDEX_FILENAME
-    teaching_migration_summary_path = index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
+    teaching_migration_summary_path = (
+        index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
+    )
     teaching_migration_payload = build_teaching_and_migration_index(
         teaching_guides,
         migration_guides,
