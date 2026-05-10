@@ -62,18 +62,12 @@ def test_load_config_ssot_policy_reads_repo_owned_policy() -> None:
     assert "makes/packages/bijux-phylogenetics.mk" in policy.audit_paths
 
 
-def test_build_config_ssot_report_flags_known_runtime_mypy_drift() -> None:
+def test_build_config_ssot_report_is_clean_for_the_repository() -> None:
     report = build_config_ssot_report(REPO_ROOT)
 
+    assert report.issue_count == 0, report.to_dict()
     assert report.package_config_allowlist == []
-    assert "packages/bijux-phylogenetics/mypy.ini" in report.package_local_config_files
-    issue_codes = {issue.code for issue in report.issues}
-    assert issue_codes == {
-        "forbidden-package-config",
-        "local-mypy-reference",
-        "mypy-config-path-drift",
-        "quality-mypy-config-path-drift",
-    }
+    assert report.package_local_config_files == []
 
 
 def test_build_config_ssot_report_flags_forbidden_package_local_config(
