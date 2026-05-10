@@ -6,6 +6,12 @@ import tomllib
 from bijux_phylogenetics_dev.quality.config_ssot import load_config_ssot_policy
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+FORBIDDEN_ROOT_GOVERNANCE_CONFIGS = (
+    "configs/config_ssot.toml",
+    "configs/execution_surfaces.toml",
+    "configs/package_boundaries.toml",
+    "configs/publication_readiness.toml",
+)
 
 
 def _root_pyproject() -> dict[str, object]:
@@ -56,5 +62,14 @@ def test_forbidden_package_local_config_files_do_not_exist() -> None:
         path.relative_to(REPO_ROOT).as_posix()
         for path in forbidden_paths
         if path.exists() and path.resolve() not in allowlist
+    ]
+    assert offenders == []
+
+
+def test_root_configs_do_not_store_maintainer_governance_policy_files() -> None:
+    offenders = [
+        relative_path
+        for relative_path in FORBIDDEN_ROOT_GOVERNANCE_CONFIGS
+        if (REPO_ROOT / relative_path).exists()
     ]
     assert offenders == []
