@@ -8,8 +8,16 @@ from bijux_phylogenetics.evidence.studies.primate_longevity_signal import (
     build_primate_family_index,
     build_primate_parity_policy,
     build_primate_scalar_parity_table,
+    build_primate_summary_bundle_claims,
     build_primate_source_fragment_map,
     render_primate_scalar_parity_table_markdown,
+)
+from bijux_phylogenetics.evidence.studies.primate_pcm1_component_bundles import (
+    build_primate_data_preparation_bundle_index,
+    build_primate_pcm1_component_bundles,
+    build_primate_structural_parity_table,
+    render_primate_data_preparation_bundle_index_markdown,
+    render_primate_structural_parity_table_markdown,
 )
 
 
@@ -28,12 +36,16 @@ def test_primate_study_fragment_outputs_match_generated_payloads() -> None:
         (STUDY_ROOT / "family-index.json").read_text(encoding="utf-8")
     )
     claim_registry = json.loads(
+        (STUDY_ROOT / "claim-registry.json").read_text(encoding="utf-8")
+    )
+    summary_bundle_claims = json.loads(
         (BUNDLE_ROOT / "claims.json").read_text(encoding="utf-8")
     )
 
     assert source_fragment_map == build_primate_source_fragment_map(REPO_ROOT)
     assert family_index == build_primate_family_index(REPO_ROOT)
     assert claim_registry == build_primate_claim_registry(REPO_ROOT)
+    assert summary_bundle_claims == build_primate_summary_bundle_claims(REPO_ROOT)
 
 
 def test_primate_study_parity_outputs_match_generated_payloads() -> None:
@@ -52,4 +64,43 @@ def test_primate_study_parity_outputs_match_generated_payloads() -> None:
     assert scalar_parity_table == generated_table
     assert scalar_parity_markdown == render_primate_scalar_parity_table_markdown(
         generated_table
+    )
+
+
+def test_primate_pcm1_component_bundle_outputs_match_generated_payloads() -> None:
+    generated_bundles = build_primate_pcm1_component_bundles(REPO_ROOT)
+
+    for evidence_id, generated in generated_bundles.items():
+        bundle_root = STUDY_ROOT / evidence_id
+        report_path = bundle_root / generated["report_filename"]
+        assert json.loads((bundle_root / "manifest.json").read_text(encoding="utf-8")) == generated["manifest"]
+        assert json.loads((bundle_root / "claims.json").read_text(encoding="utf-8")) == generated["claims"]
+        assert json.loads(report_path.read_text(encoding="utf-8")) == generated["report_payload"]
+        assert (bundle_root / "README.md").read_text(encoding="utf-8") == generated["readme"]
+
+
+def test_primate_pcm1_structural_and_data_preparation_indexes_match_generated_payloads() -> None:
+    structural_table = json.loads(
+        (STUDY_ROOT / "structural-parity-table.json").read_text(encoding="utf-8")
+    )
+    structural_markdown = (STUDY_ROOT / "structural-parity-table.md").read_text(
+        encoding="utf-8"
+    )
+    data_preparation_index = json.loads(
+        (STUDY_ROOT / "data-preparation-bundles.json").read_text(encoding="utf-8")
+    )
+    data_preparation_markdown = (
+        STUDY_ROOT / "data-preparation-bundles.md"
+    ).read_text(encoding="utf-8")
+
+    generated_structural = build_primate_structural_parity_table(REPO_ROOT)
+    generated_data_preparation = build_primate_data_preparation_bundle_index(REPO_ROOT)
+
+    assert structural_table == generated_structural
+    assert structural_markdown == render_primate_structural_parity_table_markdown(
+        generated_structural
+    )
+    assert data_preparation_index == generated_data_preparation
+    assert data_preparation_markdown == render_primate_data_preparation_bundle_index_markdown(
+        generated_data_preparation
     )
