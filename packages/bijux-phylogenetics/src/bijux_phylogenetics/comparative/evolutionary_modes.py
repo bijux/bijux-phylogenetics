@@ -469,8 +469,8 @@ def _transform_tree(
         raise ComparativeMethodError(
             "tree transformation mode must be 'ornstein-uhlenbeck' or 'early-burst'"
         )
-    if parameter_value < 0.0:
-        raise ComparativeMethodError("evolutionary mode parameter must be non-negative")
+    if mode == "ornstein-uhlenbeck" and parameter_value < 0.0:
+        raise ComparativeMethodError("OU alpha must be non-negative")
     cloned_root = _clone_node(tree.root)
     total_depth = _max_tip_depth(tree.root, depth=0.0)
 

@@ -3,6 +3,9 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
+from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.ancestral import (
     reconstruct_continuous_evolutionary_mode_states,
 )
@@ -42,6 +45,20 @@ def test_rescale_tree_early_burst_zero_matches_original_tree_length() -> None:
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+
+
+def test_rescale_tree_early_burst_supports_negative_rate_change() -> None:
+    report = rescale_tree_early_burst(EXAMPLE_TREE, rate_change=-2.0)
+
+    assert report.mode == "early-burst"
+    assert report.parameter_name == "rate_change"
+    assert math.isclose(report.parameter_value, -2.0)
+    assert report.transformed_total_branch_length > 0.0
+
+
+def test_rescale_tree_ornstein_uhlenbeck_rejects_negative_alpha() -> None:
+    with pytest.raises(ComparativeMethodError, match="OU alpha must be non-negative"):
+        rescale_tree_ornstein_uhlenbeck(EXAMPLE_TREE, alpha=-0.5)
 
 
 def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
