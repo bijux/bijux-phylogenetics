@@ -209,5 +209,30 @@ def test_check_evidence_artifacts_flags_stale_bundle_surface(tmp_path: Path) -> 
     ]
 
 
+def test_check_evidence_artifacts_supports_single_bundle_selection(tmp_path: Path) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    sync_evidence_artifacts(repo_root)
+    report_path = (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "results"
+        / "README.md"
+    )
+    report_path.write_text("# stale\n", encoding="utf-8")
+
+    mismatches = check_evidence_artifacts(
+        repo_root,
+        study_id="demo-study",
+        evidence_id="evidence-001",
+    )
+
+    assert mismatches == [
+        "evidence-book/studies/demo-study/evidence-001/results/README.md: stale governed local artifact"
+    ]
+
+
 def test_repository_evidence_artifacts_are_synchronized() -> None:
     assert check_evidence_artifacts(REPO_ROOT) == []

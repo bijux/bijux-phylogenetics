@@ -250,6 +250,27 @@ def test_validate_evidence_book_rejects_missing_governed_local_artifact(
     assert any("reference.R" in issue.path.as_posix() for issue in report.issues)
 
 
+def test_validate_evidence_book_rejects_missing_governed_result_surface(
+    tmp_path: Path,
+) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+    result_manifest_path = (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "taxon-trust"
+        / "evidence-001"
+        / "results"
+        / "manifest.json"
+    )
+    result_manifest_path.unlink()
+
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
+
+    assert report.valid is False
+    assert any("results/manifest.json" in issue.path.as_posix() for issue in report.issues)
+
+
 def test_validate_evidence_book_rejects_missing_freshness_report(
     tmp_path: Path,
 ) -> None:
