@@ -88,3 +88,13 @@ def test_root_make_wires_config_ssot_into_repository_checks() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
     assert all(snippet in root_make for snippet in REQUIRED_ROOT_TARGET_SNIPPETS)
+
+
+def test_root_apis_surface_has_no_placeholder_readme() -> None:
+    apis_root = REPO_ROOT / "apis"
+
+    assert not (apis_root / "README.md").exists()
+    if not apis_root.exists():
+        return
+
+    assert all(path.is_dir() for path in apis_root.iterdir())
