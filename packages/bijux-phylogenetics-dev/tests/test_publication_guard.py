@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -73,3 +75,31 @@ def test_assert_publishable_repository_requires_repo_root_for_config_ssot() -> N
         ValueError, match="repo_root is required when require_config_ssot is enabled"
     ):
         assert_publishable_repository(require_config_ssot=True)
+
+
+def test_publication_guard_module_runs_without_runpy_warning() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-Werror",
+            "-m",
+            "bijux_phylogenetics_dev.release.publication_guard",
+            "--pyproject",
+            str(REPO_ROOT / "packages" / "bijux-phylogenetics" / "pyproject.toml"),
+            "--package-name",
+            "bijux-phylogenetics",
+            "--repo-root",
+            str(REPO_ROOT),
+            "--require-config-ssot",
+            "--allow-local-version",
+            "--allow-prerelease",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
