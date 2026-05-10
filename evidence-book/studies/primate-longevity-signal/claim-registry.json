@@ -1,0 +1,247 @@
+{
+  "claim_count": 18,
+  "claims": [
+    {
+      "claim_id": "pcm1-reproducibility-contract-tracked",
+      "claim_title": "PCM1 reproducibility contract is tracked explicitly",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "environment-and-package-contract"
+      ],
+      "summary": "The lecture setup and package context remain visible for reviewers without being misreported as a numerical parity claim.",
+      "verdict": "not_comparable"
+    },
+    {
+      "claim_id": "pcm1-primate-data-preparation-parity",
+      "claim_title": "PCM1 primate data preparation matches the governed reference",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "Workbook-derived preprocessing and grouped trait preparation agree with the checked-in R reference artifacts.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-tree-import-pruning-parity",
+      "claim_title": "PCM1 tree import and pruning behavior matches the governed reference",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "tree-import-and-pruning"
+      ],
+      "summary": "Tree loading, diagnostics, and pruning outcomes align with the R-derived trimmed tree and its taxon set.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-topology-operation-parity",
+      "claim_title": "PCM1 topology teaching operations preserve the intended structure",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "unrooted-tree-demo",
+        "extract-clade-node-77",
+        "rotate-nodes-behavior"
+      ],
+      "summary": "Unrooting, clade extraction, and node rotation are reproduced with matching taxon identity or tip-order outcomes.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-tree-data-join-parity",
+      "claim_title": "PCM1 tree and trait joining logic matches across R and Bijux",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "tip-order-alignment",
+        "treeio-node-mapping-and-join",
+        "primate-longevity-vector-assembly"
+      ],
+      "summary": "Tree tip order, aligned trait vectors, and representative joined node mappings stay consistent across both sides.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-random-lambda-fit-parity",
+      "claim_title": "PCM1 random-data lambda fits agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "random-simulation-inputs",
+        "random-signal-lambda-fits"
+      ],
+      "summary": "Seeded simulation inputs and downstream lambda fits stay within explicitly bounded numerical tolerance.",
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "claim_id": "pcm1-primate-lambda-fit-parity",
+      "claim_title": "PCM1 primate lambda inference agrees within governed tolerance",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "primate-lambda-fit",
+        "lambda-zero-covariance-and-lrt"
+      ],
+      "summary": "Real-data lambda estimation and lambda-zero likelihood-ratio checks remain numerically aligned within stated tolerance.",
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "claim_id": "pcm1-ancestral-state-parity",
+      "claim_title": "PCM1 ancestral-state outputs agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "continuous-ancestral-point-estimates",
+        "continuous-ancestral-intervals",
+        "ancestral-table-assembly",
+        "bonobo-gibbon-mrca-estimate",
+        "lifespan-increase-counts"
+      ],
+      "summary": "Internal-node estimates, confidence intervals, MRCA spot checks, and increase counts agree to floating-point noise or exact counts.",
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "claim_id": "pcm1-visual-surface-tracking",
+      "claim_title": "PCM1 visual surfaces are tracked without false equivalence claims",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "ape-plotting-basics",
+        "ape-alternate-layouts",
+        "phytools-tree-plotting",
+        "ggtree-tree-visualization",
+        "ape-longevity-overlay",
+        "joined-ggtree-trait-plotting",
+        "random-simulation-plotting",
+        "primate-longevity-visual-inspection",
+        "lambda-zero-visual-comparison",
+        "ancestral-colored-tree-plot"
+      ],
+      "summary": "Plotting examples remain indexed and reviewer-visible while figure-equivalence claims stay intentionally out of scope.",
+      "verdict": "not_comparable"
+    },
+    {
+      "claim_id": "pcm1-artifact-provenance-tracking",
+      "claim_title": "PCM1 saved artifacts remain governed provenance surfaces",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "processed-analysis-artifacts",
+        "final-workspace-artifact"
+      ],
+      "summary": "Processed files and saved workspaces are indexed as provenance outputs rather than overstated as analytical matches.",
+      "verdict": "not_comparable"
+    },
+    {
+      "claim_id": "pcm1-workbook-loading-parity",
+      "claim_title": "PCM1 workbook loading contract is governed explicitly",
+      "evidence_ids": [
+        "evidence-002"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-type-repair-parity",
+      "claim_title": "PCM1 type repair contract is explicit and reviewable",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-missing-data-accounting-parity",
+      "claim_title": "PCM1 missing-data accounting is visible before downstream inference",
+      "evidence_ids": [
+        "evidence-004"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-duplicate-species-aggregation-parity",
+      "claim_title": "PCM1 duplicate-species aggregation is explicit and quantified",
+      "evidence_ids": [
+        "evidence-005"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-tree-import-parity",
+      "claim_title": "PCM1 tree import behavior is governed explicitly",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "source_fragments": [
+        "tree-import-and-pruning"
+      ],
+      "summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-tree-diagnostics-parity",
+      "claim_title": "PCM1 tree diagnostics are separated from later comparative results",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "source_fragments": [
+        "tree-import-and-pruning",
+        "extract-clade-node-77"
+      ],
+      "summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-tree-data-correspondence-parity",
+      "claim_title": "PCM1 tree-data correspondence is explicit before model fitting",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "source_fragments": [
+        "tree-import-and-pruning",
+        "tip-order-alignment",
+        "treeio-node-mapping-and-join"
+      ],
+      "summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm1-processed-export-parity",
+      "claim_title": "PCM1 processed exports are governed as explicit downstream inputs",
+      "evidence_ids": [
+        "evidence-009"
+      ],
+      "source_fragments": [
+        "processed-analysis-artifacts"
+      ],
+      "summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

@@ -23,7 +23,8 @@
       "script_line_spec": "1-22",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L1-L22"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -46,6 +47,12 @@
       "script_line_spec": "23-79",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L23-L79"
+      ],
+      "supporting_evidence_ids": [
+        "evidence-002",
+        "evidence-003",
+        "evidence-004",
+        "evidence-005"
       ]
     },
     {
@@ -69,6 +76,11 @@
       "script_line_spec": "80-120",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L80-L120"
+      ],
+      "supporting_evidence_ids": [
+        "evidence-006",
+        "evidence-007",
+        "evidence-008"
       ]
     },
     {
@@ -92,6 +104,9 @@
       "script_line_spec": "122-134",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L122-L134"
+      ],
+      "supporting_evidence_ids": [
+        "evidence-009"
       ]
     },
     {
@@ -115,7 +130,8 @@
       "script_line_spec": "141-155",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L141-L155"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "plot_only",
@@ -143,7 +159,8 @@
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L157-L158",
         "external:lund/pcm1-plots-signal/script#L160"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -166,7 +183,8 @@
       "script_line_spec": "159",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L159"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "plot_only",
@@ -189,7 +207,8 @@
       "script_line_spec": "165-166",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L165-L166"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -212,6 +231,9 @@
       "script_line_spec": "168-170",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L168-L170"
+      ],
+      "supporting_evidence_ids": [
+        "evidence-007"
       ]
     },
     {
@@ -235,7 +257,8 @@
       "script_line_spec": "172-192",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L172-L192"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "plot_only",
@@ -258,7 +281,8 @@
       "script_line_spec": "197-220",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L197-L220"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -281,6 +305,9 @@
       "script_line_spec": "222-240",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L222-L240"
+      ],
+      "supporting_evidence_ids": [
+        "evidence-008"
       ]
     },
     {
@@ -304,7 +331,8 @@
       "script_line_spec": "242-245",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L242-L245"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -327,6 +355,9 @@
       "script_line_spec": "248-263",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L248-L263"
+      ],
+      "supporting_evidence_ids": [
+        "evidence-008"
       ]
     },
     {
@@ -350,7 +381,8 @@
       "script_line_spec": "265-276",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L265-L276"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "seeded_input_only",
@@ -388,7 +420,8 @@
         "external:lund/pcm1-plots-signal/script#L294-L295",
         "external:lund/pcm1-plots-signal/script#L309",
         "external:lund/pcm1-plots-signal/script#L315"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "plot_only",
@@ -411,7 +444,8 @@
       "script_line_spec": "290-318",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L290-L318"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified_with_tolerance",
@@ -434,7 +468,8 @@
       "script_line_spec": "324-331",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L324-L331"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "plot_only",
@@ -462,7 +497,8 @@
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L337",
         "external:lund/pcm1-plots-signal/script#L343-L345"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -485,7 +521,8 @@
       "script_line_spec": "340-341",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L340-L341"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified_with_tolerance",
@@ -508,7 +545,8 @@
       "script_line_spec": "347-354",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L347-L354"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "plot_only",
@@ -531,7 +569,8 @@
       "script_line_spec": "357-371",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L357-L371"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified_with_tolerance",
@@ -554,7 +593,8 @@
       "script_line_spec": "375-388",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L375-L388"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified_with_tolerance",
@@ -577,7 +617,8 @@
       "script_line_spec": "395-399",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L395-L399"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified_with_tolerance",
@@ -600,7 +641,8 @@
       "script_line_spec": "400",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L400"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -623,7 +665,8 @@
       "script_line_spec": "404-412",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L404-L412"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "plot_only",
@@ -646,7 +689,8 @@
       "script_line_spec": "414-419",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L414-L419"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified_with_tolerance",
@@ -669,7 +713,8 @@
       "script_line_spec": "421-429",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L421-L429"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "verified",
@@ -692,7 +737,8 @@
       "script_line_spec": "431-448",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L431-L448"
-      ]
+      ],
+      "supporting_evidence_ids": []
     },
     {
       "block_status": "artifact_only",
@@ -715,7 +761,8 @@
       "script_line_spec": "450-451",
       "script_locators": [
         "external:lund/pcm1-plots-signal/script#L450-L451"
-      ]
+      ],
+      "supporting_evidence_ids": []
     }
   ],
   "schema_version": 1,

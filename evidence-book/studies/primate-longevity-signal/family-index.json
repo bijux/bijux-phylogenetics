@@ -22,15 +22,30 @@
     },
     {
       "claim_ids": [
+        "pcm1-duplicate-species-aggregation-parity",
+        "pcm1-missing-data-accounting-parity",
         "pcm1-primate-data-preparation-parity",
-        "pcm1-tree-data-join-parity"
+        "pcm1-tree-data-correspondence-parity",
+        "pcm1-tree-data-join-parity",
+        "pcm1-type-repair-parity",
+        "pcm1-workbook-loading-parity"
       ],
       "claim_titles": {
+        "pcm1-duplicate-species-aggregation-parity": "PCM1 duplicate-species aggregation is explicit and quantified",
+        "pcm1-missing-data-accounting-parity": "PCM1 missing-data accounting is visible before downstream inference",
         "pcm1-primate-data-preparation-parity": "PCM1 primate data preparation matches the governed reference",
-        "pcm1-tree-data-join-parity": "PCM1 tree and trait joining logic matches across R and Bijux"
+        "pcm1-tree-data-correspondence-parity": "PCM1 tree-data correspondence is explicit before model fitting",
+        "pcm1-tree-data-join-parity": "PCM1 tree and trait joining logic matches across R and Bijux",
+        "pcm1-type-repair-parity": "PCM1 type repair contract is explicit and reviewable",
+        "pcm1-workbook-loading-parity": "PCM1 workbook loading contract is governed explicitly"
       },
       "evidence_ids": [
-        "evidence-001"
+        "evidence-001",
+        "evidence-002",
+        "evidence-003",
+        "evidence-004",
+        "evidence-005",
+        "evidence-008"
       ],
       "family_id": "data-preparation",
       "family_title": "Data preparation",
@@ -38,35 +53,44 @@
       "fragment_count": 3,
       "fragment_ids": [
         "primate-data-preprocessing",
-        "tip-order-alignment",
-        "primate-longevity-vector-assembly"
+        "primate-longevity-vector-assembly",
+        "tip-order-alignment"
       ],
       "summary": "Workbook-derived preprocessing, tip alignment, and vector assembly that must match before downstream inference is credible."
     },
     {
       "claim_ids": [
         "pcm1-topology-operation-parity",
+        "pcm1-tree-data-correspondence-parity",
         "pcm1-tree-data-join-parity",
+        "pcm1-tree-diagnostics-parity",
+        "pcm1-tree-import-parity",
         "pcm1-tree-import-pruning-parity"
       ],
       "claim_titles": {
         "pcm1-topology-operation-parity": "PCM1 topology teaching operations preserve the intended structure",
+        "pcm1-tree-data-correspondence-parity": "PCM1 tree-data correspondence is explicit before model fitting",
         "pcm1-tree-data-join-parity": "PCM1 tree and trait joining logic matches across R and Bijux",
+        "pcm1-tree-diagnostics-parity": "PCM1 tree diagnostics are separated from later comparative results",
+        "pcm1-tree-import-parity": "PCM1 tree import behavior is governed explicitly",
         "pcm1-tree-import-pruning-parity": "PCM1 tree import and pruning behavior matches the governed reference"
       },
       "evidence_ids": [
-        "evidence-001"
+        "evidence-001",
+        "evidence-006",
+        "evidence-007",
+        "evidence-008"
       ],
       "family_id": "tree-operations",
       "family_title": "Tree operations",
       "family_verdict": "matched",
       "fragment_count": 5,
       "fragment_ids": [
-        "tree-import-and-pruning",
-        "unrooted-tree-demo",
         "extract-clade-node-77",
         "rotate-nodes-behavior",
-        "treeio-node-mapping-and-join"
+        "tree-import-and-pruning",
+        "treeio-node-mapping-and-join",
+        "unrooted-tree-demo"
       ],
       "summary": "Tree import, pruning, and topology-manipulation steps checked by stable taxon or node identity."
     },
@@ -85,16 +109,16 @@
       "family_verdict": "not_comparable",
       "fragment_count": 10,
       "fragment_ids": [
-        "ape-plotting-basics",
+        "ancestral-colored-tree-plot",
         "ape-alternate-layouts",
-        "phytools-tree-plotting",
-        "ggtree-tree-visualization",
         "ape-longevity-overlay",
+        "ape-plotting-basics",
+        "ggtree-tree-visualization",
         "joined-ggtree-trait-plotting",
-        "random-simulation-plotting",
-        "primate-longevity-visual-inspection",
         "lambda-zero-visual-comparison",
-        "ancestral-colored-tree-plot"
+        "phytools-tree-plotting",
+        "primate-longevity-visual-inspection",
+        "random-simulation-plotting"
       ],
       "summary": "Plotting-oriented teaching surfaces tracked honestly without claiming rendered-figure equivalence."
     },
@@ -134,9 +158,9 @@
       "family_verdict": "matched_with_tolerance",
       "fragment_count": 3,
       "fragment_ids": [
-        "random-signal-lambda-fits",
+        "lambda-zero-covariance-and-lrt",
         "primate-lambda-fit",
-        "lambda-zero-covariance-and-lrt"
+        "random-signal-lambda-fits"
       ],
       "summary": "Pagel lambda fitting and lambda-zero statistical checks that rely on governed tolerance rules."
     },
@@ -155,31 +179,34 @@
       "family_verdict": "matched_with_tolerance",
       "fragment_count": 5,
       "fragment_ids": [
-        "continuous-ancestral-point-estimates",
-        "continuous-ancestral-intervals",
         "ancestral-table-assembly",
         "bonobo-gibbon-mrca-estimate",
+        "continuous-ancestral-intervals",
+        "continuous-ancestral-point-estimates",
         "lifespan-increase-counts"
       ],
       "summary": "Internal-node estimates, intervals, and derivative summaries tied to the Brownian comparative workflow."
     },
     {
       "claim_ids": [
-        "pcm1-artifact-provenance-tracking"
+        "pcm1-artifact-provenance-tracking",
+        "pcm1-processed-export-parity"
       ],
       "claim_titles": {
-        "pcm1-artifact-provenance-tracking": "PCM1 saved artifacts remain governed provenance surfaces"
+        "pcm1-artifact-provenance-tracking": "PCM1 saved artifacts remain governed provenance surfaces",
+        "pcm1-processed-export-parity": "PCM1 processed exports are governed as explicit downstream inputs"
       },
       "evidence_ids": [
-        "evidence-001"
+        "evidence-001",
+        "evidence-009"
       ],
       "family_id": "artifact-provenance",
       "family_title": "Artifact provenance",
       "family_verdict": "not_comparable",
       "fragment_count": 2,
       "fragment_ids": [
-        "processed-analysis-artifacts",
-        "final-workspace-artifact"
+        "final-workspace-artifact",
+        "processed-analysis-artifacts"
       ],
       "summary": "Checked-in processed outputs and saved workspaces tracked as provenance, not overstated as direct numerical parity claims."
     }
