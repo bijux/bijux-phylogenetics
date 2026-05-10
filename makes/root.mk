@@ -35,9 +35,10 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
+	sync-evidence-artifacts check-evidence-artifacts \
 	report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness
 
-check: sync-license-assets lock-check check-config-ssot lint test quality security docs build sbom ## Run the full repository verification flow
+check: sync-license-assets lock-check check-config-ssot check-evidence-artifacts lint test quality security docs build sbom ## Run the full repository verification flow
 
 sync-badges: root-check-env ## Render shared badge blocks into managed README surfaces
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.docs.badge_sync sync
@@ -51,6 +52,14 @@ sync-license-assets: root-check-env ## Sync package LICENSE and NOTICE links fro
 check-config-ssot: root-check-env ## Validate repository-owned config source-of-truth rules
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.config_ssot check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/config-ssot-audit.json"
 .PHONY: check-config-ssot
+
+sync-evidence-artifacts: root-check-env ## Render governed local artifact surfaces for every evidence bundle
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts sync --repo-root "$(CURDIR)"
+.PHONY: sync-evidence-artifacts
+
+check-evidence-artifacts: root-check-env ## Validate governed local artifact surfaces for every evidence bundle
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_artifacts check --repo-root "$(CURDIR)"
+.PHONY: check-evidence-artifacts
 
 report-package-bundles: root-check-env ## Build package bundle audit reports for all publishable packages
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.package_bundles report --repo-root "$(CURDIR)" --artifacts-root "$(ROOT_ARTIFACTS_DIR)/package-bundles" --json-out "$(ROOT_ARTIFACTS_DIR)/package-bundles.json"
