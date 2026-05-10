@@ -89,6 +89,31 @@ def test_teaching_guide_builds_family_narratives_and_topic_tags() -> None:
     assert "Baseline regression" in render_teaching_guide_markdown(payload)
 
 
+def test_teaching_guide_falls_back_when_family_metadata_is_missing() -> None:
+    payload = build_teaching_guide(
+        _study_manifest(),
+        {
+            "families": [
+                {
+                    "family_id": "transformed-tree-workflows",
+                    "family_title": "Transformed tree workflows",
+                    "family_verdict": "coverage_boundary",
+                    "coverage_status": "boundary",
+                    "evidence_ids": ["evidence-001"],
+                    "fragment_ids": ["baseline-gls-fit"],
+                }
+            ]
+        },
+        _source_fragment_map(),
+    )
+
+    assert payload["families"][0]["family_id"] == "transformed-tree-workflows"
+    assert "teaching narrative has not been curated yet" in payload["families"][0][
+        "teaching_narrative"
+    ]
+    assert "transformed" in payload["families"][0]["concept_tags"]
+
+
 def test_migration_guide_builds_side_by_side_examples() -> None:
     payload = build_migration_guide(
         _study_manifest(),

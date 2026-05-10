@@ -377,6 +377,39 @@ def study_metadata(study_id: str) -> dict[str, object]:
     return deepcopy(TEACHING_STUDY_METADATA[study_id])
 
 
+def _fallback_family_metadata(
+    family: dict[str, object],
+    fragments_by_id: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    family_id = str(family["family_id"])
+    concept_tags = sorted(
+        {
+            *[
+                str(fragments_by_id[fragment_id].get("concept_family"))
+                for fragment_id in family.get("fragment_ids", [])
+                if (
+                    isinstance(fragment_id, str)
+                    and isinstance(fragments_by_id.get(fragment_id), dict)
+                    and isinstance(
+                        fragments_by_id[fragment_id].get("concept_family"), str
+                    )
+                )
+            ],
+            *[token for token in family_id.split("-") if token],
+        }
+    )
+    if not concept_tags:
+        concept_tags = ["teaching-review-required"]
+    return {
+        "concept_tags": concept_tags,
+        "teaching_narrative": (
+            "This evidence family is indexed for teaching review, but its dedicated "
+            "teaching narrative has not been curated yet. Review the bundle-level "
+            "reports and source fragments directly until the family guide is strengthened."
+        ),
+    }
+
+
 def build_teaching_guide(
     study_manifest: dict[str, object],
     family_index: dict[str, object],
@@ -394,7 +427,9 @@ def build_teaching_guide(
         if not isinstance(family, dict):
             continue
         family_id = str(family["family_id"])
-        family_metadata = metadata["families"][family_id]
+        family_metadata = metadata["families"].get(family_id)
+        if not isinstance(family_metadata, dict):
+            family_metadata = _fallback_family_metadata(family, fragments_by_id)
         concept_tags = list(family_metadata["concept_tags"])
         concept_counter.update(concept_tags)
         family_fragments = [
