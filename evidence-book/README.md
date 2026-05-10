@@ -15,6 +15,14 @@ Current tracked studies:
 
 - Teaching and migration landing page:
   [`index/teaching-and-migration.md`](./index/teaching-and-migration.md)
+- Reviewer-facing evidence overview:
+  [`../docs/02-evidence-book/index.md`](../docs/02-evidence-book/index.md)
+- Freshness tracking:
+  [`index/freshness-report.md`](./index/freshness-report.md)
+- Integrity tracking:
+  [`index/integrity-report.md`](./index/integrity-report.md)
+- Coverage gaps:
+  [`index/coverage-gaps.md`](./index/coverage-gaps.md)
 
 - [`primate-longevity-signal`](./studies/primate-longevity-signal/): block-by-block
   comparative parity against established R phylogenetics packages

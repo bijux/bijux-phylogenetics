@@ -62,5 +62,7 @@ nav:
   - Home: index.md
   - Repository:
       - Repository: 01-bijux-phylogenetics/index.md
+  - Evidence Book:
+      - Evidence Book: 02-evidence-book/index.md
   - Maintainer:
       - Maintainer: 03-bijux-phylogenetics-maintain/index.md
