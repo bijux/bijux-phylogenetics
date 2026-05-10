@@ -35,16 +35,30 @@ build-evidence-study:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json"
 validate-evidence-book:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-book-validation.json"
+report-evidence-completeness:
+\t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"
+check-evidence-completeness:
+\t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"
 sync-evidence-artifacts:
 \t@echo sync
 check-evidence-artifacts:
 \t@echo check
+report-evidence-governance:
+\t@$(MAKE) report-artifact-governance
+check-evidence-governance:
+\t@$(MAKE) check-artifact-governance
 rerun-evidence-cleanroom:
+\t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom"
+rerun-governed-evidence-cleanroom:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom"
 report-artifact-governance:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
 check-artifact-governance:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
+report-execution-surfaces:
+\t@echo "$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json"
+check-execution-surfaces:
+\t@echo "$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json"
 report-package-boundaries:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json"
 check-package-boundaries:
@@ -65,6 +79,30 @@ check-release-readiness:
         + "\n",
     )
     _write(
+        repo_root / ".github" / "workflows" / "repository-governance.yml",
+        """
+name: repository-governance
+on: workflow_dispatch
+jobs:
+  repository-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - run: tox -e repository-contracts
+  config-ssot:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          tox -e config-ssot
+          make check-execution-surfaces
+      - uses: actions/upload-artifact@v4
+        with:
+          path: |
+            artifacts/root/config-ssot-audit.json
+            artifacts/root/execution-surfaces.json
+""".strip()
+        + "\n",
+    )
+    _write(
         repo_root / ".github" / "workflows" / "evidence-governance.yml",
         """
 name: evidence-governance
@@ -73,20 +111,31 @@ jobs:
   contracts:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          make validate-evidence-book
-          make check-evidence-artifacts
-          make check-artifact-governance
+      - run: tox -e evidence-governance,evidence-completeness
       - uses: actions/upload-artifact@v4
         with:
           path: |
             artifacts/root/evidence-book-validation.json
+            artifacts/root/evidence-completeness.json
             artifacts/root/artifact-governance.json
             artifacts/root/evidence-cleanroom
   cleanroom:
     runs-on: ubuntu-latest
     steps:
-      - run: make rerun-evidence-cleanroom
+      - run: make rerun-governed-evidence-cleanroom
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root / ".github" / "workflows" / "runtime-quality.yml",
+        """
+name: runtime-quality
+on: workflow_dispatch
+jobs:
+  runtime-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - run: tox -e lint-core,test-core,quality-core,build-core,sbom-core
 """.strip()
         + "\n",
     )
@@ -99,9 +148,7 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          make check-config-ssot
-          make report-release-readiness
+      - run: tox -e publish-readiness
       - uses: actions/upload-artifact@v4
         with:
           path: |
@@ -110,10 +157,11 @@ jobs:
             artifacts/root/package-boundaries.json
             artifacts/root/publish-readiness.json
             artifacts/root/artifact-governance.json
+            artifacts/root/execution-surfaces.json
   gate:
     runs-on: ubuntu-latest
     steps:
-      - run: make check-release-readiness
+      - run: tox -e release-readiness-gate
 """.strip()
         + "\n",
     )

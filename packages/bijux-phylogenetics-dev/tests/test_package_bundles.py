@@ -49,7 +49,7 @@ required_evidence_bundle_artifacts = ["reference.R", "analysis.py", "checks.json
 expected_publishable_packages = ["demo-runtime", "demo-dev"]
 target_shape_packages = ["demo-runtime", "demo-dev", "demo-evidence"]
 forbidden_runtime_subpackages = ["evidence"]
-required_root_make_targets = ["validate-evidence-book:", "sync-evidence-artifacts:", "check-evidence-artifacts:", "check-artifact-governance:", "check-package-bundles:", "check-release-readiness:"]
+required_root_make_targets = ["validate-evidence-book:", "report-evidence-completeness:", "check-evidence-completeness:", "check-evidence-governance:", "sync-evidence-artifacts:", "check-evidence-artifacts:", "check-artifact-governance:", "check-package-bundles:", "check-release-readiness:"]
 
 [tool.bijux_phylogenetics.publication_readiness.package_policy."demo-runtime"]
 package_dir = "packages/demo-runtime"

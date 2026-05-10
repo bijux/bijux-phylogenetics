@@ -13,6 +13,7 @@ from typing import Any
 
 from .config_ssot import build_config_ssot_report
 from .evidence_inputs import INPUT_MANIFEST_FILENAME, check_inputs_manifests
+from .execution_surfaces import build_execution_surfaces_report
 from .package_boundaries import build_package_boundary_report
 from .package_bundles import (
     build_dependency_policy_report,
@@ -521,6 +522,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     package_payloads = _package_pyprojects(repo_root)
     dependency_policy = build_dependency_policy_report(repo_root)
     config_report = build_config_ssot_report(repo_root)
+    execution_surfaces = build_execution_surfaces_report(repo_root)
     package_boundaries = build_package_boundary_report(repo_root)
     evidence_inventory = build_evidence_reproducibility_inventory(
         repo_root,
@@ -581,6 +583,9 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     )
     package_issues.extend(
         ReadinessIssue(**issue) for issue in package_boundaries["issues"]  # type: ignore[index]
+    )
+    standards_issues.extend(
+        ReadinessIssue(**issue) for issue in execution_surfaces["issues"]  # type: ignore[index]
     )
 
     expected_publishable_packages = sorted(
@@ -746,7 +751,16 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     standards_closure_blockers = [
         issue["code"]
         for issue in blocker_register
-        if issue["code"] in {"missing-root-make-target"} or issue["code"].startswith("config-")
+        if issue["code"] in {
+            "missing-root-make-target",
+            "missing-governed-root-target",
+            "missing-governed-tox-env",
+            "tox-command-drift",
+            "missing-governed-workflow",
+            "workflow-job-drift",
+            "workflow-cleanroom-selection-drift",
+        }
+        or issue["code"].startswith("config-")
     ]
     closure_criteria = {
         "runtime_publishable": {
@@ -774,6 +788,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "status": "ready" if not standards_closure_blockers and config_report.issue_count == 0 else "blocked",
             "pass_when": [
                 "repository-owned config SSOT audit is clean",
+                "repository make, tox, and workflow execution surfaces are governed explicitly and stay separated by owned responsibilities",
                 "root make surface exposes the governed publish-readiness commands",
             ],
             "blocker_codes": standards_closure_blockers,
@@ -822,6 +837,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
         "package_issues": [asdict(issue) for issue in package_issues],
         "dependency_policy": dependency_policy,
         "package_boundaries": package_boundaries,
+        "execution_surfaces": execution_surfaces,
         "config_ssot": config_report.to_dict(),
         "evidence_inventory": evidence_inventory,
         "repository_shape": {

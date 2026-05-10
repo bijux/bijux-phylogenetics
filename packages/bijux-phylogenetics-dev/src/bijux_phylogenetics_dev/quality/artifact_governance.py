@@ -19,17 +19,29 @@ REQUIRED_MAKE_TARGETS = {
     "build-evidence-book": '$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json',
     "build-evidence-study": '$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json',
     "validate-evidence-book": '$(ROOT_ARTIFACTS_DIR)/evidence-book-validation.json',
+    "report-evidence-completeness": '$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json',
+    "check-evidence-completeness": '$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json',
+    "report-evidence-governance": '$(MAKE) report-artifact-governance',
+    "check-evidence-governance": '$(MAKE) check-artifact-governance',
     "report-artifact-governance": '$(ROOT_ARTIFACTS_DIR)/artifact-governance.json',
     "check-artifact-governance": '$(ROOT_ARTIFACTS_DIR)/artifact-governance.json',
+    "report-execution-surfaces": '$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json',
+    "check-execution-surfaces": '$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json',
     "report-package-boundaries": '$(ROOT_ARTIFACTS_DIR)/package-boundaries.json',
     "check-package-boundaries": '$(ROOT_ARTIFACTS_DIR)/package-boundaries.json',
     "report-release-readiness": '$(MAKE) report-publish-readiness',
     "check-release-readiness": '$(MAKE) check-publish-readiness',
     "rerun-evidence-cleanroom": '$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom',
+    "rerun-governed-evidence-cleanroom": '$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom',
 }
 REQUIRED_WORKFLOW_ARTIFACT_PATHS = {
+    "repository-governance.yml": {
+        "artifacts/root/config-ssot-audit.json",
+        "artifacts/root/execution-surfaces.json",
+    },
     "evidence-governance.yml": {
         "artifacts/root/evidence-book-validation.json",
+        "artifacts/root/evidence-completeness.json",
         "artifacts/root/artifact-governance.json",
         "artifacts/root/evidence-cleanroom",
     },
@@ -39,19 +51,26 @@ REQUIRED_WORKFLOW_ARTIFACT_PATHS = {
         "artifacts/root/package-boundaries.json",
         "artifacts/root/publish-readiness.json",
         "artifacts/root/artifact-governance.json",
+        "artifacts/root/execution-surfaces.json",
     },
+    "runtime-quality.yml": set(),
 }
 REQUIRED_WORKFLOW_COMMAND_SNIPPETS = {
+    "repository-governance.yml": {
+        "tox -e repository-contracts",
+        "tox -e config-ssot",
+        "make check-execution-surfaces",
+    },
     "evidence-governance.yml": {
-        "make validate-evidence-book",
-        "make check-evidence-artifacts",
-        "make check-artifact-governance",
-        "make rerun-evidence-cleanroom",
+        "tox -e evidence-governance,evidence-completeness",
+        "make rerun-governed-evidence-cleanroom",
     },
     "publish-readiness.yml": {
-        "make check-config-ssot",
-        "make report-release-readiness",
-        "make check-release-readiness",
+        "tox -e publish-readiness",
+        "tox -e release-readiness-gate",
+    },
+    "runtime-quality.yml": {
+        "tox -e lint-core,test-core,quality-core,build-core,sbom-core",
     },
 }
 
