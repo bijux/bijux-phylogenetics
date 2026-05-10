@@ -79,7 +79,7 @@ What exists today:
 - alignment diagnostics, filtering, trimming, and translation workflows
 - comparative trait analysis, ancestral-state workflows, and distance-based analysis
 - governed adapter surfaces for external tools such as alignment and inference engines
-- checked-in API contracts, package handbooks, and release automation
+- package handbooks and release automation
 
 Current evidence closure is narrower than raw runtime breadth. The governed
 status lives in the evidence-book:
@@ -118,7 +118,7 @@ What does not exist today:
 
 The root keeps repository-owned concerns explicit:
 
-- `apis/` for checked-in API contracts, pinned canonical JSON, and schema digests
+- `apis/` for versioned checked-in API contract bundles when this repository owns them
 - `configs/` for shared tool configuration
 - `docs/` for the repository handbook and package handbook index
 - `makes/` for automation and orchestration

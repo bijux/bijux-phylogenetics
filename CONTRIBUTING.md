@@ -11,7 +11,8 @@ Choose the narrowest correct home for every change:
 - package runtime behavior belongs in the owning package under `packages/`
 - repository-wide automation belongs in `makes/`
 - shared tool policy belongs in `configs/`
-- checked-in API contracts belong in `apis/`
+- checked-in API contracts, when they exist, belong in versioned package
+  directories under `apis/`
 - repository handbook and maintainer guidance belong at the root or in `docs/`
 
 If the same rule would need to be copied into multiple packages, that is a sign
@@ -54,6 +55,10 @@ Typical validation flows:
 If you touch checked-in API contracts, schemas, or publish flows, verify the
 resulting artifacts rather than assuming the repository state stayed
 consistent.
+
+Do not keep empty root-owned surfaces alive with placeholder files. If this
+repository does not yet own a checked-in API contract tree, leave `apis/`
+absent instead of adding a root `README.md`.
 
 ## Commits
 
