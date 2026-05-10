@@ -49,7 +49,7 @@ def test_python_package_sdists_embed_root_legal_artifacts_as_real_files() -> Non
     for project_path in package_projects:
         project = tomllib.loads(project_path.read_text(encoding="utf-8"))
         sdist_config = project["tool"]["hatch"]["build"]["targets"]["sdist"]
-        assert sdist_config["exclude"] == ["LICENSE", "NOTICE"]
+        assert sdist_config["exclude"] == ["LICENSE", "NOTICE", "tests"]
         assert sdist_config["force-include"] == {
             "../../LICENSE": "LICENSE",
             "../../NOTICE": "NOTICE",

@@ -76,7 +76,7 @@ include = [
 ]
 
 [tool.hatch.build.targets.sdist]
-exclude = ["LICENSE", "NOTICE"]
+exclude = ["LICENSE", "NOTICE", "tests"]
 include = [
     "README.md",
     "CHANGELOG.md",
