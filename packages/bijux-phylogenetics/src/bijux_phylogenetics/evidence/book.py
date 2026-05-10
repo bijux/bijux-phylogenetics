@@ -176,6 +176,26 @@ def _scan_for_local_path_leaks(
             )
 
 
+def _scan_for_portability_issues(
+    book_root: Path, issues: list[EvidenceBookValidationIssue]
+) -> None:
+    for path in sorted(candidate for candidate in book_root.rglob("*.json") if candidate.is_file()):
+        relative_path = _relative_to(book_root, path).as_posix()
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(payload, (dict, list)):
+            continue
+        for issue in audit_payload_path_values(payload, relative_file_path=relative_path):
+            issues.append(
+                EvidenceBookValidationIssue(
+                    Path(issue.relative_file_path),
+                    f"{issue.json_pointer}: {issue.message}",
+                )
+            )
+
+
 def _validate_study_manifest(
     book_root: Path, study_root: Path, issues: list[EvidenceBookValidationIssue]
 ) -> dict[str, object] | None:
@@ -744,6 +764,7 @@ def validate_evidence_book(
                     )
 
     _scan_for_local_path_leaks(root, issues)
+    _scan_for_portability_issues(root, issues)
 
     return EvidenceBookValidationReport(
         root=root,
