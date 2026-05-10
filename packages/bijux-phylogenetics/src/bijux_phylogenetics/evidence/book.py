@@ -90,6 +90,23 @@ def _bundle_paths(book_root: Path) -> list[Path]:
     return bundle_paths
 
 
+def _scan_for_local_path_leaks(
+    book_root: Path, issues: list[EvidenceBookValidationIssue]
+) -> None:
+    for path in sorted(candidate for candidate in book_root.rglob("*") if candidate.is_file()):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        if "/Users/" in text:
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, path),
+                    "durable evidence content must not contain workstation-local /Users/ paths",
+                )
+            )
+
+
 def _validate_study_manifest(
     book_root: Path, study_root: Path, issues: list[EvidenceBookValidationIssue]
 ) -> dict[str, object] | None:
@@ -251,7 +268,9 @@ def _validate_bundle_manifest(
     return manifest
 
 
-def validate_evidence_book(repo_root: Path) -> EvidenceBookValidationReport:
+def validate_evidence_book(
+    repo_root: Path, *, require_index_outputs: bool = True
+) -> EvidenceBookValidationReport:
     root = evidence_book_root(repo_root)
     issues: list[EvidenceBookValidationIssue] = []
     if not root.exists():
@@ -296,6 +315,53 @@ def validate_evidence_book(repo_root: Path) -> EvidenceBookValidationReport:
                     )
                 )
 
+    index_path = index_root / EVIDENCE_INDEX
+    catalog_path = index_root / EVIDENCE_CATALOG
+    if index_root.exists() and require_index_outputs:
+        if not index_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, index_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_INDEX}",
+                )
+            )
+        if not catalog_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, catalog_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CATALOG}",
+                )
+            )
+        if index_path.exists():
+            try:
+                index_payload = _load_json(index_path)
+            except (ValueError, json.JSONDecodeError) as error:
+                issues.append(
+                    EvidenceBookValidationIssue(
+                        _relative_to(root, index_path),
+                        f"invalid evidence index: {error}",
+                    )
+                )
+            else:
+                discovered_paths = {
+                    _relative_to(root, bundle_root).as_posix()
+                    for bundle_root in bundle_paths
+                }
+                indexed_paths = {
+                    str(entry.get("relative_path"))
+                    for entry in index_payload.get("evidence", [])
+                    if isinstance(entry, dict)
+                }
+                if discovered_paths != indexed_paths:
+                    issues.append(
+                        EvidenceBookValidationIssue(
+                            _relative_to(root, index_path),
+                            "evidence index must cover every discovered evidence bundle exactly once",
+                        )
+                    )
+
+    _scan_for_local_path_leaks(root, issues)
+
     return EvidenceBookValidationReport(
         root=root,
         valid=not issues,
@@ -306,7 +372,7 @@ def validate_evidence_book(repo_root: Path) -> EvidenceBookValidationReport:
 
 def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
     root = evidence_book_root(repo_root)
-    report = validate_evidence_book(repo_root)
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
     if not report.valid:
         messages = "; ".join(
             f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues

@@ -1,0 +1,92 @@
+{
+  "evidence": [
+    {
+      "claim_tags": [
+        "comparative-signal",
+        "teaching",
+        "parity"
+      ],
+      "evidence_id": "evidence-001",
+      "evidence_title": "Primate longevity signal parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-001",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Analytical and structural comparisons are tracked honestly, with numerical parity claims separated from plot-only surfaces."
+    },
+    {
+      "claim_tags": [
+        "taxonomy",
+        "workflow-audit",
+        "trust-surface"
+      ],
+      "evidence_id": "evidence-001",
+      "evidence_title": "Taxon workflow review bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/taxon-trust/evidence-001",
+      "study_id": "taxon-trust",
+      "study_title": "Taxon Trust",
+      "verdict_status": "matched",
+      "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
+    }
+  ],
+  "evidence_count": 2,
+  "root": "evidence-book",
+  "schema_version": 1,
+  "studies": [
+    {
+      "bundle_count": 1,
+      "evidence": [
+        {
+          "claim_tags": [
+            "comparative-signal",
+            "teaching",
+            "parity"
+          ],
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate longevity signal parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Analytical and structural comparisons are tracked honestly, with numerical parity claims separated from plot-only surfaces."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "summary": "Checked-in parity study for the Lund primate longevity signal teaching workflow."
+    },
+    {
+      "bundle_count": 1,
+      "evidence": [
+        {
+          "claim_tags": [
+            "taxonomy",
+            "workflow-audit",
+            "trust-surface"
+          ],
+          "evidence_id": "evidence-001",
+          "evidence_title": "Taxon workflow review bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust",
+          "verdict_status": "matched",
+          "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_id": "taxon-trust",
+      "study_title": "Taxon Trust",
+      "summary": "Fixture-backed study for the repository taxon-trust workflow surfaces."
+    }
+  ],
+  "study_count": 2,
+  "verdict_counts": {
+    "matched": 1,
+    "matched_with_tolerance": 1
+  }
+}

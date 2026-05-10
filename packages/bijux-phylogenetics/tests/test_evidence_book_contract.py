@@ -69,6 +69,7 @@ def _write_book_fixture(root: Path) -> Path:
 
 def test_validate_evidence_book_accepts_governed_layout(tmp_path: Path) -> None:
     repo_root = _write_book_fixture(tmp_path)
+    write_evidence_book_index(repo_root)
 
     report = validate_evidence_book(repo_root)
 
@@ -94,7 +95,7 @@ def test_validate_evidence_book_rejects_missing_manifest_fields(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    report = validate_evidence_book(repo_root)
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
 
     assert report.valid is False
     assert any("missing keys: verdict" in issue.message for issue in report.issues)
