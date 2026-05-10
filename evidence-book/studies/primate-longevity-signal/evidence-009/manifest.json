@@ -1,0 +1,79 @@
+{
+  "claim_ids": [
+    "pcm1-processed-export-parity"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "artifact-provenance",
+    "processed-export"
+  ],
+  "evidence_id": "evidence-009",
+  "evidence_title": "Primate processed export parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json"
+    ]
+  },
+  "limitations": [
+    "The governed export contract records the downstream artifacts and their parity expectations, not the rendered plot outputs that consume them."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "artifact-provenance"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_bundle_locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+  "reference_script_locators": [
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L77",
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L85"
+  ],
+  "report_keys": [
+    "checked_in_processed_matches_reference",
+    "checked_in_trimmed_tip_order_matches_reference",
+    "checked_in_trimmed_tip_set_matches_reference",
+    "evidence_id",
+    "governed_processed_reference_locator",
+    "governed_trimmed_tree_reference_locator",
+    "processed_csv_locator",
+    "schema_version",
+    "study_id",
+    "trimmed_tree_locator"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed trimmed tree export",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate processed export parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json"
+    }
+  ],
+  "source_fragments": [
+    "processed-analysis-artifacts"
+  ],
+  "study_id": "primate-longevity-signal",
+  "summary": "Governed evidence for the exported processed CSV and trimmed tree artifacts consumed by later teaching steps.",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json",
+  "verdict": {
+    "status": "matched",
+    "summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims."
+  }
+}

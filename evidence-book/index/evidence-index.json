@@ -17,6 +17,134 @@
     },
     {
       "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "workbook-loading"
+      ],
+      "evidence_id": "evidence-002",
+      "evidence_title": "Primate workbook loading parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-002",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "type-repair"
+      ],
+      "evidence_id": "evidence-003",
+      "evidence_title": "Primate type repair parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-003",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "missing-data"
+      ],
+      "evidence_id": "evidence-004",
+      "evidence_title": "Primate missing-data accounting parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-004",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "duplicate-aggregation"
+      ],
+      "evidence_id": "evidence-005",
+      "evidence_title": "Primate duplicate-species aggregation parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-005",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "tree-operations",
+        "tree-import"
+      ],
+      "evidence_id": "evidence-006",
+      "evidence_title": "Primate tree import parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-006",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "tree-operations",
+        "tree-diagnostics"
+      ],
+      "evidence_id": "evidence-007",
+      "evidence_title": "Primate tree diagnostics parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-007",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "tree-data-correspondence"
+      ],
+      "evidence_id": "evidence-008",
+      "evidence_title": "Primate tree-data correspondence parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-008",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "artifact-provenance",
+        "processed-export"
+      ],
+      "evidence_id": "evidence-009",
+      "evidence_title": "Primate processed export parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-009",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims."
+    },
+    {
+      "claim_tags": [
         "taxonomy",
         "workflow-audit",
         "trust-surface"
@@ -31,12 +159,12 @@
       "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
     }
   ],
-  "evidence_count": 2,
+  "evidence_count": 10,
   "root": "evidence-book",
   "schema_version": 1,
   "studies": [
     {
-      "bundle_count": 1,
+      "bundle_count": 9,
       "evidence": [
         {
           "claim_tags": [
@@ -52,6 +180,134 @@
           "study_title": "Primate Longevity Signal",
           "verdict_status": "matched_with_tolerance",
           "verdict_summary": "Analytical and structural comparisons are tracked honestly, with numerical parity claims separated from plot-only surfaces."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "workbook-loading"
+          ],
+          "evidence_id": "evidence-002",
+          "evidence_title": "Primate workbook loading parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-002",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "type-repair"
+          ],
+          "evidence_id": "evidence-003",
+          "evidence_title": "Primate type repair parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-003",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "missing-data"
+          ],
+          "evidence_id": "evidence-004",
+          "evidence_title": "Primate missing-data accounting parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-004",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "duplicate-aggregation"
+          ],
+          "evidence_id": "evidence-005",
+          "evidence_title": "Primate duplicate-species aggregation parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-005",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "tree-operations",
+            "tree-import"
+          ],
+          "evidence_id": "evidence-006",
+          "evidence_title": "Primate tree import parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-006",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "tree-operations",
+            "tree-diagnostics"
+          ],
+          "evidence_id": "evidence-007",
+          "evidence_title": "Primate tree diagnostics parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-007",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "tree-data-correspondence"
+          ],
+          "evidence_id": "evidence-008",
+          "evidence_title": "Primate tree-data correspondence parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-008",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "artifact-provenance",
+            "processed-export"
+          ],
+          "evidence_id": "evidence-009",
+          "evidence_title": "Primate processed export parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-009",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims."
         }
       ],
       "owner_package": "bijux-phylogenetics",
@@ -86,7 +342,7 @@
   ],
   "study_count": 2,
   "verdict_counts": {
-    "matched": 1,
+    "matched": 9,
     "matched_with_tolerance": 1
   }
 }

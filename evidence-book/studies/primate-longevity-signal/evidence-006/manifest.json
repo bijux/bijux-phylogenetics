@@ -1,0 +1,79 @@
+{
+  "claim_ids": [
+    "pcm1-tree-import-parity"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "tree-operations",
+    "tree-import"
+  ],
+  "evidence_id": "evidence-006",
+  "evidence_title": "Primate tree import parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "external:lund/pcm1-plots-signal/data/primatetree.nex",
+      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json"
+    ]
+  },
+  "limitations": [
+    "This bundle focuses on import and preserved tree shape; downstream correspondence and diagnostics are broken out separately."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "tree-preprocessing"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_bundle_locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+  "reference_script_locators": [
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L79-L85"
+  ],
+  "report_keys": [
+    "bijux_original_tip_count",
+    "bijux_trimmed_tip_count",
+    "evidence_id",
+    "original_tree_has_branch_lengths",
+    "original_tree_locator",
+    "r_original_tip_count",
+    "r_trimmed_tip_count",
+    "schema_version",
+    "study_id",
+    "trimmed_tree_has_branch_lengths",
+    "trimmed_tree_locator"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "external-course-material",
+      "label": "lund pcm1 original primate tree",
+      "locator": "external:lund/pcm1-plots-signal/data/primatetree.nex"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed trimmed tree export",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate tree import parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json"
+    }
+  ],
+  "source_fragments": [
+    "tree-import-and-pruning"
+  ],
+  "study_id": "primate-longevity-signal",
+  "summary": "Governed evidence for reading the primate tree and preserving the expected original and trimmed tree contract.",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json",
+  "verdict": {
+    "status": "matched",
+    "summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations."
+  }
+}

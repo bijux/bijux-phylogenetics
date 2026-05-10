@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-missing-data-accounting-parity",
+      "claim_title": "PCM1 missing-data accounting is visible before downstream inference",
+      "evidence_ids": [
+        "evidence-004"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-004",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

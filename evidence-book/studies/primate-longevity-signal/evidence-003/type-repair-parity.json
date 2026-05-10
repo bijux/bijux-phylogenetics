@@ -1,0 +1,38 @@
+{
+  "checked_in_processed_matches_reference": true,
+  "evidence_id": "evidence-003",
+  "factor_columns": [
+    "sex_dimorphism"
+  ],
+  "mating_system_values_sample": [
+    "Pair",
+    "Polyandrous",
+    "Polygynous"
+  ],
+  "numeric_columns": [
+    "body_mass",
+    "gestation",
+    "home_range",
+    "longevity",
+    "social_group_size"
+  ],
+  "numeric_columns_parse_without_error": true,
+  "numeric_parse_failures": {
+    "body_mass": [],
+    "gestation": [],
+    "home_range": [],
+    "longevity": [],
+    "social_group_size": []
+  },
+  "schema_version": 1,
+  "sex_dimorphism_values": [
+    "0",
+    "1"
+  ],
+  "study_id": "primate-longevity-signal",
+  "text_columns": [
+    "family",
+    "species",
+    "mating_system"
+  ]
+}

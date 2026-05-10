@@ -1,5 +1,5 @@
 {
-  "claim_count": 20,
+  "claim_count": 28,
   "claims": [
     {
       "claim_id": "ambiguous-synonym-rejection",
@@ -91,6 +91,42 @@
       ]
     },
     {
+      "claim_id": "pcm1-duplicate-species-aggregation-parity",
+      "claim_title": "PCM1 duplicate-species aggregation is explicit and quantified",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-005",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-005",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-missing-data-accounting-parity",
+      "claim_title": "PCM1 missing-data accounting is visible before downstream inference",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-004",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-004",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
       "claim_id": "pcm1-primate-data-preparation-parity",
       "claim_title": "PCM1 primate data preparation matches the governed reference",
       "evidence": [
@@ -121,6 +157,24 @@
           "source_fragments": [
             "primate-lambda-fit",
             "lambda-zero-covariance-and-lrt"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-processed-export-parity",
+      "claim_title": "PCM1 processed exports are governed as explicit downstream inputs",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-009",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-009",
+          "source_fragments": [
+            "processed-analysis-artifacts"
           ],
           "study_id": "primate-longevity-signal",
           "study_title": "Primate Longevity Signal"
@@ -185,6 +239,26 @@
       ]
     },
     {
+      "claim_id": "pcm1-tree-data-correspondence-parity",
+      "claim_title": "PCM1 tree-data correspondence is explicit before model fitting",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-008",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-008",
+          "source_fragments": [
+            "tree-import-and-pruning",
+            "tip-order-alignment",
+            "treeio-node-mapping-and-join"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
       "claim_id": "pcm1-tree-data-join-parity",
       "claim_title": "PCM1 tree and trait joining logic matches across R and Bijux",
       "evidence": [
@@ -205,6 +279,43 @@
       ]
     },
     {
+      "claim_id": "pcm1-tree-diagnostics-parity",
+      "claim_title": "PCM1 tree diagnostics are separated from later comparative results",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-007",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-007",
+          "source_fragments": [
+            "tree-import-and-pruning",
+            "extract-clade-node-77"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-import-parity",
+      "claim_title": "PCM1 tree import behavior is governed explicitly",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-006",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-006",
+          "source_fragments": [
+            "tree-import-and-pruning"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
       "claim_id": "pcm1-tree-import-pruning-parity",
       "claim_title": "PCM1 tree import and pruning behavior matches the governed reference",
       "evidence": [
@@ -216,6 +327,24 @@
           "relative_path": "studies/primate-longevity-signal/evidence-001",
           "source_fragments": [
             "tree-import-and-pruning"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-type-repair-parity",
+      "claim_title": "PCM1 type repair contract is explicit and reviewable",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-003",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-003",
+          "source_fragments": [
+            "primate-data-preprocessing"
           ],
           "study_id": "primate-longevity-signal",
           "study_title": "Primate Longevity Signal"
@@ -243,6 +372,24 @@
             "primate-longevity-visual-inspection",
             "lambda-zero-visual-comparison",
             "ancestral-colored-tree-plot"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-workbook-loading-parity",
+      "claim_title": "PCM1 workbook loading contract is governed explicitly",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-002",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-002",
+          "source_fragments": [
+            "primate-data-preprocessing"
           ],
           "study_id": "primate-longevity-signal",
           "study_title": "Primate Longevity Signal"

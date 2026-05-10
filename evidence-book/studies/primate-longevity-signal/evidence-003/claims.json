@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-type-repair-parity",
+      "claim_title": "PCM1 type repair contract is explicit and reviewable",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-003",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

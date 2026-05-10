@@ -1,0 +1,13 @@
+{
+  "bijux_original_tip_count": 77,
+  "bijux_trimmed_tip_count": 75,
+  "evidence_id": "evidence-006",
+  "original_tree_has_branch_lengths": true,
+  "original_tree_locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
+  "r_original_tip_count": 77,
+  "r_trimmed_tip_count": 75,
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal",
+  "trimmed_tree_has_branch_lengths": true,
+  "trimmed_tree_locator": "external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex"
+}
