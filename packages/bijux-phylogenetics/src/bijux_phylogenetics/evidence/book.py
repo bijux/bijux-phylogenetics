@@ -17,6 +17,10 @@ EVIDENCE_INDEX = "evidence-index.json"
 EVIDENCE_CLAIM_MAP = "claim-map.json"
 EVIDENCE_PARITY_DASHBOARD = "parity-dashboard.json"
 EVIDENCE_PARITY_SUMMARY = "parity-dashboard.md"
+EVIDENCE_MISMATCH_ARCHIVE = "mismatch-archive.json"
+EVIDENCE_MISMATCH_SUMMARY = "mismatch-archive.md"
+EVIDENCE_VERDICT_WORKFLOWS = "verdict-workflows.json"
+EVIDENCE_VERDICT_WORKFLOWS_SUMMARY = "verdict-workflows.md"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -530,6 +534,10 @@ def validate_evidence_book(
             )
         parity_dashboard_path = index_root / EVIDENCE_PARITY_DASHBOARD
         parity_summary_path = index_root / EVIDENCE_PARITY_SUMMARY
+        mismatch_archive_path = index_root / EVIDENCE_MISMATCH_ARCHIVE
+        mismatch_summary_path = index_root / EVIDENCE_MISMATCH_SUMMARY
+        verdict_workflows_path = index_root / EVIDENCE_VERDICT_WORKFLOWS
+        verdict_workflows_summary_path = index_root / EVIDENCE_VERDICT_WORKFLOWS_SUMMARY
         if not parity_dashboard_path.exists():
             issues.append(
                 EvidenceBookValidationIssue(
@@ -542,6 +550,34 @@ def validate_evidence_book(
                 EvidenceBookValidationIssue(
                     _relative_to(root, parity_summary_path),
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_PARITY_SUMMARY}",
+                )
+            )
+        if not mismatch_archive_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, mismatch_archive_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_MISMATCH_ARCHIVE}",
+                )
+            )
+        if not mismatch_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, mismatch_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_MISMATCH_SUMMARY}",
+                )
+            )
+        if not verdict_workflows_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, verdict_workflows_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_VERDICT_WORKFLOWS}",
+                )
+            )
+        if not verdict_workflows_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, verdict_workflows_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_VERDICT_WORKFLOWS_SUMMARY}",
                 )
             )
         if index_path.exists():
@@ -798,6 +834,217 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
     }
 
 
+def _iter_scalar_parity_tables(
+    repo_root: Path,
+) -> list[tuple[dict[str, object], dict[str, object], Path, dict[str, object]]]:
+    root = evidence_book_root(repo_root)
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
+    if not report.valid:
+        messages = "; ".join(
+            f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues
+        )
+        raise ValueError(f"evidence-book is invalid: {messages}")
+
+    tables: list[tuple[dict[str, object], dict[str, object], Path, dict[str, object]]] = []
+    for study_root in _study_paths(root):
+        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        for bundle_root in sorted(
+            path
+            for path in study_root.iterdir()
+            if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
+        ):
+            scalar_table_path = bundle_root / "scalar-parity-table.json"
+            if not scalar_table_path.exists():
+                continue
+            tables.append(
+                (
+                    study_manifest,
+                    _load_json(bundle_root / EVIDENCE_BUNDLE_MANIFEST),
+                    bundle_root,
+                    _load_json(scalar_table_path),
+                )
+            )
+    return tables
+
+
+def build_evidence_mismatch_archive(repo_root: Path) -> dict[str, object]:
+    root = evidence_book_root(repo_root)
+    mismatches: list[dict[str, object]] = []
+    verdict_counts: Counter[str] = Counter()
+    for study_manifest, manifest, bundle_root, scalar_table in _iter_scalar_parity_tables(
+        repo_root
+    ):
+        for row in scalar_table.get("rows", []):
+            if not isinstance(row, dict):
+                continue
+            verdict = row.get("verdict")
+            if verdict not in {"mismatch_explained", "mismatch_unexplained"}:
+                continue
+            verdict_counts.update([str(verdict)])
+            mismatches.append(
+                {
+                    "archive_id": (
+                        f"{study_manifest['study_id']}-{manifest['evidence_id']}-{row['row_id']}"
+                    ),
+                    "study_id": study_manifest["study_id"],
+                    "study_title": study_manifest["study_title"],
+                    "evidence_id": manifest["evidence_id"],
+                    "relative_path": _relative_to(root, bundle_root).as_posix(),
+                    "row_id": row["row_id"],
+                    "method_family": row["method_family"],
+                    "metric_name": row["metric_name"],
+                    "verdict": verdict,
+                    "resolution_state": (
+                        "explained" if verdict == "mismatch_explained" else "open"
+                    ),
+                    "r_value": row.get("r_value"),
+                    "bijux_value": row.get("bijux_value"),
+                    "observed_abs_diff": row.get("observed_abs_diff"),
+                    "tolerance_abs_diff": row.get("tolerance_abs_diff"),
+                    "explanation_kind": row.get("explanation_kind"),
+                    "verdict_explanation": row.get("verdict_explanation"),
+                }
+            )
+    mismatches.sort(key=lambda entry: str(entry["archive_id"]))
+    return {
+        "schema_version": 1,
+        "mismatch_count": len(mismatches),
+        "verdict_counts": dict(sorted(verdict_counts.items())),
+        "mismatches": mismatches,
+    }
+
+
+def render_evidence_mismatch_archive(payload: dict[str, object]) -> str:
+    lines = [
+        "# Mismatch Archive",
+        "",
+        "This archive tracks every scalar parity row that is still represented as",
+        "`mismatch_explained` or `mismatch_unexplained` inside the evidence-book.",
+        "",
+        f"- mismatch rows: `{payload['mismatch_count']}`",
+        "",
+    ]
+    verdict_counts = payload.get("verdict_counts", {})
+    if isinstance(verdict_counts, dict) and verdict_counts:
+        lines.append("## Verdict Counts")
+        lines.append("")
+        for verdict, count in verdict_counts.items():
+            lines.append(f"- `{verdict}`: `{count}`")
+        lines.append("")
+
+    lines.append("## Entries")
+    lines.append("")
+    for entry in payload["mismatches"]:
+        lines.append(
+            f"- `{entry['archive_id']}` — `{entry['verdict']}` in `{entry['relative_path']}`"
+        )
+        lines.append(
+            f"  Metric: `{entry['metric_name']}` (`{entry['method_family']}`), diff=`{entry['observed_abs_diff']}`"
+        )
+        if entry.get("verdict_explanation"):
+            lines.append(f"  Explanation: {entry['verdict_explanation']}")
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def build_evidence_verdict_workflows(repo_root: Path) -> dict[str, object]:
+    root = evidence_book_root(repo_root)
+    mismatch_archive = build_evidence_mismatch_archive(repo_root)
+    explained_entries = [
+        entry
+        for entry in mismatch_archive["mismatches"]
+        if entry["verdict"] == "mismatch_explained"
+    ]
+    unexplained_entries = [
+        entry
+        for entry in mismatch_archive["mismatches"]
+        if entry["verdict"] == "mismatch_unexplained"
+    ]
+
+    not_comparable_entries: list[dict[str, object]] = []
+    for study_root in _study_paths(root):
+        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        for bundle_root in sorted(
+            path
+            for path in study_root.iterdir()
+            if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
+        ):
+            manifest = _load_json(bundle_root / EVIDENCE_BUNDLE_MANIFEST)
+            for row in _load_bundle_claim_rows(bundle_root):
+                if row.get("verdict") != "not_comparable":
+                    continue
+                not_comparable_entries.append(
+                    {
+                        "entry_id": (
+                            f"{study_manifest['study_id']}-{manifest['evidence_id']}-{row['claim_id']}"
+                        ),
+                        "study_id": study_manifest["study_id"],
+                        "study_title": study_manifest["study_title"],
+                        "evidence_id": manifest["evidence_id"],
+                        "relative_path": _relative_to(root, bundle_root).as_posix(),
+                        "claim_id": row["claim_id"],
+                        "claim_title": row.get("claim_title", row["claim_id"]),
+                        "summary": row.get("summary"),
+                        "source_fragments": row.get("source_fragments", []),
+                    }
+                )
+    not_comparable_entries.sort(key=lambda entry: str(entry["entry_id"]))
+
+    workflows = [
+        {
+            "verdict_status": "mismatch_explained",
+            "workflow_rule": "Keep the row visible, record the explanation kind explicitly, and do not promote it to a full match unless the reference source becomes more precise.",
+            "entry_count": len(explained_entries),
+            "entries": explained_entries,
+        },
+        {
+            "verdict_status": "mismatch_unexplained",
+            "workflow_rule": "Keep the row visible, treat it as open scientific debt, and require explicit closure rather than silent tolerance inflation.",
+            "entry_count": len(unexplained_entries),
+            "entries": unexplained_entries,
+        },
+        {
+            "verdict_status": "not_comparable",
+            "workflow_rule": "Keep the boundary explicit, point to the governing claim and evidence bundle, and do not restate it as a pass/fail parity surface until the runtime owns the comparison.",
+            "entry_count": len(not_comparable_entries),
+            "entries": not_comparable_entries,
+        },
+    ]
+    return {
+        "schema_version": 1,
+        "workflow_count": len(workflows),
+        "workflows": workflows,
+    }
+
+
+def render_evidence_verdict_workflows(payload: dict[str, object]) -> str:
+    lines = [
+        "# Verdict Workflows",
+        "",
+        "This index explains how `mismatch_explained`, `mismatch_unexplained`, and",
+        "`not_comparable` evidence states are supposed to stay visible.",
+        "",
+    ]
+    for workflow in payload["workflows"]:
+        lines.append(f"## {workflow['verdict_status']}")
+        lines.append("")
+        lines.append(workflow["workflow_rule"])
+        lines.append("")
+        lines.append(f"- entries: `{workflow['entry_count']}`")
+        lines.append("")
+        for entry in workflow["entries"]:
+            identifier = entry.get("archive_id", entry.get("entry_id"))
+            lines.append(f"- `{identifier}`")
+            if entry.get("relative_path"):
+                lines.append(f"  Path: `{entry['relative_path']}`")
+            if entry.get("verdict_explanation"):
+                lines.append(f"  Explanation: {entry['verdict_explanation']}")
+            if entry.get("claim_title"):
+                lines.append(f"  Claim: {entry['claim_title']}")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_evidence_parity_dashboard(dashboard_payload: dict[str, object]) -> str:
     lines = [
         "# Evidence Parity Dashboard",
@@ -906,11 +1153,17 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     payload = build_evidence_book_index(repo_root)
     claim_map_payload = build_evidence_claim_map(repo_root)
     parity_dashboard_payload = build_evidence_parity_dashboard(repo_root)
+    mismatch_archive_payload = build_evidence_mismatch_archive(repo_root)
+    verdict_workflows_payload = build_evidence_verdict_workflows(repo_root)
     index_path = index_root / EVIDENCE_INDEX
     catalog_path = index_root / EVIDENCE_CATALOG
     claim_map_path = index_root / EVIDENCE_CLAIM_MAP
     parity_dashboard_path = index_root / EVIDENCE_PARITY_DASHBOARD
     parity_summary_path = index_root / EVIDENCE_PARITY_SUMMARY
+    mismatch_archive_path = index_root / EVIDENCE_MISMATCH_ARCHIVE
+    mismatch_summary_path = index_root / EVIDENCE_MISMATCH_SUMMARY
+    verdict_workflows_path = index_root / EVIDENCE_VERDICT_WORKFLOWS
+    verdict_workflows_summary_path = index_root / EVIDENCE_VERDICT_WORKFLOWS_SUMMARY
     index_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -928,6 +1181,22 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     )
     parity_summary_path.write_text(
         render_evidence_parity_dashboard(parity_dashboard_payload),
+        encoding="utf-8",
+    )
+    mismatch_archive_path.write_text(
+        json.dumps(mismatch_archive_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    mismatch_summary_path.write_text(
+        render_evidence_mismatch_archive(mismatch_archive_payload),
+        encoding="utf-8",
+    )
+    verdict_workflows_path.write_text(
+        json.dumps(verdict_workflows_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    verdict_workflows_summary_path.write_text(
+        render_evidence_verdict_workflows(verdict_workflows_payload),
         encoding="utf-8",
     )
     return index_path, catalog_path

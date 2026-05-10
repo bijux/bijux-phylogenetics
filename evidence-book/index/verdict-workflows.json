@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "workflow_count": 3,
+  "workflows": [
+    {
+      "entries": [
+        {
+          "archive_id": "primate-pgls-and-signal-evidence-001-baseline-intercept",
+          "bijux_value": 263.916162626577,
+          "evidence_id": "evidence-001",
+          "explanation_kind": "reference_rounding",
+          "method_family": "baseline-regression",
+          "metric_name": "intercept",
+          "observed_abs_diff": 3.73734230265654e-05,
+          "r_value": 263.9162,
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "resolution_state": "explained",
+          "row_id": "baseline-intercept",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "tolerance_abs_diff": 1e-06,
+          "verdict": "mismatch_explained",
+          "verdict_explanation": "The R reference stores the baseline intercept rounded to four decimal places; the Bijux value rounds back to the same published scalar."
+        },
+        {
+          "archive_id": "primate-pgls-and-signal-evidence-001-baseline-log-likelihood",
+          "bijux_value": -456.310146563131,
+          "evidence_id": "evidence-001",
+          "explanation_kind": "reference_rounding",
+          "method_family": "baseline-regression",
+          "metric_name": "log_likelihood",
+          "observed_abs_diff": 4.65631310362369e-05,
+          "r_value": -456.3101,
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "resolution_state": "explained",
+          "row_id": "baseline-log-likelihood",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "tolerance_abs_diff": 1e-06,
+          "verdict": "mismatch_explained",
+          "verdict_explanation": "The R reference stores the baseline log likelihood rounded to four decimal places; the Bijux value rounds back to the same published scalar."
+        },
+        {
+          "archive_id": "primate-pgls-and-signal-evidence-001-baseline-r-squared",
+          "bijux_value": 0.257169890828586,
+          "evidence_id": "evidence-001",
+          "explanation_kind": "reference_rounding",
+          "method_family": "baseline-regression",
+          "metric_name": "r_squared",
+          "observed_abs_diff": 3.01091714139945e-05,
+          "r_value": 0.2572,
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "resolution_state": "explained",
+          "row_id": "baseline-r-squared",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "tolerance_abs_diff": 1e-06,
+          "verdict": "mismatch_explained",
+          "verdict_explanation": "The R reference stores the baseline R-squared rounded to four decimal places; the Bijux value rounds back to the same published scalar."
+        },
+        {
+          "archive_id": "primate-pgls-and-signal-evidence-001-baseline-slope",
+          "bijux_value": 3.59115553047129,
+          "evidence_id": "evidence-001",
+          "explanation_kind": "reference_rounding",
+          "method_family": "baseline-regression",
+          "metric_name": "social_group_size",
+          "observed_abs_diff": 4.44695287100672e-05,
+          "r_value": 3.5912,
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "resolution_state": "explained",
+          "row_id": "baseline-slope",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "tolerance_abs_diff": 1e-06,
+          "verdict": "mismatch_explained",
+          "verdict_explanation": "The R reference stores the baseline slope rounded to four decimal places; the Bijux value rounds back to the same published scalar."
+        }
+      ],
+      "entry_count": 4,
+      "verdict_status": "mismatch_explained",
+      "workflow_rule": "Keep the row visible, record the explanation kind explicitly, and do not promote it to a full match unless the reference source becomes more precise."
+    },
+    {
+      "entries": [
+        {
+          "archive_id": "primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation",
+          "bijux_value": 0.112199761717797,
+          "evidence_id": "evidence-001",
+          "explanation_kind": null,
+          "method_family": "diagnostics",
+          "metric_name": "abs_residual_fitted_correlation",
+          "observed_abs_diff": 0.093400238282203,
+          "r_value": 0.2056,
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "resolution_state": "open",
+          "row_id": "estimated-diagnostic-fitted-correlation",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "tolerance_abs_diff": 0.05,
+          "verdict": "mismatch_unexplained",
+          "verdict_explanation": null
+        }
+      ],
+      "entry_count": 1,
+      "verdict_status": "mismatch_unexplained",
+      "workflow_rule": "Keep the row visible, treat it as open scientific debt, and require explicit closure rather than silent tolerance inflation."
+    },
+    {
+      "entries": [
+        {
+          "claim_id": "pcm1-artifact-provenance-tracking",
+          "claim_title": "PCM1 saved artifacts remain governed provenance surfaces",
+          "entry_id": "primate-longevity-signal-evidence-001-pcm1-artifact-provenance-tracking",
+          "evidence_id": "evidence-001",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "processed-analysis-artifacts",
+            "final-workspace-artifact"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "summary": "Processed files and saved workspaces are indexed as provenance outputs rather than overstated as analytical matches."
+        },
+        {
+          "claim_id": "pcm1-reproducibility-contract-tracked",
+          "claim_title": "PCM1 reproducibility contract is tracked explicitly",
+          "entry_id": "primate-longevity-signal-evidence-001-pcm1-reproducibility-contract-tracked",
+          "evidence_id": "evidence-001",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "environment-and-package-contract"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "summary": "The lecture setup and package context remain visible for reviewers without being misreported as a numerical parity claim."
+        },
+        {
+          "claim_id": "pcm1-visual-surface-tracking",
+          "claim_title": "PCM1 visual surfaces are tracked without false equivalence claims",
+          "entry_id": "primate-longevity-signal-evidence-001-pcm1-visual-surface-tracking",
+          "evidence_id": "evidence-001",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "ape-plotting-basics",
+            "ape-alternate-layouts",
+            "phytools-tree-plotting",
+            "ggtree-tree-visualization",
+            "ape-longevity-overlay",
+            "joined-ggtree-trait-plotting",
+            "random-simulation-plotting",
+            "primate-longevity-visual-inspection",
+            "lambda-zero-visual-comparison",
+            "ancestral-colored-tree-plot"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "summary": "Plotting examples remain indexed and reviewer-visible while figure-equivalence claims stay intentionally out of scope."
+        },
+        {
+          "claim_id": "pcm2-coverage-boundary-explicit",
+          "claim_title": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit",
+          "entry_id": "primate-pgls-and-signal-evidence-006-pcm2-coverage-boundary-explicit",
+          "evidence_id": "evidence-006",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "source_fragments": [
+            "transformed-tree-workflows",
+            "continuous-model-comparison",
+            "ancestral-mode-comparison",
+            "mode-linked-intercept-models"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied."
+        }
+      ],
+      "entry_count": 4,
+      "verdict_status": "not_comparable",
+      "workflow_rule": "Keep the boundary explicit, point to the governing claim and evidence bundle, and do not restate it as a pass/fail parity surface until the runtime owns the comparison."
+    }
+  ]
+}
