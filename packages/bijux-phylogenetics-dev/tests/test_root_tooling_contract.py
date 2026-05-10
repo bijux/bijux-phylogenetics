@@ -15,6 +15,8 @@ PROTEOMICS_ONLY_EXTENSION_COMMANDS = {
     "architecture-check:",
 }
 REQUIRED_ROOT_TARGET_SNIPPETS = {
+    "report-package-bundles:",
+    "check-package-bundles:",
     "check-config-ssot:",
     "report-publish-readiness:",
     "check-publish-readiness:",

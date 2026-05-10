@@ -7,6 +7,8 @@ import zipfile
 from bijux_phylogenetics_dev.quality.package_bundles import (
     audit_package_bundle_directory,
     build_dependency_policy_report,
+    check_package_bundles,
+    load_publication_readiness_settings,
     load_package_bundle_policies,
 )
 
@@ -68,13 +70,62 @@ forbidden_archive_prefixes = ["tests/", "docs/"]
     )
     _write(
         repo_root / "packages" / "demo-runtime" / "pyproject.toml",
-        "[project]\nname='demo-runtime'\ndependencies=['numpy>=1.0']\n",
+        """
+[project]
+name = "demo-runtime"
+version = "0.1.0"
+dependencies = ["numpy>=1.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["README.md", "src/demo_runtime/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demo_runtime"]
+""".strip()
+        + "\n",
     )
     _write(
         repo_root / "packages" / "demo-dev" / "pyproject.toml",
-        "[project]\nname='demo-dev'\ndependencies=['PyYAML>=6.0']\n",
+        """
+[project]
+name = "demo-dev"
+version = "0.1.0"
+dependencies = ["PyYAML>=6.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["README.md", "src/demo_dev/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demo_dev"]
+""".strip()
+        + "\n",
+    )
+    _write(repo_root / "packages" / "demo-runtime" / "README.md", "# Demo runtime\n")
+    _write(repo_root / "packages" / "demo-dev" / "README.md", "# Demo dev\n")
+    _write(
+        repo_root / "packages" / "demo-runtime" / "src" / "demo_runtime" / "__init__.py",
+        "__version__ = '0.1.0'\n",
+    )
+    _write(
+        repo_root / "packages" / "demo-dev" / "src" / "demo_dev" / "__init__.py",
+        "__version__ = '0.1.0'\n",
     )
     return repo_root
+
+
+def test_load_publication_readiness_settings_reads_repo_owned_policy() -> None:
+    settings = load_publication_readiness_settings(REPO_ROOT)
+
+    assert settings["required_evidence_input_manifest"] == "inputs.manifest.json"
+    assert "bijux-phylogenetics-evidence" in settings["target_shape_packages"]
 
 
 def test_load_package_bundle_policies_reads_repo_owned_policy() -> None:
@@ -158,3 +209,14 @@ def test_audit_package_bundle_directory_accepts_compliant_archives(
     report = audit_package_bundle_directory(policy, dist_dir)
 
     assert report["issue_count"] == 0
+
+
+def test_check_package_bundles_builds_and_audits_publishable_packages(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+
+    report = check_package_bundles(repo_root)
+
+    assert report["issue_count"] == 0
+    assert report["package_count"] == 2

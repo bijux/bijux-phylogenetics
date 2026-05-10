@@ -6,6 +6,7 @@ import argparse
 from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -14,6 +15,7 @@ from typing import Any
 import zipfile
 
 POLICY_PATH = Path("configs/publication_readiness.toml")
+DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/package-bundles")
 
 
 @dataclass(frozen=True)
@@ -49,14 +51,17 @@ def _as_str_tuple(values: object) -> tuple[str, ...]:
     return tuple(value for value in values if isinstance(value, str))
 
 
-def load_package_bundle_policies(repo_root: Path) -> dict[str, PackageBundlePolicy]:
+def load_publication_readiness_settings(repo_root: Path) -> dict[str, Any]:
     payload = _load_toml(repo_root / POLICY_PATH)
-    readiness = (
-        _as_dict(payload.get("tool"))
-        .get("bijux_phylogenetics", {})
-        .get("publication_readiness", {})
+    return _as_dict(
+        _as_dict(_as_dict(payload.get("tool")).get("bijux_phylogenetics")).get(
+            "publication_readiness"
+        )
     )
-    readiness = _as_dict(readiness)
+
+
+def load_package_bundle_policies(repo_root: Path) -> dict[str, PackageBundlePolicy]:
+    readiness = load_publication_readiness_settings(repo_root)
     package_policy = _as_dict(readiness.get("package_policy"))
     policies: dict[str, PackageBundlePolicy] = {}
     for package_name, entry in package_policy.items():
@@ -206,6 +211,7 @@ def build_package_bundle_report(
     for package_name, policy in sorted(policies.items()):
         dist_dir = artifacts_root / package_name
         if build_artifacts:
+            shutil.rmtree(dist_dir, ignore_errors=True)
             dist_dir.mkdir(parents=True, exist_ok=True)
             subprocess.run(
                 [
@@ -236,6 +242,24 @@ def build_package_bundle_report(
     }
 
 
+def check_package_bundles(
+    repo_root: Path,
+    *,
+    artifacts_root: Path | None = None,
+    json_out: Path | None = None,
+) -> dict[str, Any]:
+    payload = build_package_bundle_report(
+        repo_root.resolve(),
+        artifacts_root=(artifacts_root or repo_root / DEFAULT_ARTIFACTS_ROOT).resolve(),
+        build_artifacts=True,
+    )
+    if json_out is not None:
+        _write_json(json_out, payload)
+    if payload["issue_count"]:
+        raise SystemExit("package bundle audit failed")
+    return payload
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -249,7 +273,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("command", choices=("dependencies", "report", "check"))
     parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--artifacts-root", default="artifacts/root/package-bundles")
+    parser.add_argument("--artifacts-root", default=str(DEFAULT_ARTIFACTS_ROOT))
     parser.add_argument("--json-out", default="")
     return parser.parse_args()
 
@@ -262,15 +286,19 @@ def main() -> int:
     if args.command == "dependencies":
         payload = build_dependency_policy_report(repo_root)
     else:
+        if args.command == "check":
+            payload = check_package_bundles(
+                repo_root,
+                artifacts_root=artifacts_root,
+                json_out=json_out,
+            )
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0
         payload = build_package_bundle_report(
             repo_root,
             artifacts_root=artifacts_root,
-            build_artifacts=args.command in {"report", "check"},
+            build_artifacts=True,
         )
-        if args.command == "check" and payload["issue_count"]:
-            if json_out is not None:
-                _write_json(json_out, payload)
-            raise SystemExit("package bundle audit failed")
     if json_out is not None:
         _write_json(json_out, payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
