@@ -1,0 +1,35 @@
+{
+  "dataset_count": 4,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM2 primate workspace RData",
+      "locator": "external:lund/pcm2-modes-pgls/data/primate.RData",
+      "schema_summary": "Saved R workspace expected to provide `primate` and `primatetree` objects."
+    },
+    {
+      "dataset_id": "dataset-002",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM2 primate raw workbook",
+      "locator": "external:lund/pcm2-modes-pgls/data/primate_raw.xlsx",
+      "schema_summary": "Original workbook used to derive the primate workspace."
+    },
+    {
+      "dataset_id": "dataset-003",
+      "kind": "study-shared-governed-derivative",
+      "label": "Governed primate reference table reused from PCM1",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "schema_summary": "Repository-owned normalized primate table reused across both Lund-derived studies."
+    },
+    {
+      "dataset_id": "dataset-004",
+      "kind": "study-shared-governed-derivative",
+      "label": "Governed trimmed primate tree reused from PCM1",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "schema_summary": "Repository-owned trimmed Newick tree reused across both Lund-derived studies."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

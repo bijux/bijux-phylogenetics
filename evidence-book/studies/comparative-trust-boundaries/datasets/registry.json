@@ -1,0 +1,28 @@
+{
+  "dataset_count": 3,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "repository-fixture",
+      "label": "Comparative tree fixtures",
+      "locator": "packages/bijux-phylogenetics/tests/fixtures/trees",
+      "schema_summary": "Tree fixtures used to trigger rootedness and branch-length validation boundaries."
+    },
+    {
+      "dataset_id": "dataset-002",
+      "kind": "repository-fixture",
+      "label": "Comparative traits fixture",
+      "locator": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv",
+      "schema_summary": "Trait table used to drive trust-boundary regression cases."
+    },
+    {
+      "dataset_id": "dataset-003",
+      "kind": "study-local-derived-input",
+      "label": "Weak signal synthetic traits",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/evidence-002/weak_signal_traits.tsv",
+      "schema_summary": "Study-local derived dataset used to govern weak-signal instability examples."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "comparative-trust-boundaries"
+}

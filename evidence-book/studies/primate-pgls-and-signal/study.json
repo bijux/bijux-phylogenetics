@@ -3,12 +3,28 @@
   "coverage_boundary_evidence_ids": [
     "evidence-006"
   ],
+  "dataset_registry_locator": "evidence-book/studies/primate-pgls-and-signal/datasets/registry.json",
   "owner_package": "bijux-phylogenetics",
+  "provenance_descriptor_locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+  "source_intake_policy": "read-only-external-source",
   "study_categories": [
     "teaching-study",
     "migration-study"
   ],
   "study_id": "primate-pgls-and-signal",
+  "study_scope": {
+    "coverage_focus": [
+      "workspace-reload",
+      "gls-baseline",
+      "pgls",
+      "phylogenetic-signal"
+    ],
+    "untouched_source_locators": [
+      "external:lund/pcm2-modes-pgls/script",
+      "external:lund/pcm2-modes-pgls/data/primate.RData",
+      "external:lund/pcm2-modes-pgls/data/primate_raw.xlsx"
+    ]
+  },
   "study_title": "Primate PGLS and signal evidence study",
   "summary": "Governed parity study for the regression and signal sections of the Lund primate comparative lecture, with explicit coverage boundaries for the remaining EB and ancestral fragments."
 }

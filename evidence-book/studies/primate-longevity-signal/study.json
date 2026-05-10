@@ -1,5 +1,8 @@
 {
+  "dataset_registry_locator": "evidence-book/studies/primate-longevity-signal/datasets/registry.json",
   "owner_package": "bijux-phylogenetics",
+  "provenance_descriptor_locator": "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json",
+  "source_intake_policy": "read-only-external-source",
   "source_basis": [
     {
       "kind": "external-course-material",
@@ -12,11 +15,24 @@
       "locator": "evidence-book/studies/primate-longevity-signal/reference"
     }
   ],
-  "study_id": "primate-longevity-signal",
   "study_categories": [
     "teaching-study",
     "migration-study"
   ],
+  "study_id": "primate-longevity-signal",
+  "study_scope": {
+    "coverage_focus": [
+      "data-import",
+      "type-repair",
+      "tree-preprocessing",
+      "signal-workflow"
+    ],
+    "untouched_source_locators": [
+      "external:lund/pcm1-plots-signal/script",
+      "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+      "external:lund/pcm1-plots-signal/data/primatetree.nex"
+    ]
+  },
   "study_title": "Primate Longevity Signal",
   "summary": "Checked-in parity study for the Lund primate longevity signal teaching workflow."
 }
