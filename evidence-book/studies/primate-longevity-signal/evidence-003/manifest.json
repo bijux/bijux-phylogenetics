@@ -17,8 +17,8 @@
     ],
     "last_generated_on": "2026-05-10",
     "source_basis_locators": [
-      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-      "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json"
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/evidence-003/results/type-repair-parity.json"
     ]
   },
   "limitations": [
@@ -54,12 +54,12 @@
     {
       "kind": "repository-reference",
       "label": "governed processed primate table",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
     },
     {
       "kind": "repository-reference",
       "label": "Primate type repair parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/type-repair-parity.json"
     }
   ],
   "source_fragments": [
@@ -67,7 +67,7 @@
   ],
   "study_id": "primate-longevity-signal",
   "summary": "Governed evidence for the factor and numeric coercion contract before grouped downstream analysis.",
-  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/type-repair-parity.json",
   "verdict": {
     "status": "matched",
     "summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract."

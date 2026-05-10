@@ -12,9 +12,7 @@
     "reference.R": "r-reference-program",
     "report.md": "human-report"
   },
-  "primary_output_paths": [
-    "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json"
-  ],
+  "primary_output_paths": [],
   "required_local_artifacts": [
     "reference.R",
     "analysis.py",
@@ -28,8 +26,8 @@
   ],
   "schema_version": 2,
   "source_basis_locators": [
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json"
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-003/results/type-repair-parity.json"
   ],
   "study_id": "primate-longevity-signal",
   "validation_rules": [

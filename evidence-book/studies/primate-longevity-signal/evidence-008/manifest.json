@@ -17,9 +17,9 @@
     ],
     "last_generated_on": "2026-05-10",
     "source_basis_locators": [
-      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
-      "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json"
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-longevity-signal/evidence-008/results/tree-data-correspondence-parity.json"
     ]
   },
   "limitations": [
@@ -54,17 +54,17 @@
     {
       "kind": "repository-reference",
       "label": "governed processed primate table",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
     },
     {
       "kind": "repository-reference",
       "label": "governed trimmed tree export",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk"
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk"
     },
     {
       "kind": "repository-reference",
       "label": "Primate tree-data correspondence parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-008/results/tree-data-correspondence-parity.json"
     }
   ],
   "source_fragments": [
@@ -74,7 +74,7 @@
   ],
   "study_id": "primate-longevity-signal",
   "summary": "Governed evidence for missing-tip trimming, tip-order alignment, and node-aware tree-data joining.",
-  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-008/results/tree-data-correspondence-parity.json",
   "verdict": {
     "status": "matched",
     "summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference."

@@ -67,6 +67,7 @@ from .study_registry import (
     rerun_selected_evidence,
     study_registrations,
 )
+from .study_contracts import load_study_contract
 
 
 DOCS_EVIDENCE_OVERVIEW = Path("docs") / "02-evidence-book" / "index.md"
@@ -119,7 +120,7 @@ def write_bundle_reviewer_summaries(repo_root: Path | str) -> list[Path]:
     for bundle_root in sorted(book_root.glob("studies/*/evidence-*")):
         if not bundle_root.is_dir():
             continue
-        study_manifest = _load_json(bundle_root.parent / "study.json")
+        study_manifest = load_study_contract(bundle_root.parent)
         bundle_manifest = _load_json(bundle_root / "manifest.json")
         claims_path = bundle_root / "claims.json"
         claim_verdicts_path = bundle_root / "claim_verdicts.json"
@@ -213,7 +214,7 @@ def render_docs_evidence_overview(
         lines.append(f"- categories: `{', '.join(study['study_categories'])}`")
         lines.append(f"- bundles: `{study['bundle_count']}`")
         lines.append(
-            f"- study manifest: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/{study['study_id']}/study.json)"
+            f"- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/{study['study_id']}/README.md)"
         )
         lines.append("")
     lines.extend(

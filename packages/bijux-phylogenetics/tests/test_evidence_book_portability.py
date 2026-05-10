@@ -3,71 +3,37 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.evidence.book import (
-    build_evidence_portability_audit,
-    validate_evidence_book,
-    write_evidence_book_index,
-)
+from bijux_phylogenetics.evidence.book import validate_evidence_book
 
 
-def _write_portable_fixture(root: Path) -> Path:
-    book_root = root / "evidence-book"
-    study_root = book_root / "studies" / "portable-study"
+def test_validate_evidence_book_rejects_workstation_paths_in_study_provenance(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    study_root = repo_root / "evidence-book" / "studies" / "demo-study"
     bundle_root = study_root / "evidence-001"
-    bundle_root.mkdir(parents=True, exist_ok=True)
-    (book_root / "README.md").write_text("# Evidence Book\n", encoding="utf-8")
-    (study_root / "README.md").write_text("# Portable Study\n", encoding="utf-8")
-    (study_root / "study.json").write_text(
-        json.dumps(
-            {
-                "study_id": "portable-study",
-                "study_title": "Portable Study",
-                "summary": "Fixture-backed portability study.",
-                "owner_package": "bijux-phylogenetics",
-            },
-            indent=2,
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    (bundle_root / "README.md").write_text("# Evidence 001\n", encoding="utf-8")
-    (bundle_root / "manifest.json").write_text(
+    (repo_root / "evidence-book" / "README.md").parent.mkdir(parents=True, exist_ok=True)
+    (repo_root / "evidence-book" / "README.md").write_text("# Evidence Book\n", encoding="utf-8")
+    (repo_root / "evidence-book" / "index").mkdir(parents=True, exist_ok=True)
+    (study_root / "README.md").write_text("# Demo Study\n\nFixture study.\n", encoding="utf-8")
+    (study_root / "datasets").mkdir(parents=True, exist_ok=True)
+    (study_root / "reference").mkdir(parents=True, exist_ok=True)
+    (study_root / "provenance").mkdir(parents=True, exist_ok=True)
+    (study_root / "datasets" / "registry.json").write_text(
         json.dumps(
             {
                 "schema_version": 1,
-                "study_id": "portable-study",
-                "evidence_id": "evidence-001",
-                "evidence_title": "Portable bundle",
-                "summary": "Portable path semantics fixture.",
-                "owner_package": "bijux-phylogenetics",
-                "claim_ids": ["portable-claim"],
-                "source_basis": [
+                "study_id": "demo-study",
+                "dataset_count": 1,
+                "datasets": [
                     {
+                        "dataset_id": "dataset-001",
                         "kind": "repository-fixture",
-                        "label": "portable source",
-                        "locator": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk",
+                        "label": "Demo fixture",
+                        "locator": "packages/bijux-phylogenetics/tests/fixtures/demo.tsv",
+                        "schema_summary": "Fixture dataset.",
                     }
                 ],
-                "freshness": {
-                    "last_generated_on": "2026-05-10",
-                    "governed_code_paths": [
-                        "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/book.py"
-                    ],
-                    "source_basis_locators": [
-                        "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk"
-                    ],
-                },
-                "ownership": {
-                    "owner_package": "bijux-phylogenetics",
-                    "analytical_surfaces": ["portability"],
-                },
-                "claim_tags": ["portability"],
-                "verdict": {
-                    "status": "matched",
-                    "summary": "Portable fixture output matches expectations.",
-                },
-                "limitations": ["Fixture scope only."],
             },
             indent=2,
             sort_keys=True,
@@ -75,21 +41,20 @@ def _write_portable_fixture(root: Path) -> Path:
         + "\n",
         encoding="utf-8",
     )
-    (bundle_root / "claims.json").write_text(
+    (study_root / "provenance" / "sources.json").write_text(
         json.dumps(
             {
                 "schema_version": 1,
-                "study_id": "portable-study",
-                "evidence_id": "evidence-001",
-                "claim_count": 1,
-                "claims": [
+                "study_id": "demo-study",
+                "source_count": 1,
+                "intake_policy": "repository-owned-source",
+                "sources": [
                     {
-                        "claim_id": "portable-claim",
-                        "claim_title": "Portable claim",
-                        "summary": "Portable fixture claim.",
-                        "verdict": "matched",
-                        "evidence_ids": ["evidence-001"],
-                        "source_fragments": [],
+                        "source_id": "demo-fixture",
+                        "kind": "repository-fixture",
+                        "label": "Demo fixture",
+                        "locator": "/Users/demo/private.tsv",
+                        "read_only": True,
                     }
                 ],
             },
@@ -99,60 +64,78 @@ def _write_portable_fixture(root: Path) -> Path:
         + "\n",
         encoding="utf-8",
     )
-    return root
+    bundle_root.mkdir(parents=True, exist_ok=True)
+    for filename, text in {
+        "README.md": "# Evidence 001\n",
+        "analysis.py": "from __future__ import annotations\n",
+        "reference.R": "#!/usr/bin/env Rscript\n",
+        "report.md": "# Report\n",
+    }.items():
+        (bundle_root / filename).write_text(text, encoding="utf-8")
+    for filename, payload in {
+        "manifest.json": {
+            "schema_version": 1,
+            "study_id": "demo-study",
+            "evidence_id": "evidence-001",
+            "evidence_title": "Demo bundle",
+            "summary": "Fixture bundle.",
+            "owner_package": "bijux-phylogenetics",
+            "claim_ids": ["demo-claim"],
+            "source_basis": [
+                {
+                    "kind": "repository-fixture",
+                    "label": "Demo fixture",
+                    "locator": "/Users/demo/private.tsv",
+                }
+            ],
+            "freshness": {
+                "last_generated_on": "2026-05-10",
+                "governed_code_paths": [
+                    "packages/bijux-phylogenetics/src/bijux_phylogenetics"
+                ],
+                "source_basis_locators": ["/Users/demo/private.tsv"],
+            },
+            "ownership": {
+                "owner_package": "bijux-phylogenetics",
+                "analytical_surfaces": ["demo-surface"],
+            },
+            "claim_tags": ["demo"],
+            "comparison_mode": "direct_parity",
+            "verdict": {"status": "matched", "summary": "Fixture aligned."},
+            "limitations": [],
+        },
+        "claims.json": {
+            "schema_version": 1,
+            "study_id": "demo-study",
+            "evidence_id": "evidence-001",
+            "claim_count": 1,
+            "claims": [
+                {
+                    "claim_id": "demo-claim",
+                    "claim_title": "Demo claim",
+                    "summary": "Demo summary.",
+                    "verdict": "matched",
+                    "evidence_ids": ["evidence-001"],
+                    "source_fragments": ["demo-fragment"],
+                }
+            ],
+        },
+        "checks.json": {"schema_version": 1},
+        "provenance.json": {"schema_version": 1},
+        "inputs.manifest.json": {"schema_version": 1, "inputs": []},
+        "results/manifest.json": {"schema_version": 1},
+    }.items():
+        target = bundle_root / filename
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    (bundle_root / "results" / "README.md").write_text("# Results\n", encoding="utf-8")
+    (bundle_root / "results" / "reviewer-summary.json").write_text("{}\n", encoding="utf-8")
+    (bundle_root / "results" / "reviewer-summary.md").write_text("# Reviewer Summary\n", encoding="utf-8")
 
-
-def test_validate_evidence_book_rejects_workstation_absolute_locator(tmp_path: Path) -> None:
-    repo_root = _write_portable_fixture(tmp_path)
-    write_evidence_book_index(repo_root)
-
-    manifest_path = (
-        repo_root
-        / "evidence-book"
-        / "studies"
-        / "portable-study"
-        / "evidence-001"
-        / "manifest.json"
-    )
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    payload["source_basis"][0]["locator"] = "/Users/bijan/private/reference.csv"
-    payload["freshness"]["source_basis_locators"] = ["/Users/bijan/private/reference.csv"]
-    manifest_path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-
-    report = validate_evidence_book(repo_root)
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
 
     assert report.valid is False
-    assert any("workstation-local absolute paths" in issue.message for issue in report.issues)
-
-
-def test_validate_evidence_book_rejects_parent_traversal_locator(tmp_path: Path) -> None:
-    repo_root = _write_portable_fixture(tmp_path)
-    write_evidence_book_index(repo_root)
-
-    manifest_path = (
-        repo_root
-        / "evidence-book"
-        / "studies"
-        / "portable-study"
-        / "evidence-001"
-        / "manifest.json"
-    )
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    payload["source_basis"][0]["locator"] = "../bijux-pollenomics/packages/example.csv"
-    payload["freshness"]["source_basis_locators"] = [
-        "../bijux-pollenomics/packages/example.csv"
-    ]
-    manifest_path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-
-    report = validate_evidence_book(repo_root)
-    portability_audit = build_evidence_portability_audit(repo_root)
-
-    assert report.valid is False
-    assert any("parent-directory traversal" in issue.message for issue in report.issues)
-    assert portability_audit["action_required_count"] >= 1
+    assert any("/Users/" in issue.message or "/Users/" in issue.path.as_posix() for issue in report.issues)

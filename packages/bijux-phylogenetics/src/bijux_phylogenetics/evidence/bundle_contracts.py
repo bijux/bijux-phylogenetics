@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .study_contracts import load_study_contract
+
 REQUIRED_BUNDLE_LOCAL_ARTIFACTS = (
     "reference.R",
     "analysis.py",
@@ -62,10 +64,6 @@ def _primary_output_paths(bundle_root: Path, repo_root: Path) -> list[str]:
     return output_paths
 
 
-def _study_manifest(study_root: Path) -> dict[str, Any]:
-    return _load_json(study_root / "study.json")
-
-
 def _bundle_manifest(bundle_root: Path) -> dict[str, Any]:
     return _load_json(bundle_root / "manifest.json")
 
@@ -82,11 +80,8 @@ def _study_support_scripts(study_root: Path, repo_root: Path) -> dict[str, Any]:
         for path in sorted(reference_root.glob("*.py"))
         if path.is_file()
     ]
-    build_script_path = study_root / "build_evidence.py"
     return {
-        "build_script_path": None
-        if not build_script_path.is_file()
-        else _relative(build_script_path, repo_root),
+        "build_script_path": None,
         "reference_r_scripts": reference_r_scripts,
         "reference_python_scripts": reference_python_scripts,
     }
@@ -106,7 +101,7 @@ def build_bundle_artifact_contract(repo_root: Path, bundle_root: Path) -> dict[s
     repo_root = repo_root.resolve()
     bundle_root = bundle_root.resolve()
     study_root = bundle_root.parent
-    study_manifest = _study_manifest(study_root)
+    study_manifest = load_study_contract(study_root)
     bundle_manifest = _bundle_manifest(bundle_root)
     support_scripts = _study_support_scripts(study_root, repo_root)
     provenance_path = study_root / "provenance"

@@ -49,9 +49,6 @@ TEACHING_STUDY_METADATA = {
                 "no hidden lecture data paths outside the repository",
             ],
             "expected_paths": [
-                "evidence-book/studies/primate-longevity-signal/teaching-guide.json",
-                "evidence-book/studies/primate-longevity-signal/migration-guide.json",
-                "evidence-book/studies/primate-longevity-signal/student-safe-reproducibility.json",
                 "evidence-book/index/teaching-and-migration.json",
             ],
             "not_claimed": [
@@ -221,7 +218,8 @@ TEACHING_STUDY_METADATA = {
             ),
             "entrypoint_command": (
                 "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 "
-                "python evidence-book/studies/primate-pgls-and-signal/build_evidence.py"
+                "python -m bijux_phylogenetics.command_line evidence book build "
+                "--study-id primate-pgls-and-signal"
             ),
             "portable_prerequisites": [
                 "Python 3.11",
@@ -235,10 +233,8 @@ TEACHING_STUDY_METADATA = {
                 "no hidden manual patching of reference outputs",
             ],
             "expected_paths": [
-                "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
-                "evidence-book/studies/primate-pgls-and-signal/teaching-guide.json",
-                "evidence-book/studies/primate-pgls-and-signal/migration-guide.json",
-                "evidence-book/studies/primate-pgls-and-signal/student-safe-reproducibility.json",
+                "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json",
+                "evidence-book/index/teaching-and-migration.json",
             ],
             "not_claimed": [
                 "EB and ancestral-mode parity remains an explicit coverage boundary",

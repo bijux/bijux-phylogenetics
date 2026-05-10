@@ -15,14 +15,12 @@ The checked-in reference sources for this study live here:
 
 - [R reference checks](./reference/primate_lifespan_signal_reference_r.R)
 - [Python `bijux-phylogenetics` checks](./reference/primate_lifespan_signal_reference_bijux.py)
-- [Evidence builder](./build_evidence.py)
 
 The governed study surfaces live here:
 
-- [Study manifest](./study.json)
 - [Summary evidence bundle](./evidence-001/README.md)
-- [Data-preparation bundle index](./data-preparation-bundles.md)
-- [Structural parity table](./structural-parity-table.md)
+- [Shared datasets](./datasets/)
+- [Study provenance](./provenance/)
 
 Current outcome at a glance:
 

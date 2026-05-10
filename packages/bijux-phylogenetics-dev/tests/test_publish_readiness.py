@@ -520,24 +520,8 @@ jobs:
         + "\n",
     )
     _write(
-        repo_root / "evidence-book" / "studies" / "demo-study" / "study.json",
-        """
-{
-  "dataset_registry_locator": "evidence-book/studies/demo-study/datasets/registry.json",
-  "owner_package": "bijux-phylogenetics",
-  "provenance_descriptor_locator": "evidence-book/studies/demo-study/provenance/sources.json",
-  "source_intake_policy": "repository-owned-source",
-  "study_categories": ["scientific-validation"],
-  "study_id": "demo-study",
-  "study_scope": {
-    "coverage_focus": ["demo-analysis"],
-    "untouched_source_locators": ["packages/bijux-phylogenetics/tests/fixtures/demo.tsv"]
-  },
-  "study_title": "Demo Study",
-  "summary": "Minimal governed study."
-}
-""".strip()
-        + "\n",
+        repo_root / "evidence-book" / "studies" / "demo-study" / "README.md",
+        "# Demo Study\n\nMinimal governed study.\n",
     )
     _write(
         repo_root
@@ -711,9 +695,9 @@ def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     assert report["package_count"] == 3
     assert report["summary"]["overall_status"] == "blocked"
     assert report["summary"]["blocker_count"] > 0
-    assert report["summary"]["study_count"] == 4
-    assert report["summary"]["evidence_manifest_count"] == 23
-    assert report["summary"]["evidence_input_manifest_count"] == 23
+    assert report["summary"]["study_count"] == 2
+    assert report["summary"]["evidence_manifest_count"] == 19
+    assert report["summary"]["evidence_input_manifest_count"] == 19
     assert report["config_ssot"]["issue_count"] == 0
     assert report["evidence_inventory"]["governed_junk_issue_count"] == 0
     assert report["evidence_inventory"]["repo_dataset_checksum_count"] >= 4

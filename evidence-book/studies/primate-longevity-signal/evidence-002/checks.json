@@ -12,9 +12,7 @@
     "reference.R": "r-reference-program",
     "report.md": "human-report"
   },
-  "primary_output_paths": [
-    "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
-  ],
+  "primary_output_paths": [],
   "required_local_artifacts": [
     "reference.R",
     "analysis.py",
@@ -29,8 +27,8 @@
   "schema_version": 2,
   "source_basis_locators": [
     "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-002/results/workbook-loading-parity.json"
   ],
   "study_id": "primate-longevity-signal",
   "validation_rules": [

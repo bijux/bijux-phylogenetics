@@ -22,6 +22,7 @@ from .package_bundles import (
     load_target_package_bundle_policies,
 )
 from .policies import PUBLICATION_READINESS_POLICY_PATH
+from bijux_phylogenetics.evidence.study_contracts import load_study_contract
 
 TomlTable = dict[str, Any]
 JsonObject = dict[str, object]
@@ -76,6 +77,25 @@ def _as_list(value: object) -> list[object]:
 
 def _is_repo_relative_locator(locator: str) -> bool:
     return not locator.startswith("external:")
+
+
+def _source_intake_policy_matches(
+    intake_policy: str, sources: list[object]
+) -> bool:
+    locators = [
+        str(locator)
+        for source in sources
+        if isinstance(source, dict)
+        for locator in [source.get("locator")]
+        if isinstance(locator, str) and locator
+    ]
+    if intake_policy == "repository-owned-source":
+        return bool(locators) and all(
+            _is_repo_relative_locator(locator) for locator in locators
+        )
+    if intake_policy == "read-only-external-source":
+        return any(not _is_repo_relative_locator(locator) for locator in locators)
+    return False
 
 
 def _output_classification(path: Path) -> str:
@@ -220,7 +240,7 @@ def _is_ignored_junk(repo_root: Path, path: Path) -> bool:
 
 
 def _study_payload(study_root: Path) -> JsonObject:
-    return _load_json(study_root / "study.json")
+    return load_study_contract(study_root)
 
 
 def _package_pyprojects(repo_root: Path) -> dict[str, JsonObject]:
@@ -307,7 +327,7 @@ def build_evidence_reproducibility_inventory(
             issues.append(
                 ReadinessIssue(
                     code="missing-study-provenance",
-                    path=f"evidence-book/studies/{study_id}/study.json",
+                    path=f"evidence-book/studies/{study_id}/README.md",
                     message="study metadata must declare a provenance descriptor locator",
                 )
             )
@@ -334,6 +354,14 @@ def build_evidence_reproducibility_inventory(
                         )
                     )
                 sources = _as_list(provenance_payload.get("sources"))
+                if not _source_intake_policy_matches(source_intake_policy, sources):
+                    issues.append(
+                        ReadinessIssue(
+                            code="provenance-intake-policy-mismatch",
+                            path=provenance_locator,
+                            message="study provenance intake_policy must match the actual source locator ownership model",
+                        )
+                    )
                 declared_source_count = provenance_payload.get("source_count")
                 if declared_source_count != len(sources):
                     issues.append(
@@ -372,7 +400,7 @@ def build_evidence_reproducibility_inventory(
             issues.append(
                 ReadinessIssue(
                     code="missing-dataset-registry",
-                    path=f"evidence-book/studies/{study_id}/study.json",
+                    path=f"evidence-book/studies/{study_id}/README.md",
                     message="study metadata must declare a dataset registry locator",
                 )
             )
@@ -426,7 +454,7 @@ def build_evidence_reproducibility_inventory(
             issues.append(
                 ReadinessIssue(
                     code="missing-study-scope",
-                    path=f"evidence-book/studies/{study_id}/study.json",
+                    path=f"evidence-book/studies/{study_id}/README.md",
                     message="study metadata must declare a structured study_scope section",
                 )
             )
@@ -439,7 +467,7 @@ def build_evidence_reproducibility_inventory(
                 issues.append(
                     ReadinessIssue(
                         code="missing-study-coverage-focus",
-                        path=f"evidence-book/studies/{study_id}/study.json",
+                        path=f"evidence-book/studies/{study_id}/README.md",
                         message="study_scope must describe the study coverage focus",
                     )
                 )
@@ -447,7 +475,7 @@ def build_evidence_reproducibility_inventory(
                 issues.append(
                     ReadinessIssue(
                         code="missing-untouched-source-locators",
-                        path=f"evidence-book/studies/{study_id}/study.json",
+                        path=f"evidence-book/studies/{study_id}/README.md",
                         message="study_scope must declare the untouched source locators used by the study",
                     )
                 )
@@ -458,7 +486,7 @@ def build_evidence_reproducibility_inventory(
             issues.append(
                 ReadinessIssue(
                     code="invalid-source-intake-policy",
-                    path=f"evidence-book/studies/{study_id}/study.json",
+                    path=f"evidence-book/studies/{study_id}/README.md",
                     message="study metadata must declare a supported source_intake_policy",
                 )
             )

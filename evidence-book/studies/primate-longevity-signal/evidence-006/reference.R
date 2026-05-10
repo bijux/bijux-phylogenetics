@@ -21,8 +21,8 @@ payload <- list(
   source_intake_policy = "read-only-external-source",
   source_basis_locators = c(
     "external:lund/pcm1-plots-signal/data/primatetree.nex",
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
-    "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-longevity-signal/evidence-006/results/tree-import-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",

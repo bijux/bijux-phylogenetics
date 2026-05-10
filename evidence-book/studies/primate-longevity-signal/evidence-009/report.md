@@ -21,13 +21,12 @@ Governed evidence for the exported processed CSV and trimmed tree artifacts cons
 
 ## Source Basis
 
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
-- `evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
+- `evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json`
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json`
 
 ## Results Directory
 

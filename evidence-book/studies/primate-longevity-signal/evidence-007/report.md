@@ -21,12 +21,11 @@ Governed evidence for rootedness, binary-tree status, ultrametricity, and node-l
 
 ## Source Basis
 
-- `evidence-book/studies/primate-longevity-signal/evidence-001/block-payloads/tree-import-and-pruning.json`
-- `evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json`
+- `evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json`
+- `evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json`
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json`
 
 ## Results Directory
 

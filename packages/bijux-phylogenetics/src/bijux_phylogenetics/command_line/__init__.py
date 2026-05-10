@@ -7691,10 +7691,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     )
                     return 0
                 report = build_evidence_book_study(repo_root, args.study_id)
+                build_inputs = (
+                    []
+                    if report.study_report.build_script_path is None
+                    else [Path(report.study_report.build_script_path)]
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="evidence",
-                    inputs=[Path(report.study_report.build_script_path)],
+                    inputs=build_inputs,
                     outputs=report.refresh_report.updated_paths,
                 )
                 metrics = {
@@ -7706,7 +7711,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 _print_result(
                     build_command_result(
                         command="evidence",
-                        inputs=[Path(report.study_report.build_script_path)],
+                        inputs=build_inputs,
                         outputs=outputs,
                         metrics=metrics,
                         data=report,

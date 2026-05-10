@@ -6,7 +6,6 @@ when they live at the evidence root for compatibility with existing study builde
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-pgls-and-signal/evidence-008/likelihood-ratio-parity.json`
 
 ## Local Execution Products
 

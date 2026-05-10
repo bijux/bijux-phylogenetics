@@ -18,8 +18,8 @@
     "last_generated_on": "2026-05-10",
     "source_basis_locators": [
       "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
-      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-      "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/evidence-002/results/workbook-loading-parity.json"
     ]
   },
   "limitations": [
@@ -60,12 +60,12 @@
     {
       "kind": "repository-reference",
       "label": "governed processed primate table",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
     },
     {
       "kind": "repository-reference",
       "label": "Primate workbook loading parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-002/results/workbook-loading-parity.json"
     }
   ],
   "source_fragments": [
@@ -73,7 +73,7 @@
   ],
   "study_id": "primate-longevity-signal",
   "summary": "Governed evidence for the raw workbook intake boundary and the resulting processed table contract.",
-  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-002/results/workbook-loading-parity.json",
   "verdict": {
     "status": "matched",
     "summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact."

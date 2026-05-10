@@ -25,3 +25,9 @@ Current bundles:
 - `evidence-008` likelihood-ratio parity
 - `evidence-009` ancestral mode parity
 - `evidence-010` intercept sweep coverage boundary
+
+Shared study inputs and provenance:
+
+- [datasets](./datasets/)
+- [provenance](./provenance/)
+- [reference adapters](./reference/)

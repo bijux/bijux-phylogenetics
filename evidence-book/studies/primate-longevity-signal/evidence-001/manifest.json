@@ -26,8 +26,7 @@
   "evidence_title": "Primate longevity signal parity bundle",
   "freshness": {
     "governed_code_paths": [
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics",
-      "evidence-book/studies/primate-longevity-signal/build_evidence.py"
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics"
     ],
     "last_generated_on": "2026-05-10",
     "source_basis_locators": [

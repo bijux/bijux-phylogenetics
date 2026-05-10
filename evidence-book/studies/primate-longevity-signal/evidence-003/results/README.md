@@ -6,7 +6,6 @@ when they live at the evidence root for compatibility with existing study builde
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json`
 
 ## Local Execution Products
 

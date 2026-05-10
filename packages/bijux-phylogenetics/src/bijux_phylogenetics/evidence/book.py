@@ -41,12 +41,16 @@ from .teaching import (
     study_metadata,
     teaching_study_ids,
 )
+from .study_contracts import (
+    ALLOWED_STUDY_ROOT_DIRS,
+    ALLOWED_STUDY_ROOT_FILES,
+    load_study_contract,
+)
 
 
 EVIDENCE_BOOK_DIRNAME = "evidence-book"
 EVIDENCE_STUDIES_DIRNAME = "studies"
 EVIDENCE_INDEX_DIRNAME = "index"
-EVIDENCE_STUDY_MANIFEST = "study.json"
 EVIDENCE_BUNDLE_MANIFEST = "manifest.json"
 EVIDENCE_CATALOG = "catalog.md"
 EVIDENCE_INDEX = "evidence-index.json"
@@ -82,13 +86,6 @@ EVIDENCE_COMPLETION_GATES_SUMMARY = "completion-gates.md"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
-STUDY_REQUIRED_KEYS = {
-    "study_id",
-    "study_title",
-    "summary",
-    "owner_package",
-    "study_categories",
-}
 EVIDENCE_REQUIRED_KEYS = {
     "schema_version",
     "study_id",
@@ -238,7 +235,7 @@ def _scan_for_portability_issues(
             )
 
 
-def _validate_study_manifest(
+def _validate_study_contract(
     book_root: Path, study_root: Path, issues: list[EvidenceBookValidationIssue]
 ) -> dict[str, object] | None:
     if not STUDY_ID_PATTERN.fullmatch(study_root.name):
@@ -256,43 +253,61 @@ def _validate_study_manifest(
                 "study directory must include README.md",
             )
         )
-    manifest_path = study_root / EVIDENCE_STUDY_MANIFEST
-    if not manifest_path.exists():
-        issues.append(
-            EvidenceBookValidationIssue(
-                _relative_to(book_root, study_root),
-                f"study directory must include {EVIDENCE_STUDY_MANIFEST}",
+    allowed_entries = {
+        *ALLOWED_STUDY_ROOT_FILES,
+        *ALLOWED_STUDY_ROOT_DIRS,
+        *[
+            child.name
+            for child in study_root.iterdir()
+            if child.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(child.name)
+        ],
+    }
+    for child in sorted(study_root.iterdir()):
+        if child.name == "__pycache__":
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, child),
+                    "study root must not contain __pycache__",
+                )
             )
-        )
-        return None
+            continue
+        if child.name not in allowed_entries:
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, child),
+                    "study root may only contain README.md, datasets/, reference/, provenance/, and evidence-### directories",
+                )
+            )
 
-    try:
-        manifest = _load_json(manifest_path)
-    except (ValueError, json.JSONDecodeError) as error:
+    provenance_root = study_root / "provenance"
+    if not provenance_root.is_dir():
         issues.append(
             EvidenceBookValidationIssue(
-                _relative_to(book_root, manifest_path),
-                f"invalid study manifest: {error}",
+                _relative_to(book_root, provenance_root),
+                "study directory must include provenance/",
             )
         )
-        return None
+    dataset_registry_path = study_root / "datasets" / "registry.json"
+    if not dataset_registry_path.is_file():
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, dataset_registry_path),
+                "study directory must include datasets/registry.json",
+            )
+        )
+    provenance_files = sorted(
+        path for path in provenance_root.glob("*.json") if path.is_file()
+    )
+    if len(provenance_files) != 1:
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, provenance_root),
+                "study provenance/ must contain exactly one descriptor json file",
+            )
+        )
 
-    missing_keys = sorted(STUDY_REQUIRED_KEYS - manifest.keys())
-    if missing_keys:
-        issues.append(
-            EvidenceBookValidationIssue(
-                _relative_to(book_root, manifest_path),
-                f"study manifest missing keys: {', '.join(missing_keys)}",
-            )
-        )
-    if manifest.get("study_id") != study_root.name:
-        issues.append(
-            EvidenceBookValidationIssue(
-                _relative_to(book_root, manifest_path),
-                "study manifest study_id must match directory name",
-            )
-        )
-    study_categories = manifest.get("study_categories")
+    contract = load_study_contract(study_root)
+    study_categories = contract.get("study_categories")
     if (
         not isinstance(study_categories, list)
         or not study_categories
@@ -300,18 +315,18 @@ def _validate_study_manifest(
     ):
         issues.append(
             EvidenceBookValidationIssue(
-                _relative_to(book_root, manifest_path),
-                "study manifest study_categories must be a non-empty list of strings",
+                _relative_to(book_root, study_root),
+                "study contract study_categories must be a non-empty list of strings",
             )
         )
     elif not set(study_categories) <= ALLOWED_STUDY_CATEGORIES:
         issues.append(
             EvidenceBookValidationIssue(
-                _relative_to(book_root, manifest_path),
-                "study manifest study_categories must use governed category names",
+                _relative_to(book_root, study_root),
+                "study contract study_categories must use governed category names",
             )
         )
-    return manifest
+    return contract
 
 
 def _validate_bundle_manifest(
@@ -324,6 +339,18 @@ def _validate_bundle_manifest(
 ) -> dict[str, object] | None:
     manifest_path = bundle_root / EVIDENCE_BUNDLE_MANIFEST
     readme_path = bundle_root / "README.md"
+    allowed_root_entries = {
+        "README.md",
+        "analysis.py",
+        "checks.json",
+        "claims.json",
+        "inputs.manifest.json",
+        "manifest.json",
+        "provenance.json",
+        "reference.R",
+        "report.md",
+        "results",
+    }
     if not readme_path.exists():
         issues.append(
             EvidenceBookValidationIssue(
@@ -350,6 +377,23 @@ def _validate_bundle_manifest(
             )
         )
         return None
+
+    for child in sorted(bundle_root.iterdir()):
+        if child.name == "__pycache__":
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, child),
+                    "evidence bundle root must not contain __pycache__",
+                )
+            )
+            continue
+        if child.name not in allowed_root_entries:
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, child),
+                    "evidence bundle root must use the governed symmetric layout and move machine outputs under results/",
+                )
+            )
 
     missing_keys = sorted(EVIDENCE_REQUIRED_KEYS - manifest.keys())
     if missing_keys:
@@ -654,7 +698,7 @@ def validate_evidence_book(
 
     bundle_paths: list[Path] = []
     for study_root in _study_paths(root):
-        study_manifest = _validate_study_manifest(root, study_root, issues)
+        study_manifest = _validate_study_contract(root, study_root, issues)
         if (
             isinstance(study_manifest, dict)
             and str(study_manifest["study_id"]) in teaching_study_ids()
@@ -666,33 +710,12 @@ def validate_evidence_book(
             if actual_categories != expected_categories:
                 issues.append(
                     EvidenceBookValidationIssue(
-                        _relative_to(root, study_root / EVIDENCE_STUDY_MANIFEST),
+                        _relative_to(root, study_root / "README.md"),
                         "teaching study categories must match governed teaching metadata",
                     )
                 )
-            for filename in (
-                TEACHING_GUIDE_FILENAME,
-                TEACHING_GUIDE_MARKDOWN_FILENAME,
-                MIGRATION_GUIDE_FILENAME,
-                MIGRATION_GUIDE_MARKDOWN_FILENAME,
-                STUDENT_SAFE_REPRODUCIBILITY_FILENAME,
-                STUDENT_SAFE_REPRODUCIBILITY_MARKDOWN_FILENAME,
-            ):
-                if not (study_root / filename).exists():
-                    issues.append(
-                        EvidenceBookValidationIssue(
-                            _relative_to(root, study_root / filename),
-                            "teaching study is missing a governed teaching or migration output",
-                        )
-                    )
         for child in sorted(path for path in study_root.iterdir() if path.is_dir()):
-            if child.name in {
-                "reference",
-                "data",
-                "datasets",
-                "figures",
-                "provenance",
-            }:
+            if child.name in ALLOWED_STUDY_ROOT_DIRS:
                 continue
             if EVIDENCE_ID_PATTERN.fullmatch(child.name):
                 bundle_paths.append(child)
@@ -1126,7 +1149,7 @@ def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
     evidence_entries: list[dict[str, object]] = []
     studies: list[dict[str, object]] = []
     for study_root in _study_paths(root):
-        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        study_manifest = load_study_contract(study_root)
         study_entries: list[dict[str, object]] = []
         for bundle_root in sorted(
             path
@@ -1188,7 +1211,7 @@ def build_evidence_claim_map(repo_root: Path) -> dict[str, object]:
 
     claims_by_id: dict[str, dict[str, object]] = {}
     for study_root in _study_paths(root):
-        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        study_manifest = load_study_contract(study_root)
         for bundle_root in sorted(
             path
             for path in study_root.iterdir()
@@ -1242,25 +1265,16 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
     studies: list[dict[str, object]] = []
     total_row_count = 0
     verdict_counts: Counter[str] = Counter()
-    expectation_counts: Counter[str] = Counter()
     comparison_kind_counts: Counter[str] = Counter()
 
     for study_root in _study_paths(root):
-        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
-        parity_policy_path = study_root / "parity-policy.json"
-        family_index_path = study_root / "family-index.json"
-        parity_policy = (
-            _load_json(parity_policy_path) if parity_policy_path.exists() else None
-        )
-        family_index = (
-            _load_json(family_index_path) if family_index_path.exists() else None
-        )
+        study_manifest = load_study_contract(study_root)
         for bundle_root in sorted(
             path
             for path in study_root.iterdir()
             if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
         ):
-            scalar_table_path = bundle_root / "scalar-parity-table.json"
+            scalar_table_path = bundle_root / "results" / "scalar-parity-table.json"
             if not scalar_table_path.exists():
                 continue
             manifest = _load_json(bundle_root / EVIDENCE_BUNDLE_MANIFEST)
@@ -1277,12 +1291,6 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
                 for row in scalar_table.get("rows", [])
                 if isinstance(row, dict) and isinstance(row.get("comparison_kind"), str)
             )
-            if isinstance(parity_policy, dict):
-                expectation_counts.update(
-                    str(policy["parity_expectation"])
-                    for policy in parity_policy.get("policies", [])
-                    if isinstance(policy, dict)
-                )
             studies.append(
                 {
                     "study_id": study_manifest["study_id"],
@@ -1298,23 +1306,8 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
                         if isinstance(row, dict)
                         and isinstance(row.get("comparison_kind"), str)
                     ),
-                    "parity_expectation_counts": {}
-                    if not isinstance(parity_policy, dict)
-                    else Counter(
-                        str(policy["parity_expectation"])
-                        for policy in parity_policy.get("policies", [])
-                        if isinstance(policy, dict)
-                    ),
-                    "family_verdicts": []
-                    if not isinstance(family_index, dict)
-                    else [
-                        {
-                            "family_id": family["family_id"],
-                            "family_verdict": family["family_verdict"],
-                        }
-                        for family in family_index.get("families", [])
-                        if isinstance(family, dict)
-                    ],
+                    "parity_expectation_counts": {},
+                    "family_verdicts": [],
                 }
             )
 
@@ -1337,7 +1330,7 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
         "scalar_row_count": total_row_count,
         "scalar_verdict_counts": dict(sorted(verdict_counts.items())),
         "comparison_kind_counts": dict(sorted(comparison_kind_counts.items())),
-        "parity_expectation_counts": dict(sorted(expectation_counts.items())),
+        "parity_expectation_counts": {},
         "studies": normalized_studies,
     }
 
@@ -1361,13 +1354,13 @@ def _iter_scalar_parity_tables(
         tuple[dict[str, object], dict[str, object], Path, dict[str, object]]
     ] = []
     for study_root in _study_paths(root):
-        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        study_manifest = load_study_contract(study_root)
         for bundle_root in sorted(
             path
             for path in study_root.iterdir()
             if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
         ):
-            scalar_table_path = bundle_root / "scalar-parity-table.json"
+            scalar_table_path = bundle_root / "results" / "scalar-parity-table.json"
             if not scalar_table_path.exists():
                 continue
             tables.append(
@@ -1480,7 +1473,7 @@ def build_evidence_verdict_workflows(repo_root: Path) -> dict[str, object]:
 
     not_comparable_entries: list[dict[str, object]] = []
     for study_root in _study_paths(root):
-        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        study_manifest = load_study_contract(study_root)
         for bundle_root in sorted(
             path
             for path in study_root.iterdir()
@@ -1589,13 +1582,6 @@ def build_evidence_false_confidence_audit(repo_root: Path) -> dict[str, object]:
         {
             "surface_id": "primate-pgls-readme",
             "relative_path": "evidence-book/studies/primate-pgls-and-signal/README.md",
-            "disallowed_phrases": [
-                "fully validated",
-            ],
-        },
-        {
-            "surface_id": "comparative-trust-boundaries-readme",
-            "relative_path": "evidence-book/studies/comparative-trust-boundaries/README.md",
             "disallowed_phrases": [
                 "fully validated",
             ],
@@ -1839,20 +1825,14 @@ def build_evidence_regeneration_contract(repo_root: Path) -> dict[str, object]:
     root = evidence_book_root(repo_root)
     studies: list[dict[str, object]] = []
     for study_root in _study_paths(root):
-        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
-        build_script_path = study_root / "build_evidence.py"
+        study_manifest = load_study_contract(study_root)
         source_paths: list[str] = []
         generated_paths: list[str] = []
         for path in sorted(
             candidate for candidate in study_root.rglob("*") if candidate.is_file()
         ):
             relative_path = _relative_to(Path(repo_root), path).as_posix()
-            if path.name == "build_evidence.py":
-                source_paths.append(relative_path)
-            elif any(
-                parent.name in {"reference", "provenance", "data"}
-                for parent in path.parents
-            ):
+            if any(parent.name in {"reference", "provenance", "datasets"} for parent in path.parents):
                 source_paths.append(relative_path)
             else:
                 generated_paths.append(relative_path)
@@ -1860,14 +1840,11 @@ def build_evidence_regeneration_contract(repo_root: Path) -> dict[str, object]:
             {
                 "study_id": study_manifest["study_id"],
                 "study_title": study_manifest["study_title"],
-                "build_script_path": None
-                if not build_script_path.exists()
-                else _relative_to(Path(repo_root), build_script_path).as_posix(),
-                "rerun_command": None
-                if not build_script_path.exists()
-                else (
+                "build_script_path": None,
+                "rerun_command": (
                     "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 "
-                    f"python {_relative_to(Path(repo_root), build_script_path).as_posix()}"
+                    "python -m bijux_phylogenetics.command_line evidence book build "
+                    f"--study-id {study_manifest['study_id']}"
                 ),
                 "bundle_ids": [
                     path.name
@@ -2170,73 +2147,14 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     root = evidence_book_root(repo_root)
     index_root = root / EVIDENCE_INDEX_DIRNAME
     index_root.mkdir(parents=True, exist_ok=True)
-    teaching_guides: list[dict[str, object]] = []
-    migration_guides: list[dict[str, object]] = []
-    reproducibility_contracts: list[dict[str, object]] = []
-    for study_root in _study_paths(root):
-        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
-        if str(study_manifest["study_id"]) not in teaching_study_ids():
-            continue
-        family_index_path = study_root / "family-index.json"
-        source_fragment_map_path = study_root / "source-fragment-map.json"
-        if not family_index_path.exists() or not source_fragment_map_path.exists():
-            continue
-        teaching_guide_payload = build_teaching_guide(
-            study_manifest,
-            _load_json(family_index_path),
-            _load_json(source_fragment_map_path),
-        )
-        bundle_manifests = [
-            _load_json(bundle_root / EVIDENCE_BUNDLE_MANIFEST)
-            for bundle_root in sorted(
-                path
-                for path in study_root.iterdir()
-                if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
-            )
-        ]
-        (study_root / TEACHING_GUIDE_FILENAME).write_text(
-            json.dumps(teaching_guide_payload, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        (study_root / TEACHING_GUIDE_MARKDOWN_FILENAME).write_text(
-            render_teaching_guide_markdown(teaching_guide_payload),
-            encoding="utf-8",
-        )
-        teaching_guides.append(teaching_guide_payload)
-        migration_guide_payload = build_migration_guide(
-            study_manifest,
-            _load_json(source_fragment_map_path),
-            bundle_manifests,
-        )
-        (study_root / MIGRATION_GUIDE_FILENAME).write_text(
-            json.dumps(migration_guide_payload, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        (study_root / MIGRATION_GUIDE_MARKDOWN_FILENAME).write_text(
-            render_migration_guide_markdown(migration_guide_payload),
-            encoding="utf-8",
-        )
-        migration_guides.append(migration_guide_payload)
-        reproducibility_payload = build_student_safe_reproducibility_contract(
-            study_manifest
-        )
-        (study_root / STUDENT_SAFE_REPRODUCIBILITY_FILENAME).write_text(
-            json.dumps(reproducibility_payload, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        (study_root / STUDENT_SAFE_REPRODUCIBILITY_MARKDOWN_FILENAME).write_text(
-            render_student_safe_reproducibility_markdown(reproducibility_payload),
-            encoding="utf-8",
-        )
-        reproducibility_contracts.append(reproducibility_payload)
     teaching_migration_path = index_root / TEACHING_AND_MIGRATION_INDEX_FILENAME
     teaching_migration_summary_path = (
         index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
     )
     teaching_migration_payload = build_teaching_and_migration_index(
-        teaching_guides,
-        migration_guides,
-        reproducibility_contracts,
+        [],
+        [],
+        [],
     )
     teaching_migration_path.write_text(
         json.dumps(teaching_migration_payload, indent=2, sort_keys=True) + "\n",

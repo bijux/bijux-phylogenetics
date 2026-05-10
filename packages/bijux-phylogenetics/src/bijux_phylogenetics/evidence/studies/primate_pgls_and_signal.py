@@ -30,7 +30,7 @@ STUDY_ONE_REFERENCE_ROOT = (
     Path("evidence-book")
     / "studies"
     / "primate-longevity-signal"
-    / "evidence-001"
+    / "datasets"
 )
 
 FAMILY_DEFINITIONS = {

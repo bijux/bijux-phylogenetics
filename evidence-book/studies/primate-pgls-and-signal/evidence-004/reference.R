@@ -18,13 +18,13 @@ payload <- list(
   evidence_title = "Primate phylogenetic signal parity bundle",
   comparison_mode = "direct_parity",
   execution_mode = "study_reference_wrapper",
-  source_intake_policy = "",
+  source_intake_policy = "read-only-external-source",
   source_basis_locators = c(
     "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
     "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-    "evidence-book/studies/primate-pgls-and-signal/evidence-004/phylogenetic-signal-parity.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/phylogenetic-signal-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R",

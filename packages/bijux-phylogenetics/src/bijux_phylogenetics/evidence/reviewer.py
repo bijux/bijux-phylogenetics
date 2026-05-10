@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 
 
-REVIEWER_SUMMARY_JSON = "reviewer-summary.json"
-REVIEWER_SUMMARY_MARKDOWN = "reviewer-summary.md"
+REVIEWER_SUMMARY_JSON = "results/reviewer-summary.json"
+REVIEWER_SUMMARY_MARKDOWN = "results/reviewer-summary.md"
 
 
 def build_bundle_reviewer_summary(

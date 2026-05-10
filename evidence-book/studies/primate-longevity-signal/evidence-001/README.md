@@ -24,14 +24,14 @@ Files used in this report:
 - [R results JSON](r_reference_results.json)
 - [Python results JSON](bijux_reference_results.json)
 - [Comparison JSON](comparison.json)
-- [Per-block payloads](./block-payloads/)
-- [Comparative validation suite](./comparative_reference_validation_suite.json)
-- [R ecosystem comparison](./r_ecosystem_comparison.json)
-- [Trusted examples gallery](./trusted_examples_gallery.json)
-- [Reviewer audit checklist](./reviewer_audit_checklist.json)
-- [Reproducibility package](./reproducibility_package.json)
-- [Method maturity registry](./method_maturity_registry.json)
-- [Scientific debt register](./scientific_debt_register.json)
+- [Per-block payloads](./results/block-payloads/)
+- [Comparative validation suite](./results/comparative_reference_validation_suite.json)
+- [R ecosystem comparison](./results/r_ecosystem_comparison.json)
+- [Trusted examples gallery](./results/trusted_examples_gallery.json)
+- [Reviewer audit checklist](./results/reviewer_audit_checklist.json)
+- [Reproducibility package](./results/reproducibility_package.json)
+- [Method maturity registry](./results/method_maturity_registry.json)
+- [Scientific debt register](./results/scientific_debt_register.json)
 
 Coverage summary:
 
@@ -129,7 +129,7 @@ citation("ape") #Specific package
 - R package versions recorded: `ape, geiger, openxlsx, phytools, tidytree, treeio`
 - Python reference script: `evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py`
 
-Raw comparison payload: [`block-payloads/environment-and-package-contract.json`](./block-payloads/environment-and-package-contract.json)
+Raw comparison payload: [`block-payloads/environment-and-package-contract.json`](./results/block-payloads/environment-and-package-contract.json)
 
 ### primate-data-preprocessing Raw primate preprocessing to checked-in analysis table
 
@@ -219,7 +219,7 @@ assert len(set(species)) == 75
 - processed species: `75`
 - checked-in `primate.csv` matches workbook-derived reference: `True`
 
-Raw comparison payload: [`block-payloads/primate-data-preprocessing.json`](./block-payloads/primate-data-preprocessing.json)
+Raw comparison payload: [`block-payloads/primate-data-preprocessing.json`](./results/block-payloads/primate-data-preprocessing.json)
 
 ### tree-import-and-pruning Tree import, checking, node labels, and pruning
 
@@ -299,7 +299,7 @@ _, pruning_report = prune_tree_to_requested_taxa(original_tree, requested_taxa=r
 - removed taxa: `Lagothrix_lagotricha, Eulemur_fulvus`
 - checked-in trimmed tree matches R-trimmed reference: `True`
 
-Raw comparison payload: [`block-payloads/tree-import-and-pruning.json`](./block-payloads/tree-import-and-pruning.json)
+Raw comparison payload: [`block-payloads/tree-import-and-pruning.json`](./results/block-payloads/tree-import-and-pruning.json)
 
 ### processed-analysis-artifacts Save processed files for later analysis
 
@@ -338,7 +338,7 @@ save.image("Data/primate.RData") #Or all files present in your environment. Simp
 - processed CSV written by R: `external:lund/pcm1-plots-signal/data/primate.csv`
 - trimmed tree written by R: `external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex`
 
-Raw comparison payload: [`block-payloads/processed-analysis-artifacts.json`](./block-payloads/processed-analysis-artifacts.json)
+Raw comparison payload: [`block-payloads/processed-analysis-artifacts.json`](./results/block-payloads/processed-analysis-artifacts.json)
 
 ### ape-plotting-basics APE plotting basics
 
@@ -378,7 +378,7 @@ tiplabels(cex=0.5)
 
 - reason: This is a visual exploration block; the current report does not claim figure-equivalence for base `ape` plots.
 
-Raw comparison payload: [`block-payloads/ape-plotting-basics.json`](./block-payloads/ape-plotting-basics.json)
+Raw comparison payload: [`block-payloads/ape-plotting-basics.json`](./results/block-payloads/ape-plotting-basics.json)
 
 ### ape-alternate-layouts APE alternate layouts: cladogram and fan
 
@@ -408,7 +408,7 @@ plot(primatetree,cex=0.5,type="fan",main="fan")
 
 - reason: These layout variants are tracked as visual surfaces only.
 
-Raw comparison payload: [`block-payloads/ape-alternate-layouts.json`](./block-payloads/ape-alternate-layouts.json)
+Raw comparison payload: [`block-payloads/ape-alternate-layouts.json`](./results/block-payloads/ape-alternate-layouts.json)
 
 ### unrooted-tree-demo Unrooted tree demo
 
@@ -441,7 +441,7 @@ assert len(unrooted_tree.root.children) == 3
 - bijux unrooted tip count: `75`
 - bijux root child count after unrooting: `3`
 
-Raw comparison payload: [`block-payloads/unrooted-tree-demo.json`](./block-payloads/unrooted-tree-demo.json)
+Raw comparison payload: [`block-payloads/unrooted-tree-demo.json`](./results/block-payloads/unrooted-tree-demo.json)
 
 ### phytools-tree-plotting Phytools tree plotting exploration
 
@@ -468,7 +468,7 @@ nodelabels()
 
 - reason: The `phytools::plotTree()` surface is tracked, but no rendered-figure claim is made here.
 
-Raw comparison payload: [`block-payloads/phytools-tree-plotting.json`](./block-payloads/phytools-tree-plotting.json)
+Raw comparison payload: [`block-payloads/phytools-tree-plotting.json`](./results/block-payloads/phytools-tree-plotting.json)
 
 ### extract-clade-node-77 Extract clade descended from R node 77
 
@@ -512,7 +512,7 @@ assert any(len(taxa) == 54 for taxa in internal_clades.values())
 - matched bijux internal node label: `Node2`
 - exact descendant taxon set match: `True`
 
-Raw comparison payload: [`block-payloads/extract-clade-node-77.json`](./block-payloads/extract-clade-node-77.json)
+Raw comparison payload: [`block-payloads/extract-clade-node-77.json`](./results/block-payloads/extract-clade-node-77.json)
 
 ### rotate-nodes-behavior Rotate-nodes teaching demo
 
@@ -568,7 +568,7 @@ assert rotated_all.tip_count == 75
 - single-node tip order match: `True`
 - all-node tip order match: `True`
 
-Raw comparison payload: [`block-payloads/rotate-nodes-behavior.json`](./block-payloads/rotate-nodes-behavior.json)
+Raw comparison payload: [`block-payloads/rotate-nodes-behavior.json`](./results/block-payloads/rotate-nodes-behavior.json)
 
 ### ggtree-tree-visualization Ggtree tree-visualization exploration
 
@@ -617,7 +617,7 @@ p + geom_cladelabel(node=130, label="test label", align=T, color='red') +geom_cl
 
 - reason: These `ggtree` examples are tracked as visual surfaces only.
 
-Raw comparison payload: [`block-payloads/ggtree-tree-visualization.json`](./block-payloads/ggtree-tree-visualization.json)
+Raw comparison payload: [`block-payloads/ggtree-tree-visualization.json`](./results/block-payloads/ggtree-tree-visualization.json)
 
 ### tip-order-alignment Tip-order alignment for joining data to the tree
 
@@ -671,7 +671,7 @@ assert readiness.analysis_taxa[:6] == readiness.analysis_taxa[:6]
 - bijux aligned species exactly follow tip order: `True`
 - first six aligned species match across tools: `True`
 
-Raw comparison payload: [`block-payloads/tip-order-alignment.json`](./block-payloads/tip-order-alignment.json)
+Raw comparison payload: [`block-payloads/tip-order-alignment.json`](./results/block-payloads/tip-order-alignment.json)
 
 ### ape-longevity-overlay APE tip overlay with longevity
 
@@ -699,7 +699,7 @@ tiplabels(pch=21, bg="grey38",cex=primate$longevity/400) # cex = size in plot fu
 
 - reason: This is a rendered trait-overlay surface and is tracked separately from ordering correctness.
 
-Raw comparison payload: [`block-payloads/ape-longevity-overlay.json`](./block-payloads/ape-longevity-overlay.json)
+Raw comparison payload: [`block-payloads/ape-longevity-overlay.json`](./results/block-payloads/ape-longevity-overlay.json)
 
 ### treeio-node-mapping-and-join Treeio node mapping and joined tree-data object
 
@@ -755,7 +755,7 @@ assert readiness.analysis_taxa[:6] == summary.taxa[:6]
 - R joined object tip count: `75`
 - Python analysis taxon count: `75`
 
-Raw comparison payload: [`block-payloads/treeio-node-mapping-and-join.json`](./block-payloads/treeio-node-mapping-and-join.json)
+Raw comparison payload: [`block-payloads/treeio-node-mapping-and-join.json`](./results/block-payloads/treeio-node-mapping-and-join.json)
 
 ### joined-ggtree-trait-plotting Joined ggtree trait plotting
 
@@ -792,7 +792,7 @@ ggtree(p_tree_data) +
 
 - reason: Joined-data `ggtree` figures are tracked here as visual outputs only.
 
-Raw comparison payload: [`block-payloads/joined-ggtree-trait-plotting.json`](./block-payloads/joined-ggtree-trait-plotting.json)
+Raw comparison payload: [`block-payloads/joined-ggtree-trait-plotting.json`](./results/block-payloads/joined-ggtree-trait-plotting.json)
 
 ### random-simulation-inputs Random simulation scenarios
 
@@ -830,11 +830,11 @@ random_data5<-rTraitCont(random_tree, model="OU", sigma = 5,root.value=1,alpha=5
 
 **Comparison Evidence**
 
-- shared random tree artifact: `evidence-book/studies/primate-longevity-signal/evidence-001/random_tree_seed1.nwk`
+- shared random tree artifact: `evidence-book/studies/primate-longevity-signal/evidence-001/results/random_tree_seed1.nwk`
 - random examples frozen from R: `random_data, random_data2, random_data3, random_data4, random_data5`
 - random tree tip count: `30`
 
-Raw comparison payload: [`block-payloads/random-simulation-inputs.json`](./block-payloads/random-simulation-inputs.json)
+Raw comparison payload: [`block-payloads/random-simulation-inputs.json`](./results/block-payloads/random-simulation-inputs.json)
 
 ### random-simulation-plotting Random trait plotting surfaces
 
@@ -887,7 +887,7 @@ tiplabels(pch=21, cex=random_data5, bg="orange")
 
 - reason: These are visual teaching plots and are tracked separately from the simulation inputs and signal fits.
 
-Raw comparison payload: [`block-payloads/random-simulation-plotting.json`](./block-payloads/random-simulation-plotting.json)
+Raw comparison payload: [`block-payloads/random-simulation-plotting.json`](./results/block-payloads/random-simulation-plotting.json)
 
 ### random-signal-lambda-fits Random-data lambda fits
 
@@ -936,7 +936,7 @@ for name in ["random_data", "random_data2", "random_data3", "random_data4", "ran
 - `random_data4` lambda: R `1` vs bijux `1.0`
 - `random_data5` lambda: R `1` vs bijux `1.0`
 
-Raw comparison payload: [`block-payloads/random-signal-lambda-fits.json`](./block-payloads/random-signal-lambda-fits.json)
+Raw comparison payload: [`block-payloads/random-signal-lambda-fits.json`](./results/block-payloads/random-signal-lambda-fits.json)
 
 ### primate-longevity-visual-inspection Primate longevity histogram and tip-size plot
 
@@ -967,7 +967,7 @@ tiplabels(pch=21, bg="grey38",cex=primateLL/300)
 
 - reason: These are visual inspection surfaces only.
 
-Raw comparison payload: [`block-payloads/primate-longevity-visual-inspection.json`](./block-payloads/primate-longevity-visual-inspection.json)
+Raw comparison payload: [`block-payloads/primate-longevity-visual-inspection.json`](./results/block-payloads/primate-longevity-visual-inspection.json)
 
 ### primate-longevity-vector-assembly Primate longevity vector assembly
 
@@ -1005,7 +1005,7 @@ assert len(readiness.analysis_taxa) == 75
 - R names match tip order: `True`
 - bijux names match tip order: `True`
 
-Raw comparison payload: [`block-payloads/primate-longevity-vector-assembly.json`](./block-payloads/primate-longevity-vector-assembly.json)
+Raw comparison payload: [`block-payloads/primate-longevity-vector-assembly.json`](./results/block-payloads/primate-longevity-vector-assembly.json)
 
 ### primate-lambda-fit Primate longevity lambda fit
 
@@ -1046,7 +1046,7 @@ lambda_report = estimate_pagels_lambda(
 - lambda absolute difference: `0.00026987974695991124`
 - log-likelihood absolute difference: `5.460539682644594e-06`
 
-Raw comparison payload: [`block-payloads/primate-lambda-fit.json`](./block-payloads/primate-lambda-fit.json)
+Raw comparison payload: [`block-payloads/primate-lambda-fit.json`](./results/block-payloads/primate-lambda-fit.json)
 
 ### lambda-zero-visual-comparison Lambda-zero visual tree comparison
 
@@ -1086,7 +1086,7 @@ tiplabels(pch=21, bg="grey38",cex=primateLL/300)
 
 - reason: The side-by-side real-tree versus lambda=0 plots are tracked as visual outputs only.
 
-Raw comparison payload: [`block-payloads/lambda-zero-visual-comparison.json`](./block-payloads/lambda-zero-visual-comparison.json)
+Raw comparison payload: [`block-payloads/lambda-zero-visual-comparison.json`](./results/block-payloads/lambda-zero-visual-comparison.json)
 
 ### lambda-zero-covariance-and-lrt Lambda-zero covariance and likelihood-ratio test
 
@@ -1146,7 +1146,7 @@ lambda0_covariance = lambda_transform_covariance(covariance, 0.0)
 - lambda=0 covariance top-left 3x3 max diff: `9.99999993922529e-09`
 - real covariance top-left 3x3 max diff: `0.0`
 
-Raw comparison payload: [`block-payloads/lambda-zero-covariance-and-lrt.json`](./block-payloads/lambda-zero-covariance-and-lrt.json)
+Raw comparison payload: [`block-payloads/lambda-zero-covariance-and-lrt.json`](./results/block-payloads/lambda-zero-covariance-and-lrt.json)
 
 ### continuous-ancestral-point-estimates Continuous ancestral point estimates
 
@@ -1184,7 +1184,7 @@ ancestral = reconstruct_continuous_ancestral_states(
 - shared internal clades compared: `74`
 - max point-estimate absolute difference: `5.115907697472721e-13`
 
-Raw comparison payload: [`block-payloads/continuous-ancestral-point-estimates.json`](./block-payloads/continuous-ancestral-point-estimates.json)
+Raw comparison payload: [`block-payloads/continuous-ancestral-point-estimates.json`](./results/block-payloads/continuous-ancestral-point-estimates.json)
 
 ### continuous-ancestral-intervals Continuous ancestral 95% intervals
 
@@ -1220,7 +1220,7 @@ ancestral = reconstruct_continuous_ancestral_states(
 - max lower-95 difference: `5.684341886080801e-13`
 - max upper-95 difference: `5.115907697472721e-13`
 
-Raw comparison payload: [`block-payloads/continuous-ancestral-intervals.json`](./block-payloads/continuous-ancestral-intervals.json)
+Raw comparison payload: [`block-payloads/continuous-ancestral-intervals.json`](./results/block-payloads/continuous-ancestral-intervals.json)
 
 ### ancestral-table-assembly Assemble ancestral table and node mapping
 
@@ -1270,7 +1270,7 @@ assert tip_rows + internal_rows == len(ancestral.estimates)
 - R table rows: tips `75` + internal `74` = `149`
 - bijux table rows: tips `75` + internal `74` = `149`
 
-Raw comparison payload: [`block-payloads/ancestral-table-assembly.json`](./block-payloads/ancestral-table-assembly.json)
+Raw comparison payload: [`block-payloads/ancestral-table-assembly.json`](./results/block-payloads/ancestral-table-assembly.json)
 
 ### ancestral-colored-tree-plot Ancestral colored tree plot
 
@@ -1300,7 +1300,7 @@ ggtree(primate_ace_long_tree)+
 
 - reason: The ancestral-state branch-color figure is tracked as a visual rendering surface only.
 
-Raw comparison payload: [`block-payloads/ancestral-colored-tree-plot.json`](./block-payloads/ancestral-colored-tree-plot.json)
+Raw comparison payload: [`block-payloads/ancestral-colored-tree-plot.json`](./results/block-payloads/ancestral-colored-tree-plot.json)
 
 ### bonobo-gibbon-mrca-estimate Bonobo/Gibbon MRCA estimate
 
@@ -1356,7 +1356,7 @@ mrca_estimate = estimate_by_node[mrca_signature]
 - MRCA estimate in R: `520.0784230077601`
 - MRCA estimate in bijux: `520.07842300776`
 
-Raw comparison payload: [`block-payloads/bonobo-gibbon-mrca-estimate.json`](./block-payloads/bonobo-gibbon-mrca-estimate.json)
+Raw comparison payload: [`block-payloads/bonobo-gibbon-mrca-estimate.json`](./results/block-payloads/bonobo-gibbon-mrca-estimate.json)
 
 ### lifespan-increase-counts How many times lifespan increased across primates
 
@@ -1428,7 +1428,7 @@ visit(tree.root)
 - increases > 0: R `72` vs bijux `72`
 - increases > 12: R `55` vs bijux `55`
 
-Raw comparison payload: [`block-payloads/lifespan-increase-counts.json`](./block-payloads/lifespan-increase-counts.json)
+Raw comparison payload: [`block-payloads/lifespan-increase-counts.json`](./results/block-payloads/lifespan-increase-counts.json)
 
 ### final-workspace-artifact Save final analysis workspace
 
@@ -1456,5 +1456,5 @@ save.image("./Results/primate_results.RData")
 - R save target: `./Results/primate_results.RData`
 - report artifact directory: `evidence-book/studies/primate-longevity-signal/evidence-001`
 
-Raw comparison payload: [`block-payloads/final-workspace-artifact.json`](./block-payloads/final-workspace-artifact.json)
+Raw comparison payload: [`block-payloads/final-workspace-artifact.json`](./results/block-payloads/final-workspace-artifact.json)
 

@@ -6,7 +6,7 @@
       "input_id": "local-input-001",
       "kind": "governed-local-input",
       "label": "tree-diagnostics-parity.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json",
       "read_only": false,
       "sha256": "7a7d9e3479c783886b40a0283df7e9796027cc7a48311e10bff881a59751ed7a"
     },
@@ -36,7 +36,7 @@
       "input_id": "source-input-001",
       "kind": "repository-reference",
       "label": "governed tree-processing comparison payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/block-payloads/tree-import-and-pruning.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
       "read_only": true,
       "sha256": "325d6f58908673aac00dac90443dbb31b7b1e0fdadd7afc245e43b0106df3b37"
     },
@@ -44,7 +44,7 @@
       "input_id": "source-input-002",
       "kind": "repository-reference",
       "label": "Primate tree diagnostics parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json",
       "read_only": false,
       "sha256": "7a7d9e3479c783886b40a0283df7e9796027cc7a48311e10bff881a59751ed7a"
     }

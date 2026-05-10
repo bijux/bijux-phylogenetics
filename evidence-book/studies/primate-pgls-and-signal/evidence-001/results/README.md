@@ -6,9 +6,6 @@ when they live at the evidence root for compatibility with existing study builde
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.md`
 
 ## Local Execution Products
 

@@ -1,16 +1,5 @@
 """Study-specific evidence-book generators."""
 
-from .comparative_trust_boundaries import (
-    build_comparative_trust_boundaries_bundles,
-    build_comparative_trust_boundaries_claim_registry,
-    build_comparative_trust_boundaries_family_index,
-    build_comparative_trust_boundaries_provenance,
-    build_comparative_trust_boundaries_source_fragment_map,
-    render_comparative_trust_boundaries_study_manifest,
-    render_comparative_trust_boundaries_study_readme,
-    render_weak_signal_traits_tsv,
-    write_weak_signal_traits_table,
-)
 from .primate_pcm1_component_bundles import (
     build_primate_data_preparation_bundle_index,
     build_primate_pcm1_component_bundles,
@@ -39,11 +28,6 @@ from .primate_pgls_and_signal import (
 )
 
 __all__ = [
-    "build_comparative_trust_boundaries_bundles",
-    "build_comparative_trust_boundaries_claim_registry",
-    "build_comparative_trust_boundaries_family_index",
-    "build_comparative_trust_boundaries_provenance",
-    "build_comparative_trust_boundaries_source_fragment_map",
     "build_primate_data_preparation_bundle_index",
     "build_primate_pcm1_component_bundles",
     "build_primate_claim_registry",
@@ -60,12 +44,8 @@ __all__ = [
     "build_primate_summary_bundle_claims",
     "build_primate_source_fragment_map",
     "build_primate_structural_parity_table",
-    "render_comparative_trust_boundaries_study_manifest",
-    "render_comparative_trust_boundaries_study_readme",
     "render_primate_data_preparation_bundle_index_markdown",
     "render_primate_pgls_signal_scalar_parity_table_markdown",
     "render_primate_structural_parity_table_markdown",
     "render_primate_scalar_parity_table_markdown",
-    "render_weak_signal_traits_tsv",
-    "write_weak_signal_traits_table",
 ]

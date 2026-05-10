@@ -21,12 +21,11 @@ Governed evidence for how missing values are handled before the processed primat
 
 ## Source Basis
 
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
+- `evidence-book/studies/primate-longevity-signal/evidence-004/results/missing-data-accounting-parity.json`
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json`
 
 ## Results Directory
 

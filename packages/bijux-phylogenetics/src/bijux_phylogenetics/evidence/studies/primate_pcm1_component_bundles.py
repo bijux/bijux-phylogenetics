@@ -46,7 +46,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed processed primate table",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
             },
         ],
     },
@@ -71,7 +71,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed processed primate table",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
             }
         ],
     },
@@ -96,7 +96,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed processed primate table",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
             }
         ],
     },
@@ -121,7 +121,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed processed primate table",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
             }
         ],
     },
@@ -151,7 +151,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed trimmed tree export",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
             },
         ],
     },
@@ -176,7 +176,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed tree-processing comparison payload",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/block-payloads/tree-import-and-pruning.json",
+                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
             }
         ],
     },
@@ -205,12 +205,12 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed processed primate table",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
             },
             {
                 "kind": "repository-reference",
                 "label": "governed trimmed tree export",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
             },
         ],
     },
@@ -235,12 +235,12 @@ COMPONENT_BUNDLE_DEFINITIONS = [
             {
                 "kind": "repository-reference",
                 "label": "governed processed primate table",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
             },
             {
                 "kind": "repository-reference",
                 "label": "governed trimmed tree export",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
             },
         ],
     },
@@ -301,13 +301,16 @@ def _reference_script_locators(line_specs: list[str]) -> list[str]:
 def _load_context(repo_root: Path) -> dict[str, object]:
     bundle_root = _base_bundle_root(repo_root)
     return {
-        "r_results": _read_json(bundle_root / "r_reference_results.json"),
-        "bijux_results": _read_json(bundle_root / "bijux_reference_results.json"),
-        "reference_rows": _read_csv_rows(bundle_root / "reference_primate.csv"),
-        "source_fragment_map": _read_json(_study_root(repo_root) / "source-fragment-map.json"),
+        "r_results": _read_json(bundle_root / "results" / "r_reference_results.json"),
+        "bijux_results": _read_json(
+            bundle_root / "results" / "bijux_reference_results.json"
+        ),
+        "reference_rows": _read_csv_rows(
+            _study_root(repo_root) / "datasets" / "reference_primate.csv"
+        ),
         "block_payloads": {
             path.stem: _read_json(path)
-            for path in sorted((bundle_root / "block-payloads").glob("*.json"))
+            for path in sorted((bundle_root / "results" / "block-payloads").glob("*.json"))
         },
     }
 

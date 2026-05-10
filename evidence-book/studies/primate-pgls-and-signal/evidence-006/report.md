@@ -22,15 +22,13 @@ Governed parity for the lecture OU, early-burst, and late-burst transformed-tree
 ## Source Basis
 
 - `evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json`
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-006/results/transformed-tree-parity.json`
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json`
 
 ## Results Directory
 

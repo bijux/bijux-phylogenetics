@@ -11,8 +11,8 @@ RESULTS_ROOT = BUNDLE_ROOT / 'results'
 STUDY_ID = "primate-longevity-signal"
 EVIDENCE_ID = "evidence-004"
 COMPARISON_MODE = "direct_parity"
-PRIMARY_OUTPUTS = ['evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json']
-BUILD_SCRIPT = 'evidence-book/studies/primate-longevity-signal/build_evidence.py'
+PRIMARY_OUTPUTS = []
+BUILD_SCRIPT = None
 
 def main() -> None:
     RESULTS_ROOT.mkdir(parents=True, exist_ok=True)

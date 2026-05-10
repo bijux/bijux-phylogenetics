@@ -11,8 +11,8 @@ RESULTS_ROOT = BUNDLE_ROOT / 'results'
 STUDY_ID = "primate-pgls-and-signal"
 EVIDENCE_ID = "evidence-001"
 COMPARISON_MODE = "direct_parity"
-PRIMARY_OUTPUTS = ['evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json', 'evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json', 'evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.md']
-BUILD_SCRIPT = 'evidence-book/studies/primate-pgls-and-signal/build_evidence.py'
+PRIMARY_OUTPUTS = []
+BUILD_SCRIPT = None
 
 def main() -> None:
     RESULTS_ROOT.mkdir(parents=True, exist_ok=True)

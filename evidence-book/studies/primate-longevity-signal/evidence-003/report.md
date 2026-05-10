@@ -21,12 +21,11 @@ Governed evidence for the factor and numeric coercion contract before grouped do
 
 ## Source Basis
 
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
+- `evidence-book/studies/primate-longevity-signal/evidence-003/results/type-repair-parity.json`
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json`
 
 ## Results Directory
 

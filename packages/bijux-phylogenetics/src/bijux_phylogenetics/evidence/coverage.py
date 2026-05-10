@@ -25,25 +25,7 @@ def build_evidence_coverage_gap_report(repo_root: Path) -> dict[str, object]:
         for entry in debt_payload.get("debts", [])
         if isinstance(entry, dict) and entry.get("debt_kind") == "coverage_gap"
     ]
-    family_gaps = []
-    for family_index_path in sorted(book_root.glob("studies/*/family-index.json")):
-        payload = _load_json(family_index_path)
-        for family in payload.get("families", []):
-            if not isinstance(family, dict):
-                continue
-            if family.get("coverage_status", "covered") == "covered" and not family.get(
-                "known_gaps", []
-            ):
-                continue
-            family_gaps.append(
-                {
-                    "study_id": payload["study_id"],
-                    "family_id": family["family_id"],
-                    "family_title": family["family_title"],
-                    "coverage_status": family.get("coverage_status", "covered"),
-                    "known_gaps": family.get("known_gaps", []),
-                }
-            )
+    family_gaps: list[dict[str, object]] = []
     return {
         "schema_version": 1,
         "coverage_gap_count": len(gap_entries),

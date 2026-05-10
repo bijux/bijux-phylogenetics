@@ -19,14 +19,14 @@
       "dataset_id": "dataset-003",
       "kind": "study-shared-governed-derivative",
       "label": "Governed primate reference table",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "schema_summary": "Repository-owned normalized primate table reused by PCM1 and PCM2 evidence units."
     },
     {
       "dataset_id": "dataset-004",
       "kind": "study-shared-governed-derivative",
       "label": "Governed trimmed primate tree",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
       "schema_summary": "Repository-owned trimmed Newick tree reused by PCM1 and PCM2 evidence units."
     }
   ],

@@ -50,7 +50,7 @@
   "study_id": "primate-longevity-signal",
   "study_provenance_locator": "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json",
   "study_support_scripts": {
-    "build_script_path": "evidence-book/studies/primate-longevity-signal/build_evidence.py",
+    "build_script_path": null,
     "reference_python_scripts": [
       "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py"
     ],

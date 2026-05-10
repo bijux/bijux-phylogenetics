@@ -22,22 +22,8 @@ def _minimal_repo(tmp_path: Path) -> Path:
         repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
     )
     _write(
-        repo_root / "evidence-book" / "studies" / "demo-study" / "study.json",
-        json.dumps(
-            {
-                "study_id": "demo-study",
-                "study_title": "Demo Study",
-                "summary": "Small governed study for bundle artifact checks.",
-                "owner_package": "bijux-phylogenetics",
-                "study_categories": ["scientific-validation"],
-                "provenance_descriptor_locator": "evidence-book/studies/demo-study/provenance/sources.json",
-                "dataset_registry_locator": "evidence-book/studies/demo-study/datasets/registry.json",
-                "source_intake_policy": "repository-owned-source",
-            },
-            indent=2,
-            sort_keys=True,
-        )
-        + "\n",
+        repo_root / "evidence-book" / "studies" / "demo-study" / "README.md",
+        "# Demo Study\n\nSmall governed study for bundle artifact checks.\n",
     )
     _write(
         repo_root / "evidence-book" / "studies" / "demo-study" / "provenance" / "sources.json",

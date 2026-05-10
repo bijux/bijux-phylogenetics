@@ -12,9 +12,7 @@
     "reference.R": "r-reference-program",
     "report.md": "human-report"
   },
-  "primary_output_paths": [
-    "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json"
-  ],
+  "primary_output_paths": [],
   "required_local_artifacts": [
     "reference.R",
     "analysis.py",
@@ -29,10 +27,10 @@
   "schema_version": 2,
   "source_basis_locators": [
     "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
     "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-    "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json"
+    "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json"
   ],
   "study_id": "primate-pgls-and-signal",
   "validation_rules": [

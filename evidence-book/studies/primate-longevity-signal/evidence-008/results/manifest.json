@@ -7,10 +7,8 @@
     "evidence-book/studies/primate-longevity-signal/evidence-008/provenance.json"
   ],
   "evidence_id": "evidence-008",
-  "governed_primary_output_count": 1,
-  "governed_primary_outputs": [
-    "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json"
-  ],
+  "governed_primary_output_count": 0,
+  "governed_primary_outputs": [],
   "local_execution_products": [
     "evidence-book/studies/primate-longevity-signal/evidence-008/results/reference-contract.json",
     "evidence-book/studies/primate-longevity-signal/evidence-008/results/analysis-run.json"

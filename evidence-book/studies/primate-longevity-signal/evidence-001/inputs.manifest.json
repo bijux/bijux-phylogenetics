@@ -6,7 +6,7 @@
       "input_id": "local-input-001",
       "kind": "governed-local-input",
       "label": "bijux_reference_results.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/bijux_reference_results.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/bijux_reference_results.json",
       "read_only": false,
       "sha256": "f901ed1601712aa35b4b57ceb50ccdd15a48395e13de2d823b26dd9235165703"
     },
@@ -14,7 +14,7 @@
       "input_id": "local-input-002",
       "kind": "governed-local-input",
       "label": "comparative_reference_validation_suite.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/comparative_reference_validation_suite.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/comparative_reference_validation_suite.json",
       "read_only": false,
       "sha256": "472073d8ff695ee79e22ad4ae8d8ce35b6de7198933de05585c11856dbe1e12f"
     },
@@ -22,7 +22,7 @@
       "input_id": "local-input-003",
       "kind": "governed-local-input",
       "label": "comparison.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/comparison.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/comparison.json",
       "read_only": false,
       "sha256": "30032fc1113c81904a0a24210d6c439e39e3a769ccdb0f96593346785e197dea"
     },
@@ -30,7 +30,7 @@
       "input_id": "local-input-004",
       "kind": "governed-local-input",
       "label": "method_maturity_registry.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/method_maturity_registry.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/method_maturity_registry.json",
       "read_only": false,
       "sha256": "13cba463aad33bcd760848b8b28a7a615dbecfa97559ce20c65f91295c773b5b"
     },
@@ -38,7 +38,7 @@
       "input_id": "local-input-005",
       "kind": "governed-local-input",
       "label": "r_ecosystem_comparison.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/r_ecosystem_comparison.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/r_ecosystem_comparison.json",
       "read_only": false,
       "sha256": "fe5b3aa460557ee8ee2052eab80e25f2a99781cfb3c30e723feea602e8c88e21"
     },
@@ -46,7 +46,7 @@
       "input_id": "local-input-006",
       "kind": "governed-local-input",
       "label": "r_reference_results.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/r_reference_results.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/r_reference_results.json",
       "read_only": false,
       "sha256": "392a771e8346f25982e08f4bf3b5f17124ca3769c5c143f9bee7177b8bf71004"
     },
@@ -54,7 +54,7 @@
       "input_id": "local-input-007",
       "kind": "governed-local-input",
       "label": "random_data.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data.csv",
       "read_only": false,
       "sha256": "c9cf4e622d33c48d55f7ee80d4bda8ecc8c47e8a907e9de4119aa4b9b2bd1d49"
     },
@@ -62,7 +62,7 @@
       "input_id": "local-input-008",
       "kind": "governed-local-input",
       "label": "random_data2.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data2.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data2.csv",
       "read_only": false,
       "sha256": "eb640797419a84f44a1b0786a7bea3ce457e64f014fd041c734a9a7cd9ad7fa5"
     },
@@ -70,7 +70,7 @@
       "input_id": "local-input-009",
       "kind": "governed-local-input",
       "label": "random_data3.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data3.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data3.csv",
       "read_only": false,
       "sha256": "0ab79aa9ee0bb7f8e44987be3f2c988fdf7b7bfe44e129c3a79674db9069ecc5"
     },
@@ -78,7 +78,7 @@
       "input_id": "local-input-010",
       "kind": "governed-local-input",
       "label": "random_data4.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data4.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data4.csv",
       "read_only": false,
       "sha256": "c9efa5de119afe1e35404feea80bc49ad1e7c8ffba8b84be530757b22c6ddb33"
     },
@@ -86,7 +86,7 @@
       "input_id": "local-input-011",
       "kind": "governed-local-input",
       "label": "random_data5.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data5.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data5.csv",
       "read_only": false,
       "sha256": "d8f75b50d9ac1d234d280f7ff4538fc9fabc274f247c3d9d06ebd544e00e43bc"
     },
@@ -94,7 +94,7 @@
       "input_id": "local-input-012",
       "kind": "governed-local-input",
       "label": "random_tree_seed1.nwk",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_tree_seed1.nwk",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_tree_seed1.nwk",
       "read_only": false,
       "sha256": "60b793d384614ee42ba8b03e3ce6e451fa699e9ef4fd03a96957795d2654427d"
     },
@@ -102,7 +102,7 @@
       "input_id": "local-input-013",
       "kind": "copied-reference-fragment",
       "label": "reference_primate.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "read_only": false,
       "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
     },
@@ -110,7 +110,7 @@
       "input_id": "local-input-014",
       "kind": "copied-reference-fragment",
       "label": "reference_trimmed_primatetree.nwk",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
       "read_only": false,
       "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
     },
@@ -118,7 +118,7 @@
       "input_id": "local-input-015",
       "kind": "governed-local-input",
       "label": "reproducibility_package.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reproducibility_package.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/reproducibility_package.json",
       "read_only": false,
       "sha256": "26f1eacd85d9348ab413c0db2b62714669e05666735a52d21db9433f74254dfe"
     },
@@ -126,7 +126,7 @@
       "input_id": "local-input-016",
       "kind": "governed-local-input",
       "label": "reviewer_audit_checklist.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reviewer_audit_checklist.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/reviewer_audit_checklist.json",
       "read_only": false,
       "sha256": "1e01d8d132f81e7e736f184ee767362f5b3e09c636936db053c650ea17b760f9"
     },
@@ -134,7 +134,7 @@
       "input_id": "local-input-017",
       "kind": "governed-local-input",
       "label": "scalar-parity-table.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/scalar-parity-table.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/scalar-parity-table.json",
       "read_only": false,
       "sha256": "3ed0f5680ec1afb7bf2f62a2f26cf9c433239e0676e5cd4bc813d11a7cc6a21f"
     },
@@ -142,7 +142,7 @@
       "input_id": "local-input-018",
       "kind": "governed-local-input",
       "label": "scientific_debt_register.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/scientific_debt_register.json",
       "read_only": false,
       "sha256": "e19cbccb599c186f7853e670b9f0412f09aacedc4ea81fd885d035bd8e5414db"
     },
@@ -150,7 +150,7 @@
       "input_id": "local-input-019",
       "kind": "governed-local-input",
       "label": "trusted_examples_gallery.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/trusted_examples_gallery.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/trusted_examples_gallery.json",
       "read_only": false,
       "sha256": "7ef472c8c63f3d33f3912b0def28847d995c2769efbbcbba4fb64066e5455f04"
     },
@@ -178,7 +178,7 @@
       "input_id": "local-input-007",
       "kind": "governed-local-input",
       "label": "random_data.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data.csv",
       "read_only": false,
       "sha256": "c9cf4e622d33c48d55f7ee80d4bda8ecc8c47e8a907e9de4119aa4b9b2bd1d49"
     },
@@ -187,7 +187,7 @@
       "input_id": "local-input-008",
       "kind": "governed-local-input",
       "label": "random_data2.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data2.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data2.csv",
       "read_only": false,
       "sha256": "eb640797419a84f44a1b0786a7bea3ce457e64f014fd041c734a9a7cd9ad7fa5"
     },
@@ -196,7 +196,7 @@
       "input_id": "local-input-009",
       "kind": "governed-local-input",
       "label": "random_data3.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data3.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data3.csv",
       "read_only": false,
       "sha256": "0ab79aa9ee0bb7f8e44987be3f2c988fdf7b7bfe44e129c3a79674db9069ecc5"
     },
@@ -205,7 +205,7 @@
       "input_id": "local-input-010",
       "kind": "governed-local-input",
       "label": "random_data4.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data4.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data4.csv",
       "read_only": false,
       "sha256": "c9efa5de119afe1e35404feea80bc49ad1e7c8ffba8b84be530757b22c6ddb33"
     },
@@ -214,7 +214,7 @@
       "input_id": "local-input-011",
       "kind": "governed-local-input",
       "label": "random_data5.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_data5.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data5.csv",
       "read_only": false,
       "sha256": "d8f75b50d9ac1d234d280f7ff4538fc9fabc274f247c3d9d06ebd544e00e43bc"
     },
@@ -223,7 +223,7 @@
       "input_id": "local-input-012",
       "kind": "governed-local-input",
       "label": "random_tree_seed1.nwk",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/random_tree_seed1.nwk",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_tree_seed1.nwk",
       "read_only": false,
       "sha256": "60b793d384614ee42ba8b03e3ce6e451fa699e9ef4fd03a96957795d2654427d"
     },
@@ -232,7 +232,7 @@
       "input_id": "local-input-013",
       "kind": "copied-reference-fragment",
       "label": "reference_primate.csv",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "read_only": false,
       "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
     },
@@ -241,7 +241,7 @@
       "input_id": "local-input-014",
       "kind": "copied-reference-fragment",
       "label": "reference_trimmed_primatetree.nwk",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
       "read_only": false,
       "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
     }

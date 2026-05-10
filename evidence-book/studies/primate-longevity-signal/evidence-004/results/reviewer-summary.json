@@ -1,0 +1,36 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "data-preparation",
+    "missing-data"
+  ],
+  "claim_titles": [
+    "PCM1 missing-data accounting is visible before downstream inference"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-004",
+  "evidence_title": "Primate missing-data accounting parity bundle",
+  "limitations": [
+    "The raw workbook remains external, so the bundle records the governed missing-value contract at the processed artifact boundary."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed evidence for how missing values are handled before the processed primate table is used downstream.",
+    "Comparison mode: direct_parity. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "primate-data-preprocessing"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-004/results/missing-data-accounting-parity.json"
+  ],
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal"
+}

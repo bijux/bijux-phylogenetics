@@ -1,0 +1,231 @@
+{
+  "coverage": {
+    "covered_executable_line_count": 185,
+    "executable_line_count": 185,
+    "uncovered_executable_lines": []
+  },
+  "evidence_id": "evidence-001",
+  "files": [
+    {
+      "path": "external:lund/pcm1-plots-signal/script",
+      "sha256": "a4ac26a8fe4d93a66d265114ce0eb01466be99991e924e2d29998f7e1f4d3587"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",
+      "sha256": "fc2926afee040abc938870cfcc9f0659261f2ea550636ee0db14120f30a05ed6"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py",
+      "sha256": "102d6016cc8c311cc95c458d3c8e8383924f429c9c361ff70704523be455ae5e"
+    },
+    {
+      "path": "external:lund/pcm1-plots-signal/data/primate.csv",
+      "sha256": "7cb7bad02f5032cac213a52362e24d64b31220510210aa7f2e3e86a155400c51"
+    },
+    {
+      "path": "external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex",
+      "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/README.md",
+      "sha256": "839dce5d0689a1a06c6f85c9591ef35b60901973247e953f7d8b07c219ec091d"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/bijux_reference_results.json",
+      "sha256": "0fb52a0b67e3ff95803570c13ffcbea8b3a310f9510faf0b9febe9ac714ac79b"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/ancestral-colored-tree-plot.json",
+      "sha256": "488d25f088378d2fea6f9115d24484dcd20b728a613046a793285e7b343aa7ca"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/ancestral-table-assembly.json",
+      "sha256": "84695106b5c3519ac6d86d7ba6f3e229d398c5a4482f765fa0dbcc292e126e1d"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/ape-alternate-layouts.json",
+      "sha256": "2db8f0ad79dec63910eb73146e44df8ba58bd97cb61bf9ed0ad11022a8a4b94b"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/ape-longevity-overlay.json",
+      "sha256": "96d9de5626e3322916d059683dae94deb34cb29d91f52d6402ed6e5f3bd604d8"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/ape-plotting-basics.json",
+      "sha256": "383e510c587cbcdaa18591b71d4a192203c8cf596e2f9e7dda19862de1e4def0"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/bonobo-gibbon-mrca-estimate.json",
+      "sha256": "d07511ed9085569ffcfe084eb6c05a0ca8e2e3a6eb9bc95ad17395e4a2c0b195"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/continuous-ancestral-intervals.json",
+      "sha256": "62957437aee9765f9310acbd85ddf80f16f883c8e452af4d615ab3ec9e2e1f87"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/continuous-ancestral-point-estimates.json",
+      "sha256": "6e5e04b380a88ab2ad73fee101db7a1ff6774c91715ed1fd8285c91bdb1b7387"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/environment-and-package-contract.json",
+      "sha256": "6b649b6e7e1b47efbf7364ee85fe8da3dd822bde2546cee46dc084936f7abb0a"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/extract-clade-node-77.json",
+      "sha256": "b9a64c7632bae8175b9e5b5224a5fc19eef7919a501e485224ec50444906f559"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/final-workspace-artifact.json",
+      "sha256": "0729837381f90524c70fac7a4869f8e42f96aefa1f19b3a22540841f6617ce56"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/ggtree-tree-visualization.json",
+      "sha256": "bdb9ac01ac955eeabc35b311bbe26698cbdff3ae1d0b8cb73999731e26ba5cdc"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/joined-ggtree-trait-plotting.json",
+      "sha256": "d8101e5df52bd17210665766f04d87d70dc323d48e818f6767a011c206705afd"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/lambda-zero-covariance-and-lrt.json",
+      "sha256": "8db0cfb40967b757159e1e53358e7ab8751a31a6c1ffd825850bf2396003a039"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/lambda-zero-visual-comparison.json",
+      "sha256": "2abad8efc6ade3829a5889c6860c2048fd3511e80b82c019df514df514a5589c"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/lifespan-increase-counts.json",
+      "sha256": "e65bd317f675e8c5a8625d04080d0e83bda4d2109c0194b40e30a8695fd8e464"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/phytools-tree-plotting.json",
+      "sha256": "8b021767f5226c0944b0aedba3f0ed4885ad2289df56c71331234c567f794db6"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/primate-data-preprocessing.json",
+      "sha256": "65d028e47b5838082c88a3f6a1e7cf54fc9abe3ff36c91739a131f7361b45db9"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/primate-lambda-fit.json",
+      "sha256": "44d401fdb95ff89666d9ffe95afdeb3c06af0efca20e45d75da7a88a18a71f9f"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/primate-longevity-vector-assembly.json",
+      "sha256": "5e3e625e33f3ec2b0e02062033b85f2b497534a09a45111814557d1555493325"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/primate-longevity-visual-inspection.json",
+      "sha256": "8400db843c209078740be9d4287c9ace3332d907f13ae7029ec3e5a1722763bf"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/processed-analysis-artifacts.json",
+      "sha256": "6e4eda7b59ffe5af339e17d315de6d0ed7fbc8926f5542010d8bc157d463f053"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/random-signal-lambda-fits.json",
+      "sha256": "fcd9f1e93d065eca289796686b6ab784cb86bc2957c86b3ad7c25edea2a1ae8e"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/random-simulation-inputs.json",
+      "sha256": "1a7af75eb056ca81e6cc243ed39f2ab63b2f425d9919d2b45b27cef269ca8847"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/random-simulation-plotting.json",
+      "sha256": "02741ddcd2670cee2f4acc325923e754728a120524c8e68c2da951d473f1e522"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/rotate-nodes-behavior.json",
+      "sha256": "b9a4aa220c13aee2b9778a9ff5488397e76eb9de3e2099596b924ca61a799c24"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tip-order-alignment.json",
+      "sha256": "3107c78f48f8cee2a59b11bfd1fc8b04eae796d6897700e196c483dff6390db1"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
+      "sha256": "463cfa65aa0e8963c6b63b7e67ec7094e8c881bedbb769ded9442257c0428348"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/treeio-node-mapping-and-join.json",
+      "sha256": "589fe40e5b5deabbf8c390fa726bda947f8fce3f4257b6d6dd5cbb57ec179d6a"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/unrooted-tree-demo.json",
+      "sha256": "89006b0d0df70e455301655e1adaf61007d8a2e4f33db4a409c66d4ee53d849c"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/comparative_reference_validation_suite.json",
+      "sha256": "50dac658b0c789acb682163db35162b113d0425896dfb67140a77ba2eee03f11"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/comparison.json",
+      "sha256": "6ef7f01d02d01b2978d408ebb731c1e0c5e36a2a46703f2984ad1446bdedd315"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/manifest.json",
+      "sha256": "5a3ea7870720b70e24a7ffa3a816adcfedffdcc738dd31e5150c323978cbe565"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/method_maturity_registry.json",
+      "sha256": "5777bb54a8eb1f116b1cc7cda8d23c1650168405a9d876dcfa47e106c63e0fc5"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/r_ecosystem_comparison.json",
+      "sha256": "43dfc8df43e0cc169af74bb8477576f1e96ccc80f36cbd510d2b8268f0b8d190"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/r_reference_results.json",
+      "sha256": "0b9ed4ac5293b213fdba31a2e2b0c98b3d87dea21e003c618050e6227d406f13"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data.csv",
+      "sha256": "c9cf4e622d33c48d55f7ee80d4bda8ecc8c47e8a907e9de4119aa4b9b2bd1d49"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data2.csv",
+      "sha256": "eb640797419a84f44a1b0786a7bea3ce457e64f014fd041c734a9a7cd9ad7fa5"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data3.csv",
+      "sha256": "0ab79aa9ee0bb7f8e44987be3f2c988fdf7b7bfe44e129c3a79674db9069ecc5"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data4.csv",
+      "sha256": "c9efa5de119afe1e35404feea80bc49ad1e7c8ffba8b84be530757b22c6ddb33"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data5.csv",
+      "sha256": "d8f75b50d9ac1d234d280f7ff4538fc9fabc274f247c3d9d06ebd544e00e43bc"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_tree_seed1.nwk",
+      "sha256": "60b793d384614ee42ba8b03e3ce6e451fa699e9ef4fd03a96957795d2654427d"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+      "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/reproducibility_package.json",
+      "sha256": "17ab58a5b9609968d0c254a64f542a47351587a7992e4a4345da3d4158d4fff6"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/reviewer_audit_checklist.json",
+      "sha256": "fefb837b0698d401376e2fc08c53ba104a14689bb9a020260f11e5d1945cbf03"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/scientific_debt_register.json",
+      "sha256": "7c211baf166bbbaaf3252ef0cea12d5a4277cf3240de07e141627f224d602a95"
+    },
+    {
+      "path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/trusted_examples_gallery.json",
+      "sha256": "4974a1684b4821fecb624a3a8fb85346cecaebebcd03bef5e57a01749ad0cf3a"
+    }
+  ],
+  "study_id": "primate-longevity-signal"
+}

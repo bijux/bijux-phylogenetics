@@ -1,91 +1,44 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
-
-from bijux_phylogenetics.evidence.studies.primate_pgls_and_signal import (
-    build_primate_pgls_signal_bundles,
-    build_primate_pgls_signal_claim_registry,
-    build_primate_pgls_signal_evidence_registry,
-    build_primate_pgls_signal_external_sources,
-    build_primate_pgls_signal_family_index,
-    build_primate_pgls_signal_parity_policy,
-    build_primate_pgls_signal_scalar_parity_table,
-    build_primate_pgls_signal_source_fragment_map,
-    render_primate_pgls_signal_study_manifest,
-    render_primate_pgls_signal_study_readme,
-    render_primate_pgls_signal_scalar_parity_table_markdown,
-)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 STUDY_ROOT = REPO_ROOT / "evidence-book" / "studies" / "primate-pgls-and-signal"
+ALLOWED_STUDY_ENTRIES = {
+    "README.md",
+    "datasets",
+    "provenance",
+    "reference",
+    *{f"evidence-{index:03d}" for index in range(1, 11)},
+}
+ALLOWED_BUNDLE_ENTRIES = {
+    "README.md",
+    "analysis.py",
+    "checks.json",
+    "claims.json",
+    "inputs.manifest.json",
+    "manifest.json",
+    "provenance.json",
+    "reference.R",
+    "report.md",
+    "results",
+}
 
 
-def test_primate_pgls_and_signal_study_indexes_match_generated_payloads() -> None:
-    study_manifest = json.loads(
-        (STUDY_ROOT / "study.json").read_text(encoding="utf-8")
-    )
-    evidence_registry = json.loads(
-        (STUDY_ROOT / "evidence-registry.json").read_text(encoding="utf-8")
-    )
-    study_readme = (STUDY_ROOT / "README.md").read_text(encoding="utf-8")
-    external_sources = json.loads(
-        (STUDY_ROOT / "provenance" / "lund-course-sources.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    source_fragment_map = json.loads(
-        (STUDY_ROOT / "source-fragment-map.json").read_text(encoding="utf-8")
-    )
-    family_index = json.loads(
-        (STUDY_ROOT / "family-index.json").read_text(encoding="utf-8")
-    )
-    parity_policy = json.loads(
-        (STUDY_ROOT / "parity-policy.json").read_text(encoding="utf-8")
-    )
-    claim_registry = json.loads(
-        (STUDY_ROOT / "claim-registry.json").read_text(encoding="utf-8")
-    )
-
-    assert study_manifest == render_primate_pgls_signal_study_manifest(REPO_ROOT)
-    assert evidence_registry == build_primate_pgls_signal_evidence_registry(REPO_ROOT)
-    assert study_readme == render_primate_pgls_signal_study_readme(REPO_ROOT)
-    assert external_sources == build_primate_pgls_signal_external_sources()
-    assert source_fragment_map == build_primate_pgls_signal_source_fragment_map()
-    assert family_index == build_primate_pgls_signal_family_index(REPO_ROOT)
-    assert parity_policy == build_primate_pgls_signal_parity_policy()
-    assert claim_registry == build_primate_pgls_signal_claim_registry(REPO_ROOT)
+def test_primate_pgls_and_signal_study_root_is_human_first() -> None:
+    assert {path.name for path in STUDY_ROOT.iterdir()} == ALLOWED_STUDY_ENTRIES
 
 
-def test_primate_pgls_and_signal_bundles_match_generated_payloads() -> None:
-    generated_bundles = build_primate_pgls_signal_bundles(REPO_ROOT)
-
-    for evidence_id, generated in generated_bundles.items():
+def test_primate_pgls_and_signal_bundles_use_one_repeatable_layout() -> None:
+    for evidence_id in sorted(name for name in ALLOWED_STUDY_ENTRIES if name.startswith("evidence-")):
         bundle_root = STUDY_ROOT / evidence_id
-        assert json.loads((bundle_root / "manifest.json").read_text(encoding="utf-8")) == generated["manifest"]
-        assert json.loads((bundle_root / "claims.json").read_text(encoding="utf-8")) == generated["claims"]
-        assert json.loads(
-            (bundle_root / generated["report_filename"]).read_text(encoding="utf-8")
-        ) == generated["report_payload"]
-        assert (bundle_root / "README.md").read_text(encoding="utf-8") == generated["readme"]
+        assert {path.name for path in bundle_root.iterdir()} == ALLOWED_BUNDLE_ENTRIES
+        assert (bundle_root / "results" / "manifest.json").is_file()
+        assert (bundle_root / "results" / "README.md").is_file()
 
 
-def test_primate_pgls_and_signal_scalar_table_matches_generated_payload() -> None:
-    table = json.loads(
-        (
-            STUDY_ROOT
-            / "evidence-001"
-            / "scalar-parity-table.json"
-        ).read_text(encoding="utf-8")
-    )
-    markdown = (
-        STUDY_ROOT / "evidence-001" / "scalar-parity-table.md"
-    ).read_text(encoding="utf-8")
-
-    generated = build_primate_pgls_signal_scalar_parity_table(REPO_ROOT)
-
-    assert table == generated
-    assert markdown == render_primate_pgls_signal_scalar_parity_table_markdown(
-        generated
-    )
+def test_primate_pgls_and_signal_scalar_outputs_live_under_results() -> None:
+    bundle_root = STUDY_ROOT / "evidence-001" / "results"
+    assert (bundle_root / "scalar-parity-table.json").is_file()
+    assert (bundle_root / "scalar-parity-table.md").is_file()

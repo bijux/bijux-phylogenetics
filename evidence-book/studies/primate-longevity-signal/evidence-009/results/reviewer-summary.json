@@ -1,0 +1,37 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "artifact-provenance",
+    "processed-export"
+  ],
+  "claim_titles": [
+    "PCM1 processed exports are governed as explicit downstream inputs"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-009",
+  "evidence_title": "Primate processed export parity bundle",
+  "limitations": [
+    "The governed export contract records the downstream artifacts and their parity expectations, not the rendered plot outputs that consume them."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed evidence for the exported processed CSV and trimmed tree artifacts consumed by later teaching steps.",
+    "Comparison mode: direct_parity. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "processed-analysis-artifacts"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json"
+  ],
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal"
+}

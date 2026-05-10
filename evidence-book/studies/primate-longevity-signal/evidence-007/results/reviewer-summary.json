@@ -1,0 +1,37 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "tree-operations",
+    "tree-diagnostics"
+  ],
+  "claim_titles": [
+    "PCM1 tree diagnostics are separated from later comparative results"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-007",
+  "evidence_title": "Primate tree diagnostics parity bundle",
+  "limitations": [
+    "This bundle records the checked-in diagnostic contract; visual tree surfaces remain intentionally separate."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed evidence for rootedness, binary-tree status, ultrametricity, and node-label interpretation.",
+    "Comparison mode: direct_parity. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "extract-clade-node-77",
+    "tree-import-and-pruning"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json"
+  ],
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal"
+}

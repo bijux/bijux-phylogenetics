@@ -6,7 +6,7 @@
       "input_id": "local-input-001",
       "kind": "governed-local-input",
       "label": "missing-data-accounting-parity.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/missing-data-accounting-parity.json",
       "read_only": false,
       "sha256": "8c72a559ef819c26f11868c36ea292af97fe545d712cd0d0cdf65c16fabed4df"
     },
@@ -36,7 +36,7 @@
       "input_id": "source-input-001",
       "kind": "repository-reference",
       "label": "governed processed primate table",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "read_only": true,
       "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
     },
@@ -44,7 +44,7 @@
       "input_id": "source-input-002",
       "kind": "repository-reference",
       "label": "Primate missing-data accounting parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/missing-data-accounting-parity.json",
       "read_only": false,
       "sha256": "8c72a559ef819c26f11868c36ea292af97fe545d712cd0d0cdf65c16fabed4df"
     }

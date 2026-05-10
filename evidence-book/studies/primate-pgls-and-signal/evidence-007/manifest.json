@@ -18,10 +18,10 @@
     "last_generated_on": "2026-05-10",
     "source_basis_locators": [
       "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
-      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
       "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-      "evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json"
+      "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json"
     ]
   },
   "limitations": [
@@ -54,12 +54,12 @@
     {
       "kind": "repository-reference",
       "label": "governed primate reference table",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
     },
     {
       "kind": "repository-reference",
       "label": "governed primate trimmed tree",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk"
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk"
     },
     {
       "kind": "repository-reference",
@@ -69,7 +69,7 @@
     {
       "kind": "repository-reference",
       "label": "Primate evolutionary mode fit parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json"
     }
   ],
   "source_fragments": [
@@ -77,7 +77,7 @@
   ],
   "study_id": "primate-pgls-and-signal",
   "summary": "Governed parity for the lecture Brownian, OU, and early-burst fitContinuous-style intercept fits.",
-  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json",
+  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json",
   "verdict": {
     "status": "matched_with_tolerance",
     "summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference."

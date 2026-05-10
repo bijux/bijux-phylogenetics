@@ -20,8 +20,8 @@ payload <- list(
   execution_mode = "study_reference_wrapper",
   source_intake_policy = "read-only-external-source",
   source_basis_locators = c(
-    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-005/results/duplicate-species-aggregation-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",

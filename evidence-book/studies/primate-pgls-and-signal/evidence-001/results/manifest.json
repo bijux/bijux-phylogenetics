@@ -7,12 +7,8 @@
     "evidence-book/studies/primate-pgls-and-signal/evidence-001/provenance.json"
   ],
   "evidence_id": "evidence-001",
-  "governed_primary_output_count": 3,
-  "governed_primary_outputs": [
-    "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
-    "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
-    "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.md"
-  ],
+  "governed_primary_output_count": 0,
+  "governed_primary_outputs": [],
   "local_execution_products": [
     "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/reference-contract.json",
     "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/analysis-run.json"

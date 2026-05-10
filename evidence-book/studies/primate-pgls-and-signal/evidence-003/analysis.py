@@ -11,8 +11,8 @@ RESULTS_ROOT = BUNDLE_ROOT / 'results'
 STUDY_ID = "primate-pgls-and-signal"
 EVIDENCE_ID = "evidence-003"
 COMPARISON_MODE = "direct_parity"
-PRIMARY_OUTPUTS = ['evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json']
-BUILD_SCRIPT = 'evidence-book/studies/primate-pgls-and-signal/build_evidence.py'
+PRIMARY_OUTPUTS = []
+BUILD_SCRIPT = None
 
 def main() -> None:
     RESULTS_ROOT.mkdir(parents=True, exist_ok=True)

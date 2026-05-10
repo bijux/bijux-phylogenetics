@@ -496,24 +496,8 @@ jobs:
         + "\n",
     )
     _write(
-        repo_root / "evidence-book" / "studies" / "demo-study" / "study.json",
-        """
-{
-  "dataset_registry_locator": "evidence-book/studies/demo-study/datasets/registry.json",
-  "owner_package": "bijux-phylogenetics",
-  "provenance_descriptor_locator": "evidence-book/studies/demo-study/provenance/sources.json",
-  "source_intake_policy": "repository-owned-source",
-  "study_categories": ["scientific-validation"],
-  "study_id": "demo-study",
-  "study_scope": {
-    "coverage_focus": ["demo-analysis"],
-    "untouched_source_locators": ["packages/bijux-phylogenetics/tests/fixtures/demo.tsv"]
-  },
-  "study_title": "Demo Study",
-  "summary": "Minimal governed study."
-}
-""".strip()
-        + "\n",
+        repo_root / "evidence-book" / "studies" / "demo-study" / "README.md",
+        "# Demo Study\n\nMinimal governed study.\n",
     )
     _write(
         repo_root

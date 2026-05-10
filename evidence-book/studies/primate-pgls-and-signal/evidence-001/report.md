@@ -22,17 +22,14 @@ Governed representation of the lecture one-line primate workspace reload contrac
 ## Source Basis
 
 - `evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json`
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-001/results/rdata-reload-semantics.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json`
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.md`
 
 ## Results Directory
 

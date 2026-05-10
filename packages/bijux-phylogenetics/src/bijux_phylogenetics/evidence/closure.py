@@ -72,28 +72,6 @@ def _surface_definitions() -> tuple[dict[str, object], ...]:
             ],
         },
         {
-            "surface_id": "taxon-identity",
-            "surface_title": "Taxon identity and normalization",
-            "runtime_surfaces": [
-                "taxonomy",
-                "normalize-taxa",
-                "taxon crosswalk",
-                "tree accepted-name export",
-            ],
-            "linked_evidence_ids": [
-                ("taxon-trust", "evidence-001"),
-            ],
-            "coverage_status": "bounded",
-            "coverage_summary": (
-                "The taxon-trust study makes taxon identity, synonym handling, and "
-                "exclusion reasoning reviewer-visible, but the broader taxonomy surface "
-                "still relies on one evidence family."
-            ),
-            "known_gaps": [
-                "Additional evidence families are still needed for rank inference, accepted-name export, and cross-dataset reconciliation edge cases.",
-            ],
-        },
-        {
             "surface_id": "alignment-diagnostics",
             "surface_title": "Alignment diagnostics and trimming",
             "runtime_surfaces": [
@@ -134,15 +112,12 @@ def _surface_definitions() -> tuple[dict[str, object], ...]:
                 ("primate-pgls-and-signal", "evidence-004"),
                 ("primate-pgls-and-signal", "evidence-005"),
                 ("primate-pgls-and-signal", "evidence-006"),
-                ("comparative-trust-boundaries", "evidence-001"),
-                ("comparative-trust-boundaries", "evidence-002"),
-                ("comparative-trust-boundaries", "evidence-003"),
             ],
             "coverage_status": "bounded",
             "coverage_summary": (
                 "Comparative workflows are the strongest evidence-grounded surface in the "
-                "repository, but EB, transformed-tree, and ancestral parity remain open "
-                "coverage boundaries and one diagnostic scalar mismatch is still unresolved."
+                "repository, but transformed-tree and ancestral parity still retain explicit "
+                "coverage boundaries and the broader comparative surface is not yet closed."
             ),
             "known_gaps": [
                 "Transformed-tree EB parity is still explicit debt rather than closed evidence.",
@@ -177,7 +152,6 @@ def _surface_definitions() -> tuple[dict[str, object], ...]:
             ],
             "linked_evidence_ids": [
                 ("primate-longevity-signal", "evidence-001"),
-                ("taxon-trust", "evidence-001"),
             ],
             "coverage_status": "bounded",
             "coverage_summary": (

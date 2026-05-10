@@ -22,12 +22,11 @@ Governed evidence for reading the primate tree and preserving the expected origi
 ## Source Basis
 
 - `external:lund/pcm1-plots-signal/data/primatetree.nex`
-- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
-- `evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json`
+- `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
+- `evidence-book/studies/primate-longevity-signal/evidence-006/results/tree-import-parity.json`
 
 ## Governed Primary Outputs
 
-- `evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json`
 
 ## Results Directory
 
