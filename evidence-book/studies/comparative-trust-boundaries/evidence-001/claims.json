@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "comparative-input-rejection-governed",
+      "claim_title": "Comparative input rejection remains explicit and reproducible",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "pgls-input-rejection-guards"
+      ],
+      "summary": "Rootedness, branch-length completeness, and numeric-response guards are captured as governed runtime evidence instead of informal expectations.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "schema_version": 1,
+  "study_id": "comparative-trust-boundaries"
+}

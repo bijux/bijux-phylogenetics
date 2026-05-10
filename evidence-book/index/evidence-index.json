@@ -2,6 +2,54 @@
   "evidence": [
     {
       "claim_tags": [
+        "runtime-guard",
+        "expected-failure",
+        "comparative",
+        "pgls"
+      ],
+      "evidence_id": "evidence-001",
+      "evidence_title": "Comparative input rejection bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/comparative-trust-boundaries/evidence-001",
+      "study_id": "comparative-trust-boundaries",
+      "study_title": "Comparative trust boundary evidence study",
+      "verdict_status": "matched",
+      "verdict_summary": "Observed ComparativeMethodError blockers match the governed rejection expectations for the tracked comparative input failures."
+    },
+    {
+      "claim_tags": [
+        "weak-signal",
+        "instability",
+        "comparative",
+        "signal"
+      ],
+      "evidence_id": "evidence-002",
+      "evidence_title": "Weak signal instability bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/comparative-trust-boundaries/evidence-002",
+      "study_id": "comparative-trust-boundaries",
+      "study_title": "Comparative trust boundary evidence study",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "The governed weak-signal case crosses the 0.05 decision boundary across fixed-seed reruns, so instability remains explicit instead of being hidden behind one run."
+    },
+    {
+      "claim_tags": [
+        "model-instability",
+        "comparative",
+        "ou",
+        "identifiability"
+      ],
+      "evidence_id": "evidence-003",
+      "evidence_title": "OU identifiability warning bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/comparative-trust-boundaries/evidence-003",
+      "study_id": "comparative-trust-boundaries",
+      "study_title": "Comparative trust boundary evidence study",
+      "verdict_status": "matched",
+      "verdict_summary": "The OU identifiability reference audit detects every expected warning family on the governed boundary cases."
+    },
+    {
+      "claim_tags": [
         "comparative-signal",
         "teaching",
         "parity"
@@ -254,10 +302,67 @@
       "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
     }
   ],
-  "evidence_count": 16,
+  "evidence_count": 19,
   "root": "evidence-book",
   "schema_version": 1,
   "studies": [
+    {
+      "bundle_count": 3,
+      "evidence": [
+        {
+          "claim_tags": [
+            "runtime-guard",
+            "expected-failure",
+            "comparative",
+            "pgls"
+          ],
+          "evidence_id": "evidence-001",
+          "evidence_title": "Comparative input rejection bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/comparative-trust-boundaries/evidence-001",
+          "study_id": "comparative-trust-boundaries",
+          "study_title": "Comparative trust boundary evidence study",
+          "verdict_status": "matched",
+          "verdict_summary": "Observed ComparativeMethodError blockers match the governed rejection expectations for the tracked comparative input failures."
+        },
+        {
+          "claim_tags": [
+            "weak-signal",
+            "instability",
+            "comparative",
+            "signal"
+          ],
+          "evidence_id": "evidence-002",
+          "evidence_title": "Weak signal instability bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/comparative-trust-boundaries/evidence-002",
+          "study_id": "comparative-trust-boundaries",
+          "study_title": "Comparative trust boundary evidence study",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "The governed weak-signal case crosses the 0.05 decision boundary across fixed-seed reruns, so instability remains explicit instead of being hidden behind one run."
+        },
+        {
+          "claim_tags": [
+            "model-instability",
+            "comparative",
+            "ou",
+            "identifiability"
+          ],
+          "evidence_id": "evidence-003",
+          "evidence_title": "OU identifiability warning bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/comparative-trust-boundaries/evidence-003",
+          "study_id": "comparative-trust-boundaries",
+          "study_title": "Comparative trust boundary evidence study",
+          "verdict_status": "matched",
+          "verdict_summary": "The OU identifiability reference audit detects every expected warning family on the governed boundary cases."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_id": "comparative-trust-boundaries",
+      "study_title": "Comparative trust boundary evidence study",
+      "summary": "Governed evidence for expected comparative failures, weak-signal instability, and OU identifiability boundaries."
+    },
     {
       "bundle_count": 9,
       "evidence": [
@@ -539,10 +644,10 @@
       "summary": "Fixture-backed study for the repository taxon-trust workflow surfaces."
     }
   ],
-  "study_count": 3,
+  "study_count": 4,
   "verdict_counts": {
-    "matched": 11,
-    "matched_with_tolerance": 4,
+    "matched": 13,
+    "matched_with_tolerance": 5,
     "not_comparable": 1
   }
 }

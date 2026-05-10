@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "ou-identifiability-boundaries-detected",
+      "claim_title": "OU identifiability boundary warnings are detected on reference cases",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "source_fragments": [
+        "ou-identifiability-reference-audit"
+      ],
+      "summary": "Known small-sample and weak-pull OU pathologies stay visible through the canonical runtime audit instead of being implied away.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-003",
+  "schema_version": 1,
+  "study_id": "comparative-trust-boundaries"
+}

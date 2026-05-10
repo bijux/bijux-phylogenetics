@@ -1,0 +1,180 @@
+{
+  "alpha_threshold": 0.05,
+  "at_or_above_threshold_count": 13,
+  "below_threshold_count": 7,
+  "crosses_alpha_boundary": true,
+  "estimated_lambda": 0.925,
+  "evidence_id": "evidence-002",
+  "instability_summary": "The governed weak-signal case crosses the 0.05 decision boundary across fixed-seed permutation reruns.",
+  "log_likelihood": -15.294661267752502,
+  "null_log_likelihood": -16.081595025457347,
+  "p_value_max": 0.08,
+  "p_value_min": 0.03,
+  "permutations_per_run": 99,
+  "runs": [
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.03,
+      "permuted_k_at_or_above_observed": 2,
+      "seed": 1
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.03,
+      "permuted_k_at_or_above_observed": 2,
+      "seed": 2
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.06,
+      "permuted_k_at_or_above_observed": 5,
+      "seed": 3
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.05,
+      "permuted_k_at_or_above_observed": 4,
+      "seed": 4
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.08,
+      "permuted_k_at_or_above_observed": 7,
+      "seed": 5
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.05,
+      "permuted_k_at_or_above_observed": 4,
+      "seed": 6
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.06,
+      "permuted_k_at_or_above_observed": 5,
+      "seed": 7
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.05,
+      "permuted_k_at_or_above_observed": 4,
+      "seed": 8
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.07,
+      "permuted_k_at_or_above_observed": 6,
+      "seed": 9
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.06,
+      "permuted_k_at_or_above_observed": 5,
+      "seed": 10
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.04,
+      "permuted_k_at_or_above_observed": 3,
+      "seed": 11
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.03,
+      "permuted_k_at_or_above_observed": 2,
+      "seed": 12
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.05,
+      "permuted_k_at_or_above_observed": 4,
+      "seed": 13
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.04,
+      "permuted_k_at_or_above_observed": 3,
+      "seed": 14
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.07,
+      "permuted_k_at_or_above_observed": 6,
+      "seed": 15
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.06,
+      "permuted_k_at_or_above_observed": 5,
+      "seed": 16
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.04,
+      "permuted_k_at_or_above_observed": 3,
+      "seed": 17
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.04,
+      "permuted_k_at_or_above_observed": 3,
+      "seed": 18
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.05,
+      "permuted_k_at_or_above_observed": 4,
+      "seed": 19
+    },
+    {
+      "observed_k": 1.2126174887137073,
+      "p_value": 0.05,
+      "permuted_k_at_or_above_observed": 4,
+      "seed": 20
+    }
+  ],
+  "schema_version": 1,
+  "scientific_debt_entries": [
+    {
+      "debt_id": "weak-signal-threshold-instability",
+      "debt_kind": "instability",
+      "detail": "The weak-signal case crosses the 0.05 decision boundary across governed reruns, so any single-run significance claim would be overconfident.",
+      "evidence": [
+        "min p-value=0.03",
+        "max p-value=0.08",
+        "runs below 0.05=7",
+        "runs at or above 0.05=13"
+      ]
+    }
+  ],
+  "seed_count": 20,
+  "study_id": "comparative-trust-boundaries",
+  "trait_rows": [
+    {
+      "response": 0.835,
+      "taxon": "A"
+    },
+    {
+      "response": 1.724,
+      "taxon": "B"
+    },
+    {
+      "response": 6.838,
+      "taxon": "C"
+    },
+    {
+      "response": 1.614,
+      "taxon": "D"
+    },
+    {
+      "response": 9.492,
+      "taxon": "E"
+    },
+    {
+      "response": 8.443,
+      "taxon": "F"
+    }
+  ],
+  "traits_path": "evidence-book/studies/comparative-trust-boundaries/evidence-002/weak_signal_traits.tsv",
+  "tree_path": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_six_taxa.nwk"
+}

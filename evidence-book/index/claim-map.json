@@ -1,5 +1,5 @@
 {
-  "claim_count": 34,
+  "claim_count": 37,
   "claims": [
     {
       "claim_id": "ambiguous-synonym-rejection",
@@ -14,6 +14,24 @@
           "source_fragments": [],
           "study_id": "taxon-trust",
           "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "comparative-input-rejection-governed",
+      "claim_title": "Comparative input rejection remains explicit and reproducible",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/comparative-trust-boundaries/evidence-001",
+          "source_fragments": [
+            "pgls-input-rejection-guards"
+          ],
+          "study_id": "comparative-trust-boundaries",
+          "study_title": "Comparative trust boundary evidence study"
         }
       ]
     },
@@ -46,6 +64,24 @@
           "source_fragments": [],
           "study_id": "taxon-trust",
           "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "ou-identifiability-boundaries-detected",
+      "claim_title": "OU identifiability boundary warnings are detected on reference cases",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-003",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/comparative-trust-boundaries/evidence-003",
+          "source_fragments": [
+            "ou-identifiability-reference-audit"
+          ],
+          "study_id": "comparative-trust-boundaries",
+          "study_title": "Comparative trust boundary evidence study"
         }
       ]
     },
@@ -601,6 +637,24 @@
           "source_fragments": [],
           "study_id": "taxon-trust",
           "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "weak-signal-instability-visible",
+      "claim_title": "Weak phylogenetic signal instability remains visible",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-002",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/comparative-trust-boundaries/evidence-002",
+          "source_fragments": [
+            "permutation-signal-instability"
+          ],
+          "study_id": "comparative-trust-boundaries",
+          "study_title": "Comparative trust boundary evidence study"
         }
       ]
     },

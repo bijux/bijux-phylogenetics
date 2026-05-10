@@ -1,0 +1,65 @@
+{
+  "all_cases_matched": true,
+  "case_count": 3,
+  "cases": [
+    {
+      "case_id": "pgls-unrooted-tree-rejection",
+      "expected_blockers": [
+        "PGLS requires a rooted tree"
+      ],
+      "matched_expected_blockers": true,
+      "observed_blockers": [
+        "PGLS requires a rooted tree"
+      ],
+      "observed_error_code": "comparative_method_error",
+      "observed_message": "PGLS requires a rooted tree",
+      "predictors": [
+        "predictor_one"
+      ],
+      "response": "response",
+      "traits_path": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv",
+      "tree_path": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_unrooted.nwk"
+    },
+    {
+      "case_id": "pgls-missing-branch-length-rejection",
+      "expected_blockers": [
+        "PGLS requires complete tree branch lengths"
+      ],
+      "matched_expected_blockers": true,
+      "observed_blockers": [
+        "PGLS requires complete tree branch lengths"
+      ],
+      "observed_error_code": "comparative_method_error",
+      "observed_message": "PGLS requires complete tree branch lengths",
+      "predictors": [
+        "predictor_one"
+      ],
+      "response": "response",
+      "traits_path": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv",
+      "tree_path": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_no_lengths.nwk"
+    },
+    {
+      "case_id": "pgls-nonnumeric-response-rejection",
+      "expected_blockers": [
+        "response column 'habitat' must be numeric for PGLS"
+      ],
+      "matched_expected_blockers": true,
+      "observed_blockers": [
+        "response column 'habitat' must be numeric for PGLS",
+        "PGLS overfit guard requires at least one residual degree of freedom after predictor encoding"
+      ],
+      "observed_error_code": "comparative_method_error",
+      "observed_message": "response column 'habitat' must be numeric for PGLS; PGLS overfit guard requires at least one residual degree of freedom after predictor encoding",
+      "predictors": [
+        "predictor_one"
+      ],
+      "response": "habitat",
+      "traits_path": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv",
+      "tree_path": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk"
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "matched_case_count": 3,
+  "schema_version": 1,
+  "study_id": "comparative-trust-boundaries"
+}

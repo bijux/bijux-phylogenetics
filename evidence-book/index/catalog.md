@@ -3,16 +3,30 @@
 This catalog is generated from `index/evidence-index.json` and lists every
 governed evidence bundle in the repository evidence-book.
 
-- studies: `3`
-- evidence bundles: `16`
+- studies: `4`
+- evidence bundles: `19`
 
 ## Verdict Counts
 
-- `matched`: `11`
-- `matched_with_tolerance`: `4`
+- `matched`: `13`
+- `matched_with_tolerance`: `5`
 - `not_comparable`: `1`
 
 ## Studies
+
+### Comparative trust boundary evidence study
+
+- study id: `comparative-trust-boundaries`
+- owner package: `bijux-phylogenetics`
+- bundle count: `3`
+- summary: Governed evidence for expected comparative failures, weak-signal instability, and OU identifiability boundaries.
+
+- `evidence-001` — Comparative input rejection bundle (`matched`)
+  Path: `studies/comparative-trust-boundaries/evidence-001`
+- `evidence-002` — Weak signal instability bundle (`matched_with_tolerance`)
+  Path: `studies/comparative-trust-boundaries/evidence-002`
+- `evidence-003` — OU identifiability warning bundle (`matched`)
+  Path: `studies/comparative-trust-boundaries/evidence-003`
 
 ### Primate Longevity Signal
 

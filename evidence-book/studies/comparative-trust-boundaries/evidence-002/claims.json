@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "weak-signal-instability-visible",
+      "claim_title": "Weak phylogenetic signal instability remains visible",
+      "evidence_ids": [
+        "evidence-002"
+      ],
+      "source_fragments": [
+        "permutation-signal-instability"
+      ],
+      "summary": "A governed low-information signal case is rerun across fixed seeds so threshold-sensitive conclusions do not hide behind one lucky pass.",
+      "verdict": "matched_with_tolerance"
+    }
+  ],
+  "evidence_id": "evidence-002",
+  "schema_version": 1,
+  "study_id": "comparative-trust-boundaries"
+}

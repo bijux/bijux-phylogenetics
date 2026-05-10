@@ -1,0 +1,62 @@
+{
+  "claim_ids": [
+    "ou-identifiability-boundaries-detected"
+  ],
+  "claim_tags": [
+    "model-instability",
+    "comparative",
+    "ou",
+    "identifiability"
+  ],
+  "evidence_id": "evidence-003",
+  "evidence_title": "OU identifiability warning bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative/pgls.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative/signal.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative/models.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/comparative_trust_boundaries.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "evidence-book/studies/comparative-trust-boundaries/provenance/runtime-sources.json",
+      "packages/bijux-phylogenetics/tests/fixtures",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative/models.py"
+    ]
+  },
+  "limitations": [
+    "The audit covers known reference warning families and does not claim that every possible OU pathology is enumerated here."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "model-instability",
+      "ou-identifiability"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-source-descriptor",
+      "label": "comparative trust boundary provenance",
+      "locator": "evidence-book/studies/comparative-trust-boundaries/provenance/runtime-sources.json"
+    },
+    {
+      "kind": "repository-fixture",
+      "label": "comparative reference tree fixtures",
+      "locator": "packages/bijux-phylogenetics/tests/fixtures"
+    },
+    {
+      "kind": "repository-code",
+      "label": "OU identifiability audit implementation",
+      "locator": "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative/models.py"
+    }
+  ],
+  "study_id": "comparative-trust-boundaries",
+  "summary": "Governed audit of built-in reference cases that should trigger OU identifiability warnings.",
+  "verdict": {
+    "status": "matched",
+    "summary": "The OU identifiability reference audit detects every expected warning family on the governed boundary cases."
+  }
+}
