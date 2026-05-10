@@ -6,10 +6,12 @@ from pathlib import Path
 from bijux_phylogenetics.evidence.book import (
     build_evidence_claim_map,
     build_evidence_book_index,
+    build_evidence_false_confidence_audit,
     build_evidence_mismatch_archive,
     build_evidence_parity_dashboard,
     build_evidence_verdict_workflows,
     render_evidence_catalog,
+    render_evidence_false_confidence_audit,
     render_evidence_mismatch_archive,
     render_evidence_parity_dashboard,
     render_evidence_verdict_workflows,
@@ -156,6 +158,7 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     parity_dashboard = build_evidence_parity_dashboard(repo_root)
     mismatch_archive = build_evidence_mismatch_archive(repo_root)
     verdict_workflows = build_evidence_verdict_workflows(repo_root)
+    false_confidence_audit = build_evidence_false_confidence_audit(repo_root)
     claim_map_path = repo_root / "evidence-book" / "index" / "claim-map.json"
     parity_dashboard_path = repo_root / "evidence-book" / "index" / "parity-dashboard.json"
     parity_summary_path = repo_root / "evidence-book" / "index" / "parity-dashboard.md"
@@ -163,6 +166,8 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     mismatch_summary_path = repo_root / "evidence-book" / "index" / "mismatch-archive.md"
     verdict_workflows_path = repo_root / "evidence-book" / "index" / "verdict-workflows.json"
     verdict_workflows_summary_path = repo_root / "evidence-book" / "index" / "verdict-workflows.md"
+    false_confidence_audit_path = repo_root / "evidence-book" / "index" / "false-confidence-audit.json"
+    false_confidence_summary_path = repo_root / "evidence-book" / "index" / "false-confidence-audit.md"
 
     assert index_path.exists()
     assert catalog_path.exists()
@@ -173,6 +178,8 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert mismatch_summary_path.exists()
     assert verdict_workflows_path.exists()
     assert verdict_workflows_summary_path.exists()
+    assert false_confidence_audit_path.exists()
+    assert false_confidence_summary_path.exists()
     assert payload["study_count"] == 1
     assert payload["evidence_count"] == 1
     assert "Taxon Trust" in catalog
@@ -190,3 +197,9 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert verdict_workflows_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_verdict_workflows(verdict_workflows)
+    assert json.loads(
+        false_confidence_audit_path.read_text(encoding="utf-8")
+    ) == false_confidence_audit
+    assert false_confidence_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_false_confidence_audit(false_confidence_audit)

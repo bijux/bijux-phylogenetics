@@ -6,10 +6,12 @@ from pathlib import Path
 from bijux_phylogenetics.evidence.book import (
     build_evidence_claim_map,
     build_evidence_book_index,
+    build_evidence_false_confidence_audit,
     build_evidence_mismatch_archive,
     build_evidence_parity_dashboard,
     build_evidence_verdict_workflows,
     render_evidence_catalog,
+    render_evidence_false_confidence_audit,
     render_evidence_mismatch_archive,
     render_evidence_parity_dashboard,
     render_evidence_verdict_workflows,
@@ -38,6 +40,8 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     mismatch_summary_path = REPO_ROOT / "evidence-book" / "index" / "mismatch-archive.md"
     verdict_workflows_path = REPO_ROOT / "evidence-book" / "index" / "verdict-workflows.json"
     verdict_workflows_summary_path = REPO_ROOT / "evidence-book" / "index" / "verdict-workflows.md"
+    false_confidence_audit_path = REPO_ROOT / "evidence-book" / "index" / "false-confidence-audit.json"
+    false_confidence_summary_path = REPO_ROOT / "evidence-book" / "index" / "false-confidence-audit.md"
 
     payload = build_evidence_book_index(REPO_ROOT)
     catalog = render_evidence_catalog(payload)
@@ -45,6 +49,7 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     parity_dashboard = build_evidence_parity_dashboard(REPO_ROOT)
     mismatch_archive = build_evidence_mismatch_archive(REPO_ROOT)
     verdict_workflows = build_evidence_verdict_workflows(REPO_ROOT)
+    false_confidence_audit = build_evidence_false_confidence_audit(REPO_ROOT)
 
     assert json.loads(index_path.read_text(encoding="utf-8")) == payload
     assert catalog_path.read_text(encoding="utf-8") == catalog
@@ -61,3 +66,9 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     assert verdict_workflows_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_verdict_workflows(verdict_workflows)
+    assert json.loads(
+        false_confidence_audit_path.read_text(encoding="utf-8")
+    ) == false_confidence_audit
+    assert false_confidence_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_false_confidence_audit(false_confidence_audit)

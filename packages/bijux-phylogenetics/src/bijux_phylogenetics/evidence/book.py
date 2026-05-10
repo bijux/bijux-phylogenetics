@@ -21,6 +21,8 @@ EVIDENCE_MISMATCH_ARCHIVE = "mismatch-archive.json"
 EVIDENCE_MISMATCH_SUMMARY = "mismatch-archive.md"
 EVIDENCE_VERDICT_WORKFLOWS = "verdict-workflows.json"
 EVIDENCE_VERDICT_WORKFLOWS_SUMMARY = "verdict-workflows.md"
+EVIDENCE_FALSE_CONFIDENCE_AUDIT = "false-confidence-audit.json"
+EVIDENCE_FALSE_CONFIDENCE_SUMMARY = "false-confidence-audit.md"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -538,6 +540,8 @@ def validate_evidence_book(
         mismatch_summary_path = index_root / EVIDENCE_MISMATCH_SUMMARY
         verdict_workflows_path = index_root / EVIDENCE_VERDICT_WORKFLOWS
         verdict_workflows_summary_path = index_root / EVIDENCE_VERDICT_WORKFLOWS_SUMMARY
+        false_confidence_audit_path = index_root / EVIDENCE_FALSE_CONFIDENCE_AUDIT
+        false_confidence_summary_path = index_root / EVIDENCE_FALSE_CONFIDENCE_SUMMARY
         if not parity_dashboard_path.exists():
             issues.append(
                 EvidenceBookValidationIssue(
@@ -580,6 +584,20 @@ def validate_evidence_book(
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_VERDICT_WORKFLOWS_SUMMARY}",
                 )
             )
+        if not false_confidence_audit_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, false_confidence_audit_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_FALSE_CONFIDENCE_AUDIT}",
+                )
+            )
+        if not false_confidence_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, false_confidence_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_FALSE_CONFIDENCE_SUMMARY}",
+                )
+            )
         if index_path.exists():
             try:
                 index_payload = _load_json(index_path)
@@ -605,6 +623,27 @@ def validate_evidence_book(
                         EvidenceBookValidationIssue(
                             _relative_to(root, index_path),
                             "evidence index must cover every discovered evidence bundle exactly once",
+                        )
+                    )
+        if false_confidence_audit_path.exists():
+            try:
+                false_confidence_payload = _load_json(false_confidence_audit_path)
+            except (ValueError, json.JSONDecodeError) as error:
+                issues.append(
+                    EvidenceBookValidationIssue(
+                        _relative_to(root, false_confidence_audit_path),
+                        f"invalid false-confidence audit: {error}",
+                    )
+                )
+            else:
+                action_required_count = false_confidence_payload.get(
+                    "action_required_count"
+                )
+                if action_required_count != 0:
+                    issues.append(
+                        EvidenceBookValidationIssue(
+                            _relative_to(root, false_confidence_audit_path),
+                            "false-confidence audit must not leave action_required entries unresolved",
                         )
                     )
 
@@ -1045,6 +1084,109 @@ def render_evidence_verdict_workflows(payload: dict[str, object]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def build_evidence_false_confidence_audit(repo_root: Path) -> dict[str, object]:
+    repo_root = Path(repo_root)
+    audited_surfaces = [
+        {
+            "surface_id": "repository-readme",
+            "relative_path": "README.md",
+            "disallowed_phrases": [
+                "comparative validation studies",
+            ],
+        },
+        {
+            "surface_id": "evidence-book-readme",
+            "relative_path": "evidence-book/README.md",
+            "disallowed_phrases": [
+                "comparative validation against",
+            ],
+        },
+        {
+            "surface_id": "primate-longevity-readme",
+            "relative_path": "evidence-book/studies/primate-longevity-signal/README.md",
+            "disallowed_phrases": [
+                "validated against established R",
+            ],
+        },
+        {
+            "surface_id": "primate-pgls-readme",
+            "relative_path": "evidence-book/studies/primate-pgls-and-signal/README.md",
+            "disallowed_phrases": [
+                "fully validated",
+            ],
+        },
+        {
+            "surface_id": "comparative-trust-boundaries-readme",
+            "relative_path": "evidence-book/studies/comparative-trust-boundaries/README.md",
+            "disallowed_phrases": [
+                "fully validated",
+            ],
+        },
+    ]
+    entries = []
+    action_required_count = 0
+    for surface in audited_surfaces:
+        surface_path = repo_root / surface["relative_path"]
+        if not surface_path.exists():
+            entries.append(
+                {
+                    "surface_id": surface["surface_id"],
+                    "relative_path": surface["relative_path"],
+                    "status": "not_present",
+                    "matched_phrases": [],
+                    "review_rule": "Surface is outside the current fixture repository shape and is therefore not audited here.",
+                }
+            )
+            continue
+        text = surface_path.read_text(encoding="utf-8")
+        matched_phrases = [
+            phrase for phrase in surface["disallowed_phrases"] if phrase in text
+        ]
+        status = "action_required" if matched_phrases else "clear"
+        if status == "action_required":
+            action_required_count += 1
+        entries.append(
+            {
+                "surface_id": surface["surface_id"],
+                "relative_path": surface["relative_path"],
+                "status": status,
+                "matched_phrases": matched_phrases,
+                "review_rule": "High-level public evidence surfaces must describe parity and trust boundaries honestly instead of implying broader validation than the evidence-book currently proves.",
+            }
+        )
+    return {
+        "schema_version": 1,
+        "surface_count": len(entries),
+        "action_required_count": action_required_count,
+        "surfaces": entries,
+    }
+
+
+def render_evidence_false_confidence_audit(payload: dict[str, object]) -> str:
+    lines = [
+        "# False Confidence Audit",
+        "",
+        "This audit checks high-level public evidence surfaces for phrases that would",
+        "overstate confidence beyond the current governed parity state.",
+        "",
+        f"- audited surfaces: `{payload['surface_count']}`",
+        f"- action required: `{payload['action_required_count']}`",
+        "",
+        "## Surfaces",
+        "",
+    ]
+    for surface in payload["surfaces"]:
+        lines.append(
+            f"- `{surface['surface_id']}` — `{surface['status']}` at `{surface['relative_path']}`"
+        )
+        if surface["matched_phrases"]:
+            lines.append(
+                "  Matched phrases: " + ", ".join(f"`{phrase}`" for phrase in surface["matched_phrases"])
+            )
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_evidence_parity_dashboard(dashboard_payload: dict[str, object]) -> str:
     lines = [
         "# Evidence Parity Dashboard",
@@ -1155,6 +1297,7 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     parity_dashboard_payload = build_evidence_parity_dashboard(repo_root)
     mismatch_archive_payload = build_evidence_mismatch_archive(repo_root)
     verdict_workflows_payload = build_evidence_verdict_workflows(repo_root)
+    false_confidence_payload = build_evidence_false_confidence_audit(repo_root)
     index_path = index_root / EVIDENCE_INDEX
     catalog_path = index_root / EVIDENCE_CATALOG
     claim_map_path = index_root / EVIDENCE_CLAIM_MAP
@@ -1164,6 +1307,8 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     mismatch_summary_path = index_root / EVIDENCE_MISMATCH_SUMMARY
     verdict_workflows_path = index_root / EVIDENCE_VERDICT_WORKFLOWS
     verdict_workflows_summary_path = index_root / EVIDENCE_VERDICT_WORKFLOWS_SUMMARY
+    false_confidence_audit_path = index_root / EVIDENCE_FALSE_CONFIDENCE_AUDIT
+    false_confidence_summary_path = index_root / EVIDENCE_FALSE_CONFIDENCE_SUMMARY
     index_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -1197,6 +1342,14 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     )
     verdict_workflows_summary_path.write_text(
         render_evidence_verdict_workflows(verdict_workflows_payload),
+        encoding="utf-8",
+    )
+    false_confidence_audit_path.write_text(
+        json.dumps(false_confidence_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    false_confidence_summary_path.write_text(
+        render_evidence_false_confidence_audit(false_confidence_payload),
         encoding="utf-8",
     )
     return index_path, catalog_path

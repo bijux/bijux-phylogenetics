@@ -14,7 +14,7 @@ These files are intentionally different from transient local outputs under
 Current tracked studies:
 
 - [`primate-longevity-signal`](./studies/primate-longevity-signal/): block-by-block
-  comparative validation against established R phylogenetics packages
+  comparative parity against established R phylogenetics packages
   Study manifest: [`study.json`](./studies/primate-longevity-signal/study.json)
   Current bundle: [`evidence-001`](./studies/primate-longevity-signal/evidence-001/README.md)
 - [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/): governed parity

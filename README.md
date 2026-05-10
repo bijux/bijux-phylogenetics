@@ -112,7 +112,7 @@ The root keeps repository-owned concerns explicit:
 - `configs/` for shared tool configuration
 - `docs/` for the repository handbook and package handbook index
 - `makes/` for automation and orchestration
-- `evidence-book/` for checked-in comparative validation studies and trust evidence
+- `evidence-book/` for checked-in comparative parity studies and trust evidence
 - `.github/workflows/` for CI, release, and docs deployment pipelines
 - `packages/` for publishable package boundaries and maintainer tooling
 - `artifacts/` for transient local outputs such as built docs, package bundles, and test products
