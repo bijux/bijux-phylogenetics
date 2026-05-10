@@ -1,12 +1,12 @@
 {
+  "claim_id": "taxon-exclusion-reasoning",
+  "claim_title": "Taxon exclusion reasoning",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
     "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta"
   ],
-  "goal_id": 28,
-  "goal_name": "Taxon exclusion reasoning",
   "observed": {
     "rows": [
       {

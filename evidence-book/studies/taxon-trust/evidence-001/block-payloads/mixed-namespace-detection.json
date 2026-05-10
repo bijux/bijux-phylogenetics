@@ -1,9 +1,9 @@
 {
+  "claim_id": "mixed-namespace-detection",
+  "claim_title": "Mixed namespace detection",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk"
   ],
-  "goal_id": 26,
-  "goal_name": "Mixed namespace detection",
   "observed": {
     "mixed_namespaces": true,
     "warnings": [

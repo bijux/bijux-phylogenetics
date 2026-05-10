@@ -1,10 +1,10 @@
 {
+  "claim_id": "taxonomic-synonym-candidate-detection",
+  "claim_title": "Taxonomic synonym candidate detection",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
   ],
-  "goal_id": 22,
-  "goal_name": "Taxonomic synonym candidate detection",
   "observed": {
     "ambiguous_mappings": [
       {

@@ -23,12 +23,11 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.reports.service import render_taxon_report
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 STUDY_ROOT = Path(__file__).resolve().parent
-EXAMPLES_ROOT = STUDY_ROOT / "examples"
-EXAMPLE_ID = "taxon-identity-and-retention-workflow"
-EVIDENCE_ID = "reviewer-evidence"
-OUTPUT_ROOT = EXAMPLES_ROOT / EXAMPLE_ID / EVIDENCE_ID
+STUDY_ID = "taxon-trust"
+EVIDENCE_ID = "evidence-001"
+OUTPUT_ROOT = STUDY_ROOT / EVIDENCE_ID
 BLOCK_ROOT = OUTPUT_ROOT / "block-payloads"
 FIXTURES_ROOT = (
     REPO_ROOT / "packages" / "bijux-phylogenetics" / "tests" / "fixtures"
@@ -49,28 +48,28 @@ WORKFLOW_FILTERED_ALIGNMENT = (
 WORKFLOW_INFERENCE = FIXTURES_ROOT / "trees" / "example_taxon_workflow_inference.nwk"
 WORKFLOW_REPORTED = FIXTURES_ROOT / "metadata" / "example_taxon_workflow_reported.csv"
 
-GOAL_NAMES = {
-    21: "Taxon spelling-variant audit",
-    22: "Taxonomic synonym candidate detection",
-    23: "Controlled synonym resolution",
-    24: "Ambiguous synonym rejection",
-    25: "Taxon namespace classification",
-    26: "Mixed namespace detection",
-    27: "Taxon crosswalk table",
-    28: "Taxon exclusion reasoning",
-    29: "Workflow taxon-loss report",
-    30: "Taxon stability report",
+CLAIM_TITLES = {
+    "taxon-spelling-variant-audit": "Taxon spelling-variant audit",
+    "taxonomic-synonym-candidate-detection": "Taxonomic synonym candidate detection",
+    "controlled-synonym-resolution": "Controlled synonym resolution",
+    "ambiguous-synonym-rejection": "Ambiguous synonym rejection",
+    "taxon-namespace-classification": "Taxon namespace classification",
+    "mixed-namespace-detection": "Mixed namespace detection",
+    "taxon-crosswalk-table": "Taxon crosswalk table",
+    "taxon-exclusion-reasoning": "Taxon exclusion reasoning",
+    "workflow-taxon-loss-report": "Workflow taxon-loss report",
+    "taxon-stability-report": "Taxon stability report",
 }
 
 PYTHON_BLOCKS = {
-    21: """from pathlib import Path
+    "taxon-spelling-variant-audit": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxon_identity
 from bijux_phylogenetics.io.trees import load_tree
 
 tree = load_tree(Path("packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_identity.nwk"))
 report = inspect_tree_taxon_identity(tree)""",
-    22: """from pathlib import Path
+    "taxonomic-synonym-candidate-detection": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxonomy import audit_tree_taxon_synonyms
 from bijux_phylogenetics.io.trees import load_tree
@@ -80,7 +79,7 @@ report = audit_tree_taxon_synonyms(
     tree,
     Path("packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"),
 )""",
-    23: """from pathlib import Path
+    "controlled-synonym-resolution": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxonomy import resolve_tree_taxon_synonyms
 from bijux_phylogenetics.io.trees import load_tree
@@ -90,7 +89,7 @@ resolved_tree, report = resolve_tree_taxon_synonyms(
     tree,
     synonym_table_path=Path("packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"),
 )""",
-    24: """from pathlib import Path
+    "ambiguous-synonym-rejection": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxonomy import resolve_tree_taxon_synonyms
 from bijux_phylogenetics.io.trees import load_tree
@@ -101,14 +100,14 @@ resolved_tree, report = resolve_tree_taxon_synonyms(
     synonym_table_path=Path("packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"),
 )
 assert "Jaguar" in resolved_tree.tip_names""",
-    25: """from pathlib import Path
+    "taxon-namespace-classification": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxon_namespaces
 from bijux_phylogenetics.io.trees import load_tree
 
 tree = load_tree(Path("packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk"))
 report = inspect_tree_taxon_namespaces(tree)""",
-    26: """from pathlib import Path
+    "mixed-namespace-detection": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxonomy import inspect_tree_taxon_namespaces
 from bijux_phylogenetics.io.trees import load_tree
@@ -116,7 +115,7 @@ from bijux_phylogenetics.io.trees import load_tree
 tree = load_tree(Path("packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk"))
 report = inspect_tree_taxon_namespaces(tree)
 assert report.mixed_namespaces is True""",
-    27: """from pathlib import Path
+    "taxon-crosswalk-table": """from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import build_dataset_crosswalk
 
@@ -126,7 +125,7 @@ report = build_dataset_crosswalk(
     Path("packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv"),
     alignment_path=Path("packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta"),
 )""",
-    28: """from pathlib import Path
+    "taxon-exclusion-reasoning": """from pathlib import Path
 
 from bijux_phylogenetics.core.dataset import audit_dataset_inputs
 
@@ -136,7 +135,7 @@ report = audit_dataset_inputs(
     Path("packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv"),
     alignment_path=Path("packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta"),
 )""",
-    29: """from pathlib import Path
+    "workflow-taxon-loss-report": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxon_workflows import build_taxon_workflow_loss_report
 
@@ -149,7 +148,7 @@ report = build_taxon_workflow_loss_report(
     inference_tree_path=Path("packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk"),
     reported_taxa_path=Path("packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv"),
 )""",
-    30: """from pathlib import Path
+    "taxon-stability-report": """from pathlib import Path
 
 from bijux_phylogenetics.core.taxon_workflows import (
     build_taxon_stability_report,
@@ -193,7 +192,7 @@ def _pair_rows(rows: list[object]) -> list[list[str]]:
     ]
 
 
-def _goal_payloads() -> list[dict[str, object]]:
+def _claim_payloads() -> list[dict[str, object]]:
     identity_report = inspect_tree_taxon_identity(load_tree(IDENTITY_TREE))
     synonym_audit = audit_tree_taxon_synonyms(load_tree(TAXONOMY_TREE), SYNONYM_TABLE)
     resolved_tree, synonym_resolution = resolve_tree_taxon_synonyms(
@@ -237,14 +236,14 @@ def _goal_payloads() -> list[dict[str, object]]:
 
     return [
         {
-            "goal_id": 21,
-            "goal_name": GOAL_NAMES[21],
+            "claim_id": "taxon-spelling-variant-audit",
+            "claim_title": CLAIM_TITLES["taxon-spelling-variant-audit"],
             "verdict": "verified",
             "fixture_paths": [_rel(IDENTITY_TREE)],
             "summary_lines": [
                 "3 underscore/space collision pairs, 1 case collision, and 1 near-duplicate pair were detected."
             ],
-            "python_block": PYTHON_BLOCKS[21],
+            "python_block": PYTHON_BLOCKS["taxon-spelling-variant-audit"],
             "observed": {
                 "spelling_variants": _pair_rows(identity_report.spelling_variants),
                 "whitespace_variants": _pair_rows(identity_report.whitespace_variants),
@@ -258,14 +257,14 @@ def _goal_payloads() -> list[dict[str, object]]:
             },
         },
         {
-            "goal_id": 22,
-            "goal_name": GOAL_NAMES[22],
+            "claim_id": "taxonomic-synonym-candidate-detection",
+            "claim_title": CLAIM_TITLES["taxonomic-synonym-candidate-detection"],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE), _rel(SYNONYM_TABLE)],
             "summary_lines": [
                 "1 configured synonym candidate was found and 1 raw label was blocked as ambiguous."
             ],
-            "python_block": PYTHON_BLOCKS[22],
+            "python_block": PYTHON_BLOCKS["taxonomic-synonym-candidate-detection"],
             "observed": {
                 "candidates": [asdict(row) for row in synonym_audit.candidates],
                 "ambiguous_mappings": [
@@ -275,14 +274,14 @@ def _goal_payloads() -> list[dict[str, object]]:
             },
         },
         {
-            "goal_id": 23,
-            "goal_name": GOAL_NAMES[23],
+            "claim_id": "controlled-synonym-resolution",
+            "claim_title": CLAIM_TITLES["controlled-synonym-resolution"],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE), _rel(SYNONYM_TABLE)],
             "summary_lines": [
                 "Felis_concolor resolves to Puma_concolor with explicit provenance and reversible mapping rows."
             ],
-            "python_block": PYTHON_BLOCKS[23],
+            "python_block": PYTHON_BLOCKS["controlled-synonym-resolution"],
             "observed": {
                 "renamed_taxa": [asdict(row) for row in synonym_resolution.renamed_taxa],
                 "unchanged_taxa": synonym_resolution.unchanged_taxa,
@@ -290,14 +289,14 @@ def _goal_payloads() -> list[dict[str, object]]:
             },
         },
         {
-            "goal_id": 24,
-            "goal_name": GOAL_NAMES[24],
+            "claim_id": "ambiguous-synonym-rejection",
+            "claim_title": CLAIM_TITLES["ambiguous-synonym-rejection"],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE), _rel(SYNONYM_TABLE)],
             "summary_lines": [
                 "Jaguar remains unresolved because the synonym table maps it to both Panthera_onca and Panthera_pardus."
             ],
-            "python_block": PYTHON_BLOCKS[24],
+            "python_block": PYTHON_BLOCKS["ambiguous-synonym-rejection"],
             "observed": {
                 "ambiguous_mappings": [
                     asdict(row) for row in synonym_resolution.ambiguous_mappings
@@ -313,14 +312,14 @@ def _goal_payloads() -> list[dict[str, object]]:
             },
         },
         {
-            "goal_id": 25,
-            "goal_name": GOAL_NAMES[25],
+            "claim_id": "taxon-namespace-classification",
+            "claim_title": CLAIM_TITLES["taxon-namespace-classification"],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE)],
             "summary_lines": [
                 "The taxonomy tree includes species_name, accession_id, sample_id, and isolate_id labels."
             ],
-            "python_block": PYTHON_BLOCKS[25],
+            "python_block": PYTHON_BLOCKS["taxon-namespace-classification"],
             "observed": {
                 "assignments": [asdict(row) for row in namespace_report.assignments],
                 "namespace_counts": namespace_report.namespace_counts,
@@ -328,22 +327,22 @@ def _goal_payloads() -> list[dict[str, object]]:
             },
         },
         {
-            "goal_id": 26,
-            "goal_name": GOAL_NAMES[26],
+            "claim_id": "mixed-namespace-detection",
+            "claim_title": CLAIM_TITLES["mixed-namespace-detection"],
             "verdict": "verified",
             "fixture_paths": [_rel(TAXONOMY_TREE)],
             "summary_lines": [
                 "mixed_namespaces is true and the report warns against automation without a crosswalk."
             ],
-            "python_block": PYTHON_BLOCKS[26],
+            "python_block": PYTHON_BLOCKS["mixed-namespace-detection"],
             "observed": {
                 "mixed_namespaces": namespace_report.mixed_namespaces,
                 "warnings": namespace_report.warnings,
             },
         },
         {
-            "goal_id": 27,
-            "goal_name": GOAL_NAMES[27],
+            "claim_id": "taxon-crosswalk-table",
+            "claim_title": CLAIM_TITLES["taxon-crosswalk-table"],
             "verdict": "verified",
             "fixture_paths": [
                 _rel(WORKFLOW_TREE),
@@ -354,15 +353,15 @@ def _goal_payloads() -> list[dict[str, object]]:
             "summary_lines": [
                 "The crosswalk exposes 4 taxa across tree, metadata, traits, and alignment surfaces."
             ],
-            "python_block": PYTHON_BLOCKS[27],
+            "python_block": PYTHON_BLOCKS["taxon-crosswalk-table"],
             "observed": {
                 "row_count": len(crosswalk.rows),
                 "rows": [asdict(row) for row in crosswalk.rows],
             },
         },
         {
-            "goal_id": 28,
-            "goal_name": GOAL_NAMES[28],
+            "claim_id": "taxon-exclusion-reasoning",
+            "claim_title": CLAIM_TITLES["taxon-exclusion-reasoning"],
             "verdict": "verified",
             "fixture_paths": [
                 _rel(WORKFLOW_TREE),
@@ -373,14 +372,14 @@ def _goal_payloads() -> list[dict[str, object]]:
             "summary_lines": [
                 "B is excluded by metadata absence; D is excluded by alignment absence, with affected analyses recorded explicitly."
             ],
-            "python_block": PYTHON_BLOCKS[28],
+            "python_block": PYTHON_BLOCKS["taxon-exclusion-reasoning"],
             "observed": {
                 "rows": [asdict(row) for row in dataset_audit.exclusion_table.rows],
             },
         },
         {
-            "goal_id": 29,
-            "goal_name": GOAL_NAMES[29],
+            "claim_id": "workflow-taxon-loss-report",
+            "claim_title": CLAIM_TITLES["workflow-taxon-loss-report"],
             "verdict": "verified",
             "fixture_paths": [
                 _rel(WORKFLOW_TREE),
@@ -394,15 +393,15 @@ def _goal_payloads() -> list[dict[str, object]]:
             "summary_lines": [
                 "First-loss stages are B at alignment_filtering, C at trait_missingness, and D at alignment."
             ],
-            "python_block": PYTHON_BLOCKS[29],
+            "python_block": PYTHON_BLOCKS["workflow-taxon-loss-report"],
             "observed": {
                 "loss_stage_counts": workflow_loss.loss_stage_counts,
                 "rows": [asdict(row) for row in workflow_loss.rows],
             },
         },
         {
-            "goal_id": 30,
-            "goal_name": GOAL_NAMES[30],
+            "claim_id": "taxon-stability-report",
+            "claim_title": CLAIM_TITLES["taxon-stability-report"],
             "verdict": "verified",
             "fixture_paths": [
                 _rel(WORKFLOW_TREE),
@@ -416,7 +415,7 @@ def _goal_payloads() -> list[dict[str, object]]:
             "summary_lines": [
                 "A is stable across all seven sources; B, C, and D are unstable."
             ],
-            "python_block": PYTHON_BLOCKS[30],
+            "python_block": PYTHON_BLOCKS["taxon-stability-report"],
             "observed": {
                 "shared_taxa": stability.shared_taxa,
                 "stable_taxa": stability.stable_taxa,
@@ -444,29 +443,31 @@ def _build_taxonomy_report_manifest() -> dict[str, object]:
 
 
 def _write_bundle_readme(
-    goal_payloads: list[dict[str, object]], report_manifest_path: str
+    claim_payloads: list[dict[str, object]], report_manifest_path: str
 ) -> None:
     lines = [
-        "# Reviewer Evidence",
+        "# Evidence 001",
         "",
-        "This bundle verifies roadmap goals `21` through `30` using checked-in",
-        "fixtures and package-owned report surfaces.",
+        "This bundle validates the checked-in taxon-trust workflow claims using",
+        "repository fixtures and package-owned report surfaces.",
         "",
         "Generated by:",
         "",
-        "- [`build_report.py`](../../../build_report.py)",
+        "- [`build_evidence.py`](../build_evidence.py)",
         "",
         "Supporting reviewer report surface:",
         "",
         f"- [`taxonomy_report_machine_manifest.json`](./{report_manifest_path})",
         "",
-        "## Goal Checks",
+        "## Claim Verdicts",
         "",
     ]
-    for payload in goal_payloads:
+    for payload in claim_payloads:
         lines.extend(
             [
-                f"### Goal {payload['goal_id']} — {payload['goal_name']}",
+                f"### {payload['claim_title']}",
+                "",
+                f"Claim id: `{payload['claim_id']}`",
                 "",
                 f"Verdict: `{payload['verdict']}`",
                 "",
@@ -487,7 +488,7 @@ def _write_bundle_readme(
                 payload["python_block"],
                 "```",
                 "",
-                f"Observed payload: [`goal-{payload['goal_id']}.json`](./block-payloads/goal-{payload['goal_id']}.json)",
+                f"Observed payload: [`{payload['claim_id']}.json`](./block-payloads/{payload['claim_id']}.json)",
                 "",
             ]
         )
@@ -499,30 +500,45 @@ def main() -> None:
         shutil.rmtree(OUTPUT_ROOT)
     BLOCK_ROOT.mkdir(parents=True, exist_ok=True)
 
-    goal_payloads = _goal_payloads()
+    claim_payloads = _claim_payloads()
     report_manifest = _build_taxonomy_report_manifest()
 
-    for payload in goal_payloads:
-        _write_json(BLOCK_ROOT / f"goal-{payload['goal_id']}.json", payload)
+    for payload in claim_payloads:
+        _write_json(BLOCK_ROOT / f"{payload['claim_id']}.json", payload)
 
-    goal_checks = [
+    claim_verdicts = [
         {
-            "goal_id": payload["goal_id"],
-            "goal_name": payload["goal_name"],
+            "claim_id": payload["claim_id"],
+            "claim_title": payload["claim_title"],
             "verdict": payload["verdict"],
             "fixture_paths": payload["fixture_paths"],
             "summary_lines": payload["summary_lines"],
         }
-        for payload in goal_payloads
+        for payload in claim_payloads
     ]
     manifest = {
-        "study_id": "taxon-trust",
-        "example_id": EXAMPLE_ID,
+        "schema_version": 1,
+        "study_id": STUDY_ID,
         "evidence_id": EVIDENCE_ID,
-        "goals": [payload["goal_id"] for payload in goal_payloads],
-        "all_goals_verified": all(
-            payload["verdict"] == "verified" for payload in goal_payloads
-        ),
+        "evidence_title": "Taxon workflow review bundle",
+        "summary": "Fixture-backed taxon trust evidence spanning identity, crosswalk, exclusion, loss, and stability behavior.",
+        "owner_package": "bijux-phylogenetics",
+        "source_basis": [
+            {
+                "kind": "repository-fixture",
+                "label": "taxon trust fixtures",
+                "locator": "packages/bijux-phylogenetics/tests/fixtures",
+            }
+        ],
+        "claim_tags": ["taxonomy", "workflow-audit", "trust-surface"],
+        "verdict": {
+            "status": "matched",
+            "summary": "All recorded taxon-trust claims match the checked-in fixture expectations.",
+        },
+        "limitations": [
+            "Covers one governed taxon-workflow bundle rather than the full repository surface.",
+        ],
+        "claim_ids": [payload["claim_id"] for payload in claim_payloads],
         "input_checksums": {
             _rel(path): _sha256(path)
             for path in [
@@ -541,9 +557,9 @@ def main() -> None:
     }
 
     _write_json(OUTPUT_ROOT / "manifest.json", manifest)
-    _write_json(OUTPUT_ROOT / "goal_checks.json", goal_checks)
+    _write_json(OUTPUT_ROOT / "claim_verdicts.json", claim_verdicts)
     _write_json(OUTPUT_ROOT / "taxonomy_report_machine_manifest.json", report_manifest)
-    _write_bundle_readme(goal_payloads, "taxonomy_report_machine_manifest.json")
+    _write_bundle_readme(claim_payloads, "taxonomy_report_machine_manifest.json")
 
 
 if __name__ == "__main__":

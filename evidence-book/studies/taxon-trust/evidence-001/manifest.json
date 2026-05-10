@@ -1,19 +1,23 @@
 {
-  "all_goals_verified": true,
-  "evidence_id": "reviewer-evidence",
-  "example_id": "taxon-identity-and-retention-workflow",
-  "goals": [
-    21,
-    22,
-    23,
-    24,
-    25,
-    26,
-    27,
-    28,
-    29,
-    30
+  "claim_ids": [
+    "taxon-spelling-variant-audit",
+    "taxonomic-synonym-candidate-detection",
+    "controlled-synonym-resolution",
+    "ambiguous-synonym-rejection",
+    "taxon-namespace-classification",
+    "mixed-namespace-detection",
+    "taxon-crosswalk-table",
+    "taxon-exclusion-reasoning",
+    "workflow-taxon-loss-report",
+    "taxon-stability-report"
   ],
+  "claim_tags": [
+    "taxonomy",
+    "workflow-audit",
+    "trust-surface"
+  ],
+  "evidence_id": "evidence-001",
+  "evidence_title": "Taxon workflow review bundle",
   "input_checksums": {
     "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta": "07284e4f291c4fe056d44a6ba4659c2775d592003535604f2b4614c5aad201fa",
     "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_filtered_alignment.fasta": "0e9a5dd195add94cb3e6040deb840974a4b040dfa107b0754021c1ef53da9fec",
@@ -26,5 +30,22 @@
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk": "758dd317d47ead2f6b9670c3f47173cf3b6477047914a61c403333fcfa1ad1dd",
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_identity.nwk": "173860f34def43a125347a2c3b8823d853725ea16d5c58cb1d0ff4dd4e267a4a"
   },
-  "study_id": "taxon-trust"
+  "limitations": [
+    "Covers one governed taxon-workflow bundle rather than the full repository surface."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-fixture",
+      "label": "taxon trust fixtures",
+      "locator": "packages/bijux-phylogenetics/tests/fixtures"
+    }
+  ],
+  "study_id": "taxon-trust",
+  "summary": "Fixture-backed taxon trust evidence spanning identity, crosswalk, exclusion, loss, and stability behavior.",
+  "verdict": {
+    "status": "matched",
+    "summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
+  }
 }

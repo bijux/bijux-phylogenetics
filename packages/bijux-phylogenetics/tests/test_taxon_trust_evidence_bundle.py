@@ -7,24 +7,38 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 BUNDLE_ROOT = (
     REPO_ROOT
     / "evidence-book"
+    / "studies"
     / "taxon-trust"
-    / "examples"
-    / "taxon-identity-and-retention-workflow"
-    / "reviewer-evidence"
+    / "evidence-001"
 )
 
 
-def test_taxon_trust_evidence_bundle_covers_goals_21_through_30() -> None:
-    goal_checks = json.loads(
-        (BUNDLE_ROOT / "goal_checks.json").read_text(encoding="utf-8")
+def test_taxon_trust_evidence_bundle_records_expected_claims() -> None:
+    claim_verdicts = json.loads(
+        (BUNDLE_ROOT / "claim_verdicts.json").read_text(encoding="utf-8")
     )
     manifest = json.loads((BUNDLE_ROOT / "manifest.json").read_text(encoding="utf-8"))
 
-    assert [row["goal_id"] for row in goal_checks] == list(range(21, 31))
-    assert all(row["verdict"] == "verified" for row in goal_checks)
+    assert [row["claim_id"] for row in claim_verdicts] == [
+        "taxon-spelling-variant-audit",
+        "taxonomic-synonym-candidate-detection",
+        "controlled-synonym-resolution",
+        "ambiguous-synonym-rejection",
+        "taxon-namespace-classification",
+        "mixed-namespace-detection",
+        "taxon-crosswalk-table",
+        "taxon-exclusion-reasoning",
+        "workflow-taxon-loss-report",
+        "taxon-stability-report",
+    ]
+    assert all(row["verdict"] == "verified" for row in claim_verdicts)
+    assert manifest["schema_version"] == 1
     assert manifest["study_id"] == "taxon-trust"
-    assert manifest["all_goals_verified"] is True
-    assert sorted(manifest["goals"]) == list(range(21, 31))
+    assert manifest["evidence_id"] == "evidence-001"
+    assert manifest["verdict"]["status"] == "matched"
+    assert sorted(manifest["claim_ids"]) == sorted(
+        row["claim_id"] for row in claim_verdicts
+    )
     assert len(manifest["input_checksums"]) == 10
 
 

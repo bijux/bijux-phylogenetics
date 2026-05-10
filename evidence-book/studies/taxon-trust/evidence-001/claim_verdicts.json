@@ -1,102 +1,104 @@
 [
   {
+    "claim_id": "taxon-spelling-variant-audit",
+    "claim_title": "Taxon spelling-variant audit",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_identity.nwk"
     ],
-    "goal_id": 21,
-    "goal_name": "Taxon spelling-variant audit",
     "summary_lines": [
       "3 underscore/space collision pairs, 1 case collision, and 1 near-duplicate pair were detected."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "taxonomic-synonym-candidate-detection",
+    "claim_title": "Taxonomic synonym candidate detection",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
     ],
-    "goal_id": 22,
-    "goal_name": "Taxonomic synonym candidate detection",
     "summary_lines": [
       "1 configured synonym candidate was found and 1 raw label was blocked as ambiguous."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "controlled-synonym-resolution",
+    "claim_title": "Controlled synonym resolution",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
     ],
-    "goal_id": 23,
-    "goal_name": "Controlled synonym resolution",
     "summary_lines": [
       "Felis_concolor resolves to Puma_concolor with explicit provenance and reversible mapping rows."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "ambiguous-synonym-rejection",
+    "claim_title": "Ambiguous synonym rejection",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
     ],
-    "goal_id": 24,
-    "goal_name": "Ambiguous synonym rejection",
     "summary_lines": [
       "Jaguar remains unresolved because the synonym table maps it to both Panthera_onca and Panthera_pardus."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "taxon-namespace-classification",
+    "claim_title": "Taxon namespace classification",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk"
     ],
-    "goal_id": 25,
-    "goal_name": "Taxon namespace classification",
     "summary_lines": [
       "The taxonomy tree includes species_name, accession_id, sample_id, and isolate_id labels."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "mixed-namespace-detection",
+    "claim_title": "Mixed namespace detection",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk"
     ],
-    "goal_id": 26,
-    "goal_name": "Mixed namespace detection",
     "summary_lines": [
       "mixed_namespaces is true and the report warns against automation without a crosswalk."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "taxon-crosswalk-table",
+    "claim_title": "Taxon crosswalk table",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
       "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta"
     ],
-    "goal_id": 27,
-    "goal_name": "Taxon crosswalk table",
     "summary_lines": [
       "The crosswalk exposes 4 taxa across tree, metadata, traits, and alignment surfaces."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "taxon-exclusion-reasoning",
+    "claim_title": "Taxon exclusion reasoning",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
       "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta"
     ],
-    "goal_id": 28,
-    "goal_name": "Taxon exclusion reasoning",
     "summary_lines": [
       "B is excluded by metadata absence; D is excluded by alignment absence, with affected analyses recorded explicitly."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "workflow-taxon-loss-report",
+    "claim_title": "Workflow taxon-loss report",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
@@ -106,14 +108,14 @@
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv"
     ],
-    "goal_id": 29,
-    "goal_name": "Workflow taxon-loss report",
     "summary_lines": [
       "First-loss stages are B at alignment_filtering, C at trait_missingness, and D at alignment."
     ],
     "verdict": "verified"
   },
   {
+    "claim_id": "taxon-stability-report",
+    "claim_title": "Taxon stability report",
     "fixture_paths": [
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
@@ -123,8 +125,6 @@
       "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk",
       "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv"
     ],
-    "goal_id": 30,
-    "goal_name": "Taxon stability report",
     "summary_lines": [
       "A is stable across all seven sources; B, C, and D are unstable."
     ],

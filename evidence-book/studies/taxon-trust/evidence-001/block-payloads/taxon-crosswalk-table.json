@@ -1,12 +1,12 @@
 {
+  "claim_id": "taxon-crosswalk-table",
+  "claim_title": "Taxon crosswalk table",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_traits.csv",
     "packages/bijux-phylogenetics/tests/fixtures/alignments/example_taxon_workflow_alignment.fasta"
   ],
-  "goal_id": 27,
-  "goal_name": "Taxon crosswalk table",
   "observed": {
     "row_count": 4,
     "rows": [

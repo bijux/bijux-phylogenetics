@@ -1,4 +1,6 @@
 {
+  "claim_id": "taxon-stability-report",
+  "claim_title": "Taxon stability report",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
@@ -8,8 +10,6 @@
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv"
   ],
-  "goal_id": 30,
-  "goal_name": "Taxon stability report",
   "observed": {
     "rows": [
       {

@@ -1,9 +1,9 @@
 {
+  "claim_id": "taxon-namespace-classification",
+  "claim_title": "Taxon namespace classification",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk"
   ],
-  "goal_id": 25,
-  "goal_name": "Taxon namespace classification",
   "observed": {
     "assignments": [
       {

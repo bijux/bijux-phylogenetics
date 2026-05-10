@@ -1,4 +1,6 @@
 {
+  "claim_id": "workflow-taxon-loss-report",
+  "claim_title": "Workflow taxon-loss report",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_metadata.csv",
@@ -8,8 +10,6 @@
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_inference.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_workflow_reported.csv"
   ],
-  "goal_id": 29,
-  "goal_name": "Workflow taxon-loss report",
   "observed": {
     "loss_stage_counts": {
       "alignment": 1,

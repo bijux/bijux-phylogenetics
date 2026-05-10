@@ -1,10 +1,10 @@
 {
+  "claim_id": "controlled-synonym-resolution",
+  "claim_title": "Controlled synonym resolution",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxonomy_tree.nwk",
     "packages/bijux-phylogenetics/tests/fixtures/metadata/example_taxon_synonyms.tsv"
   ],
-  "goal_id": 23,
-  "goal_name": "Controlled synonym resolution",
   "observed": {
     "renamed_taxa": [
       {

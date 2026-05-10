@@ -1,9 +1,9 @@
 {
+  "claim_id": "taxon-spelling-variant-audit",
+  "claim_title": "Taxon spelling-variant audit",
   "fixture_paths": [
     "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_identity.nwk"
   ],
-  "goal_id": 21,
-  "goal_name": "Taxon spelling-variant audit",
   "observed": {
     "case_collisions": [
       [
