@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BUNDLE_ROOT = (
     REPO_ROOT
@@ -16,7 +15,9 @@ BUNDLE_ROOT = (
 
 
 def test_taxon_trust_evidence_bundle_covers_goals_21_through_30() -> None:
-    goal_checks = json.loads((BUNDLE_ROOT / "goal_checks.json").read_text(encoding="utf-8"))
+    goal_checks = json.loads(
+        (BUNDLE_ROOT / "goal_checks.json").read_text(encoding="utf-8")
+    )
     manifest = json.loads((BUNDLE_ROOT / "manifest.json").read_text(encoding="utf-8"))
 
     assert [row["goal_id"] for row in goal_checks] == list(range(21, 31))

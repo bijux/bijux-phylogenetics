@@ -447,7 +447,9 @@ def ladderize_tree(tree_path: Path) -> tuple[PhyloTree, TreeOrderingReport]:
     )
 
 
-def rotate_named_node(tree_path: Path, *, clade_name: str) -> tuple[PhyloTree, TreeOrderingReport]:
+def rotate_named_node(
+    tree_path: Path, *, clade_name: str
+) -> tuple[PhyloTree, TreeOrderingReport]:
     """Reverse the child order at one named internal node."""
     tree = load_tree(tree_path)
     rotated_root, match_count = _rotate_named_node(tree.root, clade_name=clade_name)

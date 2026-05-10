@@ -114,9 +114,9 @@ from bijux_phylogenetics.core.topology import (
     extract_named_clade,
     ladderize_tree,
     reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
     rotate_all_internal_nodes,
     rotate_named_node,
-    root_tree_on_outgroup,
     sort_tree_tips_alphabetically,
     unroot_tree,
 )
@@ -3790,8 +3790,7 @@ def test_inspect_tree_path_classifies_internal_support_and_name_labels() -> None
 
     invalid = inspect_tree_path(fixture("example_tree_support_invalid.nwk"))
     assert [
-        (row.label, row.interpretation)
-        for row in invalid.likely_support_labels
+        (row.label, row.interpretation) for row in invalid.likely_support_labels
     ] == [
         ("120", "out_of_range_support"),
         ("101", "out_of_range_support"),

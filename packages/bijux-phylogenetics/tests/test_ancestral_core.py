@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.ancestral.common import (
     load_continuous_dataset,
     load_discrete_dataset,
@@ -12,7 +14,6 @@ from bijux_phylogenetics.ancestral.continuous import (
 )
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.errors import AncestralReconstructionError
-import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

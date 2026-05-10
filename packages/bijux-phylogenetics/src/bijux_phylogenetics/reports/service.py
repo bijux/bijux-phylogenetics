@@ -986,12 +986,8 @@ def render_taxon_report(
             alignment_path=alignment_path,
         )
     )
-    taxon_crosswalk = (
-        None if dataset_audit is None else dataset_audit.crosswalk
-    )
-    taxon_exclusions = (
-        None if dataset_audit is None else dataset_audit.exclusion_table
-    )
+    taxon_crosswalk = None if dataset_audit is None else dataset_audit.crosswalk
+    taxon_exclusions = None if dataset_audit is None else dataset_audit.exclusion_table
     taxon_workflow_loss = (
         None
         if metadata_path is None or traits_path is None
@@ -1149,8 +1145,12 @@ def render_taxon_report(
             "tree_tip_count": audit.tree_tip_count,
             "warning_count": len(audit.warnings),
             "conflict_count": len(audit.mapping_conflicts.rows),
-            "crosswalk_rows": 0 if taxon_crosswalk is None else len(taxon_crosswalk.rows),
-            "excluded_taxa": 0 if taxon_exclusions is None else len(taxon_exclusions.rows),
+            "crosswalk_rows": 0
+            if taxon_crosswalk is None
+            else len(taxon_crosswalk.rows),
+            "excluded_taxa": 0
+            if taxon_exclusions is None
+            else len(taxon_exclusions.rows),
             "loss_stage_count": 0
             if taxon_workflow_loss is None
             else len(taxon_workflow_loss.loss_stage_counts),

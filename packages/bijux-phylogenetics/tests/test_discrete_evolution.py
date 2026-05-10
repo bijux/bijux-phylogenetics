@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.discrete_evolution import (
     assess_geographic_state_analysis_readiness,
     audit_discrete_state_coding,
@@ -24,7 +26,6 @@ from bijux_phylogenetics.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.errors import AncestralReconstructionError
-import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

@@ -155,9 +155,13 @@ def reconstruct_continuous_ancestral_states(
                 child_payloads.append(
                     (transformed_estimate, max(propagated_variance, 1e-12))
                 )
-            weight_sum = sum(1.0 / child_variance for _, child_variance in child_payloads)
+            weight_sum = sum(
+                1.0 / child_variance for _, child_variance in child_payloads
+            )
             estimate = (
-                sum((value / child_variance) for value, child_variance in child_payloads)
+                sum(
+                    (value / child_variance) for value, child_variance in child_payloads
+                )
                 / weight_sum
             )
             variance = 1.0 / weight_sum

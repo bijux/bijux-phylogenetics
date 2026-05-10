@@ -72,11 +72,17 @@ raw-options = { git_describe_command = "git describe --dirty --tags --long --mat
 include = [
     "README.md",
     "CHANGELOG.md",
-    "LICENSE",
-    "NOTICE",
     "src/bijux_phylogenetics/**",
 ]
-force-include = { "LICENSE" = "LICENSE", "NOTICE" = "NOTICE" }
+
+[tool.hatch.build.targets.sdist]
+exclude = ["LICENSE", "NOTICE"]
+include = [
+    "README.md",
+    "CHANGELOG.md",
+    "src/bijux_phylogenetics/**",
+]
+force-include = { "../../LICENSE" = "LICENSE", "../../NOTICE" = "NOTICE" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bijux_phylogenetics"]
