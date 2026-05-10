@@ -59,8 +59,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          make check-config-ssot
-          make report-release-readiness
+          tox -e publish-readiness
       - name: upload publish-readiness artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -72,6 +71,7 @@ jobs:
             artifacts/root/package-boundaries.json
             artifacts/root/publish-readiness.json
             artifacts/root/artifact-governance.json
+            artifacts/root/execution-surfaces.json
           if-no-files-found: error
           retention-days: 14
 
@@ -93,4 +93,4 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          make check-release-readiness
+          tox -e release-readiness-gate

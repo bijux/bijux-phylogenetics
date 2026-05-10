@@ -105,11 +105,8 @@ def test_evidence_governance_workflow_separates_contracts_and_cleanroom_jobs() -
     contract_text = "\n".join(contract_run_steps)
     cleanroom_text = "\n".join(cleanroom_run_steps)
 
-    assert "make validate-evidence-book" in contract_text
-    assert "make check-evidence-artifacts" in contract_text
-    assert "make check-artifact-governance" in contract_text
-    assert "make rerun-evidence-cleanroom EVIDENCE_STUDY_ID=primate-longevity-signal EVIDENCE_IDS=evidence-002" in cleanroom_text
-    assert "make rerun-evidence-cleanroom EVIDENCE_STUDY_ID=primate-pgls-and-signal EVIDENCE_IDS=evidence-002" in cleanroom_text
+    assert "tox -e evidence-governance,evidence-completeness" in contract_text
+    assert "make rerun-governed-evidence-cleanroom" in cleanroom_text
 
 
 def test_publish_readiness_workflow_keeps_report_and_gate_jobs_separate() -> None:
@@ -132,9 +129,8 @@ def test_publish_readiness_workflow_keeps_report_and_gate_jobs_separate() -> Non
     report_text = "\n".join(report_steps)
     gate_text = "\n".join(gate_steps)
 
-    assert "make check-config-ssot" in report_text
-    assert "make report-release-readiness" in report_text
-    assert "make check-release-readiness" in gate_text
+    assert "tox -e publish-readiness" in report_text
+    assert "tox -e release-readiness-gate" in gate_text
     assert gate_job["if"] == "${{ github.event_name == 'workflow_dispatch' && inputs.enforce_release_gate }}"
     upload_paths = [
         line.strip()
@@ -144,3 +140,41 @@ def test_publish_readiness_workflow_keeps_report_and_gate_jobs_separate() -> Non
         if line.strip()
     ]
     assert "artifacts/root/package-boundaries.json" in upload_paths
+    assert "artifacts/root/execution-surfaces.json" in upload_paths
+
+
+def test_repository_governance_workflow_isolates_repository_and_config_jobs() -> None:
+    workflow = _workflow(WORKFLOWS_DIR / "repository-governance.yml")
+    jobs = _as_dict(workflow.get("jobs"))
+
+    repository_job = _as_dict(jobs.get("repository-contracts"))
+    config_job = _as_dict(jobs.get("config-ssot"))
+
+    repository_text = "\n".join(
+        step["run"]
+        for step in repository_job.get("steps", [])
+        if isinstance(step, dict) and isinstance(step.get("run"), str)
+    )
+    config_text = "\n".join(
+        step["run"]
+        for step in config_job.get("steps", [])
+        if isinstance(step, dict) and isinstance(step.get("run"), str)
+    )
+
+    assert "tox -e repository-contracts" in repository_text
+    assert "tox -e config-ssot" in config_text
+    assert "make check-execution-surfaces" in config_text
+
+
+def test_runtime_quality_workflow_isolates_runtime_package_checks() -> None:
+    workflow = _workflow(WORKFLOWS_DIR / "runtime-quality.yml")
+    jobs = _as_dict(workflow.get("jobs"))
+    runtime_job = _as_dict(jobs.get("runtime-quality"))
+
+    runtime_text = "\n".join(
+        step["run"]
+        for step in runtime_job.get("steps", [])
+        if isinstance(step, dict) and isinstance(step.get("run"), str)
+    )
+
+    assert "tox -e lint-core,test-core,quality-core,build-core,sbom-core" in runtime_text

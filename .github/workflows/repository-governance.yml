@@ -1,12 +1,12 @@
-name: evidence-governance
+name: repository-governance
 
 on:
   push:
     branches:
       - main
     paths:
-      - ".github/workflows/evidence-governance.yml"
-      - "evidence-book/**"
+      - ".github/workflows/repository-governance.yml"
+      - "configs/**"
       - "makes/**"
       - "packages/**"
       - "tox.ini"
@@ -14,8 +14,8 @@ on:
     branches:
       - main
     paths:
-      - ".github/workflows/evidence-governance.yml"
-      - "evidence-book/**"
+      - ".github/workflows/repository-governance.yml"
+      - "configs/**"
       - "makes/**"
       - "packages/**"
       - "tox.ini"
@@ -28,12 +28,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: evidence-governance-${{ github.ref }}
+  group: repository-governance-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  evidence-contracts:
-    name: evidence-contracts
+  repository-contracts:
+    name: repository-contracts
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -45,27 +45,16 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - name: validate evidence governance
+      - name: audit repository contracts
         shell: bash
         run: |
           set -euo pipefail
-          tox -e evidence-governance,evidence-completeness
-      - name: upload evidence governance artifacts
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: evidence-governance
-          path: |
-            artifacts/root/evidence-book-validation.json
-            artifacts/root/evidence-completeness.json
-            artifacts/root/artifact-governance.json
-          if-no-files-found: error
-          retention-days: 14
+          tox -e repository-contracts
 
-  evidence-cleanroom:
-    name: evidence-cleanroom
+  config-ssot:
+    name: config-ssot
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
@@ -75,16 +64,19 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - name: rerun selected evidence clean-room checks
+      - name: audit config ssot
         shell: bash
         run: |
           set -euo pipefail
-          make rerun-governed-evidence-cleanroom
-      - name: upload clean-room artifacts
+          tox -e config-ssot
+          make check-execution-surfaces
+      - name: upload config governance artifacts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: evidence-cleanroom
-          path: artifacts/root/evidence-cleanroom
+          name: repository-governance
+          path: |
+            artifacts/root/config-ssot-audit.json
+            artifacts/root/execution-surfaces.json
           if-no-files-found: error
           retention-days: 14
