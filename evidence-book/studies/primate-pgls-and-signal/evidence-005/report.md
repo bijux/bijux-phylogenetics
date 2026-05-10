@@ -1,0 +1,28 @@
+# Primate residual diagnostics parity bundle
+
+Governed machine-readable residual diagnostics for the baseline and estimated-lambda regression surfaces.
+
+- study: `primate-pgls-and-signal`
+- evidence: `evidence-005`
+- comparison mode: `direct_parity`
+- expected verdict: `matched_with_tolerance`
+
+## Claims
+
+- `pcm2-diagnostics-parity`
+
+## Source Basis
+
+- `evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json`
+- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
+- `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
+- `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json`
+
+## Primary Outputs
+
+- `evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json`
+
+## Limits
+
+- The lecture plots are summarized as scalar diagnostics; this bundle does not claim rendered-figure equivalence.

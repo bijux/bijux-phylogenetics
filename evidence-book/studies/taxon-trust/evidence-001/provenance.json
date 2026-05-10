@@ -1,0 +1,46 @@
+{
+  "authored_local_artifacts": [
+    {
+      "artifact_kind": "reference.R",
+      "artifact_path": "evidence-book/studies/taxon-trust/evidence-001/reference.R",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "analysis.py",
+      "artifact_path": "evidence-book/studies/taxon-trust/evidence-001/analysis.py",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "checks.json",
+      "artifact_path": "evidence-book/studies/taxon-trust/evidence-001/checks.json",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "report.md",
+      "artifact_path": "evidence-book/studies/taxon-trust/evidence-001/report.md",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "provenance.json",
+      "artifact_path": "evidence-book/studies/taxon-trust/evidence-001/provenance.json",
+      "generation_mode": "governed-bundle-template"
+    }
+  ],
+  "bundle_provenance_paths": [
+    "evidence-book/studies/taxon-trust/provenance/repository-sources.json"
+  ],
+  "evidence_id": "evidence-001",
+  "schema_version": 1,
+  "source_basis_locators": [
+    "packages/bijux-phylogenetics/tests/fixtures"
+  ],
+  "source_intake_policy": "repository-owned-source",
+  "study_dataset_registry_locator": "evidence-book/studies/taxon-trust/datasets/registry.json",
+  "study_id": "taxon-trust",
+  "study_provenance_locator": "evidence-book/studies/taxon-trust/provenance/repository-sources.json",
+  "study_support_scripts": {
+    "build_script_path": "evidence-book/studies/taxon-trust/build_evidence.py",
+    "reference_python_scripts": [],
+    "reference_r_scripts": []
+  }
+}

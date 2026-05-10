@@ -1,0 +1,41 @@
+{
+  "claim_ids": [
+    "pcm2-baseline-gls-parity"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-002",
+  "expected_verdict_status": "matched",
+  "primary_output_paths": [
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/baseline-gls-parity.json"
+  ],
+  "required_local_artifacts": [
+    "reference.R",
+    "analysis.py",
+    "checks.json",
+    "report.md",
+    "provenance.json"
+  ],
+  "schema_version": 1,
+  "source_basis_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-002/baseline-gls-parity.json"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "validation_rules": [
+    {
+      "pass_when": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",
+      "rule_id": "bundle-local-artifacts-present"
+    },
+    {
+      "pass_when": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces",
+      "rule_id": "primary-outputs-present"
+    },
+    {
+      "pass_when": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries",
+      "rule_id": "verdict-still-explicit"
+    }
+  ]
+}

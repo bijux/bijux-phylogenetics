@@ -1,0 +1,52 @@
+{
+  "authored_local_artifacts": [
+    {
+      "artifact_kind": "reference.R",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-006/reference.R",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "analysis.py",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-006/analysis.py",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "checks.json",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-006/checks.json",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "report.md",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-006/report.md",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "provenance.json",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-006/provenance.json",
+      "generation_mode": "governed-bundle-template"
+    }
+  ],
+  "bundle_provenance_paths": [
+    "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json"
+  ],
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "source_basis_locators": [
+    "external:lund/pcm1-plots-signal/data/primatetree.nex",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json"
+  ],
+  "source_intake_policy": "read-only-external-source",
+  "study_dataset_registry_locator": "evidence-book/studies/primate-longevity-signal/datasets/registry.json",
+  "study_id": "primate-longevity-signal",
+  "study_provenance_locator": "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json",
+  "study_support_scripts": {
+    "build_script_path": "evidence-book/studies/primate-longevity-signal/build_evidence.py",
+    "reference_python_scripts": [
+      "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py"
+    ],
+    "reference_r_scripts": [
+      "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R"
+    ]
+  }
+}

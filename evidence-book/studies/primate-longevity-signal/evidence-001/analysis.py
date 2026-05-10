@@ -1,0 +1,38 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+BUNDLE_ROOT = Path(__file__).resolve().parent
+STUDY_ID = "primate-longevity-signal"
+EVIDENCE_ID = "evidence-001"
+COMPARISON_MODE = "direct_parity"
+PRIMARY_OUTPUTS = ['evidence-book/studies/primate-longevity-signal/evidence-001/bijux_reference_results.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/comparative_reference_validation_suite.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/comparison.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/method_maturity_registry.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/r_ecosystem_comparison.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/r_reference_results.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/random_data.csv', 'evidence-book/studies/primate-longevity-signal/evidence-001/random_data2.csv', 'evidence-book/studies/primate-longevity-signal/evidence-001/random_data3.csv', 'evidence-book/studies/primate-longevity-signal/evidence-001/random_data4.csv', 'evidence-book/studies/primate-longevity-signal/evidence-001/random_data5.csv', 'evidence-book/studies/primate-longevity-signal/evidence-001/random_tree_seed1.nwk', 'evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv', 'evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk', 'evidence-book/studies/primate-longevity-signal/evidence-001/reproducibility_package.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/reviewer_audit_checklist.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/scalar-parity-table.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/scalar-parity-table.md', 'evidence-book/studies/primate-longevity-signal/evidence-001/scientific_debt_register.json', 'evidence-book/studies/primate-longevity-signal/evidence-001/trusted_examples_gallery.json']
+BUILD_SCRIPT = 'evidence-book/studies/primate-longevity-signal/build_evidence.py'
+
+def main() -> None:
+    payload = {
+        "study_id": STUDY_ID,
+        "evidence_id": EVIDENCE_ID,
+        "comparison_mode": COMPARISON_MODE,
+        "build_script": BUILD_SCRIPT,
+    }
+    if BUILD_SCRIPT is not None:
+        subprocess.run(
+            [sys.executable, str(REPO_ROOT / BUILD_SCRIPT)],
+            cwd=str(REPO_ROOT),
+            check=True,
+        )
+        payload["execution_mode"] = "study_build_wrapper"
+    else:
+        payload["execution_mode"] = "bundle_contract_only"
+    payload["primary_outputs"] = [
+        path for path in PRIMARY_OUTPUTS if (REPO_ROOT / path).is_file()
+    ]
+    print(json.dumps(payload, indent=2, sort_keys=True))
+
+if __name__ == "__main__":
+    main()

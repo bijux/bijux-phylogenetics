@@ -1,0 +1,48 @@
+{
+  "authored_local_artifacts": [
+    {
+      "artifact_kind": "reference.R",
+      "artifact_path": "evidence-book/studies/comparative-trust-boundaries/evidence-002/reference.R",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "analysis.py",
+      "artifact_path": "evidence-book/studies/comparative-trust-boundaries/evidence-002/analysis.py",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "checks.json",
+      "artifact_path": "evidence-book/studies/comparative-trust-boundaries/evidence-002/checks.json",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "report.md",
+      "artifact_path": "evidence-book/studies/comparative-trust-boundaries/evidence-002/report.md",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "provenance.json",
+      "artifact_path": "evidence-book/studies/comparative-trust-boundaries/evidence-002/provenance.json",
+      "generation_mode": "governed-bundle-template"
+    }
+  ],
+  "bundle_provenance_paths": [
+    "evidence-book/studies/comparative-trust-boundaries/provenance/runtime-sources.json"
+  ],
+  "evidence_id": "evidence-002",
+  "schema_version": 1,
+  "source_basis_locators": [
+    "evidence-book/studies/comparative-trust-boundaries/provenance/runtime-sources.json",
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_six_taxa.nwk",
+    "evidence-book/studies/comparative-trust-boundaries/evidence-002/weak_signal_traits.tsv"
+  ],
+  "source_intake_policy": "repository-owned-source",
+  "study_dataset_registry_locator": "evidence-book/studies/comparative-trust-boundaries/datasets/registry.json",
+  "study_id": "comparative-trust-boundaries",
+  "study_provenance_locator": "evidence-book/studies/comparative-trust-boundaries/provenance/runtime-sources.json",
+  "study_support_scripts": {
+    "build_script_path": "evidence-book/studies/comparative-trust-boundaries/build_evidence.py",
+    "reference_python_scripts": [],
+    "reference_r_scripts": []
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "authored_local_artifacts": [
+    {
+      "artifact_kind": "reference.R",
+      "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-001/reference.R",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "analysis.py",
+      "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-001/analysis.py",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "checks.json",
+      "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-001/checks.json",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "report.md",
+      "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-001/report.md",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "provenance.json",
+      "artifact_path": "evidence-book/studies/primate-pgls-and-signal/evidence-001/provenance.json",
+      "generation_mode": "governed-bundle-template"
+    }
+  ],
+  "bundle_provenance_paths": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json"
+  ],
+  "evidence_id": "evidence-001",
+  "schema_version": 1,
+  "source_basis_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json"
+  ],
+  "source_intake_policy": "read-only-external-source",
+  "study_dataset_registry_locator": "evidence-book/studies/primate-pgls-and-signal/datasets/registry.json",
+  "study_id": "primate-pgls-and-signal",
+  "study_provenance_locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+  "study_support_scripts": {
+    "build_script_path": "evidence-book/studies/primate-pgls-and-signal/build_evidence.py",
+    "reference_python_scripts": [],
+    "reference_r_scripts": [
+      "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R"
+    ]
+  }
+}
