@@ -1,0 +1,115 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from bijux_phylogenetics.evidence.book import (
+    build_evidence_book_index,
+    render_evidence_catalog,
+    validate_evidence_book,
+    write_evidence_book_index,
+)
+
+
+def _write_book_fixture(root: Path) -> Path:
+    book_root = root / "evidence-book"
+    study_root = book_root / "studies" / "taxon-trust"
+    bundle_root = study_root / "evidence-001"
+    index_root = book_root / "index"
+    bundle_root.mkdir(parents=True, exist_ok=True)
+    index_root.mkdir(parents=True, exist_ok=True)
+    (book_root / "README.md").write_text("# Evidence Book\n", encoding="utf-8")
+    (study_root / "README.md").write_text("# Taxon Trust\n", encoding="utf-8")
+    (study_root / "study.json").write_text(
+        json.dumps(
+            {
+                "study_id": "taxon-trust",
+                "study_title": "Taxon Trust",
+                "summary": "Fixture-backed taxon evidence.",
+                "owner_package": "bijux-phylogenetics",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (bundle_root / "README.md").write_text("# Evidence 001\n", encoding="utf-8")
+    (bundle_root / "manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "study_id": "taxon-trust",
+                "evidence_id": "evidence-001",
+                "evidence_title": "Taxon workflow review bundle",
+                "summary": "Validates taxon-workflow trust surfaces.",
+                "owner_package": "bijux-phylogenetics",
+                "source_basis": [
+                    {
+                        "kind": "repository-fixture",
+                        "label": "example taxon workflow tree",
+                        "locator": "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
+                    }
+                ],
+                "claim_tags": ["taxonomy", "review"],
+                "verdict": {
+                    "status": "matched",
+                    "summary": "Observed output matches the checked-in fixture expectations.",
+                },
+                "limitations": ["Covers one workflow family only."],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return root
+
+
+def test_validate_evidence_book_accepts_governed_layout(tmp_path: Path) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+
+    report = validate_evidence_book(repo_root)
+
+    assert report.valid is True
+    assert report.issues == []
+    assert [path.name for path in report.bundle_paths] == ["evidence-001"]
+
+
+def test_validate_evidence_book_rejects_missing_manifest_fields(tmp_path: Path) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+    manifest_path = (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "taxon-trust"
+        / "evidence-001"
+        / "manifest.json"
+    )
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    del payload["verdict"]
+    manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_evidence_book(repo_root)
+
+    assert report.valid is False
+    assert any("missing keys: verdict" in issue.message for issue in report.issues)
+
+
+def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+
+    index_path, catalog_path = write_evidence_book_index(repo_root)
+    payload = build_evidence_book_index(repo_root)
+    catalog = render_evidence_catalog(payload)
+
+    assert index_path.exists()
+    assert catalog_path.exists()
+    assert payload["study_count"] == 1
+    assert payload["evidence_count"] == 1
+    assert "Taxon Trust" in catalog
+    assert catalog_path.read_text(encoding="utf-8") == catalog
