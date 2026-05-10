@@ -1,0 +1,281 @@
+"""Audit package dependency policy and built publish artifacts."""
+
+from __future__ import annotations
+
+import argparse
+from dataclasses import asdict, dataclass
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tarfile
+import tomllib
+from typing import Any
+import zipfile
+
+POLICY_PATH = Path("configs/publication_readiness.toml")
+
+
+@dataclass(frozen=True)
+class BundleIssue:
+    code: str
+    path: str
+    message: str
+
+
+@dataclass(frozen=True)
+class PackageBundlePolicy:
+    package_name: str
+    package_dir: str
+    wheel_module_root: str
+    allowed_dependencies: tuple[str, ...]
+    required_sdist_entries: tuple[str, ...]
+    required_wheel_entries: tuple[str, ...]
+    forbidden_archive_prefixes: tuple[str, ...]
+
+
+def _load_toml(path: Path) -> dict[str, Any]:
+    with path.open("rb") as handle:
+        return tomllib.load(handle)
+
+
+def _as_dict(value: object) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _as_str_tuple(values: object) -> tuple[str, ...]:
+    if not isinstance(values, list):
+        return ()
+    return tuple(value for value in values if isinstance(value, str))
+
+
+def load_package_bundle_policies(repo_root: Path) -> dict[str, PackageBundlePolicy]:
+    payload = _load_toml(repo_root / POLICY_PATH)
+    readiness = (
+        _as_dict(payload.get("tool"))
+        .get("bijux_phylogenetics", {})
+        .get("publication_readiness", {})
+    )
+    readiness = _as_dict(readiness)
+    package_policy = _as_dict(readiness.get("package_policy"))
+    policies: dict[str, PackageBundlePolicy] = {}
+    for package_name, entry in package_policy.items():
+        values = _as_dict(entry)
+        policies[package_name] = PackageBundlePolicy(
+            package_name=package_name,
+            package_dir=str(values["package_dir"]),
+            wheel_module_root=str(values["wheel_module_root"]),
+            allowed_dependencies=_as_str_tuple(values.get("allowed_dependencies")),
+            required_sdist_entries=_as_str_tuple(values.get("required_sdist_entries")),
+            required_wheel_entries=_as_str_tuple(values.get("required_wheel_entries")),
+            forbidden_archive_prefixes=_as_str_tuple(
+                values.get("forbidden_archive_prefixes")
+            ),
+        )
+    return policies
+
+
+def build_dependency_policy_report(repo_root: Path) -> dict[str, Any]:
+    policies = load_package_bundle_policies(repo_root)
+    issues: list[BundleIssue] = []
+    packages: list[dict[str, Any]] = []
+    for package_name, policy in sorted(policies.items()):
+        pyproject = _load_toml(repo_root / policy.package_dir / "pyproject.toml")
+        project = _as_dict(pyproject.get("project"))
+        dependencies = tuple(
+            dependency
+            for dependency in project.get("dependencies", [])
+            if isinstance(dependency, str)
+        )
+        if dependencies != policy.allowed_dependencies:
+            issues.append(
+                BundleIssue(
+                    code="dependency-policy-drift",
+                    path=f"{policy.package_dir}/pyproject.toml",
+                    message=(
+                        f"{package_name} dependencies {dependencies!r} do not match "
+                        f"the governed policy {policy.allowed_dependencies!r}"
+                    ),
+                )
+            )
+        packages.append(
+            {
+                "package_name": package_name,
+                "package_dir": policy.package_dir,
+                "dependencies": list(dependencies),
+                "allowed_dependencies": list(policy.allowed_dependencies),
+            }
+        )
+    return {
+        "schema_version": 1,
+        "package_count": len(packages),
+        "packages": packages,
+        "issue_count": len(issues),
+        "issues": [asdict(issue) for issue in issues],
+    }
+
+
+def _archive_members(path: Path) -> set[str]:
+    if path.suffix == ".whl":
+        with zipfile.ZipFile(path) as archive:
+            return set(archive.namelist())
+    if path.name.endswith(".tar.gz"):
+        with tarfile.open(path, "r:gz") as archive:
+            members = set()
+            for member in archive.getmembers():
+                if member.name and not member.isdir():
+                    _, _, relative = member.name.partition("/")
+                    members.add(relative)
+            return members
+    raise ValueError(f"unsupported archive type: {path}")
+
+
+def _find_single(dist_dir: Path, pattern: str) -> Path:
+    matches = sorted(dist_dir.glob(pattern))
+    if len(matches) != 1:
+        raise ValueError(
+            f"expected exactly one artifact for pattern {pattern} in {dist_dir}"
+        )
+    return matches[0]
+
+
+def audit_package_bundle_directory(
+    policy: PackageBundlePolicy,
+    dist_dir: Path,
+) -> dict[str, Any]:
+    issues: list[BundleIssue] = []
+    wheel_path = _find_single(dist_dir, "*.whl")
+    sdist_path = _find_single(dist_dir, "*.tar.gz")
+    wheel_members = _archive_members(wheel_path)
+    sdist_members = _archive_members(sdist_path)
+
+    for entry in policy.required_wheel_entries:
+        if entry not in wheel_members:
+            issues.append(
+                BundleIssue(
+                    code="missing-wheel-entry",
+                    path=wheel_path.name,
+                    message=f"{policy.package_name} wheel is missing {entry}",
+                )
+            )
+    for entry in policy.required_sdist_entries:
+        if entry not in sdist_members:
+            issues.append(
+                BundleIssue(
+                    code="missing-sdist-entry",
+                    path=sdist_path.name,
+                    message=f"{policy.package_name} sdist is missing {entry}",
+                )
+            )
+    for prefix in policy.forbidden_archive_prefixes:
+        for archive_name, members in (
+            (wheel_path.name, wheel_members),
+            (sdist_path.name, sdist_members),
+        ):
+            if any(member.startswith(prefix) for member in members):
+                issues.append(
+                    BundleIssue(
+                        code="forbidden-archive-prefix",
+                        path=archive_name,
+                        message=f"{policy.package_name} artifact includes forbidden prefix {prefix}",
+                    )
+                )
+
+    return {
+        "package_name": policy.package_name,
+        "wheel_path": wheel_path.as_posix(),
+        "sdist_path": sdist_path.as_posix(),
+        "wheel_member_count": len(wheel_members),
+        "sdist_member_count": len(sdist_members),
+        "issue_count": len(issues),
+        "issues": [asdict(issue) for issue in issues],
+    }
+
+
+def build_package_bundle_report(
+    repo_root: Path,
+    *,
+    artifacts_root: Path,
+    build_artifacts: bool,
+) -> dict[str, Any]:
+    policies = load_package_bundle_policies(repo_root)
+    package_reports: list[dict[str, Any]] = []
+    issues: list[BundleIssue] = []
+    artifacts_root.mkdir(parents=True, exist_ok=True)
+
+    for package_name, policy in sorted(policies.items()):
+        dist_dir = artifacts_root / package_name
+        if build_artifacts:
+            dist_dir.mkdir(parents=True, exist_ok=True)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "build",
+                    "--wheel",
+                    "--sdist",
+                    "--outdir",
+                    str(dist_dir),
+                    str(repo_root / policy.package_dir),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        report = audit_package_bundle_directory(policy, dist_dir)
+        package_reports.append(report)
+        for issue in report["issues"]:
+            issues.append(BundleIssue(**issue))
+
+    return {
+        "schema_version": 1,
+        "package_count": len(package_reports),
+        "packages": package_reports,
+        "issue_count": len(issues),
+        "issues": [asdict(issue) for issue in issues],
+    }
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Audit package dependency policy and publishable build bundles."
+    )
+    parser.add_argument("command", choices=("dependencies", "report", "check"))
+    parser.add_argument("--repo-root", default=".")
+    parser.add_argument("--artifacts-root", default="artifacts/root/package-bundles")
+    parser.add_argument("--json-out", default="")
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    repo_root = Path(args.repo_root).resolve()
+    artifacts_root = Path(args.artifacts_root).resolve()
+    json_out = Path(args.json_out).resolve() if args.json_out else None
+    if args.command == "dependencies":
+        payload = build_dependency_policy_report(repo_root)
+    else:
+        payload = build_package_bundle_report(
+            repo_root,
+            artifacts_root=artifacts_root,
+            build_artifacts=args.command in {"report", "check"},
+        )
+        if args.command == "check" and payload["issue_count"]:
+            if json_out is not None:
+                _write_json(json_out, payload)
+            raise SystemExit("package bundle audit failed")
+    if json_out is not None:
+        _write_json(json_out, payload)
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
