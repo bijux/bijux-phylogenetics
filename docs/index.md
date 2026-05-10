@@ -46,9 +46,9 @@ surface and `phylogenetic` for the shorter compatibility alias.
 
 ## Read this next
 
-- runtime package handbook: [Repository overview](01-bijux-phylogenetics/index.md)
-- evidence trust surface: [Evidence Book](02-evidence-book/index.md)
-- maintainer handbook: [Maintainer overview](03-bijux-phylogenetics-maintain/index.md)
+- public runtime guide: [Phylogenetics product guide](public/phylogenetics/index.md)
+- public evidence guide: [Evidence-book guide](public/phylogenetics-evidence-book/index.md)
+- internal maintainer guide: [Internal documentation](internal/index.md)
 
 
 ## Notable Workflows
@@ -68,5 +68,5 @@ surface and `phylogenetic` for the shorter compatibility alias.
 The runtime surface is broader than the currently closed evidence surface.
 The governed evidence-book records that difference explicitly:
 
-- start from the governed landing page: [Evidence Book](02-evidence-book/index.md)
+- start from the public evidence guide: [Evidence Book](public/phylogenetics-evidence-book/index.md)
 - review analytical surface coverage and closure status from the linked evidence-book index outputs there

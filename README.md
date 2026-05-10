@@ -40,9 +40,9 @@ staged assets to the GitHub Release.
 ## Start Here
 
 - read the public docs home: [Documentation home](https://bijux.io/bijux-phylogenetics/)
-- inspect the runtime handbook: [Repository overview](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
-- inspect the evidence trust surface: [Evidence Book](https://bijux.io/bijux-phylogenetics/02-evidence-book/)
-- inspect the maintainer handbook: [Maintainer overview](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
+- inspect the public runtime guide: [Phylogenetics product guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+- inspect the public evidence guide: [Evidence Book](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
+- inspect the internal maintainer guide: [Internal documentation](https://bijux.io/bijux-phylogenetics/internal/)
 - inspect the runtime package source: [`packages/bijux-phylogenetics`](packages/bijux-phylogenetics)
 
 ## What This Repository Produces
