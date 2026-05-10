@@ -7,6 +7,7 @@ required_root_files = [
   "configs/deptry.toml",
   "configs/schemathesis.toml",
   "configs/package_boundaries.toml",
+  "configs/execution_surfaces.toml",
 ]
 forbidden_package_config_filenames = [
   "mypy.ini",
