@@ -1,0 +1,41 @@
+{
+  "bundle_verdict_status": "not_comparable",
+  "bundle_verdict_summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "coverage-gap",
+    "not-comparable"
+  ],
+  "claim_titles": [
+    "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-006",
+  "evidence_title": "Primate coverage boundary bundle",
+  "limitations": [
+    "This bundle is intentionally a boundary register, not a parity claim."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed record of uncovered transformed-tree, EB, and ancestral fragments from the lecture workflow.",
+    "Comparison mode: direct_parity. Bundle verdict: not_comparable.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "ancestral-mode-comparison",
+    "continuous-model-comparison",
+    "mode-linked-intercept-models",
+    "transformed-tree-workflows"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS and signal evidence study"
+}

@@ -1,0 +1,39 @@
+{
+  "bundle_verdict_status": "matched_with_tolerance",
+  "bundle_verdict_summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "phylogenetic-signal",
+    "lambda-zero"
+  ],
+  "claim_titles": [
+    "PCM2 phylogenetic signal testing agrees within governed tolerance"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-004",
+  "evidence_title": "Primate phylogenetic signal parity bundle",
+  "limitations": [
+    "This bundle records the lecture\u2019s intercept-only signal workflow, not the later BM/OU/EB surrogate-model section."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed parity for intercept-only signal testing and lambda-zero likelihood-ratio logic.",
+    "Comparison mode: direct_parity. Bundle verdict: matched_with_tolerance.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "phylogenetic-signal-test"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-004/phylogenetic-signal-parity.json"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS and signal evidence study"
+}

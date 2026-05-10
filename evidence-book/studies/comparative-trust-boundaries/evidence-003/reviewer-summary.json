@@ -1,0 +1,37 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "The OU identifiability reference audit detects every expected warning family on the governed boundary cases.",
+  "claim_count": 1,
+  "claim_tags": [
+    "model-instability",
+    "comparative",
+    "ou",
+    "identifiability"
+  ],
+  "claim_titles": [
+    "OU identifiability boundary warnings are detected on reference cases"
+  ],
+  "comparison_mode": "bijux_native_reinterpretation",
+  "evidence_id": "evidence-003",
+  "evidence_title": "OU identifiability warning bundle",
+  "limitations": [
+    "The audit covers known reference warning families and does not claim that every possible OU pathology is enumerated here."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed audit of built-in reference cases that should trigger OU identifiability warnings.",
+    "Comparison mode: bijux_native_reinterpretation. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "ou-identifiability-reference-audit"
+  ],
+  "source_locators": [
+    "evidence-book/studies/comparative-trust-boundaries/provenance/runtime-sources.json",
+    "packages/bijux-phylogenetics/tests/fixtures",
+    "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative/models.py"
+  ],
+  "study_id": "comparative-trust-boundaries",
+  "study_title": "Comparative trust boundary evidence study"
+}

@@ -1,0 +1,40 @@
+{
+  "bundle_verdict_status": "matched_with_tolerance",
+  "bundle_verdict_summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "diagnostics",
+    "residuals"
+  ],
+  "claim_titles": [
+    "PCM2 residual diagnostics are machine-recorded and scientifically equivalent"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-005",
+  "evidence_title": "Primate residual diagnostics parity bundle",
+  "limitations": [
+    "The lecture plots are summarized as scalar diagnostics; this bundle does not claim rendered-figure equivalence."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed machine-readable residual diagnostics for the baseline and estimated-lambda regression surfaces.",
+    "Comparison mode: direct_parity. Bundle verdict: matched_with_tolerance.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "baseline-gls-diagnostics",
+    "estimated-lambda-diagnostics"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS and signal evidence study"
+}

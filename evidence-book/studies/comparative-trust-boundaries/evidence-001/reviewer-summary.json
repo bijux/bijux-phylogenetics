@@ -1,0 +1,38 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "Observed ComparativeMethodError blockers match the governed rejection expectations for the tracked comparative input failures.",
+  "claim_count": 1,
+  "claim_tags": [
+    "runtime-guard",
+    "expected-failure",
+    "comparative",
+    "pgls"
+  ],
+  "claim_titles": [
+    "Comparative input rejection remains explicit and reproducible"
+  ],
+  "comparison_mode": "bijux_native_reinterpretation",
+  "evidence_id": "evidence-001",
+  "evidence_title": "Comparative input rejection bundle",
+  "limitations": [
+    "This bundle audits representative rejection cases, not every possible malformed comparative input."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed expected-failure cases for rootedness, complete branch lengths, and numeric-response requirements in PGLS workflows.",
+    "Comparison mode: bijux_native_reinterpretation. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "pgls-input-rejection-guards"
+  ],
+  "source_locators": [
+    "evidence-book/studies/comparative-trust-boundaries/provenance/runtime-sources.json",
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_unrooted.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_no_lengths.nwk",
+    "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv"
+  ],
+  "study_id": "comparative-trust-boundaries",
+  "study_title": "Comparative trust boundary evidence study"
+}
