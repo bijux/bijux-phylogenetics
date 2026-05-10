@@ -145,6 +145,101 @@
     },
     {
       "claim_tags": [
+        "teaching",
+        "parity",
+        "workflow",
+        "reload-semantics"
+      ],
+      "evidence_id": "evidence-001",
+      "evidence_title": "Primate reload semantics bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched",
+      "verdict_summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "baseline-regression",
+        "gls"
+      ],
+      "evidence_id": "evidence-002",
+      "evidence_title": "Primate baseline GLS parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-002",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched",
+      "verdict_summary": "The non-phylogenetic regression slope, intercept, fit statistics, and coefficient decisions align before any phylogenetic covariance is introduced."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "phylogenetic-regression",
+        "pagel-lambda"
+      ],
+      "evidence_id": "evidence-003",
+      "evidence_title": "Primate Pagel-lambda regression parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-003",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "phylogenetic-signal",
+        "lambda-zero"
+      ],
+      "evidence_id": "evidence-004",
+      "evidence_title": "Primate phylogenetic signal parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-004",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "diagnostics",
+        "residuals"
+      ],
+      "evidence_id": "evidence-005",
+      "evidence_title": "Primate residual diagnostics parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-005",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "coverage-gap",
+        "not-comparable"
+      ],
+      "evidence_id": "evidence-006",
+      "evidence_title": "Primate coverage boundary bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied."
+    },
+    {
+      "claim_tags": [
         "taxonomy",
         "workflow-audit",
         "trust-surface"
@@ -159,7 +254,7 @@
       "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
     }
   ],
-  "evidence_count": 10,
+  "evidence_count": 16,
   "root": "evidence-book",
   "schema_version": 1,
   "studies": [
@@ -316,6 +411,110 @@
       "summary": "Checked-in parity study for the Lund primate longevity signal teaching workflow."
     },
     {
+      "bundle_count": 6,
+      "evidence": [
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "workflow",
+            "reload-semantics"
+          ],
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate reload semantics bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched",
+          "verdict_summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "baseline-regression",
+            "gls"
+          ],
+          "evidence_id": "evidence-002",
+          "evidence_title": "Primate baseline GLS parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-002",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched",
+          "verdict_summary": "The non-phylogenetic regression slope, intercept, fit statistics, and coefficient decisions align before any phylogenetic covariance is introduced."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "phylogenetic-regression",
+            "pagel-lambda"
+          ],
+          "evidence_id": "evidence-003",
+          "evidence_title": "Primate Pagel-lambda regression parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-003",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "phylogenetic-signal",
+            "lambda-zero"
+          ],
+          "evidence_id": "evidence-004",
+          "evidence_title": "Primate phylogenetic signal parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-004",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "diagnostics",
+            "residuals"
+          ],
+          "evidence_id": "evidence-005",
+          "evidence_title": "Primate residual diagnostics parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-005",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "coverage-gap",
+            "not-comparable"
+          ],
+          "evidence_id": "evidence-006",
+          "evidence_title": "Primate coverage boundary bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS and signal evidence study",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study",
+      "summary": "Governed parity study for the regression and signal sections of the Lund primate comparative lecture, with explicit coverage boundaries for the remaining EB and ancestral fragments."
+    },
+    {
       "bundle_count": 1,
       "evidence": [
         {
@@ -340,9 +539,10 @@
       "summary": "Fixture-backed study for the repository taxon-trust workflow surfaces."
     }
   ],
-  "study_count": 2,
+  "study_count": 3,
   "verdict_counts": {
-    "matched": 9,
-    "matched_with_tolerance": 1
+    "matched": 11,
+    "matched_with_tolerance": 4,
+    "not_comparable": 1
   }
 }

@@ -3,13 +3,14 @@
 This catalog is generated from `index/evidence-index.json` and lists every
 governed evidence bundle in the repository evidence-book.
 
-- studies: `2`
-- evidence bundles: `10`
+- studies: `3`
+- evidence bundles: `16`
 
 ## Verdict Counts
 
-- `matched`: `9`
-- `matched_with_tolerance`: `1`
+- `matched`: `11`
+- `matched_with_tolerance`: `4`
+- `not_comparable`: `1`
 
 ## Studies
 
@@ -38,6 +39,26 @@ governed evidence bundle in the repository evidence-book.
   Path: `studies/primate-longevity-signal/evidence-008`
 - `evidence-009` — Primate processed export parity bundle (`matched`)
   Path: `studies/primate-longevity-signal/evidence-009`
+
+### Primate PGLS and signal evidence study
+
+- study id: `primate-pgls-and-signal`
+- owner package: `bijux-phylogenetics`
+- bundle count: `6`
+- summary: Governed parity study for the regression and signal sections of the Lund primate comparative lecture, with explicit coverage boundaries for the remaining EB and ancestral fragments.
+
+- `evidence-001` — Primate reload semantics bundle (`matched`)
+  Path: `studies/primate-pgls-and-signal/evidence-001`
+- `evidence-002` — Primate baseline GLS parity bundle (`matched`)
+  Path: `studies/primate-pgls-and-signal/evidence-002`
+- `evidence-003` — Primate Pagel-lambda regression parity bundle (`matched_with_tolerance`)
+  Path: `studies/primate-pgls-and-signal/evidence-003`
+- `evidence-004` — Primate phylogenetic signal parity bundle (`matched_with_tolerance`)
+  Path: `studies/primate-pgls-and-signal/evidence-004`
+- `evidence-005` — Primate residual diagnostics parity bundle (`matched_with_tolerance`)
+  Path: `studies/primate-pgls-and-signal/evidence-005`
+- `evidence-006` — Primate coverage boundary bundle (`not_comparable`)
+  Path: `studies/primate-pgls-and-signal/evidence-006`
 
 ### Taxon Trust
 

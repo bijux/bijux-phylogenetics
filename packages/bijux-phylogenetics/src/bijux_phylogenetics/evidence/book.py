@@ -703,6 +703,7 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
     total_row_count = 0
     verdict_counts: Counter[str] = Counter()
     expectation_counts: Counter[str] = Counter()
+    comparison_kind_counts: Counter[str] = Counter()
 
     for study_root in _study_paths(root):
         study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
@@ -727,6 +728,11 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
                     for verdict, count in scalar_table.get("verdict_counts", {}).items()
                 }
             )
+            comparison_kind_counts.update(
+                str(row["comparison_kind"])
+                for row in scalar_table.get("rows", [])
+                if isinstance(row, dict) and isinstance(row.get("comparison_kind"), str)
+            )
             if isinstance(parity_policy, dict):
                 expectation_counts.update(
                     str(policy["parity_expectation"])
@@ -742,6 +748,12 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
                     "bundle_verdict_status": manifest["verdict"]["status"],
                     "scalar_row_count": scalar_table["row_count"],
                     "scalar_verdict_counts": scalar_table["verdict_counts"],
+                    "comparison_kind_counts": Counter(
+                        str(row["comparison_kind"])
+                        for row in scalar_table.get("rows", [])
+                        if isinstance(row, dict)
+                        and isinstance(row.get("comparison_kind"), str)
+                    ),
                     "parity_expectation_counts": {}
                     if not isinstance(parity_policy, dict)
                     else Counter(
@@ -768,6 +780,9 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
         normalized_studies.append(
             {
                 **entry,
+                "comparison_kind_counts": dict(
+                    sorted(entry["comparison_kind_counts"].items())
+                ),
                 "parity_expectation_counts": dict(sorted(expectation_counter.items())),
             }
         )
@@ -777,6 +792,7 @@ def build_evidence_parity_dashboard(repo_root: Path) -> dict[str, object]:
         "study_count": len(normalized_studies),
         "scalar_row_count": total_row_count,
         "scalar_verdict_counts": dict(sorted(verdict_counts.items())),
+        "comparison_kind_counts": dict(sorted(comparison_kind_counts.items())),
         "parity_expectation_counts": dict(sorted(expectation_counts.items())),
         "studies": normalized_studies,
     }
@@ -806,6 +822,14 @@ def render_evidence_parity_dashboard(dashboard_payload: dict[str, object]) -> st
             lines.append(f"- `{expectation}`: `{count}`")
         lines.append("")
 
+    comparison_kind_counts = dashboard_payload.get("comparison_kind_counts", {})
+    if isinstance(comparison_kind_counts, dict) and comparison_kind_counts:
+        lines.append("## Comparison Kinds")
+        lines.append("")
+        for comparison_kind, count in comparison_kind_counts.items():
+            lines.append(f"- `{comparison_kind}`: `{count}`")
+        lines.append("")
+
     lines.append("## Study Summary")
     lines.append("")
     for study in dashboard_payload["studies"]:
@@ -820,6 +844,12 @@ def render_evidence_parity_dashboard(dashboard_payload: dict[str, object]) -> st
                 f"{key}={value}" for key, value in study["scalar_verdict_counts"].items()
             )
             lines.append(f"- scalar verdict counts: {counts}")
+        if study["comparison_kind_counts"]:
+            counts = ", ".join(
+                f"{key}={value}"
+                for key, value in study["comparison_kind_counts"].items()
+            )
+            lines.append(f"- comparison kinds: {counts}")
         if study["parity_expectation_counts"]:
             counts = ", ".join(
                 f"{key}={value}"

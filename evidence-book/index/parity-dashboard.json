@@ -1,19 +1,27 @@
 {
-  "parity_expectation_counts": {
-    "exact": 3,
-    "near_exact": 1,
-    "not_comparable": 3,
-    "statistical_tolerance": 1
+  "comparison_kind_counts": {
+    "exact_answer": 3,
+    "scientific_equivalence": 4,
+    "tolerance": 14
   },
-  "scalar_row_count": 31,
+  "parity_expectation_counts": {
+    "exact": 5,
+    "near_exact": 1,
+    "not_comparable": 4,
+    "scientific_equivalence": 1,
+    "statistical_tolerance": 3
+  },
+  "scalar_row_count": 52,
   "scalar_verdict_counts": {
-    "matched": 16,
-    "matched_with_tolerance": 15
+    "matched": 19,
+    "matched_with_tolerance": 28,
+    "mismatch_unexplained": 5
   },
   "schema_version": 1,
   "studies": [
     {
       "bundle_verdict_status": "matched_with_tolerance",
+      "comparison_kind_counts": {},
       "evidence_id": "evidence-001",
       "family_verdicts": [
         {
@@ -63,7 +71,57 @@
       },
       "study_id": "primate-longevity-signal",
       "study_title": "Primate Longevity Signal"
+    },
+    {
+      "bundle_verdict_status": "matched",
+      "comparison_kind_counts": {
+        "exact_answer": 3,
+        "scientific_equivalence": 4,
+        "tolerance": 14
+      },
+      "evidence_id": "evidence-001",
+      "family_verdicts": [
+        {
+          "family_id": "workflow-contracts",
+          "family_verdict": "matched"
+        },
+        {
+          "family_id": "baseline-regression",
+          "family_verdict": "matched"
+        },
+        {
+          "family_id": "phylogenetic-regression",
+          "family_verdict": "matched_with_tolerance"
+        },
+        {
+          "family_id": "phylogenetic-signal",
+          "family_verdict": "matched_with_tolerance"
+        },
+        {
+          "family_id": "diagnostics",
+          "family_verdict": "matched_with_tolerance"
+        },
+        {
+          "family_id": "coverage-boundaries",
+          "family_verdict": "not_comparable"
+        }
+      ],
+      "parity_expectation_counts": {
+        "exact": 2,
+        "not_comparable": 1,
+        "scientific_equivalence": 1,
+        "statistical_tolerance": 2
+      },
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "scalar_row_count": 21,
+      "scalar_verdict_counts": {
+        "matched": 3,
+        "matched_with_tolerance": 13,
+        "mismatch_unexplained": 5
+      },
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS and signal evidence study"
     }
   ],
-  "study_count": 1
+  "study_count": 2
 }
