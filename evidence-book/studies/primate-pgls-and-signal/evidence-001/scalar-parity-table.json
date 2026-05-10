@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-001",
-  "row_count": 21,
+  "row_count": 42,
   "rows": [
     {
       "bijux_value": 2,
@@ -40,6 +40,327 @@
       "row_id": "reload-tree-tip-count",
       "tolerance_abs_diff": 0.0,
       "verdict": "matched"
+    },
+    {
+      "bijux_value": 148,
+      "comparison_kind": "exact_answer",
+      "fragment_id": "transformed-tree-workflows",
+      "method_family": "transformed-tree-workflows",
+      "metric_name": "ou_alpha_1_branch_count",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": 148,
+      "row_id": "ou-alpha-1-branch-count",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 11.8429,
+      "comparison_kind": "exact_answer",
+      "fragment_id": "transformed-tree-workflows",
+      "method_family": "transformed-tree-workflows",
+      "metric_name": "ou_alpha_1_total_branch_length",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": 11.8429,
+      "row_id": "ou-alpha-1-total-branch-length",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 3.2035,
+      "comparison_kind": "exact_answer",
+      "fragment_id": "transformed-tree-workflows",
+      "method_family": "transformed-tree-workflows",
+      "metric_name": "ou_alpha_10_total_branch_length",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": 3.2035,
+      "row_id": "ou-alpha-10-total-branch-length",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 87.5077,
+      "comparison_kind": "exact_answer",
+      "fragment_id": "transformed-tree-workflows",
+      "method_family": "transformed-tree-workflows",
+      "metric_name": "early_burst_2_total_branch_length",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": 87.5077,
+      "row_id": "early-burst-2-total-branch-length",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 4.1181,
+      "comparison_kind": "exact_answer",
+      "fragment_id": "transformed-tree-workflows",
+      "method_family": "transformed-tree-workflows",
+      "metric_name": "late_burst_minus_2_total_branch_length",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": 4.1181,
+      "row_id": "late-burst-minus-2-total-branch-length",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 262.35,
+      "comparison_kind": "tolerance",
+      "fragment_id": "continuous-model-comparison",
+      "method_family": "continuous-model-fitting",
+      "metric_name": "brownian_root_state",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": 262.35,
+      "row_id": "brownian-root-state",
+      "tolerance_abs_diff": 0.5,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 88740.4378,
+      "comparison_kind": "tolerance",
+      "fragment_id": "continuous-model-comparison",
+      "method_family": "continuous-model-fitting",
+      "metric_name": "brownian_rate",
+      "observed_abs_diff": 0.0638999999937369,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": 88740.5017,
+      "row_id": "brownian-rate",
+      "tolerance_abs_diff": 25000.0,
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "bijux_value": -476.4234,
+      "comparison_kind": "tolerance",
+      "fragment_id": "continuous-model-comparison",
+      "method_family": "continuous-model-fitting",
+      "metric_name": "brownian_log_likelihood",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": -476.4234,
+      "row_id": "brownian-log-likelihood",
+      "tolerance_abs_diff": 0.25,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 5.3344,
+      "comparison_kind": "tolerance",
+      "fragment_id": "continuous-model-comparison",
+      "method_family": "continuous-model-fitting",
+      "metric_name": "ou_alpha",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": 5.3344,
+      "row_id": "ou-alpha",
+      "tolerance_abs_diff": 0.05,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": -461.2531,
+      "comparison_kind": "tolerance",
+      "fragment_id": "continuous-model-comparison",
+      "method_family": "continuous-model-fitting",
+      "metric_name": "ou_log_likelihood",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": -461.2531,
+      "row_id": "ou-log-likelihood",
+      "tolerance_abs_diff": 0.25,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 10.6719,
+      "comparison_kind": "tolerance",
+      "fragment_id": "continuous-model-comparison",
+      "method_family": "continuous-model-fitting",
+      "metric_name": "early_burst_rate_change",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": 10.6719,
+      "row_id": "early-burst-rate-change",
+      "tolerance_abs_diff": 0.05,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": -461.2531,
+      "comparison_kind": "tolerance",
+      "fragment_id": "continuous-model-comparison",
+      "method_family": "continuous-model-fitting",
+      "metric_name": "early_burst_log_likelihood",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": -461.2531,
+      "row_id": "early-burst-log-likelihood",
+      "tolerance_abs_diff": 0.25,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 30.3407,
+      "comparison_kind": "tolerance",
+      "fragment_id": "evolutionary-mode-likelihood-ratios",
+      "method_family": "likelihood-ratio-tests",
+      "metric_name": "brownian_vs_ornstein_uhlenbeck_statistic",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": 30.3407,
+      "row_id": "brownian-ou-lrt-statistic",
+      "tolerance_abs_diff": 0.05,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 30.3406,
+      "comparison_kind": "tolerance",
+      "fragment_id": "evolutionary-mode-likelihood-ratios",
+      "method_family": "likelihood-ratio-tests",
+      "metric_name": "brownian_vs_early_burst_statistic",
+      "observed_abs_diff": 9.99999999997669e-05,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": 30.3407,
+      "row_id": "brownian-eb-lrt-statistic",
+      "tolerance_abs_diff": 0.05,
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "bijux_value": 0.0,
+      "comparison_kind": "tolerance",
+      "fragment_id": "evolutionary-mode-likelihood-ratios",
+      "method_family": "likelihood-ratio-tests",
+      "metric_name": "ornstein_uhlenbeck_vs_early_burst_statistic",
+      "observed_abs_diff": 4.5672e-07,
+      "parity_expectation": "statistical_tolerance",
+      "r_value": 4.5672e-07,
+      "row_id": "ou-eb-lrt-statistic",
+      "tolerance_abs_diff": 0.05,
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "bijux_value": 74,
+      "comparison_kind": "exact_answer",
+      "fragment_id": "ancestral-mode-comparison",
+      "method_family": "ancestral-reconstruction",
+      "metric_name": "brownian_node_count",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": 74,
+      "row_id": "ancestral-brownian-node-count",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": [
+        262.35,
+        295.3922,
+        369.7733,
+        411.276,
+        334.8041
+      ],
+      "comparison_kind": "exact_answer",
+      "fragment_id": "ancestral-mode-comparison",
+      "method_family": "ancestral-reconstruction",
+      "metric_name": "brownian_first_five_estimates",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": [
+        262.35,
+        295.3922,
+        369.7733,
+        411.276,
+        334.8041
+      ],
+      "row_id": "ancestral-brownian-first-five",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": [
+        192.3719,
+        189.8741,
+        171.5749,
+        174.0,
+        214.8
+      ],
+      "comparison_kind": "exact_answer",
+      "fragment_id": "ancestral-mode-comparison",
+      "method_family": "ancestral-reconstruction",
+      "metric_name": "brownian_recent_five_estimates",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": [
+        192.3719,
+        189.8741,
+        171.5749,
+        174,
+        214.8
+      ],
+      "row_id": "ancestral-brownian-recent-five",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": 74,
+      "comparison_kind": "exact_answer",
+      "fragment_id": "ancestral-mode-comparison",
+      "method_family": "ancestral-reconstruction",
+      "metric_name": "early_burst_node_count",
+      "observed_abs_diff": 0.0,
+      "parity_expectation": "exact",
+      "r_value": 74,
+      "row_id": "ancestral-eb-node-count",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "matched"
+    },
+    {
+      "bijux_value": [
+        260.1962,
+        285.3532,
+        371.7088,
+        415.4058,
+        334.0808
+      ],
+      "comparison_kind": "exact_answer",
+      "fragment_id": "ancestral-mode-comparison",
+      "method_family": "ancestral-reconstruction",
+      "metric_name": "early_burst_first_five_estimates",
+      "observed_abs_diff": null,
+      "parity_expectation": "exact",
+      "r_value": [
+        282.721,
+        336.8289,
+        355.3926,
+        386.4737,
+        341.7363
+      ],
+      "row_id": "ancestral-eb-first-five",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "mismatch_unexplained"
+    },
+    {
+      "bijux_value": [
+        192.7689,
+        190.2801,
+        171.5387,
+        174.0,
+        214.8
+      ],
+      "comparison_kind": "exact_answer",
+      "fragment_id": "ancestral-mode-comparison",
+      "method_family": "ancestral-reconstruction",
+      "metric_name": "early_burst_recent_five_estimates",
+      "observed_abs_diff": null,
+      "parity_expectation": "exact",
+      "r_value": [
+        190.3015,
+        187.9457,
+        171.7538,
+        174,
+        214.8
+      ],
+      "row_id": "ancestral-eb-recent-five",
+      "tolerance_abs_diff": 0.0,
+      "verdict": "mismatch_unexplained"
     },
     {
       "bijux_value": 263.916162626577,
@@ -291,9 +612,9 @@
   "schema_version": 1,
   "study_id": "primate-pgls-and-signal",
   "verdict_counts": {
-    "matched": 3,
-    "matched_with_tolerance": 13,
+    "matched": 19,
+    "matched_with_tolerance": 16,
     "mismatch_explained": 4,
-    "mismatch_unexplained": 1
+    "mismatch_unexplained": 3
   }
 }

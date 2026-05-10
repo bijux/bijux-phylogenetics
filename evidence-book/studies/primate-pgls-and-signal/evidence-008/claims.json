@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-likelihood-ratio-parity",
+      "claim_title": "PCM2 likelihood-ratio model comparisons agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "source_fragments": [
+        "evolutionary-mode-likelihood-ratios"
+      ],
+      "summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules.",
+      "verdict": "matched_with_tolerance"
+    }
+  ],
+  "evidence_id": "evidence-008",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

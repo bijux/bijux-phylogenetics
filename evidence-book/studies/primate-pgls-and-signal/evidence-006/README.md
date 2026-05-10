@@ -1,13 +1,13 @@
-# Primate coverage boundary bundle
+# Primate transformed tree parity bundle
 
-Governed record of uncovered transformed-tree, EB, and ancestral fragments from the lecture workflow.
+Governed parity for the lecture OU, early-burst, and late-burst transformed-tree workflows.
 
 - evidence id: `evidence-006`
-- source fragments: `transformed-tree-workflows`, `continuous-model-comparison`, `ancestral-mode-comparison`, `mode-linked-intercept-models`
+- source fragments: `transformed-tree-workflows`
 
 ## Limitations
 
-- This bundle is intentionally a boundary register, not a parity claim.
+- This bundle checks deterministic branch and total-length parity, not rendered figure equivalence.
 
 ## Source Locators
 

@@ -18,7 +18,7 @@ payload <- list(
   evidence_title = "Primate residual diagnostics parity bundle",
   comparison_mode = "direct_parity",
   execution_mode = "study_reference_wrapper",
-  source_intake_policy = "read-only-external-source",
+  source_intake_policy = "",
   source_basis_locators = c(
     "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
     "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",

@@ -7,9 +7,10 @@
     "evidence-book/studies/primate-pgls-and-signal/evidence-006/provenance.json"
   ],
   "evidence_id": "evidence-006",
-  "governed_primary_output_count": 1,
+  "governed_primary_output_count": 2,
   "governed_primary_outputs": [
-    "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json"
+    "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json"
   ],
   "local_execution_products": [
     "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/reference-contract.json",

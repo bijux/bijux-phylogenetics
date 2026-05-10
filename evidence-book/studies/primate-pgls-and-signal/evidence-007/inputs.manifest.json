@@ -1,0 +1,77 @@
+{
+  "evidence_id": "evidence-007",
+  "governed_local_artifact_count": 3,
+  "governed_local_artifacts": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-local-input",
+      "label": "continuous-mode-fit-parity.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json",
+      "read_only": false,
+      "sha256": "e8f14196917643e2eca5992b1219684e73d16c202c7ce7fed8ea3759caa47403"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/README.md",
+      "read_only": false,
+      "sha256": "2e0f2ae6fde5c17cddb67d625686da990a1282825771110b2ceca81ea6ef0035"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/manifest.json",
+      "read_only": false,
+      "sha256": "dadfeb083d10ff4d723b133bce86ce4e9e5c842d0f60dc97af6b785dea1e6e49"
+    }
+  ],
+  "local_input_count": 0,
+  "local_inputs": [],
+  "schema_version": 2,
+  "source_input_count": 5,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "external-source-descriptor",
+      "label": "Lund source descriptors",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+      "read_only": true,
+      "sha256": "533651c7b313d5b147a292ac39cf7854d4b3326e7b208e1e0eaea463570fbbcb"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "governed primate reference table",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "read_only": true,
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "input_id": "source-input-003",
+      "kind": "repository-reference",
+      "label": "governed primate trimmed tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "read_only": true,
+      "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
+    },
+    {
+      "input_id": "source-input-004",
+      "kind": "repository-reference",
+      "label": "R reference results for the PGLS and signal study",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+      "read_only": true,
+      "sha256": "d7b74a5da5e73a3cdff702d2d86b2936a3ad96f77dc45b5cb95df2af611b9ed9"
+    },
+    {
+      "input_id": "source-input-005",
+      "kind": "repository-reference",
+      "label": "Primate evolutionary mode fit parity bundle report payload",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json",
+      "read_only": false,
+      "sha256": "e8f14196917643e2eca5992b1219684e73d16c202c7ce7fed8ea3759caa47403"
+    }
+  ],
+  "study_id": "primate-pgls-and-signal"
+}

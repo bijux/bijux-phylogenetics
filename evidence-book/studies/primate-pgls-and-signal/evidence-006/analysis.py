@@ -11,7 +11,7 @@ RESULTS_ROOT = BUNDLE_ROOT / 'results'
 STUDY_ID = "primate-pgls-and-signal"
 EVIDENCE_ID = "evidence-006"
 COMPARISON_MODE = "direct_parity"
-PRIMARY_OUTPUTS = ['evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json']
+PRIMARY_OUTPUTS = ['evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json', 'evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json']
 BUILD_SCRIPT = 'evidence-book/studies/primate-pgls-and-signal/build_evidence.py'
 
 def main() -> None:

@@ -48,10 +48,10 @@
     "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
     "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json"
   ],
-  "source_intake_policy": "read-only-external-source",
-  "study_dataset_registry_locator": "evidence-book/studies/primate-pgls-and-signal/datasets/registry.json",
+  "source_intake_policy": "",
+  "study_dataset_registry_locator": "",
   "study_id": "primate-pgls-and-signal",
-  "study_provenance_locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+  "study_provenance_locator": "",
   "study_support_scripts": {
     "build_script_path": "evidence-book/studies/primate-pgls-and-signal/build_evidence.py",
     "reference_python_scripts": [],

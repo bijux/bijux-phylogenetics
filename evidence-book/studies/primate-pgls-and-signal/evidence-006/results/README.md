@@ -7,6 +7,7 @@ when they live at the evidence root for compatibility with existing study builde
 ## Governed Primary Outputs
 
 - `evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json`
 
 ## Local Execution Products
 

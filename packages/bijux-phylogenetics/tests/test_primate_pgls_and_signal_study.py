@@ -6,11 +6,14 @@ from pathlib import Path
 from bijux_phylogenetics.evidence.studies.primate_pgls_and_signal import (
     build_primate_pgls_signal_bundles,
     build_primate_pgls_signal_claim_registry,
+    build_primate_pgls_signal_evidence_registry,
     build_primate_pgls_signal_external_sources,
     build_primate_pgls_signal_family_index,
     build_primate_pgls_signal_parity_policy,
     build_primate_pgls_signal_scalar_parity_table,
     build_primate_pgls_signal_source_fragment_map,
+    render_primate_pgls_signal_study_manifest,
+    render_primate_pgls_signal_study_readme,
     render_primate_pgls_signal_scalar_parity_table_markdown,
 )
 
@@ -20,6 +23,13 @@ STUDY_ROOT = REPO_ROOT / "evidence-book" / "studies" / "primate-pgls-and-signal"
 
 
 def test_primate_pgls_and_signal_study_indexes_match_generated_payloads() -> None:
+    study_manifest = json.loads(
+        (STUDY_ROOT / "study.json").read_text(encoding="utf-8")
+    )
+    evidence_registry = json.loads(
+        (STUDY_ROOT / "evidence-registry.json").read_text(encoding="utf-8")
+    )
+    study_readme = (STUDY_ROOT / "README.md").read_text(encoding="utf-8")
     external_sources = json.loads(
         (STUDY_ROOT / "provenance" / "lund-course-sources.json").read_text(
             encoding="utf-8"
@@ -38,6 +48,9 @@ def test_primate_pgls_and_signal_study_indexes_match_generated_payloads() -> Non
         (STUDY_ROOT / "claim-registry.json").read_text(encoding="utf-8")
     )
 
+    assert study_manifest == render_primate_pgls_signal_study_manifest(REPO_ROOT)
+    assert evidence_registry == build_primate_pgls_signal_evidence_registry(REPO_ROOT)
+    assert study_readme == render_primate_pgls_signal_study_readme(REPO_ROOT)
     assert external_sources == build_primate_pgls_signal_external_sources()
     assert source_fragment_map == build_primate_pgls_signal_source_fragment_map()
     assert family_index == build_primate_pgls_signal_family_index(REPO_ROOT)

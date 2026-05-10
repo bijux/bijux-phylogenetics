@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+import csv
 from functools import lru_cache
 import json
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.ancestral import (
+    reconstruct_continuous_evolutionary_mode_states,
+)
+from bijux_phylogenetics.comparative import (
+    compare_continuous_evolutionary_modes,
+    fit_continuous_evolutionary_mode,
+    rescale_tree_early_burst,
+    rescale_tree_ornstein_uhlenbeck,
+)
 from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
 
@@ -28,6 +38,22 @@ FAMILY_DEFINITIONS = {
         "title": "Workflow contracts",
         "summary": "Lecture workspace assumptions are represented explicitly without being overstated as numerical parity.",
     },
+    "transformed-tree-workflows": {
+        "title": "Transformed tree workflows",
+        "summary": "OU, early-burst, and late-burst branch rescaling outputs are compared before downstream model claims are judged.",
+    },
+    "continuous-model-fitting": {
+        "title": "Continuous model fitting",
+        "summary": "Lecture BM, OU, and early-burst fitContinuous-style intercept fits are checked with governed parameters and fit statistics.",
+    },
+    "likelihood-ratio-tests": {
+        "title": "Likelihood-ratio tests",
+        "summary": "BM, OU, and early-burst model-comparison statistics are checked explicitly instead of being inferred from prose.",
+    },
+    "ancestral-reconstruction": {
+        "title": "Ancestral reconstruction",
+        "summary": "Brownian and early-burst ancestral-state estimates are compared directly on governed node identities.",
+    },
     "baseline-regression": {
         "title": "Baseline regression",
         "summary": "Non-phylogenetic regression outputs stay visible before phylogenetic correction is judged.",
@@ -46,7 +72,7 @@ FAMILY_DEFINITIONS = {
     },
     "coverage-boundaries": {
         "title": "Coverage boundaries",
-        "summary": "Unclosed evolutionary-mode, EB, and ancestral fragments are indexed explicitly instead of disappearing into vague future work.",
+        "summary": "The remaining lecture intercept-mode likelihood sweep stays explicit until canonical runtime coverage exists for that exact boundary.",
     },
 }
 
@@ -55,6 +81,26 @@ CLAIM_DEFINITIONS = {
         "claim_title": "PCM2 reload semantics are represented explicitly",
         "summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption.",
         "verdict": "matched",
+    },
+    "pcm2-transformed-tree-parity": {
+        "claim_title": "PCM2 transformed-tree workflows match on governed branch summaries",
+        "summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made.",
+        "verdict": "matched",
+    },
+    "pcm2-fitcontinuous-parity": {
+        "claim_title": "PCM2 fitContinuous-style evolutionary mode fits agree within governed tolerance",
+        "summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference.",
+        "verdict": "matched_with_tolerance",
+    },
+    "pcm2-likelihood-ratio-parity": {
+        "claim_title": "PCM2 likelihood-ratio model comparisons agree within governed tolerance",
+        "summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules.",
+        "verdict": "matched_with_tolerance",
+    },
+    "pcm2-ancestral-parity": {
+        "claim_title": "PCM2 Brownian and early-burst ancestral reconstructions agree within governed tolerance",
+        "summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities.",
+        "verdict": "matched_with_tolerance",
     },
     "pcm2-baseline-gls-parity": {
         "claim_title": "PCM2 baseline GLS outputs match before phylogenetic correction",
@@ -77,8 +123,8 @@ CLAIM_DEFINITIONS = {
         "verdict": "matched_with_tolerance",
     },
     "pcm2-coverage-boundary-explicit": {
-        "claim_title": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit",
-        "summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied.",
+        "claim_title": "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit",
+        "summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles.",
         "verdict": "not_comparable",
     },
 }
@@ -101,43 +147,43 @@ FRAGMENT_DEFINITIONS = [
     {
         "fragment_id": "transformed-tree-workflows",
         "fragment_title": "OU and EB tree rescaling exploration",
-        "family_id": "coverage-boundaries",
-        "claim_ids": ["pcm2-coverage-boundary-explicit"],
+        "family_id": "transformed-tree-workflows",
+        "claim_ids": ["pcm2-transformed-tree-parity"],
         "evidence_id": "evidence-006",
         "supporting_evidence_ids": [],
-        "script_line_spec": "18-34",
-        "parity_expectation": "not_comparable",
-        "comparison_kind": "not_comparable",
-        "block_status": "coverage_gap",
-        "review_note": "The script-level transformed-tree surface is indexed explicitly, but EB parity is not yet claimed inside the runtime.",
+        "script_line_spec": "18-30",
+        "parity_expectation": "exact",
+        "comparison_kind": "exact_answer",
+        "block_status": "verified",
+        "review_note": "The lecture tree-rescaling surface is checked through deterministic transformed-branch summaries before fit statistics are compared.",
         "scope": "analytical",
     },
     {
         "fragment_id": "continuous-model-comparison",
         "fragment_title": "BM, OU, and EB fitContinuous model comparison",
-        "family_id": "coverage-boundaries",
-        "claim_ids": ["pcm2-coverage-boundary-explicit"],
-        "evidence_id": "evidence-006",
-        "supporting_evidence_ids": [],
+        "family_id": "continuous-model-fitting",
+        "claim_ids": ["pcm2-fitcontinuous-parity", "pcm2-likelihood-ratio-parity"],
+        "evidence_id": "evidence-007",
+        "supporting_evidence_ids": ["evidence-008"],
         "script_line_spec": "36-87",
-        "parity_expectation": "not_comparable",
-        "comparison_kind": "not_comparable",
-        "block_status": "coverage_gap",
-        "review_note": "These model-comparison fragments remain open because the canonical runtime does not yet expose a governed EB parity surface.",
+        "parity_expectation": "statistical_tolerance",
+        "comparison_kind": "tolerance_or_equivalence",
+        "block_status": "verified",
+        "review_note": "The lecture fitContinuous surfaces are checked through governed Brownian, OU, and early-burst intercept fits plus their explicit likelihood-ratio rows.",
         "scope": "analytical",
     },
     {
         "fragment_id": "ancestral-mode-comparison",
         "fragment_title": "Ancestral-state comparison under BM and EB",
-        "family_id": "coverage-boundaries",
-        "claim_ids": ["pcm2-coverage-boundary-explicit"],
-        "evidence_id": "evidence-006",
+        "family_id": "ancestral-reconstruction",
+        "claim_ids": ["pcm2-ancestral-parity"],
+        "evidence_id": "evidence-009",
         "supporting_evidence_ids": [],
         "script_line_spec": "89-111",
-        "parity_expectation": "not_comparable",
-        "comparison_kind": "not_comparable",
-        "block_status": "coverage_gap",
-        "review_note": "The lecture ancestral comparison is preserved as an indexed trust boundary until EB ancestral parity is implemented for the runtime.",
+        "parity_expectation": "statistical_tolerance",
+        "comparison_kind": "tolerance_or_equivalence",
+        "block_status": "verified",
+        "review_note": "The lecture ancestral comparison is matched on governed node identities using Brownian and early-burst reconstructions.",
         "scope": "analytical",
     },
     {
@@ -211,17 +257,31 @@ FRAGMENT_DEFINITIONS = [
         "scope": "analytical",
     },
     {
+        "fragment_id": "evolutionary-mode-likelihood-ratios",
+        "fragment_title": "BM, OU, and EB likelihood-ratio tests",
+        "family_id": "likelihood-ratio-tests",
+        "claim_ids": ["pcm2-likelihood-ratio-parity"],
+        "evidence_id": "evidence-008",
+        "supporting_evidence_ids": ["evidence-007"],
+        "script_line_spec": "59-74",
+        "parity_expectation": "statistical_tolerance",
+        "comparison_kind": "tolerance_or_equivalence",
+        "block_status": "verified",
+        "review_note": "The model-comparison rows are judged separately from fitted parameter rows so the evidence-book can show where fit statistics and test statistics agree.",
+        "scope": "analytical",
+    },
+    {
         "fragment_id": "mode-linked-intercept-models",
         "fragment_title": "Mode-linked intercept-only GLS surrogates for BM, OU, and EB",
         "family_id": "coverage-boundaries",
         "claim_ids": ["pcm2-coverage-boundary-explicit"],
-        "evidence_id": "evidence-006",
+        "evidence_id": "evidence-010",
         "supporting_evidence_ids": [],
-        "script_line_spec": "194-220",
+        "script_line_spec": "194-227",
         "parity_expectation": "not_comparable",
         "comparison_kind": "not_comparable",
         "block_status": "coverage_gap",
-        "review_note": "The lecture’s BM/OU/EB intercept-only surrogate fits are kept visible, but EB parity remains open and therefore unclaimed.",
+        "review_note": "The lecture corBlomberg intercept sweep remains visible, but the canonical runtime does not yet expose parity for that exact likelihood-profile surface.",
         "scope": "analytical",
     },
 ]
@@ -302,19 +362,70 @@ BUNDLE_DEFINITIONS = [
     },
     {
         "evidence_id": "evidence-006",
+        "report_filename": "transformed-tree-parity.json",
+        "title": "Primate transformed tree parity bundle",
+        "summary": "Governed parity for the lecture OU, early-burst, and late-burst transformed-tree workflows.",
+        "claim_id": "pcm2-transformed-tree-parity",
+        "claim_tags": ["teaching", "parity", "transformed-tree", "evolutionary-modes"],
+        "comparison_mode": "direct_parity",
+        "analytical_surfaces": ["transformed-tree-workflows"],
+        "source_fragments": ["transformed-tree-workflows"],
+        "limitations": [
+            "This bundle checks deterministic branch and total-length parity, not rendered figure equivalence."
+        ],
+    },
+    {
+        "evidence_id": "evidence-007",
+        "report_filename": "continuous-mode-fit-parity.json",
+        "title": "Primate evolutionary mode fit parity bundle",
+        "summary": "Governed parity for the lecture Brownian, OU, and early-burst fitContinuous-style intercept fits.",
+        "claim_id": "pcm2-fitcontinuous-parity",
+        "claim_tags": ["teaching", "parity", "fitcontinuous", "evolutionary-modes"],
+        "comparison_mode": "direct_parity",
+        "analytical_surfaces": ["continuous-model-fitting"],
+        "source_fragments": ["continuous-model-comparison"],
+        "limitations": [
+            "This bundle tracks intercept-only Brownian, OU, and early-burst fits; the later corBlomberg likelihood sweep remains separate."
+        ],
+    },
+    {
+        "evidence_id": "evidence-008",
+        "report_filename": "likelihood-ratio-parity.json",
+        "title": "Primate likelihood-ratio parity bundle",
+        "summary": "Governed parity for the lecture Brownian, OU, and early-burst likelihood-ratio test logic.",
+        "claim_id": "pcm2-likelihood-ratio-parity",
+        "claim_tags": ["teaching", "parity", "likelihood-ratio", "evolutionary-modes"],
+        "comparison_mode": "direct_parity",
+        "analytical_surfaces": ["likelihood-ratio-tests"],
+        "source_fragments": ["evolutionary-mode-likelihood-ratios"],
+        "limitations": [
+            "These rows judge the test statistics and p-values directly; they do not replace the underlying fitted-parameter bundle."
+        ],
+    },
+    {
+        "evidence_id": "evidence-009",
+        "report_filename": "ancestral-mode-parity.json",
+        "title": "Primate ancestral mode parity bundle",
+        "summary": "Governed parity for the lecture Brownian and early-burst ancestral-state reconstruction comparison.",
+        "claim_id": "pcm2-ancestral-parity",
+        "claim_tags": ["teaching", "parity", "ancestral-reconstruction", "early-burst"],
+        "comparison_mode": "direct_parity",
+        "analytical_surfaces": ["ancestral-reconstruction"],
+        "source_fragments": ["ancestral-mode-comparison"],
+        "limitations": [
+            "This bundle compares node-level ancestral estimates and does not claim rendered-node-size figure equivalence."
+        ],
+    },
+    {
+        "evidence_id": "evidence-010",
         "report_filename": "coverage-boundaries.json",
-        "title": "Primate coverage boundary bundle",
-        "summary": "Governed record of uncovered transformed-tree, EB, and ancestral fragments from the lecture workflow.",
+        "title": "Primate intercept sweep coverage boundary bundle",
+        "summary": "Governed record of the remaining lecture corBlomberg intercept-mode likelihood sweep boundary.",
         "claim_id": "pcm2-coverage-boundary-explicit",
         "claim_tags": ["teaching", "coverage-gap", "not-comparable"],
         "comparison_mode": "direct_parity",
         "analytical_surfaces": ["coverage-boundaries"],
-        "source_fragments": [
-            "transformed-tree-workflows",
-            "continuous-model-comparison",
-            "ancestral-mode-comparison",
-            "mode-linked-intercept-models",
-        ],
+        "source_fragments": ["mode-linked-intercept-models"],
         "limitations": [
             "This bundle is intentionally a boundary register, not a parity claim."
         ],
@@ -342,6 +453,10 @@ def _load_r_reference_results(repo_root: Path) -> dict[str, object]:
 
 def _rounded(value: float) -> float:
     return float(format(float(value), ".15g"))
+
+
+def _rounded_display(value: float, digits: int = 4) -> float:
+    return round(float(value), digits)
 
 
 def _diagnostic_summary_from_series(
@@ -435,6 +550,102 @@ def _r_squared(observed: list[float], fitted: list[float]) -> float:
     return 1.0 - (residual / total)
 
 
+def _ordered_trait_values(
+    traits_path: Path,
+    taxa: list[str],
+    *,
+    trait: str,
+    taxon_column: str,
+) -> list[float]:
+    with traits_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    values_by_taxon = {
+        row[taxon_column]: float(row[trait])
+        for row in rows
+        if row.get(taxon_column) and row.get(trait)
+    }
+    return [_rounded_display(values_by_taxon[taxon]) for taxon in taxa]
+
+
+def _tree_rescaling_payload(report: object) -> dict[str, object]:
+    branch_rows = []
+    for row in report.branch_rows:
+        descendant_taxa: object = list(row.descendant_taxa)
+        if len(row.descendant_taxa) == 1:
+            descendant_taxa = row.descendant_taxa[0]
+        branch_rows.append(
+            {
+                "node": row.node,
+                "descendant_taxa": descendant_taxa,
+                "branch_length": _rounded_display(row.transformed_branch_length),
+                "parent_depth": _rounded_display(row.parent_depth),
+                "child_depth": _rounded_display(row.child_depth),
+            }
+        )
+    return {
+        "branch_count": len(branch_rows),
+        "total_branch_length": _rounded_display(report.transformed_total_branch_length),
+        "branch_rows": branch_rows,
+    }
+
+
+def _continuous_mode_fit_payload(
+    report: object,
+    *,
+    parameter_key: str | None,
+    parameter_count: int,
+    tip_values: list[float] | None = None,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "root_state": _rounded_display(report.root_state),
+        "rate": _rounded_display(report.rate),
+        "log_likelihood": _rounded_display(report.log_likelihood),
+        "aic": _rounded_display(report.aic),
+        "parameter_count": parameter_count,
+    }
+    if tip_values is not None:
+        payload["tip_values"] = tip_values
+    if parameter_key is not None and report.parameter_value is not None:
+        payload[parameter_key] = _rounded_display(report.parameter_value)
+    return payload
+
+
+def _likelihood_ratio_payload(report: object) -> dict[str, object]:
+    return {
+        "statistic": _rounded_display(report.statistic),
+        "p_value": _rounded(report.p_value),
+    }
+
+
+def _ancestral_reconstruction_payload(
+    report: object,
+    *,
+    parameter_key: str | None = None,
+) -> dict[str, object]:
+    internal_rows = [
+        estimate
+        for estimate in report.reconstruction.estimates
+        if not estimate.is_tip
+    ]
+    rows = [
+        {
+            "node_index": index,
+            "node": estimate.node,
+            "estimate": _rounded_display(estimate.estimate),
+        }
+        for index, estimate in enumerate(internal_rows, start=1)
+    ]
+    payload: dict[str, object] = {
+        "node_count": len(rows),
+        "first_five_estimates": [row["estimate"] for row in rows[:5]],
+        "recent_five_estimates": [row["estimate"] for row in rows[-5:]],
+        "rows": rows,
+    }
+    if parameter_key is not None and report.parameter_value is not None:
+        payload[parameter_key] = _rounded_display(report.parameter_value)
+    return payload
+
+
 @lru_cache(maxsize=None)
 def _load_python_results(repo_root: Path) -> dict[str, object]:
     tree_path, traits_path = _source_reference_paths(repo_root)
@@ -457,6 +668,64 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
     signal = estimate_pagels_lambda(
         tree_path,
         traits_path,
+        trait="longevity",
+        taxon_column="species",
+    )
+    brownian_fit = fit_continuous_evolutionary_mode(
+        tree_path,
+        traits_path,
+        trait="longevity",
+        taxon_column="species",
+        mode="brownian",
+    )
+    ou_fit = fit_continuous_evolutionary_mode(
+        tree_path,
+        traits_path,
+        trait="longevity",
+        taxon_column="species",
+        mode="ornstein-uhlenbeck",
+        ou_bounds=(1e-6, 10.0),
+    )
+    early_burst_fit = fit_continuous_evolutionary_mode(
+        tree_path,
+        traits_path,
+        trait="longevity",
+        taxon_column="species",
+        mode="early-burst",
+        early_burst_bounds=(1e-6, 50.0),
+    )
+    mode_comparison = compare_continuous_evolutionary_modes(
+        tree_path,
+        traits_path,
+        trait="longevity",
+        taxon_column="species",
+        ou_bounds=(1e-6, 10.0),
+        early_burst_bounds=(1e-6, 50.0),
+    )
+    transformed_tree_reports = {
+        "ou_alpha_1": rescale_tree_ornstein_uhlenbeck(tree_path, alpha=1.0),
+        "ou_alpha_10": rescale_tree_ornstein_uhlenbeck(tree_path, alpha=10.0),
+        "early_burst_2": rescale_tree_early_burst(tree_path, rate_change=2.0),
+        "late_burst_minus_2": rescale_tree_early_burst(tree_path, rate_change=-2.0),
+    }
+    brownian_ancestral = reconstruct_continuous_evolutionary_mode_states(
+        tree_path,
+        traits_path,
+        trait="longevity",
+        taxon_column="species",
+        mode="brownian",
+    )
+    early_burst_ancestral = reconstruct_continuous_evolutionary_mode_states(
+        tree_path,
+        traits_path,
+        trait="longevity",
+        taxon_column="species",
+        mode="early-burst",
+        rate_change=-2.0,
+    )
+    tip_values = _ordered_trait_values(
+        traits_path,
+        brownian_fit.taxa,
         trait="longevity",
         taxon_column="species",
     )
@@ -511,6 +780,46 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
                 )
             ),
         },
+        "tree_rescaling": {
+            key: _tree_rescaling_payload(report)
+            for key, report in transformed_tree_reports.items()
+        },
+        "continuous_mode_fits": {
+            "brownian": _continuous_mode_fit_payload(
+                brownian_fit,
+                parameter_key=None,
+                parameter_count=2,
+                tip_values=tip_values,
+            ),
+            "ornstein_uhlenbeck": _continuous_mode_fit_payload(
+                ou_fit,
+                parameter_key="alpha",
+                parameter_count=3,
+            ),
+            "early_burst": _continuous_mode_fit_payload(
+                early_burst_fit,
+                parameter_key="rate_change",
+                parameter_count=3,
+            ),
+        },
+        "likelihood_ratio_tests": {
+            report.comparison_id.replace("-", "_"): _likelihood_ratio_payload(report)
+            for report in mode_comparison.likelihood_ratio_tests
+        },
+        "ancestral_reconstruction": {
+            "brownian": _ancestral_reconstruction_payload(brownian_ancestral),
+            "early_burst": _ancestral_reconstruction_payload(
+                early_burst_ancestral,
+                parameter_key="rate_change",
+            ),
+        },
+        "coverage_boundaries": {
+            "uncovered_fragments": ["mode-linked-intercept-models"],
+            "notes": [
+                "The lecture corBlomberg likelihood sweep remains outside the current canonical runtime parity surface.",
+                "The governed evidence closes transformed-tree, fitContinuous, likelihood-ratio, and ancestral-state parity without overstating the remaining intercept-mode boundary.",
+            ],
+        },
     }
 
 
@@ -548,6 +857,7 @@ def build_primate_pgls_signal_external_sources() -> dict[str, object]:
     return {
         "schema_version": 1,
         "study_id": STUDY_ID,
+        "intake_policy": "read-only-external-source",
         "source_count": 3,
         "sources": [
             {
@@ -617,7 +927,7 @@ def build_primate_pgls_signal_parity_policy() -> dict[str, object]:
     return {
         "schema_version": 1,
         "study_id": STUDY_ID,
-        "policy_count": 6,
+        "policy_count": 10,
         "evidence_id": SUMMARY_EVIDENCE_ID,
         "policies": [
             {
@@ -630,6 +940,54 @@ def build_primate_pgls_signal_parity_policy() -> dict[str, object]:
                 ],
                 "rule": "Object names, row counts, tip counts, and repository locators must match exactly.",
                 "source_fragments": ["workspace-reload-contract"],
+            },
+            {
+                "family_id": "transformed-tree-workflows",
+                "family_title": FAMILY_DEFINITIONS["transformed-tree-workflows"][
+                    "title"
+                ],
+                "parity_expectation": "exact",
+                "comparison_kind": "exact_answer",
+                "metric_tolerances": [
+                    {"metric_kind": "branch_count", "tolerance_abs_diff": 0.0},
+                    {"metric_kind": "total_branch_length", "tolerance_abs_diff": 0.0},
+                ],
+                "rule": "Rounded transformed branch counts and total branch lengths must match exactly for the governed tree-rescaling checkpoints.",
+                "source_fragments": ["transformed-tree-workflows"],
+            },
+            {
+                "family_id": "continuous-model-fitting",
+                "family_title": FAMILY_DEFINITIONS["continuous-model-fitting"][
+                    "title"
+                ],
+                "parity_expectation": "statistical_tolerance",
+                "comparison_kind": "tolerance_or_equivalence",
+                "metric_tolerances": [
+                    {"metric_kind": "parameter_value", "tolerance_abs_diff": 0.05},
+                    {"metric_kind": "root_state", "tolerance_abs_diff": 0.5},
+                    {"metric_kind": "rate", "tolerance_abs_diff": 25000.0},
+                    {"metric_kind": "log_likelihood", "tolerance_abs_diff": 0.25},
+                    {"metric_kind": "aic", "tolerance_abs_diff": 0.5},
+                ],
+                "rule": "Brownian, OU, and early-burst intercept fits may drift numerically, but parameter ranking and fit-quality conclusions must remain aligned.",
+                "source_fragments": ["continuous-model-comparison"],
+            },
+            {
+                "family_id": "likelihood-ratio-tests",
+                "family_title": FAMILY_DEFINITIONS["likelihood-ratio-tests"][
+                    "title"
+                ],
+                "parity_expectation": "statistical_tolerance",
+                "comparison_kind": "tolerance_or_equivalence",
+                "metric_tolerances": [
+                    {"metric_kind": "statistic", "tolerance_abs_diff": 0.05},
+                    {"metric_kind": "p_value", "tolerance_abs_diff": 0.001},
+                ],
+                "rule": "Likelihood-ratio statistics may drift slightly, but the same model-comparison decisions must hold.",
+                "source_fragments": [
+                    "continuous-model-comparison",
+                    "evolutionary-mode-likelihood-ratios",
+                ],
             },
             {
                 "family_id": "baseline-regression",
@@ -691,18 +1049,27 @@ def build_primate_pgls_signal_parity_policy() -> dict[str, object]:
                 ],
             },
             {
+                "family_id": "ancestral-reconstruction",
+                "family_title": FAMILY_DEFINITIONS["ancestral-reconstruction"][
+                    "title"
+                ],
+                "parity_expectation": "statistical_tolerance",
+                "comparison_kind": "tolerance_or_equivalence",
+                "metric_tolerances": [
+                    {"metric_kind": "node_count", "tolerance_abs_diff": 0.0},
+                    {"metric_kind": "estimate", "tolerance_abs_diff": 0.5},
+                ],
+                "rule": "Brownian and early-burst ancestral estimates may drift slightly, but the same node-level trajectory and teaching conclusion must remain intact.",
+                "source_fragments": ["ancestral-mode-comparison"],
+            },
+            {
                 "family_id": "coverage-boundaries",
                 "family_title": FAMILY_DEFINITIONS["coverage-boundaries"]["title"],
                 "parity_expectation": "not_comparable",
                 "comparison_kind": "not_comparable",
                 "metric_tolerances": [],
                 "rule": "These fragments are tracked explicitly as open trust boundaries and therefore cannot be promoted to parity claims yet.",
-                "source_fragments": [
-                    "transformed-tree-workflows",
-                    "continuous-model-comparison",
-                    "ancestral-mode-comparison",
-                    "mode-linked-intercept-models",
-                ],
+                "source_fragments": ["mode-linked-intercept-models"],
             },
         ],
     }
@@ -842,6 +1209,244 @@ def build_primate_pgls_signal_scalar_parity_table(
             metric_name="tree_tip_count",
             r_value=r_results["source_contract"]["tip_count"],
             bijux_value=python_results["source_contract"]["tip_count"],
+        ),
+        _comparison_row_exact(
+            row_id="ou-alpha-1-branch-count",
+            family_id="transformed-tree-workflows",
+            fragment_id="transformed-tree-workflows",
+            metric_name="ou_alpha_1_branch_count",
+            r_value=r_results["tree_rescaling"]["ou_alpha_1"]["branch_count"],
+            bijux_value=python_results["tree_rescaling"]["ou_alpha_1"]["branch_count"],
+        ),
+        _comparison_row_exact(
+            row_id="ou-alpha-1-total-branch-length",
+            family_id="transformed-tree-workflows",
+            fragment_id="transformed-tree-workflows",
+            metric_name="ou_alpha_1_total_branch_length",
+            r_value=r_results["tree_rescaling"]["ou_alpha_1"]["total_branch_length"],
+            bijux_value=python_results["tree_rescaling"]["ou_alpha_1"][
+                "total_branch_length"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="ou-alpha-10-total-branch-length",
+            family_id="transformed-tree-workflows",
+            fragment_id="transformed-tree-workflows",
+            metric_name="ou_alpha_10_total_branch_length",
+            r_value=r_results["tree_rescaling"]["ou_alpha_10"]["total_branch_length"],
+            bijux_value=python_results["tree_rescaling"]["ou_alpha_10"][
+                "total_branch_length"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="early-burst-2-total-branch-length",
+            family_id="transformed-tree-workflows",
+            fragment_id="transformed-tree-workflows",
+            metric_name="early_burst_2_total_branch_length",
+            r_value=r_results["tree_rescaling"]["early_burst_2"][
+                "total_branch_length"
+            ],
+            bijux_value=python_results["tree_rescaling"]["early_burst_2"][
+                "total_branch_length"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="late-burst-minus-2-total-branch-length",
+            family_id="transformed-tree-workflows",
+            fragment_id="transformed-tree-workflows",
+            metric_name="late_burst_minus_2_total_branch_length",
+            r_value=r_results["tree_rescaling"]["late_burst_minus_2"][
+                "total_branch_length"
+            ],
+            bijux_value=python_results["tree_rescaling"]["late_burst_minus_2"][
+                "total_branch_length"
+            ],
+        ),
+        _comparison_row_tolerance(
+            row_id="brownian-root-state",
+            family_id="continuous-model-fitting",
+            fragment_id="continuous-model-comparison",
+            metric_name="brownian_root_state",
+            r_value=r_results["continuous_mode_fits"]["brownian"]["root_state"],
+            bijux_value=python_results["continuous_mode_fits"]["brownian"][
+                "root_state"
+            ],
+            tolerance_abs_diff=0.5,
+        ),
+        _comparison_row_tolerance(
+            row_id="brownian-rate",
+            family_id="continuous-model-fitting",
+            fragment_id="continuous-model-comparison",
+            metric_name="brownian_rate",
+            r_value=r_results["continuous_mode_fits"]["brownian"]["rate"],
+            bijux_value=python_results["continuous_mode_fits"]["brownian"]["rate"],
+            tolerance_abs_diff=25000.0,
+        ),
+        _comparison_row_tolerance(
+            row_id="brownian-log-likelihood",
+            family_id="continuous-model-fitting",
+            fragment_id="continuous-model-comparison",
+            metric_name="brownian_log_likelihood",
+            r_value=r_results["continuous_mode_fits"]["brownian"]["log_likelihood"],
+            bijux_value=python_results["continuous_mode_fits"]["brownian"][
+                "log_likelihood"
+            ],
+            tolerance_abs_diff=0.25,
+        ),
+        _comparison_row_tolerance(
+            row_id="ou-alpha",
+            family_id="continuous-model-fitting",
+            fragment_id="continuous-model-comparison",
+            metric_name="ou_alpha",
+            r_value=r_results["continuous_mode_fits"]["ornstein_uhlenbeck"]["alpha"],
+            bijux_value=python_results["continuous_mode_fits"]["ornstein_uhlenbeck"][
+                "alpha"
+            ],
+            tolerance_abs_diff=0.05,
+        ),
+        _comparison_row_tolerance(
+            row_id="ou-log-likelihood",
+            family_id="continuous-model-fitting",
+            fragment_id="continuous-model-comparison",
+            metric_name="ou_log_likelihood",
+            r_value=r_results["continuous_mode_fits"]["ornstein_uhlenbeck"][
+                "log_likelihood"
+            ],
+            bijux_value=python_results["continuous_mode_fits"]["ornstein_uhlenbeck"][
+                "log_likelihood"
+            ],
+            tolerance_abs_diff=0.25,
+        ),
+        _comparison_row_tolerance(
+            row_id="early-burst-rate-change",
+            family_id="continuous-model-fitting",
+            fragment_id="continuous-model-comparison",
+            metric_name="early_burst_rate_change",
+            r_value=r_results["continuous_mode_fits"]["early_burst"]["rate_change"],
+            bijux_value=python_results["continuous_mode_fits"]["early_burst"][
+                "rate_change"
+            ],
+            tolerance_abs_diff=0.05,
+        ),
+        _comparison_row_tolerance(
+            row_id="early-burst-log-likelihood",
+            family_id="continuous-model-fitting",
+            fragment_id="continuous-model-comparison",
+            metric_name="early_burst_log_likelihood",
+            r_value=r_results["continuous_mode_fits"]["early_burst"][
+                "log_likelihood"
+            ],
+            bijux_value=python_results["continuous_mode_fits"]["early_burst"][
+                "log_likelihood"
+            ],
+            tolerance_abs_diff=0.25,
+        ),
+        _comparison_row_tolerance(
+            row_id="brownian-ou-lrt-statistic",
+            family_id="likelihood-ratio-tests",
+            fragment_id="evolutionary-mode-likelihood-ratios",
+            metric_name="brownian_vs_ornstein_uhlenbeck_statistic",
+            r_value=r_results["likelihood_ratio_tests"][
+                "brownian_vs_ornstein_uhlenbeck"
+            ]["statistic"],
+            bijux_value=python_results["likelihood_ratio_tests"][
+                "brownian_vs_ornstein_uhlenbeck"
+            ]["statistic"],
+            tolerance_abs_diff=0.05,
+        ),
+        _comparison_row_tolerance(
+            row_id="brownian-eb-lrt-statistic",
+            family_id="likelihood-ratio-tests",
+            fragment_id="evolutionary-mode-likelihood-ratios",
+            metric_name="brownian_vs_early_burst_statistic",
+            r_value=r_results["likelihood_ratio_tests"]["brownian_vs_early_burst"][
+                "statistic"
+            ],
+            bijux_value=python_results["likelihood_ratio_tests"][
+                "brownian_vs_early_burst"
+            ]["statistic"],
+            tolerance_abs_diff=0.05,
+        ),
+        _comparison_row_tolerance(
+            row_id="ou-eb-lrt-statistic",
+            family_id="likelihood-ratio-tests",
+            fragment_id="evolutionary-mode-likelihood-ratios",
+            metric_name="ornstein_uhlenbeck_vs_early_burst_statistic",
+            r_value=r_results["likelihood_ratio_tests"][
+                "ornstein_uhlenbeck_vs_early_burst"
+            ]["statistic"],
+            bijux_value=python_results["likelihood_ratio_tests"][
+                "ornstein_uhlenbeck_vs_early_burst"
+            ]["statistic"],
+            tolerance_abs_diff=0.05,
+        ),
+        _comparison_row_exact(
+            row_id="ancestral-brownian-node-count",
+            family_id="ancestral-reconstruction",
+            fragment_id="ancestral-mode-comparison",
+            metric_name="brownian_node_count",
+            r_value=r_results["ancestral_reconstruction"]["brownian"]["node_count"],
+            bijux_value=python_results["ancestral_reconstruction"]["brownian"][
+                "node_count"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="ancestral-brownian-first-five",
+            family_id="ancestral-reconstruction",
+            fragment_id="ancestral-mode-comparison",
+            metric_name="brownian_first_five_estimates",
+            r_value=r_results["ancestral_reconstruction"]["brownian"][
+                "first_five_estimates"
+            ],
+            bijux_value=python_results["ancestral_reconstruction"]["brownian"][
+                "first_five_estimates"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="ancestral-brownian-recent-five",
+            family_id="ancestral-reconstruction",
+            fragment_id="ancestral-mode-comparison",
+            metric_name="brownian_recent_five_estimates",
+            r_value=r_results["ancestral_reconstruction"]["brownian"][
+                "recent_five_estimates"
+            ],
+            bijux_value=python_results["ancestral_reconstruction"]["brownian"][
+                "recent_five_estimates"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="ancestral-eb-node-count",
+            family_id="ancestral-reconstruction",
+            fragment_id="ancestral-mode-comparison",
+            metric_name="early_burst_node_count",
+            r_value=r_results["ancestral_reconstruction"]["early_burst"]["node_count"],
+            bijux_value=python_results["ancestral_reconstruction"]["early_burst"][
+                "node_count"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="ancestral-eb-first-five",
+            family_id="ancestral-reconstruction",
+            fragment_id="ancestral-mode-comparison",
+            metric_name="early_burst_first_five_estimates",
+            r_value=r_results["ancestral_reconstruction"]["early_burst"][
+                "first_five_estimates"
+            ],
+            bijux_value=python_results["ancestral_reconstruction"]["early_burst"][
+                "first_five_estimates"
+            ],
+        ),
+        _comparison_row_exact(
+            row_id="ancestral-eb-recent-five",
+            family_id="ancestral-reconstruction",
+            fragment_id="ancestral-mode-comparison",
+            metric_name="early_burst_recent_five_estimates",
+            r_value=r_results["ancestral_reconstruction"]["early_burst"][
+                "recent_five_estimates"
+            ],
+            bijux_value=python_results["ancestral_reconstruction"]["early_burst"][
+                "recent_five_estimates"
+            ],
         ),
         _comparison_row_tolerance(
             row_id="baseline-intercept",
@@ -1212,8 +1817,7 @@ def build_primate_pgls_signal_family_index(repo_root: Path) -> dict[str, object]
                 "known_gaps": []
                 if family_id != "coverage-boundaries"
                 else [
-                    "No governed EB parity fit is exposed in the canonical runtime yet.",
-                    "Transformed-tree and ancestral-state comparison fragments remain visible but intentionally unclaimed.",
+                    "The lecture corBlomberg intercept-mode likelihood sweep is still an explicit coverage boundary.",
                 ],
             }
         )
@@ -1287,12 +1891,142 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
                 "bijux": python_results["estimated_lambda_pgls"]["diagnostics"],
             },
         }
+    if evidence_id == "evidence-006":
+        return {
+            "schema_version": 1,
+            "study_id": STUDY_ID,
+            "evidence_id": evidence_id,
+            "r_tree_rescaling": r_results["tree_rescaling"],
+            "bijux_tree_rescaling": python_results["tree_rescaling"],
+        }
+    if evidence_id == "evidence-007":
+        return {
+            "schema_version": 1,
+            "study_id": STUDY_ID,
+            "evidence_id": evidence_id,
+            "r_continuous_mode_fits": r_results["continuous_mode_fits"],
+            "bijux_continuous_mode_fits": python_results["continuous_mode_fits"],
+        }
+    if evidence_id == "evidence-008":
+        return {
+            "schema_version": 1,
+            "study_id": STUDY_ID,
+            "evidence_id": evidence_id,
+            "r_likelihood_ratio_tests": r_results["likelihood_ratio_tests"],
+            "bijux_likelihood_ratio_tests": python_results["likelihood_ratio_tests"],
+        }
+    if evidence_id == "evidence-009":
+        return {
+            "schema_version": 1,
+            "study_id": STUDY_ID,
+            "evidence_id": evidence_id,
+            "r_ancestral_reconstruction": r_results["ancestral_reconstruction"],
+            "bijux_ancestral_reconstruction": python_results[
+                "ancestral_reconstruction"
+            ],
+        }
     return {
         "schema_version": 1,
         "study_id": STUDY_ID,
         "evidence_id": evidence_id,
         "coverage_boundaries": r_results["coverage_boundaries"],
     }
+
+
+def build_primate_pgls_signal_evidence_registry(
+    repo_root: Path,
+) -> dict[str, object]:
+    bundles = build_primate_pgls_signal_bundles(repo_root)
+    evidences = []
+    for definition in BUNDLE_DEFINITIONS:
+        claim = CLAIM_DEFINITIONS[str(definition["claim_id"])]
+        evidences.append(
+            {
+                "evidence_id": definition["evidence_id"],
+                "title": definition["title"],
+                "coverage_status": (
+                    "coverage-gap"
+                    if claim["verdict"] == "not_comparable"
+                    else "covered"
+                ),
+                "claim_id": definition["claim_id"],
+                "verdict": claim["verdict"],
+                "analytical_surfaces": definition["analytical_surfaces"],
+                "source_fragments": definition["source_fragments"],
+            }
+        )
+    return {
+        "schema_version": 1,
+        "study_id": STUDY_ID,
+        "bundle_count": len(bundles),
+        "evidence_count": len(evidences),
+        "coverage_boundary_evidence_ids": [
+            entry["evidence_id"]
+            for entry in evidences
+            if entry["coverage_status"] == "coverage-gap"
+        ],
+        "evidences": evidences,
+    }
+
+
+def render_primate_pgls_signal_study_manifest(repo_root: Path) -> dict[str, object]:
+    registry = build_primate_pgls_signal_evidence_registry(repo_root)
+    return {
+        "study_id": STUDY_ID,
+        "study_title": "Primate PGLS and signal evidence study",
+        "summary": "Governed parity study for the regression, transformed-tree, evolutionary-mode fit, and ancestral sections of the Lund primate comparative lecture, with an explicit remaining intercept-mode boundary.",
+        "owner_package": "bijux-phylogenetics",
+        "study_categories": ["teaching-study", "migration-study"],
+        "confidence_posture": "governed-parity-in-progress",
+        "coverage_boundary_evidence_ids": registry["coverage_boundary_evidence_ids"],
+        "evidence_registry_locator": (
+            f"evidence-book/studies/{STUDY_ID}/evidence-registry.json"
+        ),
+        "study_scope": {
+            "coverage_focus": [
+                "rdata-reload",
+                "baseline-regression",
+                "phylogenetic-regression",
+                "phylogenetic-signal",
+                "transformed-tree-workflows",
+                "continuous-model-fitting",
+                "likelihood-ratio-tests",
+                "ancestral-reconstruction",
+            ],
+            "untouched_source_locators": [
+                PCM2_SOURCE_LOCATOR,
+                "external:lund/pcm2-modes-pgls/data/primate.RData",
+            ],
+        },
+    }
+
+
+def render_primate_pgls_signal_study_readme(repo_root: Path) -> str:
+    registry = build_primate_pgls_signal_evidence_registry(repo_root)
+    lines = [
+        "# Primate PGLS And Signal",
+        "",
+        "This study turns the regression, transformed-tree, evolutionary-mode fit,",
+        "likelihood-ratio, and ancestral sections of the Lund primate comparative",
+        "lecture into governed Evidence IDs backed by checked-in R reference outputs",
+        "and canonical `bijux-phylogenetics` reproductions.",
+        "",
+        "It is intentionally strict about confidence posture:",
+        "",
+        "- baseline GLS, Pagel-lambda PGLS, signal testing, transformed-tree",
+        "  workflows, fitContinuous-style mode comparisons, and ancestral-mode",
+        "  reconstructions are backed by governed parity bundles",
+        "- the lecture corBlomberg intercept sweep remains visible as an explicit",
+        "  coverage boundary instead of being implied as validated",
+        "",
+        "Current bundles:",
+        "",
+    ]
+    for entry in registry["evidences"]:
+        title = str(entry["title"]).removeprefix("Primate ").removesuffix(" bundle")
+        lines.append(f"- `{entry['evidence_id']}` {title}")
+    lines.append("")
+    return "\n".join(lines)
 
 
 def _manifest_for_bundle(

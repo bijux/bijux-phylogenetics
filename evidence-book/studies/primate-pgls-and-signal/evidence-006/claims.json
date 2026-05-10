@@ -2,19 +2,16 @@
   "claim_count": 1,
   "claims": [
     {
-      "claim_id": "pcm2-coverage-boundary-explicit",
-      "claim_title": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit",
+      "claim_id": "pcm2-transformed-tree-parity",
+      "claim_title": "PCM2 transformed-tree workflows match on governed branch summaries",
       "evidence_ids": [
         "evidence-006"
       ],
       "source_fragments": [
-        "transformed-tree-workflows",
-        "continuous-model-comparison",
-        "ancestral-mode-comparison",
-        "mode-linked-intercept-models"
+        "transformed-tree-workflows"
       ],
-      "summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied.",
-      "verdict": "not_comparable"
+      "summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made.",
+      "verdict": "matched"
     }
   ],
   "evidence_id": "evidence-006",

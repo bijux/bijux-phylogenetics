@@ -24,6 +24,92 @@
     },
     {
       "claim_ids": [
+        "pcm2-transformed-tree-parity"
+      ],
+      "claim_titles": {
+        "pcm2-transformed-tree-parity": "PCM2 transformed-tree workflows match on governed branch summaries"
+      },
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "family_id": "transformed-tree-workflows",
+      "family_title": "Transformed tree workflows",
+      "family_verdict": "matched",
+      "fragment_count": 1,
+      "fragment_ids": [
+        "transformed-tree-workflows"
+      ],
+      "known_gaps": [],
+      "summary": "OU, early-burst, and late-burst branch rescaling outputs are compared before downstream model claims are judged."
+    },
+    {
+      "claim_ids": [
+        "pcm2-fitcontinuous-parity",
+        "pcm2-likelihood-ratio-parity"
+      ],
+      "claim_titles": {
+        "pcm2-fitcontinuous-parity": "PCM2 fitContinuous-style evolutionary mode fits agree within governed tolerance",
+        "pcm2-likelihood-ratio-parity": "PCM2 likelihood-ratio model comparisons agree within governed tolerance"
+      },
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "family_id": "continuous-model-fitting",
+      "family_title": "Continuous model fitting",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_count": 1,
+      "fragment_ids": [
+        "continuous-model-comparison"
+      ],
+      "known_gaps": [],
+      "summary": "Lecture BM, OU, and early-burst fitContinuous-style intercept fits are checked with governed parameters and fit statistics."
+    },
+    {
+      "claim_ids": [
+        "pcm2-likelihood-ratio-parity"
+      ],
+      "claim_titles": {
+        "pcm2-likelihood-ratio-parity": "PCM2 likelihood-ratio model comparisons agree within governed tolerance"
+      },
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "family_id": "likelihood-ratio-tests",
+      "family_title": "Likelihood-ratio tests",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_count": 1,
+      "fragment_ids": [
+        "evolutionary-mode-likelihood-ratios"
+      ],
+      "known_gaps": [],
+      "summary": "BM, OU, and early-burst model-comparison statistics are checked explicitly instead of being inferred from prose."
+    },
+    {
+      "claim_ids": [
+        "pcm2-ancestral-parity"
+      ],
+      "claim_titles": {
+        "pcm2-ancestral-parity": "PCM2 Brownian and early-burst ancestral reconstructions agree within governed tolerance"
+      },
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-009"
+      ],
+      "family_id": "ancestral-reconstruction",
+      "family_title": "Ancestral reconstruction",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_count": 1,
+      "fragment_ids": [
+        "ancestral-mode-comparison"
+      ],
+      "known_gaps": [],
+      "summary": "Brownian and early-burst ancestral-state estimates are compared directly on governed node identities."
+    },
+    {
+      "claim_ids": [
         "pcm2-baseline-gls-parity"
       ],
       "claim_titles": {
@@ -112,30 +198,26 @@
         "pcm2-coverage-boundary-explicit"
       ],
       "claim_titles": {
-        "pcm2-coverage-boundary-explicit": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit"
+        "pcm2-coverage-boundary-explicit": "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit"
       },
       "coverage_status": "coverage-gap",
       "evidence_ids": [
-        "evidence-006"
+        "evidence-010"
       ],
       "family_id": "coverage-boundaries",
       "family_title": "Coverage boundaries",
       "family_verdict": "not_comparable",
-      "fragment_count": 4,
+      "fragment_count": 1,
       "fragment_ids": [
-        "transformed-tree-workflows",
-        "continuous-model-comparison",
-        "ancestral-mode-comparison",
         "mode-linked-intercept-models"
       ],
       "known_gaps": [
-        "No governed EB parity fit is exposed in the canonical runtime yet.",
-        "Transformed-tree and ancestral-state comparison fragments remain visible but intentionally unclaimed."
+        "The lecture corBlomberg intercept-mode likelihood sweep is still an explicit coverage boundary."
       ],
-      "summary": "Unclosed evolutionary-mode, EB, and ancestral fragments are indexed explicitly instead of disappearing into vague future work."
+      "summary": "The remaining lecture intercept-mode likelihood sweep stays explicit until canonical runtime coverage exists for that exact boundary."
     }
   ],
-  "family_count": 6,
+  "family_count": 10,
   "schema_version": 1,
   "source_family_id": "pcm2-modes-pgls",
   "source_family_title": "PCM2 modes and PGLS evidence family",

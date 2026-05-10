@@ -1,0 +1,39 @@
+{
+  "bundle_verdict_status": "matched_with_tolerance",
+  "bundle_verdict_summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "fitcontinuous",
+    "evolutionary-modes"
+  ],
+  "claim_titles": [
+    "PCM2 fitContinuous-style evolutionary mode fits agree within governed tolerance"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-007",
+  "evidence_title": "Primate evolutionary mode fit parity bundle",
+  "limitations": [
+    "This bundle tracks intercept-only Brownian, OU, and early-burst fits; the later corBlomberg likelihood sweep remains separate."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed parity for the lecture Brownian, OU, and early-burst fitContinuous-style intercept fits.",
+    "Comparison mode: direct_parity. Bundle verdict: matched_with_tolerance.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "continuous-model-comparison"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS and signal evidence study"
+}

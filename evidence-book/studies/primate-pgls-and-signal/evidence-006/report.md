@@ -1,11 +1,11 @@
-# Primate coverage boundary bundle
+# Primate transformed tree parity bundle
 
-Governed record of uncovered transformed-tree, EB, and ancestral fragments from the lecture workflow.
+Governed parity for the lecture OU, early-burst, and late-burst transformed-tree workflows.
 
 - study: `primate-pgls-and-signal`
 - evidence: `evidence-006`
 - comparison mode: `direct_parity`
-- expected verdict: `not_comparable`
+- expected verdict: `matched`
 
 ## Local Artifacts
 
@@ -17,7 +17,7 @@ Governed record of uncovered transformed-tree, EB, and ancestral fragments from 
 
 ## Claims
 
-- `pcm2-coverage-boundary-explicit`
+- `pcm2-transformed-tree-parity`
 
 ## Source Basis
 
@@ -25,11 +25,12 @@ Governed record of uncovered transformed-tree, EB, and ancestral fragments from 
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json`
 
 ## Governed Primary Outputs
 
 - `evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json`
 
 ## Results Directory
 
@@ -38,4 +39,4 @@ Governed record of uncovered transformed-tree, EB, and ancestral fragments from 
 
 ## Limits
 
-- This bundle is intentionally a boundary register, not a parity claim.
+- This bundle checks deterministic branch and total-length parity, not rendered figure equivalence.

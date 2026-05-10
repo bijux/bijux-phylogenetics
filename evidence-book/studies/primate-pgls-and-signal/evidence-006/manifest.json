@@ -1,15 +1,16 @@
 {
   "claim_ids": [
-    "pcm2-coverage-boundary-explicit"
+    "pcm2-transformed-tree-parity"
   ],
   "claim_tags": [
     "teaching",
-    "coverage-gap",
-    "not-comparable"
+    "parity",
+    "transformed-tree",
+    "evolutionary-modes"
   ],
   "comparison_mode": "direct_parity",
   "evidence_id": "evidence-006",
-  "evidence_title": "Primate coverage boundary bundle",
+  "evidence_title": "Primate transformed tree parity bundle",
   "freshness": {
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal.py"
@@ -20,16 +21,16 @@
       "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
       "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
       "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-      "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json"
+      "evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json"
     ]
   },
   "limitations": [
-    "This bundle is intentionally a boundary register, not a parity claim."
+    "This bundle checks deterministic branch and total-length parity, not rendered figure equivalence."
   ],
   "owner_package": "bijux-phylogenetics",
   "ownership": {
     "analytical_surfaces": [
-      "coverage-boundaries"
+      "transformed-tree-workflows"
     ],
     "owner_package": "bijux-phylogenetics"
   },
@@ -37,8 +38,9 @@
     "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R#L1-L200"
   ],
   "report_keys": [
-    "coverage_boundaries",
+    "bijux_tree_rescaling",
     "evidence_id",
+    "r_tree_rescaling",
     "schema_version",
     "study_id"
   ],
@@ -66,21 +68,18 @@
     },
     {
       "kind": "repository-reference",
-      "label": "Primate coverage boundary bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json"
+      "label": "Primate transformed tree parity bundle report payload",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json"
     }
   ],
   "source_fragments": [
-    "transformed-tree-workflows",
-    "continuous-model-comparison",
-    "ancestral-mode-comparison",
-    "mode-linked-intercept-models"
+    "transformed-tree-workflows"
   ],
   "study_id": "primate-pgls-and-signal",
-  "summary": "Governed record of uncovered transformed-tree, EB, and ancestral fragments from the lecture workflow.",
-  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json",
+  "summary": "Governed parity for the lecture OU, early-burst, and late-burst transformed-tree workflows.",
+  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json",
   "verdict": {
-    "status": "not_comparable",
-    "summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied."
+    "status": "matched",
+    "summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made."
   }
 }

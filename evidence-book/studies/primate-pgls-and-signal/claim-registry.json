@@ -1,6 +1,6 @@
 {
-  "bundle_count": 6,
-  "claim_count": 6,
+  "bundle_count": 10,
+  "claim_count": 10,
   "claims": [
     {
       "claim_id": "pcm2-reload-contract-governed",
@@ -64,18 +64,63 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "claim_id": "pcm2-coverage-boundary-explicit",
-      "claim_title": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit",
+      "claim_id": "pcm2-transformed-tree-parity",
+      "claim_title": "PCM2 transformed-tree workflows match on governed branch summaries",
       "evidence_ids": [
         "evidence-006"
       ],
       "source_fragments": [
-        "transformed-tree-workflows",
-        "continuous-model-comparison",
-        "ancestral-mode-comparison",
+        "transformed-tree-workflows"
+      ],
+      "summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made.",
+      "verdict": "matched"
+    },
+    {
+      "claim_id": "pcm2-fitcontinuous-parity",
+      "claim_title": "PCM2 fitContinuous-style evolutionary mode fits agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "source_fragments": [
+        "continuous-model-comparison"
+      ],
+      "summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference.",
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "claim_id": "pcm2-likelihood-ratio-parity",
+      "claim_title": "PCM2 likelihood-ratio model comparisons agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "source_fragments": [
+        "evolutionary-mode-likelihood-ratios"
+      ],
+      "summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules.",
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "claim_id": "pcm2-ancestral-parity",
+      "claim_title": "PCM2 Brownian and early-burst ancestral reconstructions agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-009"
+      ],
+      "source_fragments": [
+        "ancestral-mode-comparison"
+      ],
+      "summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities.",
+      "verdict": "matched_with_tolerance"
+    },
+    {
+      "claim_id": "pcm2-coverage-boundary-explicit",
+      "claim_title": "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit",
+      "evidence_ids": [
+        "evidence-010"
+      ],
+      "source_fragments": [
         "mode-linked-intercept-models"
       ],
-      "summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied.",
+      "summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles.",
       "verdict": "not_comparable"
     }
   ],

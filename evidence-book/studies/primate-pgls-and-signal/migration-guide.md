@@ -5,7 +5,7 @@
 
 ## Comparison Modes
 
-- `direct_parity`: `6`
+- `direct_parity`: `10`
 
 ## Side-By-Side Examples
 

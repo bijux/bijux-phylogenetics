@@ -1,6 +1,6 @@
 {
   "evidence_id": "evidence-001",
-  "fragment_count": 10,
+  "fragment_count": 11,
   "fragments": [
     {
       "block_status": "verified",
@@ -28,42 +28,43 @@
       "supporting_evidence_ids": []
     },
     {
-      "block_status": "coverage_gap",
+      "block_status": "verified",
       "claim_ids": [
-        "pcm2-coverage-boundary-explicit"
+        "pcm2-transformed-tree-parity"
       ],
-      "comparison_kind": "not_comparable",
-      "concept_family": "coverage-boundaries",
+      "comparison_kind": "exact_answer",
+      "concept_family": "transformed-tree-workflows",
       "evidence_id": "evidence-006",
       "fragment_id": "transformed-tree-workflows",
       "fragment_title": "OU and EB tree rescaling exploration",
-      "parity_expectation": "not_comparable",
-      "review_note": "The script-level transformed-tree surface is indexed explicitly, but EB parity is not yet claimed inside the runtime.",
+      "parity_expectation": "exact",
+      "review_note": "The lecture tree-rescaling surface is checked through deterministic transformed-branch summaries before fit statistics are compared.",
       "scope": "analytical",
       "script_line_spans": [
         {
-          "end_line": 34,
+          "end_line": 30,
           "start_line": 18
         }
       ],
-      "script_line_spec": "18-34",
+      "script_line_spec": "18-30",
       "script_locators": [
-        "external:lund/pcm2-modes-pgls/script#L18-L34"
+        "external:lund/pcm2-modes-pgls/script#L18-L30"
       ],
       "supporting_evidence_ids": []
     },
     {
-      "block_status": "coverage_gap",
+      "block_status": "verified",
       "claim_ids": [
-        "pcm2-coverage-boundary-explicit"
+        "pcm2-fitcontinuous-parity",
+        "pcm2-likelihood-ratio-parity"
       ],
-      "comparison_kind": "not_comparable",
-      "concept_family": "coverage-boundaries",
-      "evidence_id": "evidence-006",
+      "comparison_kind": "tolerance_or_equivalence",
+      "concept_family": "continuous-model-fitting",
+      "evidence_id": "evidence-007",
       "fragment_id": "continuous-model-comparison",
       "fragment_title": "BM, OU, and EB fitContinuous model comparison",
-      "parity_expectation": "not_comparable",
-      "review_note": "These model-comparison fragments remain open because the canonical runtime does not yet expose a governed EB parity surface.",
+      "parity_expectation": "statistical_tolerance",
+      "review_note": "The lecture fitContinuous surfaces are checked through governed Brownian, OU, and early-burst intercept fits plus their explicit likelihood-ratio rows.",
       "scope": "analytical",
       "script_line_spans": [
         {
@@ -75,20 +76,22 @@
       "script_locators": [
         "external:lund/pcm2-modes-pgls/script#L36-L87"
       ],
-      "supporting_evidence_ids": []
+      "supporting_evidence_ids": [
+        "evidence-008"
+      ]
     },
     {
-      "block_status": "coverage_gap",
+      "block_status": "verified",
       "claim_ids": [
-        "pcm2-coverage-boundary-explicit"
+        "pcm2-ancestral-parity"
       ],
-      "comparison_kind": "not_comparable",
-      "concept_family": "coverage-boundaries",
-      "evidence_id": "evidence-006",
+      "comparison_kind": "tolerance_or_equivalence",
+      "concept_family": "ancestral-reconstruction",
+      "evidence_id": "evidence-009",
       "fragment_id": "ancestral-mode-comparison",
       "fragment_title": "Ancestral-state comparison under BM and EB",
-      "parity_expectation": "not_comparable",
-      "review_note": "The lecture ancestral comparison is preserved as an indexed trust boundary until EB ancestral parity is implemented for the runtime.",
+      "parity_expectation": "statistical_tolerance",
+      "review_note": "The lecture ancestral comparison is matched on governed node identities using Brownian and early-burst reconstructions.",
       "scope": "analytical",
       "script_line_spans": [
         {
@@ -236,27 +239,54 @@
       "supporting_evidence_ids": []
     },
     {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm2-likelihood-ratio-parity"
+      ],
+      "comparison_kind": "tolerance_or_equivalence",
+      "concept_family": "likelihood-ratio-tests",
+      "evidence_id": "evidence-008",
+      "fragment_id": "evolutionary-mode-likelihood-ratios",
+      "fragment_title": "BM, OU, and EB likelihood-ratio tests",
+      "parity_expectation": "statistical_tolerance",
+      "review_note": "The model-comparison rows are judged separately from fitted parameter rows so the evidence-book can show where fit statistics and test statistics agree.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 74,
+          "start_line": 59
+        }
+      ],
+      "script_line_spec": "59-74",
+      "script_locators": [
+        "external:lund/pcm2-modes-pgls/script#L59-L74"
+      ],
+      "supporting_evidence_ids": [
+        "evidence-007"
+      ]
+    },
+    {
       "block_status": "coverage_gap",
       "claim_ids": [
         "pcm2-coverage-boundary-explicit"
       ],
       "comparison_kind": "not_comparable",
       "concept_family": "coverage-boundaries",
-      "evidence_id": "evidence-006",
+      "evidence_id": "evidence-010",
       "fragment_id": "mode-linked-intercept-models",
       "fragment_title": "Mode-linked intercept-only GLS surrogates for BM, OU, and EB",
       "parity_expectation": "not_comparable",
-      "review_note": "The lecture\u2019s BM/OU/EB intercept-only surrogate fits are kept visible, but EB parity remains open and therefore unclaimed.",
+      "review_note": "The lecture corBlomberg intercept sweep remains visible, but the canonical runtime does not yet expose parity for that exact likelihood-profile surface.",
       "scope": "analytical",
       "script_line_spans": [
         {
-          "end_line": 220,
+          "end_line": 227,
           "start_line": 194
         }
       ],
-      "script_line_spec": "194-220",
+      "script_line_spec": "194-227",
       "script_locators": [
-        "external:lund/pcm2-modes-pgls/script#L194-L220"
+        "external:lund/pcm2-modes-pgls/script#L194-L227"
       ],
       "supporting_evidence_ids": []
     }

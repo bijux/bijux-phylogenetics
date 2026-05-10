@@ -1,25 +1,40 @@
 {
   "concept_tags": [
+    "ancestral",
     "ancestral-gaps",
+    "ancestral-reconstruction",
     "baseline-model",
+    "continuous",
+    "continuous-model-fitting",
     "course-context",
     "coverage-boundary",
     "diagnostics",
     "eb",
     "estimated-lambda",
+    "fitting",
     "fixed-lambda",
     "gls",
     "heteroscedasticity",
     "lambda-zero",
+    "likelihood",
     "likelihood-ratio",
+    "likelihood-ratio-tests",
+    "model",
     "ou",
     "pagel-lambda",
     "pgls",
     "phylogenetic-signal",
     "qq",
+    "ratio",
+    "reconstruction",
     "regression",
     "reproducibility",
     "residuals",
+    "tests",
+    "transformed",
+    "transformed-tree-workflows",
+    "tree",
+    "workflows",
     "workspace-reload"
   ],
   "course_material_label": "Lund PCM2 modes and PGLS lecture",
@@ -45,6 +60,93 @@
         "external:lund/pcm2-modes-pgls/script#L8-L16"
       ],
       "teaching_narrative": "The lecture's one-line reload assumption is made explicit so students know which objects and paths the rest of the workflow depends on."
+    },
+    {
+      "concept_tags": [
+        "transformed",
+        "transformed-tree-workflows",
+        "tree",
+        "workflows"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "family_id": "transformed-tree-workflows",
+      "family_title": "Transformed tree workflows",
+      "family_verdict": "matched",
+      "fragment_ids": [
+        "transformed-tree-workflows"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L18-L30"
+      ],
+      "teaching_narrative": "This evidence family is indexed for teaching review, but its dedicated teaching narrative has not been curated yet. Review the bundle-level reports and source fragments directly until the family guide is strengthened."
+    },
+    {
+      "concept_tags": [
+        "continuous",
+        "continuous-model-fitting",
+        "fitting",
+        "model"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "family_id": "continuous-model-fitting",
+      "family_title": "Continuous model fitting",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_ids": [
+        "continuous-model-comparison"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L36-L87"
+      ],
+      "teaching_narrative": "This evidence family is indexed for teaching review, but its dedicated teaching narrative has not been curated yet. Review the bundle-level reports and source fragments directly until the family guide is strengthened."
+    },
+    {
+      "concept_tags": [
+        "likelihood",
+        "likelihood-ratio-tests",
+        "ratio",
+        "tests"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "family_id": "likelihood-ratio-tests",
+      "family_title": "Likelihood-ratio tests",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_ids": [
+        "evolutionary-mode-likelihood-ratios"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L59-L74"
+      ],
+      "teaching_narrative": "This evidence family is indexed for teaching review, but its dedicated teaching narrative has not been curated yet. Review the bundle-level reports and source fragments directly until the family guide is strengthened."
+    },
+    {
+      "concept_tags": [
+        "ancestral",
+        "ancestral-reconstruction",
+        "reconstruction"
+      ],
+      "coverage_status": "covered",
+      "evidence_ids": [
+        "evidence-009"
+      ],
+      "family_id": "ancestral-reconstruction",
+      "family_title": "Ancestral reconstruction",
+      "family_verdict": "matched_with_tolerance",
+      "fragment_ids": [
+        "ancestral-mode-comparison"
+      ],
+      "source_locators": [
+        "external:lund/pcm2-modes-pgls/script#L89-L111"
+      ],
+      "teaching_narrative": "This evidence family is indexed for teaching review, but its dedicated teaching narrative has not been curated yet. Review the bundle-level reports and source fragments directly until the family guide is strengthened."
     },
     {
       "concept_tags": [
@@ -143,27 +245,21 @@
       ],
       "coverage_status": "coverage-gap",
       "evidence_ids": [
-        "evidence-006"
+        "evidence-010"
       ],
       "family_id": "coverage-boundaries",
       "family_title": "Coverage boundaries",
       "family_verdict": "not_comparable",
       "fragment_ids": [
-        "transformed-tree-workflows",
-        "continuous-model-comparison",
-        "ancestral-mode-comparison",
         "mode-linked-intercept-models"
       ],
       "source_locators": [
-        "external:lund/pcm2-modes-pgls/script#L18-L34",
-        "external:lund/pcm2-modes-pgls/script#L36-L87",
-        "external:lund/pcm2-modes-pgls/script#L89-L111",
-        "external:lund/pcm2-modes-pgls/script#L194-L220"
+        "external:lund/pcm2-modes-pgls/script#L194-L227"
       ],
       "teaching_narrative": "Open EB and ancestral-mode gaps stay explicit so students are not taught a false sense of completeness."
     }
   ],
-  "family_count": 6,
+  "family_count": 10,
   "schema_version": 1,
   "study_categories": [
     "teaching-study",

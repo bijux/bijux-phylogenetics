@@ -1,10 +1,10 @@
 {
   "claim_ids": [
-    "pcm2-coverage-boundary-explicit"
+    "pcm2-transformed-tree-parity"
   ],
   "comparison_mode": "direct_parity",
   "evidence_id": "evidence-006",
-  "expected_verdict_status": "not_comparable",
+  "expected_verdict_status": "matched",
   "local_artifact_purposes": {
     "analysis.py": "python-analysis-program",
     "checks.json": "machine-check-contract",
@@ -13,7 +13,8 @@
     "report.md": "human-report"
   },
   "primary_output_paths": [
-    "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json"
+    "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json"
   ],
   "required_local_artifacts": [
     "reference.R",
@@ -32,7 +33,7 @@
     "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
     "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
     "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-    "evidence-book/studies/primate-pgls-and-signal/evidence-006/coverage-boundaries.json"
+    "evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json"
   ],
   "study_id": "primate-pgls-and-signal",
   "validation_rules": [
