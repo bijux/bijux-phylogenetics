@@ -3,6 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from bijux_phylogenetics.evidence.closure import (
+    build_closure_criteria,
+    build_evidence_maturity_scorecard,
+)
 from bijux_phylogenetics.evidence.coverage import build_evidence_coverage_gap_report
 from bijux_phylogenetics.evidence.freshness import build_evidence_freshness_report
 from bijux_phylogenetics.evidence.integrity import build_evidence_integrity_report
@@ -69,6 +73,8 @@ def test_repository_docs_evidence_overview_matches_generated_payload() -> None:
     freshness_payload = build_evidence_freshness_report(REPO_ROOT)
     integrity_payload = build_evidence_integrity_report(REPO_ROOT)
     coverage_payload = build_evidence_coverage_gap_report(REPO_ROOT)
+    closure_payload = build_closure_criteria(REPO_ROOT)
+    scorecard_payload = build_evidence_maturity_scorecard(REPO_ROOT)
 
     overview = render_docs_evidence_overview(
         index_payload=index_payload,
@@ -76,6 +82,8 @@ def test_repository_docs_evidence_overview_matches_generated_payload() -> None:
         freshness_payload=freshness_payload,
         integrity_payload=integrity_payload,
         coverage_payload=coverage_payload,
+        closure_payload=closure_payload,
+        scorecard_payload=scorecard_payload,
     )
 
     assert (REPO_ROOT / DOCS_EVIDENCE_OVERVIEW).read_text(encoding="utf-8") == overview

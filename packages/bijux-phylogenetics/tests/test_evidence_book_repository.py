@@ -25,6 +25,20 @@ from bijux_phylogenetics.evidence.book import (
     render_evidence_verdict_workflows,
     validate_evidence_book,
 )
+from bijux_phylogenetics.evidence.closure import (
+    build_analytical_surface_coverage,
+    build_claim_reaudit,
+    build_closure_criteria,
+    build_completion_gates,
+    build_evidence_maturity_scorecard,
+    build_evidence_review_ritual,
+    render_analytical_surface_coverage,
+    render_claim_reaudit,
+    render_closure_criteria,
+    render_completion_gates,
+    render_evidence_maturity_scorecard,
+    render_evidence_review_ritual,
+)
 from bijux_phylogenetics.evidence.coverage import (
     build_evidence_coverage_gap_report,
     render_evidence_coverage_gap_report,
@@ -124,6 +138,40 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     coverage_gap_summary_path = (
         REPO_ROOT / "evidence-book" / "index" / "coverage-gaps.md"
     )
+    claim_reaudit_path = REPO_ROOT / "evidence-book" / "index" / "claim-reaudit.json"
+    claim_reaudit_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "claim-reaudit.md"
+    )
+    analytical_surface_coverage_path = (
+        REPO_ROOT / "evidence-book" / "index" / "analytical-surface-coverage.json"
+    )
+    analytical_surface_coverage_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "analytical-surface-coverage.md"
+    )
+    closure_criteria_path = (
+        REPO_ROOT / "evidence-book" / "index" / "closure-criteria.json"
+    )
+    closure_criteria_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "closure-criteria.md"
+    )
+    maturity_scorecard_path = (
+        REPO_ROOT / "evidence-book" / "index" / "evidence-maturity-scorecard.json"
+    )
+    maturity_scorecard_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "evidence-maturity-scorecard.md"
+    )
+    review_ritual_path = (
+        REPO_ROOT / "evidence-book" / "index" / "evidence-review-ritual.json"
+    )
+    review_ritual_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "evidence-review-ritual.md"
+    )
+    completion_gates_path = (
+        REPO_ROOT / "evidence-book" / "index" / "completion-gates.json"
+    )
+    completion_gates_summary_path = (
+        REPO_ROOT / "evidence-book" / "index" / "completion-gates.md"
+    )
 
     payload = build_evidence_book_index(REPO_ROOT)
     catalog = render_evidence_catalog(payload)
@@ -139,6 +187,12 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     freshness_report = build_evidence_freshness_report(REPO_ROOT)
     integrity_report = build_evidence_integrity_report(REPO_ROOT)
     coverage_gap_report = build_evidence_coverage_gap_report(REPO_ROOT)
+    claim_reaudit = build_claim_reaudit(REPO_ROOT)
+    analytical_surface_coverage = build_analytical_surface_coverage(REPO_ROOT)
+    closure_criteria = build_closure_criteria(REPO_ROOT)
+    maturity_scorecard = build_evidence_maturity_scorecard(REPO_ROOT)
+    review_ritual = build_evidence_review_ritual(REPO_ROOT)
+    completion_gates = build_completion_gates(REPO_ROOT)
 
     assert json.loads(index_path.read_text(encoding="utf-8")) == payload
     assert catalog_path.read_text(encoding="utf-8") == catalog
@@ -216,6 +270,42 @@ def test_repository_evidence_book_index_matches_generated_payload() -> None:
     assert coverage_gap_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_coverage_gap_report(coverage_gap_report)
+    assert json.loads(claim_reaudit_path.read_text(encoding="utf-8")) == claim_reaudit
+    assert claim_reaudit_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_claim_reaudit(claim_reaudit)
+    assert (
+        json.loads(analytical_surface_coverage_path.read_text(encoding="utf-8"))
+        == analytical_surface_coverage
+    )
+    assert analytical_surface_coverage_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_analytical_surface_coverage(analytical_surface_coverage)
+    assert (
+        json.loads(closure_criteria_path.read_text(encoding="utf-8"))
+        == closure_criteria
+    )
+    assert closure_criteria_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_closure_criteria(closure_criteria)
+    assert (
+        json.loads(maturity_scorecard_path.read_text(encoding="utf-8"))
+        == maturity_scorecard
+    )
+    assert maturity_scorecard_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_maturity_scorecard(maturity_scorecard)
+    assert json.loads(review_ritual_path.read_text(encoding="utf-8")) == review_ritual
+    assert review_ritual_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_review_ritual(review_ritual)
+    assert (
+        json.loads(completion_gates_path.read_text(encoding="utf-8"))
+        == completion_gates
+    )
+    assert completion_gates_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_completion_gates(completion_gates)
 
 
 def test_repository_teaching_and_migration_surfaces_match_generated_payloads() -> None:

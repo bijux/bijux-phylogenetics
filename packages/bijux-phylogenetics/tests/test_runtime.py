@@ -6208,6 +6208,10 @@ def test_cli_evidence_book_validate_json_output(capsys, monkeypatch) -> None:
     assert payload["data"]["valid"] is True
     assert payload["metrics"]["bundle_count"] == 19
     assert payload["metrics"]["coverage_gap_count"] >= 1
+    assert payload["metrics"]["downgraded_claim_count"] >= 1
+    assert payload["metrics"]["foundational_numerical_trust_status"] == "bounded"
+    assert payload["metrics"]["maturity_tier"] == "reviewable_but_incomplete"
+    assert payload["metrics"]["completion_not_ready_count"] == 2
 
 
 def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
@@ -6222,6 +6226,7 @@ def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
     assert payload["metrics"]["reviewer_summary_count"] == 19
     assert payload["metrics"]["updated_path_count"] >= 1
     assert payload["metrics"]["bundle_count"] == 19
+    assert payload["metrics"]["reviewer_readiness_status"] == "bounded"
 
 
 def test_cli_evidence_book_rerun_json_output(capsys, monkeypatch) -> None:
@@ -6243,6 +6248,7 @@ def test_cli_evidence_book_rerun_json_output(capsys, monkeypatch) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["selected_evidence_count"] == 1
+    assert payload["metrics"]["downgraded_claim_count"] >= 1
     assert payload["data"]["rerun_report"]["study_id"] == "primate-pgls-and-signal"
     assert payload["data"]["rerun_report"]["selected_evidence_ids"] == ["evidence-002"]
 

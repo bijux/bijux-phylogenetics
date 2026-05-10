@@ -26,6 +26,20 @@ from bijux_phylogenetics.evidence.book import (
     validate_evidence_book,
     write_evidence_book_index,
 )
+from bijux_phylogenetics.evidence.closure import (
+    build_analytical_surface_coverage,
+    build_claim_reaudit,
+    build_closure_criteria,
+    build_completion_gates,
+    build_evidence_maturity_scorecard,
+    build_evidence_review_ritual,
+    render_analytical_surface_coverage,
+    render_claim_reaudit,
+    render_closure_criteria,
+    render_completion_gates,
+    render_evidence_maturity_scorecard,
+    render_evidence_review_ritual,
+)
 from bijux_phylogenetics.evidence.coverage import (
     build_evidence_coverage_gap_report,
     render_evidence_coverage_gap_report,
@@ -217,6 +231,18 @@ def test_validate_evidence_book_rejects_missing_freshness_report(
     )
 
 
+def test_validate_evidence_book_rejects_missing_claim_reaudit(tmp_path: Path) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+    refresh_evidence_book(repo_root)
+    claim_reaudit_path = repo_root / "evidence-book" / "index" / "claim-reaudit.json"
+    claim_reaudit_path.unlink()
+
+    report = validate_evidence_book(repo_root)
+
+    assert report.valid is False
+    assert any("claim-reaudit.json" in issue.path.as_posix() for issue in report.issues)
+
+
 def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) -> None:
     repo_root = _write_book_fixture(tmp_path)
 
@@ -236,6 +262,12 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     freshness_report = build_evidence_freshness_report(repo_root)
     integrity_report = build_evidence_integrity_report(repo_root)
     coverage_gap_report = build_evidence_coverage_gap_report(repo_root)
+    claim_reaudit = build_claim_reaudit(repo_root)
+    analytical_surface_coverage = build_analytical_surface_coverage(repo_root)
+    closure_criteria = build_closure_criteria(repo_root)
+    maturity_scorecard = build_evidence_maturity_scorecard(repo_root)
+    review_ritual = build_evidence_review_ritual(repo_root)
+    completion_gates = build_completion_gates(repo_root)
     claim_map_path = repo_root / "evidence-book" / "index" / "claim-map.json"
     parity_dashboard_path = (
         repo_root / "evidence-book" / "index" / "parity-dashboard.json"
@@ -303,6 +335,40 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     coverage_gap_summary_path = (
         repo_root / "evidence-book" / "index" / "coverage-gaps.md"
     )
+    claim_reaudit_path = repo_root / "evidence-book" / "index" / "claim-reaudit.json"
+    claim_reaudit_summary_path = (
+        repo_root / "evidence-book" / "index" / "claim-reaudit.md"
+    )
+    analytical_surface_coverage_path = (
+        repo_root / "evidence-book" / "index" / "analytical-surface-coverage.json"
+    )
+    analytical_surface_coverage_summary_path = (
+        repo_root / "evidence-book" / "index" / "analytical-surface-coverage.md"
+    )
+    closure_criteria_path = (
+        repo_root / "evidence-book" / "index" / "closure-criteria.json"
+    )
+    closure_criteria_summary_path = (
+        repo_root / "evidence-book" / "index" / "closure-criteria.md"
+    )
+    maturity_scorecard_path = (
+        repo_root / "evidence-book" / "index" / "evidence-maturity-scorecard.json"
+    )
+    maturity_scorecard_summary_path = (
+        repo_root / "evidence-book" / "index" / "evidence-maturity-scorecard.md"
+    )
+    review_ritual_path = (
+        repo_root / "evidence-book" / "index" / "evidence-review-ritual.json"
+    )
+    review_ritual_summary_path = (
+        repo_root / "evidence-book" / "index" / "evidence-review-ritual.md"
+    )
+    completion_gates_path = (
+        repo_root / "evidence-book" / "index" / "completion-gates.json"
+    )
+    completion_gates_summary_path = (
+        repo_root / "evidence-book" / "index" / "completion-gates.md"
+    )
     reviewer_summary_json_path = (
         repo_root
         / "evidence-book"
@@ -348,6 +414,18 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert integrity_summary_path.exists()
     assert coverage_gap_path.exists()
     assert coverage_gap_summary_path.exists()
+    assert claim_reaudit_path.exists()
+    assert claim_reaudit_summary_path.exists()
+    assert analytical_surface_coverage_path.exists()
+    assert analytical_surface_coverage_summary_path.exists()
+    assert closure_criteria_path.exists()
+    assert closure_criteria_summary_path.exists()
+    assert maturity_scorecard_path.exists()
+    assert maturity_scorecard_summary_path.exists()
+    assert review_ritual_path.exists()
+    assert review_ritual_summary_path.exists()
+    assert completion_gates_path.exists()
+    assert completion_gates_summary_path.exists()
     assert reviewer_summary_json_path.exists()
     assert reviewer_summary_markdown_path.exists()
     assert docs_evidence_path.exists()
@@ -429,3 +507,39 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     assert coverage_gap_summary_path.read_text(
         encoding="utf-8"
     ) == render_evidence_coverage_gap_report(coverage_gap_report)
+    assert json.loads(claim_reaudit_path.read_text(encoding="utf-8")) == claim_reaudit
+    assert claim_reaudit_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_claim_reaudit(claim_reaudit)
+    assert (
+        json.loads(analytical_surface_coverage_path.read_text(encoding="utf-8"))
+        == analytical_surface_coverage
+    )
+    assert analytical_surface_coverage_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_analytical_surface_coverage(analytical_surface_coverage)
+    assert (
+        json.loads(closure_criteria_path.read_text(encoding="utf-8"))
+        == closure_criteria
+    )
+    assert closure_criteria_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_closure_criteria(closure_criteria)
+    assert (
+        json.loads(maturity_scorecard_path.read_text(encoding="utf-8"))
+        == maturity_scorecard
+    )
+    assert maturity_scorecard_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_maturity_scorecard(maturity_scorecard)
+    assert json.loads(review_ritual_path.read_text(encoding="utf-8")) == review_ritual
+    assert review_ritual_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_evidence_review_ritual(review_ritual)
+    assert (
+        json.loads(completion_gates_path.read_text(encoding="utf-8"))
+        == completion_gates
+    )
+    assert completion_gates_summary_path.read_text(
+        encoding="utf-8"
+    ) == render_completion_gates(completion_gates)
