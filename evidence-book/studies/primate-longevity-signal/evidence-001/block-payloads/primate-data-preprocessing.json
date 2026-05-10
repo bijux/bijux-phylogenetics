@@ -1,16 +1,16 @@
 {
   "block_id": "primate-data-preprocessing",
-  "script_lines": "23-79",
-  "title": "Raw primate preprocessing to checked-in analysis table",
-  "status": "verified",
-  "note": "The R reference reconstruction from the workbook matches the checked-in processed CSV.",
   "evidence": {
-    "raw_row_count": 76,
+    "checked_in_processed_matches_reference": true,
+    "checked_in_processed_path": "external:lund/pcm1-plots-signal/data/primate.csv",
+    "duplicate_species_after_grouping": 1,
     "processed_row_count": 75,
     "processed_species_count": 75,
-    "duplicate_species_after_grouping": 1,
-    "checked_in_processed_matches_reference": true,
-    "checked_in_processed_path": "/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Data/primate.csv",
-    "reference_processed_path": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/reference_primate.csv"
-  }
+    "raw_row_count": 76,
+    "reference_processed_path": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+  },
+  "note": "The R reference reconstruction from the workbook matches the checked-in processed CSV.",
+  "script_lines": "23-79",
+  "status": "verified",
+  "title": "Raw primate preprocessing to checked-in analysis table"
 }

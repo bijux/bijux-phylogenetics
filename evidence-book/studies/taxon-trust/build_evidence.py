@@ -192,6 +192,23 @@ def _pair_rows(rows: list[object]) -> list[list[str]]:
     ]
 
 
+def _sanitize_report_manifest(value: object) -> object:
+    if isinstance(value, str) and value.startswith(f"{REPO_ROOT}/"):
+        return _rel(Path(value))
+    if isinstance(value, list):
+        return [_sanitize_report_manifest(item) for item in value]
+    if isinstance(value, dict):
+        return {
+            (
+                _rel(Path(key))
+                if isinstance(key, str) and key.startswith(f"{REPO_ROOT}/")
+                else key
+            ): _sanitize_report_manifest(item)
+            for key, item in value.items()
+        }
+    return value
+
+
 def _claim_payloads() -> list[dict[str, object]]:
     identity_report = inspect_tree_taxon_identity(load_tree(IDENTITY_TREE))
     synonym_audit = audit_tree_taxon_synonyms(load_tree(TAXONOMY_TREE), SYNONYM_TABLE)
@@ -439,7 +456,9 @@ def _build_taxonomy_report_manifest() -> dict[str, object]:
             reported_taxa_path=WORKFLOW_REPORTED,
             out_path=out_path,
         )
-        return json.loads(result.machine_manifest_path.read_text(encoding="utf-8"))
+        return _sanitize_report_manifest(
+            json.loads(result.machine_manifest_path.read_text(encoding="utf-8"))
+        )
 
 
 def _write_bundle_readme(

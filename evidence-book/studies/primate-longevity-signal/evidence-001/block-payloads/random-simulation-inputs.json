@@ -1,11 +1,6 @@
 {
   "block_id": "random-simulation-inputs",
-  "script_lines": "287-288,294-295,309,315",
-  "title": "Random simulation scenarios",
-  "status": "seeded_input_only",
-  "note": "For credibility, the report freezes these R-generated simulation inputs with `set.seed(1)` and reuses the resulting artifacts on both sides.",
   "evidence": {
-    "random_tree_path": "/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/random_tree_seed1.nwk",
     "example_names": [
       "random_data",
       "random_data2",
@@ -13,6 +8,11 @@
       "random_data4",
       "random_data5"
     ],
+    "random_tree_path": "evidence-book/studies/primate-longevity-signal/evidence-001/random_tree_seed1.nwk",
     "random_tree_tip_count": 30
-  }
+  },
+  "note": "For credibility, the report freezes these R-generated simulation inputs with `set.seed(1)` and reuses the resulting artifacts on both sides.",
+  "script_lines": "287-288,294-295,309,315",
+  "status": "seeded_input_only",
+  "title": "Random simulation scenarios"
 }

@@ -1,19 +1,19 @@
 {
   "block_id": "primate-lambda-fit",
-  "script_lines": "347-354",
-  "title": "Primate longevity lambda fit",
-  "status": "verified_with_tolerance",
-  "note": "The `bijux-phylogenetics` lambda estimate is within a small numerical tolerance of the R fit.",
   "evidence": {
-    "r": {
-      "lambda_value": 0.8027301202530401,
-      "log_likelihood": -446.94323405402366
-    },
     "bijux": {
       "lambda_value": 0.803,
       "log_likelihood": -446.94323951456334
     },
     "lambda_abs_diff": 0.00026987974695991124,
-    "log_likelihood_abs_diff": 5.460539682644594e-06
-  }
+    "log_likelihood_abs_diff": 5.460539682644594e-06,
+    "r": {
+      "lambda_value": 0.8027301202530401,
+      "log_likelihood": -446.94323405402366
+    }
+  },
+  "note": "The `bijux-phylogenetics` lambda estimate is within a small numerical tolerance of the R fit.",
+  "script_lines": "347-354",
+  "status": "verified_with_tolerance",
+  "title": "Primate longevity lambda fit"
 }

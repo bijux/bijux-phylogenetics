@@ -1,13 +1,12 @@
-# primate-longevity-signal-workflow accepted-tool-parity
+# Evidence 001
 
 This is a registered cross-reference example for the full lecture script
-[`PCM1_plots_signal.R`](/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Rcripts/PCM1_plots_signal.R).
+[`PCM1_plots_signal.R`](external:lund/pcm1-plots-signal/script).
 
 Identity:
 
-- study id: `phylogenetic-101`
-- example id: `primate-longevity-signal-workflow`
-- evidence id: `accepted-tool-parity`
+- study id: `primate-longevity-signal`
+- evidence id: `evidence-001`
 - reference tools: `ape, geiger, phytools, treeio, tidytree`
 
 Evidence contract:
@@ -19,8 +18,8 @@ Evidence contract:
 
 Files used in this report:
 
-- [R reference checks](../../../reference/primate_lifespan_signal_reference_r.R)
-- [Python `bijux-phylogenetics` checks](../../../reference/primate_lifespan_signal_reference_bijux.py)
+- [R reference checks](../reference/primate_lifespan_signal_reference_r.R)
+- [Python `bijux-phylogenetics` checks](../reference/primate_lifespan_signal_reference_bijux.py)
 - [Example manifest](manifest.json)
 - [R results JSON](r_reference_results.json)
 - [Python results JSON](bijux_reference_results.json)
@@ -128,7 +127,7 @@ citation("ape") #Specific package
 **Comparison Evidence**
 
 - R package versions recorded: `ape, geiger, openxlsx, phytools, tidytree, treeio`
-- Python reference script: `/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/reference/primate_lifespan_signal_reference_bijux.py`
+- Python reference script: `evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py`
 
 Raw comparison payload: [`block-payloads/environment-and-package-contract.json`](./block-payloads/environment-and-package-contract.json)
 
@@ -336,8 +335,8 @@ save.image("Data/primate.RData") #Or all files present in your environment. Simp
 
 **Comparison Evidence**
 
-- processed CSV written by R: `/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Data/primate.csv`
-- trimmed tree written by R: `/Users/bijan/bijux/bijux-phylogenetics-r/PCM1_plots_signal/Lecture/R/Data/trimmed_primatetree.nex`
+- processed CSV written by R: `external:lund/pcm1-plots-signal/data/primate.csv`
+- trimmed tree written by R: `external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex`
 
 Raw comparison payload: [`block-payloads/processed-analysis-artifacts.json`](./block-payloads/processed-analysis-artifacts.json)
 
@@ -831,7 +830,7 @@ random_data5<-rTraitCont(random_tree, model="OU", sigma = 5,root.value=1,alpha=5
 
 **Comparison Evidence**
 
-- shared random tree artifact: `/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/random_tree_seed1.nwk`
+- shared random tree artifact: `evidence-book/studies/primate-longevity-signal/evidence-001/random_tree_seed1.nwk`
 - random examples frozen from R: `random_data, random_data2, random_data3, random_data4, random_data5`
 - random tree tip count: `30`
 
@@ -916,7 +915,7 @@ from pathlib import Path
 
 from bijux_phylogenetics import estimate_pagels_lambda
 
-out_dir = Path("reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity")
+out_dir = Path("evidence-book/studies/primate-longevity-signal/evidence-001")
 random_tree = out_dir / "random_tree_seed1.nwk"
 
 for name in ["random_data", "random_data2", "random_data3", "random_data4", "random_data5"]:
@@ -1449,13 +1448,13 @@ save.image("./Results/primate_results.RData")
 ```python
 # Workflow/artifact block.
 # The R lecture script saves an `.RData` workspace; this evidence pass saves
-# explicit JSON artifacts under `reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/`.
+# explicit JSON artifacts under `evidence-book/studies/primate-longevity-signal/evidence-001/`.
 ```
 
 **Comparison Evidence**
 
 - R save target: `./Results/primate_results.RData`
-- report artifact directory: `/Users/bijan/bijux/bijux-phylogenetics/reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity`
+- report artifact directory: `evidence-book/studies/primate-longevity-signal/evidence-001`
 
 Raw comparison payload: [`block-payloads/final-workspace-artifact.json`](./block-payloads/final-workspace-artifact.json)
 

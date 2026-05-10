@@ -1,8 +1,8 @@
 {
   "block_id": "ancestral-colored-tree-plot",
-  "script_lines": "414-419",
-  "title": "Ancestral colored tree plot",
-  "status": "plot_only",
+  "evidence": {},
   "note": "The ancestral-state branch-color figure is tracked as a visual rendering surface only.",
-  "evidence": {}
+  "script_lines": "414-419",
+  "status": "plot_only",
+  "title": "Ancestral colored tree plot"
 }

@@ -1,15 +1,15 @@
 {
   "block_id": "ancestral-table-assembly",
-  "script_lines": "404-412",
-  "title": "Assemble ancestral table and node mapping",
-  "status": "verified",
-  "note": "The ancestral table assembly is consistent: 75 tip rows plus 74 internal rows on both sides.",
   "evidence": {
-    "r_tip_rows": 75,
-    "r_internal_rows": 74,
-    "r_total_rows": 149,
-    "bijux_tip_rows": 75,
     "bijux_internal_rows": 74,
-    "bijux_total_rows": 149
-  }
+    "bijux_tip_rows": 75,
+    "bijux_total_rows": 149,
+    "r_internal_rows": 74,
+    "r_tip_rows": 75,
+    "r_total_rows": 149
+  },
+  "note": "The ancestral table assembly is consistent: 75 tip rows plus 74 internal rows on both sides.",
+  "script_lines": "404-412",
+  "status": "verified",
+  "title": "Assemble ancestral table and node mapping"
 }

@@ -1,8 +1,4 @@
 {
-  "study_id": "phylogenetic-101",
-  "example_id": "primate-longevity-signal-workflow",
-  "evidence_id": "accepted-tool-parity",
-  "validation_goal_id": 249,
   "debts": [
     {
       "debt_kind": "experimental",
@@ -17,7 +13,7 @@
       "detail": "cross-environment reproducibility is not yet claimed, and external R ecosystem comparisons remain narrower than the broader validation roadmap",
       "evidence": [
         "goal-252 remains outside this iteration",
-        "reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity demonstrates one checked-in R comparison bundle"
+        "evidence-book/studies/primate-longevity-signal/evidence-001 demonstrates one checked-in R comparison bundle"
       ]
     },
     {
@@ -129,7 +125,10 @@
       "detail": "The lecture script saves an `.RData` workspace; this report saves explicit machine-readable evidence artifacts instead."
     }
   ],
+  "evidence_id": "evidence-001",
   "limitations": [
     "the report summarizes current checked-in evidence; it does not replace method-specific diagnostics on a new biological dataset"
-  ]
+  ],
+  "study_id": "primate-longevity-signal",
+  "validation_goal_id": 249
 }

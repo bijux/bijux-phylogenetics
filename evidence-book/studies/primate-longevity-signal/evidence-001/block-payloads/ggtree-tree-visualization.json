@@ -1,8 +1,8 @@
 {
   "block_id": "ggtree-tree-visualization",
-  "script_lines": "197-220",
-  "title": "Ggtree tree-visualization exploration",
-  "status": "plot_only",
+  "evidence": {},
   "note": "These `ggtree` examples are tracked as visual surfaces only.",
-  "evidence": {}
+  "script_lines": "197-220",
+  "status": "plot_only",
+  "title": "Ggtree tree-visualization exploration"
 }

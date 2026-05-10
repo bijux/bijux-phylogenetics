@@ -175,7 +175,7 @@ assert readiness.analysis_taxa[:6] == summary.taxa[:6]""",
 
 from bijux_phylogenetics import estimate_pagels_lambda
 
-out_dir = Path("reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity")
+out_dir = Path("evidence-book/studies/primate-longevity-signal/evidence-001")
 random_tree = out_dir / "random_tree_seed1.nwk"
 
 for name in ["random_data", "random_data2", "random_data3", "random_data4", "random_data5"]:
@@ -329,7 +329,7 @@ def visit(node, parent=None):
 visit(tree.root)""",
     "pcm1-029": """# Workflow/artifact block.
 # The R lecture script saves an `.RData` workspace; this evidence pass saves
-# explicit JSON artifacts under `reports/phylogenetic-101/examples/primate-longevity-signal-workflow/accepted-tool-parity/`.""",
+# explicit JSON artifacts under `evidence-book/studies/primate-longevity-signal/evidence-001/`.""",
 }
 
 PUBLIC_BLOCK_IDS = {
@@ -1196,7 +1196,7 @@ def _build_examples_index() -> str:
             "# Cross-Reference Examples",
             "",
             "This directory registers durable comparative examples for the",
-            "`phylogenetic-101` study.",
+            "`primate-longevity-signal` study.",
             "",
             "Each example is meant to be stable and reusable:",
             "",
