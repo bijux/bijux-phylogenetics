@@ -7,6 +7,7 @@ import sys
 
 import pytest
 
+from bijux_phylogenetics_dev.quality.evidence_artifacts import sync_evidence_artifacts
 from bijux_phylogenetics_dev.quality.evidence_inputs import build_inputs_manifest
 from bijux_phylogenetics_dev.release.publication_guard import (
     assert_publishable_repository,
@@ -49,6 +50,7 @@ expected_mypy_config_path = "configs/mypy.ini"
 [tool.bijux_phylogenetics.publication_readiness]
 required_evidence_input_manifest = "inputs.manifest.json"
 required_evidence_bundle_code_files = ["reference.R", "analysis.py"]
+required_evidence_bundle_artifacts = ["reference.R", "analysis.py", "checks.json", "report.md", "provenance.json"]
 expected_publishable_packages = [
     "bijux-phylogenetics",
     "phylogenetic",
@@ -61,6 +63,8 @@ target_shape_packages = [
 ]
 forbidden_runtime_subpackages = ["evidence"]
 required_root_make_targets = [
+    "sync-evidence-artifacts:",
+    "check-evidence-artifacts:",
     "report-package-bundles:",
     "check-package-bundles:",
     "report-publish-readiness:",
@@ -76,6 +80,8 @@ required_root_make_targets = [
         repo_root / "makes" / "root.mk",
         "\n".join(
             [
+                "sync-evidence-artifacts:",
+                "check-evidence-artifacts:",
                 "report-package-bundles:",
                 "check-package-bundles:",
                 "report-publish-readiness:",
@@ -235,8 +241,13 @@ packages = ["src/bijux_phylogenetics_dev"]
         / "manifest.json",
         """
 {
+  "schema_version": 1,
   "evidence_id": "evidence-001",
+  "evidence_title": "Demo evidence bundle",
   "study_id": "demo-study",
+  "summary": "Minimal governed evidence bundle.",
+  "owner_package": "bijux-phylogenetics",
+  "claim_ids": ["demo-claim"],
   "freshness": {
     "governed_code_paths": ["packages/bijux-phylogenetics/src/bijux_phylogenetics"],
     "last_generated_on": "2026-05-10",
@@ -249,6 +260,13 @@ packages = ["src/bijux_phylogenetics_dev"]
     "analytical_surfaces": ["demo-analysis"],
     "owner_package": "bijux-phylogenetics"
   },
+  "claim_tags": ["demo"],
+  "comparison_mode": "direct_r_parity",
+  "verdict": {
+    "status": "matched",
+    "summary": "Demo parity matched."
+  },
+  "limitations": [],
   "source_basis": [
     {
       "kind": "repository-fixture",
@@ -325,6 +343,7 @@ packages = ["src/bijux_phylogenetics_dev"]
         bundle_root / "inputs.manifest.json",
         json.dumps(inputs_manifest, indent=2, sort_keys=True) + "\n",
     )
+    sync_evidence_artifacts(repo_root)
     return repo_root
 
 

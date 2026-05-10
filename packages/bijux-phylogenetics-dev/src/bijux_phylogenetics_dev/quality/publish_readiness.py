@@ -173,8 +173,8 @@ def build_evidence_reproducibility_inventory(
             INPUT_MANIFEST_FILENAME,
         )
     )
-    required_bundle_code_files = tuple(
-        _as_str_list(publication_settings.get("required_evidence_bundle_code_files"))
+    required_bundle_artifacts = tuple(
+        _as_str_list(publication_settings.get("required_evidence_bundle_artifacts"))
     )
     studies: list[JsonObject] = []
     issues: list[ReadinessIssue] = []
@@ -182,7 +182,7 @@ def build_evidence_reproducibility_inventory(
     evidence_manifest_count = 0
     evidence_input_manifest_count = 0
     evidence_output_checksum_count = 0
-    missing_bundle_code_file_count = 0
+    missing_bundle_artifact_count = 0
     missing_input_manifest_count = 0
     output_classification_counts = {
         "human-report": 0,
@@ -409,22 +409,22 @@ def build_evidence_reproducibility_inventory(
                         message="evidence bundle is missing the governed input manifest companion file",
                     )
                 )
-            bundle_code_files: list[JsonObject] = []
-            for code_file in required_bundle_code_files:
-                code_path = evidence_root / code_file
-                bundle_code_files.append(
+            bundle_local_artifacts: list[JsonObject] = []
+            for artifact_name in required_bundle_artifacts:
+                artifact_path = evidence_root / artifact_name
+                bundle_local_artifacts.append(
                     {
-                        "path": code_path.relative_to(repo_root).as_posix(),
-                        "present": code_path.is_file(),
+                        "path": artifact_path.relative_to(repo_root).as_posix(),
+                        "present": artifact_path.is_file(),
                     }
                 )
-                if not code_path.is_file():
-                    missing_bundle_code_file_count += 1
+                if not artifact_path.is_file():
+                    missing_bundle_artifact_count += 1
                     issues.append(
                         ReadinessIssue(
-                            code="missing-evidence-bundle-code-file",
-                            path=code_path.relative_to(repo_root).as_posix(),
-                            message="evidence bundle is missing one of the required side-by-side code files",
+                            code="missing-evidence-bundle-artifact",
+                            path=artifact_path.relative_to(repo_root).as_posix(),
+                            message="evidence bundle is missing one of the required governed local artifacts",
                         )
                     )
             local_output_checksums: dict[str, str] = {}
@@ -447,7 +447,7 @@ def build_evidence_reproducibility_inventory(
             evidence_entries.append(
                 {
                     "evidence_id": manifest.get("evidence_id", evidence_root.name),
-                    "bundle_code_files": bundle_code_files,
+                    "bundle_local_artifacts": bundle_local_artifacts,
                     "has_input_manifest": input_manifest_path.is_file(),
                     "output_classification_counts": local_output_classification_counts,
                     "output_checksum_count": len(local_output_checksums),
@@ -486,7 +486,7 @@ def build_evidence_reproducibility_inventory(
         "evidence_output_checksum_count": evidence_output_checksum_count,
         "governed_junk_issue_count": len(junk_issues),
         "issues": [asdict(issue) for issue in issues],
-        "missing_bundle_code_file_count": missing_bundle_code_file_count,
+        "missing_bundle_artifact_count": missing_bundle_artifact_count,
         "missing_input_manifest_count": missing_input_manifest_count,
         "output_classification_counts": output_classification_counts,
         "repo_dataset_checksum_count": repo_dataset_checksum_count,
@@ -727,7 +727,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "missing-evidence-manifest",
             "missing-evidence-input-manifest",
             "stale-evidence-input-manifest",
-            "missing-evidence-bundle-code-file",
+            "missing-evidence-bundle-artifact",
         }
     ]
     standards_closure_blockers = [

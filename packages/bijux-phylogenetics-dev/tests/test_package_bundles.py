@@ -45,10 +45,11 @@ def _minimal_repo(tmp_path: Path) -> Path:
 [tool.bijux_phylogenetics.publication_readiness]
 required_evidence_input_manifest = "inputs.manifest.json"
 required_evidence_bundle_code_files = ["reference.R", "analysis.py"]
+required_evidence_bundle_artifacts = ["reference.R", "analysis.py", "checks.json", "report.md", "provenance.json"]
 expected_publishable_packages = ["demo-runtime", "demo-dev"]
 target_shape_packages = ["demo-runtime", "demo-dev", "demo-evidence"]
 forbidden_runtime_subpackages = ["evidence"]
-required_root_make_targets = ["check-package-bundles:"]
+required_root_make_targets = ["sync-evidence-artifacts:", "check-evidence-artifacts:", "check-package-bundles:"]
 
 [tool.bijux_phylogenetics.publication_readiness.package_policy."demo-runtime"]
 package_dir = "packages/demo-runtime"
