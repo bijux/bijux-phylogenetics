@@ -34,13 +34,58 @@ make_dir = "makes"
         repo_root / "configs" / "config_ssot.toml",
         """
 [tool.bijux_phylogenetics.config_ssot]
-required_root_files = ["configs/mypy.ini", "configs/pytest.ini"]
+required_root_files = ["configs/mypy.ini", "configs/pytest.ini", "configs/package_boundaries.toml"]
 forbidden_package_config_filenames = ["mypy.ini", "pytest.ini"]
 allowed_package_config_paths = []
 audit_paths = ["tox.ini", "makes/packages/runtime.mk"]
 expected_root_config_dir = "configs"
 expected_root_make_dir = "makes"
 expected_mypy_config_path = "configs/mypy.ini"
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root / "configs" / "package_boundaries.toml",
+        """
+[tool.bijux_phylogenetics.package_boundaries]
+known_repo_module_roots = ["bijux_phylogenetics", "phylogenetic", "bijux_phylogenetics_dev"]
+forbidden_runtime_top_level_exports = ["EvidenceBundleReport", "bundle_directory"]
+alias_allowed_local_files = ["__init__.py", "__main__.py", "cli.py", "py.typed", "runtime_alias.py"]
+
+[tool.bijux_phylogenetics.package_boundaries.runtime_evidence_compatibility]
+runtime_version_spec = ">=0.1.0,<1.0"
+supported_api_modules = ["bijux_phylogenetics.comparative"]
+supported_api_locators = ["bijux_phylogenetics.comparative:inspect_pgls_inputs", "bijux_phylogenetics.comparative:run_pgls"]
+notes = "Minimal runtime consumer contract."
+
+[tool.bijux_phylogenetics.package_boundaries.package_roles."bijux-phylogenetics"]
+role = "runtime"
+package_dir = "packages/bijux-phylogenetics"
+module_root = "bijux_phylogenetics"
+allowed_repo_import_roots = ["bijux_phylogenetics"]
+owned_module_prefixes = ["bijux_phylogenetics"]
+required_install_dependencies = ["biopython>=1.0"]
+
+[tool.bijux_phylogenetics.package_boundaries.package_roles."phylogenetic"]
+role = "compatibility-alias"
+package_dir = "packages/phylogenetic"
+module_root = "phylogenetic"
+allowed_repo_import_roots = ["phylogenetic", "bijux_phylogenetics"]
+owned_module_prefixes = ["phylogenetic"]
+required_install_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+
+[tool.bijux_phylogenetics.package_boundaries.package_roles."bijux-phylogenetics-dev"]
+role = "maintainer"
+package_dir = "packages/bijux-phylogenetics-dev"
+module_root = "bijux_phylogenetics_dev"
+allowed_repo_import_roots = ["bijux_phylogenetics_dev", "bijux_phylogenetics"]
+owned_module_prefixes = ["bijux_phylogenetics_dev"]
+required_install_dependencies = ["PyYAML>=6.0"]
+
+[tool.bijux_phylogenetics.package_boundaries.target_package_roles."bijux-phylogenetics-evidence"]
+role = "evidence-consumer"
+target_module_root = "bijux_phylogenetics_evidence"
+required_runtime_dependency = "bijux-phylogenetics>=0.1.0,<1.0"
 """.strip()
         + "\n",
     )
@@ -67,6 +112,8 @@ required_root_make_targets = [
     "sync-evidence-artifacts:",
     "check-evidence-artifacts:",
     "check-artifact-governance:",
+    "report-package-boundaries:",
+    "check-package-boundaries:",
     "report-package-bundles:",
     "check-package-bundles:",
     "report-publish-readiness:",
@@ -88,6 +135,8 @@ required_root_make_targets = [
                 "check-evidence-artifacts:",
                 "validate-evidence-book:",
                 "check-artifact-governance:",
+                "report-package-boundaries:",
+                "check-package-boundaries:",
                 "report-package-bundles:",
                 "check-package-bundles:",
                 "report-publish-readiness:",
@@ -124,7 +173,34 @@ packages = ["src/bijux_phylogenetics"]
         / "src"
         / "bijux_phylogenetics"
         / "__init__.py",
-        "__version__ = '0.1.0'\n",
+        """
+from .comparative import inspect_pgls_inputs, run_pgls
+
+__version__ = "0.1.0"
+__all__ = ["inspect_pgls_inputs", "run_pgls"]
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "comparative"
+        / "__init__.py",
+        """
+def inspect_pgls_inputs() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+def run_pgls() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+__all__ = ["inspect_pgls_inputs", "run_pgls"]
+""".strip()
+        + "\n",
     )
     _write(
         repo_root / "packages" / "phylogenetic" / "pyproject.toml",
@@ -143,7 +219,28 @@ packages = ["src/phylogenetic"]
     )
     _write(
         repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "__init__.py",
-        "__version__ = '0.1.0'\n",
+        'from bijux_phylogenetics import inspect_pgls_inputs, run_pgls\n\n__version__ = "0.1.0"\n',
+    )
+    _write(
+        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "__main__.py",
+        "from .cli import main\n",
+    )
+    _write(
+        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "cli.py",
+        "def main() -> int:\n    return 0\n",
+    )
+    _write(
+        repo_root
+        / "packages"
+        / "phylogenetic"
+        / "src"
+        / "phylogenetic"
+        / "runtime_alias.py",
+        "def install_runtime_aliases() -> None:\n    return None\n",
+    )
+    _write(
+        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "py.typed",
+        "",
     )
     _write(
         repo_root / "packages" / "bijux-phylogenetics-dev" / "pyproject.toml",
@@ -363,6 +460,7 @@ def test_assert_publishable_repository_allows_clean_config_ssot_repo(
     assert_publishable_repository(
         repo_root=repo_root,
         require_config_ssot=True,
+        require_package_boundaries=True,
         require_publish_readiness=True,
     )
 
@@ -400,6 +498,22 @@ def test_assert_publishable_repository_requires_repo_root_for_repo_level_guards(
         match="repo_root is required when repository-level publish guards are enabled",
     ):
         assert_publishable_repository(require_publish_readiness=True)
+
+
+def test_assert_publishable_repository_rejects_package_boundary_drift(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    _write(
+        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "notes.py",
+        "ALIASED = True\n",
+    )
+
+    with pytest.raises(SystemExit, match="package boundary audit failed"):
+        assert_publishable_repository(
+            repo_root=repo_root,
+            require_package_boundaries=True,
+        )
 
 
 def test_assert_publishable_repository_rejects_publish_readiness_drift(

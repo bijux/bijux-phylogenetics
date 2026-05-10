@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 from bijux_phylogenetics_dev.quality.config_ssot import check_config_ssot
+from bijux_phylogenetics_dev.quality.package_boundaries import check_package_boundaries
 from bijux_phylogenetics_dev.quality.package_bundles import check_package_bundles
 from bijux_phylogenetics_dev.quality.publish_readiness import check_publish_readiness
 
@@ -47,6 +48,11 @@ def parse_args() -> argparse.Namespace:
         "--require-package-bundles",
         action="store_true",
         help="Require a clean publish-artifact bundle audit before publish checks pass.",
+    )
+    parser.add_argument(
+        "--require-package-boundaries",
+        action="store_true",
+        help="Require a clean package boundary audit before publish checks pass.",
     )
     parser.add_argument(
         "--require-publish-readiness",
@@ -124,12 +130,14 @@ def assert_publishable_repository(
     *,
     repo_root: Path | None = None,
     require_config_ssot: bool = False,
+    require_package_boundaries: bool = False,
     require_package_bundles: bool = False,
     require_publish_readiness: bool = False,
 ) -> None:
     """Reject repository states that are not safe to publish."""
     if (
         not require_config_ssot
+        and not require_package_boundaries
         and not require_package_bundles
         and not require_publish_readiness
     ):
@@ -140,6 +148,8 @@ def assert_publishable_repository(
         )
     if require_config_ssot:
         check_config_ssot(repo_root)
+    if require_package_boundaries:
+        check_package_boundaries(repo_root)
     if require_package_bundles:
         check_package_bundles(repo_root)
     if require_publish_readiness:
@@ -161,6 +171,7 @@ def main() -> int:
     assert_publishable_repository(
         repo_root=repo_root,
         require_config_ssot=args.require_config_ssot,
+        require_package_boundaries=args.require_package_boundaries,
         require_package_bundles=args.require_package_bundles,
         require_publish_readiness=args.require_publish_readiness,
     )
