@@ -37,13 +37,13 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
 	list-evidence-studies build-evidence-book build-evidence-study validate-evidence-book rerun-evidence-cleanroom \
 	sync-evidence-artifacts check-evidence-artifacts report-artifact-governance check-artifact-governance \
-	report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
+	report-package-boundaries check-package-boundaries report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
 	report-release-readiness check-release-readiness
 
 EVIDENCE_STUDY_ID ?=
 EVIDENCE_IDS ?=
 
-check: sync-license-assets lock-check check-config-ssot validate-evidence-book check-evidence-artifacts check-artifact-governance lint test quality security docs build sbom ## Run the full repository verification flow
+check: sync-license-assets lock-check check-config-ssot validate-evidence-book check-evidence-artifacts check-artifact-governance check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
 
 sync-badges: root-check-env ## Render shared badge blocks into managed README surfaces
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.docs.badge_sync sync
@@ -101,6 +101,14 @@ check-artifact-governance: root-check-env ## Fail when repo execution surfaces d
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.artifact_governance check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
 .PHONY: check-artifact-governance
 
+report-package-boundaries: root-check-env ## Audit package ownership, exports, and cross-package boundary contracts
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.package_boundaries report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json"
+.PHONY: report-package-boundaries
+
+check-package-boundaries: root-check-env ## Fail when runtime, alias, or maintainer package boundaries drift from owned contracts
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.package_boundaries check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json"
+.PHONY: check-package-boundaries
+
 report-package-bundles: root-check-env ## Build package bundle audit reports for all publishable packages
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.package_bundles report --repo-root "$(CURDIR)" --artifacts-root "$(ROOT_ARTIFACTS_DIR)/package-bundles" --json-out "$(ROOT_ARTIFACTS_DIR)/package-bundles.json"
 .PHONY: report-package-bundles
@@ -122,6 +130,7 @@ report-release-readiness: root-check-env ## Build the full release-readiness evi
 	@$(MAKE) validate-evidence-book
 	@$(MAKE) check-evidence-artifacts
 	@$(MAKE) report-artifact-governance
+	@$(MAKE) report-package-boundaries
 	@$(MAKE) report-package-bundles
 	@$(MAKE) report-publish-readiness
 .PHONY: report-release-readiness
@@ -131,6 +140,7 @@ check-release-readiness: root-check-env ## Enforce the full release-readiness ga
 	@$(MAKE) validate-evidence-book
 	@$(MAKE) check-evidence-artifacts
 	@$(MAKE) check-artifact-governance
+	@$(MAKE) check-package-boundaries
 	@$(MAKE) check-package-bundles
 	@$(MAKE) check-publish-readiness
 .PHONY: check-release-readiness

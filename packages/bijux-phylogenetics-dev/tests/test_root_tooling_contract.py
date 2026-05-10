@@ -24,6 +24,8 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "rerun-evidence-cleanroom:",
     "report-artifact-governance:",
     "check-artifact-governance:",
+    "report-package-boundaries:",
+    "check-package-boundaries:",
     "report-package-bundles:",
     "check-package-bundles:",
     "check-config-ssot:",
@@ -31,7 +33,7 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "check-publish-readiness:",
     "report-release-readiness:",
     "check-release-readiness:",
-    "check: sync-license-assets lock-check check-config-ssot validate-evidence-book check-evidence-artifacts check-artifact-governance lint test quality security docs build sbom",
+    "check: sync-license-assets lock-check check-config-ssot validate-evidence-book check-evidence-artifacts check-artifact-governance check-package-boundaries lint test quality security docs build sbom",
 }
 
 
