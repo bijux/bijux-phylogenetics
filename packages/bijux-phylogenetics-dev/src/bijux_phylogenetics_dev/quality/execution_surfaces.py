@@ -11,8 +11,9 @@ from typing import Any
 
 import yaml
 
+from .policies import EXECUTION_SURFACES_POLICY_PATH
+
 DEFAULT_JSON_OUT = Path("artifacts/root/execution-surfaces.json")
-POLICY_PATH = Path("configs/execution_surfaces.toml")
 ROOT_MAKEFILE = Path("makes/root.mk")
 TOX_FILE = Path("tox.ini")
 WORKFLOWS_DIR = Path(".github/workflows")
@@ -141,7 +142,7 @@ def _workflow_run_commands(path: Path) -> str:
 
 def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
-    payload = _load_toml(repo_root / POLICY_PATH)
+    payload = _load_toml(repo_root / EXECUTION_SURFACES_POLICY_PATH)
     tool = _as_dict(payload.get("tool"))
     workspace = _as_dict(tool.get("bijux_phylogenetics"))
     policy = _as_dict(workspace.get("execution_surfaces"))

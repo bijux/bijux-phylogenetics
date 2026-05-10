@@ -7,6 +7,7 @@ from bijux_phylogenetics_dev.quality.config_ssot import (
     check_config_ssot,
     load_config_ssot_policy,
 )
+from bijux_phylogenetics_dev.quality.policies import CONFIG_SSOT_POLICY_PATH
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -28,7 +29,7 @@ make_dir = "makes"
         + "\n",
     )
     _write(
-        repo_root / "configs" / "config_ssot.toml",
+        repo_root / CONFIG_SSOT_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.config_ssot]
 required_root_files = ["configs/mypy.ini", "configs/pytest.ini"]

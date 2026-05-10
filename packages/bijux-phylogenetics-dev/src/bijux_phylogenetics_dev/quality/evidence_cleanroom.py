@@ -13,8 +13,9 @@ import sys
 import tomllib
 from uuid import uuid4
 
+from .policies import EXECUTION_SURFACES_POLICY_PATH
+
 DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/evidence-cleanroom")
-EXECUTION_POLICY_PATH = Path("configs/execution_surfaces.toml")
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,7 @@ def _json_payload(output: str) -> dict[str, object]:
 
 
 def _load_selected_cleanroom_runs(repo_root: Path) -> list[tuple[str, list[str]]]:
-    with (repo_root / EXECUTION_POLICY_PATH).open("rb") as handle:
+    with (repo_root / EXECUTION_SURFACES_POLICY_PATH).open("rb") as handle:
         payload = tomllib.load(handle)
     tool = payload.get("tool", {})
     workspace = tool.get("bijux_phylogenetics", {}) if isinstance(tool, dict) else {}

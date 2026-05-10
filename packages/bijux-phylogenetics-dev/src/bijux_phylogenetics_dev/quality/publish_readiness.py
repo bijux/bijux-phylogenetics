@@ -21,6 +21,7 @@ from .package_bundles import (
     load_publication_readiness_settings,
     load_target_package_bundle_policies,
 )
+from .policies import PUBLICATION_READINESS_POLICY_PATH
 
 TomlTable = dict[str, Any]
 JsonObject = dict[str, object]
@@ -756,7 +757,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
         shape_issues.append(
             ReadinessIssue(
                 code="missing-target-package-policy",
-                path="configs/publication_readiness.toml",
+                path=PUBLICATION_READINESS_POLICY_PATH.as_posix(),
                 message="target repository shape package must have either a publishable or target-only bundle policy",
             )
         )

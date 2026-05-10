@@ -10,7 +10,8 @@ from pathlib import Path
 import tomllib
 from typing import Any
 
-POLICY_PATH = Path("configs/package_boundaries.toml")
+from .policies import PACKAGE_BOUNDARIES_POLICY_PATH
+
 DEFAULT_JSON_OUT = Path("artifacts/root/package-boundaries.json")
 
 
@@ -74,7 +75,7 @@ def _as_str_tuple(value: object) -> tuple[str, ...]:
 
 
 def load_package_boundary_policy(repo_root: Path) -> PackageBoundaryPolicy:
-    payload = _load_toml(repo_root / POLICY_PATH)
+    payload = _load_toml(repo_root / PACKAGE_BOUNDARIES_POLICY_PATH)
     tool = _as_dict(payload.get("tool"))
     workspace = _as_dict(tool.get("bijux_phylogenetics"))
     section = _as_dict(workspace.get("package_boundaries"))
@@ -279,28 +280,39 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
         / "comparative"
         / "evidence_contract.py"
     )
-    contract_modules = _tuple_constant_strings(
-        evidence_contract_module, "SUPPORTED_EVIDENCE_API_MODULES"
-    )
-    contract_locators = _tuple_constant_strings(
-        evidence_contract_module, "SUPPORTED_EVIDENCE_API_LOCATORS"
-    )
-    if contract_modules != policy.runtime_evidence_compatibility.supported_api_modules:
+    contract_modules: tuple[str, ...] = ()
+    contract_locators: tuple[str, ...] = ()
+    if not evidence_contract_module.is_file():
         issues.append(
             BoundaryIssue(
-                code="runtime-evidence-module-contract-drift",
+                code="missing-runtime-evidence-contract-module",
                 path=evidence_contract_module.relative_to(repo_root).as_posix(),
-                message="runtime evidence API module contract does not match the governed package-boundary policy",
+                message="runtime package must expose a governed evidence compatibility contract module",
             )
         )
-    if contract_locators != policy.runtime_evidence_compatibility.supported_api_locators:
-        issues.append(
-            BoundaryIssue(
-                code="runtime-evidence-locator-contract-drift",
-                path=evidence_contract_module.relative_to(repo_root).as_posix(),
-                message="runtime evidence API locator contract does not match the governed package-boundary policy",
-            )
+    else:
+        contract_modules = _tuple_constant_strings(
+            evidence_contract_module, "SUPPORTED_EVIDENCE_API_MODULES"
         )
+        contract_locators = _tuple_constant_strings(
+            evidence_contract_module, "SUPPORTED_EVIDENCE_API_LOCATORS"
+        )
+        if contract_modules != policy.runtime_evidence_compatibility.supported_api_modules:
+            issues.append(
+                BoundaryIssue(
+                    code="runtime-evidence-module-contract-drift",
+                    path=evidence_contract_module.relative_to(repo_root).as_posix(),
+                    message="runtime evidence API module contract does not match the governed package-boundary policy",
+                )
+            )
+        if contract_locators != policy.runtime_evidence_compatibility.supported_api_locators:
+            issues.append(
+                BoundaryIssue(
+                    code="runtime-evidence-locator-contract-drift",
+                    path=evidence_contract_module.relative_to(repo_root).as_posix(),
+                    message="runtime evidence API locator contract does not match the governed package-boundary policy",
+                )
+            )
 
     alias_root = repo_root / alias_policy.package_dir / "src" / alias_policy.module_root
     actual_alias_files = sorted(
@@ -430,7 +442,7 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
             issues.append(
                 BoundaryIssue(
                     code=issue_code,
-                    path=POLICY_PATH.as_posix(),
+                    path=PACKAGE_BOUNDARIES_POLICY_PATH.as_posix(),
                     message=message,
                 )
             )

@@ -5,6 +5,7 @@ from pathlib import Path
 from bijux_phylogenetics_dev.quality.execution_surfaces import (
     build_execution_surfaces_report,
 )
+from bijux_phylogenetics_dev.quality.policies import EXECUTION_SURFACES_POLICY_PATH
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -17,7 +18,7 @@ def _write(path: Path, text: str) -> None:
 def _minimal_repo(tmp_path: Path) -> Path:
     repo_root = tmp_path / "repo"
     _write(
-        repo_root / "configs" / "execution_surfaces.toml",
+        repo_root / EXECUTION_SURFACES_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.execution_surfaces]
 required_root_make_targets = [

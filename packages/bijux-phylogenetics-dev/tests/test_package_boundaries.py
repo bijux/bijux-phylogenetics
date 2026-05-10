@@ -6,6 +6,7 @@ from bijux_phylogenetics_dev.quality.package_boundaries import (
     build_package_boundary_report,
     load_package_boundary_policy,
 )
+from bijux_phylogenetics_dev.quality.policies import PACKAGE_BOUNDARIES_POLICY_PATH
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -18,7 +19,7 @@ def _write(path: Path, text: str) -> None:
 def _minimal_repo(tmp_path: Path) -> Path:
     repo_root = tmp_path / "repo"
     _write(
-        repo_root / "configs" / "package_boundaries.toml",
+        repo_root / PACKAGE_BOUNDARIES_POLICY_PATH,
         """
         [tool.bijux_phylogenetics.package_boundaries]
 known_repo_module_roots = ["demo_runtime", "demo_alias", "demo_dev"]

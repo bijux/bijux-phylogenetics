@@ -9,6 +9,12 @@ import pytest
 
 from bijux_phylogenetics_dev.quality.evidence_artifacts import sync_evidence_artifacts
 from bijux_phylogenetics_dev.quality.evidence_inputs import build_inputs_manifest
+from bijux_phylogenetics_dev.quality.policies import (
+    CONFIG_SSOT_POLICY_PATH,
+    EXECUTION_SURFACES_POLICY_PATH,
+    PACKAGE_BOUNDARIES_POLICY_PATH,
+    PUBLICATION_READINESS_POLICY_PATH,
+)
 from bijux_phylogenetics_dev.release.publication_guard import (
     assert_publishable_repository,
 )
@@ -31,10 +37,10 @@ make_dir = "makes"
         + "\n",
     )
     _write(
-        repo_root / "configs" / "config_ssot.toml",
+        repo_root / CONFIG_SSOT_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.config_ssot]
-required_root_files = ["configs/mypy.ini", "configs/pytest.ini", "configs/package_boundaries.toml"]
+required_root_files = ["configs/mypy.ini", "configs/pytest.ini"]
 forbidden_package_config_filenames = ["mypy.ini", "pytest.ini"]
 allowed_package_config_paths = []
 audit_paths = ["tox.ini", "makes/packages/runtime.mk"]
@@ -45,7 +51,7 @@ expected_mypy_config_path = "configs/mypy.ini"
         + "\n",
     )
     _write(
-        repo_root / "configs" / "package_boundaries.toml",
+        repo_root / PACKAGE_BOUNDARIES_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.package_boundaries]
 known_repo_module_roots = ["bijux_phylogenetics", "phylogenetic", "bijux_phylogenetics_dev"]
@@ -90,7 +96,7 @@ required_runtime_dependency = "bijux-phylogenetics>=0.1.0,<1.0"
         + "\n",
     )
     _write(
-        repo_root / "configs" / "execution_surfaces.toml",
+        repo_root / EXECUTION_SURFACES_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.execution_surfaces]
 required_root_make_targets = [
@@ -132,7 +138,7 @@ evidence_ids = ["evidence-001"]
         + "\n",
     )
     _write(
-        repo_root / "configs" / "publication_readiness.toml",
+        repo_root / PUBLICATION_READINESS_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.publication_readiness]
 required_evidence_input_manifest = "inputs.manifest.json"
@@ -170,6 +176,30 @@ required_root_make_targets = [
     "report-release-readiness:",
     "check-release-readiness:",
 ]
+
+[tool.bijux_phylogenetics.publication_readiness.package_policy."bijux-phylogenetics"]
+package_dir = "packages/bijux-phylogenetics"
+wheel_module_root = "bijux_phylogenetics"
+allowed_dependencies = ["biopython>=1.0"]
+required_sdist_entries = ["src/bijux_phylogenetics/__init__.py"]
+required_wheel_entries = ["bijux_phylogenetics/__init__.py"]
+forbidden_archive_prefixes = ["tests/", "docs/"]
+
+[tool.bijux_phylogenetics.publication_readiness.package_policy."phylogenetic"]
+package_dir = "packages/phylogenetic"
+wheel_module_root = "phylogenetic"
+allowed_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+required_sdist_entries = ["src/phylogenetic/__init__.py"]
+required_wheel_entries = ["phylogenetic/__init__.py"]
+forbidden_archive_prefixes = ["tests/", "docs/"]
+
+[tool.bijux_phylogenetics.publication_readiness.package_policy."bijux-phylogenetics-dev"]
+package_dir = "packages/bijux-phylogenetics-dev"
+wheel_module_root = "bijux_phylogenetics_dev"
+allowed_dependencies = ["PyYAML>=6.0"]
+required_sdist_entries = ["src/bijux_phylogenetics_dev/__init__.py"]
+required_wheel_entries = ["bijux_phylogenetics_dev/__init__.py"]
+forbidden_archive_prefixes = ["tests/", "docs/"]
 """.strip()
         + "\n",
     )
@@ -274,6 +304,23 @@ from .comparative import inspect_pgls_inputs, run_pgls
 
 __version__ = "0.1.0"
 __all__ = ["inspect_pgls_inputs", "run_pgls"]
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "comparative"
+        / "evidence_contract.py",
+        """
+SUPPORTED_EVIDENCE_API_MODULES = ("bijux_phylogenetics.comparative",)
+SUPPORTED_EVIDENCE_API_LOCATORS = (
+    "bijux_phylogenetics.comparative:inspect_pgls_inputs",
+    "bijux_phylogenetics.comparative:run_pgls",
+)
 """.strip()
         + "\n",
     )
@@ -624,13 +671,13 @@ jobs:
         / "demo.tsv",
         "species\tvalue\nA\t1\n",
     )
+    sync_evidence_artifacts(repo_root)
     bundle_root = repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
     inputs_manifest = build_inputs_manifest(repo_root, bundle_root)
     _write(
         bundle_root / "inputs.manifest.json",
         json.dumps(inputs_manifest, indent=2, sort_keys=True) + "\n",
     )
-    sync_evidence_artifacts(repo_root)
     return repo_root
 
 

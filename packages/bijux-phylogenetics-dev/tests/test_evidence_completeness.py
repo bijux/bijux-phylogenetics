@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics_dev.quality.evidence_completeness import (
     build_evidence_completeness_report,
 )
+from bijux_phylogenetics_dev.quality.policies import PUBLICATION_READINESS_POLICY_PATH
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -18,7 +19,7 @@ def _write(path: Path, text: str) -> None:
 def _minimal_repo(tmp_path: Path) -> Path:
     repo_root = tmp_path / "repo"
     _write(
-        repo_root / "configs" / "publication_readiness.toml",
+        repo_root / PUBLICATION_READINESS_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.publication_readiness]
 required_evidence_input_manifest = "inputs.manifest.json"

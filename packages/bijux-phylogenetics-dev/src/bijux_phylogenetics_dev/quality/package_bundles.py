@@ -15,7 +15,8 @@ from typing import Any
 from uuid import uuid4
 import zipfile
 
-POLICY_PATH = Path("configs/publication_readiness.toml")
+from .policies import PUBLICATION_READINESS_POLICY_PATH
+
 DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/package-bundles")
 
 
@@ -53,7 +54,7 @@ def _as_str_tuple(values: object) -> tuple[str, ...]:
 
 
 def load_publication_readiness_settings(repo_root: Path) -> dict[str, Any]:
-    payload = _load_toml(repo_root / POLICY_PATH)
+    payload = _load_toml(repo_root / PUBLICATION_READINESS_POLICY_PATH)
     return _as_dict(
         _as_dict(_as_dict(payload.get("tool")).get("bijux_phylogenetics")).get(
             "publication_readiness"
@@ -233,7 +234,7 @@ def build_package_bundle_report(
         issues.append(
             BundleIssue(
                 code="publishable-package-policy-drift",
-                path=POLICY_PATH.as_posix(),
+                path=PUBLICATION_READINESS_POLICY_PATH.as_posix(),
                 message="package bundle policy entries must match the governed publishable package set exactly",
             )
         )
@@ -250,7 +251,7 @@ def build_package_bundle_report(
             issues.append(
                 BundleIssue(
                     code="missing-target-package-policy",
-                    path=POLICY_PATH.as_posix(),
+                    path=PUBLICATION_READINESS_POLICY_PATH.as_posix(),
                     message=f"target repository shape package {package_name} is missing a target package bundle policy",
                 )
             )

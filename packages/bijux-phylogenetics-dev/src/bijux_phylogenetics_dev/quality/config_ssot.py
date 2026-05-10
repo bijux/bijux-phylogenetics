@@ -10,8 +10,9 @@ import re
 import tomllib
 from typing import Any
 
+from .policies import CONFIG_SSOT_POLICY_PATH
+
 TomlTable = dict[str, Any]
-CONFIG_POLICY_PATH = Path("configs/config_ssot.toml")
 LOCAL_MYPY_REFERENCE = re.compile(
     r"(?P<ref>\$\(PROJECT_DIR\)/mypy\.ini|packages/[^/\s\"']+/mypy\.ini)"
 )
@@ -70,7 +71,7 @@ def _load_toml(path: Path) -> TomlTable:
 
 def load_config_ssot_policy(repo_root: Path) -> ConfigSsotPolicy:
     """Load the repository config SSOT policy."""
-    policy_path = repo_root / CONFIG_POLICY_PATH
+    policy_path = repo_root / CONFIG_SSOT_POLICY_PATH
     payload = _load_toml(policy_path)
     tool = _as_table(payload.get("tool"))
     workspace = _as_table(tool.get("bijux_phylogenetics"))
@@ -228,7 +229,7 @@ def build_config_ssot_report(repo_root: Path) -> ConfigSsotReport:
 
     return ConfigSsotReport(
         repo_root=repo_root.as_posix(),
-        policy_path=(repo_root / CONFIG_POLICY_PATH).as_posix(),
+        policy_path=CONFIG_SSOT_POLICY_PATH.as_posix(),
         issue_count=len(issues),
         issues=issues,
         required_root_files=list(policy.required_root_files),

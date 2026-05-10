@@ -7,6 +7,12 @@ import pytest
 
 from bijux_phylogenetics_dev.quality.evidence_artifacts import sync_evidence_artifacts
 from bijux_phylogenetics_dev.quality.evidence_inputs import build_inputs_manifest
+from bijux_phylogenetics_dev.quality.policies import (
+    CONFIG_SSOT_POLICY_PATH,
+    EXECUTION_SURFACES_POLICY_PATH,
+    PACKAGE_BOUNDARIES_POLICY_PATH,
+    PUBLICATION_READINESS_POLICY_PATH,
+)
 from bijux_phylogenetics_dev.quality.publish_readiness import (
     build_publish_readiness_report,
     check_publish_readiness,
@@ -32,10 +38,10 @@ make_dir = "makes"
         + "\n",
     )
     _write(
-        repo_root / "configs" / "config_ssot.toml",
+        repo_root / CONFIG_SSOT_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.config_ssot]
-required_root_files = ["configs/mypy.ini", "configs/pytest.ini", "configs/package_boundaries.toml"]
+required_root_files = ["configs/mypy.ini", "configs/pytest.ini"]
 forbidden_package_config_filenames = ["mypy.ini", "pytest.ini"]
 allowed_package_config_paths = []
 audit_paths = ["tox.ini", "makes/packages/runtime.mk"]
@@ -46,7 +52,7 @@ expected_mypy_config_path = "configs/mypy.ini"
         + "\n",
     )
     _write(
-        repo_root / "configs" / "package_boundaries.toml",
+        repo_root / PACKAGE_BOUNDARIES_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.package_boundaries]
 known_repo_module_roots = ["bijux_phylogenetics", "phylogenetic", "bijux_phylogenetics_dev"]
@@ -91,7 +97,7 @@ required_runtime_dependency = "bijux-phylogenetics>=0.1.0,<1.0"
         + "\n",
     )
     _write(
-        repo_root / "configs" / "execution_surfaces.toml",
+        repo_root / EXECUTION_SURFACES_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.execution_surfaces]
 required_root_make_targets = [
@@ -133,7 +139,7 @@ evidence_ids = ["evidence-001"]
         + "\n",
     )
     _write(
-        repo_root / "configs" / "publication_readiness.toml",
+        repo_root / PUBLICATION_READINESS_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.publication_readiness]
 required_evidence_input_manifest = "inputs.manifest.json"
@@ -689,13 +695,13 @@ jobs:
         / "demo.tsv",
         "species\tvalue\nA\t1\n",
     )
+    sync_evidence_artifacts(repo_root)
     bundle_root = repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
     inputs_manifest = build_inputs_manifest(repo_root, bundle_root)
     _write(
         bundle_root / "inputs.manifest.json",
         json.dumps(inputs_manifest, indent=2, sort_keys=True) + "\n",
     )
-    sync_evidence_artifacts(repo_root)
     return repo_root
 
 
@@ -706,14 +712,14 @@ def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     assert report["summary"]["overall_status"] == "blocked"
     assert report["summary"]["blocker_count"] > 0
     assert report["summary"]["study_count"] == 4
-    assert report["summary"]["evidence_manifest_count"] == 19
-    assert report["summary"]["evidence_input_manifest_count"] == 19
+    assert report["summary"]["evidence_manifest_count"] == 23
+    assert report["summary"]["evidence_input_manifest_count"] == 23
     assert report["config_ssot"]["issue_count"] == 0
     assert report["evidence_inventory"]["governed_junk_issue_count"] == 0
     assert report["evidence_inventory"]["repo_dataset_checksum_count"] >= 4
     assert report["evidence_inventory"]["evidence_output_checksum_count"] >= 10
     assert report["scorecards"]["package_boundaries"]["status"] == "blocked"
-    assert report["scorecards"]["evidence_program"]["status"] == "ready"
+    assert report["scorecards"]["evidence_program"]["status"] == "blocked"
     blocker_codes = {issue["code"] for issue in report["blocker_register"]["issues"]}
     assert "missing-target-shape-package" in blocker_codes
     assert "runtime-owns-forbidden-subpackage" in blocker_codes

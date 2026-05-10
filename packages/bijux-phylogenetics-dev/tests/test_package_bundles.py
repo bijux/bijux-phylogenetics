@@ -12,6 +12,7 @@ from bijux_phylogenetics_dev.quality.package_bundles import (
     load_publication_readiness_settings,
     load_package_bundle_policies,
 )
+from bijux_phylogenetics_dev.quality.policies import PUBLICATION_READINESS_POLICY_PATH
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -41,7 +42,7 @@ def _write_sdist(path: Path, members: dict[str, str]) -> None:
 def _minimal_repo(tmp_path: Path) -> Path:
     repo_root = tmp_path / "repo"
     _write(
-        repo_root / "configs" / "publication_readiness.toml",
+        repo_root / PUBLICATION_READINESS_POLICY_PATH,
         """
 [tool.bijux_phylogenetics.publication_readiness]
 required_evidence_input_manifest = "inputs.manifest.json"
