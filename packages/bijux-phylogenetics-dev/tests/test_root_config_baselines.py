@@ -6,6 +6,7 @@ import tomllib
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+CONFIGS_ROOT = REPO_ROOT / "configs"
 
 
 def _config_parser(path: Path) -> ConfigParser:
@@ -15,8 +16,12 @@ def _config_parser(path: Path) -> ConfigParser:
 
 
 def _ruff_config() -> dict[str, Any]:
-    with (REPO_ROOT / "configs" / "ruff.toml").open("rb") as handle:
+    with (CONFIGS_ROOT / "ruff.toml").open("rb") as handle:
         return tomllib.load(handle)
+
+
+def _resolve_config_relative_path(config_path: Path, configured_path: str) -> Path:
+    return (config_path.parent / configured_path).resolve()
 
 
 def _package_roots(kind: str) -> set[str]:
@@ -36,14 +41,19 @@ def _package_import_roots() -> set[str]:
 
 
 def test_root_pytest_configuration_matches_shared_python_baseline() -> None:
-    pytest_config = _config_parser(REPO_ROOT / "configs" / "pytest.ini")["pytest"]
+    pytest_ini = CONFIGS_ROOT / "pytest.ini"
+    pytest_config = _config_parser(pytest_ini)["pytest"]
 
     assert pytest_config["minversion"] == "8.0"
     assert pytest_config["python_files"] == "test_*.py"
     assert pytest_config["python_classes"] == "Test*"
     assert pytest_config["python_functions"] == "test_*"
     assert pytest_config["asyncio_mode"] == "auto"
-    assert pytest_config["cache_dir"] == "artifacts/root/pytest-cache"
+    assert pytest_config["cache_dir"] == "../artifacts/root/pytest-cache"
+    assert _resolve_config_relative_path(
+        pytest_ini,
+        pytest_config["cache_dir"],
+    ) == REPO_ROOT / "artifacts" / "root" / "pytest-cache"
     assert pytest_config["timeout"] == "120"
     assert pytest_config["timeout_method"] == "thread"
     assert pytest_config["timeout_func_only"] == "true"
@@ -116,7 +126,11 @@ def test_root_ruff_configuration_matches_shared_python_baseline() -> None:
     assert ruff_config["target-version"] == "py311"
     assert ruff_config["line-length"] == 88
     assert ruff_config["respect-gitignore"] is True
-    assert ruff_config["cache-dir"] == "artifacts/root/ruff-cache"
+    assert ruff_config["cache-dir"] == "../artifacts/root/ruff-cache"
+    assert _resolve_config_relative_path(
+        CONFIGS_ROOT / "ruff.toml",
+        ruff_config["cache-dir"],
+    ) == REPO_ROOT / "artifacts" / "root" / "ruff-cache"
     assert set(ruff_config["src"]) == _package_roots("src") | _package_roots("tests")
     assert ruff_config["exclude"] == [
         ".git",
