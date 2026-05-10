@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 import tomllib
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
-def _deptry_config() -> dict[str, object]:
+def _deptry_config() -> dict[str, Any]:
     with (REPO_ROOT / "configs" / "deptry.toml").open("rb") as handle:
         return tomllib.load(handle)
 

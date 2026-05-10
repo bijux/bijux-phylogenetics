@@ -15,6 +15,10 @@ DOCS_RENDER_SERVE_CONFIG := 0
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/repository/root.mk
 
+ROOT_FORBIDDEN_ARTIFACTS := $(filter-out \
+	"$(CURDIR)/.hypothesis" \
+	"$(CURDIR)/.benchmarks",$(ROOT_FORBIDDEN_ARTIFACTS))
+
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/package-dispatch.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-docs.mk

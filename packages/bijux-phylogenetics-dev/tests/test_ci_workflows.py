@@ -79,5 +79,5 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
         entry for entry in include if entry["package_slug"] == "bijux-phylogenetics"
     )
     assert runtime_entry["check_targets"] == (
-        "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
+        '["quality", "security", "api", "openapi-drift", "build", "sbom"]'
     )

@@ -47,6 +47,12 @@ docs_package = "bijux-phylogenetics-dev"
 config_dir = "configs"
 make_dir = "makes"
 
+# Shared workspace package index consumed by common Bijux make tooling.
+[tool.bijux_canon.package_dirs]
+"bijux-phylogenetics" = "packages/bijux-phylogenetics"
+"phylogenetic" = "packages/phylogenetic"
+"bijux-phylogenetics-dev" = "packages/bijux-phylogenetics-dev"
+
 [tool.uv.sources]
 bijux-phylogenetics = { workspace = true }
 phylogenetic = { workspace = true }

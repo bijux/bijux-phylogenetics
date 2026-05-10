@@ -29,7 +29,9 @@ def test_badge_catalog_exposes_expected_templates() -> None:
 
 
 def test_repository_badge_block_uses_the_shared_workflow_badge_syntax() -> None:
-    rendered = render_badge_block(BadgeTarget(path=Path("README.md"), kind="repository"))
+    rendered = render_badge_block(
+        BadgeTarget(path=Path("README.md"), kind="repository")
+    )
 
     assert (
         "https://github.com/bijux/bijux-phylogenetics/actions/workflows/verify.yml/badge.svg?branch=main"
@@ -86,8 +88,7 @@ def test_alias_package_badge_block_prioritizes_the_alias_distribution() -> None:
 
     assert "\n[![phylogenetic](https://img.shields.io/pypi/v/phylogenetic" in rendered
     assert (
-        "\n[![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr"
-        in rendered
+        "\n[![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr" in rendered
     )
     assert (
         "\n[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic"

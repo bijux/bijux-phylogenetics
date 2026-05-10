@@ -15,6 +15,10 @@ QUALITY_MYPY_CONFIG = $(PROJECT_DIR)/mypy.ini
 QUALITY_MYPY_TARGETS = src
 SECURITY_AUDIT_PREPARE_MODE = pyproject
 PIP_AUDIT_INPUTS = -r "$(SECURITY_REQS)"
+TEST_PRE_TARGETS := sync-license-assets-package
+LINT_PRE_TARGETS := sync-license-assets-package
+QUALITY_PRE_TARGETS := sync-license-assets-package
+SECURITY_EXTRA_TARGETS := sync-license-assets-package
 QUALITY_POST_TARGETS := quality-compileall
 BUILD_PACKAGE_NAME := bijux-phylogenetics
 BUILD_PRE_TARGETS := sync-license-assets-package
@@ -27,14 +31,7 @@ quality-compileall:
 .PHONY: quality-compileall
 
 sync-license-assets-package:
-	@for file_name in LICENSE NOTICE; do \
-	  source_path="$(MONOREPO_ROOT)/$$file_name"; \
-	  target_path="$(PROJECT_DIR)/$$file_name"; \
-	  if [ -L "$$target_path" ] || [ ! -f "$$target_path" ] || ! cmp -s "$$source_path" "$$target_path"; then \
-	    rm -f "$$target_path"; \
-	    cp "$$source_path" "$$target_path"; \
-	  fi; \
-	done
+	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.release.license_assets sync
 .PHONY: sync-license-assets-package
 
 build-install-smoke:

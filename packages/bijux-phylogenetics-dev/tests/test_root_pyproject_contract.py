@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 import tomllib
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 WORKSPACE_TOOL = "bijux_phylogenetics"
 
 
-def _root_pyproject() -> dict[str, object]:
+def _root_pyproject() -> dict[str, Any]:
     with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
         return tomllib.load(handle)
 
@@ -49,6 +50,19 @@ def test_root_pyproject_uses_workspace_sources_for_every_workspace_package() -> 
     uv_sources = pyproject["tool"]["uv"]["sources"]
 
     assert set(uv_sources) == workspace_packages
-    assert {name for name, config in uv_sources.items() if config == {"workspace": True}} == (
-        workspace_packages
+    assert {
+        name for name, config in uv_sources.items() if config == {"workspace": True}
+    } == (workspace_packages)
+
+
+def test_root_pyproject_declares_workspace_package_dirs_for_shared_make_tooling() -> (
+    None
+):
+    pyproject = _root_pyproject()
+    workspace_packages = set(pyproject["tool"][WORKSPACE_TOOL]["packages"])
+    package_dirs = pyproject["tool"]["bijux_canon"]["package_dirs"]
+
+    assert set(package_dirs) == workspace_packages
+    assert all(
+        (REPO_ROOT / relative_path).is_dir() for relative_path in package_dirs.values()
     )
