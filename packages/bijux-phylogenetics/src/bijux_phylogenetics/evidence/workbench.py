@@ -91,6 +91,14 @@ class EvidenceBookStudyRerunReport:
     refresh_report: EvidenceBookRefreshReport
 
 
+@dataclass(slots=True)
+class EvidenceBookSelectionBuildReport:
+    study_id: str
+    selected_evidence_ids: list[str]
+    updated_paths: list[str]
+    refresh_report: EvidenceBookRefreshReport
+
+
 def _load_json(path: Path) -> dict[str, object]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -363,6 +371,19 @@ def build_evidence_book_study(
     refresh_report = refresh_evidence_book(repo_root)
     return EvidenceBookStudyBuildReport(
         study_report=report,
+        refresh_report=refresh_report,
+    )
+
+
+def build_evidence_book_selection(
+    repo_root: Path | str, study_id: str, evidence_ids: list[str]
+) -> EvidenceBookSelectionBuildReport:
+    rerun_report = rerun_selected_evidence(repo_root, study_id, evidence_ids)
+    refresh_report = refresh_evidence_book(repo_root)
+    return EvidenceBookSelectionBuildReport(
+        study_id=rerun_report.study_id,
+        selected_evidence_ids=rerun_report.selected_evidence_ids,
+        updated_paths=rerun_report.updated_paths,
         refresh_report=refresh_report,
     )
 

@@ -6244,6 +6244,33 @@ def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
     assert payload["metrics"]["reviewer_readiness_status"] == "bounded"
 
 
+def test_cli_evidence_book_build_selected_evidence_json_output(
+    capsys, monkeypatch
+) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(
+        [
+            "evidence",
+            "book",
+            "build",
+            "primate-pgls-and-signal",
+            "--evidence-id",
+            "evidence-002",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["selected_study_count"] == 1
+    assert payload["metrics"]["selected_evidence_count"] == 1
+    assert payload["data"]["study_id"] == "primate-pgls-and-signal"
+    assert payload["data"]["selected_evidence_ids"] == ["evidence-002"]
+
+
 def test_cli_evidence_book_rerun_json_output(capsys, monkeypatch) -> None:
     monkeypatch.chdir(REPO_ROOT)
 

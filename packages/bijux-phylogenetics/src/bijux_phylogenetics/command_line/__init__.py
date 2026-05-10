@@ -222,6 +222,7 @@ from bijux_phylogenetics.evidence.freshness import build_evidence_freshness_repo
 from bijux_phylogenetics.evidence.integrity import build_evidence_integrity_report
 from bijux_phylogenetics.evidence.workbench import (
     DOCS_EVIDENCE_OVERVIEW,
+    build_evidence_book_selection,
     build_evidence_book_study,
     list_registered_evidence_studies,
     refresh_evidence_book,
@@ -2934,6 +2935,13 @@ def build_parser() -> argparse.ArgumentParser:
         "study_id",
         nargs="?",
         help="Optional registered study identifier to rebuild before refreshing the evidence-book.",
+    )
+    evidence_book_build.add_argument(
+        "--evidence-id",
+        dest="evidence_ids",
+        action="append",
+        default=[],
+        help="Optional Evidence ID to rebuild within the selected study. May be repeated.",
     )
     evidence_book_build.add_argument(
         "--json", action="store_true", help="Emit the build report as JSON."
@@ -7623,6 +7631,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.evidence_book_command == "build":
+                if args.study_id is None and args.evidence_ids:
+                    raise EvidenceContractError(
+                        "--evidence-id requires a study_id for evidence book build"
+                    )
                 if args.study_id is None:
                     refresh_report = refresh_evidence_book(repo_root)
                     outputs = _finalize_outputs(
@@ -7643,6 +7655,36 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             outputs=outputs,
                             metrics=metrics,
                             data=refresh_report,
+                        ),
+                        json_output=args.json,
+                    )
+                    return 0
+                if args.evidence_ids:
+                    report = build_evidence_book_selection(
+                        repo_root,
+                        args.study_id,
+                        args.evidence_ids,
+                    )
+                    outputs = _finalize_outputs(
+                        args,
+                        command="evidence",
+                        inputs=[],
+                        outputs=report.refresh_report.updated_paths,
+                    )
+                    metrics = {
+                        "selected_study_count": 1,
+                        "selected_evidence_count": len(report.selected_evidence_ids),
+                        "updated_path_count": len(report.refresh_report.updated_paths),
+                        "reviewer_summary_count": report.refresh_report.reviewer_summary_count,
+                        **_evidence_book_metrics(repo_root),
+                    }
+                    _print_result(
+                        build_command_result(
+                            command="evidence",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics=metrics,
+                            data=report,
                         ),
                         json_output=args.json,
                     )

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.evidence.workbench import (
     DOCS_EVIDENCE_OVERVIEW,
+    build_evidence_book_selection,
     list_registered_evidence_studies,
     refresh_evidence_book,
     rerun_evidence_book_selection,
@@ -59,5 +60,21 @@ def test_rerun_evidence_book_selection_updates_selected_bundle_and_refreshes_boo
     assert (
         "evidence-book/studies/primate-pgls-and-signal/evidence-002/manifest.json"
         in report.rerun_report.updated_paths
+    )
+    assert REPO_ROOT / DOCS_EVIDENCE_OVERVIEW in report.refresh_report.updated_paths
+
+
+def test_build_evidence_book_selection_rebuilds_selected_evidence_only() -> None:
+    report = build_evidence_book_selection(
+        REPO_ROOT,
+        "primate-pgls-and-signal",
+        ["evidence-002"],
+    )
+
+    assert report.study_id == "primate-pgls-and-signal"
+    assert report.selected_evidence_ids == ["evidence-002"]
+    assert (
+        "evidence-book/studies/primate-pgls-and-signal/evidence-002/manifest.json"
+        in report.updated_paths
     )
     assert REPO_ROOT / DOCS_EVIDENCE_OVERVIEW in report.refresh_report.updated_paths

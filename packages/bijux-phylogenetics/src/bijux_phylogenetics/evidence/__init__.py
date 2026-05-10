@@ -63,8 +63,10 @@ from .study_registry import (
 )
 from .workbench import (
     EvidenceBookRefreshReport,
+    EvidenceBookSelectionBuildReport,
     EvidenceBookStudyBuildReport,
     EvidenceBookStudyRerunReport,
+    build_evidence_book_selection,
     build_evidence_book_study,
     list_registered_evidence_studies,
     refresh_evidence_book,
@@ -77,6 +79,7 @@ __all__ = [
     "EvidenceBookValidationIssue",
     "EvidenceBookValidationReport",
     "EvidenceBookRefreshReport",
+    "EvidenceBookSelectionBuildReport",
     "EvidenceBookStudyBuildReport",
     "EvidenceBookStudyRerunReport",
     "EvidenceBundleTemplateSpec",
@@ -90,6 +93,7 @@ __all__ = [
     "build_claim_reaudit",
     "build_evidence_claim_map",
     "build_evidence_book_index",
+    "build_evidence_book_selection",
     "build_evidence_book_study",
     "build_evidence_bundle_template",
     "build_closure_criteria",
