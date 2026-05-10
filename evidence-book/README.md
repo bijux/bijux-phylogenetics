@@ -13,6 +13,9 @@ These files are intentionally different from transient local outputs under
 
 Current tracked studies:
 
+- Teaching and migration landing page:
+  [`index/teaching-and-migration.md`](./index/teaching-and-migration.md)
+
 - [`primate-longevity-signal`](./studies/primate-longevity-signal/): block-by-block
   comparative parity against established R phylogenetics packages
   Study manifest: [`study.json`](./studies/primate-longevity-signal/study.json)

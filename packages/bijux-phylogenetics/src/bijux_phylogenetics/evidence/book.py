@@ -19,9 +19,13 @@ from .teaching import (
     MIGRATION_GUIDE_MARKDOWN_FILENAME,
     STUDENT_SAFE_REPRODUCIBILITY_FILENAME,
     STUDENT_SAFE_REPRODUCIBILITY_MARKDOWN_FILENAME,
+    TEACHING_AND_MIGRATION_INDEX_FILENAME,
+    TEACHING_AND_MIGRATION_SUMMARY_FILENAME,
+    build_teaching_and_migration_index,
     build_migration_guide,
     build_student_safe_reproducibility_contract,
     build_teaching_guide,
+    render_teaching_and_migration_index_markdown,
     render_student_safe_reproducibility_markdown,
     render_migration_guide_markdown,
     render_teaching_guide_markdown,
@@ -1821,6 +1825,9 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     root = evidence_book_root(repo_root)
     index_root = root / EVIDENCE_INDEX_DIRNAME
     index_root.mkdir(parents=True, exist_ok=True)
+    teaching_guides: list[dict[str, object]] = []
+    migration_guides: list[dict[str, object]] = []
+    reproducibility_contracts: list[dict[str, object]] = []
     for study_root in _study_paths(root):
         study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
         if str(study_manifest["study_id"]) not in teaching_study_ids():
@@ -1850,6 +1857,7 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
             render_teaching_guide_markdown(teaching_guide_payload),
             encoding="utf-8",
         )
+        teaching_guides.append(teaching_guide_payload)
         migration_guide_payload = build_migration_guide(
             study_manifest,
             _load_json(source_fragment_map_path),
@@ -1863,6 +1871,7 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
             render_migration_guide_markdown(migration_guide_payload),
             encoding="utf-8",
         )
+        migration_guides.append(migration_guide_payload)
         reproducibility_payload = build_student_safe_reproducibility_contract(
             study_manifest
         )
@@ -1874,6 +1883,22 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
             render_student_safe_reproducibility_markdown(reproducibility_payload),
             encoding="utf-8",
         )
+        reproducibility_contracts.append(reproducibility_payload)
+    teaching_migration_path = index_root / TEACHING_AND_MIGRATION_INDEX_FILENAME
+    teaching_migration_summary_path = index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
+    teaching_migration_payload = build_teaching_and_migration_index(
+        teaching_guides,
+        migration_guides,
+        reproducibility_contracts,
+    )
+    teaching_migration_path.write_text(
+        json.dumps(teaching_migration_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    teaching_migration_summary_path.write_text(
+        render_teaching_and_migration_index_markdown(teaching_migration_payload),
+        encoding="utf-8",
+    )
     payload = build_evidence_book_index(repo_root)
     claim_map_payload = build_evidence_claim_map(repo_root)
     parity_dashboard_payload = build_evidence_parity_dashboard(repo_root)
