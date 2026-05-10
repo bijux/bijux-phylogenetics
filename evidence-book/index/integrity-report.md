@@ -5,41 +5,41 @@
 
 ## Bundle Digests
 
-- `comparative-trust-boundaries/evidence-001` — `50643ef849259fe0ea89785519aa74de3320a97c9a12a17483ca93da66892fd3`
-  Files: `6`
-- `comparative-trust-boundaries/evidence-002` — `eeea681af2f9ec672a489037150c69406b2ee328b8c88affbc84705b790dffb8`
-  Files: `7`
-- `comparative-trust-boundaries/evidence-003` — `639ab194da706df1786ff8fcb38935850562c8fffdd426c582635dcec200092a`
-  Files: `6`
-- `primate-longevity-signal/evidence-001` — `edd182f0e8eee66bc9c1ea6495c8a830b9be4d852901f880556a452139bf8b1f`
-  Files: `55`
-- `primate-longevity-signal/evidence-002` — `2defb291eeb38c2a884c95e5c318f19b9b288a049c791084d5a8adfdafa7a71f`
-  Files: `6`
-- `primate-longevity-signal/evidence-003` — `b7a77895d5597a9a9cc43b1fb0834a47a6bae604f516643722280b3776cb482d`
-  Files: `6`
-- `primate-longevity-signal/evidence-004` — `43d28191d53459337d4186b056ac4c3d4d17bb295bfede5330592f27f6422549`
-  Files: `6`
-- `primate-longevity-signal/evidence-005` — `2fa514d0d6177c284a94d36ac5d26973ebf8fd30d320532deb722df095683342`
-  Files: `6`
-- `primate-longevity-signal/evidence-006` — `171dfbc8d360b39f6c7e0dbbf54114f3a67873c80a85afb88eaebe20322adbe3`
-  Files: `6`
-- `primate-longevity-signal/evidence-007` — `40cac88b3989a640815f715e280619e2a9d1be17c28ca77bf952b2a0326d551b`
-  Files: `6`
-- `primate-longevity-signal/evidence-008` — `89cdfc090916417c5384de7499246b8300c5b55a7333aa5bc4606406d4de6525`
-  Files: `6`
-- `primate-longevity-signal/evidence-009` — `77cff84d0000508cc3df824ba1bdc592269568f183e4d2ca8734da1de3a4720c`
-  Files: `6`
-- `primate-pgls-and-signal/evidence-001` — `b7a495e70341cf6d04a83b8e43a167ce2f10f91fe9a54611743b5c0288c9f2a6`
-  Files: `8`
-- `primate-pgls-and-signal/evidence-002` — `3ed6d0f5d0c7911be9a1c3e7d0f9545634db79758d819af0123c655ca6c746b3`
-  Files: `6`
-- `primate-pgls-and-signal/evidence-003` — `b7baa342bb5f8153301fe90073b7d688b277c18bd7a925ddde955be47ccf4aa1`
-  Files: `6`
-- `primate-pgls-and-signal/evidence-004` — `1fe53e2502167a887d382e5e7e52a33ae3b7a8987d705c76b1c06a59df050e67`
-  Files: `6`
-- `primate-pgls-and-signal/evidence-005` — `ee31f29b4ba93a8644e403bf0ba4528519879e50c07d82de78ecd4363f2275f2`
-  Files: `6`
-- `primate-pgls-and-signal/evidence-006` — `d35d24de6fbf70641b60662504bc03ed56a4fa73ddf7c4e378416794e6ba2024`
-  Files: `6`
-- `taxon-trust/evidence-001` — `c57726b698439a76fe64c800e9e95d837bb04426364161605a14be6e07b82dc1`
-  Files: `16`
+- `comparative-trust-boundaries/evidence-001` — `dd195e48bb65b9799dcb7d963351a309744e4a16c43345398c95359ddc1675ce`
+  Files: `12`
+- `comparative-trust-boundaries/evidence-002` — `f4fc7cf0e7ee2fac12bb1725e0be018dcddb2477980afc4d97d17f99586963f1`
+  Files: `13`
+- `comparative-trust-boundaries/evidence-003` — `e0e031a7cee705055bbc6970c40cb4a681fb41d4d807b60c88b126b88854de29`
+  Files: `12`
+- `primate-longevity-signal/evidence-001` — `aadb5ce82ef1dcf70c8765ac8f663039a35c9d9dbf8ad7d1d7d709c610d08e30`
+  Files: `61`
+- `primate-longevity-signal/evidence-002` — `a484272deba9559adc342037cb48844669327c885c840f0e1d3d47008a081617`
+  Files: `12`
+- `primate-longevity-signal/evidence-003` — `54b82bc2caa80f1a4f3dd4f3e0d1b5cf91d0d33d0aea7ffd1bf153d18a84a39e`
+  Files: `12`
+- `primate-longevity-signal/evidence-004` — `c74dd914f0a1afbd58eeef39489cab6fccd4e80894babd09330ef5993336112a`
+  Files: `12`
+- `primate-longevity-signal/evidence-005` — `6cc816b5c4586399464ad13f594513be0260fd9e1c15fabd97eb1786b2507158`
+  Files: `12`
+- `primate-longevity-signal/evidence-006` — `b75c5e1ea654bbf508c9ab657c717bbd733a781b5ef991b331eff190956877bf`
+  Files: `12`
+- `primate-longevity-signal/evidence-007` — `8d4dfa423f619a0f3cb0658d31a90c3f9ab9577f4ea2f4f2ed6a83617448a3b0`
+  Files: `12`
+- `primate-longevity-signal/evidence-008` — `fa2c0c595fbe776faef4d6107e2ff0e387dcb95f44d81b5f745aa5ce38c17d7b`
+  Files: `12`
+- `primate-longevity-signal/evidence-009` — `48fe6a4d69b90a02efd9203ea8505f9512608ed45ff051cd54cfe42980dbfa7d`
+  Files: `12`
+- `primate-pgls-and-signal/evidence-001` — `c34ed51126d64e9d3d3ffaccbd26537aaa715d9db883b08d06b5419c60c7dbe9`
+  Files: `14`
+- `primate-pgls-and-signal/evidence-002` — `d6212367c7c1fc770ab1d74bd3bd31addbda6944d1ff44a9ec2bfbf5ea4e8967`
+  Files: `12`
+- `primate-pgls-and-signal/evidence-003` — `01a757f3d2484482f6f92db7101f27f1846241ac0fcb0d41b0b95497f8a1f568`
+  Files: `12`
+- `primate-pgls-and-signal/evidence-004` — `7532d85d361de464ac1f6f19dceb292bdcb113c8f43038b09a9c7bc30098c71f`
+  Files: `12`
+- `primate-pgls-and-signal/evidence-005` — `a07a0100bdf994619918c789edf23e0609fa786728281a7dc620f0f6f3bea6ac`
+  Files: `12`
+- `primate-pgls-and-signal/evidence-006` — `9ae41ee423bf0270349afc9316c1ea01affef4c3644dc1f65014329b82d894a6`
+  Files: `12`
+- `taxon-trust/evidence-001` — `06df9ce58268d6269e24e36539cbb8264fd1bbee4bcfa77b3b0f19f06d08edbb`
+  Files: `22`
