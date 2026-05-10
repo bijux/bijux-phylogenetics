@@ -46,9 +46,160 @@ expected_mypy_config_path = "configs/mypy.ini"
     _write(repo_root / "tox.ini", "[tox]\nminversion = 4.11\n")
     _write(
         repo_root / "makes" / "packages" / "runtime.mk",
-        'MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini\n',
+        "MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini\n",
     )
-    _write(repo_root / "packages" / "runtime" / "pyproject.toml", "[project]\nname='runtime'\n")
+    _write(
+        repo_root / "packages" / "bijux-phylogenetics" / "pyproject.toml",
+        """
+[project]
+name = "bijux-phylogenetics"
+dependencies = ["biopython>=1.0"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/bijux_phylogenetics/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bijux_phylogenetics"]
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root / "packages" / "phylogenetic" / "pyproject.toml",
+        """
+[project]
+name = "phylogenetic"
+dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/phylogenetic/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/phylogenetic"]
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root / "packages" / "bijux-phylogenetics-dev" / "pyproject.toml",
+        """
+[project]
+name = "bijux-phylogenetics-dev"
+dependencies = ["PyYAML>=6.0"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/bijux_phylogenetics_dev/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bijux_phylogenetics_dev"]
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root / "evidence-book" / "studies" / "demo-study" / "study.json",
+        """
+{
+  "dataset_registry_locator": "evidence-book/studies/demo-study/datasets/registry.json",
+  "owner_package": "bijux-phylogenetics",
+  "provenance_descriptor_locator": "evidence-book/studies/demo-study/provenance/sources.json",
+  "source_intake_policy": "repository-owned-source",
+  "study_categories": ["scientific-validation"],
+  "study_id": "demo-study",
+  "study_scope": {
+    "coverage_focus": ["demo-analysis"],
+    "untouched_source_locators": ["packages/bijux-phylogenetics/tests/fixtures/demo.tsv"]
+  },
+  "study_title": "Demo Study",
+  "summary": "Minimal governed study."
+}
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "provenance"
+        / "sources.json",
+        """
+{
+  "intake_policy": "repository-owned-source",
+  "schema_version": 1,
+  "source_count": 1,
+  "sources": [
+    {
+      "source_id": "demo-fixture",
+      "kind": "repository-fixture",
+      "label": "Demo fixture",
+      "locator": "packages/bijux-phylogenetics/tests/fixtures/demo.tsv",
+      "read_only": true
+    }
+  ],
+  "study_id": "demo-study"
+}
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "datasets"
+        / "registry.json",
+        """
+{
+  "dataset_count": 1,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "repository-fixture",
+      "label": "Demo fixture",
+      "locator": "packages/bijux-phylogenetics/tests/fixtures/demo.tsv",
+      "schema_summary": "Small governed fixture."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "demo-study"
+}
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "manifest.json",
+        '{"evidence_id": "evidence-001"}\n',
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "report.md",
+        "# Demo report\n",
+    )
+    _write(
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "results.json",
+        '{"status": "ok"}\n',
+    )
+    _write(
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics"
+        / "tests"
+        / "fixtures"
+        / "demo.tsv",
+        "species\tvalue\nA\t1\n",
+    )
     return repo_root
 
 
@@ -57,24 +208,51 @@ def test_assert_publishable_repository_allows_clean_config_ssot_repo(
 ) -> None:
     repo_root = _minimal_repo(tmp_path)
 
-    assert_publishable_repository(repo_root=repo_root, require_config_ssot=True)
+    assert_publishable_repository(
+        repo_root=repo_root,
+        require_config_ssot=True,
+        require_publish_readiness=True,
+    )
 
 
 def test_assert_publishable_repository_rejects_config_ssot_drift(
     tmp_path: Path,
 ) -> None:
     repo_root = _minimal_repo(tmp_path)
-    _write(repo_root / "packages" / "runtime" / "mypy.ini", "[mypy]\nstrict = false\n")
+    _write(
+        repo_root / "packages" / "bijux-phylogenetics" / "mypy.ini",
+        "[mypy]\nstrict = false\n",
+    )
 
     with pytest.raises(SystemExit, match="config SSOT audit failed"):
-        assert_publishable_repository(repo_root=repo_root, require_config_ssot=True)
+        assert_publishable_repository(
+            repo_root=repo_root,
+            require_config_ssot=True,
+            require_publish_readiness=True,
+        )
 
 
-def test_assert_publishable_repository_requires_repo_root_for_config_ssot() -> None:
+def test_assert_publishable_repository_requires_repo_root_for_repo_level_guards() -> (
+    None
+):
     with pytest.raises(
-        ValueError, match="repo_root is required when require_config_ssot is enabled"
+        ValueError,
+        match="repo_root is required when repository-level publish guards are enabled",
     ):
-        assert_publishable_repository(require_config_ssot=True)
+        assert_publishable_repository(require_publish_readiness=True)
+
+
+def test_assert_publishable_repository_rejects_publish_readiness_drift(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    _write(repo_root / "docs" / ".DS_Store", "")
+
+    with pytest.raises(SystemExit, match="publish-readiness report failed"):
+        assert_publishable_repository(
+            repo_root=repo_root,
+            require_publish_readiness=True,
+        )
 
 
 def test_publication_guard_module_runs_without_runpy_warning() -> None:
@@ -91,6 +269,7 @@ def test_publication_guard_module_runs_without_runpy_warning() -> None:
             "--repo-root",
             str(REPO_ROOT),
             "--require-config-ssot",
+            "--require-publish-readiness",
             "--allow-local-version",
             "--allow-prerelease",
         ],
