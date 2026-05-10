@@ -26,6 +26,10 @@ from bijux_phylogenetics.evidence.book import (
     validate_evidence_book,
     write_evidence_book_index,
 )
+from bijux_phylogenetics.evidence.bundle_artifacts import (
+    ARTIFACT_JSON_FILENAMES,
+    build_bundle_local_artifacts,
+)
 from bijux_phylogenetics.evidence.closure import (
     build_analytical_surface_coverage,
     build_claim_reaudit,
@@ -151,6 +155,17 @@ def _write_book_fixture(root: Path) -> Path:
         + "\n",
         encoding="utf-8",
     )
+    for filename, payload in build_bundle_local_artifacts(root, bundle_root).items():
+        target = bundle_root / filename
+        if filename in ARTIFACT_JSON_FILENAMES:
+            target.write_text(
+                json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        else:
+            if not isinstance(payload, str):
+                raise AssertionError(f"expected text artifact for {filename}")
+            target.write_text(payload, encoding="utf-8")
     return root
 
 
@@ -211,6 +226,26 @@ def test_validate_evidence_book_rejects_missing_reviewer_summary(
         or "reviewer-summary.json" in issue.path.as_posix()
         for issue in report.issues
     )
+
+
+def test_validate_evidence_book_rejects_missing_governed_local_artifact(
+    tmp_path: Path,
+) -> None:
+    repo_root = _write_book_fixture(tmp_path)
+    reference_path = (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "taxon-trust"
+        / "evidence-001"
+        / "reference.R"
+    )
+    reference_path.unlink()
+
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
+
+    assert report.valid is False
+    assert any("reference.R" in issue.path.as_posix() for issue in report.issues)
 
 
 def test_validate_evidence_book_rejects_missing_freshness_report(

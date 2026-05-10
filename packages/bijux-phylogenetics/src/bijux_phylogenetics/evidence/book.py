@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import re
 
+from .bundle_artifacts import REQUIRED_BUNDLE_LOCAL_ARTIFACTS
 from .portability import (
     audit_payload_path_values,
     classify_locator_kind,
@@ -369,6 +370,15 @@ def _validate_bundle_manifest(
                 "evidence manifest evidence_id must match bundle directory name",
             )
         )
+    for filename in REQUIRED_BUNDLE_LOCAL_ARTIFACTS:
+        artifact_path = bundle_root / filename
+        if not artifact_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, artifact_path),
+                    f"evidence bundle must include governed local artifact {filename}",
+                )
+            )
     if require_generated_outputs:
         reviewer_summary_json_path = bundle_root / REVIEWER_SUMMARY_JSON
         reviewer_summary_markdown_path = bundle_root / REVIEWER_SUMMARY_MARKDOWN
@@ -664,7 +674,13 @@ def validate_evidence_book(
                         )
                     )
         for child in sorted(path for path in study_root.iterdir() if path.is_dir()):
-            if child.name in {"reference", "data", "figures", "provenance"}:
+            if child.name in {
+                "reference",
+                "data",
+                "datasets",
+                "figures",
+                "provenance",
+            }:
                 continue
             if EVIDENCE_ID_PATTERN.fullmatch(child.name):
                 bundle_paths.append(child)
