@@ -14,6 +14,7 @@ EVIDENCE_STUDY_MANIFEST = "study.json"
 EVIDENCE_BUNDLE_MANIFEST = "manifest.json"
 EVIDENCE_CATALOG = "catalog.md"
 EVIDENCE_INDEX = "evidence-index.json"
+EVIDENCE_CLAIM_MAP = "claim-map.json"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -84,6 +85,36 @@ def _load_json(path: Path) -> dict[str, object]:
     if not isinstance(payload, dict):
         raise ValueError("expected a JSON object")
     return payload
+
+
+def _load_json_list(path: Path) -> list[object]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, list):
+        raise ValueError("expected a JSON array")
+    return payload
+
+
+def _load_bundle_claim_rows(bundle_root: Path) -> list[dict[str, object]]:
+    claims_path = bundle_root / "claims.json"
+    legacy_claim_verdicts_path = bundle_root / "claim_verdicts.json"
+    if claims_path.exists():
+        payload = _load_json(claims_path)
+        claims = payload.get("claims")
+        if not isinstance(claims, list):
+            raise ValueError("claims.json must contain a claims list")
+        return [
+            row
+            for row in claims
+            if isinstance(row, dict)
+        ]
+    if legacy_claim_verdicts_path.exists():
+        rows = _load_json_list(legacy_claim_verdicts_path)
+        return [
+            row
+            for row in rows
+            if isinstance(row, dict)
+        ]
+    return []
 
 
 def _study_paths(book_root: Path) -> list[Path]:
@@ -292,6 +323,28 @@ def _validate_bundle_manifest(
                 "evidence manifest claim_ids must be a non-empty list of strings",
             )
         )
+    else:
+        claim_rows = _load_bundle_claim_rows(bundle_root)
+        if not claim_rows:
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, bundle_root),
+                    "evidence bundle must include claims.json or claim_verdicts.json for declared claim_ids",
+                )
+            )
+        else:
+            row_claim_ids = {
+                row.get("claim_id")
+                for row in claim_rows
+                if isinstance(row.get("claim_id"), str)
+            }
+            if set(claim_ids) != row_claim_ids:
+                issues.append(
+                    EvidenceBookValidationIssue(
+                        _relative_to(book_root, bundle_root),
+                        "evidence bundle claim rows must match manifest claim_ids exactly",
+                    )
+                )
 
     freshness = manifest.get("freshness")
     if not isinstance(freshness, dict):
@@ -465,6 +518,14 @@ def validate_evidence_book(
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CATALOG}",
                 )
             )
+        claim_map_path = index_root / EVIDENCE_CLAIM_MAP
+        if not claim_map_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, claim_map_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CLAIM_MAP}",
+                )
+            )
         if index_path.exists():
             try:
                 index_payload = _load_json(index_path)
@@ -562,6 +623,55 @@ def build_evidence_book_index(repo_root: Path) -> dict[str, object]:
     }
 
 
+def build_evidence_claim_map(repo_root: Path) -> dict[str, object]:
+    root = evidence_book_root(repo_root)
+    report = validate_evidence_book(repo_root, require_index_outputs=False)
+    if not report.valid:
+        messages = "; ".join(
+            f"{issue.path.as_posix()}: {issue.message}" for issue in report.issues
+        )
+        raise ValueError(f"evidence-book is invalid: {messages}")
+
+    claims_by_id: dict[str, dict[str, object]] = {}
+    for study_root in _study_paths(root):
+        study_manifest = _load_json(study_root / EVIDENCE_STUDY_MANIFEST)
+        for bundle_root in sorted(
+            path
+            for path in study_root.iterdir()
+            if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
+        ):
+            manifest = _load_json(bundle_root / EVIDENCE_BUNDLE_MANIFEST)
+            for row in _load_bundle_claim_rows(bundle_root):
+                claim_id = row["claim_id"]
+                entry = claims_by_id.setdefault(
+                    claim_id,
+                    {
+                        "claim_id": claim_id,
+                        "claim_title": row.get("claim_title", claim_id),
+                        "evidence": [],
+                    },
+                )
+                entry["evidence"].append(
+                    {
+                        "study_id": study_manifest["study_id"],
+                        "study_title": study_manifest["study_title"],
+                        "evidence_id": manifest["evidence_id"],
+                        "relative_path": _relative_to(root, bundle_root).as_posix(),
+                        "owner_package": manifest["owner_package"],
+                        "bundle_verdict_status": manifest["verdict"]["status"],
+                        "claim_verdict": row.get("verdict"),
+                        "source_fragments": row.get("source_fragments", []),
+                    }
+                )
+
+    claims = [claims_by_id[key] for key in sorted(claims_by_id)]
+    return {
+        "schema_version": 1,
+        "claim_count": len(claims),
+        "claims": claims,
+    }
+
+
 def render_evidence_catalog(index_payload: dict[str, object]) -> str:
     lines = [
         "# Evidence Catalog",
@@ -606,13 +716,19 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     index_root = root / EVIDENCE_INDEX_DIRNAME
     index_root.mkdir(parents=True, exist_ok=True)
     payload = build_evidence_book_index(repo_root)
+    claim_map_payload = build_evidence_claim_map(repo_root)
     index_path = index_root / EVIDENCE_INDEX
     catalog_path = index_root / EVIDENCE_CATALOG
+    claim_map_path = index_root / EVIDENCE_CLAIM_MAP
     index_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     catalog_path.write_text(
         render_evidence_catalog(payload),
+        encoding="utf-8",
+    )
+    claim_map_path.write_text(
+        json.dumps(claim_map_payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return index_path, catalog_path

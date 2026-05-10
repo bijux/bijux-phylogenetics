@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.evidence.book import (
+    build_evidence_claim_map,
     build_evidence_book_index,
     render_evidence_catalog,
     validate_evidence_book,
@@ -78,6 +79,30 @@ def _write_book_fixture(root: Path) -> Path:
         + "\n",
         encoding="utf-8",
     )
+    (bundle_root / "claims.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "study_id": "taxon-trust",
+                "evidence_id": "evidence-001",
+                "claim_count": 1,
+                "claims": [
+                    {
+                        "claim_id": "taxonomy-review",
+                        "claim_title": "Taxonomy review",
+                        "summary": "Fixture-backed taxonomy review contract.",
+                        "verdict": "matched",
+                        "evidence_ids": ["evidence-001"],
+                        "source_fragments": ["fixture-taxonomy-review"],
+                    }
+                ],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     return root
 
 
@@ -121,10 +146,14 @@ def test_write_evidence_book_index_renders_catalog_from_index(tmp_path: Path) ->
     index_path, catalog_path = write_evidence_book_index(repo_root)
     payload = build_evidence_book_index(repo_root)
     catalog = render_evidence_catalog(payload)
+    claim_map = build_evidence_claim_map(repo_root)
+    claim_map_path = repo_root / "evidence-book" / "index" / "claim-map.json"
 
     assert index_path.exists()
     assert catalog_path.exists()
+    assert claim_map_path.exists()
     assert payload["study_count"] == 1
     assert payload["evidence_count"] == 1
     assert "Taxon Trust" in catalog
     assert catalog_path.read_text(encoding="utf-8") == catalog
+    assert json.loads(claim_map_path.read_text(encoding="utf-8")) == claim_map

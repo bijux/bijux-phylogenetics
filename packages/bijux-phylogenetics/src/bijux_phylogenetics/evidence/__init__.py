@@ -3,6 +3,7 @@
 from .book import (
     EvidenceBookValidationIssue,
     EvidenceBookValidationReport,
+    build_evidence_claim_map,
     build_evidence_book_index,
     evidence_book_root,
     render_evidence_catalog,
@@ -13,6 +14,7 @@ from .book import (
 __all__ = [
     "EvidenceBookValidationIssue",
     "EvidenceBookValidationReport",
+    "build_evidence_claim_map",
     "build_evidence_book_index",
     "evidence_book_root",
     "render_evidence_catalog",

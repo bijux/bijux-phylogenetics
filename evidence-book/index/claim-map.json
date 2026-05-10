@@ -1,0 +1,366 @@
+{
+  "claim_count": 20,
+  "claims": [
+    {
+      "claim_id": "ambiguous-synonym-rejection",
+      "claim_title": "Ambiguous synonym rejection",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "controlled-synonym-resolution",
+      "claim_title": "Controlled synonym resolution",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "mixed-namespace-detection",
+      "claim_title": "Mixed namespace detection",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-ancestral-state-parity",
+      "claim_title": "PCM1 ancestral-state outputs agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "continuous-ancestral-point-estimates",
+            "continuous-ancestral-intervals",
+            "ancestral-table-assembly",
+            "bonobo-gibbon-mrca-estimate",
+            "lifespan-increase-counts"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-artifact-provenance-tracking",
+      "claim_title": "PCM1 saved artifacts remain governed provenance surfaces",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "not_comparable",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "processed-analysis-artifacts",
+            "final-workspace-artifact"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-primate-data-preparation-parity",
+      "claim_title": "PCM1 primate data preparation matches the governed reference",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-primate-lambda-fit-parity",
+      "claim_title": "PCM1 primate lambda inference agrees within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "primate-lambda-fit",
+            "lambda-zero-covariance-and-lrt"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-random-lambda-fit-parity",
+      "claim_title": "PCM1 random-data lambda fits agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "random-simulation-inputs",
+            "random-signal-lambda-fits"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-reproducibility-contract-tracked",
+      "claim_title": "PCM1 reproducibility contract is tracked explicitly",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "not_comparable",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "environment-and-package-contract"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-topology-operation-parity",
+      "claim_title": "PCM1 topology teaching operations preserve the intended structure",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "unrooted-tree-demo",
+            "extract-clade-node-77",
+            "rotate-nodes-behavior"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-data-join-parity",
+      "claim_title": "PCM1 tree and trait joining logic matches across R and Bijux",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "tip-order-alignment",
+            "treeio-node-mapping-and-join",
+            "primate-longevity-vector-assembly"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-import-pruning-parity",
+      "claim_title": "PCM1 tree import and pruning behavior matches the governed reference",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "tree-import-and-pruning"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-visual-surface-tracking",
+      "claim_title": "PCM1 visual surfaces are tracked without false equivalence claims",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "not_comparable",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "ape-plotting-basics",
+            "ape-alternate-layouts",
+            "phytools-tree-plotting",
+            "ggtree-tree-visualization",
+            "ape-longevity-overlay",
+            "joined-ggtree-trait-plotting",
+            "random-simulation-plotting",
+            "primate-longevity-visual-inspection",
+            "lambda-zero-visual-comparison",
+            "ancestral-colored-tree-plot"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "taxon-crosswalk-table",
+      "claim_title": "Taxon crosswalk table",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "taxon-exclusion-reasoning",
+      "claim_title": "Taxon exclusion reasoning",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "taxon-namespace-classification",
+      "claim_title": "Taxon namespace classification",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "taxon-spelling-variant-audit",
+      "claim_title": "Taxon spelling-variant audit",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "taxon-stability-report",
+      "claim_title": "Taxon stability report",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "taxonomic-synonym-candidate-detection",
+      "claim_title": "Taxonomic synonym candidate detection",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    },
+    {
+      "claim_id": "workflow-taxon-loss-report",
+      "claim_title": "Workflow taxon-loss report",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "verified",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/taxon-trust/evidence-001",
+          "source_fragments": [],
+          "study_id": "taxon-trust",
+          "study_title": "Taxon Trust"
+        }
+      ]
+    }
+  ],
+  "schema_version": 1
+}
