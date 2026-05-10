@@ -464,7 +464,6 @@ from .engines import (
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
 )
-from .evidence.bundles import EvidenceBundleReport, bundle_directory
 from .identity import (
     CLI_NAME,
     IDENTITY,
@@ -725,7 +724,6 @@ __all__ = [
     "DatasetExclusionTable",
     "DatasetOrderingAudit",
     "DatasetReadinessSummary",
-    "EvidenceBundleReport",
     "CLI_NAME",
     "BranchLengthUnitReport",
     "CladeCredibilityConflict",
@@ -928,7 +926,6 @@ __all__ = [
     "build_regression_dataset_corpus",
     "build_runtime_benchmark_dashboard",
     "build_scientific_validation_report",
-    "bundle_directory",
     "bundle_inference_workflow_evidence",
     "BootstrapPosteriorCladeComparison",
     "BootstrapPosteriorSupportComparisonReport",

@@ -109,3 +109,35 @@ def test_top_level_runtime_exports_cover_every_relative_import() -> None:
 
     missing_exports = [name for name in imported_names if name not in exported_names]
     assert missing_exports == []
+
+
+def test_top_level_runtime_exports_do_not_leak_evidence_book_helpers() -> None:
+    package_init = (
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "__init__.py"
+    )
+    module = ast.parse(package_init.read_text(encoding="utf-8"))
+
+    exported_names: list[str] = []
+    for node in module.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == "__all__"
+            for target in node.targets
+        ):
+            continue
+        assert isinstance(node.value, ast.List)
+        exported_names = [
+            element.value
+            for element in node.value.elts
+            if isinstance(element, ast.Constant) and isinstance(element.value, str)
+        ]
+        break
+
+    assert "EvidenceBundleReport" not in exported_names
+    assert "bundle_directory" not in exported_names
