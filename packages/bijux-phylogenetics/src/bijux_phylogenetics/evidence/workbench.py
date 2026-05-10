@@ -5,6 +5,32 @@ import json
 from pathlib import Path
 
 from .book import evidence_book_root, write_evidence_book_index
+from .closure import (
+    ANALYTICAL_SURFACE_COVERAGE_JSON,
+    ANALYTICAL_SURFACE_COVERAGE_MARKDOWN,
+    CLAIM_REAUDIT_JSON,
+    CLAIM_REAUDIT_MARKDOWN,
+    CLOSURE_CRITERIA_JSON,
+    CLOSURE_CRITERIA_MARKDOWN,
+    COMPLETION_GATES_JSON,
+    COMPLETION_GATES_MARKDOWN,
+    EVIDENCE_MATURITY_SCORECARD_JSON,
+    EVIDENCE_MATURITY_SCORECARD_MARKDOWN,
+    EVIDENCE_REVIEW_RITUAL_JSON,
+    EVIDENCE_REVIEW_RITUAL_MARKDOWN,
+    build_analytical_surface_coverage,
+    build_claim_reaudit,
+    build_closure_criteria,
+    build_completion_gates,
+    build_evidence_maturity_scorecard,
+    build_evidence_review_ritual,
+    render_analytical_surface_coverage,
+    render_claim_reaudit,
+    render_closure_criteria,
+    render_completion_gates,
+    render_evidence_maturity_scorecard,
+    render_evidence_review_ritual,
+)
 from .coverage import (
     COVERAGE_GAPS_JSON,
     COVERAGE_GAPS_MARKDOWN,
@@ -117,7 +143,19 @@ def render_docs_evidence_overview(
     freshness_payload: dict[str, object],
     integrity_payload: dict[str, object],
     coverage_payload: dict[str, object],
+    closure_payload: dict[str, object],
+    scorecard_payload: dict[str, object],
 ) -> str:
+    foundational_status = next(
+        criterion["current_status"]
+        for criterion in closure_payload["criteria"]
+        if criterion["criterion_id"] == "foundational-numerical-trust"
+    )
+    reviewer_status = next(
+        criterion["current_status"]
+        for criterion in closure_payload["criteria"]
+        if criterion["criterion_id"] == "reviewer-readiness"
+    )
     lines = [
         "---",
         "title: Evidence Book",
@@ -139,6 +177,9 @@ def render_docs_evidence_overview(
         f"- migration studies: `{teaching_payload['migration_study_count']}`",
         f"- freshness statuses: `{', '.join(f'{key}={value}' for key, value in freshness_payload['freshness_status_counts'].items())}`",
         f"- coverage gaps: `{coverage_payload['coverage_gap_count']}` debt entries",
+        f"- foundational numerical trust: `{foundational_status}`",
+        f"- reviewer readiness: `{reviewer_status}`",
+        f"- maturity tier: `{scorecard_payload['maturity_tier']}`",
         "",
         "## Review Surfaces",
         "",
@@ -148,6 +189,11 @@ def render_docs_evidence_overview(
         "- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)",
         "- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)",
         "- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)",
+        "- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)",
+        "- analytical surface coverage: [`evidence-book/index/analytical-surface-coverage.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/analytical-surface-coverage.md)",
+        "- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)",
+        "- maturity scorecard: [`evidence-book/index/evidence-maturity-scorecard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-maturity-scorecard.md)",
+        "- completion gates: [`evidence-book/index/completion-gates.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/completion-gates.md)",
         "",
         "## Studies",
         "",
@@ -188,6 +234,10 @@ def write_docs_evidence_overview(repo_root: Path | str) -> Path:
     freshness_payload = _load_json(book_root / "index" / FRESHNESS_REPORT_JSON)
     integrity_payload = _load_json(book_root / "index" / INTEGRITY_REPORT_JSON)
     coverage_payload = _load_json(book_root / "index" / COVERAGE_GAPS_JSON)
+    closure_payload = _load_json(book_root / "index" / CLOSURE_CRITERIA_JSON)
+    scorecard_payload = _load_json(
+        book_root / "index" / EVIDENCE_MATURITY_SCORECARD_JSON
+    )
     return _write_text(
         docs_path,
         render_docs_evidence_overview(
@@ -196,6 +246,8 @@ def write_docs_evidence_overview(repo_root: Path | str) -> Path:
             freshness_payload=freshness_payload,
             integrity_payload=integrity_payload,
             coverage_payload=coverage_payload,
+            closure_payload=closure_payload,
+            scorecard_payload=scorecard_payload,
         ),
     )
 
@@ -213,6 +265,12 @@ def refresh_evidence_book(repo_root: Path | str) -> EvidenceBookRefreshReport:
     freshness_payload = build_evidence_freshness_report(repo_root)
     integrity_payload = build_evidence_integrity_report(repo_root)
     coverage_payload = build_evidence_coverage_gap_report(repo_root)
+    claim_reaudit_payload = build_claim_reaudit(repo_root)
+    analytical_surface_payload = build_analytical_surface_coverage(repo_root)
+    closure_payload = build_closure_criteria(repo_root)
+    maturity_scorecard_payload = build_evidence_maturity_scorecard(repo_root)
+    review_ritual_payload = build_evidence_review_ritual(repo_root)
+    completion_gates_payload = build_completion_gates(repo_root)
     updated_paths.extend(
         [
             _write_text(
@@ -238,6 +296,54 @@ def refresh_evidence_book(repo_root: Path | str) -> EvidenceBookRefreshReport:
             _write_text(
                 index_root / COVERAGE_GAPS_MARKDOWN,
                 render_evidence_coverage_gap_report(coverage_payload),
+            ),
+            _write_text(
+                index_root / CLAIM_REAUDIT_JSON,
+                json.dumps(claim_reaudit_payload, indent=2, sort_keys=True) + "\n",
+            ),
+            _write_text(
+                index_root / CLAIM_REAUDIT_MARKDOWN,
+                render_claim_reaudit(claim_reaudit_payload),
+            ),
+            _write_text(
+                index_root / ANALYTICAL_SURFACE_COVERAGE_JSON,
+                json.dumps(analytical_surface_payload, indent=2, sort_keys=True) + "\n",
+            ),
+            _write_text(
+                index_root / ANALYTICAL_SURFACE_COVERAGE_MARKDOWN,
+                render_analytical_surface_coverage(analytical_surface_payload),
+            ),
+            _write_text(
+                index_root / CLOSURE_CRITERIA_JSON,
+                json.dumps(closure_payload, indent=2, sort_keys=True) + "\n",
+            ),
+            _write_text(
+                index_root / CLOSURE_CRITERIA_MARKDOWN,
+                render_closure_criteria(closure_payload),
+            ),
+            _write_text(
+                index_root / EVIDENCE_MATURITY_SCORECARD_JSON,
+                json.dumps(maturity_scorecard_payload, indent=2, sort_keys=True) + "\n",
+            ),
+            _write_text(
+                index_root / EVIDENCE_MATURITY_SCORECARD_MARKDOWN,
+                render_evidence_maturity_scorecard(maturity_scorecard_payload),
+            ),
+            _write_text(
+                index_root / EVIDENCE_REVIEW_RITUAL_JSON,
+                json.dumps(review_ritual_payload, indent=2, sort_keys=True) + "\n",
+            ),
+            _write_text(
+                index_root / EVIDENCE_REVIEW_RITUAL_MARKDOWN,
+                render_evidence_review_ritual(review_ritual_payload),
+            ),
+            _write_text(
+                index_root / COMPLETION_GATES_JSON,
+                json.dumps(completion_gates_payload, indent=2, sort_keys=True) + "\n",
+            ),
+            _write_text(
+                index_root / COMPLETION_GATES_MARKDOWN,
+                render_completion_gates(completion_gates_payload),
             ),
         ]
     )

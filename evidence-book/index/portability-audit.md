@@ -2,8 +2,8 @@
 
 This audit enforces portable path semantics for checked-in evidence payloads.
 
-- audited json files: `164`
-- report-like files: `236`
+- audited json files: `170`
+- report-like files: `248`
 - action required: `0`
 
 ## Rules
@@ -26,8 +26,8 @@ Portable checked-in reports and plots must reference their governed sources thro
 ## Locator Kinds
 
 - `external_locator`: `162`
-- `repo_relative`: `620`
-- `suspicious_path_like`: `40`
+- `repo_relative`: `647`
+- `suspicious_path_like`: `67`
 
 ## Issues
 

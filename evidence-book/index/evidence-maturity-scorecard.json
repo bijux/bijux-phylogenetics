@@ -1,0 +1,61 @@
+{
+  "components": [
+    {
+      "component_id": "portability",
+      "max_score": 3,
+      "score": 3,
+      "status": "strong",
+      "summary": "Portable locators are enforced and the current audit has zero action-required entries."
+    },
+    {
+      "component_id": "parity-depth",
+      "max_score": 3,
+      "score": 2,
+      "status": "bounded",
+      "summary": "Comparative parity is deep, but foundational closure is still bounded by uncovered surfaces and one unresolved mismatch."
+    },
+    {
+      "component_id": "failure-transparency",
+      "max_score": 3,
+      "score": 3,
+      "status": "strong",
+      "summary": "Mismatch, verdict workflow, coverage-gap, and scientific-debt outputs keep failures visible instead of hidden."
+    },
+    {
+      "component_id": "coverage-breadth",
+      "max_score": 3,
+      "score": 1,
+      "status": "weak",
+      "summary": "Major runtime surfaces still include uncovered alignment and distance families."
+    },
+    {
+      "component_id": "reviewer-navigation",
+      "max_score": 3,
+      "score": 3,
+      "status": "strong",
+      "summary": "Reviewer summaries, docs navigation, and governed index outputs make the current trust surface inspectable."
+    },
+    {
+      "component_id": "regeneration-discipline",
+      "max_score": 3,
+      "score": 3,
+      "status": "strong",
+      "summary": "Workbench refresh, freshness, integrity, and partial rerun support make the evidence-book reproducible as a maintained system."
+    }
+  ],
+  "coverage_status_counts": {
+    "bounded": 4,
+    "uncovered": 2
+  },
+  "foundational_numerical_trust_status": "bounded",
+  "freshness_status_counts": {
+    "current": 19
+  },
+  "integrity_action_required_count": 0,
+  "maturity_tier": "reviewable_but_incomplete",
+  "max_score": 18,
+  "open_unresolved_mismatch_count": 1,
+  "portability_action_required_count": 0,
+  "schema_version": 1,
+  "total_score": 15
+}

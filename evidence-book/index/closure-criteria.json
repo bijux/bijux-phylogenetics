@@ -1,0 +1,101 @@
+{
+  "criteria": [
+    {
+      "blocking_factors": [
+        "2 analytical surfaces are still uncovered by governed evidence families.",
+        "1 unresolved scalar mismatch rows remain visible in the mismatch archive.",
+        "4 coverage-gap debt entries remain reviewer-visible."
+      ],
+      "criterion_id": "foundational-numerical-trust",
+      "current_status": "bounded",
+      "pass_when": [
+        "Major runtime analytical surfaces no longer include uncovered foundational categories.",
+        "Unresolved scalar mismatches are closed or explicitly relegated to bounded, non-foundational surfaces.",
+        "Coverage-gap debt for core comparative and tree workflows has been reduced to bounded, explained exceptions."
+      ],
+      "supporting_evidence": [
+        "analytical-surface-coverage.json",
+        "mismatch-archive.json",
+        "coverage-gaps.json"
+      ]
+    },
+    {
+      "blocking_factors": [
+        "Foundational numerical trust is still bounded rather than closed.",
+        "Plot-only scientific debt remains visible for the PCM1 visual surfaces."
+      ],
+      "criterion_id": "visualization-competition",
+      "current_status": "blocked_by_foundational_numerical_trust",
+      "pass_when": [
+        "Foundational numerical trust is already closed for the compared workflow family.",
+        "Figure-comparison evidence bundles exist for the specific visual surface being claimed competitive."
+      ],
+      "supporting_evidence": [
+        "scientific-debt-register.json",
+        "claim-reaudit.json"
+      ]
+    },
+    {
+      "blocking_factors": [
+        "No governed benchmark evidence families yet exist in the evidence-book.",
+        "Foundational numerical trust is still bounded rather than closed."
+      ],
+      "criterion_id": "performance-competition",
+      "current_status": "blocked_by_foundational_numerical_trust",
+      "pass_when": [
+        "Foundational numerical trust is already closed for the workflow family.",
+        "Representative benchmark evidence bundles compare Bijux against the reference toolchain under governed inputs."
+      ],
+      "supporting_evidence": [
+        "analytical-surface-coverage.json",
+        "completion-gates.json"
+      ]
+    },
+    {
+      "blocking_factors": [
+        "Migration evidence is currently strongest for Lund-derived comparative workflows only.",
+        "Alignment and distance migration claims would currently outrun the evidence-book."
+      ],
+      "criterion_id": "migration-usefulness",
+      "current_status": "bounded",
+      "pass_when": [
+        "Migration studies cover more than one major analytical family for each public migration claim.",
+        "Side-by-side R and Bijux mappings exist for the claimed workflow family and link to governed Evidence IDs."
+      ],
+      "supporting_evidence": [
+        "teaching-and-migration.json",
+        "analytical-surface-coverage.json"
+      ]
+    },
+    {
+      "blocking_factors": [
+        "4 surfaces still rely on bounded rather than evidence-grounded coverage.",
+        "0 false-confidence surface findings would block reviewer readiness if nonzero."
+      ],
+      "criterion_id": "reviewer-readiness",
+      "current_status": "bounded",
+      "pass_when": [
+        "A skeptical reviewer can find linked evidence status for every major analytical surface.",
+        "Coverage gaps, unresolved mismatches, and bounded claims remain explicit in one navigation path.",
+        "High-level docs link directly to the evidence-book closure surfaces."
+      ],
+      "supporting_evidence": [
+        "claim-reaudit.json",
+        "analytical-surface-coverage.json",
+        "coverage-gaps.json"
+      ]
+    }
+  ],
+  "criteria_count": 5,
+  "freshness_current_count": 19,
+  "integrity_tracked_count": 19,
+  "schema_version": 1,
+  "surface_status_snapshot": {
+    "alignment-diagnostics": "uncovered",
+    "comparative-analysis": "bounded",
+    "distance-analysis": "uncovered",
+    "reporting-surfaces": "bounded",
+    "taxon-identity": "bounded",
+    "tree-diagnostics": "bounded"
+  }
+}

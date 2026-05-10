@@ -63,6 +63,18 @@ EVIDENCE_FRAGILE_EXAMPLE_AUDIT = "fragile-example-audit.json"
 EVIDENCE_FRAGILE_EXAMPLE_SUMMARY = "fragile-example-audit.md"
 EVIDENCE_REGENERATION_CONTRACT = "regeneration-contract.json"
 EVIDENCE_REGENERATION_SUMMARY = "regeneration-contract.md"
+EVIDENCE_CLAIM_REAUDIT = "claim-reaudit.json"
+EVIDENCE_CLAIM_REAUDIT_SUMMARY = "claim-reaudit.md"
+EVIDENCE_ANALYTICAL_SURFACE_COVERAGE = "analytical-surface-coverage.json"
+EVIDENCE_ANALYTICAL_SURFACE_COVERAGE_SUMMARY = "analytical-surface-coverage.md"
+EVIDENCE_CLOSURE_CRITERIA = "closure-criteria.json"
+EVIDENCE_CLOSURE_CRITERIA_SUMMARY = "closure-criteria.md"
+EVIDENCE_MATURITY_SCORECARD = "evidence-maturity-scorecard.json"
+EVIDENCE_MATURITY_SCORECARD_SUMMARY = "evidence-maturity-scorecard.md"
+EVIDENCE_REVIEW_RITUAL = "evidence-review-ritual.json"
+EVIDENCE_REVIEW_RITUAL_SUMMARY = "evidence-review-ritual.md"
+EVIDENCE_COMPLETION_GATES = "completion-gates.json"
+EVIDENCE_COMPLETION_GATES_SUMMARY = "completion-gates.md"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -716,6 +728,24 @@ def validate_evidence_book(
         teaching_migration_summary_path = (
             index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
         )
+        claim_reaudit_path = index_root / EVIDENCE_CLAIM_REAUDIT
+        claim_reaudit_summary_path = index_root / EVIDENCE_CLAIM_REAUDIT_SUMMARY
+        analytical_surface_coverage_path = (
+            index_root / EVIDENCE_ANALYTICAL_SURFACE_COVERAGE
+        )
+        analytical_surface_coverage_summary_path = (
+            index_root / EVIDENCE_ANALYTICAL_SURFACE_COVERAGE_SUMMARY
+        )
+        closure_criteria_path = index_root / EVIDENCE_CLOSURE_CRITERIA
+        closure_criteria_summary_path = index_root / EVIDENCE_CLOSURE_CRITERIA_SUMMARY
+        maturity_scorecard_path = index_root / EVIDENCE_MATURITY_SCORECARD
+        maturity_scorecard_summary_path = (
+            index_root / EVIDENCE_MATURITY_SCORECARD_SUMMARY
+        )
+        review_ritual_path = index_root / EVIDENCE_REVIEW_RITUAL
+        review_ritual_summary_path = index_root / EVIDENCE_REVIEW_RITUAL_SUMMARY
+        completion_gates_path = index_root / EVIDENCE_COMPLETION_GATES
+        completion_gates_summary_path = index_root / EVIDENCE_COMPLETION_GATES_SUMMARY
         freshness_report_path = index_root / FRESHNESS_REPORT_JSON
         freshness_summary_path = index_root / FRESHNESS_REPORT_MARKDOWN
         integrity_report_path = index_root / INTEGRITY_REPORT_JSON
@@ -846,6 +876,90 @@ def validate_evidence_book(
                 EvidenceBookValidationIssue(
                     _relative_to(root, teaching_migration_summary_path),
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{TEACHING_AND_MIGRATION_SUMMARY_FILENAME}",
+                )
+            )
+        if not claim_reaudit_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, claim_reaudit_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CLAIM_REAUDIT}",
+                )
+            )
+        if not claim_reaudit_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, claim_reaudit_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CLAIM_REAUDIT_SUMMARY}",
+                )
+            )
+        if not analytical_surface_coverage_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, analytical_surface_coverage_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_ANALYTICAL_SURFACE_COVERAGE}",
+                )
+            )
+        if not analytical_surface_coverage_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, analytical_surface_coverage_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_ANALYTICAL_SURFACE_COVERAGE_SUMMARY}",
+                )
+            )
+        if not closure_criteria_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, closure_criteria_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CLOSURE_CRITERIA}",
+                )
+            )
+        if not closure_criteria_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, closure_criteria_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_CLOSURE_CRITERIA_SUMMARY}",
+                )
+            )
+        if not maturity_scorecard_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, maturity_scorecard_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_MATURITY_SCORECARD}",
+                )
+            )
+        if not maturity_scorecard_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, maturity_scorecard_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_MATURITY_SCORECARD_SUMMARY}",
+                )
+            )
+        if not review_ritual_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, review_ritual_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_REVIEW_RITUAL}",
+                )
+            )
+        if not review_ritual_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, review_ritual_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_REVIEW_RITUAL_SUMMARY}",
+                )
+            )
+        if not completion_gates_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, completion_gates_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_COMPLETION_GATES}",
+                )
+            )
+        if not completion_gates_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, completion_gates_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_COMPLETION_GATES_SUMMARY}",
                 )
             )
         if not freshness_report_path.exists():
