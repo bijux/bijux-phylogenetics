@@ -44,6 +44,7 @@
     {
       "bijux_value": 263.916162626577,
       "comparison_kind": "tolerance",
+      "explanation_kind": "reference_rounding",
       "fragment_id": "baseline-gls-fit",
       "method_family": "baseline-regression",
       "metric_name": "intercept",
@@ -52,11 +53,13 @@
       "r_value": 263.9162,
       "row_id": "baseline-intercept",
       "tolerance_abs_diff": 1e-06,
-      "verdict": "mismatch_unexplained"
+      "verdict": "mismatch_explained",
+      "verdict_explanation": "The R reference stores the baseline intercept rounded to four decimal places; the Bijux value rounds back to the same published scalar."
     },
     {
       "bijux_value": 3.59115553047129,
       "comparison_kind": "tolerance",
+      "explanation_kind": "reference_rounding",
       "fragment_id": "baseline-gls-fit",
       "method_family": "baseline-regression",
       "metric_name": "social_group_size",
@@ -65,11 +68,13 @@
       "r_value": 3.5912,
       "row_id": "baseline-slope",
       "tolerance_abs_diff": 1e-06,
-      "verdict": "mismatch_unexplained"
+      "verdict": "mismatch_explained",
+      "verdict_explanation": "The R reference stores the baseline slope rounded to four decimal places; the Bijux value rounds back to the same published scalar."
     },
     {
       "bijux_value": -456.310146563131,
       "comparison_kind": "tolerance",
+      "explanation_kind": "reference_rounding",
       "fragment_id": "baseline-gls-fit",
       "method_family": "baseline-regression",
       "metric_name": "log_likelihood",
@@ -78,11 +83,13 @@
       "r_value": -456.3101,
       "row_id": "baseline-log-likelihood",
       "tolerance_abs_diff": 1e-06,
-      "verdict": "mismatch_unexplained"
+      "verdict": "mismatch_explained",
+      "verdict_explanation": "The R reference stores the baseline log likelihood rounded to four decimal places; the Bijux value rounds back to the same published scalar."
     },
     {
       "bijux_value": 0.257169890828586,
       "comparison_kind": "tolerance",
+      "explanation_kind": "reference_rounding",
       "fragment_id": "baseline-gls-fit",
       "method_family": "baseline-regression",
       "metric_name": "r_squared",
@@ -91,7 +98,8 @@
       "r_value": 0.2572,
       "row_id": "baseline-r-squared",
       "tolerance_abs_diff": 1e-06,
-      "verdict": "mismatch_unexplained"
+      "verdict": "mismatch_explained",
+      "verdict_explanation": "The R reference stores the baseline R-squared rounded to four decimal places; the Bijux value rounds back to the same published scalar."
     },
     {
       "bijux_value": 0.805,
@@ -285,6 +293,7 @@
   "verdict_counts": {
     "matched": 3,
     "matched_with_tolerance": 13,
-    "mismatch_unexplained": 5
+    "mismatch_explained": 4,
+    "mismatch_unexplained": 1
   }
 }

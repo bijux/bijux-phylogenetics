@@ -17,6 +17,7 @@
   "verdict_counts": {
     "matched": 3,
     "matched_with_tolerance": 13,
-    "mismatch_unexplained": 5
+    "mismatch_explained": 4,
+    "mismatch_unexplained": 1
   }
 }

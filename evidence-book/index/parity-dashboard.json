@@ -15,7 +15,8 @@
   "scalar_verdict_counts": {
     "matched": 19,
     "matched_with_tolerance": 28,
-    "mismatch_unexplained": 5
+    "mismatch_explained": 4,
+    "mismatch_unexplained": 1
   },
   "schema_version": 1,
   "studies": [
@@ -117,7 +118,8 @@
       "scalar_verdict_counts": {
         "matched": 3,
         "matched_with_tolerance": 13,
-        "mismatch_unexplained": 5
+        "mismatch_explained": 4,
+        "mismatch_unexplained": 1
       },
       "study_id": "primate-pgls-and-signal",
       "study_title": "Primate PGLS and signal evidence study"

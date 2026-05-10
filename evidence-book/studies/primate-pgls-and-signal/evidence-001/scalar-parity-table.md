@@ -5,10 +5,10 @@
 | reload-object-count | workflow-contracts | object_name_count | exact_answer | matched | 2 | 2 |
 | reload-primate-row-count | workflow-contracts | primate_row_count | exact_answer | matched | 75 | 75 |
 | reload-tree-tip-count | workflow-contracts | tree_tip_count | exact_answer | matched | 75 | 75 |
-| baseline-intercept | baseline-regression | intercept | tolerance | mismatch_unexplained | 263.9162 | 263.916162626577 |
-| baseline-slope | baseline-regression | social_group_size | tolerance | mismatch_unexplained | 3.5912 | 3.59115553047129 |
-| baseline-log-likelihood | baseline-regression | log_likelihood | tolerance | mismatch_unexplained | -456.3101 | -456.310146563131 |
-| baseline-r-squared | baseline-regression | r_squared | tolerance | mismatch_unexplained | 0.2572 | 0.257169890828586 |
+| baseline-intercept | baseline-regression | intercept | tolerance | mismatch_explained | 263.9162 | 263.916162626577 |
+| baseline-slope | baseline-regression | social_group_size | tolerance | mismatch_explained | 3.5912 | 3.59115553047129 |
+| baseline-log-likelihood | baseline-regression | log_likelihood | tolerance | mismatch_explained | -456.3101 | -456.310146563131 |
+| baseline-r-squared | baseline-regression | r_squared | tolerance | mismatch_explained | 0.2572 | 0.257169890828586 |
 | estimated-lambda-value | phylogenetic-regression | lambda_value | tolerance | matched_with_tolerance | 0.7687 | 0.805 |
 | estimated-pgls-intercept | phylogenetic-regression | intercept | tolerance | matched_with_tolerance | 249.9584 | 250.105945368603 |
 | estimated-pgls-slope | phylogenetic-regression | social_group_size | tolerance | matched_with_tolerance | 1.6621 | 1.61904779942812 |
@@ -28,4 +28,5 @@
 
 - `matched`: `3`
 - `matched_with_tolerance`: `13`
-- `mismatch_unexplained`: `5`
+- `mismatch_explained`: `4`
+- `mismatch_unexplained`: `1`

@@ -7,7 +7,8 @@
 
 - `matched`: `19`
 - `matched_with_tolerance`: `28`
-- `mismatch_unexplained`: `5`
+- `mismatch_explained`: `4`
+- `mismatch_unexplained`: `1`
 
 ## Parity Expectations
 
@@ -40,6 +41,6 @@
 - path: `studies/primate-pgls-and-signal/evidence-001`
 - bundle verdict: `matched`
 - scalar rows: `21`
-- scalar verdict counts: matched=3, matched_with_tolerance=13, mismatch_unexplained=5
+- scalar verdict counts: matched=3, matched_with_tolerance=13, mismatch_explained=4, mismatch_unexplained=1
 - comparison kinds: exact_answer=3, scientific_equivalence=4, tolerance=14
 - parity expectations: exact=2, not_comparable=1, scientific_equivalence=1, statistical_tolerance=2

@@ -738,15 +738,29 @@ def _comparison_row_tolerance(
     r_value: float,
     bijux_value: float,
     tolerance_abs_diff: float,
+    reference_rounding_digits: int | None = None,
+    explained_rounding_message: str | None = None,
 ) -> dict[str, object]:
     observed_abs_diff = abs(float(r_value) - float(bijux_value))
+    explanation_kind: str | None = None
+    verdict_explanation: str | None = None
     if math.isclose(float(r_value), float(bijux_value), rel_tol=0.0, abs_tol=1e-12):
         verdict = "matched"
     elif observed_abs_diff <= tolerance_abs_diff:
         verdict = "matched_with_tolerance"
+    elif (
+        reference_rounding_digits is not None
+        and round(float(bijux_value), reference_rounding_digits) == float(r_value)
+    ):
+        verdict = "mismatch_explained"
+        explanation_kind = "reference_rounding"
+        verdict_explanation = explained_rounding_message or (
+            f"The checked-in R reference is rounded to {reference_rounding_digits} decimal places, "
+            "so the stored scalar is less precise than the governed Bijux value."
+        )
     else:
         verdict = "mismatch_unexplained"
-    return {
+    row = {
         "row_id": row_id,
         "method_family": family_id,
         "fragment_id": fragment_id,
@@ -759,6 +773,11 @@ def _comparison_row_tolerance(
         "tolerance_abs_diff": tolerance_abs_diff,
         "verdict": verdict,
     }
+    if explanation_kind is not None:
+        row["explanation_kind"] = explanation_kind
+    if verdict_explanation is not None:
+        row["verdict_explanation"] = verdict_explanation
+    return row
 
 
 def _comparison_row_equivalence(
@@ -826,6 +845,11 @@ def build_primate_pgls_signal_scalar_parity_table(
             r_value=r_results["baseline_gls"]["coefficients"]["intercept"],
             bijux_value=python_results["baseline_gls"]["coefficients"]["intercept"],
             tolerance_abs_diff=1e-06,
+            reference_rounding_digits=4,
+            explained_rounding_message=(
+                "The R reference stores the baseline intercept rounded to four decimal places; "
+                "the Bijux value rounds back to the same published scalar."
+            ),
         ),
         _comparison_row_tolerance(
             row_id="baseline-slope",
@@ -837,6 +861,11 @@ def build_primate_pgls_signal_scalar_parity_table(
                 "social_group_size"
             ],
             tolerance_abs_diff=1e-06,
+            reference_rounding_digits=4,
+            explained_rounding_message=(
+                "The R reference stores the baseline slope rounded to four decimal places; "
+                "the Bijux value rounds back to the same published scalar."
+            ),
         ),
         _comparison_row_tolerance(
             row_id="baseline-log-likelihood",
@@ -846,6 +875,11 @@ def build_primate_pgls_signal_scalar_parity_table(
             r_value=r_results["baseline_gls"]["log_likelihood"],
             bijux_value=python_results["baseline_gls"]["log_likelihood"],
             tolerance_abs_diff=1e-06,
+            reference_rounding_digits=4,
+            explained_rounding_message=(
+                "The R reference stores the baseline log likelihood rounded to four decimal places; "
+                "the Bijux value rounds back to the same published scalar."
+            ),
         ),
         _comparison_row_tolerance(
             row_id="baseline-r-squared",
@@ -855,6 +889,11 @@ def build_primate_pgls_signal_scalar_parity_table(
             r_value=r_results["baseline_gls"]["r_squared"],
             bijux_value=python_results["baseline_gls"]["r_squared"],
             tolerance_abs_diff=1e-06,
+            reference_rounding_digits=4,
+            explained_rounding_message=(
+                "The R reference stores the baseline R-squared rounded to four decimal places; "
+                "the Bijux value rounds back to the same published scalar."
+            ),
         ),
         _comparison_row_tolerance(
             row_id="estimated-lambda-value",
