@@ -1,0 +1,65 @@
+[tool.bijux_phylogenetics.package_boundaries]
+known_repo_module_roots = [
+  "bijux_phylogenetics",
+  "phylogenetic",
+  "bijux_phylogenetics_dev",
+]
+forbidden_runtime_top_level_exports = [
+  "EvidenceBundleReport",
+  "bundle_directory",
+]
+alias_allowed_local_files = [
+  "__init__.py",
+  "__main__.py",
+  "cli.py",
+  "py.typed",
+  "runtime_alias.py",
+]
+
+[tool.bijux_phylogenetics.package_boundaries.runtime_evidence_compatibility]
+runtime_version_spec = ">=0.1.0,<1.0"
+supported_api_modules = [
+  "bijux_phylogenetics.comparative",
+]
+supported_api_locators = [
+  "bijux_phylogenetics.comparative:inspect_pgls_inputs",
+  "bijux_phylogenetics.comparative:run_pgls",
+  "bijux_phylogenetics.comparative:run_pgls_multiple_testing",
+  "bijux_phylogenetics.comparative:compute_phylogenetic_signal_test",
+  "bijux_phylogenetics.comparative:estimate_pagels_lambda",
+  "bijux_phylogenetics.comparative:audit_ou_identifiability_reference_examples",
+  "bijux_phylogenetics.comparative:compare_brownian_and_ou_models",
+  "bijux_phylogenetics.comparative:fit_brownian_motion_model",
+  "bijux_phylogenetics.comparative:fit_ornstein_uhlenbeck_model",
+  "bijux_phylogenetics.comparative:transform_tree_for_evolutionary_mode",
+]
+notes = "Evidence-layer consumers must depend on supported top-level runtime APIs instead of internal comparative submodules."
+
+[tool.bijux_phylogenetics.package_boundaries.package_roles."bijux-phylogenetics"]
+role = "runtime"
+package_dir = "packages/bijux-phylogenetics"
+module_root = "bijux_phylogenetics"
+allowed_repo_import_roots = ["bijux_phylogenetics"]
+owned_module_prefixes = ["bijux_phylogenetics"]
+required_install_dependencies = ["biopython>=1.87,<2.0"]
+
+[tool.bijux_phylogenetics.package_boundaries.package_roles."phylogenetic"]
+role = "compatibility-alias"
+package_dir = "packages/phylogenetic"
+module_root = "phylogenetic"
+allowed_repo_import_roots = ["phylogenetic", "bijux_phylogenetics"]
+owned_module_prefixes = ["phylogenetic"]
+required_install_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+
+[tool.bijux_phylogenetics.package_boundaries.package_roles."bijux-phylogenetics-dev"]
+role = "maintainer"
+package_dir = "packages/bijux-phylogenetics-dev"
+module_root = "bijux_phylogenetics_dev"
+allowed_repo_import_roots = ["bijux_phylogenetics_dev", "bijux_phylogenetics"]
+owned_module_prefixes = ["bijux_phylogenetics_dev"]
+required_install_dependencies = ["PyYAML>=6.0,<7.0"]
+
+[tool.bijux_phylogenetics.package_boundaries.target_package_roles."bijux-phylogenetics-evidence"]
+role = "evidence-consumer"
+target_module_root = "bijux_phylogenetics_evidence"
+required_runtime_dependency = "bijux-phylogenetics>=0.1.0,<1.0"
