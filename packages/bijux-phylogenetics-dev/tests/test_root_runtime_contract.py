@@ -25,8 +25,11 @@ def test_root_tox_keeps_the_shared_env_families_and_drops_proteomics_only_ones()
 
     assert _tox_config()["tox"]["toxworkdir"] == "{tox_root}/artifacts/root/tox"
     assert "repository-contracts" in envlist
+    assert "config-ssot" in envlist
     assert "evidence-governance" in envlist
+    assert "evidence-completeness" in envlist
     assert "publish-readiness" in envlist
+    assert "release-readiness-gate" in envlist
     assert "security" in envlist
     assert "docs" in envlist
     assert "fmt-{dev,core}" not in envlist
@@ -55,12 +58,24 @@ def test_root_tox_isolates_repository_evidence_and_publish_surfaces() -> None:
     assert config["testenv:evidence-governance"]["change_dir"] == "{tox_root}"
     assert (
         config["testenv:evidence-governance"]["commands"].strip()
-        == "make validate-evidence-book check-evidence-artifacts check-artifact-governance rerun-evidence-cleanroom EVIDENCE_STUDY_ID=primate-longevity-signal EVIDENCE_IDS=evidence-002"
+        == "make check-evidence-governance\nmake rerun-governed-evidence-cleanroom"
     )
+    assert config["testenv:evidence-completeness"]["change_dir"] == "{tox_root}"
+    assert (
+        config["testenv:evidence-completeness"]["commands"].strip()
+        == "make check-evidence-completeness"
+    )
+    assert config["testenv:config-ssot"]["change_dir"] == "{tox_root}"
+    assert config["testenv:config-ssot"]["commands"].strip() == "make check-config-ssot"
     assert config["testenv:publish-readiness"]["change_dir"] == "{tox_root}"
     assert (
         config["testenv:publish-readiness"]["commands"].strip()
         == "make report-release-readiness"
+    )
+    assert config["testenv:release-readiness-gate"]["change_dir"] == "{tox_root}"
+    assert (
+        config["testenv:release-readiness-gate"]["commands"].strip()
+        == "make check-release-readiness"
     )
 
 
