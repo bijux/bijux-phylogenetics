@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from bijux_phylogenetics_dev.quality.config_ssot import check_config_ssot
+
 from .version_resolver import resolve_version
 
 
@@ -28,6 +30,16 @@ def parse_args() -> argparse.Namespace:
         "--allow-local-version",
         action="store_true",
         help="Allow local version segments such as +dirty",
+    )
+    parser.add_argument(
+        "--repo-root",
+        default="",
+        help="Optional repository root for repo-level publish guards.",
+    )
+    parser.add_argument(
+        "--require-config-ssot",
+        action="store_true",
+        help="Require a clean repository config SSOT audit before publish checks pass.",
     )
     return parser.parse_args()
 
@@ -96,6 +108,19 @@ def assert_artifacts_match_version(dist_dir: Path, version: str) -> None:
         )
 
 
+def assert_publishable_repository(
+    *,
+    repo_root: Path | None = None,
+    require_config_ssot: bool = False,
+) -> None:
+    """Reject repository states that are not safe to publish."""
+    if not require_config_ssot:
+        return
+    if repo_root is None:
+        raise ValueError("repo_root is required when require_config_ssot is enabled")
+    check_config_ssot(repo_root)
+
+
 def main() -> int:
     """Run the command-line entry point."""
     args = parse_args()
@@ -106,6 +131,11 @@ def main() -> int:
         version,
         allow_prerelease=args.allow_prerelease,
         allow_local_version=args.allow_local_version,
+    )
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else None
+    assert_publishable_repository(
+        repo_root=repo_root,
+        require_config_ssot=args.require_config_ssot,
     )
     if args.dist_dir:
         assert_artifacts_match_version(Path(args.dist_dir), version)
