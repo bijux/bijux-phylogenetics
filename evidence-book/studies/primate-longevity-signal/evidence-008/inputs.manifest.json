@@ -1,0 +1,43 @@
+{
+  "evidence_id": "evidence-008",
+  "local_input_count": 1,
+  "local_inputs": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-local-input",
+      "label": "tree-data-correspondence-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json",
+      "read_only": false,
+      "sha256": "18bc8ae428927a8a4ed111fda164df4d55ddc53289277bf3c9da99b947a6b0b6"
+    }
+  ],
+  "schema_version": 1,
+  "source_input_count": 3,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "read_only": true,
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "governed trimmed tree export",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "read_only": true,
+      "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
+    },
+    {
+      "input_id": "source-input-003",
+      "kind": "repository-reference",
+      "label": "Primate tree-data correspondence parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json",
+      "read_only": false,
+      "sha256": "18bc8ae428927a8a4ed111fda164df4d55ddc53289277bf3c9da99b947a6b0b6"
+    }
+  ],
+  "study_id": "primate-longevity-signal"
+}

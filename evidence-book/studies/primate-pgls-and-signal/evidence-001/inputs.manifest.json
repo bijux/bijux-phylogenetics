@@ -1,0 +1,75 @@
+{
+  "evidence_id": "evidence-001",
+  "local_input_count": 2,
+  "local_inputs": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-local-input",
+      "label": "rdata-reload-semantics.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+      "read_only": false,
+      "sha256": "3a4b72241f6384f311179aa84f383bbf1dcb55e44d759b7d66a87696e2fb6758"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-local-input",
+      "label": "scalar-parity-table.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
+      "read_only": false,
+      "sha256": "ed7541bd728fe38dc9e1c76fc132f2282d0d735a4ce9a9430e0f14743d5dc141"
+    }
+  ],
+  "schema_version": 1,
+  "source_input_count": 6,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "external-source-descriptor",
+      "label": "Lund source descriptors",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+      "read_only": true,
+      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "governed primate reference table",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "read_only": true,
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "input_id": "source-input-003",
+      "kind": "repository-reference",
+      "label": "governed primate trimmed tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "read_only": true,
+      "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
+    },
+    {
+      "input_id": "source-input-004",
+      "kind": "repository-reference",
+      "label": "R reference results for the PGLS and signal study",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+      "read_only": true,
+      "sha256": "eccc851509191865cce2f2ea817b060e5d8a6191dec7f1663b5229585f3824b9"
+    },
+    {
+      "input_id": "source-input-005",
+      "kind": "repository-reference",
+      "label": "Primate reload semantics bundle report payload",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+      "read_only": false,
+      "sha256": "3a4b72241f6384f311179aa84f383bbf1dcb55e44d759b7d66a87696e2fb6758"
+    },
+    {
+      "input_id": "source-input-006",
+      "kind": "repository-reference",
+      "label": "scalar parity table",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
+      "read_only": false,
+      "sha256": "ed7541bd728fe38dc9e1c76fc132f2282d0d735a4ce9a9430e0f14743d5dc141"
+    }
+  ],
+  "study_id": "primate-pgls-and-signal"
+}

@@ -1,0 +1,35 @@
+{
+  "evidence_id": "evidence-003",
+  "local_input_count": 1,
+  "local_inputs": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-local-input",
+      "label": "type-repair-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json",
+      "read_only": false,
+      "sha256": "833169bf6c0586b5f9a1f04ec884fe349e584ef1f23535cd55bca16181d71379"
+    }
+  ],
+  "schema_version": 1,
+  "source_input_count": 2,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "read_only": true,
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "Primate type repair parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json",
+      "read_only": false,
+      "sha256": "833169bf6c0586b5f9a1f04ec884fe349e584ef1f23535cd55bca16181d71379"
+    }
+  ],
+  "study_id": "primate-longevity-signal"
+}
