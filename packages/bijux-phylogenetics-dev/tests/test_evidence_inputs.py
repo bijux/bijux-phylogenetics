@@ -131,6 +131,20 @@ def test_sync_inputs_manifests_supports_single_bundle_selection(tmp_path: Path) 
     ]
 
 
+def test_sync_inputs_manifests_ignores_study_registry_files(tmp_path: Path) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    _write(
+        repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-registry.json",
+        "{}\n",
+    )
+
+    written = sync_inputs_manifests(repo_root)
+
+    assert [path.relative_to(repo_root).as_posix() for path in written] == [
+        "evidence-book/studies/demo-study/evidence-001/inputs.manifest.json"
+    ]
+
+
 def test_check_inputs_manifests_flags_stale_bundle_companion_files(
     tmp_path: Path,
 ) -> None:
@@ -163,7 +177,9 @@ def test_repository_inputs_manifests_are_synchronized() -> None:
 
 def test_repository_bundle_inputs_manifest_exists_for_every_bundle() -> None:
     bundle_roots = sorted(
-        (REPO_ROOT / "evidence-book" / "studies").glob("*/evidence-*")
+        path
+        for path in (REPO_ROOT / "evidence-book" / "studies").glob("*/evidence-*")
+        if path.is_dir()
     )
 
     assert bundle_roots

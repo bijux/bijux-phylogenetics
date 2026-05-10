@@ -192,7 +192,7 @@ def build_inputs_manifest(repo_root: Path, bundle_root: Path) -> dict[str, Any]:
 
 def iter_bundle_roots(repo_root: Path) -> list[Path]:
     studies_root = repo_root / "evidence-book" / "studies"
-    return sorted(studies_root.glob("*/evidence-*"))
+    return sorted(path for path in studies_root.glob("*/evidence-*") if path.is_dir())
 
 
 def _selected_bundle_roots(
