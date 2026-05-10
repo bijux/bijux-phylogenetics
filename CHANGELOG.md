@@ -3,6 +3,7 @@
 ## Unreleased
 
 - initialize the Bijux-standard phylogenetics workspace scaffold
+- add the `phylogenetic` compatibility alias distribution for the canonical runtime package
 - add alignment trimming, coding diagnostics, coding translation, and pairwise identity-matrix workflows
 - add DNA distance matrices with p-distance and Jukes-Cantor models, pairwise-deletion and complete-deletion gap handling, and NJ/UPGMA tree building
 - add imported distance-matrix validation, nonmetric diagnostics, imported-tree building, distance-analysis reports, and tree-assumption diagnostics

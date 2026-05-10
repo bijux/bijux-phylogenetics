@@ -9,14 +9,17 @@
 [![Release GitHub](https://img.shields.io/badge/release-github%20workflow-2563EB?logo=githubactions&logoColor=white)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/release-github.yml)
 [![Docs](https://github.com/bijux/bijux-phylogenetics/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/deploy-docs.yml)
 [![Release](https://img.shields.io/github/v/release/bijux/bijux-phylogenetics?display_name=tag&label=release)](https://github.com/bijux/bijux-phylogenetics/releases)
-[![GHCR packages](https://img.shields.io/badge/ghcr-1%20packages-181717?logo=github)](https://github.com/bijux?tab=packages&repo_name=bijux-phylogenetics)
-[![Published packages](https://img.shields.io/badge/published%20packages-1-2563EB)](https://github.com/bijux/bijux-phylogenetics/tree/main/packages)
+[![GHCR packages](https://img.shields.io/badge/ghcr-2%20packages-181717?logo=github)](https://github.com/bijux?tab=packages&repo_name=bijux-phylogenetics)
+[![Published packages](https://img.shields.io/badge/published%20packages-2-2563EB)](https://github.com/bijux/bijux-phylogenetics/tree/main/packages)
 
 [![bijux-phylogenetics](https://img.shields.io/pypi/v/bijux-phylogenetics?label=bijux--phylogenetics&logo=pypi)](https://pypi.org/project/bijux-phylogenetics/)
+[![phylogenetic](https://img.shields.io/pypi/v/phylogenetic?label=phylogenetic&logo=pypi)](https://pypi.org/project/phylogenetic/)
 
 [![bijux-phylogenetics](https://img.shields.io/badge/bijux--phylogenetics-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics)
+[![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic)
 
 [![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 `bijux-phylogenetics` is a contract-first Python repository for reproducible
@@ -26,13 +29,13 @@ reviewable reporting around trees, alignments, and trait tables.
 The repository follows the same managed workspace pattern as
 `bijux-canon`, `bijux-proteomics`, and `bijux-pollenomics`: shared standards
 under `.bijux/`, repository-owned `makes/` and `configs/`, a root `uv`
-workspace, one primary runtime package, and one repository-owned maintainer
-package.
+workspace, one canonical runtime package, one compatibility alias package, and
+one repository-owned maintainer package.
 
-This repository publishes `1` package. Each release tag builds one staged
-bundle, uploads the distribution to PyPI, publishes the release bundle to its
-exact GHCR package page under the `bijux` account, and attaches the same staged
-assets to the GitHub Release.
+This repository publishes `2` packages. Each release tag builds two staged
+bundles, uploads both distributions to PyPI, publishes each release bundle to
+its exact GHCR package page under the `bijux` account, and attaches the same
+staged assets to the GitHub Release.
 
 ## Start Here
 
@@ -43,19 +46,21 @@ assets to the GitHub Release.
 
 ## What This Repository Produces
 
-Today, the checked-in repository produces three durable outcomes:
+Today, the checked-in repository produces four durable outcomes:
 
 - a Python runtime package for tree validation, comparison, analysis, and reporting
+- a shorter compatibility alias package that installs the same runtime under the `phylogenetic` distribution name
 - a repository-owned maintainer package for docs, release, and quality automation
 - a MkDocs documentation site that builds into `artifacts/root/docs/site/`
 
 ## Package Map
 
-The `1` publishable package in this repository is:
+The `2` publishable packages in this repository are:
 
 | Package | Role | Links |
 | --- | --- | --- |
 | `bijux-phylogenetics` | Canonical runtime package for phylogenetic diagnostics, comparative workflows, and reporting surfaces | <a href="https://pypi.org/project/bijux-phylogenetics/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
+| `phylogenetic` | Compatibility alias package that installs the canonical runtime with a shorter distribution and CLI name | <a href="https://pypi.org/project/phylogenetic/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/phylogenetic"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
 
 Repository-owned developer tooling also lives here in
 [`packages/bijux-phylogenetics-dev`](packages/bijux-phylogenetics-dev), but it

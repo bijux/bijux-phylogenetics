@@ -12,6 +12,7 @@ def test_managed_assets_cover_every_workspace_package() -> None:
     targets = {asset.target.parent.name for asset in assets}
     assert targets == {
         "bijux-phylogenetics",
+        "phylogenetic",
         "bijux-phylogenetics-dev",
     }
 

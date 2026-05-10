@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling>=1.27.0,<1.30", "hatch-vcs>=0.4.0,<1.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "phylogenetic"
+description = "Compatibility alias package for bijux-phylogenetics."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Bijan Mousavi", email = "bijan@bijux.io" },
+]
+keywords = ["bioinformatics", "comparative-biology", "evolution", "phylogenetics"]
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "bijux-phylogenetics>=0.1.0,<1.0",
+]
+
+[project.urls]
+Documentation = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"
+Repository = "https://github.com/bijux/bijux-phylogenetics"
+Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
+Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/phylogenetic/CHANGELOG.md"
+Security = "https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.3,<10.0",
+    "pytest-asyncio>=1.0.0,<2.0",
+    "pytest-cov>=6.2.1,<8.0",
+    "pytest-timeout>=2.4.0,<3.0",
+    "hatch>=1.14.0,<2.0",
+    "pydantic>=2.12,<3.0",
+    "ruff>=0.13.0,<1.0",
+    "mypy>=1.18.2,<2.0",
+    "vulture>=2.14,<3.0",
+    "deptry>=0.24.0,<1.0",
+    "interrogate>=1.7.0,<2.0",
+    "bandit>=1.8.6,<2.0",
+    "pip-audit>=2.9.0,<3.0",
+    "build>=1.3.0,<2.0",
+    "codespell>=2.4.1,<3.0",
+    "pydocstyle>=6.3.0,<7.0",
+    "radon>=6.0.1,<7.0",
+    "twine>=6.2.0,<7.0",
+]
+
+[project.scripts]
+phylogenetic = "phylogenetic.cli:main"
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "^v(?P<version>.*)$"
+fallback-version = "0.1.0"
+raw-options = { git_describe_command = "git describe --dirty --tags --long --match 'v*'", local_scheme = "dirty-tag", version_scheme = "guess-next-dev", root = "../..", search_parent_directories = true }
+
+[tool.hatch.build]
+include = [
+    "README.md",
+    "CHANGELOG.md",
+    "src/phylogenetic/**",
+]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["LICENSE", "NOTICE"]
+include = [
+    "README.md",
+    "CHANGELOG.md",
+    "src/phylogenetic/**",
+]
+force-include = { "../../LICENSE" = "LICENSE", "../../NOTICE" = "NOTICE" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/phylogenetic"]

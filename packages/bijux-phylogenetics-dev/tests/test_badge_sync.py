@@ -48,8 +48,8 @@ def test_repository_badge_block_uses_the_shared_workflow_badge_syntax() -> None:
         in rendered
     )
     assert "workflows/release-pypi/badge.svg" not in rendered
-    assert rendered.count("https://img.shields.io/pypi/v/") == 1
-    assert rendered.count("/pkgs/container/") == 1
+    assert rendered.count("https://img.shields.io/pypi/v/") == 2
+    assert rendered.count("/pkgs/container/") == 2
 
 
 def test_package_badge_block_prioritizes_the_public_distribution() -> None:
@@ -75,6 +75,26 @@ def test_package_badge_block_prioritizes_the_public_distribution() -> None:
     )
 
 
+def test_alias_package_badge_block_prioritizes_the_alias_distribution() -> None:
+    rendered = render_badge_block(
+        BadgeTarget(
+            path=Path("packages/phylogenetic/README.md"),
+            kind="package",
+            package_slug="phylogenetic",
+        )
+    )
+
+    assert "\n[![phylogenetic](https://img.shields.io/pypi/v/phylogenetic" in rendered
+    assert (
+        "\n[![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr"
+        in rendered
+    )
+    assert (
+        "\n[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic"
+        in rendered
+    )
+
+
 def test_badge_surfaces_are_synchronized() -> None:
     assert synchronize_badges(check=True) == []
 
@@ -84,6 +104,7 @@ def test_managed_surfaces_only_use_generated_badges() -> None:
         Path("README.md"),
         Path("docs/index.md"),
         Path("packages/bijux-phylogenetics/README.md"),
+        Path("packages/phylogenetic/README.md"),
         Path("packages/bijux-phylogenetics-dev/README.md"),
     ]
     for path in targets:

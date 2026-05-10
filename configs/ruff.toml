@@ -5,6 +5,8 @@ cache-dir = "artifacts/root/ruff-cache"
 src = [
   "packages/bijux-phylogenetics/src",
   "packages/bijux-phylogenetics/tests",
+  "packages/phylogenetic/src",
+  "packages/phylogenetic/tests",
   "packages/bijux-phylogenetics-dev/src",
   "packages/bijux-phylogenetics-dev/tests",
 ]
@@ -40,6 +42,7 @@ ignore = ["E501", "E203"]
 force-sort-within-sections = true
 known-first-party = [
   "bijux_phylogenetics",
+  "phylogenetic",
   "bijux_phylogenetics_dev",
   "tests",
 ]
