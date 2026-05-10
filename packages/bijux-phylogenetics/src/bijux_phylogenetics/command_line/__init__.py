@@ -211,6 +211,12 @@ from bijux_phylogenetics.errors import (
 )
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.evidence.book import validate_evidence_book
+from bijux_phylogenetics.evidence.closure import (
+    build_claim_reaudit,
+    build_closure_criteria,
+    build_completion_gates,
+    build_evidence_maturity_scorecard,
+)
 from bijux_phylogenetics.evidence.coverage import build_evidence_coverage_gap_report
 from bijux_phylogenetics.evidence.freshness import build_evidence_freshness_report
 from bijux_phylogenetics.evidence.integrity import build_evidence_integrity_report
@@ -329,12 +335,27 @@ def _print_result(result: Any, *, json_output: bool) -> None:
     print(json.dumps(_json_ready(result), indent=2, sort_keys=True))
 
 
-def _evidence_book_metrics(repo_root: Path) -> dict[str, int]:
+def _evidence_book_metrics(repo_root: Path) -> dict[str, int | str]:
     freshness_report = build_evidence_freshness_report(repo_root)
     integrity_report = build_evidence_integrity_report(repo_root)
     coverage_report = build_evidence_coverage_gap_report(repo_root)
+    claim_reaudit = build_claim_reaudit(repo_root)
+    closure_report = build_closure_criteria(repo_root)
+    scorecard = build_evidence_maturity_scorecard(repo_root)
+    completion_gates = build_completion_gates(repo_root)
     freshness_counts = freshness_report["freshness_status_counts"]
     integrity_counts = integrity_report["integrity_status_counts"]
+    foundational_status = next(
+        criterion["current_status"]
+        for criterion in closure_report["criteria"]
+        if criterion["criterion_id"] == "foundational-numerical-trust"
+    )
+    reviewer_status = next(
+        criterion["current_status"]
+        for criterion in closure_report["criteria"]
+        if criterion["criterion_id"] == "reviewer-readiness"
+    )
+    completion_state_counts = completion_gates["completion_state_counts"]
     return {
         "bundle_count": int(freshness_report["bundle_count"]),
         "freshness_current_count": int(freshness_counts.get("current", 0)),
@@ -345,6 +366,12 @@ def _evidence_book_metrics(repo_root: Path) -> dict[str, int]:
         "integrity_tracked_count": int(integrity_counts.get("tracked", 0)),
         "coverage_gap_count": int(coverage_report["coverage_gap_count"]),
         "family_gap_count": int(coverage_report["family_gap_count"]),
+        "downgraded_claim_count": int(claim_reaudit["downgraded_claim_count"]),
+        "foundational_numerical_trust_status": str(foundational_status),
+        "reviewer_readiness_status": str(reviewer_status),
+        "maturity_tier": str(scorecard["maturity_tier"]),
+        "completion_bounded_count": int(completion_state_counts.get("bounded", 0)),
+        "completion_not_ready_count": int(completion_state_counts.get("not_ready", 0)),
     }
 
 
