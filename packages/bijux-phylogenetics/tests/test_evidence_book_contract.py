@@ -44,6 +44,7 @@ def _write_book_fixture(root: Path) -> Path:
                 "evidence_title": "Taxon workflow review bundle",
                 "summary": "Validates taxon-workflow trust surfaces.",
                 "owner_package": "bijux-phylogenetics",
+                "claim_ids": ["taxonomy-review"],
                 "source_basis": [
                     {
                         "kind": "repository-fixture",
@@ -51,6 +52,19 @@ def _write_book_fixture(root: Path) -> Path:
                         "locator": "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk",
                     }
                 ],
+                "freshness": {
+                    "last_generated_on": "2026-05-10",
+                    "governed_code_paths": [
+                        "packages/bijux-phylogenetics/src/bijux_phylogenetics"
+                    ],
+                    "source_basis_locators": [
+                        "packages/bijux-phylogenetics/tests/fixtures/trees/example_taxon_workflow_tree.nwk"
+                    ],
+                },
+                "ownership": {
+                    "owner_package": "bijux-phylogenetics",
+                    "analytical_surfaces": ["taxonomy"],
+                },
                 "claim_tags": ["taxonomy", "review"],
                 "verdict": {
                     "status": "matched",

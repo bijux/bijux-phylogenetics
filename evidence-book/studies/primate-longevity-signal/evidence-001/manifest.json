@@ -1,4 +1,16 @@
 {
+  "claim_ids": [
+    "pcm1-reproducibility-contract-tracked",
+    "pcm1-primate-data-preparation-parity",
+    "pcm1-tree-import-pruning-parity",
+    "pcm1-topology-operation-parity",
+    "pcm1-tree-data-join-parity",
+    "pcm1-random-lambda-fit-parity",
+    "pcm1-primate-lambda-fit-parity",
+    "pcm1-ancestral-state-parity",
+    "pcm1-visual-surface-tracking",
+    "pcm1-artifact-provenance-tracking"
+  ],
   "claim_tags": [
     "comparative-signal",
     "teaching",
@@ -20,7 +32,26 @@
     "Rendered figure equivalence remains out of scope for plot-only blocks.",
     "The checked-in bundle captures one governed PCM1 evidence family rather than the full lecture decomposition."
   ],
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics",
+      "evidence-book/studies/primate-longevity-signal/build_evidence.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "external:lund/pcm1-plots-signal/script",
+      "evidence-book/studies/primate-longevity-signal/reference"
+    ]
+  },
   "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "comparative-signal",
+      "ancestral-reconstruction",
+      "tree-preprocessing"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
   "reference_tools": [
     "ape",
     "geiger",

@@ -33,7 +33,25 @@
   "limitations": [
     "Covers one governed taxon-workflow bundle rather than the full repository surface."
   ],
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics",
+      "evidence-book/studies/taxon-trust/build_evidence.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "packages/bijux-phylogenetics/tests/fixtures"
+    ]
+  },
   "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "taxonomy",
+      "workflow-audit",
+      "trust-surface"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
   "schema_version": 1,
   "source_basis": [
     {

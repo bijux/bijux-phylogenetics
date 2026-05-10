@@ -30,12 +30,28 @@ EVIDENCE_REQUIRED_KEYS = {
     "evidence_title",
     "summary",
     "owner_package",
+    "claim_ids",
     "source_basis",
+    "freshness",
+    "ownership",
     "claim_tags",
     "verdict",
     "limitations",
 }
 VERDICT_REQUIRED_KEYS = {"status", "summary"}
+FRESHNESS_REQUIRED_KEYS = {
+    "last_generated_on",
+    "governed_code_paths",
+    "source_basis_locators",
+}
+OWNERSHIP_REQUIRED_KEYS = {"owner_package", "analytical_surfaces"}
+ALLOWED_EVIDENCE_VERDICT_STATUSES = {
+    "matched",
+    "matched_with_tolerance",
+    "mismatch_explained",
+    "mismatch_unexplained",
+    "not_comparable",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -240,6 +256,15 @@ def _validate_bundle_manifest(
                     + ", ".join(missing_verdict_keys),
                 )
             )
+        status = verdict.get("status")
+        if status not in ALLOWED_EVIDENCE_VERDICT_STATUSES:
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest verdict status must be one of: "
+                    + ", ".join(sorted(ALLOWED_EVIDENCE_VERDICT_STATUSES)),
+                )
+            )
 
     source_basis = manifest.get("source_basis")
     if not isinstance(source_basis, list) or not source_basis:
@@ -257,6 +282,114 @@ def _validate_bundle_manifest(
                 "evidence manifest claim_tags must be a list",
             )
         )
+    claim_ids = manifest.get("claim_ids")
+    if not isinstance(claim_ids, list) or not claim_ids or not all(
+        isinstance(value, str) and value for value in claim_ids
+    ):
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, manifest_path),
+                "evidence manifest claim_ids must be a non-empty list of strings",
+            )
+        )
+
+    freshness = manifest.get("freshness")
+    if not isinstance(freshness, dict):
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, manifest_path),
+                "evidence manifest freshness must be a JSON object",
+            )
+        )
+    else:
+        missing_freshness_keys = sorted(FRESHNESS_REQUIRED_KEYS - freshness.keys())
+        if missing_freshness_keys:
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest freshness missing keys: "
+                    + ", ".join(missing_freshness_keys),
+                )
+            )
+        last_generated_on = freshness.get("last_generated_on")
+        if not isinstance(last_generated_on, str) or not re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}", last_generated_on
+        ):
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest freshness last_generated_on must use YYYY-MM-DD",
+                )
+            )
+        governed_code_paths = freshness.get("governed_code_paths")
+        if not isinstance(governed_code_paths, list) or not governed_code_paths or not all(
+            isinstance(value, str) and value for value in governed_code_paths
+        ):
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest freshness governed_code_paths must be a non-empty list of strings",
+                )
+            )
+        source_basis_locators = freshness.get("source_basis_locators")
+        if not isinstance(source_basis_locators, list) or not source_basis_locators or not all(
+            isinstance(value, str) and value for value in source_basis_locators
+        ):
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest freshness source_basis_locators must be a non-empty list of strings",
+                )
+            )
+        elif isinstance(source_basis, list):
+            bundle_locators = {
+                entry.get("locator")
+                for entry in source_basis
+                if isinstance(entry, dict) and isinstance(entry.get("locator"), str)
+            }
+            if not set(source_basis_locators) <= bundle_locators:
+                issues.append(
+                    EvidenceBookValidationIssue(
+                        _relative_to(book_root, manifest_path),
+                        "evidence manifest freshness source_basis_locators must refer to source_basis locators",
+                    )
+                )
+
+    ownership = manifest.get("ownership")
+    if not isinstance(ownership, dict):
+        issues.append(
+            EvidenceBookValidationIssue(
+                _relative_to(book_root, manifest_path),
+                "evidence manifest ownership must be a JSON object",
+            )
+        )
+    else:
+        missing_ownership_keys = sorted(OWNERSHIP_REQUIRED_KEYS - ownership.keys())
+        if missing_ownership_keys:
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest ownership missing keys: "
+                    + ", ".join(missing_ownership_keys),
+                )
+            )
+        if ownership.get("owner_package") != manifest.get("owner_package"):
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest ownership owner_package must match owner_package",
+                )
+            )
+        analytical_surfaces = ownership.get("analytical_surfaces")
+        if not isinstance(analytical_surfaces, list) or not analytical_surfaces or not all(
+            isinstance(value, str) and value for value in analytical_surfaces
+        ):
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(book_root, manifest_path),
+                    "evidence manifest ownership analytical_surfaces must be a non-empty list of strings",
+                )
+            )
     limitations = manifest.get("limitations")
     if not isinstance(limitations, list):
         issues.append(
