@@ -21,12 +21,21 @@ target_shape_packages = [
 ]
 forbidden_runtime_subpackages = ["evidence"]
 required_root_make_targets = [
+    "list-evidence-studies:",
+    "build-evidence-book:",
+    "build-evidence-study:",
+    "validate-evidence-book:",
     "sync-evidence-artifacts:",
     "check-evidence-artifacts:",
+    "rerun-evidence-cleanroom:",
+    "report-artifact-governance:",
+    "check-artifact-governance:",
     "report-package-bundles:",
     "check-package-bundles:",
     "report-publish-readiness:",
     "check-publish-readiness:",
+    "report-release-readiness:",
+    "check-release-readiness:",
 ]
 
 [tool.bijux_phylogenetics.publication_readiness.package_policy."bijux-phylogenetics"]

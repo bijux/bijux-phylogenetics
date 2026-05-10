@@ -1,0 +1,92 @@
+name: evidence-governance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/evidence-governance.yml"
+      - "evidence-book/**"
+      - "makes/**"
+      - "packages/**"
+      - "tox.ini"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/evidence-governance.yml"
+      - "evidence-book/**"
+      - "makes/**"
+      - "packages/**"
+      - "tox.ini"
+  workflow_dispatch:
+  merge_group:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evidence-governance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence-contracts:
+    name: evidence-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
+        with:
+          python-version: 3.11
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: validate evidence governance
+        shell: bash
+        run: |
+          set -euo pipefail
+          make validate-evidence-book
+          make check-evidence-artifacts
+          make check-artifact-governance
+      - name: upload evidence governance artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: evidence-governance
+          path: |
+            artifacts/root/evidence-book-validation.json
+            artifacts/root/artifact-governance.json
+          if-no-files-found: error
+          retention-days: 14
+
+  evidence-cleanroom:
+    name: evidence-cleanroom
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
+        with:
+          python-version: 3.11
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: rerun selected evidence clean-room checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          make rerun-evidence-cleanroom EVIDENCE_STUDY_ID=primate-longevity-signal EVIDENCE_IDS=evidence-002
+          make rerun-evidence-cleanroom EVIDENCE_STUDY_ID=primate-pgls-and-signal EVIDENCE_IDS=evidence-002
+      - name: upload clean-room artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: evidence-cleanroom
+          path: artifacts/root/evidence-cleanroom
+          if-no-files-found: error
+          retention-days: 14

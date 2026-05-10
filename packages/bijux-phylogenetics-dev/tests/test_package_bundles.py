@@ -49,7 +49,7 @@ required_evidence_bundle_artifacts = ["reference.R", "analysis.py", "checks.json
 expected_publishable_packages = ["demo-runtime", "demo-dev"]
 target_shape_packages = ["demo-runtime", "demo-dev", "demo-evidence"]
 forbidden_runtime_subpackages = ["evidence"]
-required_root_make_targets = ["sync-evidence-artifacts:", "check-evidence-artifacts:", "check-package-bundles:"]
+required_root_make_targets = ["validate-evidence-book:", "sync-evidence-artifacts:", "check-evidence-artifacts:", "check-artifact-governance:", "check-package-bundles:", "check-release-readiness:"]
 
 [tool.bijux_phylogenetics.publication_readiness.package_policy."demo-runtime"]
 package_dir = "packages/demo-runtime"
@@ -221,3 +221,16 @@ def test_check_package_bundles_builds_and_audits_publishable_packages(
 
     assert report["issue_count"] == 0
     assert report["package_count"] == 2
+
+
+def test_check_package_bundles_rebuilds_cleanly_into_staged_output_directories(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+
+    first_report = check_package_bundles(repo_root)
+    second_report = check_package_bundles(repo_root)
+
+    assert first_report["issue_count"] == 0
+    assert second_report["issue_count"] == 0
+    assert second_report["package_count"] == 2

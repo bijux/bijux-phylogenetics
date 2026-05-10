@@ -63,12 +63,16 @@ target_shape_packages = [
 ]
 forbidden_runtime_subpackages = ["evidence"]
 required_root_make_targets = [
+    "validate-evidence-book:",
     "sync-evidence-artifacts:",
     "check-evidence-artifacts:",
+    "check-artifact-governance:",
     "report-package-bundles:",
     "check-package-bundles:",
     "report-publish-readiness:",
     "check-publish-readiness:",
+    "report-release-readiness:",
+    "check-release-readiness:",
 ]
 """.strip()
         + "\n",
@@ -82,10 +86,14 @@ required_root_make_targets = [
             [
                 "sync-evidence-artifacts:",
                 "check-evidence-artifacts:",
+                "validate-evidence-book:",
+                "check-artifact-governance:",
                 "report-package-bundles:",
                 "check-package-bundles:",
                 "report-publish-readiness:",
                 "check-publish-readiness:",
+                "report-release-readiness:",
+                "check-release-readiness:",
             ]
         )
         + "\n",

@@ -12,6 +12,7 @@ import sys
 import tarfile
 import tomllib
 from typing import Any
+from uuid import uuid4
 import zipfile
 
 POLICY_PATH = Path("configs/publication_readiness.toml")
@@ -207,31 +208,52 @@ def build_package_bundle_report(
     package_reports: list[dict[str, Any]] = []
     issues: list[BundleIssue] = []
     artifacts_root.mkdir(parents=True, exist_ok=True)
+    staging_root = (
+        artifacts_root / f".package-bundles-{uuid4().hex}"
+        if build_artifacts
+        else None
+    )
+    if staging_root is not None:
+        shutil.rmtree(staging_root, ignore_errors=True)
+        staging_root.mkdir(parents=True, exist_ok=True)
 
-    for package_name, policy in sorted(policies.items()):
-        dist_dir = artifacts_root / package_name
-        if build_artifacts:
-            shutil.rmtree(dist_dir, ignore_errors=True)
-            dist_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "build",
-                    "--wheel",
-                    "--sdist",
-                    "--outdir",
-                    str(dist_dir),
-                    str(repo_root / policy.package_dir),
-                ],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-        report = audit_package_bundle_directory(policy, dist_dir)
-        package_reports.append(report)
-        for issue in report["issues"]:
-            issues.append(BundleIssue(**issue))
+    try:
+        for package_name, policy in sorted(policies.items()):
+            dist_dir = artifacts_root / package_name
+            audit_dir = dist_dir
+            if build_artifacts:
+                if staging_root is None:
+                    raise ValueError("staging root is required when building artifacts")
+                audit_dir = staging_root / package_name
+                shutil.rmtree(audit_dir, ignore_errors=True)
+                audit_dir.mkdir(parents=True, exist_ok=True)
+                subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "build",
+                        "--wheel",
+                        "--sdist",
+                        "--outdir",
+                        str(audit_dir),
+                        str(repo_root / policy.package_dir),
+                    ],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+            report = audit_package_bundle_directory(policy, audit_dir)
+            if build_artifacts:
+                shutil.rmtree(dist_dir, ignore_errors=True)
+                shutil.copytree(audit_dir, dist_dir)
+                report["wheel_path"] = str(dist_dir / Path(report["wheel_path"]).name)
+                report["sdist_path"] = str(dist_dir / Path(report["sdist_path"]).name)
+            package_reports.append(report)
+            for issue in report["issues"]:
+                issues.append(BundleIssue(**issue))
+    finally:
+        if staging_root is not None:
+            shutil.rmtree(staging_root, ignore_errors=True)
 
     return {
         "schema_version": 1,
