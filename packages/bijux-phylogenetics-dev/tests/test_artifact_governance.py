@@ -45,6 +45,10 @@ report-artifact-governance:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
 check-artifact-governance:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
+report-package-boundaries:
+\t@echo "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json"
+check-package-boundaries:
+\t@echo "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json"
 report-package-bundles:
 \t@echo report-bundles
 check-package-bundles:
@@ -103,6 +107,7 @@ jobs:
           path: |
             artifacts/root/package-bundles
             artifacts/root/package-bundles.json
+            artifacts/root/package-boundaries.json
             artifacts/root/publish-readiness.json
             artifacts/root/artifact-governance.json
   gate:

@@ -69,6 +69,7 @@ jobs:
           path: |
             artifacts/root/package-bundles
             artifacts/root/package-bundles.json
+            artifacts/root/package-boundaries.json
             artifacts/root/publish-readiness.json
             artifacts/root/artifact-governance.json
           if-no-files-found: error

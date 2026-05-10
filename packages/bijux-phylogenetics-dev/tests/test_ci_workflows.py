@@ -136,3 +136,11 @@ def test_publish_readiness_workflow_keeps_report_and_gate_jobs_separate() -> Non
     assert "make report-release-readiness" in report_text
     assert "make check-release-readiness" in gate_text
     assert gate_job["if"] == "${{ github.event_name == 'workflow_dispatch' && inputs.enforce_release_gate }}"
+    upload_paths = [
+        line.strip()
+        for step in report_job.get("steps", [])
+        if isinstance(step, dict) and isinstance(step.get("with"), dict)
+        for line in str(step["with"].get("path", "")).splitlines()
+        if line.strip()
+    ]
+    assert "artifacts/root/package-boundaries.json" in upload_paths

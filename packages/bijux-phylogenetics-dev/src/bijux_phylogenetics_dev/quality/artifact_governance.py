@@ -21,6 +21,8 @@ REQUIRED_MAKE_TARGETS = {
     "validate-evidence-book": '$(ROOT_ARTIFACTS_DIR)/evidence-book-validation.json',
     "report-artifact-governance": '$(ROOT_ARTIFACTS_DIR)/artifact-governance.json',
     "check-artifact-governance": '$(ROOT_ARTIFACTS_DIR)/artifact-governance.json',
+    "report-package-boundaries": '$(ROOT_ARTIFACTS_DIR)/package-boundaries.json',
+    "check-package-boundaries": '$(ROOT_ARTIFACTS_DIR)/package-boundaries.json',
     "report-release-readiness": '$(MAKE) report-publish-readiness',
     "check-release-readiness": '$(MAKE) check-publish-readiness',
     "rerun-evidence-cleanroom": '$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom',
@@ -34,6 +36,7 @@ REQUIRED_WORKFLOW_ARTIFACT_PATHS = {
     "publish-readiness.yml": {
         "artifacts/root/package-bundles",
         "artifacts/root/package-bundles.json",
+        "artifacts/root/package-boundaries.json",
         "artifacts/root/publish-readiness.json",
         "artifacts/root/artifact-governance.json",
     },
