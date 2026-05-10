@@ -641,7 +641,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "evidence":
         if args.evidence_command == "bundle":
             return [*args.inputs, *args.outputs]
-        return [args.bundle_root]
+        bundle_root = getattr(args, "bundle_root", None)
+        return [] if bundle_root is None else [bundle_root]
     if args.command == "demo":
         return []
     if args.command == "report":
