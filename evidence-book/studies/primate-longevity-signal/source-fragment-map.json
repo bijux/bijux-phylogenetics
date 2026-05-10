@@ -1,0 +1,724 @@
+{
+  "evidence_id": "evidence-001",
+  "fragment_count": 30,
+  "fragments": [
+    {
+      "block_status": "workflow_only",
+      "claim_ids": [
+        "pcm1-reproducibility-contract-tracked"
+      ],
+      "concept_family": "workflow-contracts",
+      "evidence_id": "evidence-001",
+      "fragment_id": "environment-and-package-contract",
+      "fragment_title": "Environment, package loading, and citation workflow",
+      "parity_expectation": "not_comparable",
+      "review_note": "This setup block is documented for reproducibility, but it is not an analysis-equivalence target.",
+      "scope": "workflow",
+      "script_line_spans": [
+        {
+          "end_line": 22,
+          "start_line": 1
+        }
+      ],
+      "script_line_spec": "1-22",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L1-L22"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-primate-data-preparation-parity"
+      ],
+      "concept_family": "data-preparation",
+      "evidence_id": "evidence-001",
+      "fragment_id": "primate-data-preprocessing",
+      "fragment_title": "Raw primate preprocessing to checked-in analysis table",
+      "parity_expectation": "exact",
+      "review_note": "The R reference reconstruction from the workbook matches the checked-in processed CSV.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 79,
+          "start_line": 23
+        }
+      ],
+      "script_line_spec": "23-79",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L23-L79"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-tree-import-pruning-parity"
+      ],
+      "concept_family": "tree-operations",
+      "evidence_id": "evidence-001",
+      "fragment_id": "tree-import-and-pruning",
+      "fragment_title": "Tree import, checking, node labels, and pruning",
+      "parity_expectation": "exact",
+      "review_note": "The checked-in trimmed tree matches the R-pruned reference tree.",
+      "scope": "structural",
+      "script_line_spans": [
+        {
+          "end_line": 120,
+          "start_line": 80
+        }
+      ],
+      "script_line_spec": "80-120",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L80-L120"
+      ]
+    },
+    {
+      "block_status": "artifact_only",
+      "claim_ids": [
+        "pcm1-artifact-provenance-tracking"
+      ],
+      "concept_family": "artifact-provenance",
+      "evidence_id": "evidence-001",
+      "fragment_id": "processed-analysis-artifacts",
+      "fragment_title": "Save processed files for later analysis",
+      "parity_expectation": "not_comparable",
+      "review_note": "This block writes the processed CSV and trimmed tree that the Python evidence pass later consumes.",
+      "scope": "artifact",
+      "script_line_spans": [
+        {
+          "end_line": 134,
+          "start_line": 122
+        }
+      ],
+      "script_line_spec": "122-134",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L122-L134"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "ape-plotting-basics",
+      "fragment_title": "APE plotting basics",
+      "parity_expectation": "not_comparable",
+      "review_note": "This is a visual exploration block; the current report does not claim figure-equivalence for base `ape` plots.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 155,
+          "start_line": 141
+        }
+      ],
+      "script_line_spec": "141-155",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L141-L155"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "ape-alternate-layouts",
+      "fragment_title": "APE alternate layouts: cladogram and fan",
+      "parity_expectation": "not_comparable",
+      "review_note": "These layout variants are tracked as visual surfaces only.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 158,
+          "start_line": 157
+        },
+        {
+          "end_line": 160,
+          "start_line": 160
+        }
+      ],
+      "script_line_spec": "157-158,160",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L157-L158",
+        "external:lund/pcm1-plots-signal/script#L160"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-topology-operation-parity"
+      ],
+      "concept_family": "tree-operations",
+      "evidence_id": "evidence-001",
+      "fragment_id": "unrooted-tree-demo",
+      "fragment_title": "Unrooted tree demo",
+      "parity_expectation": "exact",
+      "review_note": "Both sides produce an unrooted representation with the same tip set and 75 tips.",
+      "scope": "structural",
+      "script_line_spans": [
+        {
+          "end_line": 159,
+          "start_line": 159
+        }
+      ],
+      "script_line_spec": "159",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L159"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "phytools-tree-plotting",
+      "fragment_title": "Phytools tree plotting exploration",
+      "parity_expectation": "not_comparable",
+      "review_note": "The `phytools::plotTree()` surface is tracked, but no rendered-figure claim is made here.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 166,
+          "start_line": 165
+        }
+      ],
+      "script_line_spec": "165-166",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L165-L166"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-topology-operation-parity"
+      ],
+      "concept_family": "tree-operations",
+      "evidence_id": "evidence-001",
+      "fragment_id": "extract-clade-node-77",
+      "fragment_title": "Extract clade descended from R node 77",
+      "parity_expectation": "exact",
+      "review_note": "The descendant tip set matches exactly when compared by stable taxon signature rather than recycled node labels.",
+      "scope": "structural",
+      "script_line_spans": [
+        {
+          "end_line": 170,
+          "start_line": 168
+        }
+      ],
+      "script_line_spec": "168-170",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L168-L170"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-topology-operation-parity"
+      ],
+      "concept_family": "tree-operations",
+      "evidence_id": "evidence-001",
+      "fragment_id": "rotate-nodes-behavior",
+      "fragment_title": "Rotate-nodes teaching demo",
+      "parity_expectation": "exact",
+      "review_note": "The child-order rotation results match the R `rotateNodes` tip order for both the single-node and all-node variants.",
+      "scope": "structural",
+      "script_line_spans": [
+        {
+          "end_line": 192,
+          "start_line": 172
+        }
+      ],
+      "script_line_spec": "172-192",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L172-L192"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "ggtree-tree-visualization",
+      "fragment_title": "Ggtree tree-visualization exploration",
+      "parity_expectation": "not_comparable",
+      "review_note": "These `ggtree` examples are tracked as visual surfaces only.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 220,
+          "start_line": 197
+        }
+      ],
+      "script_line_spec": "197-220",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L197-L220"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-tree-data-join-parity"
+      ],
+      "concept_family": "data-preparation",
+      "evidence_id": "evidence-001",
+      "fragment_id": "tip-order-alignment",
+      "fragment_title": "Tip-order alignment for joining data to the tree",
+      "parity_expectation": "exact",
+      "review_note": "The aligned species order matches the trimmed tree tip order.",
+      "scope": "structural",
+      "script_line_spans": [
+        {
+          "end_line": 240,
+          "start_line": 222
+        }
+      ],
+      "script_line_spec": "222-240",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L222-L240"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "ape-longevity-overlay",
+      "fragment_title": "APE tip overlay with longevity",
+      "parity_expectation": "not_comparable",
+      "review_note": "This is a rendered trait-overlay surface and is tracked separately from ordering correctness.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 245,
+          "start_line": 242
+        }
+      ],
+      "script_line_spec": "242-245",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L242-L245"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-tree-data-join-parity"
+      ],
+      "concept_family": "tree-operations",
+      "evidence_id": "evidence-001",
+      "fragment_id": "treeio-node-mapping-and-join",
+      "fragment_title": "Treeio node mapping and joined tree-data object",
+      "parity_expectation": "exact",
+      "review_note": "Representative node ids align and the joined object size is consistent with the 75-taxon dataset.",
+      "scope": "structural",
+      "script_line_spans": [
+        {
+          "end_line": 263,
+          "start_line": 248
+        }
+      ],
+      "script_line_spec": "248-263",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L248-L263"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "joined-ggtree-trait-plotting",
+      "fragment_title": "Joined ggtree trait plotting",
+      "parity_expectation": "not_comparable",
+      "review_note": "Joined-data `ggtree` figures are tracked here as visual outputs only.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 276,
+          "start_line": 265
+        }
+      ],
+      "script_line_spec": "265-276",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L265-L276"
+      ]
+    },
+    {
+      "block_status": "seeded_input_only",
+      "claim_ids": [
+        "pcm1-random-lambda-fit-parity"
+      ],
+      "concept_family": "simulation-inputs",
+      "evidence_id": "evidence-001",
+      "fragment_id": "random-simulation-inputs",
+      "fragment_title": "Random simulation scenarios",
+      "parity_expectation": "exact",
+      "review_note": "For credibility, the report freezes these R-generated simulation inputs with `set.seed(1)` and reuses the resulting artifacts on both sides.",
+      "scope": "artifact",
+      "script_line_spans": [
+        {
+          "end_line": 288,
+          "start_line": 287
+        },
+        {
+          "end_line": 295,
+          "start_line": 294
+        },
+        {
+          "end_line": 309,
+          "start_line": 309
+        },
+        {
+          "end_line": 315,
+          "start_line": 315
+        }
+      ],
+      "script_line_spec": "287-288,294-295,309,315",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L287-L288",
+        "external:lund/pcm1-plots-signal/script#L294-L295",
+        "external:lund/pcm1-plots-signal/script#L309",
+        "external:lund/pcm1-plots-signal/script#L315"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "random-simulation-plotting",
+      "fragment_title": "Random trait plotting surfaces",
+      "parity_expectation": "not_comparable",
+      "review_note": "These are visual teaching plots and are tracked separately from the simulation inputs and signal fits.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 318,
+          "start_line": 290
+        }
+      ],
+      "script_line_spec": "290-318",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L290-L318"
+      ]
+    },
+    {
+      "block_status": "verified_with_tolerance",
+      "claim_ids": [
+        "pcm1-random-lambda-fit-parity"
+      ],
+      "concept_family": "comparative-signal",
+      "evidence_id": "evidence-001",
+      "fragment_id": "random-signal-lambda-fits",
+      "fragment_title": "Random-data lambda fits",
+      "parity_expectation": "statistical_tolerance",
+      "review_note": "The report checks the explicit random-data fit calls and extends the implied checks to the other generated examples.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 331,
+          "start_line": 324
+        }
+      ],
+      "script_line_spec": "324-331",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L324-L331"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "primate-longevity-visual-inspection",
+      "fragment_title": "Primate longevity histogram and tip-size plot",
+      "parity_expectation": "not_comparable",
+      "review_note": "These are visual inspection surfaces only.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 337,
+          "start_line": 337
+        },
+        {
+          "end_line": 345,
+          "start_line": 343
+        }
+      ],
+      "script_line_spec": "337,343-345",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L337",
+        "external:lund/pcm1-plots-signal/script#L343-L345"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-tree-data-join-parity"
+      ],
+      "concept_family": "data-preparation",
+      "evidence_id": "evidence-001",
+      "fragment_id": "primate-longevity-vector-assembly",
+      "fragment_title": "Primate longevity vector assembly",
+      "parity_expectation": "exact",
+      "review_note": "The longevity vector is aligned to the trimmed tree tip order.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 341,
+          "start_line": 340
+        }
+      ],
+      "script_line_spec": "340-341",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L340-L341"
+      ]
+    },
+    {
+      "block_status": "verified_with_tolerance",
+      "claim_ids": [
+        "pcm1-primate-lambda-fit-parity"
+      ],
+      "concept_family": "comparative-signal",
+      "evidence_id": "evidence-001",
+      "fragment_id": "primate-lambda-fit",
+      "fragment_title": "Primate longevity lambda fit",
+      "parity_expectation": "statistical_tolerance",
+      "review_note": "The `bijux-phylogenetics` lambda estimate is within a small numerical tolerance of the R fit.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 354,
+          "start_line": 347
+        }
+      ],
+      "script_line_spec": "347-354",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L347-L354"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "lambda-zero-visual-comparison",
+      "fragment_title": "Lambda-zero visual tree comparison",
+      "parity_expectation": "not_comparable",
+      "review_note": "The side-by-side real-tree versus lambda=0 plots are tracked as visual outputs only.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 371,
+          "start_line": 357
+        }
+      ],
+      "script_line_spec": "357-371",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L357-L371"
+      ]
+    },
+    {
+      "block_status": "verified_with_tolerance",
+      "claim_ids": [
+        "pcm1-primate-lambda-fit-parity"
+      ],
+      "concept_family": "comparative-signal",
+      "evidence_id": "evidence-001",
+      "fragment_id": "lambda-zero-covariance-and-lrt",
+      "fragment_title": "Lambda-zero covariance and likelihood-ratio test",
+      "parity_expectation": "near_exact",
+      "review_note": "The covariance surface and lambda-vs-zero test agree within numerical tolerance.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 388,
+          "start_line": 375
+        }
+      ],
+      "script_line_spec": "375-388",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L375-L388"
+      ]
+    },
+    {
+      "block_status": "verified_with_tolerance",
+      "claim_ids": [
+        "pcm1-ancestral-state-parity"
+      ],
+      "concept_family": "ancestral-reconstruction",
+      "evidence_id": "evidence-001",
+      "fragment_id": "continuous-ancestral-point-estimates",
+      "fragment_title": "Continuous ancestral point estimates",
+      "parity_expectation": "near_exact",
+      "review_note": "Clade-aligned ancestral point estimates match to floating-point noise.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 399,
+          "start_line": 395
+        }
+      ],
+      "script_line_spec": "395-399",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L395-L399"
+      ]
+    },
+    {
+      "block_status": "verified_with_tolerance",
+      "claim_ids": [
+        "pcm1-ancestral-state-parity"
+      ],
+      "concept_family": "ancestral-reconstruction",
+      "evidence_id": "evidence-001",
+      "fragment_id": "continuous-ancestral-intervals",
+      "fragment_title": "Continuous ancestral 95% intervals",
+      "parity_expectation": "near_exact",
+      "review_note": "The Brownian/PIC confidence-interval surface now matches the R reference to floating-point noise.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 400,
+          "start_line": 400
+        }
+      ],
+      "script_line_spec": "400",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L400"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-ancestral-state-parity"
+      ],
+      "concept_family": "ancestral-reconstruction",
+      "evidence_id": "evidence-001",
+      "fragment_id": "ancestral-table-assembly",
+      "fragment_title": "Assemble ancestral table and node mapping",
+      "parity_expectation": "exact",
+      "review_note": "The ancestral table assembly is consistent: 75 tip rows plus 74 internal rows on both sides.",
+      "scope": "structural",
+      "script_line_spans": [
+        {
+          "end_line": 412,
+          "start_line": 404
+        }
+      ],
+      "script_line_spec": "404-412",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L404-L412"
+      ]
+    },
+    {
+      "block_status": "plot_only",
+      "claim_ids": [
+        "pcm1-visual-surface-tracking"
+      ],
+      "concept_family": "visual-surfaces",
+      "evidence_id": "evidence-001",
+      "fragment_id": "ancestral-colored-tree-plot",
+      "fragment_title": "Ancestral colored tree plot",
+      "parity_expectation": "not_comparable",
+      "review_note": "The ancestral-state branch-color figure is tracked as a visual rendering surface only.",
+      "scope": "visual",
+      "script_line_spans": [
+        {
+          "end_line": 419,
+          "start_line": 414
+        }
+      ],
+      "script_line_spec": "414-419",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L414-L419"
+      ]
+    },
+    {
+      "block_status": "verified_with_tolerance",
+      "claim_ids": [
+        "pcm1-ancestral-state-parity"
+      ],
+      "concept_family": "ancestral-reconstruction",
+      "evidence_id": "evidence-001",
+      "fragment_id": "bonobo-gibbon-mrca-estimate",
+      "fragment_title": "Bonobo/Gibbon MRCA estimate",
+      "parity_expectation": "near_exact",
+      "review_note": "The MRCA clade and the ancestral point estimate match.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 429,
+          "start_line": 421
+        }
+      ],
+      "script_line_spec": "421-429",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L421-L429"
+      ]
+    },
+    {
+      "block_status": "verified",
+      "claim_ids": [
+        "pcm1-ancestral-state-parity"
+      ],
+      "concept_family": "ancestral-reconstruction",
+      "evidence_id": "evidence-001",
+      "fragment_id": "lifespan-increase-counts",
+      "fragment_title": "How many times lifespan increased across primates",
+      "parity_expectation": "exact",
+      "review_note": "The branch-wise increase counts match the direct R reference path.",
+      "scope": "analytical",
+      "script_line_spans": [
+        {
+          "end_line": 448,
+          "start_line": 431
+        }
+      ],
+      "script_line_spec": "431-448",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L431-L448"
+      ]
+    },
+    {
+      "block_status": "artifact_only",
+      "claim_ids": [
+        "pcm1-artifact-provenance-tracking"
+      ],
+      "concept_family": "artifact-provenance",
+      "evidence_id": "evidence-001",
+      "fragment_id": "final-workspace-artifact",
+      "fragment_title": "Save final analysis workspace",
+      "parity_expectation": "not_comparable",
+      "review_note": "The lecture script saves an `.RData` workspace; this report saves explicit machine-readable evidence artifacts instead.",
+      "scope": "artifact",
+      "script_line_spans": [
+        {
+          "end_line": 451,
+          "start_line": 450
+        }
+      ],
+      "script_line_spec": "450-451",
+      "script_locators": [
+        "external:lund/pcm1-plots-signal/script#L450-L451"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "source_locator": "external:lund/pcm1-plots-signal/script",
+  "study_id": "primate-longevity-signal"
+}
