@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-pagel-lambda-regression-parity",
+      "claim_title": "PCM2 Pagel-lambda regression agrees within governed tolerance",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "source_fragments": [
+        "pagel-lambda-regression"
+      ],
+      "summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations.",
+      "verdict": "matched_with_tolerance"
+    }
+  ],
+  "evidence_id": "evidence-003",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

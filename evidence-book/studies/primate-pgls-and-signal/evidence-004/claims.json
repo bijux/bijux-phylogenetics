@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-phylogenetic-signal-parity",
+      "claim_title": "PCM2 phylogenetic signal testing agrees within governed tolerance",
+      "evidence_ids": [
+        "evidence-004"
+      ],
+      "source_fragments": [
+        "phylogenetic-signal-test"
+      ],
+      "summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences.",
+      "verdict": "matched_with_tolerance"
+    }
+  ],
+  "evidence_id": "evidence-004",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

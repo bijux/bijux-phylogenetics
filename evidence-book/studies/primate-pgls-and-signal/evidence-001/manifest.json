@@ -1,0 +1,95 @@
+{
+  "claim_ids": [
+    "pcm2-reload-contract-governed"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "workflow",
+    "reload-semantics"
+  ],
+  "evidence_id": "evidence-001",
+  "evidence_title": "Primate reload semantics bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+      "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+      "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json"
+    ]
+  },
+  "limitations": [
+    "The raw lecture `primate.RData` file remains external; this bundle governs the object contract using repository-owned reference artifacts."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "workflow-contracts"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_script_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R#L1-L200"
+  ],
+  "report_keys": [
+    "evidence_id",
+    "governed_reload_inputs",
+    "object_names",
+    "row_count",
+    "scalar_row_count",
+    "schema_version",
+    "species_tip_match",
+    "study_id",
+    "tip_count",
+    "verdict_counts"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "external-source-descriptor",
+      "label": "Lund source descriptors",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed primate reference table",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed primate trimmed tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "R reference results for the PGLS and signal study",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate reload semantics bundle report payload",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "scalar parity table",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json"
+    }
+  ],
+  "source_fragments": [
+    "workspace-reload-contract"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "summary": "Governed representation of the lecture one-line primate workspace reload contract.",
+  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+  "verdict": {
+    "status": "matched",
+    "summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."
+  }
+}

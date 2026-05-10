@@ -1,0 +1,22 @@
+{
+  "evidence_id": "evidence-001",
+  "governed_reload_inputs": [
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk"
+  ],
+  "object_names": [
+    "primate",
+    "primatetree"
+  ],
+  "row_count": 75,
+  "scalar_row_count": 21,
+  "schema_version": 1,
+  "species_tip_match": true,
+  "study_id": "primate-pgls-and-signal",
+  "tip_count": 75,
+  "verdict_counts": {
+    "matched": 3,
+    "matched_with_tolerance": 13,
+    "mismatch_unexplained": 5
+  }
+}

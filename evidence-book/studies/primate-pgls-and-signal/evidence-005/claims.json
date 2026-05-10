@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-diagnostics-parity",
+      "claim_title": "PCM2 residual diagnostics are machine-recorded and scientifically equivalent",
+      "evidence_ids": [
+        "evidence-005"
+      ],
+      "source_fragments": [
+        "baseline-gls-diagnostics",
+        "estimated-lambda-diagnostics"
+      ],
+      "summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots.",
+      "verdict": "matched_with_tolerance"
+    }
+  ],
+  "evidence_id": "evidence-005",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

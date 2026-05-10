@@ -1,0 +1,84 @@
+{
+  "claim_ids": [
+    "pcm2-pagel-lambda-regression-parity"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "phylogenetic-regression",
+    "pagel-lambda"
+  ],
+  "evidence_id": "evidence-003",
+  "evidence_title": "Primate Pagel-lambda regression parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal.py"
+    ],
+    "last_generated_on": "2026-05-10",
+    "source_basis_locators": [
+      "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+      "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json"
+    ]
+  },
+  "limitations": [
+    "Likelihood and coefficient comparisons allow bounded numerical drift as long as the same scientific conclusion is preserved."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "phylogenetic-regression"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_script_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R#L1-L200"
+  ],
+  "report_keys": [
+    "bijux_estimated_lambda",
+    "evidence_id",
+    "r_estimated_lambda",
+    "schema_version",
+    "study_id"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "external-source-descriptor",
+      "label": "Lund source descriptors",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed primate reference table",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed primate trimmed tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_trimmed_primatetree.nwk"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "R reference results for the PGLS and signal study",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate Pagel-lambda regression parity bundle report payload",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json"
+    }
+  ],
+  "source_fragments": [
+    "pagel-lambda-regression"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "summary": "Governed parity for fixed-lambda and estimated-lambda regression surfaces derived from the lecture workflow.",
+  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json",
+  "verdict": {
+    "status": "matched_with_tolerance",
+    "summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations."
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-reload-contract-governed",
+      "claim_title": "PCM2 reload semantics are represented explicitly",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "workspace-reload-contract"
+      ],
+      "summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal",
+  "source_contract": {
+    "object_names": ["primate", "primatetree"],
+    "object_name_count": 2,
+    "row_count": 75,
+    "tip_count": 75,
+    "species_tip_match": true
+  },
+  "baseline_gls": {
+    "coefficients": {
+      "intercept": 263.9162,
+      "social_group_size": 3.5912
+    },
+    "p_values": {
+      "intercept": 8.7931e-26,
+      "social_group_size": 3.4337e-06
+    },
+    "log_likelihood": -456.3101,
+    "r_squared": 0.2572,
+    "diagnostics": {
+      "residual_mean": 1.6314e-15,
+      "residual_variance": 1.0135,
+      "residual_sd": 1.0067,
+      "max_abs_z_residual": 3.073,
+      "abs_residual_fitted_correlation": 0.0234,
+      "qq_correlation": 0.975,
+      "outlier_count_abs_z_ge_2": 5
+    }
+  },
+  "fixed_lambda_gls_matches_baseline": true,
+  "estimated_lambda_pgls": {
+    "lambda_value": 0.7687,
+    "coefficients": {
+      "intercept": 249.9584,
+      "social_group_size": 1.6621
+    },
+    "p_values": {
+      "intercept": 3.4433e-06,
+      "social_group_size": 0.0169
+    },
+    "log_likelihood": -444.0691,
+    "r_squared": 0.063,
+    "diagnostics": {
+      "residual_mean": 0.1775,
+      "residual_variance": 0.9816,
+      "residual_sd": 0.9908,
+      "max_abs_z_residual": 2.6925,
+      "abs_residual_fitted_correlation": 0.2056,
+      "qq_correlation": 0.9802,
+      "outlier_count_abs_z_ge_2": 3
+    }
+  },
+  "signal_test": {
+    "estimated_lambda": 0.8027,
+    "estimated_log_likelihood": -446.9432,
+    "null_log_likelihood": -467.4584,
+    "likelihood_ratio": 41.0304,
+    "p_value": 1.4988e-10
+  },
+  "coverage_boundaries": {
+    "uncovered_fragments": ["transformed-tree-workflows", "continuous-model-comparison", "ancestral-mode-comparison", "mode-linked-intercept-models"],
+    "notes": ["The lecture EB surfaces remain outside the current canonical runtime parity surface.", "Transformed-tree and ancestral comparison fragments stay explicitly indexed until governed runtime coverage exists."]
+  }
+}

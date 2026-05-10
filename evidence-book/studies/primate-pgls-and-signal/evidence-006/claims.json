@@ -1,0 +1,23 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-coverage-boundary-explicit",
+      "claim_title": "PCM2 uncovered evolutionary-mode and ancestral fragments remain explicit",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "source_fragments": [
+        "transformed-tree-workflows",
+        "continuous-model-comparison",
+        "ancestral-mode-comparison",
+        "mode-linked-intercept-models"
+      ],
+      "summary": "Unimplemented EB, transformed-tree, and ancestral parity surfaces are indexed as open trust boundaries rather than silently implied.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

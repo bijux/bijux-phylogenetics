@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-baseline-gls-parity",
+      "claim_title": "PCM2 baseline GLS outputs match before phylogenetic correction",
+      "evidence_ids": [
+        "evidence-002"
+      ],
+      "source_fragments": [
+        "baseline-gls-fit"
+      ],
+      "summary": "The non-phylogenetic regression slope, intercept, fit statistics, and coefficient decisions align before any phylogenetic covariance is introduced.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-002",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

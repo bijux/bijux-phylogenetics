@@ -1,0 +1,49 @@
+{
+  "bijux_estimated_lambda": {
+    "coefficients": {
+      "intercept": 250.105945368603,
+      "social_group_size": 1.61904779942812
+    },
+    "diagnostics": {
+      "abs_residual_fitted_correlation": 0.112199761717797,
+      "max_abs_z_residual": 2.98146003868482,
+      "outlier_count_abs_z_ge_2": 4,
+      "qq_correlation": 0.977832436449786,
+      "residual_mean": 43.1604392484416,
+      "residual_sd": 112.343581157334,
+      "residual_variance": 12621.0802272544
+    },
+    "lambda_value": 0.805,
+    "log_likelihood": -444.155346705612,
+    "p_values": {
+      "intercept": 1.94054461299942e-06,
+      "social_group_size": 0.0176077892959636
+    },
+    "r_squared": 0.0568922214933538
+  },
+  "evidence_id": "evidence-003",
+  "r_estimated_lambda": {
+    "coefficients": {
+      "intercept": 249.9584,
+      "social_group_size": 1.6621
+    },
+    "diagnostics": {
+      "abs_residual_fitted_correlation": 0.2056,
+      "max_abs_z_residual": 2.6925,
+      "outlier_count_abs_z_ge_2": 3,
+      "qq_correlation": 0.9802,
+      "residual_mean": 0.1775,
+      "residual_sd": 0.9908,
+      "residual_variance": 0.9816
+    },
+    "lambda_value": 0.7687,
+    "log_likelihood": -444.0691,
+    "p_values": {
+      "intercept": 3.4433e-06,
+      "social_group_size": 0.0169
+    },
+    "r_squared": 0.063
+  },
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}
