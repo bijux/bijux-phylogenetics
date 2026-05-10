@@ -23,6 +23,8 @@ EVIDENCE_VERDICT_WORKFLOWS = "verdict-workflows.json"
 EVIDENCE_VERDICT_WORKFLOWS_SUMMARY = "verdict-workflows.md"
 EVIDENCE_FALSE_CONFIDENCE_AUDIT = "false-confidence-audit.json"
 EVIDENCE_FALSE_CONFIDENCE_SUMMARY = "false-confidence-audit.md"
+EVIDENCE_SCIENTIFIC_DEBT_REGISTER = "scientific-debt-register.json"
+EVIDENCE_SCIENTIFIC_DEBT_SUMMARY = "scientific-debt-register.md"
 EVIDENCE_ID_PATTERN = re.compile(r"^evidence-\d{3}$")
 STUDY_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -542,6 +544,8 @@ def validate_evidence_book(
         verdict_workflows_summary_path = index_root / EVIDENCE_VERDICT_WORKFLOWS_SUMMARY
         false_confidence_audit_path = index_root / EVIDENCE_FALSE_CONFIDENCE_AUDIT
         false_confidence_summary_path = index_root / EVIDENCE_FALSE_CONFIDENCE_SUMMARY
+        scientific_debt_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_REGISTER
+        scientific_debt_summary_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_SUMMARY
         if not parity_dashboard_path.exists():
             issues.append(
                 EvidenceBookValidationIssue(
@@ -596,6 +600,20 @@ def validate_evidence_book(
                 EvidenceBookValidationIssue(
                     _relative_to(root, false_confidence_summary_path),
                     f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_FALSE_CONFIDENCE_SUMMARY}",
+                )
+            )
+        if not scientific_debt_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, scientific_debt_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_SCIENTIFIC_DEBT_REGISTER}",
+                )
+            )
+        if not scientific_debt_summary_path.exists():
+            issues.append(
+                EvidenceBookValidationIssue(
+                    _relative_to(root, scientific_debt_summary_path),
+                    f"missing {EVIDENCE_INDEX_DIRNAME}/{EVIDENCE_SCIENTIFIC_DEBT_SUMMARY}",
                 )
             )
         if index_path.exists():
@@ -1187,6 +1205,150 @@ def render_evidence_false_confidence_audit(payload: dict[str, object]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def build_evidence_scientific_debt_register(repo_root: Path) -> dict[str, object]:
+    root = evidence_book_root(repo_root)
+    mismatch_archive = build_evidence_mismatch_archive(repo_root)
+    verdict_workflows = build_evidence_verdict_workflows(repo_root)
+    debts: list[dict[str, object]] = []
+
+    for mismatch in mismatch_archive["mismatches"]:
+        if mismatch["verdict"] != "mismatch_unexplained":
+            continue
+        debts.append(
+            {
+                "debt_id": mismatch["archive_id"],
+                "debt_kind": "unresolved_mismatch",
+                "study_id": mismatch["study_id"],
+                "evidence_id": mismatch["evidence_id"],
+                "relative_path": mismatch["relative_path"],
+                "detail": (
+                    f"{mismatch['metric_name']} remains unresolved with observed absolute "
+                    f"difference {mismatch['observed_abs_diff']}."
+                ),
+                "evidence": [
+                    f"verdict={mismatch['verdict']}",
+                    f"r_value={mismatch['r_value']}",
+                    f"bijux_value={mismatch['bijux_value']}",
+                ],
+            }
+        )
+
+    not_comparable_workflow = next(
+        workflow
+        for workflow in verdict_workflows["workflows"]
+        if workflow["verdict_status"] == "not_comparable"
+    )
+    for entry in not_comparable_workflow["entries"]:
+        debts.append(
+            {
+                "debt_id": entry["entry_id"],
+                "debt_kind": "coverage_gap",
+                "study_id": entry["study_id"],
+                "evidence_id": entry["evidence_id"],
+                "relative_path": entry["relative_path"],
+                "detail": entry.get("summary")
+                or "This analytical surface is still tracked as not comparable.",
+                "evidence": [
+                    f"claim_id={entry['claim_id']}",
+                    *[
+                        f"source_fragment={fragment}"
+                        for fragment in entry.get("source_fragments", [])
+                    ],
+                ],
+            }
+        )
+
+    for study_root in _study_paths(root):
+        for bundle_root in sorted(
+            path
+            for path in study_root.iterdir()
+            if path.is_dir() and EVIDENCE_ID_PATTERN.fullmatch(path.name)
+        ):
+            debt_register_path = bundle_root / "scientific_debt_register.json"
+            if debt_register_path.exists():
+                payload = _load_json(debt_register_path)
+                for index, debt in enumerate(payload.get("debts", []), start=1):
+                    if not isinstance(debt, dict):
+                        continue
+                    identifier = (
+                        debt.get("debt_id")
+                        or debt.get("block_id")
+                        or f"{study_root.name}-{bundle_root.name}-bundle-debt-{index}"
+                    )
+                    debts.append(
+                        {
+                            "debt_id": identifier,
+                            "debt_kind": debt.get("debt_kind", "bundle-debt"),
+                            "study_id": study_root.name,
+                            "evidence_id": bundle_root.name,
+                            "relative_path": _relative_to(root, debt_register_path).as_posix(),
+                            "detail": debt.get("detail"),
+                            "evidence": debt.get("evidence", []),
+                        }
+                    )
+            for json_path in sorted(bundle_root.glob("*.json")):
+                if json_path.name in {"manifest.json", "claims.json", "scientific_debt_register.json"}:
+                    continue
+                try:
+                    payload = _load_json(json_path)
+                except (ValueError, json.JSONDecodeError):
+                    continue
+                for debt in payload.get("scientific_debt_entries", []):
+                    if not isinstance(debt, dict):
+                        continue
+                    debts.append(
+                        {
+                            "debt_id": debt.get("debt_id")
+                            or f"{study_root.name}-{bundle_root.name}-{json_path.stem}",
+                            "debt_kind": debt.get("debt_kind", "bundle-inline-debt"),
+                            "study_id": study_root.name,
+                            "evidence_id": bundle_root.name,
+                            "relative_path": _relative_to(root, json_path).as_posix(),
+                            "detail": debt.get("detail"),
+                            "evidence": debt.get("evidence", []),
+                        }
+                    )
+
+    debts.sort(key=lambda entry: str(entry["debt_id"]))
+    debt_kind_counts = Counter(str(entry["debt_kind"]) for entry in debts)
+    return {
+        "schema_version": 1,
+        "debt_count": len(debts),
+        "debt_kind_counts": dict(sorted(debt_kind_counts.items())),
+        "debts": debts,
+    }
+
+
+def render_evidence_scientific_debt_register(payload: dict[str, object]) -> str:
+    lines = [
+        "# Scientific Debt Register",
+        "",
+        "This register centralizes unresolved parity gaps, explicit coverage",
+        "boundaries, and reviewer-visible trust weaknesses across the evidence-book.",
+        "",
+        f"- debt entries: `{payload['debt_count']}`",
+        "",
+    ]
+    debt_kind_counts = payload.get("debt_kind_counts", {})
+    if isinstance(debt_kind_counts, dict) and debt_kind_counts:
+        lines.append("## Debt Kinds")
+        lines.append("")
+        for debt_kind, count in debt_kind_counts.items():
+            lines.append(f"- `{debt_kind}`: `{count}`")
+        lines.append("")
+
+    lines.append("## Entries")
+    lines.append("")
+    for debt in payload["debts"]:
+        lines.append(f"- `{debt['debt_id']}` — `{debt['debt_kind']}`")
+        if debt.get("relative_path"):
+            lines.append(f"  Path: `{debt['relative_path']}`")
+        if debt.get("detail"):
+            lines.append(f"  Detail: {debt['detail']}")
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_evidence_parity_dashboard(dashboard_payload: dict[str, object]) -> str:
     lines = [
         "# Evidence Parity Dashboard",
@@ -1298,6 +1460,7 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     mismatch_archive_payload = build_evidence_mismatch_archive(repo_root)
     verdict_workflows_payload = build_evidence_verdict_workflows(repo_root)
     false_confidence_payload = build_evidence_false_confidence_audit(repo_root)
+    scientific_debt_payload = build_evidence_scientific_debt_register(repo_root)
     index_path = index_root / EVIDENCE_INDEX
     catalog_path = index_root / EVIDENCE_CATALOG
     claim_map_path = index_root / EVIDENCE_CLAIM_MAP
@@ -1309,6 +1472,8 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     verdict_workflows_summary_path = index_root / EVIDENCE_VERDICT_WORKFLOWS_SUMMARY
     false_confidence_audit_path = index_root / EVIDENCE_FALSE_CONFIDENCE_AUDIT
     false_confidence_summary_path = index_root / EVIDENCE_FALSE_CONFIDENCE_SUMMARY
+    scientific_debt_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_REGISTER
+    scientific_debt_summary_path = index_root / EVIDENCE_SCIENTIFIC_DEBT_SUMMARY
     index_path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -1350,6 +1515,14 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     )
     false_confidence_summary_path.write_text(
         render_evidence_false_confidence_audit(false_confidence_payload),
+        encoding="utf-8",
+    )
+    scientific_debt_path.write_text(
+        json.dumps(scientific_debt_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    scientific_debt_summary_path.write_text(
+        render_evidence_scientific_debt_register(scientific_debt_payload),
         encoding="utf-8",
     )
     return index_path, catalog_path
