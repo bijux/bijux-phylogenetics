@@ -148,6 +148,8 @@
         "evidence-book/studies/primate-longevity-signal/source-fragment-map.json",
         "evidence-book/studies/primate-longevity-signal/structural-parity-table.json",
         "evidence-book/studies/primate-longevity-signal/structural-parity-table.md",
+        "evidence-book/studies/primate-longevity-signal/student-safe-reproducibility.json",
+        "evidence-book/studies/primate-longevity-signal/student-safe-reproducibility.md",
         "evidence-book/studies/primate-longevity-signal/study.json",
         "evidence-book/studies/primate-longevity-signal/teaching-guide.json",
         "evidence-book/studies/primate-longevity-signal/teaching-guide.md"
@@ -206,6 +208,8 @@
         "evidence-book/studies/primate-pgls-and-signal/migration-guide.md",
         "evidence-book/studies/primate-pgls-and-signal/parity-policy.json",
         "evidence-book/studies/primate-pgls-and-signal/source-fragment-map.json",
+        "evidence-book/studies/primate-pgls-and-signal/student-safe-reproducibility.json",
+        "evidence-book/studies/primate-pgls-and-signal/student-safe-reproducibility.md",
         "evidence-book/studies/primate-pgls-and-signal/study.json",
         "evidence-book/studies/primate-pgls-and-signal/teaching-guide.json",
         "evidence-book/studies/primate-pgls-and-signal/teaching-guide.md"

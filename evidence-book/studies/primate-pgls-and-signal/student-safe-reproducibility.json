@@ -1,0 +1,32 @@
+{
+  "entrypoint_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python evidence-book/studies/primate-pgls-and-signal/build_evidence.py",
+  "expected_paths": [
+    "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
+    "evidence-book/studies/primate-pgls-and-signal/teaching-guide.json",
+    "evidence-book/studies/primate-pgls-and-signal/migration-guide.json",
+    "evidence-book/studies/primate-pgls-and-signal/student-safe-reproducibility.json"
+  ],
+  "forbidden_assumptions": [
+    "no workstation-local /Users paths",
+    "no sibling repository checkout assumptions",
+    "no hidden manual patching of reference outputs"
+  ],
+  "not_claimed": [
+    "EB and ancestral-mode parity remains an explicit coverage boundary",
+    "plot rendering is summarized as diagnostics rather than figure equivalence"
+  ],
+  "portable_prerequisites": [
+    "Python 3.11",
+    "UV project environment at artifacts/root/venv",
+    "Rscript on PATH",
+    "optional R_LIBS_USER rooted at artifacts/root/r-library"
+  ],
+  "schema_version": 1,
+  "study_categories": [
+    "teaching-study",
+    "migration-study"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS and signal evidence study",
+  "supported_scope": "regenerate the governed PCM2 study outputs from the checked-in study sources and repository-managed reference script"
+}

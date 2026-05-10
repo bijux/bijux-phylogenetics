@@ -17,8 +17,12 @@ from .teaching import (
     TEACHING_GUIDE_MARKDOWN_FILENAME,
     MIGRATION_GUIDE_FILENAME,
     MIGRATION_GUIDE_MARKDOWN_FILENAME,
+    STUDENT_SAFE_REPRODUCIBILITY_FILENAME,
+    STUDENT_SAFE_REPRODUCIBILITY_MARKDOWN_FILENAME,
     build_migration_guide,
+    build_student_safe_reproducibility_contract,
     build_teaching_guide,
+    render_student_safe_reproducibility_markdown,
     render_migration_guide_markdown,
     render_teaching_guide_markdown,
     teaching_study_ids,
@@ -1857,6 +1861,17 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
         )
         (study_root / MIGRATION_GUIDE_MARKDOWN_FILENAME).write_text(
             render_migration_guide_markdown(migration_guide_payload),
+            encoding="utf-8",
+        )
+        reproducibility_payload = build_student_safe_reproducibility_contract(
+            study_manifest
+        )
+        (study_root / STUDENT_SAFE_REPRODUCIBILITY_FILENAME).write_text(
+            json.dumps(reproducibility_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        (study_root / STUDENT_SAFE_REPRODUCIBILITY_MARKDOWN_FILENAME).write_text(
+            render_student_safe_reproducibility_markdown(reproducibility_payload),
             encoding="utf-8",
         )
     payload = build_evidence_book_index(repo_root)
