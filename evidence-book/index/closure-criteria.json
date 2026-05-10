@@ -69,7 +69,7 @@
     },
     {
       "blocking_factors": [
-        "4 surfaces still rely on bounded rather than evidence-grounded coverage.",
+        "3 surfaces still rely on bounded rather than evidence-grounded coverage.",
         "0 false-confidence surface findings would block reviewer readiness if nonzero."
       ],
       "criterion_id": "reviewer-readiness",
@@ -87,15 +87,14 @@
     }
   ],
   "criteria_count": 5,
-  "freshness_current_count": 23,
-  "integrity_tracked_count": 23,
+  "freshness_current_count": 19,
+  "integrity_tracked_count": 19,
   "schema_version": 1,
   "surface_status_snapshot": {
     "alignment-diagnostics": "uncovered",
     "comparative-analysis": "bounded",
     "distance-analysis": "uncovered",
     "reporting-surfaces": "bounded",
-    "taxon-identity": "bounded",
     "tree-diagnostics": "bounded"
   }
 }

@@ -12,11 +12,11 @@ last_reviewed: 2026-05-10
 The evidence-book is the repository trust surface for governed parity,
 teaching, migration, and explicit coverage boundaries.
 
-- studies: `4`
-- evidence bundles: `23`
-- teaching studies: `2`
-- migration studies: `2`
-- freshness statuses: `current=23`
+- studies: `2`
+- evidence bundles: `19`
+- teaching studies: `0`
+- migration studies: `0`
+- freshness statuses: `current=19`
 - coverage gaps: `4` debt entries
 - foundational numerical trust: `bounded`
 - reviewer readiness: `bounded`
@@ -38,40 +38,26 @@ teaching, migration, and explicit coverage boundaries.
 
 ## Studies
 
-### Comparative trust boundary evidence study
-
-- study id: `comparative-trust-boundaries`
-- categories: `scientific-validation`
-- bundles: `3`
-- study manifest: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/comparative-trust-boundaries/study.json)
-
 ### Primate Longevity Signal
 
 - study id: `primate-longevity-signal`
 - categories: `teaching-study, migration-study`
 - bundles: `9`
-- study manifest: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-longevity-signal/study.json)
+- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-longevity-signal/README.md)
 
-### Primate PGLS and signal evidence study
+### Primate PGLS And Signal
 
 - study id: `primate-pgls-and-signal`
 - categories: `teaching-study, migration-study`
 - bundles: `10`
-- study manifest: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/study.json)
-
-### Taxon Trust
-
-- study id: `taxon-trust`
-- categories: `scientific-validation`
-- bundles: `1`
-- study manifest: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/taxon-trust/study.json)
+- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/README.md)
 
 ## Integrity
 
-- tracked bundles: `23`
+- tracked bundles: `19`
 - action required: `0`
 
 ## Coverage
 
-- family gaps: `1`
+- family gaps: `0`
 - debt gaps: `4`

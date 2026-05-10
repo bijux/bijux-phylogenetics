@@ -60,17 +60,7 @@
       "study_id": "primate-pgls-and-signal"
     }
   ],
-  "family_gap_count": 1,
-  "family_gaps": [
-    {
-      "coverage_status": "coverage-gap",
-      "family_id": "coverage-boundaries",
-      "family_title": "Coverage boundaries",
-      "known_gaps": [
-        "The lecture corBlomberg intercept-mode likelihood sweep is still an explicit coverage boundary."
-      ],
-      "study_id": "primate-pgls-and-signal"
-    }
-  ],
+  "family_gap_count": 0,
+  "family_gaps": [],
   "schema_version": 1
 }

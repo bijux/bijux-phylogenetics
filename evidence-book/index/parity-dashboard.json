@@ -4,13 +4,7 @@
     "scientific_equivalence": 4,
     "tolerance": 24
   },
-  "parity_expectation_counts": {
-    "exact": 6,
-    "near_exact": 1,
-    "not_comparable": 4,
-    "scientific_equivalence": 1,
-    "statistical_tolerance": 6
-  },
+  "parity_expectation_counts": {},
   "scalar_row_count": 73,
   "scalar_verdict_counts": {
     "matched": 35,
@@ -24,46 +18,8 @@
       "bundle_verdict_status": "matched_with_tolerance",
       "comparison_kind_counts": {},
       "evidence_id": "evidence-001",
-      "family_verdicts": [
-        {
-          "family_id": "workflow-contracts",
-          "family_verdict": "not_comparable"
-        },
-        {
-          "family_id": "data-preparation",
-          "family_verdict": "matched"
-        },
-        {
-          "family_id": "tree-operations",
-          "family_verdict": "matched"
-        },
-        {
-          "family_id": "visual-surfaces",
-          "family_verdict": "not_comparable"
-        },
-        {
-          "family_id": "simulation-inputs",
-          "family_verdict": "matched"
-        },
-        {
-          "family_id": "comparative-signal",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "ancestral-reconstruction",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "artifact-provenance",
-          "family_verdict": "not_comparable"
-        }
-      ],
-      "parity_expectation_counts": {
-        "exact": 3,
-        "near_exact": 1,
-        "not_comparable": 3,
-        "statistical_tolerance": 1
-      },
+      "family_verdicts": [],
+      "parity_expectation_counts": {},
       "relative_path": "studies/primate-longevity-signal/evidence-001",
       "scalar_row_count": 31,
       "scalar_verdict_counts": {
@@ -81,54 +37,8 @@
         "tolerance": 24
       },
       "evidence_id": "evidence-001",
-      "family_verdicts": [
-        {
-          "family_id": "workflow-contracts",
-          "family_verdict": "matched"
-        },
-        {
-          "family_id": "transformed-tree-workflows",
-          "family_verdict": "matched"
-        },
-        {
-          "family_id": "continuous-model-fitting",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "likelihood-ratio-tests",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "ancestral-reconstruction",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "baseline-regression",
-          "family_verdict": "matched"
-        },
-        {
-          "family_id": "phylogenetic-regression",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "phylogenetic-signal",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "diagnostics",
-          "family_verdict": "matched_with_tolerance"
-        },
-        {
-          "family_id": "coverage-boundaries",
-          "family_verdict": "not_comparable"
-        }
-      ],
-      "parity_expectation_counts": {
-        "exact": 3,
-        "not_comparable": 1,
-        "scientific_equivalence": 1,
-        "statistical_tolerance": 5
-      },
+      "family_verdicts": [],
+      "parity_expectation_counts": {},
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
       "scalar_row_count": 42,
       "scalar_verdict_counts": {
@@ -138,7 +48,7 @@
         "mismatch_unexplained": 3
       },
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study"
+      "study_title": "Primate PGLS And Signal"
     }
   ],
   "study_count": 2

@@ -5,8 +5,8 @@ hard closure for foundational trust, visualization competition, performance comp
 migration usefulness, or reviewer readiness.
 
 - criteria: `5`
-- current freshness-tracked bundles: `23`
-- integrity-tracked bundles: `23`
+- current freshness-tracked bundles: `19`
+- integrity-tracked bundles: `19`
 
 ## foundational-numerical-trust
 
@@ -85,7 +85,7 @@ Pass when:
 - High-level docs link directly to the evidence-book closure surfaces.
 
 Blocking factors:
-- 4 surfaces still rely on bounded rather than evidence-grounded coverage.
+- 3 surfaces still rely on bounded rather than evidence-grounded coverage.
 - 0 false-confidence surface findings would block reviewer readiness if nonzero.
 
 Supporting evidence:

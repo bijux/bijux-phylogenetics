@@ -3,12 +3,12 @@
 These gates prevent the repository from calling a major analytical surface
 complete before the evidence-book actually supports that claim.
 
-- gates: `6`
+- gates: `5`
 - maturity tier: `reviewable_but_incomplete`
 
 ## Completion State Counts
 
-- `bounded`: `4`
+- `bounded`: `3`
 - `not_ready`: `2`
 
 ## Gates
@@ -18,22 +18,6 @@ complete before the evidence-book actually supports that claim.
 - surface id: `tree-diagnostics`
 - completion state: `bounded`
 - linked evidence bundles: `3`
-
-Minimum requirements:
-- indexed evidence bundles
-- reviewer-readable summaries
-- portable checked-in artifacts
-- source-grounded provenance
-
-Missing conditions:
-- Broader surface coverage still depends on bounded or partial evidence families.
-- The repository scorecard still classifies the overall program as reviewable but incomplete.
-
-### Taxon identity and normalization
-
-- surface id: `taxon-identity`
-- completion state: `bounded`
-- linked evidence bundles: `1`
 
 Minimum requirements:
 - indexed evidence bundles
@@ -65,7 +49,7 @@ Missing conditions:
 
 - surface id: `comparative-analysis`
 - completion state: `bounded`
-- linked evidence bundles: `15`
+- linked evidence bundles: `12`
 
 Minimum requirements:
 - indexed evidence bundles
@@ -97,7 +81,7 @@ Missing conditions:
 
 - surface id: `reporting-surfaces`
 - completion state: `bounded`
-- linked evidence bundles: `2`
+- linked evidence bundles: `1`
 
 Minimum requirements:
 - indexed evidence bundles

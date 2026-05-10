@@ -1,7 +1,7 @@
 {
   "action_required_count": 0,
   "schema_version": 1,
-  "surface_count": 5,
+  "surface_count": 4,
   "surfaces": [
     {
       "matched_phrases": [],
@@ -30,13 +30,6 @@
       "review_rule": "High-level public evidence surfaces must describe parity and trust boundaries honestly instead of implying broader validation than the evidence-book currently proves.",
       "status": "clear",
       "surface_id": "primate-pgls-readme"
-    },
-    {
-      "matched_phrases": [],
-      "relative_path": "evidence-book/studies/comparative-trust-boundaries/README.md",
-      "review_rule": "High-level public evidence surfaces must describe parity and trust boundaries honestly instead of implying broader validation than the evidence-book currently proves.",
-      "status": "clear",
-      "surface_id": "comparative-trust-boundaries-readme"
     }
   ]
 }

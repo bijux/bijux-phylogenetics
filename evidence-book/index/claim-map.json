@@ -1,90 +1,6 @@
 {
-  "claim_count": 41,
+  "claim_count": 28,
   "claims": [
-    {
-      "claim_id": "ambiguous-synonym-rejection",
-      "claim_title": "Ambiguous synonym rejection",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "comparative-input-rejection-governed",
-      "claim_title": "Comparative input rejection remains explicit and reproducible",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "matched",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-001",
-          "source_fragments": [
-            "pgls-input-rejection-guards"
-          ],
-          "study_id": "comparative-trust-boundaries",
-          "study_title": "Comparative trust boundary evidence study"
-        }
-      ]
-    },
-    {
-      "claim_id": "controlled-synonym-resolution",
-      "claim_title": "Controlled synonym resolution",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "mixed-namespace-detection",
-      "claim_title": "Mixed namespace detection",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "ou-identifiability-boundaries-detected",
-      "claim_title": "OU identifiability boundary warnings are detected on reference cases",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "matched",
-          "evidence_id": "evidence-003",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-003",
-          "source_fragments": [
-            "ou-identifiability-reference-audit"
-          ],
-          "study_id": "comparative-trust-boundaries",
-          "study_title": "Comparative trust boundary evidence study"
-        }
-      ]
-    },
     {
       "claim_id": "pcm1-ancestral-state-parity",
       "claim_title": "PCM1 ancestral-state outputs agree within governed tolerance",
@@ -446,7 +362,7 @@
             "ancestral-mode-comparison"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -464,7 +380,7 @@
             "baseline-gls-fit"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -482,7 +398,7 @@
             "mode-linked-intercept-models"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -501,7 +417,7 @@
             "estimated-lambda-diagnostics"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -519,7 +435,7 @@
             "continuous-model-comparison"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -537,7 +453,7 @@
             "evolutionary-mode-likelihood-ratios"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -555,7 +471,7 @@
             "pagel-lambda-regression"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -573,7 +489,7 @@
             "phylogenetic-signal-test"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -591,7 +507,7 @@
             "workspace-reload-contract"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     },
@@ -609,137 +525,7 @@
             "transformed-tree-workflows"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study"
-        }
-      ]
-    },
-    {
-      "claim_id": "taxon-crosswalk-table",
-      "claim_title": "Taxon crosswalk table",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "taxon-exclusion-reasoning",
-      "claim_title": "Taxon exclusion reasoning",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "taxon-namespace-classification",
-      "claim_title": "Taxon namespace classification",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "taxon-spelling-variant-audit",
-      "claim_title": "Taxon spelling-variant audit",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "taxon-stability-report",
-      "claim_title": "Taxon stability report",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "taxonomic-synonym-candidate-detection",
-      "claim_title": "Taxonomic synonym candidate detection",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
-        }
-      ]
-    },
-    {
-      "claim_id": "weak-signal-instability-visible",
-      "claim_title": "Weak phylogenetic signal instability remains visible",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched_with_tolerance",
-          "claim_verdict": "matched_with_tolerance",
-          "evidence_id": "evidence-002",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-002",
-          "source_fragments": [
-            "permutation-signal-instability"
-          ],
-          "study_id": "comparative-trust-boundaries",
-          "study_title": "Comparative trust boundary evidence study"
-        }
-      ]
-    },
-    {
-      "claim_id": "workflow-taxon-loss-report",
-      "claim_title": "Workflow taxon-loss report",
-      "evidence": [
-        {
-          "bundle_verdict_status": "matched",
-          "claim_verdict": "verified",
-          "evidence_id": "evidence-001",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "source_fragments": [],
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust"
+          "study_title": "Primate PGLS And Signal"
         }
       ]
     }

@@ -3,31 +3,16 @@
 This catalog is generated from `index/evidence-index.json` and lists every
 governed evidence bundle in the repository evidence-book.
 
-- studies: `4`
-- evidence bundles: `23`
+- studies: `2`
+- evidence bundles: `19`
 
 ## Verdict Counts
 
-- `matched`: `14`
-- `matched_with_tolerance`: `8`
+- `matched`: `11`
+- `matched_with_tolerance`: `7`
 - `not_comparable`: `1`
 
 ## Studies
-
-### Comparative trust boundary evidence study
-
-- study id: `comparative-trust-boundaries`
-- owner package: `bijux-phylogenetics`
-- categories: `scientific-validation`
-- bundle count: `3`
-- summary: Governed evidence for expected comparative failures, weak-signal instability, and OU identifiability boundaries.
-
-- `evidence-001` — Comparative input rejection bundle (`matched`)
-  Path: `studies/comparative-trust-boundaries/evidence-001`
-- `evidence-002` — Weak signal instability bundle (`matched_with_tolerance`)
-  Path: `studies/comparative-trust-boundaries/evidence-002`
-- `evidence-003` — OU identifiability warning bundle (`matched`)
-  Path: `studies/comparative-trust-boundaries/evidence-003`
 
 ### Primate Longevity Signal
 
@@ -35,7 +20,7 @@ governed evidence bundle in the repository evidence-book.
 - owner package: `bijux-phylogenetics`
 - categories: `teaching-study, migration-study`
 - bundle count: `9`
-- summary: Checked-in parity study for the Lund primate longevity signal teaching workflow.
+- summary: This study holds reviewer-facing parity evidence for the Lund `PCM1_plots_signal` teaching workflow and the corresponding `bijux-phylogenetics` reproductions.
 
 - `evidence-001` — Primate longevity signal parity bundle (`matched_with_tolerance`)
   Path: `studies/primate-longevity-signal/evidence-001`
@@ -56,13 +41,13 @@ governed evidence bundle in the repository evidence-book.
 - `evidence-009` — Primate processed export parity bundle (`matched`)
   Path: `studies/primate-longevity-signal/evidence-009`
 
-### Primate PGLS and signal evidence study
+### Primate PGLS And Signal
 
 - study id: `primate-pgls-and-signal`
 - owner package: `bijux-phylogenetics`
 - categories: `teaching-study, migration-study`
 - bundle count: `10`
-- summary: Governed parity study for the regression, transformed-tree, evolutionary-mode fit, and ancestral sections of the Lund primate comparative lecture, with an explicit remaining intercept-mode boundary.
+- summary: This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed Evidence IDs backed by checked-in R reference outputs and canonical `bijux-phylogenetics` reproductions.
 
 - `evidence-001` — Primate reload semantics bundle (`matched`)
   Path: `studies/primate-pgls-and-signal/evidence-001`
@@ -84,14 +69,3 @@ governed evidence bundle in the repository evidence-book.
   Path: `studies/primate-pgls-and-signal/evidence-009`
 - `evidence-010` — Primate intercept sweep coverage boundary bundle (`not_comparable`)
   Path: `studies/primate-pgls-and-signal/evidence-010`
-
-### Taxon Trust
-
-- study id: `taxon-trust`
-- owner package: `bijux-phylogenetics`
-- categories: `scientific-validation`
-- bundle count: `1`
-- summary: Fixture-backed study for the repository taxon-trust workflow surfaces.
-
-- `evidence-001` — Taxon workflow review bundle (`matched`)
-  Path: `studies/taxon-trust/evidence-001`

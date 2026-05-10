@@ -17,7 +17,7 @@
           "resolution_state": "explained",
           "row_id": "baseline-intercept",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "tolerance_abs_diff": 1e-06,
           "verdict": "mismatch_explained",
           "verdict_explanation": "The R reference stores the baseline intercept rounded to four decimal places; the Bijux value rounds back to the same published scalar."
@@ -35,7 +35,7 @@
           "resolution_state": "explained",
           "row_id": "baseline-log-likelihood",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "tolerance_abs_diff": 1e-06,
           "verdict": "mismatch_explained",
           "verdict_explanation": "The R reference stores the baseline log likelihood rounded to four decimal places; the Bijux value rounds back to the same published scalar."
@@ -53,7 +53,7 @@
           "resolution_state": "explained",
           "row_id": "baseline-r-squared",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "tolerance_abs_diff": 1e-06,
           "verdict": "mismatch_explained",
           "verdict_explanation": "The R reference stores the baseline R-squared rounded to four decimal places; the Bijux value rounds back to the same published scalar."
@@ -71,7 +71,7 @@
           "resolution_state": "explained",
           "row_id": "baseline-slope",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "tolerance_abs_diff": 1e-06,
           "verdict": "mismatch_explained",
           "verdict_explanation": "The R reference stores the baseline slope rounded to four decimal places; the Bijux value rounds back to the same published scalar."
@@ -108,7 +108,7 @@
           "resolution_state": "open",
           "row_id": "ancestral-eb-first-five",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "tolerance_abs_diff": 0.0,
           "verdict": "mismatch_unexplained",
           "verdict_explanation": null
@@ -138,7 +138,7 @@
           "resolution_state": "open",
           "row_id": "ancestral-eb-recent-five",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "tolerance_abs_diff": 0.0,
           "verdict": "mismatch_unexplained",
           "verdict_explanation": null
@@ -156,7 +156,7 @@
           "resolution_state": "open",
           "row_id": "estimated-diagnostic-fitted-correlation",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "tolerance_abs_diff": 0.05,
           "verdict": "mismatch_unexplained",
           "verdict_explanation": null
@@ -227,7 +227,7 @@
             "mode-linked-intercept-models"
           ],
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
         }
       ],

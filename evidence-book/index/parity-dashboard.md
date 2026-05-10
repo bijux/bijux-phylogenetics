@@ -10,14 +10,6 @@
 - `mismatch_explained`: `4`
 - `mismatch_unexplained`: `3`
 
-## Parity Expectations
-
-- `exact`: `6`
-- `near_exact`: `1`
-- `not_comparable`: `4`
-- `scientific_equivalence`: `1`
-- `statistical_tolerance`: `6`
-
 ## Comparison Kinds
 
 - `exact_answer`: `14`
@@ -33,9 +25,8 @@
 - bundle verdict: `matched_with_tolerance`
 - scalar rows: `31`
 - scalar verdict counts: matched=16, matched_with_tolerance=15
-- parity expectations: exact=3, near_exact=1, not_comparable=3, statistical_tolerance=1
 
-### Primate PGLS and signal evidence study
+### Primate PGLS And Signal
 
 - evidence id: `evidence-001`
 - path: `studies/primate-pgls-and-signal/evidence-001`
@@ -43,4 +34,3 @@
 - scalar rows: `42`
 - scalar verdict counts: matched=19, matched_with_tolerance=16, mismatch_explained=4, mismatch_unexplained=3
 - comparison kinds: exact_answer=14, scientific_equivalence=4, tolerance=24
-- parity expectations: exact=3, not_comparable=1, scientific_equivalence=1, statistical_tolerance=5

@@ -1,12 +1,10 @@
 # Evidence Coverage Gaps
 
 - coverage gap debts: `4`
-- family gaps: `1`
+- family gaps: `0`
 
 ## Family Gaps
 
-- `primate-pgls-and-signal/coverage-boundaries` — `coverage-gap`
-  Detail: The lecture corBlomberg intercept-mode likelihood sweep is still an explicit coverage boundary.
 
 ## Debt Register Gaps
 

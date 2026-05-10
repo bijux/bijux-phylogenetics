@@ -2,57 +2,6 @@
   "evidence": [
     {
       "claim_tags": [
-        "runtime-guard",
-        "expected-failure",
-        "comparative",
-        "pgls"
-      ],
-      "comparison_mode": "bijux_native_reinterpretation",
-      "evidence_id": "evidence-001",
-      "evidence_title": "Comparative input rejection bundle",
-      "owner_package": "bijux-phylogenetics",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-001",
-      "study_id": "comparative-trust-boundaries",
-      "study_title": "Comparative trust boundary evidence study",
-      "verdict_status": "matched",
-      "verdict_summary": "Observed ComparativeMethodError blockers match the governed rejection expectations for the tracked comparative input failures."
-    },
-    {
-      "claim_tags": [
-        "weak-signal",
-        "instability",
-        "comparative",
-        "signal"
-      ],
-      "comparison_mode": "bijux_native_reinterpretation",
-      "evidence_id": "evidence-002",
-      "evidence_title": "Weak signal instability bundle",
-      "owner_package": "bijux-phylogenetics",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-002",
-      "study_id": "comparative-trust-boundaries",
-      "study_title": "Comparative trust boundary evidence study",
-      "verdict_status": "matched_with_tolerance",
-      "verdict_summary": "The governed weak-signal case crosses the 0.05 decision boundary across fixed-seed reruns, so instability remains explicit instead of being hidden behind one run."
-    },
-    {
-      "claim_tags": [
-        "model-instability",
-        "comparative",
-        "ou",
-        "identifiability"
-      ],
-      "comparison_mode": "bijux_native_reinterpretation",
-      "evidence_id": "evidence-003",
-      "evidence_title": "OU identifiability warning bundle",
-      "owner_package": "bijux-phylogenetics",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-003",
-      "study_id": "comparative-trust-boundaries",
-      "study_title": "Comparative trust boundary evidence study",
-      "verdict_status": "matched",
-      "verdict_summary": "The OU identifiability reference audit detects every expected warning family on the governed boundary cases."
-    },
-    {
-      "claim_tags": [
         "comparative-signal",
         "teaching",
         "parity"
@@ -216,7 +165,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched",
       "verdict_summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."
     },
@@ -233,7 +182,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-002",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched",
       "verdict_summary": "The non-phylogenetic regression slope, intercept, fit statistics, and coefficient decisions align before any phylogenetic covariance is introduced."
     },
@@ -250,7 +199,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-003",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched_with_tolerance",
       "verdict_summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations."
     },
@@ -267,7 +216,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-004",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched_with_tolerance",
       "verdict_summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences."
     },
@@ -284,7 +233,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-005",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched_with_tolerance",
       "verdict_summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots."
     },
@@ -301,7 +250,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-006",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched",
       "verdict_summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made."
     },
@@ -318,7 +267,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-007",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched_with_tolerance",
       "verdict_summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference."
     },
@@ -335,7 +284,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-008",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched_with_tolerance",
       "verdict_summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules."
     },
@@ -352,7 +301,7 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-009",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "matched_with_tolerance",
       "verdict_summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities."
     },
@@ -368,94 +317,15 @@
       "owner_package": "bijux-phylogenetics",
       "relative_path": "studies/primate-pgls-and-signal/evidence-010",
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
+      "study_title": "Primate PGLS And Signal",
       "verdict_status": "not_comparable",
       "verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
-    },
-    {
-      "claim_tags": [
-        "taxonomy",
-        "workflow-audit",
-        "trust-surface"
-      ],
-      "comparison_mode": "bijux_native_reinterpretation",
-      "evidence_id": "evidence-001",
-      "evidence_title": "Taxon workflow review bundle",
-      "owner_package": "bijux-phylogenetics",
-      "relative_path": "studies/taxon-trust/evidence-001",
-      "study_id": "taxon-trust",
-      "study_title": "Taxon Trust",
-      "verdict_status": "matched",
-      "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
     }
   ],
-  "evidence_count": 23,
+  "evidence_count": 19,
   "root": "evidence-book",
   "schema_version": 1,
   "studies": [
-    {
-      "bundle_count": 3,
-      "evidence": [
-        {
-          "claim_tags": [
-            "runtime-guard",
-            "expected-failure",
-            "comparative",
-            "pgls"
-          ],
-          "comparison_mode": "bijux_native_reinterpretation",
-          "evidence_id": "evidence-001",
-          "evidence_title": "Comparative input rejection bundle",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-001",
-          "study_id": "comparative-trust-boundaries",
-          "study_title": "Comparative trust boundary evidence study",
-          "verdict_status": "matched",
-          "verdict_summary": "Observed ComparativeMethodError blockers match the governed rejection expectations for the tracked comparative input failures."
-        },
-        {
-          "claim_tags": [
-            "weak-signal",
-            "instability",
-            "comparative",
-            "signal"
-          ],
-          "comparison_mode": "bijux_native_reinterpretation",
-          "evidence_id": "evidence-002",
-          "evidence_title": "Weak signal instability bundle",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-002",
-          "study_id": "comparative-trust-boundaries",
-          "study_title": "Comparative trust boundary evidence study",
-          "verdict_status": "matched_with_tolerance",
-          "verdict_summary": "The governed weak-signal case crosses the 0.05 decision boundary across fixed-seed reruns, so instability remains explicit instead of being hidden behind one run."
-        },
-        {
-          "claim_tags": [
-            "model-instability",
-            "comparative",
-            "ou",
-            "identifiability"
-          ],
-          "comparison_mode": "bijux_native_reinterpretation",
-          "evidence_id": "evidence-003",
-          "evidence_title": "OU identifiability warning bundle",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-003",
-          "study_id": "comparative-trust-boundaries",
-          "study_title": "Comparative trust boundary evidence study",
-          "verdict_status": "matched",
-          "verdict_summary": "The OU identifiability reference audit detects every expected warning family on the governed boundary cases."
-        }
-      ],
-      "owner_package": "bijux-phylogenetics",
-      "study_categories": [
-        "scientific-validation"
-      ],
-      "study_id": "comparative-trust-boundaries",
-      "study_title": "Comparative trust boundary evidence study",
-      "summary": "Governed evidence for expected comparative failures, weak-signal instability, and OU identifiability boundaries."
-    },
     {
       "bundle_count": 9,
       "evidence": [
@@ -619,7 +489,7 @@
       ],
       "study_id": "primate-longevity-signal",
       "study_title": "Primate Longevity Signal",
-      "summary": "Checked-in parity study for the Lund primate longevity signal teaching workflow."
+      "summary": "This study holds reviewer-facing parity evidence for the Lund `PCM1_plots_signal` teaching workflow and the corresponding `bijux-phylogenetics` reproductions."
     },
     {
       "bundle_count": 10,
@@ -637,7 +507,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-001",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched",
           "verdict_summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."
         },
@@ -654,7 +524,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-002",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched",
           "verdict_summary": "The non-phylogenetic regression slope, intercept, fit statistics, and coefficient decisions align before any phylogenetic covariance is introduced."
         },
@@ -671,7 +541,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-003",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched_with_tolerance",
           "verdict_summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations."
         },
@@ -688,7 +558,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-004",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched_with_tolerance",
           "verdict_summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences."
         },
@@ -705,7 +575,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-005",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched_with_tolerance",
           "verdict_summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots."
         },
@@ -722,7 +592,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-006",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched",
           "verdict_summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made."
         },
@@ -739,7 +609,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-007",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched_with_tolerance",
           "verdict_summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference."
         },
@@ -756,7 +626,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-008",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched_with_tolerance",
           "verdict_summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules."
         },
@@ -773,7 +643,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-009",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "matched_with_tolerance",
           "verdict_summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities."
         },
@@ -789,7 +659,7 @@
           "owner_package": "bijux-phylogenetics",
           "relative_path": "studies/primate-pgls-and-signal/evidence-010",
           "study_id": "primate-pgls-and-signal",
-          "study_title": "Primate PGLS and signal evidence study",
+          "study_title": "Primate PGLS And Signal",
           "verdict_status": "not_comparable",
           "verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
         }
@@ -800,42 +670,14 @@
         "migration-study"
       ],
       "study_id": "primate-pgls-and-signal",
-      "study_title": "Primate PGLS and signal evidence study",
-      "summary": "Governed parity study for the regression, transformed-tree, evolutionary-mode fit, and ancestral sections of the Lund primate comparative lecture, with an explicit remaining intercept-mode boundary."
-    },
-    {
-      "bundle_count": 1,
-      "evidence": [
-        {
-          "claim_tags": [
-            "taxonomy",
-            "workflow-audit",
-            "trust-surface"
-          ],
-          "comparison_mode": "bijux_native_reinterpretation",
-          "evidence_id": "evidence-001",
-          "evidence_title": "Taxon workflow review bundle",
-          "owner_package": "bijux-phylogenetics",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "study_id": "taxon-trust",
-          "study_title": "Taxon Trust",
-          "verdict_status": "matched",
-          "verdict_summary": "All recorded taxon-trust claims match the checked-in fixture expectations."
-        }
-      ],
-      "owner_package": "bijux-phylogenetics",
-      "study_categories": [
-        "scientific-validation"
-      ],
-      "study_id": "taxon-trust",
-      "study_title": "Taxon Trust",
-      "summary": "Fixture-backed study for the repository taxon-trust workflow surfaces."
+      "study_title": "Primate PGLS And Signal",
+      "summary": "This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed Evidence IDs backed by checked-in R reference outputs and canonical `bijux-phylogenetics` reproductions."
     }
   ],
-  "study_count": 4,
+  "study_count": 2,
   "verdict_counts": {
-    "matched": 14,
-    "matched_with_tolerance": 8,
+    "matched": 11,
+    "matched_with_tolerance": 7,
     "not_comparable": 1
   }
 }

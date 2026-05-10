@@ -1,217 +1,181 @@
 {
   "action_required_count": 0,
-  "bundle_count": 23,
+  "bundle_count": 19,
   "entries": [
     {
-      "bundle_digest": "d206f2809cf5a735d9af86997984841accc71cc33330db74a6c6bd6df3d4af01",
+      "bundle_digest": "fda016d4f4b03938d574c1607c8934b169505126f6e61afa5b99748504bfe0cd",
       "evidence_id": "evidence-001",
-      "file_count": 14,
+      "file_count": 61,
       "integrity_status": "tracked",
-      "manifest_digest": "e36e4ea59627a93f191ebea903a89733fcdaacb350007799a16e6fef90861734",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-001",
-      "study_id": "comparative-trust-boundaries"
-    },
-    {
-      "bundle_digest": "25867243c2e96070b78e44428d0aa3c4281fd36baab6f5aa6aad4310eb9e03e3",
-      "evidence_id": "evidence-002",
-      "file_count": 15,
-      "integrity_status": "tracked",
-      "manifest_digest": "4464079d9047f6803fbac9c5b292c3d1ddcad05047316ffa1dead50dab572cac",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-002",
-      "study_id": "comparative-trust-boundaries"
-    },
-    {
-      "bundle_digest": "9d1b92c94ba01ecc08c32f99f58c07438d420087fdc5903e773ca1509b04cf47",
-      "evidence_id": "evidence-003",
-      "file_count": 14,
-      "integrity_status": "tracked",
-      "manifest_digest": "9056d126f60f8747ffce6ced2b91854f7587091e2f1ff40ed25da4ed509ea69f",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-003",
-      "study_id": "comparative-trust-boundaries"
-    },
-    {
-      "bundle_digest": "f2594e2d1c6f3c7b4439e0f703bf8cda2534e1d7a88034b1191ebe651df2ad31",
-      "evidence_id": "evidence-001",
-      "file_count": 63,
-      "integrity_status": "tracked",
-      "manifest_digest": "779c7677cedc522b94704fae49e3573a4f1a3967a2f5021685a8756705c113d7",
+      "manifest_digest": "5a0884a224a6446d5308054752475d93e47d5dc629fd88ccf0c56b94203d5d03",
       "relative_path": "studies/primate-longevity-signal/evidence-001",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "cbe2d742ffe70e678f9f508c5faf183d4c47c15cd99b9365701297bafc7f3517",
+      "bundle_digest": "aa4eb630551f9c7775cae3071cab096e59ba0e60dec722dc1c4fb4135a9a0d8f",
       "evidence_id": "evidence-002",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "01dd368badd64d79dc0df3eb9ea80ce505211eefcbd931fac76a47b6b021cc0b",
+      "manifest_digest": "76367aa1e8098eac8aa962e36d76a4df14535fbd31a73da5967aa41e951ba0d5",
       "relative_path": "studies/primate-longevity-signal/evidence-002",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "7b348d735dbbea7ede2668c289ef39ae2d51294534145fedce4e5c311d5d8a4a",
+      "bundle_digest": "1c5196a6eda93c301400edba214dc3b1221195b4765584e27c1c7b8b026693cc",
       "evidence_id": "evidence-003",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "68964d63f7f4ef604f70feeb97beff64bb43a5691150029522e03326c26adb3a",
+      "manifest_digest": "6beaec7cf4046c5c000d865c9953cf8b042cfee0dfdd9db06f02dbc0838baede",
       "relative_path": "studies/primate-longevity-signal/evidence-003",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "a2f9c9596fdb5142b94d26c998ec3b1ac3b269fc9eb902048ddf98cfbff5945b",
+      "bundle_digest": "2fedafdc0762ab87a6a9fa3cbb46da7f87b8b6ebaa73bf92a99cca613194f696",
       "evidence_id": "evidence-004",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "6dfce1f151c829db27810c844e0120d55f5fd962d4f3ca62a2230b10e665b0db",
+      "manifest_digest": "353c1784618968641952e083984a29bd6df6bf7a7777e591fd233265198e21ca",
       "relative_path": "studies/primate-longevity-signal/evidence-004",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "574419bd67352a43eb1f6904019ea89537ee91059ee720884cbeb66c4426d2ef",
+      "bundle_digest": "b7250abb718367f0a02b3bc0ba69b1f1fad110adc93aa6f82a6345d8a26ed281",
       "evidence_id": "evidence-005",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "e487f9a558ef6b11c414c58121857b3a50347f4ec156e6a9d7530c252914adee",
+      "manifest_digest": "26bb4f459060e9a62a8bb4fb223fe0648d3f16b53dbbb74aa5c09610e0c0026d",
       "relative_path": "studies/primate-longevity-signal/evidence-005",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "9631e48db4c518479404766b466cf9638e2796e0f9217c27a676bf0d1e9dd28a",
+      "bundle_digest": "a6ba88bf6ff8dd69afaf9d621fc50dc1f96b8e17251a3ae63c44d7285ab2dfe1",
       "evidence_id": "evidence-006",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "c280fb4910933c17b50b2bca830b50d8061a15b24e91e2a2ae98b72e3270dc95",
+      "manifest_digest": "46f06d93d9681dbd63811143f572eee7502516c627149261df6c6bea0cf208dd",
       "relative_path": "studies/primate-longevity-signal/evidence-006",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "fefae33a006dcd89dcd9c0e885a23bcf3faa94f33aa8c44494c3623fc559cb66",
+      "bundle_digest": "5bf312a3c1e37677ada7077e759b32ca40d149f01d1a644b16da0562e188c0e4",
       "evidence_id": "evidence-007",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "0ffbba5b1f3e6a3ac8555a219d7371987e9d23ed7397878d1b59d05b42463c8a",
+      "manifest_digest": "5f27ea50a8990623d8682694ee5604c6fd4c5adb62a5c3772de848fe5f35a471",
       "relative_path": "studies/primate-longevity-signal/evidence-007",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "5ca2fe74d7485d752cde4d7a8c4517499c49ee12b68450338cec1a496413f1b3",
+      "bundle_digest": "8f4b6ff4f36b2604c17b9d866412bb431cb9c47bb6ede004a367d5228cdd9e6e",
       "evidence_id": "evidence-008",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "115e1389583aaa9ecdeae73640d31a176e27f2f253234f75513f8d24cc64a206",
+      "manifest_digest": "ffb00eba5be2ea7a4a0d3b13918b5b7b5c01294bf6a853604e0fb532658454ff",
       "relative_path": "studies/primate-longevity-signal/evidence-008",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "a74f0030bc0824cc141d9fb2bae7534dd739562f4c8340ed768fd157109ecd2d",
+      "bundle_digest": "0ec3a71fc9df2c264afa6a74736e34c89552a4270fb14bfc4eb7c71bda7a17b3",
       "evidence_id": "evidence-009",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "c19f42ad254ad93a4583a4d1dd25559fb2f569d2c0163b88f32710b2390aaa18",
+      "manifest_digest": "52cf5ec5506515930568e958ffa4c6628e0c3ae6b414acc2de88ec1cdf070d1c",
       "relative_path": "studies/primate-longevity-signal/evidence-009",
       "study_id": "primate-longevity-signal"
     },
     {
-      "bundle_digest": "35a59c6983f7caa34e34ecdec4c55aa8c268c6af9806c644b572a1eee0d54285",
+      "bundle_digest": "f64b2237bd0758e48b61506a362d28e694813983c5ec4291a4e0cd39c2a4a417",
       "evidence_id": "evidence-001",
       "file_count": 16,
       "integrity_status": "tracked",
-      "manifest_digest": "49b3aec28c94a90d6b94b368da8e5caa410e71528b43c2892e128bba391305e8",
+      "manifest_digest": "c9749597df907011fcb08384d7b344bf7e794a2a9001b3e11f93c475b99257bd",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "55a899a5d72259dcdbf55bba80aefbd41d2ac5943a546a1af66a78213aec336a",
+      "bundle_digest": "b645ef24be8b36a6b9f9920c32bbe027f31fc7537d2b11537a307e73665c3ade",
       "evidence_id": "evidence-002",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "1081555bb03e8d14d1999dc8a0f1ed94cd71423b15c2a99cd7252dbf07269447",
+      "manifest_digest": "75db13f71f1746bcbe9ff28af68abc4965b519c3f423830aeccfe881e2e16cbc",
       "relative_path": "studies/primate-pgls-and-signal/evidence-002",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "e75ef22aea5dd253010f2d7d7215d4b031f9208fb30651f5e722fdf3046efc87",
+      "bundle_digest": "943490c1b7232e157f0f80b8f516d4e17abb83b843a1baffdf3f7f0894d58e2a",
       "evidence_id": "evidence-003",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "9088bcda43a4005f05963374bacbe4922e0ccdc7c8cc21fe32c00c20d2ea9620",
+      "manifest_digest": "6a7eff1c6d47698beabf150ddee9c3a9868a4163ffec596a26fb0988db21f528",
       "relative_path": "studies/primate-pgls-and-signal/evidence-003",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "6a7857eabc2474562492b4923c98e486a4e0d874b12df452d3f15416134e6281",
+      "bundle_digest": "1d5dc1f73fcbd38d1ffb5414a7b5589d35a645c0dd50d98474f99c6295a064c6",
       "evidence_id": "evidence-004",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "4e290bcc33d4c46c149b142bc3addf06275813139af8f9d4d7120576356192ff",
+      "manifest_digest": "88a129bedd897e190512c4c669b12629169f1731b6c6f5d8bcd1d8f6b7e015f0",
       "relative_path": "studies/primate-pgls-and-signal/evidence-004",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "a7affbdc6e4d4ae4484e1ff80e9b0a0480724cab065cd3838ba248b890963001",
+      "bundle_digest": "2afd3261656b9cb72caef201a330e2c2e33b136640b2a4a27b72dbf55407eccf",
       "evidence_id": "evidence-005",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "268083857a25033dc850e933109c9ce2937f42e1b1bed969c3ccecfdafc5cad2",
+      "manifest_digest": "001df58c8829977bbf7e80c49f856baef5c7511dda012ce4553cf525761cba1f",
       "relative_path": "studies/primate-pgls-and-signal/evidence-005",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "6c930a9dc666abdf59c15ff5fe3834352c10df5caeca1608b215d8c07186b1de",
+      "bundle_digest": "5e78c08e94b8c79b8f7c36016ce9cb5e13f6f5ac8c0de0f9dd24346924ca192b",
       "evidence_id": "evidence-006",
       "file_count": 15,
       "integrity_status": "tracked",
-      "manifest_digest": "a59410183bb283ff321eb7e7ae0c08025ea61a0059a1fa7b35e99f390c6631aa",
+      "manifest_digest": "31f58fef7b147e517872694808b24c5d77dfba71c40ad19d8c25886f701849f9",
       "relative_path": "studies/primate-pgls-and-signal/evidence-006",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "c8a19eeec54a7627fc8c9f233348c7d5b4678ef9e7c405413c8a85583760431f",
+      "bundle_digest": "efafdfbcbd0aa58a354bc9f781fc00a205b164040b12558de4691b121f11a8b9",
       "evidence_id": "evidence-007",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "527748bf465ae3671fd8b93603f0c628bd7739901533b0384304b687f2d9b0e1",
+      "manifest_digest": "38eb53631cdc0cd76edc9bf3744ec9e6c4541f4614fe65dbedf703fcec0a5475",
       "relative_path": "studies/primate-pgls-and-signal/evidence-007",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "ee1a810c391fdc25343bee621aaec2bd4b11242b86e0ca4fe83e72607f88e036",
+      "bundle_digest": "673bc62ac5191e6e3ecbcdf8f96e8f8ae63474ebb19151e222eb23b49dc1f832",
       "evidence_id": "evidence-008",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "f9c3d967e51ed38b1b8325aa513bf196b909e9faae75dab8f715461baaaadf9c",
+      "manifest_digest": "d0e13584811ede0b18d836a59ec09fa939ec3340deb9f358b111371cc5d204d6",
       "relative_path": "studies/primate-pgls-and-signal/evidence-008",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "bca526473ae46a5c3e4a499fb4107b08ab1609471edc66deb058b9d4719a891b",
+      "bundle_digest": "704e3e07db34d1988c3ad85a824cce81f348bb513d703d57dc2efccc7dea832a",
       "evidence_id": "evidence-009",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "70f76e12be5bf0dd17538c09771c1d3ee2ced73d34c3ccb0256ddba973259d52",
+      "manifest_digest": "28d05fba3c6ad590fbbb1057805482386f34c7968861b3f1a8720450844cecd8",
       "relative_path": "studies/primate-pgls-and-signal/evidence-009",
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "b471e3dc213183a0815f606ae751453323f1b8354303371f9e83dbb8c496ec52",
+      "bundle_digest": "c19f8bbe57095eaa0f2f7871e645530b4767d9277d1f13d4fb2bd04c6e69c75a",
       "evidence_id": "evidence-010",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "6a0cf3d303ca9e265ddf8343830011c6bc1405c68fae323371aee1025ac1a40b",
+      "manifest_digest": "e24ad52351b398bcad4a806f7ffa7b575dbe9d969d9a68248110d09f2936b76f",
       "relative_path": "studies/primate-pgls-and-signal/evidence-010",
       "study_id": "primate-pgls-and-signal"
-    },
-    {
-      "bundle_digest": "c7f16f4364f78dd2385edf0903a97e29f29e4197dbc93e5d71f38678812fdbab",
-      "evidence_id": "evidence-001",
-      "file_count": 24,
-      "integrity_status": "tracked",
-      "manifest_digest": "08255c6603331144534d6c54bbfe27e6277657b957e7d18777e89350064b033e",
-      "relative_path": "studies/taxon-trust/evidence-001",
-      "study_id": "taxon-trust"
     }
   ],
   "integrity_status_counts": {
-    "tracked": 23
+    "tracked": 19
   },
   "schema_version": 1
 }

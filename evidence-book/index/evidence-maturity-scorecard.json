@@ -44,12 +44,12 @@
     }
   ],
   "coverage_status_counts": {
-    "bounded": 4,
+    "bounded": 3,
     "uncovered": 2
   },
   "foundational_numerical_trust_status": "bounded",
   "freshness_status_counts": {
-    "current": 23
+    "current": 19
   },
   "integrity_action_required_count": 0,
   "maturity_tier": "reviewable_but_incomplete",

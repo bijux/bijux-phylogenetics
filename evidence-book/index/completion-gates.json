@@ -1,9 +1,9 @@
 {
   "completion_state_counts": {
-    "bounded": 4,
+    "bounded": 3,
     "not_ready": 2
   },
-  "gate_count": 6,
+  "gate_count": 5,
   "gates": [
     {
       "completion_state": "bounded",
@@ -20,22 +20,6 @@
       ],
       "surface_id": "tree-diagnostics",
       "surface_title": "Tree diagnostics and tree-data correspondence"
-    },
-    {
-      "completion_state": "bounded",
-      "linked_evidence_count": 1,
-      "minimum_requirements": [
-        "indexed evidence bundles",
-        "reviewer-readable summaries",
-        "portable checked-in artifacts",
-        "source-grounded provenance"
-      ],
-      "missing_conditions": [
-        "Broader surface coverage still depends on bounded or partial evidence families.",
-        "The repository scorecard still classifies the overall program as reviewable but incomplete."
-      ],
-      "surface_id": "taxon-identity",
-      "surface_title": "Taxon identity and normalization"
     },
     {
       "completion_state": "not_ready",
@@ -55,7 +39,7 @@
     },
     {
       "completion_state": "bounded",
-      "linked_evidence_count": 15,
+      "linked_evidence_count": 12,
       "minimum_requirements": [
         "indexed evidence bundles",
         "reviewer-readable summaries",
@@ -87,7 +71,7 @@
     },
     {
       "completion_state": "bounded",
-      "linked_evidence_count": 2,
+      "linked_evidence_count": 1,
       "minimum_requirements": [
         "indexed evidence bundles",
         "reviewer-readable summaries",

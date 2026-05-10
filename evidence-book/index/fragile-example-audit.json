@@ -1,108 +1,6 @@
 {
   "examples": [
     {
-      "debt_id": "ancestral-colored-tree-plot",
-      "debt_kind": "plot_only",
-      "detail": "The ancestral-state branch-color figure is tracked as a visual rendering surface only.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "ape-alternate-layouts",
-      "debt_kind": "plot_only",
-      "detail": "These layout variants are tracked as visual surfaces only.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "ape-longevity-overlay",
-      "debt_kind": "plot_only",
-      "detail": "This is a rendered trait-overlay surface and is tracked separately from ordering correctness.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "ape-plotting-basics",
-      "debt_kind": "plot_only",
-      "detail": "This is a visual exploration block; the current report does not claim figure-equivalence for base `ape` plots.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "environment-and-package-contract",
-      "debt_kind": "workflow_only",
-      "detail": "This setup block is documented for reproducibility, but it is not an analysis-equivalence target.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "final-workspace-artifact",
-      "debt_kind": "artifact_only",
-      "detail": "The lecture script saves an `.RData` workspace; this report saves explicit machine-readable evidence artifacts instead.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "ggtree-tree-visualization",
-      "debt_kind": "plot_only",
-      "detail": "These `ggtree` examples are tracked as visual surfaces only.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "joined-ggtree-trait-plotting",
-      "debt_kind": "plot_only",
-      "detail": "Joined-data `ggtree` figures are tracked here as visual outputs only.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "lambda-zero-visual-comparison",
-      "debt_kind": "plot_only",
-      "detail": "The side-by-side real-tree versus lambda=0 plots are tracked as visual outputs only.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "ou-identifiability-boundary-cases",
-      "debt_kind": "model-boundary",
-      "detail": "OU fits on the governed reference cases still sit on identifiability boundaries, so the repository must keep these warnings reviewer-visible instead of treating them as ordinary successful fits.",
-      "evidence": [
-        "example-tree-small-n triggers small_sample_size, boundary_alpha, and flat_likelihood",
-        "example-tree-weak-pull triggers boundary_alpha, flat_likelihood, and weak_pull_to_optimum"
-      ],
-      "evidence_id": "evidence-003",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-003/ou-identifiability-audit.json",
-      "study_id": "comparative-trust-boundaries"
-    },
-    {
-      "debt_id": "phytools-tree-plotting",
-      "debt_kind": "plot_only",
-      "detail": "The `phytools::plotTree()` surface is tracked, but no rendered-figure claim is made here.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
       "debt_id": "primate-longevity-signal-evidence-001-pcm1-artifact-provenance-tracking",
       "debt_kind": "coverage_gap",
       "detail": "Processed files and saved workspaces are indexed as provenance outputs rather than overstated as analytical matches.",
@@ -149,15 +47,6 @@
       "study_id": "primate-longevity-signal"
     },
     {
-      "debt_id": "primate-longevity-visual-inspection",
-      "debt_kind": "plot_only",
-      "detail": "These are visual inspection surfaces only.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
       "debt_id": "primate-pgls-and-signal-evidence-010-pcm2-coverage-boundary-explicit",
       "debt_kind": "coverage_gap",
       "detail": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles.",
@@ -168,58 +57,11 @@
       "evidence_id": "evidence-010",
       "relative_path": "studies/primate-pgls-and-signal/evidence-010",
       "study_id": "primate-pgls-and-signal"
-    },
-    {
-      "debt_id": "processed-analysis-artifacts",
-      "debt_kind": "artifact_only",
-      "detail": "This block writes the processed CSV and trimmed tree that the Python evidence pass later consumes.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "random-simulation-inputs",
-      "debt_kind": "seeded_input_only",
-      "detail": "For credibility, the report freezes these R-generated simulation inputs with `set.seed(1)` and reuses the resulting artifacts on both sides.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "random-simulation-plotting",
-      "debt_kind": "plot_only",
-      "detail": "These are visual teaching plots and are tracked separately from the simulation inputs and signal fits.",
-      "evidence": [],
-      "evidence_id": "evidence-001",
-      "relative_path": "studies/primate-longevity-signal/evidence-001/scientific_debt_register.json",
-      "study_id": "primate-longevity-signal"
-    },
-    {
-      "debt_id": "weak-signal-threshold-instability",
-      "debt_kind": "instability",
-      "detail": "The weak-signal case crosses the 0.05 decision boundary across governed reruns, so any single-run significance claim would be overconfident.",
-      "evidence": [
-        "min p-value=0.03",
-        "max p-value=0.08",
-        "runs below 0.05=7",
-        "runs at or above 0.05=13"
-      ],
-      "evidence_id": "evidence-002",
-      "relative_path": "studies/comparative-trust-boundaries/evidence-002/result-instability-audit.json",
-      "study_id": "comparative-trust-boundaries"
     }
   ],
-  "fragile_example_count": 20,
+  "fragile_example_count": 4,
   "fragility_kind_counts": {
-    "artifact_only": 2,
-    "coverage_gap": 4,
-    "instability": 1,
-    "model-boundary": 1,
-    "plot_only": 10,
-    "seeded_input_only": 1,
-    "workflow_only": 1
+    "coverage_gap": 4
   },
   "schema_version": 1
 }

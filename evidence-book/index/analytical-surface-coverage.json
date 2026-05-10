@@ -1,10 +1,10 @@
 {
   "coverage_status_counts": {
-    "bounded": 4,
+    "bounded": 3,
     "uncovered": 2
   },
   "schema_version": 1,
-  "surface_count": 6,
+  "surface_count": 5,
   "surfaces": [
     {
       "coverage_status": "bounded",
@@ -47,31 +47,6 @@
       "surface_title": "Tree diagnostics and tree-data correspondence"
     },
     {
-      "coverage_status": "bounded",
-      "coverage_summary": "The taxon-trust study makes taxon identity, synonym handling, and exclusion reasoning reviewer-visible, but the broader taxonomy surface still relies on one evidence family.",
-      "known_gaps": [
-        "Additional evidence families are still needed for rank inference, accepted-name export, and cross-dataset reconciliation edge cases."
-      ],
-      "linked_evidence": [
-        {
-          "evidence_id": "evidence-001",
-          "evidence_title": "Taxon workflow review bundle",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "study_id": "taxon-trust",
-          "verdict_status": "matched"
-        }
-      ],
-      "linked_evidence_count": 1,
-      "runtime_surfaces": [
-        "taxonomy",
-        "normalize-taxa",
-        "taxon crosswalk",
-        "tree accepted-name export"
-      ],
-      "surface_id": "taxon-identity",
-      "surface_title": "Taxon identity and normalization"
-    },
-    {
       "coverage_status": "uncovered",
       "coverage_summary": "The runtime exposes a broad alignment surface, but the evidence-book does not yet contain governed parity or trust bundles for it.",
       "known_gaps": [
@@ -90,7 +65,7 @@
     },
     {
       "coverage_status": "bounded",
-      "coverage_summary": "Comparative workflows are the strongest evidence-grounded surface in the repository, but EB, transformed-tree, and ancestral parity remain open coverage boundaries and one diagnostic scalar mismatch is still unresolved.",
+      "coverage_summary": "Comparative workflows are the strongest evidence-grounded surface in the repository, but transformed-tree and ancestral parity still retain explicit coverage boundaries and the broader comparative surface is not yet closed.",
       "known_gaps": [
         "Transformed-tree EB parity is still explicit debt rather than closed evidence.",
         "Ancestral-mode parity from the Lund PCM2 lecture is still intentionally unclaimed."
@@ -179,30 +154,9 @@
           "relative_path": "studies/primate-pgls-and-signal/evidence-006",
           "study_id": "primate-pgls-and-signal",
           "verdict_status": "matched"
-        },
-        {
-          "evidence_id": "evidence-001",
-          "evidence_title": "Comparative input rejection bundle",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-001",
-          "study_id": "comparative-trust-boundaries",
-          "verdict_status": "matched"
-        },
-        {
-          "evidence_id": "evidence-002",
-          "evidence_title": "Weak signal instability bundle",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-002",
-          "study_id": "comparative-trust-boundaries",
-          "verdict_status": "matched_with_tolerance"
-        },
-        {
-          "evidence_id": "evidence-003",
-          "evidence_title": "OU identifiability warning bundle",
-          "relative_path": "studies/comparative-trust-boundaries/evidence-003",
-          "study_id": "comparative-trust-boundaries",
-          "verdict_status": "matched"
         }
       ],
-      "linked_evidence_count": 15,
+      "linked_evidence_count": 12,
       "runtime_surfaces": [
         "comparative readiness",
         "comparative signal",
@@ -240,16 +194,9 @@
           "relative_path": "studies/primate-longevity-signal/evidence-001",
           "study_id": "primate-longevity-signal",
           "verdict_status": "matched_with_tolerance"
-        },
-        {
-          "evidence_id": "evidence-001",
-          "evidence_title": "Taxon workflow review bundle",
-          "relative_path": "studies/taxon-trust/evidence-001",
-          "study_id": "taxon-trust",
-          "verdict_status": "matched"
         }
       ],
-      "linked_evidence_count": 2,
+      "linked_evidence_count": 1,
       "runtime_surfaces": [
         "report tree",
         "report dataset",
