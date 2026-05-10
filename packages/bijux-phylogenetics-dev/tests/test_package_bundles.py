@@ -66,6 +66,14 @@ allowed_dependencies = ["PyYAML>=6.0"]
 required_sdist_entries = ["README.md", "src/demo_dev/__init__.py"]
 required_wheel_entries = ["demo_dev/__init__.py"]
 forbidden_archive_prefixes = ["tests/", "docs/"]
+
+[tool.bijux_phylogenetics.publication_readiness.target_package_policy."demo-evidence"]
+package_dir = "packages/demo-evidence"
+wheel_module_root = "demo_evidence"
+allowed_dependencies = ["demo-runtime>=0.1.0,<1.0"]
+required_sdist_entries = ["README.md", "src/demo_evidence/__init__.py"]
+required_wheel_entries = ["demo_evidence/__init__.py"]
+forbidden_archive_prefixes = ["tests/", "docs/"]
 """.strip()
         + "\n",
     )
@@ -138,6 +146,19 @@ def test_load_package_bundle_policies_reads_repo_owned_policy() -> None:
         "bijux-phylogenetics-dev",
     }
     assert policies["bijux-phylogenetics"].wheel_module_root == "bijux_phylogenetics"
+
+
+def test_check_package_bundles_reports_target_package_policy_coverage(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+
+    report = check_package_bundles(repo_root)
+
+    assert report["issue_count"] == 0
+    assert report["target_package_policies"][0]["package_name"] == "demo-runtime"
+    assert report["target_package_policies"][-1]["package_name"] == "demo-evidence"
+    assert report["target_package_policies"][-1]["has_target_policy"] is True
 
 
 def test_build_dependency_policy_report_is_clean_for_repository() -> None:

@@ -17,7 +17,9 @@ from .execution_surfaces import build_execution_surfaces_report
 from .package_boundaries import build_package_boundary_report
 from .package_bundles import (
     build_dependency_policy_report,
+    load_package_bundle_policies,
     load_publication_readiness_settings,
+    load_target_package_bundle_policies,
 )
 
 TomlTable = dict[str, Any]
@@ -87,6 +89,105 @@ def _as_str_list(value: object) -> list[str]:
     if not isinstance(value, list):
         return []
     return [entry for entry in value if isinstance(entry, str)]
+
+
+def _issue_metadata(code: str) -> dict[str, str]:
+    if code.startswith("config-") or code.startswith("missing-root-make-target"):
+        return {
+            "domain": "standards",
+            "owner_surface": "repository-governance",
+            "severity": "error",
+        }
+    if code in {
+        "runtime-example-fixture-coupling",
+        "runtime-example-resource-missing",
+        "runtime-evidence-helper-coupling",
+    }:
+        return {
+            "domain": "runtime-boundary",
+            "owner_surface": "bijux-phylogenetics",
+            "severity": "error",
+        }
+    if code in {
+        "missing-target-shape-package",
+        "missing-target-package-policy",
+        "runtime-owns-forbidden-subpackage",
+    }:
+        return {
+            "domain": "repository-shape",
+            "owner_surface": "package-layout",
+            "severity": "error",
+        }
+    if code.startswith("missing-evidence") or code.startswith("stale-evidence"):
+        return {
+            "domain": "evidence-program",
+            "owner_surface": "evidence-book",
+            "severity": "error",
+        }
+    if code.startswith("dependency-") or "package" in code or "runtime" in code:
+        return {
+            "domain": "package-policy",
+            "owner_surface": "packaging",
+            "severity": "error",
+        }
+    return {
+        "domain": "governance",
+        "owner_surface": "repository",
+        "severity": "error",
+    }
+
+
+def scan_runtime_owner_drift(
+    repo_root: Path, *, publication_settings: JsonObject
+) -> list[ReadinessIssue]:
+    issues: list[ReadinessIssue] = []
+    target_shape = _as_dict(publication_settings.get("target_repository_shape"))
+    runtime_example_root = str(target_shape.get("runtime_example_input_root", ""))
+    if runtime_example_root and not (repo_root / runtime_example_root).is_dir():
+        issues.append(
+            ReadinessIssue(
+                code="runtime-example-resource-missing",
+                path=runtime_example_root,
+                message="runtime example workflows must ship packaged example inputs from the governed repository path",
+            )
+        )
+    demo_path = (
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "core"
+        / "demo.py"
+    )
+    if demo_path.is_file():
+        demo_text = demo_path.read_text(encoding="utf-8")
+        if "tests/fixtures" in demo_text:
+            issues.append(
+                ReadinessIssue(
+                    code="runtime-example-fixture-coupling",
+                    path=demo_path.relative_to(repo_root).as_posix(),
+                    message="runtime example workflow still reads maintainer test fixtures instead of packaged example resources",
+                )
+            )
+    for relative_path in (
+        "packages/bijux-phylogenetics/src/bijux_phylogenetics/core/demo.py",
+        "packages/bijux-phylogenetics/src/bijux_phylogenetics/bayesian/evidence.py",
+        "packages/bijux-phylogenetics/src/bijux_phylogenetics/engines/evidence.py",
+    ):
+        path = repo_root / relative_path
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "bijux_phylogenetics.evidence.bundles" in text:
+            issues.append(
+                ReadinessIssue(
+                    code="runtime-evidence-helper-coupling",
+                    path=relative_path,
+                    message="runtime-owned workflow still imports evidence bundle helpers instead of the governed provenance bundle contract",
+                )
+            )
+    return issues
 
 
 def iter_study_roots(repo_root: Path) -> list[Path]:
@@ -402,6 +503,23 @@ def build_evidence_reproducibility_inventory(
             input_manifest_path = evidence_root / required_input_manifest
             if input_manifest_path.is_file():
                 evidence_input_manifest_count += 1
+                input_manifest = _load_json(input_manifest_path)
+                if input_manifest.get("schema_version", 0) < 2:
+                    issues.append(
+                        ReadinessIssue(
+                            code="stale-evidence-input-manifest",
+                            path=input_manifest_path.relative_to(repo_root).as_posix(),
+                            message="governed input manifest must use the schema that distinguishes local inputs from governed local output artifacts",
+                        )
+                    )
+                if "governed_local_artifact_count" not in input_manifest:
+                    issues.append(
+                        ReadinessIssue(
+                            code="missing-evidence-input-artifact-inventory",
+                            path=input_manifest_path.relative_to(repo_root).as_posix(),
+                            message="governed input manifest must enumerate the full local artifact inventory alongside true local inputs",
+                        )
+                    )
             else:
                 missing_input_manifest_count += 1
                 issues.append(
@@ -451,6 +569,17 @@ def build_evidence_reproducibility_inventory(
                     "evidence_id": manifest.get("evidence_id", evidence_root.name),
                     "bundle_local_artifacts": bundle_local_artifacts,
                     "has_input_manifest": input_manifest_path.is_file(),
+                    "input_manifest_locator": input_manifest_path.relative_to(repo_root).as_posix(),
+                    "governed_local_artifact_count": (
+                        int(input_manifest.get("governed_local_artifact_count", 0))
+                        if input_manifest_path.is_file()
+                        else 0
+                    ),
+                    "local_input_count": (
+                        int(input_manifest.get("local_input_count", 0))
+                        if input_manifest_path.is_file()
+                        else 0
+                    ),
                     "output_classification_counts": local_output_classification_counts,
                     "output_checksum_count": len(local_output_checksums),
                     "output_checksums": local_output_checksums,
@@ -520,11 +649,17 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     repo_root = repo_root.resolve()
     publication_settings = load_publication_readiness_settings(repo_root)
     package_payloads = _package_pyprojects(repo_root)
+    publishable_bundle_policies = load_package_bundle_policies(repo_root)
+    target_bundle_policies = load_target_package_bundle_policies(repo_root)
     dependency_policy = build_dependency_policy_report(repo_root)
     config_report = build_config_ssot_report(repo_root)
     execution_surfaces = build_execution_surfaces_report(repo_root)
     package_boundaries = build_package_boundary_report(repo_root)
     evidence_inventory = build_evidence_reproducibility_inventory(
+        repo_root,
+        publication_settings=publication_settings,
+    )
+    runtime_owner_issues = scan_runtime_owner_drift(
         repo_root,
         publication_settings=publication_settings,
     )
@@ -615,6 +750,18 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 message="target repository shape requires an owned package that does not exist yet",
             )
         )
+    for package_name in target_shape_packages:
+        if package_name in publishable_bundle_policies or package_name in target_bundle_policies:
+            continue
+        shape_issues.append(
+            ReadinessIssue(
+                code="missing-target-package-policy",
+                path="configs/publication_readiness.toml",
+                message="target repository shape package must have either a publishable or target-only bundle policy",
+            )
+        )
+
+    package_issues.extend(runtime_owner_issues)
 
     root_make_path = repo_root / "makes" / "root.mk"
     root_make_text = (
@@ -702,15 +849,14 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
         + int(evidence_inventory["stale_input_manifest_count"])  # type: ignore[arg-type,index]
         + int(evidence_inventory["missing_input_manifest_count"]),  # type: ignore[arg-type,index]
     )
-    blocker_register = [
-        asdict(issue)
-        for issue in (
-            package_issues
-            + standards_issues
-            + shape_issues
-            + [ReadinessIssue(**issue) for issue in evidence_issues]
-        )
-    ]
+    blocker_register = []
+    for issue in (
+        package_issues
+        + standards_issues
+        + shape_issues
+        + [ReadinessIssue(**issue) for issue in evidence_issues]
+    ):
+        blocker_register.append({**asdict(issue), **_issue_metadata(issue.code)})
     runtime_closure_blockers = [
         issue["code"]
         for issue in blocker_register
@@ -730,6 +876,9 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "missing-build-targets",
             "dependency-policy-drift",
             "publishable-package-set-drift",
+            "runtime-example-fixture-coupling",
+            "runtime-example-resource-missing",
+            "runtime-evidence-helper-coupling",
             "runtime-owns-forbidden-subpackage",
         }
     ]
@@ -744,8 +893,10 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "missing-dataset-registry-file",
             "missing-evidence-manifest",
             "missing-evidence-input-manifest",
+            "missing-evidence-input-artifact-inventory",
             "stale-evidence-input-manifest",
             "missing-evidence-bundle-artifact",
+            "missing-target-package-policy",
         }
     ]
     standards_closure_blockers = [
@@ -771,6 +922,8 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 "compatibility alias package remains a thin alias surface with no local scientific ownership",
                 "runtime-to-evidence compatibility is declared against supported public runtime locators",
                 "runtime package no longer owns subpackages reserved for a separate evidence consumer layer",
+                "runtime example workflows consume packaged example resources instead of maintainer test fixtures",
+                "runtime-owned workflow bundling uses the governed provenance bundle contract instead of evidence-only helper modules",
                 "all governed publishable packages declare wheel and sdist targets",
             ],
             "blocker_codes": runtime_closure_blockers,
@@ -779,8 +932,10 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "status": "ready" if not evidence_closure_blockers else "blocked",
             "pass_when": [
                 "every evidence bundle has a governed input manifest",
+                "every evidence input manifest distinguishes actual local inputs from governed local output artifacts",
                 "every evidence bundle carries side-by-side reference and python code surfaces",
                 "study provenance and dataset registries resolve cleanly",
+                "the target evidence consumer package has an explicit shipping policy before the repository claims publication maturity",
             ],
             "blocker_codes": evidence_closure_blockers,
         },
@@ -790,6 +945,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 "repository-owned config SSOT audit is clean",
                 "repository make, tox, and workflow execution surfaces are governed explicitly and stay separated by owned responsibilities",
                 "root make surface exposes the governed publish-readiness commands",
+                "the target repository shape is encoded explicitly in repository-owned policy instead of being implied by backlog prose",
             ],
             "blocker_codes": standards_closure_blockers,
         },
@@ -834,6 +990,13 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
         "package_count": len(package_payloads),
         "package_names": sorted(package_payloads),
         "publication_settings": publication_settings,
+        "target_repository_shape": _as_dict(
+            publication_settings.get("target_repository_shape")
+        ),
+        "package_bundle_policy": {
+            "publishable_policy_names": sorted(publishable_bundle_policies),
+            "target_policy_names": sorted(target_bundle_policies),
+        },
         "package_issues": [asdict(issue) for issue in package_issues],
         "dependency_policy": dependency_policy,
         "package_boundaries": package_boundaries,

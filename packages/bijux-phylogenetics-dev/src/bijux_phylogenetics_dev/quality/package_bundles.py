@@ -64,6 +64,20 @@ def load_publication_readiness_settings(repo_root: Path) -> dict[str, Any]:
 def load_package_bundle_policies(repo_root: Path) -> dict[str, PackageBundlePolicy]:
     readiness = load_publication_readiness_settings(repo_root)
     package_policy = _as_dict(readiness.get("package_policy"))
+    return _load_policy_entries(package_policy)
+
+
+def load_target_package_bundle_policies(
+    repo_root: Path,
+) -> dict[str, PackageBundlePolicy]:
+    readiness = load_publication_readiness_settings(repo_root)
+    package_policy = _as_dict(readiness.get("target_package_policy"))
+    return _load_policy_entries(package_policy)
+
+
+def _load_policy_entries(
+    package_policy: dict[str, Any],
+) -> dict[str, PackageBundlePolicy]:
     policies: dict[str, PackageBundlePolicy] = {}
     for package_name, entry in package_policy.items():
         values = _as_dict(entry)
@@ -205,8 +219,49 @@ def build_package_bundle_report(
     build_artifacts: bool,
 ) -> dict[str, Any]:
     policies = load_package_bundle_policies(repo_root)
+    target_policies = load_target_package_bundle_policies(repo_root)
+    settings = load_publication_readiness_settings(repo_root)
     package_reports: list[dict[str, Any]] = []
     issues: list[BundleIssue] = []
+    expected_publishable_packages = tuple(
+        entry
+        for entry in settings.get("expected_publishable_packages", [])
+        if isinstance(entry, str)
+    )
+    if tuple(sorted(policies)) != tuple(sorted(expected_publishable_packages)):
+        issues.append(
+            BundleIssue(
+                code="publishable-package-policy-drift",
+                path=POLICY_PATH.as_posix(),
+                message="package bundle policy entries must match the governed publishable package set exactly",
+            )
+        )
+    target_shape_packages = tuple(
+        entry for entry in settings.get("target_shape_packages", []) if isinstance(entry, str)
+    )
+    target_policy_reports: list[dict[str, Any]] = []
+    for package_name in target_shape_packages:
+        target_policy = target_policies.get(package_name)
+        package_dir = (
+            target_policy.package_dir if target_policy is not None else f"packages/{package_name}"
+        )
+        if package_name not in policies and target_policy is None:
+            issues.append(
+                BundleIssue(
+                    code="missing-target-package-policy",
+                    path=POLICY_PATH.as_posix(),
+                    message=f"target repository shape package {package_name} is missing a target package bundle policy",
+                )
+            )
+        target_policy_reports.append(
+            {
+                "package_name": package_name,
+                "has_publishable_policy": package_name in policies,
+                "has_target_policy": target_policy is not None,
+                "package_dir": package_dir,
+                "package_exists": (repo_root / package_dir).is_dir(),
+            }
+        )
     artifacts_root.mkdir(parents=True, exist_ok=True)
     staging_root = (
         artifacts_root / f".package-bundles-{uuid4().hex}"
@@ -259,6 +314,9 @@ def build_package_bundle_report(
         "schema_version": 1,
         "package_count": len(package_reports),
         "packages": package_reports,
+        "expected_publishable_packages": list(expected_publishable_packages),
+        "policy_package_names": sorted(policies),
+        "target_package_policies": target_policy_reports,
         "issue_count": len(issues),
         "issues": [asdict(issue) for issue in issues],
     }

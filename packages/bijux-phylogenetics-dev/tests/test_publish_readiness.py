@@ -171,6 +171,41 @@ required_root_make_targets = [
     "report-release-readiness:",
     "check-release-readiness:",
 ]
+
+[tool.bijux_phylogenetics.publication_readiness.target_repository_shape]
+canonical_runtime_package = "bijux-phylogenetics"
+compatibility_alias_package = "phylogenetic"
+maintainer_package = "bijux-phylogenetics-dev"
+evidence_consumer_package = "bijux-phylogenetics-evidence"
+evidence_book_root = "evidence-book"
+runtime_example_input_root = "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/examples"
+runtime_must_not_own_subpackages = ["evidence"]
+runtime_bundle_contract_module = "bijux_phylogenetics.provenance.bundles"
+evidence_bundle_contract_module = "bijux_phylogenetics.evidence.bundles"
+
+[tool.bijux_phylogenetics.publication_readiness.package_policy."bijux-phylogenetics"]
+package_dir = "packages/bijux-phylogenetics"
+wheel_module_root = "bijux_phylogenetics"
+allowed_dependencies = ["biopython>=1.0"]
+required_sdist_entries = ["src/bijux_phylogenetics/__init__.py"]
+required_wheel_entries = ["bijux_phylogenetics/__init__.py"]
+forbidden_archive_prefixes = ["tests/", "docs/"]
+
+[tool.bijux_phylogenetics.publication_readiness.package_policy."phylogenetic"]
+package_dir = "packages/phylogenetic"
+wheel_module_root = "phylogenetic"
+allowed_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+required_sdist_entries = ["src/phylogenetic/__init__.py"]
+required_wheel_entries = ["phylogenetic/__init__.py"]
+forbidden_archive_prefixes = ["tests/", "docs/"]
+
+[tool.bijux_phylogenetics.publication_readiness.package_policy."bijux-phylogenetics-dev"]
+package_dir = "packages/bijux-phylogenetics-dev"
+wheel_module_root = "bijux_phylogenetics_dev"
+allowed_dependencies = ["PyYAML>=6.0"]
+required_sdist_entries = ["src/bijux_phylogenetics_dev/__init__.py"]
+required_wheel_entries = ["bijux_phylogenetics_dev/__init__.py"]
+forbidden_archive_prefixes = ["tests/", "docs/"]
 """.strip()
         + "\n",
     )
@@ -262,6 +297,18 @@ include = ["src/bijux_phylogenetics/**"]
 packages = ["src/bijux_phylogenetics"]
 """.strip()
         + "\n",
+    )
+    _write(
+        repo_root
+        / "packages"
+        / "bijux-phylogenetics"
+        / "src"
+        / "bijux_phylogenetics"
+        / "resources"
+        / "examples"
+        / "metadata"
+        / "example_metadata.tsv",
+        "species\tvalue\nA\t1\n",
     )
     _write(
         repo_root
