@@ -210,6 +210,17 @@ from bijux_phylogenetics.errors import (
     PhylogeneticsError,
 )
 from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
+from bijux_phylogenetics.evidence.book import validate_evidence_book
+from bijux_phylogenetics.evidence.coverage import build_evidence_coverage_gap_report
+from bijux_phylogenetics.evidence.freshness import build_evidence_freshness_report
+from bijux_phylogenetics.evidence.integrity import build_evidence_integrity_report
+from bijux_phylogenetics.evidence.workbench import (
+    DOCS_EVIDENCE_OVERVIEW,
+    build_evidence_book_study,
+    list_registered_evidence_studies,
+    refresh_evidence_book,
+    rerun_evidence_book_selection,
+)
 from bijux_phylogenetics.io.fasta import (
     assess_alignment_low_information,
     build_alignment_forensic_report,
@@ -303,7 +314,7 @@ def _json_ready(value: Any) -> Any:
         return str(value)
     if isinstance(value, dict):
         return {key: _json_ready(item) for key, item in value.items()}
-    if isinstance(value, list):
+    if isinstance(value, (list, tuple)):
         return [_json_ready(item) for item in value]
     return value
 
@@ -316,6 +327,25 @@ def _print_result(result: Any, *, json_output: bool) -> None:
         print(result)
         return
     print(json.dumps(_json_ready(result), indent=2, sort_keys=True))
+
+
+def _evidence_book_metrics(repo_root: Path) -> dict[str, int]:
+    freshness_report = build_evidence_freshness_report(repo_root)
+    integrity_report = build_evidence_integrity_report(repo_root)
+    coverage_report = build_evidence_coverage_gap_report(repo_root)
+    freshness_counts = freshness_report["freshness_status_counts"]
+    integrity_counts = integrity_report["integrity_status_counts"]
+    return {
+        "bundle_count": int(freshness_report["bundle_count"]),
+        "freshness_current_count": int(freshness_counts.get("current", 0)),
+        "freshness_stale_count": int(freshness_counts.get("stale", 0)),
+        "freshness_source_unresolved_count": int(
+            freshness_counts.get("source_unresolved", 0)
+        ),
+        "integrity_tracked_count": int(integrity_counts.get("tracked", 0)),
+        "coverage_gap_count": int(coverage_report["coverage_gap_count"]),
+        "family_gap_count": int(coverage_report["family_gap_count"]),
+    }
 
 
 def _split_csv_values(raw: str | None) -> list[str]:
@@ -2853,6 +2883,53 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the validation report as JSON."
     )
     _add_manifest_argument(evidence_validate)
+    evidence_book = evidence_subparsers.add_parser(
+        "book",
+        help="Govern evidence-book generation, validation, and partial reruns.",
+    )
+    evidence_book_subparsers = evidence_book.add_subparsers(
+        dest="evidence_book_command",
+        required=True,
+    )
+    evidence_book_studies = evidence_book_subparsers.add_parser(
+        "studies",
+        help="List governed evidence-book studies and partial rerun capabilities.",
+    )
+    evidence_book_studies.add_argument(
+        "--json", action="store_true", help="Emit the study registry as JSON."
+    )
+    _add_manifest_argument(evidence_book_studies)
+    evidence_book_build = evidence_book_subparsers.add_parser(
+        "build",
+        help="Refresh governed evidence-book outputs or rebuild one registered study.",
+    )
+    evidence_book_build.add_argument(
+        "study_id",
+        nargs="?",
+        help="Optional registered study identifier to rebuild before refreshing the evidence-book.",
+    )
+    evidence_book_build.add_argument(
+        "--json", action="store_true", help="Emit the build report as JSON."
+    )
+    _add_manifest_argument(evidence_book_build)
+    evidence_book_validate = evidence_book_subparsers.add_parser(
+        "validate",
+        help="Validate the governed evidence-book surface and summarize coverage gaps.",
+    )
+    evidence_book_validate.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
+    _add_manifest_argument(evidence_book_validate)
+    evidence_book_rerun = evidence_book_subparsers.add_parser(
+        "rerun",
+        help="Regenerate selected Evidence IDs for a study and refresh governed outputs.",
+    )
+    evidence_book_rerun.add_argument("study_id")
+    evidence_book_rerun.add_argument("evidence_ids", nargs="+")
+    evidence_book_rerun.add_argument(
+        "--json", action="store_true", help="Emit the rerun report as JSON."
+    )
+    _add_manifest_argument(evidence_book_rerun)
 
     report = subparsers.add_parser(
         get_command_spec("report").name, help=get_command_spec("report").summary
@@ -7478,20 +7555,147 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-            report = validate_bundle(args.bundle_root)
-            if not report.valid:
-                raise EvidenceContractError(
-                    f"evidence bundle validation failed with {len(report.mismatches)} mismatch(es)"
+            if args.evidence_command == "validate":
+                report = validate_bundle(args.bundle_root)
+                if not report.valid:
+                    raise EvidenceContractError(
+                        f"evidence bundle validation failed with {len(report.mismatches)} mismatch(es)"
+                    )
+                outputs = _finalize_outputs(
+                    args, command="evidence", inputs=[args.bundle_root]
                 )
+                _print_result(
+                    build_command_result(
+                        command="evidence",
+                        inputs=[args.bundle_root],
+                        outputs=outputs,
+                        metrics={"file_count": report.file_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            repo_root = Path.cwd()
+            if args.evidence_book_command == "studies":
+                studies = list_registered_evidence_studies(repo_root)
+                outputs = _finalize_outputs(args, command="evidence", inputs=[])
+                _print_result(
+                    build_command_result(
+                        command="evidence",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "study_count": len(studies),
+                            "partial_rerun_capable_count": sum(
+                                1 for study in studies if study.supports_partial_rerun
+                            ),
+                        },
+                        data={"studies": studies},
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.evidence_book_command == "build":
+                if args.study_id is None:
+                    refresh_report = refresh_evidence_book(repo_root)
+                    outputs = _finalize_outputs(
+                        args,
+                        command="evidence",
+                        inputs=[],
+                        outputs=refresh_report.updated_paths,
+                    )
+                    metrics = {
+                        "reviewer_summary_count": refresh_report.reviewer_summary_count,
+                        "updated_path_count": len(refresh_report.updated_paths),
+                        **_evidence_book_metrics(repo_root),
+                    }
+                    _print_result(
+                        build_command_result(
+                            command="evidence",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics=metrics,
+                            data=refresh_report,
+                        ),
+                        json_output=args.json,
+                    )
+                    return 0
+                report = build_evidence_book_study(repo_root, args.study_id)
+                outputs = _finalize_outputs(
+                    args,
+                    command="evidence",
+                    inputs=[Path(report.study_report.build_script_path)],
+                    outputs=report.refresh_report.updated_paths,
+                )
+                metrics = {
+                    "selected_study_count": 1,
+                    "updated_path_count": len(report.refresh_report.updated_paths),
+                    "reviewer_summary_count": report.refresh_report.reviewer_summary_count,
+                    **_evidence_book_metrics(repo_root),
+                }
+                _print_result(
+                    build_command_result(
+                        command="evidence",
+                        inputs=[Path(report.study_report.build_script_path)],
+                        outputs=outputs,
+                        metrics=metrics,
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.evidence_book_command == "validate":
+                report = validate_evidence_book(repo_root)
+                if not report.valid:
+                    raise EvidenceContractError(
+                        f"evidence-book validation failed with {len(report.issues)} issue(s)"
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="evidence",
+                    inputs=[repo_root / "evidence-book"],
+                    outputs=[
+                        repo_root / "evidence-book" / "index" / "coverage-gaps.json",
+                        repo_root / "evidence-book" / "index" / "freshness-report.json",
+                        repo_root / "evidence-book" / "index" / "integrity-report.json",
+                        repo_root / DOCS_EVIDENCE_OVERVIEW,
+                    ],
+                )
+                _print_result(
+                    build_command_result(
+                        command="evidence",
+                        inputs=[repo_root / "evidence-book"],
+                        outputs=outputs,
+                        metrics={
+                            "issue_count": len(report.issues),
+                            **_evidence_book_metrics(repo_root),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            report = rerun_evidence_book_selection(
+                repo_root, args.study_id, args.evidence_ids
+            )
             outputs = _finalize_outputs(
-                args, command="evidence", inputs=[args.bundle_root]
+                args,
+                command="evidence",
+                inputs=[],
+                outputs=report.refresh_report.updated_paths,
             )
             _print_result(
                 build_command_result(
                     command="evidence",
-                    inputs=[args.bundle_root],
+                    inputs=[],
                     outputs=outputs,
-                    metrics={"file_count": report.file_count},
+                    metrics={
+                        "selected_evidence_count": len(
+                            report.rerun_report.selected_evidence_ids
+                        ),
+                        "updated_path_count": len(report.refresh_report.updated_paths),
+                        **_evidence_book_metrics(repo_root),
+                    },
                     data=report,
                 ),
                 json_output=args.json,

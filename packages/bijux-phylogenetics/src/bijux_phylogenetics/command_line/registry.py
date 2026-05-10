@@ -193,9 +193,9 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
     CommandSpec(
         name="evidence",
         domain="evidence",
-        summary="Bundle a run directory into a checksummed evidence pack.",
-        inputs=("run-root",),
-        outputs=("evidence-bundle",),
+        summary="Bundle evidence packs and govern the repository evidence-book.",
+        inputs=("run-root", "study-id", "evidence-id"),
+        outputs=("evidence-bundle", "evidence-book-index", "reviewer-summary"),
     ),
     CommandSpec(
         name="adapter",
