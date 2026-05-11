@@ -179,6 +179,25 @@ def _copy_output(source: Path, destination: Path) -> Path:
     return destination
 
 
+def _display_path(path: Path, *, root_dir: Path | None) -> str:
+    if root_dir is None:
+        return str(path)
+    try:
+        return str(path.relative_to(root_dir))
+    except ValueError:
+        return str(path)
+
+
+def _display_command(command: list[str], *, root_dir: Path | None) -> str:
+    rendered: list[str] = []
+    for token in command:
+        if token.startswith("/"):
+            rendered.append(_display_path(Path(token), root_dir=root_dir))
+        else:
+            rendered.append(token)
+    return " ".join(rendered)
+
+
 def _artifact_prefix(out_dir: Path, prefix: str, step_name: str) -> Path:
     return out_dir / "engine-artifacts" / prefix / step_name / step_name
 
@@ -199,6 +218,8 @@ def _final_output_paths(out_dir: Path, prefix: str) -> dict[str, Path]:
 def write_fasta_to_tree_model_table(
     path: Path,
     rows: list[FastaToTreeModelRow],
+    *,
+    root_dir: Path | None = None,
 ) -> Path:
     """Write the selected-model table for one FASTA-to-tree workflow."""
     return _write_tsv(
@@ -226,9 +247,9 @@ def write_fasta_to_tree_model_table(
                 if row.artifact_selected_model is None
                 else row.artifact_selected_model,
                 "true" if row.model_consistent else "false",
-                str(row.alignment_path),
-                str(row.trimmed_alignment_path),
-                str(row.manifest_path),
+                _display_path(row.alignment_path, root_dir=root_dir),
+                _display_path(row.trimmed_alignment_path, root_dir=root_dir),
+                _display_path(row.manifest_path, root_dir=root_dir),
             ]
             for row in rows
         ],
@@ -262,12 +283,18 @@ def write_fasta_to_tree_support_table(
     )
 
 
-def write_fasta_to_tree_log(path: Path, report: FastaToTreeWorkflowReport) -> Path:
+def write_fasta_to_tree_log(
+    path: Path,
+    report: FastaToTreeWorkflowReport,
+    *,
+    root_dir: Path | None = None,
+) -> Path:
     """Write a reviewer-facing plain-text log for one workflow run."""
     lines = [
         "workflow: fasta-to-tree",
-        f"input_path: {report.input_path}",
-        f"prepared_input_path: {report.prepared_input_path}",
+        f"input_path: {_display_path(report.input_path, root_dir=root_dir)}",
+        "prepared_input_path: "
+        f"{_display_path(report.prepared_input_path, root_dir=root_dir)}",
         f"sequence_type: {report.sequence_type}",
         f"selected_model: {report.selected_model}",
         "",
@@ -300,13 +327,15 @@ def write_fasta_to_tree_log(path: Path, report: FastaToTreeWorkflowReport) -> Pa
             [
                 f"[{label}]",
                 f"engine: {workflow.engine_name}",
-                f"command: {' '.join(workflow.run.command)}",
+                f"command: {_display_command(workflow.run.command, root_dir=root_dir)}",
                 f"version: {workflow.run.version.text}",
-                f"manifest: {workflow.manifest_path}",
+                f"manifest: {_display_path(workflow.manifest_path, root_dir=root_dir)}",
             ]
         )
         for output_label, output_path in workflow.output_paths.items():
-            lines.append(f"output.{output_label}: {output_path}")
+            lines.append(
+                f"output.{output_label}: {_display_path(output_path, root_dir=root_dir)}"
+            )
         if workflow.run.warning_lines:
             lines.append("warnings:")
             lines.extend(f"- {warning}" for warning in workflow.run.warning_lines)
@@ -470,7 +499,11 @@ def run_fasta_to_tree_workflow(
         alignment_path=final_outputs["alignment"],
         trimmed_alignment_path=final_outputs["trimmed_alignment"],
     )
-    write_fasta_to_tree_model_table(final_outputs["model_table"], model_rows)
+    write_fasta_to_tree_model_table(
+        final_outputs["model_table"],
+        model_rows,
+        root_dir=out_dir,
+    )
     support_summary = summarize_bootstrap_support_distribution(final_outputs["tree"])
     support_rows = build_fasta_to_tree_support_rows(support_summary)
     write_fasta_to_tree_support_table(final_outputs["support_table"], support_rows)
@@ -546,7 +579,7 @@ def run_fasta_to_tree_workflow(
         warnings=warnings,
         notes=notes,
     )
-    write_fasta_to_tree_log(final_outputs["log"], report)
+    write_fasta_to_tree_log(final_outputs["log"], report, root_dir=out_dir)
     report.output_checksums = build_file_checksums(
         [
             final_outputs["alignment"],

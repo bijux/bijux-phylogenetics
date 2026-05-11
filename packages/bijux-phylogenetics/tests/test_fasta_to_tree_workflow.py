@@ -10,6 +10,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeSupportRow,
     infer_unaligned_sequence_type,
     run_fasta_to_tree_workflow,
+    write_fasta_to_tree_log,
     write_fasta_to_tree_model_table,
     write_fasta_to_tree_support_table,
 )
@@ -248,6 +249,45 @@ def test_write_fasta_to_tree_tables_emits_expected_tsv(tmp_path: Path) -> None:
     )
 
 
+def test_write_fasta_to_tree_model_table_can_render_paths_relative_to_root(
+    tmp_path: Path,
+) -> None:
+    workflow_root = tmp_path / "workflow"
+    model_path = workflow_root / "example.model.tsv"
+
+    write_fasta_to_tree_model_table(
+        model_path,
+        [
+            FastaToTreeModelRow(
+                workflow="model-selection",
+                engine_name="iqtree",
+                sequence_type="dna",
+                selected_model="GTR+G",
+                report_selected_model="GTR+G",
+                artifact_selected_model="GTR+G",
+                model_consistent=True,
+                alignment_path=workflow_root / "example.aln",
+                trimmed_alignment_path=workflow_root / "example.trimmed.aln",
+                manifest_path=workflow_root
+                / "engine-artifacts"
+                / "example"
+                / "model-selection"
+                / "model-selection.manifest.json",
+            )
+        ],
+        root_dir=workflow_root,
+    )
+
+    assert model_path.read_text(encoding="utf-8") == (
+        "workflow\tengine_name\tsequence_type\tselected_model\t"
+        "report_selected_model\tartifact_selected_model\tmodel_consistent\t"
+        "alignment_path\ttrimmed_alignment_path\tmanifest_path\n"
+        "model-selection\tiqtree\tdna\tGTR+G\tGTR+G\tGTR+G\ttrue\t"
+        "example.aln\texample.trimmed.aln\t"
+        "engine-artifacts/example/model-selection/model-selection.manifest.json\n"
+    )
+
+
 def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_datasets(
     tmp_path: Path,
 ) -> None:
@@ -318,6 +358,34 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert "iqtree random seed: 1" in log_text
         assert "iqtree threads: 1" in log_text
         assert "warning: iqtree fixture bootstrap" in log_text
+        model_text = report.output_paths["model_table"].read_text(encoding="utf-8")
+        assert "engine-artifacts/" in model_text
+        assert str(report.out_dir) not in model_text
+
+
+def test_write_fasta_to_tree_log_renders_workflow_outputs_relative_to_root(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    report = run_fasta_to_tree_workflow(
+        fixture("alignments/example_sequences_raw.fasta"),
+        out_dir=tmp_path / "portable-log",
+        prefix="portable-log",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+
+    log_path = tmp_path / "portable-log.rendered.log"
+    write_fasta_to_tree_log(log_path, report, root_dir=report.out_dir)
+    log_text = log_path.read_text(encoding="utf-8")
+
+    assert "manifest: engine-artifacts/portable-log/model-selection/model-selection.manifest.json" in log_text
+    assert "output.alignment: engine-artifacts/portable-log/alignment/alignment.aln" in log_text
+    assert str(report.out_dir) not in log_text
 
 
 def test_run_fasta_to_tree_workflow_rejects_invalid_raw_input_without_repair(
