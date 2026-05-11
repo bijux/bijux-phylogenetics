@@ -633,14 +633,57 @@ def test_run_iqtree_backend_with_real_executable_on_small_dataset(
     assert ml_report.log_likelihood is not None
     assert bootstrap_report.output_paths["bootstrap_trees"].exists()
     assert bootstrap_report.output_paths["support_tree"].exists()
+    assert bootstrap_report.output_paths["support_table"].exists()
+    assert bootstrap_report.output_paths["low_support_branches"].exists()
+    assert bootstrap_report.output_paths["support_histogram"].exists()
     assert bootstrap_report.output_paths["iqtree_log"].exists()
     assert bootstrap_report.log_likelihood is not None
     assert bootstrap_report.iqtree_summary is not None
     assert bootstrap_report.iqtree_summary.support_value_count >= 1
+    assert bootstrap_report.bootstrap_support_summary is not None
+    assert bootstrap_report.weak_backbone_report is not None
     assert consensus_report.output_paths["consensus_tree"].exists()
     assert consensus_report.output_paths["iqtree_log"].exists()
     assert consensus_report.iqtree_summary is not None
     assert consensus_report.iqtree_summary.support_value_count >= 1
+
+
+def test_run_bootstrap_support_estimation_exports_branch_ledgers_and_histogram(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_bootstrap_support_estimation(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        replicates=1000,
+    )
+
+    assert report.output_paths["support_table"].read_text(encoding="utf-8") == (
+        "node\tdescendant_taxa\tsupport\tsupport_fraction\tis_backbone\t"
+        "support_bucket\tlow_support\n"
+        "A|B\tA,B\t95\t0.95\ttrue\tge90\tfalse\n"
+        "C|D\tC,D\t88\t0.88\ttrue\t70to89\tfalse\n"
+    )
+    assert (
+        report.output_paths["low_support_branches"].read_text(encoding="utf-8")
+        == "node\tdescendant_taxa\tsupport\tsupport_fraction\tis_backbone\t"
+        "support_bucket\tlow_support\n"
+    )
+    assert report.output_paths["support_histogram"].read_text(encoding="utf-8") == (
+        "support_bucket\tminimum_support\tmaximum_support\tnode_count\n"
+        "lt50\t\t50\t0\n"
+        "50to69\t50\t70\t0\n"
+        "70to89\t70\t90\t1\n"
+        "ge90\t90\t\t1\n"
+    )
+    assert report.bootstrap_support_summary is not None
+    assert report.bootstrap_support_summary.weakly_supported_clade_count == 0
+    assert report.weak_backbone_report is not None
+    assert report.weak_backbone_report.weak_backbone_node_count == 0
 
 
 def test_trimal_trimming_modes_resolve_to_explicit_documented_arguments() -> None:

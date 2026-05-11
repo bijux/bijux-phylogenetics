@@ -49,6 +49,13 @@ from .common import (
     resolve_engine_executable,
     write_engine_manifest,
 )
+from .bootstrap_artifacts import (
+    build_bootstrap_support_histogram_rows,
+    build_bootstrap_support_rows,
+    build_low_support_bootstrap_rows,
+    write_bootstrap_support_histogram,
+    write_bootstrap_support_table,
+)
 from .iqtree_artifacts import (
     IqtreeModelCandidate,
     IqtreeModelSelectionSummary,
@@ -58,7 +65,13 @@ from .iqtree_artifacts import (
     resolve_iqtree_model_sidecar,
     write_iqtree_model_candidates_table,
 )
-from .validation import summarize_bootstrap_support_distribution
+from .validation import (
+    BootstrapSupportNode,
+    BootstrapSupportSummaryReport,
+    WeakBackboneReport,
+    detect_weakly_supported_backbone,
+    summarize_bootstrap_support_distribution,
+)
 _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
     "auto": ("--auto",),
     "linsi": ("--localpair", "--maxiterate", "1000"),
@@ -90,6 +103,8 @@ class EngineWorkflowReport:
     log_likelihood: float | None = None
     iqtree_summary: IqtreeWorkflowSummary | None = None
     model_selection_summary: IqtreeModelSelectionSummary | None = None
+    bootstrap_support_summary: BootstrapSupportSummaryReport | None = None
+    weak_backbone_report: WeakBackboneReport | None = None
     trimming_summary: AlignmentTrimmingSummary | None = None
     resumed: bool = False
     notes: list[str] = field(default_factory=list)
@@ -632,6 +647,108 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ],
             )
         ),
+        bootstrap_support_summary=(
+            None
+            if payload.get("bootstrap_support_summary") is None
+            else BootstrapSupportSummaryReport(
+                tree_path=Path(dict(payload["bootstrap_support_summary"])["tree_path"]),
+                internal_node_count=int(
+                    dict(payload["bootstrap_support_summary"])["internal_node_count"]
+                ),
+                supported_node_count=int(
+                    dict(payload["bootstrap_support_summary"])["supported_node_count"]
+                ),
+                minimum_support=(
+                    None
+                    if dict(payload["bootstrap_support_summary"]).get(
+                        "minimum_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["bootstrap_support_summary"])["minimum_support"]
+                    )
+                ),
+                maximum_support=(
+                    None
+                    if dict(payload["bootstrap_support_summary"]).get(
+                        "maximum_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["bootstrap_support_summary"])["maximum_support"]
+                    )
+                ),
+                median_support=(
+                    None
+                    if dict(payload["bootstrap_support_summary"]).get("median_support")
+                    is None
+                    else float(
+                        dict(payload["bootstrap_support_summary"])["median_support"]
+                    )
+                ),
+                weakly_supported_clade_count=int(
+                    dict(payload["bootstrap_support_summary"])[
+                        "weakly_supported_clade_count"
+                    ]
+                ),
+                support_histogram={
+                    str(key): int(value)
+                    for key, value in dict(
+                        dict(payload["bootstrap_support_summary"])["support_histogram"]
+                    ).items()
+                },
+                nodes=[
+                    BootstrapSupportNode(
+                        node=str(dict(item)["node"]),
+                        descendant_taxa=[
+                            str(taxon)
+                            for taxon in list(dict(item)["descendant_taxa"])
+                        ],
+                        support=float(dict(item)["support"]),
+                        support_fraction=float(dict(item)["support_fraction"]),
+                        is_backbone=bool(dict(item)["is_backbone"]),
+                    )
+                    for item in list(dict(payload["bootstrap_support_summary"])["nodes"])
+                ],
+                warnings=[
+                    str(item)
+                    for item in list(dict(payload["bootstrap_support_summary"])["warnings"])
+                ],
+            )
+        ),
+        weak_backbone_report=(
+            None
+            if payload.get("weak_backbone_report") is None
+            else WeakBackboneReport(
+                tree_path=Path(dict(payload["weak_backbone_report"])["tree_path"]),
+                threshold=float(dict(payload["weak_backbone_report"])["threshold"]),
+                evaluated_backbone_node_count=int(
+                    dict(payload["weak_backbone_report"])[
+                        "evaluated_backbone_node_count"
+                    ]
+                ),
+                weak_backbone_node_count=int(
+                    dict(payload["weak_backbone_report"])["weak_backbone_node_count"]
+                ),
+                weak_nodes=[
+                    BootstrapSupportNode(
+                        node=str(dict(item)["node"]),
+                        descendant_taxa=[
+                            str(taxon)
+                            for taxon in list(dict(item)["descendant_taxa"])
+                        ],
+                        support=float(dict(item)["support"]),
+                        support_fraction=float(dict(item)["support_fraction"]),
+                        is_backbone=bool(dict(item)["is_backbone"]),
+                    )
+                    for item in list(dict(payload["weak_backbone_report"])["weak_nodes"])
+                ],
+                warnings=[
+                    str(item)
+                    for item in list(dict(payload["weak_backbone_report"])["warnings"])
+                ],
+            )
+        ),
         trimming_summary=None
         if payload.get("trimming_summary") is None
         else AlignmentTrimmingSummary(
@@ -705,6 +822,16 @@ def _persist_workflow_report(report: EngineWorkflowReport) -> EngineWorkflowRepo
     report.output_checksums = build_file_checksums(list(report.output_paths.values()))
     write_engine_manifest(report.manifest_path, report)
     return report
+
+
+def _resume_has_bootstrap_review_outputs(report: EngineWorkflowReport) -> bool:
+    return (
+        report.bootstrap_support_summary is not None
+        and report.weak_backbone_report is not None
+        and report.output_paths.get("support_table") is not None
+        and report.output_paths.get("low_support_branches") is not None
+        and report.output_paths.get("support_histogram") is not None
+    )
 
 
 def _iqtree_sequence_type_flag(
@@ -1351,6 +1478,9 @@ def run_bootstrap_support_estimation(
         )
     support_tree_path = prefix_path.with_suffix(".treefile")
     bootstrap_tree_path = prefix_path.with_suffix(".ufboot")
+    support_table_path = prefix_path.with_suffix(".support.tsv")
+    low_support_branches_path = prefix_path.with_suffix(".low-support.tsv")
+    support_histogram_path = prefix_path.with_suffix(".support-histogram.tsv")
     report_path = prefix_path.with_suffix(".iqtree")
     log_path = prefix_path.with_suffix(".log")
     manifest_path = prefix_path.with_suffix(".manifest.json")
@@ -1386,7 +1516,8 @@ def run_bootstrap_support_estimation(
             expected_command=command,
         )
         if resumed is not None:
-            return resumed
+            if _resume_has_bootstrap_review_outputs(resumed):
+                return resumed
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="bootstrap-support",
@@ -1411,6 +1542,22 @@ def run_bootstrap_support_estimation(
         default_selected_model=model,
         support_tree_path=support_tree_path,
     )
+    bootstrap_support_summary = summarize_bootstrap_support_distribution(
+        support_tree_path
+    )
+    weak_backbone_report = detect_weakly_supported_backbone(support_tree_path)
+    write_bootstrap_support_table(
+        support_table_path,
+        build_bootstrap_support_rows(bootstrap_support_summary),
+    )
+    write_bootstrap_support_table(
+        low_support_branches_path,
+        build_low_support_bootstrap_rows(bootstrap_support_summary),
+    )
+    write_bootstrap_support_histogram(
+        support_histogram_path,
+        build_bootstrap_support_histogram_rows(bootstrap_support_summary),
+    )
     model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
     report = EngineWorkflowReport(
         workflow="bootstrap-support",
@@ -1433,6 +1580,9 @@ def run_bootstrap_support_estimation(
                 include_consensus=True,
             ),
             "support_tree": support_tree_path,
+            "support_table": support_table_path,
+            "low_support_branches": low_support_branches_path,
+            "support_histogram": support_histogram_path,
         },
         run=run,
         manifest_path=manifest_path,
@@ -1444,6 +1594,8 @@ def run_bootstrap_support_estimation(
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
         model_selection_summary=model_selection_summary,
+        bootstrap_support_summary=bootstrap_support_summary,
+        weak_backbone_report=weak_backbone_report,
         notes=[
             *(
                 []
@@ -1465,6 +1617,9 @@ def run_bootstrap_support_estimation(
                     "support values parsed from the bootstrap-supported tree artifact"
                 ]
             ),
+            "branch-level support table exported for bootstrap review",
+            "low-support branch ledger exported for weak-clade review",
+            "support histogram exported for reviewer-facing support distribution checks",
         ],
     )
     return _persist_workflow_report(report)
