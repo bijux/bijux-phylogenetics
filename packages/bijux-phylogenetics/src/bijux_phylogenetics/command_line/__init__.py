@@ -198,6 +198,7 @@ from bijux_phylogenetics.diversification import (
 )
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
+    list_mafft_alignment_modes,
     read_engine_version,
     render_inference_workflow_report,
     run_alignment_trimming,
@@ -3286,6 +3287,12 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_align.add_argument("input_path", type=Path)
     adapter_align.add_argument("--out", required=True, type=Path)
     adapter_align.add_argument("--executable", type=str)
+    adapter_align.add_argument(
+        "--mode",
+        choices=list_mafft_alignment_modes(),
+        default="auto",
+        help="Select the named MAFFT alignment strategy.",
+    )
     adapter_align.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
@@ -8548,6 +8555,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.input_path,
                     args.out,
                     executable=args.executable or "mafft",
+                    mode=args.mode,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -8561,7 +8569,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.input_path],
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"warning_count": len(report.run.warning_lines)},
+                        metrics={
+                            "mode": args.mode,
+                            "warning_count": len(report.run.warning_lines),
+                        },
                         data=report,
                     ),
                     json_output=args.json,

@@ -229,6 +229,41 @@ def test_adapter_align_cli_writes_aligned_fasta_and_manifest(
     assert Path(payload["data"]["manifest_path"]).exists()
 
 
+def test_adapter_align_cli_passes_named_mafft_mode_to_workflow(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "unaligned-protein.fasta"
+    input_path.write_text(">A\nMKTW\n>B\nMKTWA\n>C\nMKT\n", encoding="utf-8")
+    output_path = tmp_path / "aligned-protein.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "align",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--mode",
+            "linsi",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["mode"] == "linsi"
+    assert payload["data"]["run"]["command"][1:-1] == [
+        "--localpair",
+        "--maxiterate",
+        "1000",
+    ]
+    assert payload["data"]["notes"][0] == "mafft alignment mode: linsi"
+    assert output_path.exists()
+
+
 def test_adapter_model_select_and_compare_cli_produce_outputs(
     tmp_path: Path, capsys
 ) -> None:
