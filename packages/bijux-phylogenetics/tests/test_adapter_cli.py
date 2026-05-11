@@ -403,6 +403,49 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     assert Path(payload["data"]["manifest_path"]).exists()
 
 
+def test_adapter_fasta_to_tree_cli_passes_named_mafft_mode_to_alignment_step(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+    out_dir = tmp_path / "fasta-to-tree-linsi"
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--mafft-executable",
+            str(mafft),
+            "--alignment-mode",
+            "linsi",
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(iqtree),
+            "--bootstrap-replicates",
+            "200",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["alignment_mode"] == "linsi"
+    assert payload["data"]["alignment_workflow"]["run"]["command"][1:-1] == [
+        "--localpair",
+        "--maxiterate",
+        "1000",
+    ]
+    assert "mafft alignment mode: linsi" in payload["data"]["notes"]
+
+
 def test_adapter_fasta_to_tree_cli_repairs_invalid_input_when_requested(
     tmp_path: Path, capsys
 ) -> None:

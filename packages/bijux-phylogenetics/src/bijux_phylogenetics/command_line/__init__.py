@@ -3363,6 +3363,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--sequence-type", choices=("dna", "rna", "protein", "unknown")
     )
     adapter_fasta_to_tree.add_argument("--mafft-executable", type=str)
+    adapter_fasta_to_tree.add_argument(
+        "--alignment-mode",
+        choices=list_mafft_alignment_modes(),
+        default="auto",
+        help="Select the named MAFFT alignment strategy for the raw-input workflow.",
+    )
     adapter_fasta_to_tree.add_argument("--trimal-executable", type=str)
     adapter_fasta_to_tree.add_argument("--iqtree-executable", type=str)
     adapter_fasta_to_tree.add_argument("--trim-gap-threshold", type=float, default=0.1)
@@ -8691,6 +8697,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     prefix=args.prefix,
                     sequence_type=args.sequence_type,
                     mafft_executable=args.mafft_executable or "mafft",
+                    alignment_mode=args.alignment_mode,
                     trimal_executable=args.trimal_executable or "trimal",
                     iqtree_executable=args.iqtree_executable or "iqtree2",
                     trim_gap_threshold=args.trim_gap_threshold,
@@ -8711,6 +8718,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=report.warnings,
                         metrics={
+                            "alignment_mode": args.alignment_mode,
                             "bootstrap_replicates": args.bootstrap_replicates,
                             "selected_model": report.selected_model,
                             "sequence_type": report.sequence_type,
