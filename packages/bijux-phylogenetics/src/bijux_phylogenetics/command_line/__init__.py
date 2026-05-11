@@ -89,6 +89,11 @@ from bijux_phylogenetics.compare.topology import (
 )
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
+from bijux_phylogenetics.core.locus_occupancy import (
+    build_locus_occupancy_report,
+    filter_locus_occupancy,
+    write_locus_partitions,
+)
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import (
     inspect_metadata_table,
@@ -336,6 +341,102 @@ def _print_result(result: Any, *, json_output: bool) -> None:
     print(json.dumps(_json_ready(result), indent=2, sort_keys=True))
 
 
+def _tsv_field(value: Any) -> str:
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, float):
+        return format(value, ".12g")
+    return str(value)
+
+
+def _write_tsv(path: Path, *, header: list[str], rows: list[list[Any]]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["\t".join(header)]
+    lines.extend("\t".join(_tsv_field(value) for value in row) for row in rows)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_locus_occupancy_taxa_tsv(path: Path, report: Any) -> Path:
+    return _write_tsv(
+        path,
+        header=[
+            "taxon",
+            "covered_locus_count",
+            "total_locus_count",
+            "locus_coverage_fraction",
+            "observed_site_count",
+            "total_site_count",
+            "low_coverage",
+        ],
+        rows=[
+            [
+                row.taxon,
+                row.covered_locus_count,
+                row.total_locus_count,
+                row.locus_coverage_fraction,
+                row.observed_site_count,
+                row.total_site_count,
+                row.low_coverage,
+            ]
+            for row in report.taxa
+        ],
+    )
+
+
+def _write_locus_occupancy_loci_tsv(path: Path, report: Any) -> Path:
+    return _write_tsv(
+        path,
+        header=[
+            "locus_name",
+            "covered_taxon_count",
+            "total_taxa",
+            "taxon_coverage_fraction",
+            "observed_site_count",
+            "total_site_count",
+            "low_coverage",
+        ],
+        rows=[
+            [
+                row.locus_name,
+                row.covered_taxon_count,
+                row.total_taxa,
+                row.taxon_coverage_fraction,
+                row.observed_site_count,
+                row.total_site_count,
+                row.low_coverage,
+            ]
+            for row in report.loci
+        ],
+    )
+
+
+def _write_locus_occupancy_matrix_tsv(path: Path, report: Any) -> Path:
+    locus_names = [partition.name for partition in report.partitions]
+    return _write_tsv(
+        path,
+        header=[
+            "taxon",
+            *locus_names,
+            "covered_locus_count",
+            "total_locus_count",
+            "locus_coverage_fraction",
+            "low_coverage",
+        ],
+        rows=[
+            [
+                row.taxon,
+                *[row.occupancies[name] for name in locus_names],
+                row.covered_locus_count,
+                row.total_locus_count,
+                row.locus_coverage_fraction,
+                row.low_coverage,
+            ]
+            for row in report.taxa
+        ],
+    )
+
+
 def _evidence_book_metrics(repo_root: Path) -> dict[str, int | str]:
     freshness_report = build_evidence_freshness_report(repo_root)
     integrity_report = build_evidence_integrity_report(repo_root)
@@ -556,6 +657,18 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.alignment]
         if args.alignment_command == "quality":
             return [args.alignment]
+        if args.alignment_command == "occupancy":
+            inputs: list[Path | str] = [args.alignment, args.partitions]
+            for optional_path in (
+                args.taxa_out,
+                args.loci_out,
+                args.matrix_out,
+                args.filtered_alignment_out,
+                args.filtered_partitions_out,
+            ):
+                if optional_path is not None:
+                    inputs.append(optional_path)
+            return inputs
         if args.alignment_command == "trim":
             return [args.alignment, args.out]
         if args.alignment_command == "identity-matrix":
@@ -975,6 +1088,43 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the report as JSON."
     )
     _add_manifest_argument(alignment_sequence_ranking)
+    alignment_occupancy = alignment_subparsers.add_parser(
+        "occupancy",
+        help="Quantify per-taxon and per-locus occupancy across a concatenated multi-locus alignment.",
+    )
+    alignment_occupancy.add_argument("alignment", type=Path)
+    alignment_occupancy.add_argument("partitions", type=Path)
+    alignment_occupancy.add_argument("--taxon-coverage-threshold", type=float)
+    alignment_occupancy.add_argument("--locus-coverage-threshold", type=float)
+    alignment_occupancy.add_argument(
+        "--taxa-out",
+        type=Path,
+        help="Write per-taxon locus coverage as TSV.",
+    )
+    alignment_occupancy.add_argument(
+        "--loci-out",
+        type=Path,
+        help="Write per-locus taxon coverage as TSV.",
+    )
+    alignment_occupancy.add_argument(
+        "--matrix-out",
+        type=Path,
+        help="Write the taxon-by-locus occupancy matrix as TSV.",
+    )
+    alignment_occupancy.add_argument(
+        "--filtered-alignment-out",
+        type=Path,
+        help="Write the retained alignment after occupancy filtering.",
+    )
+    alignment_occupancy.add_argument(
+        "--filtered-partitions-out",
+        type=Path,
+        help="Write the retained partition file after occupancy filtering.",
+    )
+    alignment_occupancy.add_argument(
+        "--json", action="store_true", help="Emit the occupancy report as JSON."
+    )
+    _add_manifest_argument(alignment_occupancy)
     alignment_filter = alignment_subparsers.add_parser(
         "filter",
         help="Clean an alignment through one named profile and report what changed.",
@@ -4077,6 +4227,103 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             else report.rows[-1].score,
                         },
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "occupancy":
+                report = build_locus_occupancy_report(
+                    args.alignment,
+                    args.partitions,
+                    taxon_coverage_threshold=args.taxon_coverage_threshold,
+                    locus_coverage_threshold=args.locus_coverage_threshold,
+                )
+                command_outputs: list[Path] = []
+                if args.taxa_out is not None:
+                    command_outputs.append(
+                        _write_locus_occupancy_taxa_tsv(args.taxa_out, report)
+                    )
+                if args.loci_out is not None:
+                    command_outputs.append(
+                        _write_locus_occupancy_loci_tsv(args.loci_out, report)
+                    )
+                if args.matrix_out is not None:
+                    command_outputs.append(
+                        _write_locus_occupancy_matrix_tsv(args.matrix_out, report)
+                    )
+
+                filter_report = None
+                if (
+                    args.taxon_coverage_threshold is not None
+                    or args.locus_coverage_threshold is not None
+                    or args.filtered_alignment_out is not None
+                    or args.filtered_partitions_out is not None
+                ):
+                    filtered_records, filtered_partitions, filter_report = (
+                        filter_locus_occupancy(
+                            args.alignment,
+                            args.partitions,
+                            taxon_coverage_threshold=args.taxon_coverage_threshold,
+                            locus_coverage_threshold=args.locus_coverage_threshold,
+                        )
+                    )
+                    if args.filtered_alignment_out is not None:
+                        command_outputs.append(
+                            write_fasta_alignment(
+                                args.filtered_alignment_out,
+                                filtered_records,
+                            )
+                        )
+                    if args.filtered_partitions_out is not None:
+                        command_outputs.append(
+                            write_locus_partitions(
+                                args.filtered_partitions_out,
+                                filtered_partitions,
+                            )
+                        )
+
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment, args.partitions],
+                    outputs=command_outputs,
+                )
+                warnings = list(
+                    dict.fromkeys(
+                        report.warnings
+                        + (
+                            []
+                            if filter_report is None
+                            else filter_report.final_report.warnings
+                        )
+                    )
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment, args.partitions],
+                        outputs=outputs,
+                        warnings=warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "locus_count": report.locus_count,
+                            "low_coverage_taxon_count": len(report.low_coverage_taxa),
+                            "low_coverage_locus_count": len(report.low_coverage_loci),
+                            "filtered_taxon_count": (
+                                report.taxon_count
+                                if filter_report is None
+                                else len(filter_report.retained_taxa)
+                            ),
+                            "filtered_locus_count": (
+                                report.locus_count
+                                if filter_report is None
+                                else len(filter_report.retained_loci)
+                            ),
+                        },
+                        data={
+                            "report": report,
+                            "filter_report": filter_report,
+                        },
                     ),
                     json_output=args.json,
                 )

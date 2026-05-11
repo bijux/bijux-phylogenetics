@@ -4988,6 +4988,71 @@ def test_cli_alignment_profiles_json_output(capsys) -> None:
     assert any(profile["name"] == "coding-safe" for profile in payload["data"])
 
 
+def test_cli_alignment_occupancy_writes_tables_and_filtered_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    taxa_out = tmp_path / "taxa.tsv"
+    loci_out = tmp_path / "loci.tsv"
+    matrix_out = tmp_path / "matrix.tsv"
+    filtered_alignment_out = tmp_path / "filtered_alignment.fasta"
+    filtered_partitions_out = tmp_path / "filtered_partitions.txt"
+
+    exit_code = main(
+        [
+            "alignment",
+            "occupancy",
+            str(fixture("example_multilocus_alignment.fasta")),
+            str(fixture("example_multilocus_partitions.txt")),
+            "--taxon-coverage-threshold",
+            "0.6",
+            "--locus-coverage-threshold",
+            "0.6",
+            "--taxa-out",
+            str(taxa_out),
+            "--loci-out",
+            str(loci_out),
+            "--matrix-out",
+            str(matrix_out),
+            "--filtered-alignment-out",
+            str(filtered_alignment_out),
+            "--filtered-partitions-out",
+            str(filtered_partitions_out),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["metrics"]["locus_count"] == 3
+    assert payload["metrics"]["filtered_taxon_count"] == 2
+    assert payload["metrics"]["filtered_locus_count"] == 2
+    assert payload["data"]["filter_report"]["removed_taxa"] == [
+        "TaxonC",
+        "TaxonD",
+        "TaxonE",
+    ]
+    assert payload["data"]["filter_report"]["removed_loci"] == ["gene_beta"]
+
+    assert taxa_out.read_text(encoding="utf-8").startswith(
+        "taxon\tcovered_locus_count\ttotal_locus_count"
+    )
+    assert "gene_gamma\t2\t5\t0.4\t6\t15\ttrue\n" in loci_out.read_text(
+        encoding="utf-8"
+    )
+    assert matrix_out.read_text(encoding="utf-8").splitlines()[0] == (
+        "taxon\tgene_alpha\tgene_beta\tgene_gamma\tcovered_locus_count\t"
+        "total_locus_count\tlocus_coverage_fraction\tlow_coverage"
+    )
+    assert filtered_alignment_out.read_text(encoding="utf-8") == (
+        ">TaxonA\nAAAAGGG\n>TaxonB\nAAAAGGG\n"
+    )
+    assert filtered_partitions_out.read_text(encoding="utf-8") == (
+        "DNA,gene_alpha = 1-4\nDNA,gene_gamma = 5-7\n"
+    )
+
+
 def test_cli_alignment_forensic_json_output(capsys) -> None:
     exit_code = main(
         [
