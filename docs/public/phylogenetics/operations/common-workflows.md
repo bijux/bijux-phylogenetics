@@ -115,11 +115,13 @@ partition. Use a model-selection keyword such as `MF`, `MFP`, `TEST`, or
 `TESTMERGE` so the engine can choose partition-appropriate models honestly.
 
 Those direct adapter runs now preserve IQ-TREE's own `.iqtree` and `.log`
-artifacts, plus `.treefile`, `.ufboot`, and `.contree` where the invoked step
-produces them. The emitted JSON and manifests also include the parsed
-`selected_model`, `log_likelihood`, and support-value counts so reviewers can
-verify the ML result against structured fields instead of manually scraping
-engine text files.
+artifacts, plus the model-selection sidecar, a generated
+`.model-candidates.tsv`, and `.treefile`, `.ufboot`, or `.contree` where the
+invoked step produces them. The emitted JSON and manifests also include the
+parsed `selected_model`, `selected_criterion`, `candidate_model_count`,
+`best_model_aic`, `best_model_aicc`, `best_model_bic`, `log_likelihood`, and
+support-value counts so reviewers can verify the ML result against structured
+fields instead of manually scraping engine text files.
 
 ## Coding DNA Alignment
 
@@ -191,9 +193,11 @@ It also retains step-specific engine artifacts under
 `artifacts/fasta-to-tree/engine-artifacts/mammals/` for auditability.
 
 Within that engine-artifact directory, the IQ-TREE stages preserve the native
-`.iqtree`, `.log`, `.treefile`, `.ufboot`, and `.contree` files where each
-stage produces them. The corresponding manifest entries expose the parsed
-selected model, log-likelihood, and support summary directly.
+`.iqtree`, `.log`, model-selection sidecar, `.model-candidates.tsv`,
+`.treefile`, `.ufboot`, and `.contree` files where each stage produces them.
+The corresponding manifest entries expose the parsed selected model, selected
+criterion, AIC/AICc/BIC winners, candidate-model counts, log-likelihood, and
+support summary directly.
 
 The IQ-TREE part of the workflow now defaults to deterministic execution with
 `--iqtree-seed 1` and `--iqtree-threads 1`. Ultrafast bootstrap support is the

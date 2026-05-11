@@ -64,13 +64,16 @@ DNA/protein runs; use a model-selection keyword such as `MF`, `MFP`, `TEST`, or
 `TESTMERGE` instead.
 
 The direct IQ-TREE adapter commands also preserve the native engine artifacts
-that correspond to each run. `adapter model-select` keeps `.iqtree` and `.log`;
-`adapter infer-ml` keeps `.treefile`, `.iqtree`, and `.log`; `adapter bootstrap`
-keeps `.treefile`, `.iqtree`, `.log`, `.ufboot`, and `.contree` when those
-artifacts exist; and `adapter consensus` keeps the consensus `.contree` with
-the matching `.iqtree` and `.log`. Their JSON summaries expose parsed
-`selected_model`, `log_likelihood`, and support-value counts so review surfaces
-can rely on structured engine outputs instead of re-parsing free text.
+that correspond to each run. `adapter model-select` keeps `.iqtree`, `.log`,
+the native model sidecar, and a generated `.model-candidates.tsv`; `adapter infer-ml`
+keeps `.treefile`, `.iqtree`, and `.log`; `adapter bootstrap` keeps `.treefile`,
+`.iqtree`, `.log`, `.ufboot`, and `.contree` when those artifacts exist; and
+`adapter consensus` keeps the consensus `.contree` with the matching `.iqtree`
+and `.log`. Their JSON summaries expose parsed `selected_model`,
+`selected_criterion`, `candidate_model_count`, `best_model_aic`,
+`best_model_aicc`, `best_model_bic`, `log_likelihood`, and support-value counts
+so review surfaces can rely on structured engine outputs instead of re-parsing
+free text.
 
 For raw input hygiene before alignment, the alignment family now includes
 `alignment sequence-type`, `alignment validate-input`, and
