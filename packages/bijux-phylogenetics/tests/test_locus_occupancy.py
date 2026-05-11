@@ -23,9 +23,7 @@ def fixture(path: str) -> Path:
 def test_parse_locus_partitions_accepts_common_partition_syntax(tmp_path: Path) -> None:
     partition_path = tmp_path / "partitions.txt"
     partition_path.write_text(
-        "charset gene_alpha = 1-4;\n"
-        "DNA,gene_beta = 5-9\n"
-        "gene_gamma = 10-12\n",
+        "charset gene_alpha = 1-4;\nDNA,gene_beta = 5-9\ngene_gamma = 10-12\n",
         encoding="utf-8",
     )
 
@@ -66,7 +64,8 @@ def test_parse_locus_partitions_rejects_duplicate_locus_names(
     )
 
     with pytest.raises(
-        InvalidPartitionError, match="partition name 'gene_alpha' appears more than once"
+        InvalidPartitionError,
+        match="partition name 'gene_alpha' appears more than once",
     ):
         build_locus_occupancy_report(
             fixture("alignments/example_multilocus_alignment.fasta"),

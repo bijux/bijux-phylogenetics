@@ -239,7 +239,9 @@ def _validate_partitions(
 
 
 def _slice_partition_sequence(sequence: str, partition: LocusPartition) -> str:
-    return "".join(sequence[segment.start - 1 : segment.end] for segment in partition.segments)
+    return "".join(
+        sequence[segment.start - 1 : segment.end] for segment in partition.segments
+    )
 
 
 def _partition_records(
@@ -489,7 +491,9 @@ def filter_locus_occupancy(
     *,
     taxon_coverage_threshold: float | None = None,
     locus_coverage_threshold: float | None = None,
-) -> tuple[list[AlignmentRecord], tuple[LocusPartition, ...], LocusOccupancyFilterReport]:
+) -> tuple[
+    list[AlignmentRecord], tuple[LocusPartition, ...], LocusOccupancyFilterReport
+]:
     """Filter taxa and loci by occupancy thresholds until the retained matrix stabilizes."""
     _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
     _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
@@ -559,12 +563,11 @@ def filter_locus_occupancy(
             )
             next_partitions = _remap_partitions_for_concatenation(retained_partitions)
 
-        if (
-            [record.identifier for record in next_records]
-            == [record.identifier for record in current_records]
-            and [partition.name for partition in next_partitions]
-            == [partition.name for partition in current_partitions]
-        ):
+        if [record.identifier for record in next_records] == [
+            record.identifier for record in current_records
+        ] and [partition.name for partition in next_partitions] == [
+            partition.name for partition in current_partitions
+        ]:
             final_report = _build_locus_occupancy_report_from_inputs(
                 alignment_path,
                 partition_path,
@@ -573,31 +576,36 @@ def filter_locus_occupancy(
                 taxon_coverage_threshold=taxon_coverage_threshold,
                 locus_coverage_threshold=locus_coverage_threshold,
             )
-            return next_records, next_partitions, LocusOccupancyFilterReport(
-                alignment_path=alignment_path,
-                partition_path=partition_path,
-                original_taxon_count=len(original_taxa),
-                original_locus_count=len(original_loci),
-                original_alignment_length=_validate_records(
-                    load_fasta_alignment(alignment_path)
+            return (
+                next_records,
+                next_partitions,
+                LocusOccupancyFilterReport(
+                    alignment_path=alignment_path,
+                    partition_path=partition_path,
+                    original_taxon_count=len(original_taxa),
+                    original_locus_count=len(original_loci),
+                    original_alignment_length=_validate_records(
+                        load_fasta_alignment(alignment_path)
+                    ),
+                    retained_taxa=[record.identifier for record in next_records],
+                    removed_taxa=[
+                        taxon
+                        for taxon in original_taxa
+                        if taxon not in {record.identifier for record in next_records}
+                    ],
+                    retained_loci=[partition.name for partition in next_partitions],
+                    removed_loci=[
+                        locus
+                        for locus in original_loci
+                        if locus
+                        not in {partition.name for partition in next_partitions}
+                    ],
+                    filtered_alignment_length=len(next_records[0].sequence),
+                    iterations=iterations,
+                    taxon_coverage_threshold=taxon_coverage_threshold,
+                    locus_coverage_threshold=locus_coverage_threshold,
+                    final_report=final_report,
                 ),
-                retained_taxa=[record.identifier for record in next_records],
-                removed_taxa=[
-                    taxon
-                    for taxon in original_taxa
-                    if taxon not in {record.identifier for record in next_records}
-                ],
-                retained_loci=[partition.name for partition in next_partitions],
-                removed_loci=[
-                    locus
-                    for locus in original_loci
-                    if locus not in {partition.name for partition in next_partitions}
-                ],
-                filtered_alignment_length=len(next_records[0].sequence),
-                iterations=iterations,
-                taxon_coverage_threshold=taxon_coverage_threshold,
-                locus_coverage_threshold=locus_coverage_threshold,
-                final_report=final_report,
             )
 
         current_records = next_records

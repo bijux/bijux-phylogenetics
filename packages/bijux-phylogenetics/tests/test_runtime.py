@@ -573,8 +573,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
     )
     assert (
-        bijux_phylogenetics.build_locus_occupancy_report
-        is build_locus_occupancy_report
+        bijux_phylogenetics.build_locus_occupancy_report is build_locus_occupancy_report
     )
     assert bijux_phylogenetics.filter_locus_occupancy is filter_locus_occupancy
     assert bijux_phylogenetics.parse_locus_partitions is parse_locus_partitions
