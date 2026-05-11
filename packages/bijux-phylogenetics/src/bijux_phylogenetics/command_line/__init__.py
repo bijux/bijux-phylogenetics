@@ -3377,6 +3377,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Select the named MAFFT alignment strategy for the raw-input workflow.",
     )
     adapter_fasta_to_tree.add_argument("--trimal-executable", type=str)
+    adapter_fasta_to_tree.add_argument(
+        "--trimming-mode",
+        choices=list_trimal_trimming_modes(),
+        default="gap-threshold",
+        help="Select the named trimAl trimming strategy for the aligned workflow.",
+    )
     adapter_fasta_to_tree.add_argument("--iqtree-executable", type=str)
     adapter_fasta_to_tree.add_argument("--trim-gap-threshold", type=float, default=0.1)
     adapter_fasta_to_tree.add_argument("--bootstrap-replicates", type=int, default=1000)
@@ -8730,6 +8736,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     mafft_executable=args.mafft_executable or "mafft",
                     alignment_mode=args.alignment_mode,
                     trimal_executable=args.trimal_executable or "trimal",
+                    trimming_mode=args.trimming_mode,
                     iqtree_executable=args.iqtree_executable or "iqtree2",
                     trim_gap_threshold=args.trim_gap_threshold,
                     bootstrap_replicates=args.bootstrap_replicates,
@@ -8750,7 +8757,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.warnings,
                         metrics={
                             "alignment_mode": args.alignment_mode,
+                            "trimming_mode": args.trimming_mode,
                             "bootstrap_replicates": args.bootstrap_replicates,
+                            "retained_site_count": (
+                                None
+                                if report.trimming_workflow.trimming_summary is None
+                                else report.trimming_workflow.trimming_summary.retained_site_count
+                            ),
+                            "removed_site_count": (
+                                None
+                                if report.trimming_workflow.trimming_summary is None
+                                else report.trimming_workflow.trimming_summary.removed_site_count
+                            ),
                             "selected_model": report.selected_model,
                             "sequence_type": report.sequence_type,
                             "normalized_identifier_count": 0

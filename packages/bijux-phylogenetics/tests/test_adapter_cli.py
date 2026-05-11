@@ -463,7 +463,10 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     assert exit_code == 0
     assert payload["metrics"]["selected_model"] == "GTR+G"
     assert payload["metrics"]["sequence_type"] == "dna"
-    assert "warning: trimal fixture trimmed one trailing site" in payload["warnings"]
+    assert (
+        "warning: trimal fixture gap-threshold trimmed one trailing site"
+        in payload["warnings"]
+    )
     assert Path(payload["data"]["engine_artifact_dir"]).name == "example"
     assert (
         Path(payload["data"]["engine_artifact_dir"]).parent.name == "engine-artifacts"
@@ -524,6 +527,51 @@ def test_adapter_fasta_to_tree_cli_passes_named_mafft_mode_to_alignment_step(
         "1000",
     ]
     assert "mafft alignment mode: linsi" in payload["data"]["notes"]
+
+
+def test_adapter_fasta_to_tree_cli_passes_named_trimal_mode_to_trimming_step(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+    out_dir = tmp_path / "fasta-to-tree-strictplus"
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--trimming-mode",
+            "strictplus",
+            "--iqtree-executable",
+            str(iqtree),
+            "--bootstrap-replicates",
+            "200",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["trimming_mode"] == "strictplus"
+    assert payload["metrics"]["removed_site_count"] == 3
+    assert payload["data"]["trimming_workflow"]["run"]["command"][5:] == [
+        "-strictplus"
+    ]
+    assert payload["data"]["trimming_workflow"]["trimming_summary"][
+        "removed_site_count"
+    ] == 3
+    assert "trimal trimming mode: strictplus" in payload["data"]["notes"]
 
 
 def test_adapter_fasta_to_tree_cli_repairs_invalid_input_when_requested(
