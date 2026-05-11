@@ -27,7 +27,7 @@
   "schema_version": 2,
   "source_basis_locators": [
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-005/results/duplicate-species-aggregation-parity.json"
+    "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json"
   ],
   "study_id": "primate-longevity-signal",
   "validation_rules": [

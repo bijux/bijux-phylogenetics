@@ -28,7 +28,7 @@
   "source_basis_locators": [
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
     "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
-    "evidence-book/studies/primate-longevity-signal/evidence-008/results/tree-data-correspondence-parity.json"
+    "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json"
   ],
   "study_id": "primate-longevity-signal",
   "validation_rules": [

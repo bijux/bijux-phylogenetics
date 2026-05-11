@@ -21,7 +21,7 @@ payload <- list(
   source_intake_policy = "read-only-external-source",
   source_basis_locators = c(
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-004/results/missing-data-accounting-parity.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",

@@ -22,7 +22,7 @@ Governed evidence for duplicate-species consolidation before processed trait ana
 ## Source Basis
 
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/evidence-005/results/duplicate-species-aggregation-parity.json`
+- `evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json`
 
 ## Governed Primary Outputs
 

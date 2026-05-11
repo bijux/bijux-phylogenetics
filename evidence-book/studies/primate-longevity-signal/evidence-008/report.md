@@ -23,7 +23,7 @@ Governed evidence for missing-tip trimming, tip-order alignment, and node-aware 
 
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
-- `evidence-book/studies/primate-longevity-signal/evidence-008/results/tree-data-correspondence-parity.json`
+- `evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json`
 
 ## Governed Primary Outputs
 

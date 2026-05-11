@@ -21,7 +21,7 @@ payload <- list(
   source_intake_policy = "read-only-external-source",
   source_basis_locators = c(
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-003/results/type-repair-parity.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",

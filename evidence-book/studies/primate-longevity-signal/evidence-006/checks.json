@@ -28,7 +28,7 @@
   "source_basis_locators": [
     "external:lund/pcm1-plots-signal/data/primatetree.nex",
     "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
-    "evidence-book/studies/primate-longevity-signal/evidence-006/results/tree-import-parity.json"
+    "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json"
   ],
   "study_id": "primate-longevity-signal",
   "validation_rules": [

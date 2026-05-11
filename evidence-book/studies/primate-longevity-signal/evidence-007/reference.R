@@ -21,7 +21,7 @@ payload <- list(
   source_intake_policy = "read-only-external-source",
   source_basis_locators = c(
     "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
-    "evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",

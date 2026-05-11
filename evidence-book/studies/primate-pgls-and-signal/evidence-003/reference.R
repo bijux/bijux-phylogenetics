@@ -24,7 +24,7 @@ payload <- list(
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
     "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
     "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-    "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R",

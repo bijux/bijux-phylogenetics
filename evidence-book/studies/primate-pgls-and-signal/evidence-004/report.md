@@ -25,7 +25,7 @@ Governed parity for intercept-only signal testing and lambda-zero likelihood-rat
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-004/results/phylogenetic-signal-parity.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-004/phylogenetic-signal-parity.json`
 
 ## Governed Primary Outputs
 
