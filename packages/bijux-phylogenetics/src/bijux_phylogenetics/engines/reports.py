@@ -6,6 +6,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.render.html import write_html_report
 
+from .bootstrap_artifacts import build_low_support_bootstrap_rows
 from .common import load_engine_manifest
 from .validation import (
     classify_inference_workflow_failure,
@@ -210,11 +211,40 @@ def render_inference_workflow_report(
             supplement_sections.append("bootstrap-tree-set-validation")
         tree_path = output_paths.get("tree") or output_paths.get("support_tree")
         if tree_path is not None:
+            bootstrap_support_summary = summarize_bootstrap_support_distribution(
+                tree_path
+            )
             sections.append(
                 (
                     "bootstrap-support-summary",
                     json.dumps(
-                        asdict(summarize_bootstrap_support_distribution(tree_path)),
+                        asdict(bootstrap_support_summary),
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "bootstrap-support-histogram",
+                    json.dumps(
+                        bootstrap_support_summary.support_histogram,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "low-support-branches",
+                    json.dumps(
+                        [
+                            asdict(row)
+                            for row in build_low_support_bootstrap_rows(
+                                bootstrap_support_summary
+                            )
+                        ],
                         default=str,
                         indent=2,
                         sort_keys=True,
@@ -232,7 +262,14 @@ def render_inference_workflow_report(
                     ),
                 )
             )
-            supplement_sections.extend(["bootstrap-support-summary", "weak-backbone"])
+            supplement_sections.extend(
+                [
+                    "bootstrap-support-summary",
+                    "bootstrap-support-histogram",
+                    "low-support-branches",
+                    "weak-backbone",
+                ]
+            )
     machine_manifest = {
         "report_kind": "inference-workflow",
         "title": title,

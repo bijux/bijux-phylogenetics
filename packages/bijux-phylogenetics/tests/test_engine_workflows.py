@@ -1209,6 +1209,8 @@ def test_bootstrap_workflow_report_includes_support_and_backbone_sections(
     )
 
     assert "bootstrap-support-summary" in rendered.supplement_sections
+    assert "bootstrap-support-histogram" in rendered.supplement_sections
+    assert "low-support-branches" in rendered.supplement_sections
     assert "weak-backbone" in rendered.supplement_sections
 
 
