@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-009/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "f4741b3e7d8ce30036e2091583d43af93df9119f033744efe4d3d3716d1210f7"
+      "sha256": "e36e35ae0257efdd68787384ea8d5e317b0db3b38b19f92728ba496f12e9e357"
     },
     {
       "input_id": "local-input-005",
@@ -84,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate ancestral mode parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-009/results/ancestral-mode-parity.json",
-      "read_only": false,
-      "sha256": "a28c9098945535965c140d020f33f2f669870c14ad7bff9ba3cb40232ed3268d"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-009/ancestral-mode-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

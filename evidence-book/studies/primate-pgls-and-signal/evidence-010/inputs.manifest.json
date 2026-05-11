@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-010/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "945e6a97e3d2f464930a35c66bb9f2e133a5769abea4a1c2d130ce366682fe19"
+      "sha256": "fdf9fe75ba7db35fcba0c57f61e28ff975e923bce9cc78b044ad976d4de6c227"
     },
     {
       "input_id": "local-input-005",
@@ -84,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate intercept sweep coverage boundary bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-010/results/coverage-boundaries.json",
-      "read_only": false,
-      "sha256": "45a81cc218768421a34a903d267ff094c24b0812f324c35d7dea1a96b5a3d071"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-010/coverage-boundaries.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

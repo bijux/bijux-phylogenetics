@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "a88b4e7a2a7c2909e0761f995c31a3280a4621d8514a56b47ad4668048feef53"
+      "sha256": "116b3a04adbb5c1a386d45dcca0da6cad1734b85fe19f007974831e719893387"
     },
     {
       "input_id": "local-input-005",
@@ -84,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate phylogenetic signal parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/phylogenetic-signal-parity.json",
-      "read_only": false,
-      "sha256": "1c4e2774c63f2b6b4758b330e7976ce87072edb3e9987d689ad316c5203fe6e3"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/phylogenetic-signal-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

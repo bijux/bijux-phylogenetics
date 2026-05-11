@@ -24,7 +24,7 @@
       "label": "results/processed-export-parity.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json",
       "read_only": false,
-      "sha256": "2459ea8a3b9b9b2d56a3315ba7fd98f58f4e73e11f96bb2f7acb55bf00e16ece"
+      "sha256": "b083d4818659e7e8e55f00543e543a287bab2564a0ee366f62df2a5851d3b5e2"
     },
     {
       "input_id": "local-input-004",
@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "81618ef82aae53b738761738ed499290a121a77d240e3ec631743740ef2d65c3"
+      "sha256": "56ee6ec99929cf424e55dd68522ebedaba0ee66ff74b9dc8a36882f93a869e25"
     },
     {
       "input_id": "local-input-005",
@@ -68,9 +68,8 @@
       "input_id": "source-input-003",
       "kind": "repository-reference",
       "label": "Primate processed export parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json",
-      "read_only": false,
-      "sha256": "2459ea8a3b9b9b2d56a3315ba7fd98f58f4e73e11f96bb2f7acb55bf00e16ece"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-longevity-signal"

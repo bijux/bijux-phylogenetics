@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "3770b05fe3000a2bdb704e727cf91f8fe51183f15896fcd9ac0b6e48d04cac04"
+      "sha256": "9b37a916dee50c2562ab7ffb02300ab0dcc16b81604e892ae9bb0c12b9d4189f"
     },
     {
       "input_id": "local-input-005",
@@ -92,9 +92,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate transformed tree parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/transformed-tree-parity.json",
-      "read_only": false,
-      "sha256": "8486c37f7329699d35a94cffb873ce63db2a520da17c24b4087f54bfb32340e7"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/transformed-tree-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

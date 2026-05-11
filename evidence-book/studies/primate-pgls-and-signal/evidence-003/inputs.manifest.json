@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "254ddcc0a49ef2caaf0e6ba174cac022f1c79bcfc7e33a394dc10cfa06292740"
+      "sha256": "ac4113ebc73d905183fcd51292ef2ac2c70f27c1f9dd2244898f49a130e8b9e1"
     },
     {
       "input_id": "local-input-005",
@@ -84,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate Pagel-lambda regression parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json",
-      "read_only": false,
-      "sha256": "a0b04e048613c270e8e7f838e7d7ef3bf642dfee127d3ff81f27582e7016bce0"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/pagel-lambda-regression-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

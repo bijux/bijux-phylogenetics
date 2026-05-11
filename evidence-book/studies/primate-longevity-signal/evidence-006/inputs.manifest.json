@@ -24,7 +24,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-006/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "00acde06b2ae4e28657ef0ae8ef15d3fef4952e5c956109ec5e98c2b722a94e4"
+      "sha256": "5ba7aeb508dc610990d54ca1d2132f016612170cf5442f9301fb619267529480"
     },
     {
       "input_id": "local-input-004",
@@ -67,9 +67,8 @@
       "input_id": "source-input-003",
       "kind": "repository-reference",
       "label": "Primate tree import parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-006/results/tree-import-parity.json",
-      "read_only": false,
-      "sha256": "dd13ae2f46599bfbb00d56c2fd67512156edc7034df048d85adb08d0ff8d8073"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-longevity-signal"

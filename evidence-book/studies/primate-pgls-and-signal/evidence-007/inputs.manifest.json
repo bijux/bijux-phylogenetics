@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "b6150fac35eded3c50939b35c4d1518a8ae4c2e322cdddf22090a563b6762ec7"
+      "sha256": "534cdec93bece98e71c01b576593cc2de4dd174a71e4b741d25c026b385a4bbc"
     },
     {
       "input_id": "local-input-005",
@@ -84,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate evolutionary mode fit parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json",
-      "read_only": false,
-      "sha256": "e8f14196917643e2eca5992b1219684e73d16c202c7ce7fed8ea3759caa47403"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

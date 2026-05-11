@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "472ae92a6b043a4485f75a41ec2a3bc3eb232a46aef175482dd41d0a143c3c90"
+      "sha256": "5eba0ff418393483252e407f459c1d0db01f74b29193fcdbbfa7c240a968fb8e"
     },
     {
       "input_id": "local-input-005",
@@ -60,9 +60,8 @@
       "input_id": "source-input-002",
       "kind": "repository-reference",
       "label": "Primate duplicate-species aggregation parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/results/duplicate-species-aggregation-parity.json",
-      "read_only": false,
-      "sha256": "fede8bbfa3c71c861bcdf154e634e3206c6c6621bdaf9c27ee8ef7cf0a8a5ae4"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-longevity-signal"

@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "544136d225ba919483e7a539c4c15f6afb48969614fc5a03f61b1c371c8edd4a"
+      "sha256": "71dc69958d85565279a8b7b34a6be0d299ba31c7ab2a7bd67f21e568d28915c6"
     },
     {
       "input_id": "local-input-005",
@@ -100,17 +100,15 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate reload semantics bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/rdata-reload-semantics.json",
-      "read_only": false,
-      "sha256": "f76e4b9e7baaafccfc5932042799c0255d8cbc71a1463cb2dbe0af81067968c3"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+      "read_only": false
     },
     {
       "input_id": "source-input-006",
       "kind": "repository-reference",
       "label": "scalar parity table",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json",
-      "read_only": false,
-      "sha256": "3f14c4fde3fc99e9fc5db51ff65fb50d9328104a7022a232c119a5845808275e"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

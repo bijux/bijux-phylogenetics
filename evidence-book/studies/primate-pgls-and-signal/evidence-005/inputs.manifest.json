@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "fb8de53e758cdd1995548f18e8ed333ed5bcee3764e46605a08bb3a92f60a2e4"
+      "sha256": "7511dba6df47b506c4f3566111d2536bfa49d15979a3622132c194f17d2467b2"
     },
     {
       "input_id": "local-input-005",
@@ -84,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate residual diagnostics parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/residual-diagnostics-parity.json",
-      "read_only": false,
-      "sha256": "bed7a3490291e53d09aee1cab6e4da17a69530d44df0f854c9007dda681c3e44"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

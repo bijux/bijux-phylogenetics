@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-008/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "ab2b2cd127fc234a2060969a64dc69177b8a8adcdc9f63231e5b9e9c8b1a307c"
+      "sha256": "6eb916faa071f95bbcb9e0fbe18d67835f42ab8f8be57642ad2d3d11634bf0e7"
     },
     {
       "input_id": "local-input-005",
@@ -84,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate likelihood-ratio parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-008/results/likelihood-ratio-parity.json",
-      "read_only": false,
-      "sha256": "53264d5f8a42ef4adc4563739cceccb739ef49cc9df02c64f952999a1fb8f69a"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-008/likelihood-ratio-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"
