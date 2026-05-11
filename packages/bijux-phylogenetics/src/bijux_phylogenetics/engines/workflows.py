@@ -9,7 +9,7 @@ from bijux_phylogenetics.compare.reports import (
     ComparisonReportBuildResult,
     build_tree_comparison_report,
 )
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet
+from bijux_phylogenetics.core.alignment import AlignmentAlphabet, AlignmentSummary
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import (
@@ -62,8 +62,25 @@ class EngineWorkflowReport:
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
     selected_model: str | None = None
+    trimming_summary: AlignmentTrimmingSummary | None = None
     resumed: bool = False
     notes: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class AlignmentTrimmingSummary:
+    mode: str
+    gap_threshold: float | None
+    input_alignment_length: int
+    trimmed_alignment_length: int
+    retained_site_count: int
+    removed_site_count: int
+    retained_site_fraction: float
+    removed_site_fraction: float
+    input_gap_fraction: float
+    trimmed_gap_fraction: float
+    input_gap_percentage: float
+    trimmed_gap_percentage: float
 
 
 @dataclass(slots=True)
@@ -132,6 +149,37 @@ def _validate_alignment_output(path: Path) -> None:
     summarise_fasta(path)
 
 
+def _build_alignment_trimming_summary(
+    *,
+    mode: str,
+    gap_threshold: float,
+    input_summary: AlignmentSummary,
+    trimmed_summary: AlignmentSummary,
+) -> AlignmentTrimmingSummary:
+    if trimmed_summary.alignment_length > input_summary.alignment_length:
+        raise EngineWorkflowError(
+            "trimmed alignment is longer than the input alignment, which is not a valid trimAl result"
+        )
+    retained_site_count = trimmed_summary.alignment_length
+    removed_site_count = input_summary.alignment_length - trimmed_summary.alignment_length
+    retained_site_fraction = retained_site_count / input_summary.alignment_length
+    removed_site_fraction = removed_site_count / input_summary.alignment_length
+    return AlignmentTrimmingSummary(
+        mode=mode,
+        gap_threshold=gap_threshold if mode == "gap-threshold" else None,
+        input_alignment_length=input_summary.alignment_length,
+        trimmed_alignment_length=trimmed_summary.alignment_length,
+        retained_site_count=retained_site_count,
+        removed_site_count=removed_site_count,
+        retained_site_fraction=retained_site_fraction,
+        removed_site_fraction=removed_site_fraction,
+        input_gap_fraction=input_summary.gap_fraction,
+        trimmed_gap_fraction=trimmed_summary.gap_fraction,
+        input_gap_percentage=input_summary.gap_fraction * 100.0,
+        trimmed_gap_percentage=trimmed_summary.gap_fraction * 100.0,
+    )
+
+
 def _validate_tree_output(path: Path) -> None:
     loads_newick(path.read_text(encoding="utf-8"))
     validate_tree_path(path)
@@ -196,6 +244,46 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
         selected_model=None
         if payload.get("selected_model") is None
         else str(payload["selected_model"]),
+        trimming_summary=None
+        if payload.get("trimming_summary") is None
+        else AlignmentTrimmingSummary(
+            mode=str(dict(payload["trimming_summary"])["mode"]),
+            gap_threshold=(
+                None
+                if dict(payload["trimming_summary"]).get("gap_threshold") is None
+                else float(dict(payload["trimming_summary"])["gap_threshold"])
+            ),
+            input_alignment_length=int(
+                dict(payload["trimming_summary"])["input_alignment_length"]
+            ),
+            trimmed_alignment_length=int(
+                dict(payload["trimming_summary"])["trimmed_alignment_length"]
+            ),
+            retained_site_count=int(
+                dict(payload["trimming_summary"])["retained_site_count"]
+            ),
+            removed_site_count=int(
+                dict(payload["trimming_summary"])["removed_site_count"]
+            ),
+            retained_site_fraction=float(
+                dict(payload["trimming_summary"])["retained_site_fraction"]
+            ),
+            removed_site_fraction=float(
+                dict(payload["trimming_summary"])["removed_site_fraction"]
+            ),
+            input_gap_fraction=float(
+                dict(payload["trimming_summary"])["input_gap_fraction"]
+            ),
+            trimmed_gap_fraction=float(
+                dict(payload["trimming_summary"])["trimmed_gap_fraction"]
+            ),
+            input_gap_percentage=float(
+                dict(payload["trimming_summary"])["input_gap_percentage"]
+            ),
+            trimmed_gap_percentage=float(
+                dict(payload["trimming_summary"])["trimmed_gap_percentage"]
+            ),
+        ),
         resumed=bool(payload.get("resumed", False)),
         notes=[str(item) for item in payload.get("notes", [])],
     )
@@ -338,6 +426,7 @@ def run_alignment_trimming(
     """Run an external alignment trimming engine against an aligned FASTA file."""
     load_fasta_alignment(input_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    input_summary = summarise_fasta(input_path)
     mode_args = resolve_trimal_trimming_mode(mode, gap_threshold=gap_threshold)
     version = read_engine_version("trimal", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
@@ -359,6 +448,13 @@ def run_alignment_trimming(
         output_paths={"trimmed_alignment": out_path},
     )
     _validate_alignment_output(out_path)
+    trimmed_summary = summarise_fasta(out_path)
+    trimming_summary = _build_alignment_trimming_summary(
+        mode=mode,
+        gap_threshold=gap_threshold,
+        input_summary=input_summary,
+        trimmed_summary=trimmed_summary,
+    )
     manifest_path = _manifest_path_from_output(out_path)
     report = EngineWorkflowReport(
         workflow="alignment-trimming",
@@ -369,8 +465,11 @@ def run_alignment_trimming(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
+        trimming_summary=trimming_summary,
         notes=[
             f"trimal trimming mode: {mode}",
+            f"retained sites: {trimming_summary.retained_site_count} of {trimming_summary.input_alignment_length}",
+            f"gap percentage: {trimming_summary.input_gap_percentage:.3f} -> {trimming_summary.trimmed_gap_percentage:.3f}",
             "trimmed alignment validated as nonempty equal-length FASTA",
         ],
     )

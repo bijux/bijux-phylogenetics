@@ -47,6 +47,7 @@ from .validation import (
     validate_model_selection_against_engine_outputs,
 )
 from .workflows import (
+    AlignmentTrimmingSummary,
     EngineWorkflowReport,
     ExternalTreeComparisonReport,
     compare_fast_and_ml_trees,
@@ -66,6 +67,7 @@ from .workflows import (
 __all__ = [
     "classify_inference_workflow_failure",
     "compare_inferred_tree_to_taxon_metadata",
+    "AlignmentTrimmingSummary",
     "EngineRunReport",
     "EngineVersionInfo",
     "FastaToTreeModelRow",

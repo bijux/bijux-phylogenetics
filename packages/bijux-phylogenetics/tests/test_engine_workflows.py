@@ -428,13 +428,23 @@ def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(
     )
 
     records = load_fasta_alignment(output_path)
+    input_alignment_length = len(load_fasta_alignment(input_path)[0].sequence)
     assert (
         len(records[0].sequence)
-        == len(load_fasta_alignment(input_path)[0].sequence) - 1
+        == input_alignment_length - 1
     )
     assert report.run.warning_lines == [
         "warning: trimal fixture gap-threshold trimmed one trailing site"
     ]
+    assert report.trimming_summary is not None
+    assert report.trimming_summary.mode == "gap-threshold"
+    assert report.trimming_summary.input_alignment_length == input_alignment_length
+    assert report.trimming_summary.trimmed_alignment_length == input_alignment_length - 1
+    assert report.trimming_summary.retained_site_count == input_alignment_length - 1
+    assert report.trimming_summary.removed_site_count == 1
+    assert report.notes[1] == (
+        f"retained sites: {input_alignment_length - 1} of {input_alignment_length}"
+    )
     assert report.manifest_path.exists()
 
 
@@ -461,8 +471,12 @@ def test_run_alignment_trimming_supports_all_named_trimal_modes(tmp_path: Path) 
 
         assert report.run.command[5:] == mode_args
         assert report.notes[0] == f"trimal trimming mode: {mode}"
+        assert report.trimming_summary is not None
+        assert report.trimming_summary.mode == mode
         trimmed = load_fasta_alignment(output_path)
-        assert len(trimmed[0].sequence) == len(load_fasta_alignment(input_path)[0].sequence) - removed_sites
+        assert len(trimmed[0].sequence) == (
+            len(load_fasta_alignment(input_path)[0].sequence) - removed_sites
+        )
 
 
 def test_run_model_selection_parses_best_fit_model_and_writes_manifest(
@@ -729,6 +743,26 @@ def test_bootstrap_workflow_report_includes_support_and_backbone_sections(
 
     assert "bootstrap-support-summary" in rendered.supplement_sections
     assert "weak-backbone" in rendered.supplement_sections
+
+
+def test_alignment_trimming_workflow_report_includes_trimming_summary_section(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_trimal(tmp_path / "trimal-fixture")
+    workflow = run_alignment_trimming(
+        fixture("alignments/example_alignment_trim.fasta"),
+        tmp_path / "trimmed.fasta",
+        executable=executable,
+        mode="strictplus",
+    )
+
+    rendered = render_inference_workflow_report(
+        manifest_path=workflow.manifest_path,
+        out_path=tmp_path / "trim-report.html",
+    )
+
+    assert "alignment-trimming-summary" in rendered.supplement_sections
+    assert rendered.output_path.exists()
 
 
 def test_bundle_inference_workflow_evidence_copies_inputs_outputs_and_manifests(

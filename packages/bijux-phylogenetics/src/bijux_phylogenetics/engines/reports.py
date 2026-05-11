@@ -160,6 +160,21 @@ def render_inference_workflow_report(
             )
         )
         supplement_sections.append("model-selection-limitations")
+    if (
+        manifest["workflow"] == "alignment-trimming"
+        and manifest.get("trimming_summary") is not None
+    ):
+        sections.append(
+            (
+                "alignment-trimming-summary",
+                json.dumps(
+                    manifest["trimming_summary"],
+                    indent=2,
+                    sort_keys=True,
+                ),
+            )
+        )
+        supplement_sections.append("alignment-trimming-summary")
     if manifest["workflow"] == "maximum-likelihood-tree":
         sections.append(
             (
