@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
+import shutil
+
+import pytest
 
 from bijux_phylogenetics.engines import (
     build_inference_sensitivity_report,
@@ -24,10 +28,28 @@ from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
 
 def fixture(path: str) -> Path:
     return FIXTURES / path
+
+
+def _real_mafft_executable() -> Path | None:
+    configured = os.environ.get("BIJUX_PHYLOGENETICS_MAFFT_EXECUTABLE")
+    if configured:
+        candidate = Path(configured)
+        if candidate.exists():
+            return candidate
+    resolved = shutil.which("mafft")
+    if resolved is not None:
+        return Path(resolved)
+    artifact_candidate = (
+        REPOSITORY_ROOT / "artifacts" / "mafft" / "mafft-mac" / "mafft.bat"
+    )
+    if artifact_candidate.exists():
+        return artifact_candidate
+    return None
 
 
 def _write_executable(path: Path, body: str) -> Path:
@@ -325,6 +347,32 @@ def test_run_multiple_sequence_alignment_supports_all_named_mafft_modes(
         assert report.run.command[1:-1] == expected_args
         assert report.notes[0] == f"mafft alignment mode: {mode}"
         assert load_fasta_alignment(output_path)
+
+
+def test_run_multiple_sequence_alignment_with_real_mafft_on_small_dataset(
+    tmp_path: Path,
+) -> None:
+    executable = _real_mafft_executable()
+    if executable is None:
+        pytest.skip("real MAFFT executable is not available for integration coverage")
+
+    output_path = tmp_path / "real-mafft-alignment.fasta"
+    report = run_multiple_sequence_alignment(
+        fixture("alignments/example_sequences_raw.fasta"),
+        output_path,
+        executable=executable,
+        mode="linsi",
+    )
+
+    alignment = load_fasta_alignment(output_path)
+    widths = {len(record.sequence) for record in alignment}
+
+    assert report.run.exit_code == 0
+    assert report.run.command[1:-1] == ["--localpair", "--maxiterate", "1000"]
+    assert "v7." in report.run.version.text
+    assert report.manifest_path.exists()
+    assert len(alignment) == 4
+    assert len(widths) == 1
 
 
 def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(
