@@ -4950,6 +4950,58 @@ def test_cli_alignment_classify_json_output(capsys) -> None:
     assert payload["data"]["sequence_count"] == 4
 
 
+def test_cli_alignment_validate_input_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "validate-input",
+            str(fixture("example_sequences_invalid_input.fasta")),
+            "--sequence-type",
+            "dna",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["duplicate_identifier_count"] == 1
+    assert payload["metrics"]["illegal_character_count"] == 1
+    assert payload["metrics"]["empty_sequence_count"] == 1
+    assert payload["metrics"]["sequence_length_outlier_count"] == 2
+
+
+def test_cli_alignment_repair_input_writes_repaired_fasta(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "repaired.fasta"
+    exit_code = main(
+        [
+            "alignment",
+            "repair-input",
+            str(fixture("example_sequences_invalid_input.fasta")),
+            "--out",
+            str(output),
+            "--sequence-type",
+            "dna",
+            "--normalize-identifiers",
+            "--remove-invalid-records",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output.read_text(encoding="utf-8") == (
+        ">Alpha_sample\nACTGACTG\n"
+        ">rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
+    )
+    assert payload["metrics"]["normalized_identifier_count"] == 2
+    assert payload["metrics"]["removed_record_count"] == 2
+    assert payload["metrics"]["remaining_duplicate_identifier_count"] == 0
+    assert payload["metrics"]["remaining_illegal_character_count"] == 0
+    assert payload["metrics"]["remaining_empty_sequence_count"] == 0
+
+
 def test_cli_alignment_windows_json_output(capsys) -> None:
     exit_code = main(
         [

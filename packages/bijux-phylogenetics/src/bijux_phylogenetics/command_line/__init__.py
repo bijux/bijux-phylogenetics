@@ -257,11 +257,13 @@ from bijux_phylogenetics.io.fasta import (
     link_alignment_to_tree,
     list_alignment_filter_profiles,
     load_fasta_alignment,
+    repair_fasta_input,
     summarise_fasta,
     summarize_alignment_readiness,
     summarize_alignment_windows,
     translate_coding_alignment,
     trim_alignment,
+    validate_fasta_input,
     write_fasta_alignment,
     write_sequence_identity_matrix,
 )
@@ -658,6 +660,10 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.alignment]
         if args.alignment_command == "quality":
             return [args.alignment]
+        if args.alignment_command == "validate-input":
+            return [args.alignment]
+        if args.alignment_command == "repair-input":
+            return [args.alignment, args.out]
         if args.alignment_command == "occupancy":
             inputs: list[Path | str] = [args.alignment, args.partitions]
             for optional_path in (
@@ -962,6 +968,41 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the report as JSON."
     )
     _add_manifest_argument(alignment_classify)
+    alignment_validate_input = alignment_subparsers.add_parser(
+        "validate-input",
+        help="Validate raw FASTA input for duplicates, illegal characters, empty sequences, and length outliers.",
+    )
+    alignment_validate_input.add_argument("alignment", type=Path)
+    alignment_validate_input.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein")
+    )
+    alignment_validate_input.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
+    _add_manifest_argument(alignment_validate_input)
+    alignment_repair_input = alignment_subparsers.add_parser(
+        "repair-input",
+        help="Write a repaired FASTA input after explicit identifier normalization or invalid-record removal.",
+    )
+    alignment_repair_input.add_argument("alignment", type=Path)
+    alignment_repair_input.add_argument("--out", required=True, type=Path)
+    alignment_repair_input.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein")
+    )
+    alignment_repair_input.add_argument(
+        "--normalize-identifiers",
+        action="store_true",
+        help="Rewrite FASTA identifiers into engine-safe stable names and resolve collisions.",
+    )
+    alignment_repair_input.add_argument(
+        "--remove-invalid-records",
+        action="store_true",
+        help="Remove records with empty sequences or unsupported characters.",
+    )
+    alignment_repair_input.add_argument(
+        "--json", action="store_true", help="Emit the repair report as JSON."
+    )
+    _add_manifest_argument(alignment_repair_input)
     alignment_quality = alignment_subparsers.add_parser(
         "quality", help="Generate a higher-level alignment quality report."
     )
@@ -3916,6 +3957,95 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "state": report.state,
                         },
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "validate-input":
+                report = validate_fasta_input(
+                    args.alignment,
+                    sequence_type=args.sequence_type,
+                )
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "sequence_count": report.summary.sequence_count,
+                            "duplicate_identifier_count": len(
+                                report.duplicate_identifiers
+                            ),
+                            "illegal_character_count": len(report.illegal_characters),
+                            "empty_sequence_count": len(report.empty_sequences),
+                            "sequence_length_outlier_count": len(
+                                report.length_outliers
+                            ),
+                            "inferred_alphabet": report.summary.inferred_alphabet,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "repair-input":
+                if not args.normalize_identifiers and not args.remove_invalid_records:
+                    raise ValueError(
+                        "repair-input requires at least one explicit repair action"
+                    )
+                records, report = repair_fasta_input(
+                    args.alignment,
+                    sequence_type=args.sequence_type,
+                    normalize_identifiers=args.normalize_identifiers,
+                    remove_invalid_records=args.remove_invalid_records,
+                )
+                output_path = write_fasta_alignment(args.out, records)
+                report.output_path = output_path
+                repaired_validation = validate_fasta_input(
+                    output_path,
+                    sequence_type=args.sequence_type,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment],
+                    outputs=[output_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=list(
+                            dict.fromkeys(
+                                report.warnings + repaired_validation.warnings
+                            )
+                        ),
+                        metrics={
+                            "before_sequence_count": report.before.sequence_count,
+                            "after_sequence_count": report.after.sequence_count,
+                            "normalized_identifier_count": len(
+                                report.normalized_identifiers
+                            ),
+                            "removed_record_count": len(report.removed_records),
+                            "remaining_duplicate_identifier_count": len(
+                                repaired_validation.duplicate_identifiers
+                            ),
+                            "remaining_illegal_character_count": len(
+                                repaired_validation.illegal_characters
+                            ),
+                            "remaining_empty_sequence_count": len(
+                                repaired_validation.empty_sequences
+                            ),
+                        },
+                        data={
+                            "repair": report,
+                            "post_repair_validation": repaired_validation,
+                        },
                     ),
                     json_output=args.json,
                 )
