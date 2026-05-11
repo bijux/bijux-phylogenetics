@@ -232,6 +232,17 @@ Named MAFFT strategies are now first-class on both `adapter align` and
 strategy into the explicit MAFFT arguments it runs, and the workflow manifest
 captures both the resolved command and the detected MAFFT version for review.
 
+The direct IQ-TREE adapter surface now preserves the native engine artifacts
+that reviewers expect instead of collapsing everything into one opaque tree
+file. `adapter model-select` retains `.iqtree` and `.log`; `adapter infer-ml`
+retains `.treefile`, `.iqtree`, and `.log`; `adapter bootstrap` retains
+`.treefile`, `.iqtree`, `.log`, `.ufboot`, and `.contree` when IQ-TREE emits
+them; and `adapter consensus` retains the consensus `.contree` plus the
+matching `.iqtree` and `.log`. The JSON report and persisted manifest for
+those runs also expose the parsed `selected_model`, `log_likelihood`, and
+support-value counts so downstream review does not have to scrape IQ-TREE text
+again by hand.
+
 Coding-sequence alignment is now first-class on `adapter align` through
 `--codon-aware`. That workflow accepts raw coding DNA or RNA FASTA, excludes
 frame-broken sequences and sequences with premature stop codons, aligns a
