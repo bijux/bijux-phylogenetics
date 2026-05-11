@@ -29,8 +29,11 @@ supermatrix from aligned per-locus FASTA inputs, preserves taxon identities,
 inserts `?` blocks for absent taxa, writes the remapped partition file, and can
 emit the taxon-by-locus occupancy matrix in the same run. `alignment occupancy`
 then audits an existing concatenated FASTA plus partition file, reports
-per-taxon coverage, per-locus coverage, low-coverage flags, TSV tables, and an
-optionally filtered retained matrix with remapped partitions.
+per-taxon coverage, per-locus coverage, low-coverage flags, explicit
+`site_coverage_fraction` summaries, TSV tables, and an optionally filtered
+retained matrix with remapped partitions. Use
+`--minimum-locus-occupancy` when partial fragments should count as absent for
+thresholding instead of being treated as covered from a single observed site.
 
 For partitioned inference preparation, the alignment family also includes
 `alignment partition-summary`. It validates one partition file against an

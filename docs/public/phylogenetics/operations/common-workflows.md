@@ -52,6 +52,28 @@ per-taxon and per-locus TSV tables, a taxon-by-locus occupancy matrix, and a
 retained alignment plus remapped partition file after applying explicit
 coverage thresholds.
 
+Use `--minimum-locus-occupancy` when partial locus fragments should count as
+absent for taxon/locus thresholding. This keeps the retained matrix honest on
+datasets where one or two recovered characters should not be treated as
+meaningful locus presence. The TSV outputs include `site_coverage_fraction`
+columns so the binary coverage calls can be reviewed against overall retained
+signal.
+
+```bash
+bijux-phylogenetics alignment occupancy \
+  artifacts/mixed-locus-supermatrix.aln.fasta \
+  artifacts/mixed-locus-supermatrix.partitions.txt \
+  --taxon-coverage-threshold 0.6 \
+  --locus-coverage-threshold 0.6 \
+  --minimum-locus-occupancy 0.75 \
+  --taxa-out artifacts/occupancy/taxa.tsv \
+  --loci-out artifacts/occupancy/loci.tsv \
+  --matrix-out artifacts/occupancy/matrix.tsv \
+  --filtered-alignment-out artifacts/occupancy/filtered.fasta \
+  --filtered-partitions-out artifacts/occupancy/filtered-partitions.txt \
+  --json
+```
+
 When the matrix is already aligned and you need to validate the partition file
 itself, run `alignment partition-summary` first. That command reports assigned
 and unassigned sites, mixed declared datatypes, and one row per locus, and it
