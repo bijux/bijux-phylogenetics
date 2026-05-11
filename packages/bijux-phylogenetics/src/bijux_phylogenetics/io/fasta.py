@@ -1566,6 +1566,74 @@ def translate_coding_alignment(
     )
 
 
+def translate_prepared_coding_sequences(
+    records: list[AlignmentRecord],
+) -> list[AlignmentRecord]:
+    """Translate prepared coding sequences into an amino-acid guide alignment input."""
+    translated_records: list[AlignmentRecord] = []
+    for record in records:
+        if len(record.sequence) % 3 != 0:
+            raise InvalidAlignmentError(
+                "prepared coding sequences must remain divisible by three for translation"
+            )
+        translated_records.append(
+            AlignmentRecord(
+                identifier=record.identifier,
+                sequence="".join(
+                    "X" if amino_acid == "*" else amino_acid
+                    for amino_acid in (
+                        _translate_codon(codon)
+                        for _, codon in _iter_codon_windows(record.sequence)
+                    )
+                ),
+            )
+        )
+    return translated_records
+
+
+def back_translate_aligned_coding_sequences(
+    guide_alignment: list[AlignmentRecord],
+    *,
+    coding_records: list[AlignmentRecord],
+) -> list[AlignmentRecord]:
+    """Project an aligned amino-acid guide back onto nucleotide codon triplets."""
+    coding_by_identifier = {record.identifier: record for record in coding_records}
+    back_translated: list[AlignmentRecord] = []
+    for guide_record in guide_alignment:
+        try:
+            coding_record = coding_by_identifier[guide_record.identifier]
+        except KeyError as error:
+            raise InvalidAlignmentError(
+                f"codon back-translation is missing coding residues for {guide_record.identifier}"
+            ) from error
+        codons = [
+            codon for _, codon in _iter_codon_windows(coding_record.sequence)
+        ]
+        codon_index = 0
+        aligned_codons: list[str] = []
+        for residue in guide_record.sequence:
+            if residue == "-":
+                aligned_codons.append("---")
+                continue
+            if codon_index >= len(codons):
+                raise InvalidAlignmentError(
+                    f"aligned amino-acid guide consumed more codons than available for {guide_record.identifier}"
+                )
+            aligned_codons.append(codons[codon_index])
+            codon_index += 1
+        if codon_index != len(codons):
+            raise InvalidAlignmentError(
+                f"aligned amino-acid guide left unused codons for {guide_record.identifier}"
+            )
+        back_translated.append(
+            AlignmentRecord(
+                identifier=guide_record.identifier,
+                sequence="".join(aligned_codons),
+            )
+        )
+    return back_translated
+
+
 def summarize_alignment_windows(
     path: Path,
     *,

@@ -48,6 +48,7 @@ from .validation import (
 )
 from .workflows import (
     AlignmentTrimmingSummary,
+    CodonAwareAlignmentWorkflowReport,
     EngineWorkflowReport,
     ExternalTreeComparisonReport,
     compare_fast_and_ml_trees,
@@ -58,6 +59,7 @@ from .workflows import (
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
+    run_codon_aware_multiple_sequence_alignment,
     run_fast_tree_inference,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
@@ -68,6 +70,7 @@ __all__ = [
     "classify_inference_workflow_failure",
     "compare_inferred_tree_to_taxon_metadata",
     "AlignmentTrimmingSummary",
+    "CodonAwareAlignmentWorkflowReport",
     "EngineRunReport",
     "EngineVersionInfo",
     "FastaToTreeModelRow",
@@ -113,6 +116,7 @@ __all__ = [
     "run_alignment_trimming",
     "run_bootstrap_consensus_tree",
     "run_bootstrap_support_estimation",
+    "run_codon_aware_multiple_sequence_alignment",
     "run_fasta_to_tree_workflow",
     "run_fast_tree_inference",
     "run_maximum_likelihood_tree_inference",

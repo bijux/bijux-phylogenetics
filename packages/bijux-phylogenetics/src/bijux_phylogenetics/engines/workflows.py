@@ -9,13 +9,21 @@ from bijux_phylogenetics.compare.reports import (
     ComparisonReportBuildResult,
     build_tree_comparison_report,
 )
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet, AlignmentSummary
+from bijux_phylogenetics.core.alignment import (
+    AlignmentAlphabet,
+    AlignmentSummary,
+    CodingSequenceExclusion,
+)
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import (
+    back_translate_aligned_coding_sequences,
     infer_alignment_alphabet,
     load_fasta_alignment,
+    prepare_coding_sequences_for_alignment,
     summarise_fasta,
+    translate_prepared_coding_sequences,
+    write_fasta_alignment,
 )
 from bijux_phylogenetics.io.newick import loads_newick
 
@@ -90,6 +98,24 @@ class ExternalTreeComparisonReport:
     comparison_report: ComparisonReportBuildResult
 
 
+@dataclass(slots=True)
+class CodonAwareAlignmentWorkflowReport:
+    workflow: str
+    engine_name: str
+    input_path: Path
+    output_paths: dict[str, Path]
+    run: EngineRunReport
+    manifest_path: Path
+    input_checksums: dict[str, str]
+    output_checksums: dict[str, str]
+    sequence_type: AlignmentAlphabet
+    accepted_sequence_count: int
+    excluded_sequences: list[CodingSequenceExclusion]
+    terminal_stop_sequence_count: int
+    notes: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+
 def list_mafft_alignment_modes() -> tuple[str, ...]:
     """Return the supported named MAFFT alignment strategies."""
     return tuple(_MAFFT_ALIGNMENT_MODE_ARGUMENTS)
@@ -147,6 +173,41 @@ def _validate_alignment_output(path: Path) -> None:
             f"inference alignment is empty after filtering: {path}"
         )
     summarise_fasta(path)
+
+
+def _write_coding_exclusion_table(
+    path: Path, exclusions: list[CodingSequenceExclusion]
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "\t".join(
+            [
+                "identifier",
+                "comparable_length",
+                "reason",
+                "premature_stop_count",
+                "terminal_stop_count",
+                "trailing_bases",
+                "note",
+            ]
+        )
+    ]
+    lines.extend(
+        "\t".join(
+            [
+                row.identifier,
+                str(row.comparable_length),
+                row.reason,
+                str(row.premature_stop_count),
+                str(row.terminal_stop_count),
+                str(row.trailing_bases),
+                row.note,
+            ]
+        )
+        for row in exclusions
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
 
 
 def _build_alignment_trimming_summary(
@@ -413,6 +474,85 @@ def run_multiple_sequence_alignment(
         ],
     )
     return _persist_workflow_report(report)
+
+
+def run_codon_aware_multiple_sequence_alignment(
+    input_path: Path,
+    out_path: Path,
+    *,
+    executable: str | Path = "mafft",
+    mode: str = "auto",
+    sequence_type: AlignmentAlphabet | None = None,
+) -> CodonAwareAlignmentWorkflowReport:
+    """Align coding nucleotide sequences through a translated amino-acid guide."""
+    prepared_records, preparation = prepare_coding_sequences_for_alignment(
+        input_path,
+        sequence_type=sequence_type,
+    )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    guide_input_path = _sidecar(out_path, "guide-input.fasta")
+    guide_alignment_path = _sidecar(out_path, "guide-alignment.fasta")
+    exclusion_report_path = _sidecar(out_path, "excluded.tsv")
+    guide_records = translate_prepared_coding_sequences(prepared_records)
+    write_fasta_alignment(guide_input_path, guide_records)
+    mode_args = resolve_mafft_alignment_mode(mode)
+    version = read_engine_version("mafft", executable, version_args=("--version",))
+    resolved = resolve_engine_executable(executable)
+    run = execute_engine_command(
+        engine_name="mafft",
+        workflow="codon-aware-multiple-sequence-alignment",
+        executable=resolved,
+        version=version,
+        command_args=[*mode_args, str(guide_input_path.resolve())],
+        work_dir=out_path.parent,
+        stdout_path=guide_alignment_path,
+        stderr_path=_sidecar(out_path, "stderr.log"),
+        output_paths={"guide_alignment": guide_alignment_path},
+    )
+    aligned_guide = load_fasta_alignment(guide_alignment_path)
+    codon_records = back_translate_aligned_coding_sequences(
+        aligned_guide,
+        coding_records=prepared_records,
+    )
+    write_fasta_alignment(out_path, codon_records)
+    _validate_alignment_output(out_path)
+    codon_summary = summarise_fasta(out_path)
+    if codon_summary.alignment_length % 3 != 0:
+        raise EngineWorkflowError(
+            "codon-aware alignment produced an alignment length that is not divisible by three"
+        )
+    _write_coding_exclusion_table(exclusion_report_path, preparation.excluded_sequences)
+    output_paths = {
+        "alignment": out_path,
+        "guide_input": guide_input_path,
+        "guide_alignment": guide_alignment_path,
+        "excluded_sequences": exclusion_report_path,
+    }
+    manifest_path = _manifest_path_from_output(out_path)
+    report = CodonAwareAlignmentWorkflowReport(
+        workflow="codon-aware-multiple-sequence-alignment",
+        engine_name="mafft",
+        input_path=input_path,
+        output_paths=output_paths,
+        run=run,
+        manifest_path=manifest_path,
+        input_checksums=build_file_checksums([input_path]),
+        output_checksums={},
+        sequence_type=preparation.sequence_type,
+        accepted_sequence_count=preparation.accepted_sequence_count,
+        excluded_sequences=preparation.excluded_sequences,
+        terminal_stop_sequence_count=preparation.terminal_stop_sequence_count,
+        notes=[
+            "codon-aware alignment preserved nucleotide codon triplets through amino-acid guide alignment",
+            f"mafft alignment mode: {mode}",
+            f"accepted coding sequences: {preparation.accepted_sequence_count} of {preparation.input_sequence_count}",
+            f"retained nucleotide alignment length: {codon_summary.alignment_length}",
+        ],
+        warnings=list(dict.fromkeys(run.warning_lines + preparation.warnings)),
+    )
+    report.output_checksums = build_file_checksums(list(output_paths.values()))
+    write_engine_manifest(manifest_path, report)
+    return report
 
 
 def run_alignment_trimming(

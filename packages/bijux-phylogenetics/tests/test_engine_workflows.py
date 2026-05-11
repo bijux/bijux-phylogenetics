@@ -21,12 +21,13 @@ from bijux_phylogenetics.engines import (
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
+    run_codon_aware_multiple_sequence_alignment,
     run_fast_tree_inference,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -318,6 +319,77 @@ def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(
         "WARNING: mafft fixture inserted alignment padding"
     ]
     assert report.manifest_path.exists()
+
+
+def test_run_codon_aware_multiple_sequence_alignment_preserves_triplet_gaps(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "coding-raw.fasta"
+    input_path.write_text(
+        ">short_good\nATGGAATGG\n"
+        ">long_good\nATGGAATGGAAA\n"
+        ">frameshift\nATGGAATG\n"
+        ">internal_stop\nATGTAGTGG\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "codon-aligned.fasta"
+
+    report = run_codon_aware_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+        mode="linsi",
+    )
+
+    records = load_fasta_alignment(output_path)
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("long_good", "ATGGAATGGAAA"),
+        ("short_good", "ATGGAATGG---"),
+    ]
+    assert report.sequence_type == "dna"
+    assert report.accepted_sequence_count == 2
+    assert [row.identifier for row in report.excluded_sequences] == [
+        "frameshift",
+        "internal_stop",
+    ]
+    assert report.output_paths["guide_input"].read_text(encoding="utf-8") == (
+        ">long_good\nMEWK\n>short_good\nMEW\n"
+    )
+    assert report.output_paths["excluded_sequences"].read_text(encoding="utf-8") == (
+        "identifier\tcomparable_length\treason\tpremature_stop_count\t"
+        "terminal_stop_count\ttrailing_bases\tnote\n"
+        "frameshift\t8\tframe-error\t0\t0\t2\t"
+        "sequence is not frame-consistent after gaps and missing data are removed\n"
+        "internal_stop\t9\tinternal-stop-codon\t1\t0\t0\t"
+        "sequence contains one or more premature stop codons\n"
+    )
+    assert report.run.command[1:-1] == ["--localpair", "--maxiterate", "1000"]
+    assert report.notes[0].startswith("codon-aware alignment preserved")
+    assert report.manifest_path.exists()
+
+
+def test_run_codon_aware_multiple_sequence_alignment_fails_when_every_sequence_is_excluded(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "coding-invalid.fasta"
+    input_path.write_text(
+        ">frameshift\nATGGAATG\n>internal_stop\nATGTAGTGG\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "codon-aligned.fasta"
+
+    with pytest.raises(
+        InvalidAlignmentError, match="excluded every sequence"
+    ) as error_info:
+        run_codon_aware_multiple_sequence_alignment(
+            input_path,
+            output_path,
+            executable=executable,
+        )
+
+    assert "excluded every sequence" in str(error_info.value)
 
 
 def test_mafft_alignment_modes_resolve_to_explicit_documented_arguments() -> None:
