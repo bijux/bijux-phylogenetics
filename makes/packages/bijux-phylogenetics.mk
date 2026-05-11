@@ -10,6 +10,7 @@ ENABLE_PYDOCSTYLE := 0
 TEST_PATHS := tests
 TEST_PATHS_UNIT := tests
 TEST_MAIN_ARGS = -m "not slow"
+TEST_CLEAN_PATHS := "$(MONOREPO_ROOT)/.pytest_cache" "$(MONOREPO_ROOT)/.ruff_cache"
 QUALITY_PATHS = src tests
 MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini
 QUALITY_MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini

@@ -7,6 +7,7 @@ BUILD_PRE_TARGETS := sync-license-assets-package
 TEST_PATHS := tests
 TEST_PATHS_UNIT := tests
 TEST_SOURCE_PATHS := src
+TEST_CLEAN_PATHS := "$(MONOREPO_ROOT)/.pytest_cache" "$(MONOREPO_ROOT)/.ruff_cache"
 INTERROGATE_PATHS := src
 QUALITY_PATHS := src tests
 # Audit the installed environment so the local workspace dependency on
