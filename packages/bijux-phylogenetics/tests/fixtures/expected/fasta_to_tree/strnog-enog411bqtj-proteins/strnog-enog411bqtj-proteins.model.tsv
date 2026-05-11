@@ -1,0 +1,2 @@
+workflow	engine_name	sequence_type	selected_model	report_selected_model	artifact_selected_model	model_consistent	alignment_path	trimmed_alignment_path	manifest_path
+model-selection	iqtree	protein	JTTDCMut+G4	JTTDCMut+G4	JTTDCMut+G4	true	strnog-enog411bqtj-proteins.aln	strnog-enog411bqtj-proteins.trimmed.aln	engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.manifest.json

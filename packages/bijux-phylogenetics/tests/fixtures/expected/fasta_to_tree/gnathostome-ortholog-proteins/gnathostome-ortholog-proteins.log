@@ -1,0 +1,71 @@
+workflow: fasta-to-tree
+input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
+prepared_input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
+sequence_type: protein
+selected_model: Q.insect+I
+
+[input-validation]
+sequence_count: 9
+warnings:
+- input contains sequence length outliers
+
+[alignment]
+engine: mafft
+command: /opt/homebrew/bin/mafft --auto packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
+version: v7.526 (2024/Apr/26)
+manifest: engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.manifest.json
+output.alignment: engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln
+
+[trimming]
+engine: trimal
+command: /opt/homebrew/bin/trimal -in engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln -out engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln -gt 0.100000
+version: trimAl v1.5.rev0 build[2024-05-27]
+manifest: engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.manifest.json
+output.trimmed_alignment: engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln
+
+[model_selection]
+engine: iqtree
+command: /opt/homebrew/bin/iqtree2 -s engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln -st AA -seed 1 -nt 1 -m MF -pre engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection
+version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+manifest: engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json
+output.iqtree_report: engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree
+output.selected_model: engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.selected-model.txt
+warnings:
+- WARNING: Normalizing state frequencies so that sum of them equals to 1
+
+[maximum_likelihood]
+engine: iqtree
+command: /opt/homebrew/bin/iqtree2 -s engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln -st AA -seed 1 -nt 1 -m Q.insect+I -pre engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood
+version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+manifest: engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.manifest.json
+output.tree: engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile
+output.iqtree_report: engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree
+
+[bootstrap_support]
+engine: iqtree
+command: /opt/homebrew/bin/iqtree2 -s engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln -st AA -seed 1 -nt 1 -m Q.insect+I -bb 1000 -wbt -pre engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support
+version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+manifest: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.manifest.json
+output.support_tree: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile
+output.bootstrap_trees: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot
+output.iqtree_report: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree
+
+[support-summary]
+- one or more internal nodes did not expose numeric support labels
+- one or more internal clades remain weakly supported
+
+[notes]
+- final tree path contains the bootstrap-supported inference tree
+- engine-specific intermediate artifacts remain under engine-artifacts/
+- mafft alignment mode: auto
+- trimal trimming mode: gap-threshold
+- iqtree random seed: 1
+- iqtree threads: 1
+- raw sequence type detection: protein (high)
+- protein-exclusive residues were observed in the raw FASTA input
