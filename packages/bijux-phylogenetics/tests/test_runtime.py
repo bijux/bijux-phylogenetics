@@ -6023,6 +6023,18 @@ def test_reference_validation_suites_cover_goals_91_through_96() -> None:
     assert sum(suite.fixture_count for suite in suites) >= 18
 
 
+def test_alignment_quality_reference_fixtures_lock_suspicion_and_concentration() -> None:
+    suite = validate_alignment_quality_reference_fixtures()
+    fixtures = {fixture.name: fixture for fixture in suite.fixtures}
+
+    assert fixtures["clean_alignment_quality"].observed["suspicious_alignment"] is False
+    assert fixtures["missingness_heavy_alignment"].observed[
+        "concentrated_missing_run"
+    ] == 2
+    assert fixtures["ambiguity_heavy_alignment"].observed["warning_count"] == 5
+    assert suite.passed is True
+
+
 def test_build_core_workflow_validation_report_aggregates_suites_failures_and_maturity() -> (
     None
 ):
