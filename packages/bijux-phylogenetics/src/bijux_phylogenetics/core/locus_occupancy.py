@@ -2,9 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import re
 
 from bijux_phylogenetics.core.alignment import AlignmentRecord
+from bijux_phylogenetics.core.partitions import (
+    LocusPartition,
+    LocusSegment,
+    parse_locus_partitions,
+    slice_partition_sequence,
+    validate_locus_partitions,
+    write_locus_partitions as _write_locus_partitions,
+)
 from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidPartitionError
 from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
@@ -16,42 +23,10 @@ __all__ = [
     "LocusOccupancyFilterReport",
     "LocusOccupancyCell",
     "LocusOccupancyReport",
-    "LocusPartition",
-    "LocusSegment",
     "TaxonCoverageRow",
     "build_locus_occupancy_report",
     "filter_locus_occupancy",
-    "parse_locus_partitions",
-    "write_locus_partitions",
 ]
-
-_PARTITION_LINE = re.compile(
-    r"^(?:(?P<data_type>[A-Za-z0-9_-]+)\s*,\s*)?"
-    r"(?P<name>[^=]+?)\s*=\s*(?P<ranges>[^;]+?)\s*;?$"
-)
-
-
-@dataclass(frozen=True, slots=True)
-class LocusSegment:
-    """One inclusive 1-based coordinate block inside a locus partition."""
-
-    start: int
-    end: int
-
-    @property
-    def length(self) -> int:
-        """Return the number of sites covered by this segment."""
-        return self.end - self.start + 1
-
-
-@dataclass(frozen=True, slots=True)
-class LocusPartition:
-    """One named locus assembled from one or more concatenated segments."""
-
-    name: str
-    segments: tuple[LocusSegment, ...]
-    total_sites: int
-    data_type: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,75 +109,6 @@ class LocusOccupancyFilterReport:
     locus_coverage_threshold: float | None
     final_report: LocusOccupancyReport
 
-
-def _strip_partition_comments(raw_line: str) -> str:
-    line = raw_line.split("#", 1)[0].strip()
-    if line.lower().startswith("charset "):
-        return line[8:].strip()
-    return line
-
-
-def _parse_segment(raw: str) -> LocusSegment:
-    text = raw.strip()
-    if not text:
-        raise InvalidPartitionError("partition file contains an empty coordinate block")
-    if "-" in text:
-        left, right = text.split("-", 1)
-    else:
-        left = right = text
-    try:
-        start = int(left.strip())
-        end = int(right.strip())
-    except ValueError as error:
-        raise InvalidPartitionError(
-            f"partition coordinate '{text}' is not an integer range"
-        ) from error
-    if start < 1 or end < 1:
-        raise InvalidPartitionError(
-            f"partition coordinate '{text}' must use positive 1-based positions"
-        )
-    if end < start:
-        raise InvalidPartitionError(
-            f"partition coordinate '{text}' ends before it starts"
-        )
-    return LocusSegment(start=start, end=end)
-
-
-def parse_locus_partitions(path: Path) -> tuple[LocusPartition, ...]:
-    """Parse a simple IQ-TREE, RAxML, or NEXUS-style partition file."""
-    partitions: list[LocusPartition] = []
-    for line_number, raw_line in enumerate(
-        path.read_text(encoding="utf-8").splitlines(), start=1
-    ):
-        line = _strip_partition_comments(raw_line)
-        if not line or line.lower() in {"begin sets;", "end;"}:
-            continue
-        match = _PARTITION_LINE.match(line)
-        if match is None:
-            raise InvalidPartitionError(
-                f"partition line {line_number} is not in NAME=START-END form"
-            )
-        name = match.group("name").strip()
-        if not name:
-            raise InvalidPartitionError(
-                f"partition line {line_number} does not declare a locus name"
-            )
-        segments = tuple(
-            _parse_segment(block) for block in match.group("ranges").split(",")
-        )
-        partitions.append(
-            LocusPartition(
-                name=name,
-                segments=segments,
-                total_sites=sum(segment.length for segment in segments),
-                data_type=match.group("data_type"),
-            )
-        )
-    if not partitions:
-        raise InvalidPartitionError("partition file does not define any loci")
-    return tuple(partitions)
-
-
 def _validate_threshold(value: float | None, label: str) -> None:
     if value is None:
         return
@@ -210,38 +116,13 @@ def _validate_threshold(value: float | None, label: str) -> None:
         raise ValueError(f"{label} must be between 0 and 1 inclusive")
 
 
-def _validate_partitions(
-    partitions: tuple[LocusPartition, ...],
-    *,
-    alignment_length: int,
-) -> tuple[int, int]:
-    seen_names: set[str] = set()
-    occupied_sites: set[int] = set()
-    for partition in partitions:
-        if partition.name in seen_names:
-            raise InvalidPartitionError(
-                f"partition name '{partition.name}' appears more than once"
-            )
-        seen_names.add(partition.name)
-        for segment in partition.segments:
-            if segment.end > alignment_length:
-                raise InvalidPartitionError(
-                    f"partition '{partition.name}' extends beyond the alignment length"
-                )
-            for site in range(segment.start, segment.end + 1):
-                if site in occupied_sites:
-                    raise InvalidPartitionError(
-                        f"partition '{partition.name}' overlaps another locus at site {site}"
-                    )
-                occupied_sites.add(site)
-    assigned_site_count = len(occupied_sites)
-    return assigned_site_count, alignment_length - assigned_site_count
-
-
 def _slice_partition_sequence(sequence: str, partition: LocusPartition) -> str:
-    return "".join(
-        sequence[segment.start - 1 : segment.end] for segment in partition.segments
-    )
+    return slice_partition_sequence(sequence, partition)
+
+
+def write_locus_partitions(path: Path, partitions: tuple[LocusPartition, ...]) -> Path:
+    """Write a retained partition file through the shared partition serializer."""
+    return _write_locus_partitions(path, partitions)
 
 
 def _partition_records(
@@ -288,7 +169,7 @@ def _build_locus_occupancy_report_from_inputs(
     locus_coverage_threshold: float | None = None,
 ) -> LocusOccupancyReport:
     alignment_length = _validate_records(records)
-    assigned_site_count, unassigned_site_count = _validate_partitions(
+    assigned_site_count, unassigned_site_count = validate_locus_partitions(
         partitions, alignment_length=alignment_length
     )
 
@@ -465,25 +346,6 @@ def _subset_records_to_taxa(
     retained_taxa: set[str],
 ) -> list[AlignmentRecord]:
     return [record for record in records if record.identifier in retained_taxa]
-
-
-def _serialize_segment(segment: LocusSegment) -> str:
-    if segment.start == segment.end:
-        return str(segment.start)
-    return f"{segment.start}-{segment.end}"
-
-
-def write_locus_partitions(path: Path, partitions: tuple[LocusPartition, ...]) -> Path:
-    """Write a partition file for the retained loci in concatenated alignment order."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    lines: list[str] = []
-    for partition in partitions:
-        prefix = f"{partition.data_type}," if partition.data_type else ""
-        ranges = ",".join(_serialize_segment(segment) for segment in partition.segments)
-        lines.append(f"{prefix}{partition.name} = {ranges}")
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return path
-
 
 def filter_locus_occupancy(
     alignment_path: Path,
