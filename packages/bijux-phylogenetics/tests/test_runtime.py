@@ -2357,6 +2357,60 @@ def test_alignment_quality_report_includes_transparent_score_components() -> Non
     assert 0.0 <= report.quality_score <= 100.0
 
 
+def test_alignment_quality_report_exposes_per_sequence_and_per_column_gap_profiles() -> None:
+    report = build_alignment_quality_report(fixture("example_alignment_ambiguity.fasta"))
+
+    assert report.invariant_site_count == 4
+    assert [
+        (row.identifier, row.gap_fraction, row.missing_fraction, row.ambiguity_fraction)
+        for row in report.per_sequence_uncertainty
+    ] == [
+        ("A", 0.0, 2 / 6, 1 / 6),
+        ("B", 0.0, 2 / 6, 1 / 6),
+        ("C", 1 / 6, 1 / 6, 0.0),
+    ]
+    assert [
+        (row.position, row.gap_fraction, row.missing_fraction, row.ambiguity_fraction)
+        for row in report.per_site_uncertainty
+    ] == [
+        (1, 0.0, 0.0, 0.0),
+        (2, 0.0, 0.0, 0.0),
+        (3, 0.0, 0.0, 0.0),
+        (4, 0.0, 0.0, 0.0),
+        (5, 1 / 3, 2 / 3, 2 / 3),
+        (6, 0.0, 1.0, 0.0),
+    ]
+
+
+def test_alignment_quality_report_flags_missingness_concentration_and_suspicious_windows() -> None:
+    missingness_report = build_alignment_quality_report(
+        fixture("example_alignment_missingness.fasta")
+    )
+    suspicious_window_report = build_alignment_quality_report(
+        fixture("example_alignment_filtering.fasta")
+    )
+
+    assert missingness_report.missing_data_concentration.concentrated_column_count == 2
+    assert missingness_report.missing_data_concentration.longest_concentrated_run == 2
+    assert missingness_report.missing_data_concentration.longest_concentrated_run_start == 5
+    assert missingness_report.missing_data_concentration.longest_concentrated_run_end == 6
+    assert missingness_report.suspicious_alignment is True
+    assert (
+        "alignment concentrates missing data into adjacent columns"
+        in missingness_report.suspicious_reasons
+    )
+    assert (
+        "alignment has low information content for defensible inference"
+        in missingness_report.suspicious_reasons
+    )
+
+    assert suspicious_window_report.suspicious_alignment is True
+    assert (
+        "alignment contains suspiciously over-aligned windows"
+        in suspicious_window_report.suspicious_reasons
+    )
+
+
 def test_alignment_low_information_detection_blocks_sparse_inference_inputs() -> None:
     report = assess_alignment_low_information(
         fixture("example_alignment_missingness.fasta")
