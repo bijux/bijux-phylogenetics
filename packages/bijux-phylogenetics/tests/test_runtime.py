@@ -264,15 +264,18 @@ from bijux_phylogenetics.io.fasta import (
     link_alignment_to_tree,
     list_alignment_filter_profiles,
     load_fasta_alignment,
+    repair_fasta_input,
     remove_all_gap_columns,
     remove_all_missing_columns,
     remove_sequences_above_missingness_threshold,
     summarise_fasta,
     summarize_alignment_readiness,
+    summarize_fasta_input,
     summarize_alignment_windows,
     translate_coding_alignment,
     trim_alignment,
     trim_columns_above_missingness_threshold,
+    validate_fasta_input,
     write_fasta_alignment,
 )
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
@@ -538,6 +541,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.detect_sequence_length_outliers
         is detect_sequence_length_outliers
     )
+    assert bijux_phylogenetics.validate_fasta_input is validate_fasta_input
+    assert bijux_phylogenetics.repair_fasta_input is repair_fasta_input
+    assert bijux_phylogenetics.summarize_fasta_input is summarize_fasta_input
     assert (
         bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
     )
