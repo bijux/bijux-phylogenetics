@@ -332,6 +332,7 @@ def run_fasta_to_tree_workflow(
     mafft_executable: str | Path = "mafft",
     alignment_mode: str = "auto",
     trimal_executable: str | Path = "trimal",
+    trimming_mode: str = "gap-threshold",
     iqtree_executable: str | Path = "iqtree2",
     trim_gap_threshold: float = 0.1,
     bootstrap_replicates: int = 1000,
@@ -410,6 +411,7 @@ def run_fasta_to_tree_workflow(
             ".trimmed.aln"
         ),
         executable=trimal_executable,
+        mode=trimming_mode,
         gap_threshold=trim_gap_threshold,
     )
     model_selection_workflow = run_model_selection(
@@ -483,6 +485,7 @@ def run_fasta_to_tree_workflow(
         "final tree path contains the bootstrap-supported inference tree",
         "engine-specific intermediate artifacts remain under engine-artifacts/",
         f"mafft alignment mode: {alignment_mode}",
+        f"trimal trimming mode: {trimming_mode}",
     ]
     if input_repair is not None:
         notes.append(

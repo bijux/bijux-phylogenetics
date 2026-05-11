@@ -79,6 +79,21 @@ if "--version" in sys.argv:
 args = sys.argv[1:]
 input_path = Path(args[args.index("-in") + 1])
 output_path = Path(args[args.index("-out") + 1])
+if "-strictplus" in args:
+    trim_count = 3
+    warning = "warning: trimal fixture strictplus trimmed three trailing sites"
+elif "-strict" in args:
+    trim_count = 2
+    warning = "warning: trimal fixture strict trimmed two trailing sites"
+elif "-automated1" in args:
+    trim_count = 2
+    warning = "warning: trimal fixture automated1 trimmed two trailing sites"
+elif "-gappyout" in args:
+    trim_count = 1
+    warning = "warning: trimal fixture gappyout trimmed one trailing site"
+else:
+    trim_count = 1
+    warning = "warning: trimal fixture gap-threshold trimmed one trailing site"
 records = []
 identifier = None
 sequence = []
@@ -98,8 +113,8 @@ if identifier is not None:
 output_path.parent.mkdir(parents=True, exist_ok=True)
 with output_path.open("w", encoding="utf-8") as handle:
     for identifier, sequence in records:
-        handle.write(f">{identifier}\\n{sequence[:-1]}\\n")
-print("warning: trimal fixture trimmed one trailing site", file=sys.stderr)
+        handle.write(f">{identifier}\\n{sequence[:-trim_count]}\\n")
+print(warning, file=sys.stderr)
 """,
     )
 
@@ -372,3 +387,28 @@ def test_run_fasta_to_tree_workflow_passes_named_mafft_mode_to_alignment_step(
     assert report.alignment_workflow.notes[0] == "mafft alignment mode: linsi"
     assert "mafft alignment mode: linsi" in report.notes
     assert "command:" in report.output_paths["log"].read_text(encoding="utf-8")
+
+
+def test_run_fasta_to_tree_workflow_passes_named_trimal_mode_to_trimming_step(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_fasta_to_tree_workflow(
+        fixture("alignments/example_sequences_raw.fasta"),
+        out_dir=tmp_path / "workflow-strictplus",
+        prefix="workflow-strictplus",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        trimming_mode="strictplus",
+        iqtree_executable=iqtree,
+        bootstrap_replicates=200,
+    )
+
+    assert report.trimming_workflow.run.command[5:] == ["-strictplus"]
+    assert report.trimming_workflow.trimming_summary is not None
+    assert report.trimming_workflow.trimming_summary.mode == "strictplus"
+    assert report.trimming_workflow.trimming_summary.removed_site_count == 3
+    assert "trimal trimming mode: strictplus" in report.notes
