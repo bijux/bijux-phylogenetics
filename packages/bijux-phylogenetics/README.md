@@ -156,7 +156,9 @@ bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait reg
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json
-bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --bootstrap-replicates 1000 --json
+bijux-phylogenetics alignment validate-input raw-sequences.fasta --json
+bijux-phylogenetics alignment repair-input raw-sequences.fasta --out artifacts/raw-sequences.repaired.fasta --normalize-identifiers --remove-invalid-records --json
+bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --normalize-identifiers --remove-invalid-records --bootstrap-replicates 1000 --json
 bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json
 bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json
 bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json
@@ -197,6 +199,14 @@ inference, and bootstrap support estimation, then writes:
 Engine-specific intermediate manifests and working files stay under
 `out-dir/engine-artifacts/prefix/` so the final output set remains compact
 without hiding reviewable run details.
+
+Raw sequence hygiene is now explicit. Use `alignment validate-input` to inspect
+duplicate identifiers, illegal sequence characters, empty records, and
+sequence-length outliers before alignment. Use `alignment repair-input` when
+you want the runtime to normalize identifiers or remove invalid records into a
+new FASTA. The same repair controls are available on `adapter fasta-to-tree`;
+without them, the workflow now fails fast instead of silently continuing on
+bad raw input.
 
 ## Alignment Filter Profiles
 

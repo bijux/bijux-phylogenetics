@@ -33,3 +33,8 @@ supported end-to-end inference entrypoint for raw FASTA inputs. It emits a
 reviewable aligned matrix, trimmed matrix, selected-model table, supported
 tree, support summary table, run log, and manifest in one command instead of
 forcing users to stitch separate adapter steps together by hand.
+
+For raw input hygiene before alignment, the alignment family now includes
+`alignment validate-input` and `alignment repair-input`. Those commands expose
+the same duplicate-ID, illegal-character, empty-record, length-outlier, and
+identifier-normalization contract that `adapter fasta-to-tree` uses internally.
