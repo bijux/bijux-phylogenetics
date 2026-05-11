@@ -205,6 +205,7 @@ from bijux_phylogenetics.engines import (
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
+    run_codon_aware_multiple_sequence_alignment,
     run_fast_tree_inference,
     run_fasta_to_tree_workflow,
     run_maximum_likelihood_tree_inference,
@@ -3303,6 +3304,16 @@ def build_parser() -> argparse.ArgumentParser:
         choices=list_mafft_alignment_modes(),
         default="auto",
         help="Select the named MAFFT alignment strategy.",
+    )
+    adapter_align.add_argument(
+        "--codon-aware",
+        action="store_true",
+        help="Translate accepted coding nucleotide sequences to an amino-acid guide, align that guide, then back-translate codon triplets.",
+    )
+    adapter_align.add_argument(
+        "--sequence-type",
+        choices=("dna", "rna"),
+        help="Declare the coding nucleotide type for codon-aware alignment when explicit forcing is needed.",
     )
     adapter_align.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
@@ -8611,6 +8622,39 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.adapter_command == "align":
+                if args.codon_aware:
+                    report = run_codon_aware_multiple_sequence_alignment(
+                        args.input_path,
+                        args.out,
+                        executable=args.executable or "mafft",
+                        mode=args.mode,
+                        sequence_type=args.sequence_type,
+                    )
+                    outputs = _finalize_outputs(
+                        args,
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=[*report.output_paths.values(), report.manifest_path],
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="adapter",
+                            inputs=[args.input_path],
+                            outputs=outputs,
+                            warnings=report.warnings,
+                            metrics={
+                                "mode": args.mode,
+                                "codon_aware": True,
+                                "sequence_type": report.sequence_type,
+                                "accepted_sequence_count": report.accepted_sequence_count,
+                                "excluded_sequence_count": len(report.excluded_sequences),
+                                "terminal_stop_sequence_count": report.terminal_stop_sequence_count,
+                            },
+                            data=report,
+                        ),
+                        json_output=args.json,
+                    )
+                    return 0
                 report = run_multiple_sequence_alignment(
                     args.input_path,
                     args.out,
@@ -8631,6 +8675,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.run.warning_lines,
                         metrics={
                             "mode": args.mode,
+                            "codon_aware": False,
                             "warning_count": len(report.run.warning_lines),
                         },
                         data=report,

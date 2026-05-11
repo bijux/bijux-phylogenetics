@@ -279,6 +279,80 @@ def test_adapter_align_cli_passes_named_mafft_mode_to_workflow(
     assert output_path.exists()
 
 
+def test_adapter_align_cli_can_run_codon_aware_alignment(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "coding-raw.fasta"
+    input_path.write_text(
+        ">short_good\nATGGAATGG\n"
+        ">long_good\nATGGAATGGAAA\n"
+        ">frameshift\nATGGAATG\n"
+        ">internal_stop\nATGTAGTGG\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "codon-aligned.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "align",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--mode",
+            "linsi",
+            "--codon-aware",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["codon_aware"] is True
+    assert payload["metrics"]["sequence_type"] == "dna"
+    assert payload["metrics"]["accepted_sequence_count"] == 2
+    assert payload["metrics"]["excluded_sequence_count"] == 2
+    assert output_path.read_text(encoding="utf-8") == (
+        ">long_good\nATGGAATGGAAA\n>short_good\nATGGAATGG---\n"
+    )
+    assert Path(payload["data"]["output_paths"]["guide_input"]).exists()
+    assert Path(payload["data"]["output_paths"]["excluded_sequences"]).exists()
+
+
+def test_adapter_align_cli_reports_codon_aware_failures(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "coding-invalid.fasta"
+    input_path.write_text(
+        ">frameshift\nATGGAATG\n>internal_stop\nATGTAGTGG\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "codon-aligned.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "align",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--codon-aware",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert "excluded every sequence" in payload["errors"][0]["message"]
+
+
 def test_adapter_trim_cli_reports_retained_and_removed_sites(
     tmp_path: Path, capsys
 ) -> None:
