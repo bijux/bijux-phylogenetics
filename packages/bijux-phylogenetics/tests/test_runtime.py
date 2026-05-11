@@ -207,6 +207,7 @@ from bijux_phylogenetics.engines import (
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
+    run_codon_aware_multiple_sequence_alignment,
     run_fast_tree_inference,
     run_fasta_to_tree_workflow,
     run_maximum_likelihood_tree_inference,
@@ -543,12 +544,20 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.detect_sequence_length_outliers
         is detect_sequence_length_outliers
     )
+    assert (
+        bijux_phylogenetics.prepare_coding_sequences_for_alignment
+        is prepare_coding_sequences_for_alignment
+    )
     assert bijux_phylogenetics.detect_fasta_sequence_type is detect_fasta_sequence_type
     assert bijux_phylogenetics.validate_fasta_input is validate_fasta_input
     assert bijux_phylogenetics.repair_fasta_input is repair_fasta_input
     assert bijux_phylogenetics.summarize_fasta_input is summarize_fasta_input
     assert (
         bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
+    )
+    assert (
+        bijux_phylogenetics.run_codon_aware_multiple_sequence_alignment
+        is run_codon_aware_multiple_sequence_alignment
     )
     assert (
         bijux_phylogenetics.detect_under_aligned_regions is detect_under_aligned_regions
