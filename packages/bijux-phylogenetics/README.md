@@ -70,6 +70,7 @@ bijux-phylogenetics --help
 - define named alignment-filtering profiles, generate cleaned alignments, compare original versus cleaned versions, and warn when filtering removes signal or biases taxon groups
 - score alignment quality with transparent components and emit one-shot alignment forensic reports
 - detect low-information alignments, ambiguity-heavy columns, duplicate-handling policy needs, and per-sequence quality rankings before inference
+- quantify per-taxon locus occupancy, per-locus taxon occupancy, low-coverage taxa, and low-coverage loci from concatenated multi-locus alignments with retained-matrix exports
 - audit tree, metadata, traits, alignment, tip dates, and calibrations together through one-shot dataset readiness decisions
 - render dedicated reviewer-facing alignment, dataset, phylo-input, and taxonomy HTML reports with machine-readable sidecars
 - validate checked-in Level 1 reference fixtures, aggregate workflow coverage, document known failure cases, classify workflow maturity, and render reviewer-facing workflow-validation or release-gate reports
@@ -102,6 +103,7 @@ bijux-phylogenetics alignment low-information alignment.fasta --json
 bijux-phylogenetics alignment duplicate-policy alignment.fasta --identity-threshold 0.99 --json
 bijux-phylogenetics alignment ambiguous-columns alignment.fasta --threshold 0.5 --json
 bijux-phylogenetics alignment sequence-ranking alignment.fasta --json
+bijux-phylogenetics alignment occupancy supermatrix.fasta partitions.txt --taxon-coverage-threshold 0.6 --locus-coverage-threshold 0.6 --taxa-out artifacts/occupancy/taxa.tsv --loci-out artifacts/occupancy/loci.tsv --matrix-out artifacts/occupancy/matrix.tsv --filtered-alignment-out artifacts/occupancy/filtered.fasta --filtered-partitions-out artifacts/occupancy/filtered-partitions.txt --json
 bijux-phylogenetics alignment length-outliers sequences.fasta --json
 bijux-phylogenetics alignment forensic alignment.fasta --json
 bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cleaned.fasta --json
