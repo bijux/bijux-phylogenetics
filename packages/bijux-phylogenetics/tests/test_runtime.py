@@ -92,6 +92,7 @@ from bijux_phylogenetics.core.dataset import (
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.locus_occupancy import (
+    LocusOccupancyFilterIteration,
     build_locus_occupancy_report,
     filter_locus_occupancy,
 )
@@ -598,6 +599,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert (
         bijux_phylogenetics.build_locus_occupancy_report is build_locus_occupancy_report
+    )
+    assert (
+        bijux_phylogenetics.LocusOccupancyFilterIteration
+        is LocusOccupancyFilterIteration
     )
     assert (
         bijux_phylogenetics.build_partition_summary_report
