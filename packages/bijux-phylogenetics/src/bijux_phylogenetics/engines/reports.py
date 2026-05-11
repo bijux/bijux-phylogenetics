@@ -37,6 +37,11 @@ class InferenceWorkflowReportBuildResult:
 class ModelSelectionLimitationsReport:
     manifest_path: Path
     selected_model: str | None
+    selected_criterion: str | None
+    candidate_model_count: int
+    best_model_aic: str | None
+    best_model_aicc: str | None
+    best_model_bic: str | None
     validation_issues: list[str]
     limitations: list[str]
     interpretation_limits: list[str]
@@ -278,6 +283,11 @@ def build_model_selection_limitations_report(
     return ModelSelectionLimitationsReport(
         manifest_path=manifest_path,
         selected_model=None if selected_model is None else str(selected_model),
+        selected_criterion=validation.report_selected_criterion,
+        candidate_model_count=validation.candidate_model_count,
+        best_model_aic=validation.best_model_aic,
+        best_model_aicc=validation.best_model_aicc,
+        best_model_bic=validation.best_model_bic,
         validation_issues=validation.issues,
         limitations=limitations,
         interpretation_limits=interpretation_limits,

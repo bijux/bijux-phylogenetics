@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import gzip
 from pathlib import Path
-import re
 
 from bijux_phylogenetics.ancestral.common import node_descendant_taxa
 from bijux_phylogenetics.compare.topology import (
@@ -16,6 +14,12 @@ from bijux_phylogenetics.engines.common import (
     build_file_checksums,
     load_engine_manifest,
 )
+from bijux_phylogenetics.engines.iqtree_artifacts import (
+    parse_best_model_file,
+    parse_iqtree_model_selection_summary,
+    parse_log_likelihood_file,
+    resolve_iqtree_model_sidecar,
+)
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
@@ -23,21 +27,6 @@ from bijux_phylogenetics.io.fasta import (
 )
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.tree_set import load_tree_set
-
-_BEST_MODEL_PATTERN = re.compile(
-    r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
-    re.IGNORECASE,
-)
-_LOG_LIKELIHOOD_PATTERNS = (
-    re.compile(
-        r"(?:log-likelihood(?: of the tree)?|log likelihood)\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"best score found\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
-        re.IGNORECASE,
-    ),
-)
 
 
 @dataclass(slots=True)
@@ -64,8 +53,14 @@ class InferenceReadinessAuditReport:
 class ModelSelectionValidationReport:
     manifest_path: Path
     manifest_selected_model: str | None
+    manifest_selected_criterion: str | None
     report_selected_model: str | None
+    report_selected_criterion: str | None
     artifact_selected_model: str | None
+    candidate_model_count: int
+    best_model_aic: str | None
+    best_model_aicc: str | None
+    best_model_bic: str | None
     valid: bool
     issues: list[str]
 
@@ -250,36 +245,6 @@ def audit_alignment_inference_readiness(path: Path) -> InferenceReadinessAuditRe
         warnings=generic_warnings,
     )
 
-
-def _parse_best_model_text(text: str) -> str | None:
-    match = _BEST_MODEL_PATTERN.search(text)
-    return None if match is None else match.group("model")
-
-
-def _parse_best_model_file(path: Path) -> str | None:
-    if not path.exists():
-        return None
-    return _parse_best_model_text(path.read_text(encoding="utf-8"))
-
-
-def _parse_log_likelihood_text(text: str) -> float | None:
-    for pattern in _LOG_LIKELIHOOD_PATTERNS:
-        match = pattern.search(text)
-        if match is None:
-            continue
-        try:
-            return float(match.group("value"))
-        except ValueError:
-            continue
-    return None
-
-
-def _parse_log_likelihood_file(path: Path) -> float | None:
-    if not path.exists():
-        return None
-    return _parse_log_likelihood_text(path.read_text(encoding="utf-8"))
-
-
 def validate_model_selection_against_engine_outputs(
     manifest_path: Path,
 ) -> ModelSelectionValidationReport:
@@ -291,33 +256,43 @@ def validate_model_selection_against_engine_outputs(
     iqtree_report = output_paths.get("iqtree_report")
     iqtree_log = output_paths.get("iqtree_log")
     selected_model_file = output_paths.get("selected_model")
+    report_summary = (
+        None
+        if iqtree_report is None
+        else parse_iqtree_model_selection_summary(
+            iqtree_report_path=iqtree_report,
+            model_sidecar_path=resolve_iqtree_model_sidecar(iqtree_report.with_suffix("")),
+        )
+    )
     report_selected_model = (
-        None if iqtree_report is None else _parse_best_model_file(iqtree_report)
+        None if report_summary is None else report_summary.selected_model
+    )
+    report_selected_criterion = (
+        None if report_summary is None else report_summary.selected_criterion
     )
     report_log_likelihood = (
-        None if iqtree_report is None else _parse_log_likelihood_file(iqtree_report)
+        None if iqtree_report is None else parse_log_likelihood_file(iqtree_report)
     )
     if report_log_likelihood is None and iqtree_log is not None:
-        report_log_likelihood = _parse_log_likelihood_file(iqtree_log)
+        report_log_likelihood = parse_log_likelihood_file(iqtree_log)
     artifact_selected_model = None
     if selected_model_file is not None and selected_model_file.exists():
         artifact_selected_model = (
             selected_model_file.read_text(encoding="utf-8").strip() or None
         )
     if report_selected_model is None and iqtree_report is not None:
-        model_sidecar = iqtree_report.with_suffix(".model")
-        if model_sidecar.exists():
-            report_selected_model = _parse_best_model_file(model_sidecar)
-        else:
-            model_gz_sidecar = iqtree_report.with_suffix(".model.gz")
-            if model_gz_sidecar.exists():
-                report_selected_model = _parse_best_model_text(
-                    gzip.decompress(model_gz_sidecar.read_bytes()).decode(
-                        "utf-8", errors="replace"
-                    )
-                )
+        model_sidecar = resolve_iqtree_model_sidecar(iqtree_report.with_suffix(""))
+        if model_sidecar is not None:
+            report_selected_model = parse_best_model_file(model_sidecar)
     manifest_selected_model = manifest.get("selected_model")
     manifest_log_likelihood = manifest.get("log_likelihood")
+    manifest_summary = manifest.get("model_selection_summary")
+    manifest_selected_criterion = (
+        None
+        if not isinstance(manifest_summary, dict)
+        or manifest_summary.get("selected_criterion") is None
+        else str(manifest_summary["selected_criterion"])
+    )
     issues: list[str] = []
     if manifest.get("workflow") != "model-selection":
         issues.append("manifest does not describe a model-selection workflow")
@@ -327,8 +302,25 @@ def validate_model_selection_against_engine_outputs(
         issues.append("manifest selected_model field is missing")
     if manifest_log_likelihood is None:
         issues.append("manifest log_likelihood field is missing")
+    if not isinstance(manifest_summary, dict):
+        issues.append("manifest model_selection_summary field is missing")
+    else:
+        if int(manifest_summary.get("candidate_count", 0)) < 1:
+            issues.append("manifest does not record any candidate substitution models")
+        if manifest_summary.get("selected_criterion") is None:
+            issues.append(
+                "manifest model-selection summary does not record the selected criterion"
+            )
     if report_selected_model is None:
         issues.append("engine report does not expose a parsable best-fit model")
+    if report_summary is None or report_summary.candidate_count < 1:
+        issues.append("engine report does not expose a parsable candidate-model table")
+    elif (
+        report_summary.best_model_aic is None
+        or report_summary.best_model_aicc is None
+        or report_summary.best_model_bic is None
+    ):
+        issues.append("engine report does not expose AIC, AICc, and BIC winners")
     if report_log_likelihood is None:
         issues.append("engine artifacts do not expose a parsable log-likelihood")
     if artifact_selected_model is None:
@@ -354,13 +346,27 @@ def validate_model_selection_against_engine_outputs(
         issues.append(
             "log-likelihood disagrees between manifest and iqtree inference artifacts"
         )
+    if (
+        manifest_selected_criterion is not None
+        and report_selected_criterion is not None
+        and manifest_selected_criterion != report_selected_criterion
+    ):
+        issues.append(
+            "selected criterion disagrees between manifest and iqtree inference artifacts"
+        )
     return ModelSelectionValidationReport(
         manifest_path=manifest_path,
         manifest_selected_model=None
         if manifest_selected_model is None
         else str(manifest_selected_model),
+        manifest_selected_criterion=manifest_selected_criterion,
         report_selected_model=report_selected_model,
+        report_selected_criterion=report_selected_criterion,
         artifact_selected_model=artifact_selected_model,
+        candidate_model_count=0 if report_summary is None else report_summary.candidate_count,
+        best_model_aic=None if report_summary is None else report_summary.best_model_aic,
+        best_model_aicc=None if report_summary is None else report_summary.best_model_aicc,
+        best_model_bic=None if report_summary is None else report_summary.best_model_bic,
         valid=not issues,
         issues=issues,
     )

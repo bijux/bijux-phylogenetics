@@ -54,7 +54,15 @@ if "--version" in args:
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
 prefix.with_suffix(".iqtree").write_text(
-    "Best-fit model according to BIC: GTR+G\\nLog-likelihood of the tree: -123.456\\n",
+    " No. Model         -LnL         df  AIC          AICc         BIC\\n"
+    "  1  GTR+G         123.456      12  270.912      330.912      272.912\\n"
+    "  2  HKY+G         124.000      10  268.000      320.000      269.000\\n"
+    "  3  JC            130.500      5   271.000      300.000      271.500\\n"
+    "Akaike Information Criterion:           HKY+G\\n"
+    "Corrected Akaike Information Criterion: JC\\n"
+    "Bayesian Information Criterion:         GTR+G\\n"
+    "Best-fit model according to BIC: GTR+G\\n"
+    "Log-likelihood of the tree: -123.456\\n",
     encoding="utf-8",
 )
 prefix.with_suffix(".log").write_text(
@@ -194,8 +202,14 @@ def test_validate_model_selection_against_engine_outputs_requires_exact_match(
     report = validate_model_selection_against_engine_outputs(workflow.manifest_path)
     assert report.valid is True
     assert report.manifest_selected_model == "GTR+G"
+    assert report.manifest_selected_criterion == "BIC"
     assert report.report_selected_model == "GTR+G"
+    assert report.report_selected_criterion == "BIC"
     assert report.artifact_selected_model == "GTR+G"
+    assert report.candidate_model_count == 3
+    assert report.best_model_aic == "HKY+G"
+    assert report.best_model_aicc == "JC"
+    assert report.best_model_bic == "GTR+G"
 
 
 def test_validate_model_selection_against_engine_outputs_requires_manifest_likelihood(
@@ -219,6 +233,29 @@ def test_validate_model_selection_against_engine_outputs_requires_manifest_likel
 
     assert report.valid is False
     assert "manifest log_likelihood field is missing" in report.issues
+
+
+def test_validate_model_selection_against_engine_outputs_requires_candidate_summary(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    workflow = run_model_selection(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="example",
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    payload["model_selection_summary"]["candidate_count"] = 0
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_model_selection_against_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert "manifest does not record any candidate substitution models" in report.issues
 
 
 def test_validate_ml_tree_contains_expected_taxa_matches_alignment_ids(

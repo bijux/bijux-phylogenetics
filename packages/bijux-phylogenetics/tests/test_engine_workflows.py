@@ -1060,6 +1060,11 @@ def test_model_selection_limitations_report_records_interpretation_boundaries(
     )
 
     assert report.selected_model == "GTR+G"
+    assert report.selected_criterion == "BIC"
+    assert report.candidate_model_count == 3
+    assert report.best_model_aic == "HKY+G"
+    assert report.best_model_aicc == "JC"
+    assert report.best_model_bic == "GTR+G"
     assert report.limitations
     assert report.interpretation_limits
     assert rendered.output_path.exists()
