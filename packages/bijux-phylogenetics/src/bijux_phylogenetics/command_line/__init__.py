@@ -94,6 +94,11 @@ from bijux_phylogenetics.core.locus_occupancy import (
     filter_locus_occupancy,
     write_locus_partitions,
 )
+from bijux_phylogenetics.core.partitions import (
+    build_partition_summary_report,
+    parse_locus_partitions,
+    write_partition_summary_table,
+)
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import (
     inspect_metadata_table,
@@ -1180,6 +1185,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the occupancy report as JSON."
     )
     _add_manifest_argument(alignment_occupancy)
+    alignment_partition_summary = alignment_subparsers.add_parser(
+        "partition-summary",
+        help="Validate one partition file against an aligned matrix and summarize each locus as TSV-ready rows.",
+    )
+    alignment_partition_summary.add_argument("alignment", type=Path)
+    alignment_partition_summary.add_argument("partitions", type=Path)
+    alignment_partition_summary.add_argument(
+        "--out",
+        type=Path,
+        help="Write the partition summary table as TSV.",
+    )
+    alignment_partition_summary.add_argument(
+        "--json", action="store_true", help="Emit the partition summary report as JSON."
+    )
+    _add_manifest_argument(alignment_partition_summary)
     alignment_filter = alignment_subparsers.add_parser(
         "filter",
         help="Clean an alignment through one named profile and report what changed.",
@@ -3343,6 +3363,11 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_model.add_argument("--out-dir", required=True, type=Path)
     adapter_model.add_argument("--prefix", default="model-selection")
     adapter_model.add_argument(
+        "--partitions",
+        type=Path,
+        help="Validate and apply a partition scheme for partitioned model selection.",
+    )
+    adapter_model.add_argument(
         "--sequence-type", choices=("dna", "rna", "protein", "unknown")
     )
     adapter_model.add_argument("--executable", type=str)
@@ -3357,6 +3382,11 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_ml.add_argument("--out-dir", required=True, type=Path)
     adapter_ml.add_argument("--model", required=True)
     adapter_ml.add_argument("--prefix", default="maximum-likelihood")
+    adapter_ml.add_argument(
+        "--partitions",
+        type=Path,
+        help="Validate and apply a partition scheme for partitioned maximum-likelihood inference.",
+    )
     adapter_ml.add_argument(
         "--sequence-type", choices=("dna", "rna", "protein", "unknown")
     )
@@ -3373,6 +3403,11 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_bootstrap.add_argument("--model", required=True)
     adapter_bootstrap.add_argument("--replicates", type=int, default=1000)
     adapter_bootstrap.add_argument("--prefix", default="bootstrap-support")
+    adapter_bootstrap.add_argument(
+        "--partitions",
+        type=Path,
+        help="Validate and apply a partition scheme for partitioned bootstrap support estimation.",
+    )
     adapter_bootstrap.add_argument(
         "--sequence-type", choices=("dna", "rna", "protein", "unknown")
     )
@@ -4561,6 +4596,40 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "report": report,
                             "filter_report": filter_report,
                         },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "partition-summary":
+                alignment_summary = summarise_fasta(args.alignment)
+                report = build_partition_summary_report(
+                    parse_locus_partitions(args.partitions),
+                    alignment_length=alignment_summary.alignment_length,
+                )
+                command_outputs: list[Path] = []
+                if args.out is not None:
+                    command_outputs.append(
+                        write_partition_summary_table(args.out, report)
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=[args.alignment, args.partitions],
+                    outputs=command_outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment, args.partitions],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "partition_count": report.partition_count,
+                            "assigned_site_count": report.assigned_site_count,
+                            "unassigned_site_count": report.unassigned_site_count,
+                            "mixed_data_types": report.mixed_data_types,
+                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )
@@ -8739,20 +8808,29 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     prefix=args.prefix,
                     executable=args.executable or "iqtree2",
                     sequence_type=args.sequence_type,
+                    partition_path=args.partitions,
+                )
+                adapter_inputs = (
+                    [args.input_path]
+                    if args.partitions is None
+                    else [args.input_path, args.partitions]
                 )
                 outputs = _finalize_outputs(
                     args,
                     command="adapter",
-                    inputs=[args.input_path],
+                    inputs=adapter_inputs,
                     outputs=[*report.output_paths.values(), report.manifest_path],
                 )
                 _print_result(
                     build_command_result(
                         command="adapter",
-                        inputs=[args.input_path],
+                        inputs=adapter_inputs,
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"selected_model": report.selected_model},
+                        metrics={
+                            "selected_model": report.selected_model,
+                            "partitioned": args.partitions is not None,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -8766,20 +8844,29 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     prefix=args.prefix,
                     executable=args.executable or "iqtree2",
                     sequence_type=args.sequence_type,
+                    partition_path=args.partitions,
+                )
+                adapter_inputs = (
+                    [args.input_path]
+                    if args.partitions is None
+                    else [args.input_path, args.partitions]
                 )
                 outputs = _finalize_outputs(
                     args,
                     command="adapter",
-                    inputs=[args.input_path],
+                    inputs=adapter_inputs,
                     outputs=[*report.output_paths.values(), report.manifest_path],
                 )
                 _print_result(
                     build_command_result(
                         command="adapter",
-                        inputs=[args.input_path],
+                        inputs=adapter_inputs,
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"selected_model": report.selected_model},
+                        metrics={
+                            "selected_model": report.selected_model,
+                            "partitioned": args.partitions is not None,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -8794,20 +8881,29 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     prefix=args.prefix,
                     executable=args.executable or "iqtree2",
                     sequence_type=args.sequence_type,
+                    partition_path=args.partitions,
+                )
+                adapter_inputs = (
+                    [args.input_path]
+                    if args.partitions is None
+                    else [args.input_path, args.partitions]
                 )
                 outputs = _finalize_outputs(
                     args,
                     command="adapter",
-                    inputs=[args.input_path],
+                    inputs=adapter_inputs,
                     outputs=[*report.output_paths.values(), report.manifest_path],
                 )
                 _print_result(
                     build_command_result(
                         command="adapter",
-                        inputs=[args.input_path],
+                        inputs=adapter_inputs,
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"bootstrap_replicates": args.replicates},
+                        metrics={
+                            "bootstrap_replicates": args.replicates,
+                            "partitioned": args.partitions is not None,
+                        },
                         data=report,
                     ),
                     json_output=args.json,

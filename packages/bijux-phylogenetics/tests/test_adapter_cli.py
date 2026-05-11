@@ -503,6 +503,100 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     assert comparison_path.exists()
 
 
+def test_alignment_partition_summary_cli_writes_summary_table(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "partition-summary.tsv"
+
+    exit_code = main(
+        [
+            "alignment",
+            "partition-summary",
+            str(fixture("alignments/example_multilocus_alignment.fasta")),
+            str(fixture("alignments/example_multilocus_partitions.txt")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["partition_count"] == 3
+    assert payload["metrics"]["unassigned_site_count"] == 0
+    assert output_path.exists()
+    assert "gene_gamma" in output_path.read_text(encoding="utf-8")
+
+
+def test_adapter_model_select_cli_supports_partitioned_alignment(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    exit_code = main(
+        [
+            "adapter",
+            "model-select",
+            str(fixture("alignments/example_multilocus_alignment.fasta")),
+            "--partitions",
+            str(fixture("alignments/example_multilocus_partitions.txt")),
+            "--out-dir",
+            str(tmp_path / "model"),
+            "--prefix",
+            "partitioned",
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["partitioned"] is True
+    assert Path(payload["data"]["output_paths"]["partition_summary"]).exists()
+
+
+def test_adapter_infer_ml_cli_supports_mixed_partition_inputs(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = tmp_path / "mixed-alignment.fasta"
+    input_path.write_text(
+        ">A\nACGTACMKTW\n>B\nACGTACMKTA\n>C\nACGTACMKTF\n>D\nACGTACMKTY\n",
+        encoding="utf-8",
+    )
+    partition_path = tmp_path / "mixed.partitions"
+    partition_path.write_text(
+        "DNA,gene_alpha = 1-6\nPROTEIN,gene_beta = 7-10\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "infer-ml",
+            str(input_path),
+            "--partitions",
+            str(partition_path),
+            "--out-dir",
+            str(tmp_path / "ml"),
+            "--model",
+            "MFP",
+            "--prefix",
+            "mixed",
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["partitioned"] is True
+    assert payload["data"]["run"]["command"].count("-s") == 0
+    assert payload["data"]["output_paths"]["partition_scheme"].endswith(".nex")
+
+
 def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     tmp_path: Path, capsys
 ) -> None:
