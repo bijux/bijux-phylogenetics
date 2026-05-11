@@ -69,6 +69,21 @@ if "--version" in sys.argv:
 args = sys.argv[1:]
 input_path = Path(args[args.index("-in") + 1])
 output_path = Path(args[args.index("-out") + 1])
+if "-strictplus" in args:
+    trim_count = 3
+    warning = "warning: trimal fixture strictplus trimmed three trailing sites"
+elif "-strict" in args:
+    trim_count = 2
+    warning = "warning: trimal fixture strict trimmed two trailing sites"
+elif "-automated1" in args:
+    trim_count = 2
+    warning = "warning: trimal fixture automated1 trimmed two trailing sites"
+elif "-gappyout" in args:
+    trim_count = 1
+    warning = "warning: trimal fixture gappyout trimmed one trailing site"
+else:
+    trim_count = 1
+    warning = "warning: trimal fixture gap-threshold trimmed one trailing site"
 records = []
 identifier = None
 sequence = []
@@ -88,8 +103,8 @@ if identifier is not None:
 output_path.parent.mkdir(parents=True, exist_ok=True)
 with output_path.open("w", encoding="utf-8") as handle:
     for identifier, sequence in records:
-        handle.write(f">{identifier}\\n{sequence[:-1]}\\n")
-print("warning: trimal fixture trimmed one trailing site", file=sys.stderr)
+        handle.write(f">{identifier}\\n{sequence[:-trim_count]}\\n")
+print(warning, file=sys.stderr)
 """,
     )
 
@@ -261,6 +276,71 @@ def test_adapter_align_cli_passes_named_mafft_mode_to_workflow(
         "1000",
     ]
     assert payload["data"]["notes"][0] == "mafft alignment mode: linsi"
+    assert output_path.exists()
+
+
+def test_adapter_trim_cli_reports_retained_and_removed_sites(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_trimal(tmp_path / "trimal-fixture")
+    input_path = fixture("alignments/example_alignment_trim.fasta")
+    output_path = tmp_path / "trimmed.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "trim",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--gap-threshold",
+            "0.2",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["mode"] == "gap-threshold"
+    assert payload["metrics"]["retained_site_count"] == 5
+    assert payload["metrics"]["removed_site_count"] == 1
+    assert payload["data"]["trimming_summary"]["gap_threshold"] == 0.2
+    assert payload["data"]["notes"][1] == "retained sites: 5 of 6"
+    assert output_path.exists()
+
+
+def test_adapter_trim_cli_passes_named_trimal_mode_to_workflow(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_trimal(tmp_path / "trimal-fixture")
+    input_path = fixture("alignments/example_alignment_trim.fasta")
+    output_path = tmp_path / "trimmed-strictplus.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "trim",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--mode",
+            "strictplus",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["mode"] == "strictplus"
+    assert payload["data"]["run"]["command"][5:] == ["-strictplus"]
+    assert payload["data"]["trimming_summary"]["removed_site_count"] == 3
+    assert payload["warnings"] == [
+        "warning: trimal fixture strictplus trimmed three trailing sites"
+    ]
     assert output_path.exists()
 
 

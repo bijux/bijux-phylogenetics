@@ -199,6 +199,7 @@ from bijux_phylogenetics.diversification import (
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
     list_mafft_alignment_modes,
+    list_trimal_trimming_modes,
     read_engine_version,
     render_inference_workflow_report,
     run_alignment_trimming,
@@ -3302,6 +3303,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     adapter_trim.add_argument("input_path", type=Path)
     adapter_trim.add_argument("--out", required=True, type=Path)
+    adapter_trim.add_argument(
+        "--mode",
+        choices=list_trimal_trimming_modes(),
+        default="gap-threshold",
+        help="Select the named trimAl trimming strategy.",
+    )
     adapter_trim.add_argument("--gap-threshold", type=float, default=0.1)
     adapter_trim.add_argument("--executable", type=str)
     adapter_trim.add_argument(
@@ -8589,6 +8596,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.input_path,
                     args.out,
                     executable=args.executable or "trimal",
+                    mode=args.mode,
                     gap_threshold=args.gap_threshold,
                 )
                 outputs = _finalize_outputs(
@@ -8603,7 +8611,30 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.input_path],
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"warning_count": len(report.run.warning_lines)},
+                        metrics={
+                            "mode": args.mode,
+                            "warning_count": len(report.run.warning_lines),
+                            "retained_site_count": (
+                                None
+                                if report.trimming_summary is None
+                                else report.trimming_summary.retained_site_count
+                            ),
+                            "removed_site_count": (
+                                None
+                                if report.trimming_summary is None
+                                else report.trimming_summary.removed_site_count
+                            ),
+                            "input_gap_percentage": (
+                                None
+                                if report.trimming_summary is None
+                                else report.trimming_summary.input_gap_percentage
+                            ),
+                            "trimmed_gap_percentage": (
+                                None
+                                if report.trimming_summary is None
+                                else report.trimming_summary.trimmed_gap_percentage
+                            ),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
