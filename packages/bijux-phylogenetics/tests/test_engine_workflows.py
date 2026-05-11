@@ -7,9 +7,11 @@ from bijux_phylogenetics.engines import (
     build_model_selection_limitations_report,
     bundle_inference_workflow_evidence,
     compare_fast_and_ml_trees,
+    list_mafft_alignment_modes,
     render_inference_sensitivity_report,
     render_inference_workflow_report,
     render_model_selection_limitations_report,
+    resolve_mafft_alignment_mode,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -260,6 +262,69 @@ def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(
         "WARNING: mafft fixture inserted alignment padding"
     ]
     assert report.manifest_path.exists()
+
+
+def test_mafft_alignment_modes_resolve_to_explicit_documented_arguments() -> None:
+    assert list_mafft_alignment_modes() == (
+        "auto",
+        "linsi",
+        "ginsi",
+        "einsi",
+        "fast",
+    )
+    assert resolve_mafft_alignment_mode("auto") == ("--auto",)
+    assert resolve_mafft_alignment_mode("linsi") == (
+        "--localpair",
+        "--maxiterate",
+        "1000",
+    )
+    assert resolve_mafft_alignment_mode("ginsi") == (
+        "--globalpair",
+        "--maxiterate",
+        "1000",
+    )
+    assert resolve_mafft_alignment_mode("einsi") == (
+        "--ep",
+        "0",
+        "--genafpair",
+        "--maxiterate",
+        "1000",
+    )
+    assert resolve_mafft_alignment_mode("fast") == (
+        "--retree",
+        "2",
+        "--maxiterate",
+        "0",
+    )
+
+
+def test_run_multiple_sequence_alignment_supports_all_named_mafft_modes(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "unaligned.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
+
+    expected_prefixes = {
+        "auto": ["--auto"],
+        "linsi": ["--localpair", "--maxiterate", "1000"],
+        "ginsi": ["--globalpair", "--maxiterate", "1000"],
+        "einsi": ["--ep", "0", "--genafpair", "--maxiterate", "1000"],
+        "fast": ["--retree", "2", "--maxiterate", "0"],
+    }
+
+    for mode, expected_args in expected_prefixes.items():
+        output_path = tmp_path / f"{mode}.fasta"
+        report = run_multiple_sequence_alignment(
+            input_path,
+            output_path,
+            executable=executable,
+            mode=mode,
+        )
+
+        assert report.run.command[1:-1] == expected_args
+        assert report.notes[0] == f"mafft alignment mode: {mode}"
+        assert load_fasta_alignment(output_path)
 
 
 def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(

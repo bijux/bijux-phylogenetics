@@ -35,6 +35,13 @@ _BEST_MODEL_PATTERN = re.compile(
     r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
     re.IGNORECASE,
 )
+_MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
+    "auto": ("--auto",),
+    "linsi": ("--localpair", "--maxiterate", "1000"),
+    "ginsi": ("--globalpair", "--maxiterate", "1000"),
+    "einsi": ("--ep", "0", "--genafpair", "--maxiterate", "1000"),
+    "fast": ("--retree", "2", "--maxiterate", "0"),
+}
 
 
 @dataclass(slots=True)
@@ -57,6 +64,22 @@ class ExternalTreeComparisonReport:
     fast_tree_path: Path
     ml_tree_path: Path
     comparison_report: ComparisonReportBuildResult
+
+
+def list_mafft_alignment_modes() -> tuple[str, ...]:
+    """Return the supported named MAFFT alignment strategies."""
+    return tuple(_MAFFT_ALIGNMENT_MODE_ARGUMENTS)
+
+
+def resolve_mafft_alignment_mode(mode: str) -> tuple[str, ...]:
+    """Resolve one named MAFFT alignment strategy into explicit engine arguments."""
+    try:
+        return _MAFFT_ALIGNMENT_MODE_ARGUMENTS[mode]
+    except KeyError as error:
+        available = ", ".join(sorted(_MAFFT_ALIGNMENT_MODE_ARGUMENTS))
+        raise ValueError(
+            f"unsupported mafft alignment mode '{mode}', expected one of: {available}"
+        ) from error
 
 
 def _sidecar(path: Path, label: str) -> Path:
@@ -237,11 +260,13 @@ def run_multiple_sequence_alignment(
     out_path: Path,
     *,
     executable: str | Path = "mafft",
+    mode: str = "auto",
     extra_args: tuple[str, ...] = (),
 ) -> EngineWorkflowReport:
     """Run a multiple-sequence alignment engine against an unaligned FASTA file."""
     load_unaligned_fasta(input_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    mode_args = resolve_mafft_alignment_mode(mode)
     version = read_engine_version("mafft", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
     run = execute_engine_command(
@@ -249,7 +274,7 @@ def run_multiple_sequence_alignment(
         workflow="multiple-sequence-alignment",
         executable=resolved,
         version=version,
-        command_args=["--auto", *extra_args, str(input_path.resolve())],
+        command_args=[*mode_args, *extra_args, str(input_path.resolve())],
         work_dir=out_path.parent,
         stdout_path=out_path,
         stderr_path=_sidecar(out_path, "stderr.log"),
@@ -266,7 +291,10 @@ def run_multiple_sequence_alignment(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
-        notes=["alignment output validated as deterministic equal-length FASTA"],
+        notes=[
+            f"mafft alignment mode: {mode}",
+            "alignment output validated as deterministic equal-length FASTA",
+        ],
     )
     return _persist_workflow_report(report)
 
