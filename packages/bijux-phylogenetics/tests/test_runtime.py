@@ -5187,6 +5187,27 @@ def test_cli_alignment_forensic_json_output(capsys) -> None:
     assert payload["data"]["coding"]["mixed_coding_signals"] is True
 
 
+def test_cli_alignment_quality_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "quality",
+            str(fixture("example_alignment_missingness.fasta")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["quality_score"] == payload["data"]["quality_score"]
+    assert payload["metrics"]["invariant_site_count"] == 6
+    assert payload["metrics"]["parsimony_informative_site_count"] == 0
+    assert payload["metrics"]["suspicious_alignment"] is True
+    assert payload["metrics"]["suspicious_reason_count"] >= 2
+    assert payload["metrics"]["concentrated_column_count"] == 2
+    assert payload["data"]["missing_data_concentration"]["longest_concentrated_run"] == 2
+
+
 def test_cli_alignment_low_information_json_output(capsys) -> None:
     exit_code = main(
         [

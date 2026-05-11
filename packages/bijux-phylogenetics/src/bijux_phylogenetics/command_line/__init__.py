@@ -4098,6 +4098,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=report.warnings,
                         metrics={
+                            "quality_score": report.quality_score,
+                            "invariant_site_count": report.invariant_site_count,
+                            "parsimony_informative_site_count": report.parsimony_informative_site_count,
+                            "suspicious_alignment": report.suspicious_alignment,
+                            "suspicious_reason_count": len(report.suspicious_reasons),
+                            "concentrated_column_count": report.missing_data_concentration.concentrated_column_count,
                             "invalid_character_count": len(report.invalid_characters),
                             "composition_outlier_count": len(
                                 report.composition_outliers
