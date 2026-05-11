@@ -20,7 +20,6 @@ from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidPartitionEr
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,
-    summarise_records_as_alignment_summary,
 )
 
 __all__ = [
@@ -117,17 +116,6 @@ def _validate_unique_taxa(path: Path, records: list[AlignmentRecord]) -> None:
         seen.add(record.identifier)
 
 
-def _observed_site_count(
-    *,
-    alignment_length: int,
-    gap_fraction: float,
-    missing_fraction: float,
-) -> int:
-    absent = round(alignment_length * (gap_fraction + missing_fraction))
-    observed = alignment_length - absent
-    return max(0, observed)
-
-
 def _partition_data_type(
     *,
     inferred_alphabet: AlignmentAlphabet,
@@ -152,19 +140,8 @@ def _load_locus(
     _validate_unique_taxa(path, records)
 
     inferred_alphabet = infer_alignment_alphabet(records)
-    summary = summarise_records_as_alignment_summary(path=path, records=records)
-    uncertainty_by_taxon = {
-        row.identifier: row for row in summary.per_sequence_uncertainty
-    }
     occupancy_by_taxon = {
-        record.identifier: (
-            observed_site_count := _observed_site_count(
-                alignment_length=summary.alignment_length,
-                gap_fraction=uncertainty_by_taxon[record.identifier].gap_fraction,
-                missing_fraction=uncertainty_by_taxon[record.identifier].missing_fraction,
-            ),
-            observed_site_count / summary.alignment_length,
-        )
+        record.identifier: (len(record.sequence), 1.0)
         for record in records
     }
     return _LoadedLocus(
