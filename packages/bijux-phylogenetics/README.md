@@ -155,10 +155,10 @@ bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.j
 bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model symmetric --out artifacts/geography-report.html
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
-bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json
+bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --mode linsi --json
 bijux-phylogenetics alignment validate-input raw-sequences.fasta --json
 bijux-phylogenetics alignment repair-input raw-sequences.fasta --out artifacts/raw-sequences.repaired.fasta --normalize-identifiers --remove-invalid-records --json
-bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --normalize-identifiers --remove-invalid-records --bootstrap-replicates 1000 --json
+bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --alignment-mode einsi --normalize-identifiers --remove-invalid-records --bootstrap-replicates 1000 --json
 bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json
 bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json
 bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json
@@ -199,6 +199,12 @@ inference, and bootstrap support estimation, then writes:
 Engine-specific intermediate manifests and working files stay under
 `out-dir/engine-artifacts/prefix/` so the final output set remains compact
 without hiding reviewable run details.
+
+Named MAFFT strategies are now first-class on both `adapter align` and
+`adapter fasta-to-tree`. Use `--mode` or `--alignment-mode` with one of
+`auto`, `linsi`, `ginsi`, `einsi`, or `fast`. The runtime expands each named
+strategy into the explicit MAFFT arguments it runs, and the workflow manifest
+captures both the resolved command and the detected MAFFT version for review.
 
 Raw sequence hygiene is now explicit. Use `alignment validate-input` to inspect
 duplicate identifiers, illegal sequence characters, empty records, and
