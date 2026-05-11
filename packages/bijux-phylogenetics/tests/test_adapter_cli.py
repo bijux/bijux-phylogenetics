@@ -55,6 +55,45 @@ print("WARNING: mafft fixture inserted alignment padding", file=sys.stderr)
     )
 
 
+def _fake_trimal(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print("trimAl v2.0")
+    raise SystemExit(0)
+
+args = sys.argv[1:]
+input_path = Path(args[args.index("-in") + 1])
+output_path = Path(args[args.index("-out") + 1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+output_path.parent.mkdir(parents=True, exist_ok=True)
+with output_path.open("w", encoding="utf-8") as handle:
+    for identifier, sequence in records:
+        handle.write(f">{identifier}\\n{sequence[:-1]}\\n")
+print("warning: trimal fixture trimmed one trailing site", file=sys.stderr)
+""",
+    )
+
+
 def _fake_iqtree(path: Path) -> Path:
     return _write_executable(
         path,
@@ -273,6 +312,58 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     assert compare_exit == 0
     assert compare_payload["metrics"]["shared_taxa"] == 4
     assert comparison_path.exists()
+
+
+def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+    out_dir = tmp_path / "fasta-to-tree"
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(iqtree),
+            "--bootstrap-replicates",
+            "200",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["selected_model"] == "GTR+G"
+    assert payload["metrics"]["sequence_type"] == "dna"
+    assert "warning: trimal fixture trimmed one trailing site" in payload["warnings"]
+    assert Path(payload["data"]["engine_artifact_dir"]).name == "example"
+    assert Path(payload["data"]["engine_artifact_dir"]).parent.name == "engine-artifacts"
+    outputs = {Path(path).name for path in payload["outputs"]}
+    assert {
+        "example",
+        "example.aln",
+        "example.trimmed.aln",
+        "example.tree",
+        "example.log",
+        "example.model.tsv",
+        "example.support.tsv",
+        "example.manifest.json",
+    }.issubset(outputs)
+    assert Path(payload["data"]["output_paths"]["tree"]).exists()
+    assert Path(payload["data"]["manifest_path"]).exists()
 
 
 def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:

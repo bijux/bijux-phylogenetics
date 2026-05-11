@@ -203,6 +203,7 @@ from bijux_phylogenetics.engines import (
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
+    run_fasta_to_tree_workflow,
     run_fast_tree_inference,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
@@ -3304,6 +3305,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
     _add_manifest_argument(adapter_bootstrap)
+    adapter_fasta_to_tree = adapter_subparsers.add_parser(
+        "fasta-to-tree", help="Run alignment-to-tree inference from raw FASTA."
+    )
+    adapter_fasta_to_tree.add_argument("input_path", type=Path)
+    adapter_fasta_to_tree.add_argument("--out-dir", required=True, type=Path)
+    adapter_fasta_to_tree.add_argument("--prefix")
+    adapter_fasta_to_tree.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
+    adapter_fasta_to_tree.add_argument("--mafft-executable", type=str)
+    adapter_fasta_to_tree.add_argument("--trimal-executable", type=str)
+    adapter_fasta_to_tree.add_argument("--iqtree-executable", type=str)
+    adapter_fasta_to_tree.add_argument("--trim-gap-threshold", type=float, default=0.1)
+    adapter_fasta_to_tree.add_argument("--bootstrap-replicates", type=int, default=1000)
+    adapter_fasta_to_tree.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
+    _add_manifest_argument(adapter_fasta_to_tree)
     adapter_consensus = adapter_subparsers.add_parser(
         "consensus", help="Build a consensus tree from bootstrap trees."
     )
@@ -8509,6 +8528,40 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=report.run.warning_lines,
                         metrics={"bootstrap_replicates": args.replicates},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "fasta-to-tree":
+                report = run_fasta_to_tree_workflow(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    prefix=args.prefix,
+                    sequence_type=args.sequence_type,
+                    mafft_executable=args.mafft_executable or "mafft",
+                    trimal_executable=args.trimal_executable or "trimal",
+                    iqtree_executable=args.iqtree_executable or "iqtree2",
+                    trim_gap_threshold=args.trim_gap_threshold,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[report.engine_artifact_dir, *report.output_paths.values()],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "bootstrap_replicates": args.bootstrap_replicates,
+                            "selected_model": report.selected_model,
+                            "sequence_type": report.sequence_type,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
