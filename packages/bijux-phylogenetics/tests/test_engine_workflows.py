@@ -72,6 +72,18 @@ def _real_trimal_executable() -> Path | None:
     return None
 
 
+def _real_iqtree_executable() -> Path | None:
+    configured = os.environ.get("BIJUX_PHYLOGENETICS_IQTREE_EXECUTABLE")
+    if configured:
+        candidate = Path(configured)
+        if candidate.exists():
+            return candidate
+    resolved = shutil.which("iqtree2")
+    if resolved is not None:
+        return Path(resolved)
+    return None
+
+
 def _write_executable(path: Path, body: str) -> Path:
     path.write_text(body, encoding="utf-8")
     path.chmod(0o755)
@@ -540,6 +552,64 @@ def test_run_alignment_trimming_with_real_trimal_on_small_dataset(
         trimmed_records[0].sequence
     )
     assert len(trimmed_records[0].sequence) < len(input_records[0].sequence)
+
+
+def test_run_iqtree_backend_with_real_executable_on_small_dataset(
+    tmp_path: Path,
+) -> None:
+    executable = _real_iqtree_executable()
+    if executable is None:
+        pytest.skip("real IQ-TREE executable is not available for integration coverage")
+
+    input_path = fixture("alignments/example_alignment.fasta")
+    model_report = run_model_selection(
+        input_path,
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="real",
+        sequence_type="dna",
+    )
+    assert model_report.selected_model is not None
+    ml_report = run_maximum_likelihood_tree_inference(
+        input_path,
+        out_dir=tmp_path / "ml",
+        model=model_report.selected_model,
+        executable=executable,
+        prefix="real",
+        sequence_type="dna",
+    )
+    bootstrap_report = run_bootstrap_support_estimation(
+        input_path,
+        out_dir=tmp_path / "bootstrap",
+        model=model_report.selected_model,
+        executable=executable,
+        prefix="real",
+        sequence_type="dna",
+        replicates=1000,
+    )
+    consensus_report = run_bootstrap_consensus_tree(
+        bootstrap_report.output_paths["bootstrap_trees"],
+        out_dir=tmp_path / "consensus",
+        executable=executable,
+        prefix="real",
+    )
+
+    assert model_report.output_paths["iqtree_report"].exists()
+    assert model_report.output_paths["iqtree_log"].exists()
+    assert model_report.log_likelihood is not None
+    assert ml_report.output_paths["tree"].exists()
+    assert ml_report.output_paths["iqtree_log"].exists()
+    assert ml_report.log_likelihood is not None
+    assert bootstrap_report.output_paths["bootstrap_trees"].exists()
+    assert bootstrap_report.output_paths["support_tree"].exists()
+    assert bootstrap_report.output_paths["iqtree_log"].exists()
+    assert bootstrap_report.log_likelihood is not None
+    assert bootstrap_report.iqtree_summary is not None
+    assert bootstrap_report.iqtree_summary.support_value_count >= 1
+    assert consensus_report.output_paths["consensus_tree"].exists()
+    assert consensus_report.output_paths["iqtree_log"].exists()
+    assert consensus_report.iqtree_summary is not None
+    assert consensus_report.iqtree_summary.support_value_count >= 1
 
 
 def test_trimal_trimming_modes_resolve_to_explicit_documented_arguments() -> None:
