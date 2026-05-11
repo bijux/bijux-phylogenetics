@@ -331,20 +331,40 @@ class AlignmentQualityReport:
     path: Path
     sequence_count: int
     alignment_length: int
+    invariant_site_count: int
     missing_data_fraction: float
     gap_fraction: float
     ambiguity_fraction: float
     variable_site_count: int
     parsimony_informative_site_count: int
+    per_sequence_uncertainty: list[SequenceUncertaintyProfile]
+    per_site_uncertainty: list[SiteUncertaintyProfile]
     inferred_alphabet: AlignmentAlphabet
     invalid_characters: list[InvalidAlignmentCharacter]
     composition_outliers: list[SequenceCompositionOutlier]
     sequence_length_outliers: list[SequenceLengthOutlier]
     duplicate_sequence_groups: list[DuplicateSequenceGroup]
     near_duplicate_pairs: list[NearDuplicateSequencePair]
+    missing_data_concentration: AlignmentMissingDataConcentration
+    suspicious_alignment: bool
+    suspicious_reasons: list[str]
     quality_score: float
     quality_components: dict[str, float]
     warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentMissingDataConcentration:
+    """Compact summary of whether missing data clusters into concentrated columns."""
+
+    threshold: float
+    concentrated_column_count: int
+    concentrated_column_fraction: float
+    longest_concentrated_run: int
+    longest_concentrated_run_start: int | None
+    longest_concentrated_run_end: int | None
+    maximum_missing_fraction: float
+    maximum_missing_positions: list[int]
 
 
 @dataclass(frozen=True, slots=True)
