@@ -8967,6 +8967,31 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.run.warning_lines,
                         metrics={
                             "selected_model": report.selected_model,
+                            "selected_criterion": (
+                                None
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.selected_criterion
+                            ),
+                            "candidate_model_count": (
+                                0
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.candidate_count
+                            ),
+                            "best_model_aic": (
+                                None
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.best_model_aic
+                            ),
+                            "best_model_aicc": (
+                                None
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.best_model_aicc
+                            ),
+                            "best_model_bic": (
+                                None
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.best_model_bic
+                            ),
                             "log_likelihood": report.log_likelihood,
                             "partitioned": args.partitions is not None,
                         },
@@ -9004,6 +9029,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.run.warning_lines,
                         metrics={
                             "selected_model": report.selected_model,
+                            "selected_criterion": (
+                                None
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.selected_criterion
+                            ),
+                            "candidate_model_count": (
+                                0
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.candidate_count
+                            ),
                             "log_likelihood": report.log_likelihood,
                             "support_value_count": (
                                 0
@@ -9048,6 +9083,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "bootstrap_replicates": args.replicates,
                             "selected_model": report.selected_model,
+                            "selected_criterion": (
+                                None
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.selected_criterion
+                            ),
+                            "candidate_model_count": (
+                                0
+                                if report.model_selection_summary is None
+                                else report.model_selection_summary.candidate_count
+                            ),
                             "log_likelihood": report.log_likelihood,
                             "support_value_count": (
                                 0

@@ -124,15 +124,42 @@ if "--version" in args:
 prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
 prefix.parent.mkdir(parents=True, exist_ok=True)
 if "-m" in args and args[args.index("-m") + 1] == "MF":
+    is_protein = "-st" in args and args[args.index("-st") + 1] == "AA"
+    selected_model = "LG+G4" if is_protein else "GTR+G"
+    criteria_lines = (
+        " No. Model         -LnL         df  AIC          AICc         BIC\\n"
+        + (
+            "  1  LG+G4         120.100      9   258.200      310.200      260.200\\n"
+            "  2  LG+I+G4       119.900      10  259.800      323.800      262.000\\n"
+            "  3  WAG+G4        121.500      9   261.000      313.000      263.000\\n"
+            "Akaike Information Criterion:           LG+G4\\n"
+            "Corrected Akaike Information Criterion: LG+G4\\n"
+            "Bayesian Information Criterion:         LG+G4\\n"
+            "Best-fit model: LG+G4 chosen according to BIC\\n"
+            if is_protein
+            else
+            "  1  GTR+G         123.456      12  270.912      330.912      272.912\\n"
+            "  2  HKY+G         124.000      10  268.000      320.000      269.000\\n"
+            "  3  JC            130.500      5   271.000      300.000      271.500\\n"
+            "Akaike Information Criterion:           HKY+G\\n"
+            "Corrected Akaike Information Criterion: JC\\n"
+            "Bayesian Information Criterion:         GTR+G\\n"
+            "Best-fit model according to BIC: GTR+G\\n"
+        )
+    )
     prefix.with_suffix(".iqtree").write_text(
-        "Best-fit model according to BIC: GTR+G\\nLog-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
+        criteria_lines
+        + f"Log-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
         encoding="utf-8",
     )
     prefix.with_suffix(".log").write_text(
         "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
         encoding="utf-8",
     )
-    prefix.with_suffix(".model").write_text("Best-fit model: GTR+G\\n", encoding="utf-8")
+    prefix.with_suffix(".model").write_text(
+        f"Best-fit model: {selected_model}\\n",
+        encoding="utf-8",
+    )
     print("warning: iqtree fixture model selection", file=sys.stderr)
     raise SystemExit(0)
 
@@ -463,8 +490,14 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     model_payload = json.loads(capsys.readouterr().out)
     assert model_exit == 0
     assert model_payload["metrics"]["selected_model"] == "GTR+G"
+    assert model_payload["metrics"]["selected_criterion"] == "BIC"
+    assert model_payload["metrics"]["candidate_model_count"] == 3
+    assert model_payload["metrics"]["best_model_aic"] == "HKY+G"
+    assert model_payload["metrics"]["best_model_aicc"] == "JC"
+    assert model_payload["metrics"]["best_model_bic"] == "GTR+G"
     assert model_payload["metrics"]["log_likelihood"] == -123.456
     assert Path(model_payload["data"]["output_paths"]["iqtree_log"]).exists()
+    assert Path(model_payload["data"]["output_paths"]["model_candidates"]).exists()
 
     ml_exit = main(
         [
@@ -577,9 +610,46 @@ def test_adapter_model_select_cli_supports_partitioned_alignment(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["partitioned"] is True
+    assert payload["metrics"]["selected_criterion"] == "BIC"
+    assert payload["metrics"]["candidate_model_count"] == 3
+    assert payload["metrics"]["best_model_aic"] == "HKY+G"
+    assert payload["metrics"]["best_model_aicc"] == "JC"
+    assert payload["metrics"]["best_model_bic"] == "GTR+G"
     assert payload["metrics"]["log_likelihood"] == -123.456
     assert Path(payload["data"]["output_paths"]["partition_summary"]).exists()
     assert Path(payload["data"]["output_paths"]["iqtree_log"]).exists()
+    assert Path(payload["data"]["output_paths"]["model_candidates"]).exists()
+
+
+def test_adapter_model_select_cli_supports_protein_alignment(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    exit_code = main(
+        [
+            "adapter",
+            "model-select",
+            str(fixture("alignments/example_alignment_protein.fasta")),
+            "--out-dir",
+            str(tmp_path / "protein-model"),
+            "--prefix",
+            "protein",
+            "--sequence-type",
+            "protein",
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["selected_model"] == "LG+G4"
+    assert payload["metrics"]["selected_criterion"] == "BIC"
+    assert payload["metrics"]["candidate_model_count"] == 3
+    assert payload["metrics"]["best_model_bic"] == "LG+G4"
+    assert Path(payload["data"]["output_paths"]["model_candidates"]).exists()
 
 
 def test_adapter_infer_ml_cli_supports_mixed_partition_inputs(
