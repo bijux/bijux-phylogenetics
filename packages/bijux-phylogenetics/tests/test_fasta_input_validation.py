@@ -203,3 +203,54 @@ def test_repair_fasta_input_resolves_duplicate_collisions_when_ids_are_normalize
         "normalized identifier",
         "normalized identifier and resolved duplicate collision",
     ]
+
+
+def test_repair_fasta_input_requires_explicit_type_for_mixed_records(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "mixed.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="dna_like", sequence="ACTGACTG"),
+            AlignmentRecord(identifier="rna_like", sequence="ACUGACUG"),
+        ],
+    )
+
+    with pytest.raises(InvalidAlignmentError, match="explicit sequence_type"):
+        repair_fasta_input(
+            input_path,
+            normalize_identifiers=False,
+            remove_invalid_records=True,
+        )
+
+
+def test_repair_fasta_input_can_remove_records_incompatible_with_declared_type(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "mixed.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="dna_like", sequence="ACTGACTG"),
+            AlignmentRecord(identifier="rna_like", sequence="ACUGACUG"),
+            AlignmentRecord(identifier="protein_like", sequence="MKTWFLIM"),
+        ],
+    )
+
+    repaired_records, report = repair_fasta_input(
+        input_path,
+        sequence_type="dna",
+        normalize_identifiers=False,
+        remove_invalid_records=True,
+    )
+
+    assert [record.identifier for record in repaired_records] == ["dna_like"]
+    assert [(row.identifier, row.reason) for row in report.removed_records] == [
+        ("rna_like", "illegal-characters+sequence-type-mismatch"),
+        ("protein_like", "illegal-characters+sequence-type-mismatch"),
+    ]
+    assert (
+        "repair removed records incompatible with the declared sequence type"
+        in report.warnings
+    )

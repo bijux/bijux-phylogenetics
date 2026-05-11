@@ -2552,10 +2552,20 @@ def repair_fasta_input(
     """Repair a FASTA input through explicit identifier and record policies."""
     records = load_permissive_fasta_records(path)
     validation = validate_fasta_input(path, sequence_type=sequence_type)
+    if sequence_type is None and validation.sequence_type_report.detected_type == "mixed":
+        raise InvalidAlignmentError(
+            "FASTA repair requires an explicit sequence_type when raw records carry conflicting sequence-type signals"
+        )
     illegal_record_indices = {
         row.record_index for row in validation.illegal_characters
     }
     empty_record_indices = {row.record_index for row in validation.empty_sequences}
+    mismatched_record_indices: set[int] = set()
+    if remove_invalid_records and sequence_type is not None:
+        for record_index, record in enumerate(records, start=1):
+            compatible_types = _compatible_raw_sequence_types(record)
+            if compatible_types and sequence_type not in compatible_types:
+                mismatched_record_indices.add(record_index)
     retained_records: list[AlignmentRecord] = []
     normalized_identifiers: list[FastaIdentifierRepair] = []
     removed_records: list[FastaRemovedRecord] = []
@@ -2567,6 +2577,8 @@ def repair_fasta_input(
             removal_reasons.append("empty-sequence")
         if remove_invalid_records and record_index in illegal_record_indices:
             removal_reasons.append("illegal-characters")
+        if remove_invalid_records and record_index in mismatched_record_indices:
+            removal_reasons.append("sequence-type-mismatch")
         if removal_reasons:
             removed_records.append(
                 FastaRemovedRecord(
@@ -2618,6 +2630,8 @@ def repair_fasta_input(
     warnings = list(validation.warnings)
     if remove_invalid_records and removed_records:
         warnings.append("repair removed invalid sequence records")
+    if mismatched_record_indices:
+        warnings.append("repair removed records incompatible with the declared sequence type")
     if normalize_identifiers and normalized_identifiers:
         warnings.append("repair normalized FASTA identifiers")
     return retained_records, FastaRepairReport(
