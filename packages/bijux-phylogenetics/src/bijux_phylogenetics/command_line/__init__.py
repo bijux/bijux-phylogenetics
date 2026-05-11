@@ -380,6 +380,7 @@ def _write_locus_occupancy_taxa_tsv(path: Path, report: Any) -> Path:
             "locus_coverage_fraction",
             "observed_site_count",
             "total_site_count",
+            "site_coverage_fraction",
             "low_coverage",
         ],
         rows=[
@@ -390,6 +391,7 @@ def _write_locus_occupancy_taxa_tsv(path: Path, report: Any) -> Path:
                 row.locus_coverage_fraction,
                 row.observed_site_count,
                 row.total_site_count,
+                row.site_coverage_fraction,
                 row.low_coverage,
             ]
             for row in report.taxa
@@ -407,6 +409,7 @@ def _write_locus_occupancy_loci_tsv(path: Path, report: Any) -> Path:
             "taxon_coverage_fraction",
             "observed_site_count",
             "total_site_count",
+            "site_coverage_fraction",
             "low_coverage",
         ],
         rows=[
@@ -417,6 +420,7 @@ def _write_locus_occupancy_loci_tsv(path: Path, report: Any) -> Path:
                 row.taxon_coverage_fraction,
                 row.observed_site_count,
                 row.total_site_count,
+                row.site_coverage_fraction,
                 row.low_coverage,
             ]
             for row in report.loci
@@ -434,6 +438,9 @@ def _write_locus_occupancy_matrix_tsv(path: Path, report: Any) -> Path:
             "covered_locus_count",
             "total_locus_count",
             "locus_coverage_fraction",
+            "observed_site_count",
+            "total_site_count",
+            "site_coverage_fraction",
             "low_coverage",
         ],
         rows=[
@@ -443,6 +450,9 @@ def _write_locus_occupancy_matrix_tsv(path: Path, report: Any) -> Path:
                 row.covered_locus_count,
                 row.total_locus_count,
                 row.locus_coverage_fraction,
+                row.observed_site_count,
+                row.total_site_count,
+                row.site_coverage_fraction,
                 row.low_coverage,
             ]
             for row in report.taxa
@@ -1168,6 +1178,15 @@ def build_parser() -> argparse.ArgumentParser:
     alignment_occupancy.add_argument("partitions", type=Path)
     alignment_occupancy.add_argument("--taxon-coverage-threshold", type=float)
     alignment_occupancy.add_argument("--locus-coverage-threshold", type=float)
+    alignment_occupancy.add_argument(
+        "--minimum-locus-occupancy",
+        type=float,
+        default=0.0,
+        help=(
+            "Require at least this per-taxon per-locus occupancy fraction before "
+            "a locus counts as covered for thresholding."
+        ),
+    )
     alignment_occupancy.add_argument(
         "--taxa-out",
         type=Path,
@@ -4625,6 +4644,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.partitions,
                     taxon_coverage_threshold=args.taxon_coverage_threshold,
                     locus_coverage_threshold=args.locus_coverage_threshold,
+                    minimum_locus_occupancy=args.minimum_locus_occupancy,
                 )
                 command_outputs: list[Path] = []
                 if args.taxa_out is not None:
@@ -4653,6 +4673,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             args.partitions,
                             taxon_coverage_threshold=args.taxon_coverage_threshold,
                             locus_coverage_threshold=args.locus_coverage_threshold,
+                            minimum_locus_occupancy=args.minimum_locus_occupancy,
                         )
                     )
                     if args.filtered_alignment_out is not None:
@@ -4697,6 +4718,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "locus_count": report.locus_count,
                             "low_coverage_taxon_count": len(report.low_coverage_taxa),
                             "low_coverage_locus_count": len(report.low_coverage_loci),
+                            "minimum_locus_occupancy": report.minimum_locus_occupancy,
                             "filtered_taxon_count": (
                                 report.taxon_count
                                 if filter_report is None

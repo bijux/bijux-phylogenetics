@@ -5243,6 +5243,7 @@ def test_cli_alignment_occupancy_writes_tables_and_filtered_outputs(
     assert exit_code == 0
     assert payload["metrics"]["taxon_count"] == 5
     assert payload["metrics"]["locus_count"] == 3
+    assert payload["metrics"]["minimum_locus_occupancy"] == 0.0
     assert payload["metrics"]["filtered_taxon_count"] == 2
     assert payload["metrics"]["filtered_locus_count"] == 2
     assert payload["data"]["filter_report"]["removed_taxa"] == [
@@ -5253,20 +5254,104 @@ def test_cli_alignment_occupancy_writes_tables_and_filtered_outputs(
     assert payload["data"]["filter_report"]["removed_loci"] == ["gene_beta"]
 
     assert taxa_out.read_text(encoding="utf-8").startswith(
-        "taxon\tcovered_locus_count\ttotal_locus_count"
+        "taxon\tcovered_locus_count\ttotal_locus_count\t"
+        "locus_coverage_fraction\tobserved_site_count\t"
+        "total_site_count\tsite_coverage_fraction\tlow_coverage"
     )
-    assert "gene_gamma\t2\t5\t0.4\t6\t15\ttrue\n" in loci_out.read_text(
+    assert "gene_gamma\t2\t5\t0.4\t6\t15\t0.4\ttrue\n" in loci_out.read_text(
         encoding="utf-8"
     )
     assert matrix_out.read_text(encoding="utf-8").splitlines()[0] == (
         "taxon\tgene_alpha\tgene_beta\tgene_gamma\tcovered_locus_count\t"
-        "total_locus_count\tlocus_coverage_fraction\tlow_coverage"
+        "total_locus_count\tlocus_coverage_fraction\tobserved_site_count\t"
+        "total_site_count\tsite_coverage_fraction\tlow_coverage"
     )
     assert filtered_alignment_out.read_text(encoding="utf-8") == (
         ">TaxonA\nAAAAGGG\n>TaxonB\nAAAAGGG\n"
     )
     assert filtered_partitions_out.read_text(encoding="utf-8") == (
         "DNA,gene_alpha = 1-4\nDNA,gene_gamma = 5-7\n"
+    )
+
+
+def test_cli_alignment_occupancy_supports_minimum_locus_occupancy(
+    tmp_path: Path, capsys
+) -> None:
+    taxa_out = tmp_path / "partial-taxa.tsv"
+    loci_out = tmp_path / "partial-loci.tsv"
+    matrix_out = tmp_path / "partial-matrix.tsv"
+    filtered_alignment_out = tmp_path / "partial-filtered.fasta"
+    filtered_partitions_out = tmp_path / "partial-filtered.partitions.txt"
+
+    exit_code = main(
+        [
+            "alignment",
+            "occupancy",
+            str(fixture("example_multilocus_partial_occupancy.fasta")),
+            str(fixture("example_multilocus_partial_occupancy_partitions.txt")),
+            "--taxon-coverage-threshold",
+            "0.5",
+            "--locus-coverage-threshold",
+            "0.75",
+            "--minimum-locus-occupancy",
+            "0.75",
+            "--taxa-out",
+            str(taxa_out),
+            "--loci-out",
+            str(loci_out),
+            "--matrix-out",
+            str(matrix_out),
+            "--filtered-alignment-out",
+            str(filtered_alignment_out),
+            "--filtered-partitions-out",
+            str(filtered_partitions_out),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["minimum_locus_occupancy"] == 0.75
+    assert payload["metrics"]["filtered_taxon_count"] == 2
+    assert payload["metrics"]["filtered_locus_count"] == 2
+    assert payload["data"]["report"]["minimum_locus_occupancy"] == 0.75
+    assert payload["data"]["report"]["low_coverage_loci"] == [
+        "gene_alpha",
+        "gene_gamma",
+    ]
+    assert payload["data"]["filter_report"]["retained_taxa"] == ["TaxonA", "TaxonB"]
+    assert payload["data"]["filter_report"]["retained_loci"] == [
+        "gene_alpha",
+        "gene_beta",
+    ]
+    assert payload["data"]["filter_report"]["filter_iterations"][0] == {
+        "input_loci": ["gene_alpha", "gene_beta", "gene_gamma"],
+        "input_taxa": ["TaxonA", "TaxonB", "TaxonC", "TaxonD", "TaxonE"],
+        "iteration": 1,
+        "low_coverage_loci": ["gene_gamma"],
+        "low_coverage_taxa": ["TaxonC", "TaxonD", "TaxonE"],
+        "removed_loci": ["gene_gamma"],
+        "removed_taxa": ["TaxonC", "TaxonD", "TaxonE"],
+        "retained_loci": ["gene_alpha", "gene_beta"],
+        "retained_taxa": ["TaxonA", "TaxonB"],
+    }
+    assert filtered_alignment_out.read_text(encoding="utf-8") == (
+        ">TaxonA\nAAAACCCC\n>TaxonB\nAAAACCCC\n"
+    )
+    assert filtered_partitions_out.read_text(encoding="utf-8") == (
+        "DNA,gene_alpha = 1-4\nDNA,gene_beta = 5-8\n"
+    )
+    assert "TaxonB\t2\t3\t0.666666666667\t9\t12\t0.75\tfalse\n" in taxa_out.read_text(
+        encoding="utf-8"
+    )
+    assert "gene_gamma\t2\t5\t0.4\t9\t20\t0.45\ttrue\n" in loci_out.read_text(
+        encoding="utf-8"
+    )
+    assert matrix_out.read_text(encoding="utf-8").splitlines()[0] == (
+        "taxon\tgene_alpha\tgene_beta\tgene_gamma\tcovered_locus_count\t"
+        "total_locus_count\tlocus_coverage_fraction\tobserved_site_count\t"
+        "total_site_count\tsite_coverage_fraction\tlow_coverage"
     )
 
 
