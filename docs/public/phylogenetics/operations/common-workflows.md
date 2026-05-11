@@ -123,6 +123,18 @@ parsed `selected_model`, `selected_criterion`, `candidate_model_count`,
 support-value counts so reviewers can verify the ML result against structured
 fields instead of manually scraping engine text files.
 
+For ultrafast bootstrap review specifically, `adapter bootstrap` now writes
+three reviewer-facing TSV artifacts alongside the native IQ-TREE files:
+
+- `PREFIX.support.tsv` for every supported internal branch
+- `PREFIX.low-support.tsv` for the subset of branches below the governed weak-support threshold
+- `PREFIX.support-histogram.tsv` for the support distribution buckets used in reports
+
+Those artifacts map support values back onto explicit descendant-taxon clades,
+flag low-support branches directly, and preserve the same `lt50`, `50to69`,
+`70to89`, and `ge90` buckets that appear in the manifest and HTML workflow
+report.
+
 ## Coding DNA Alignment
 
 Use `adapter align --codon-aware` when you need a nucleotide alignment that
@@ -195,9 +207,12 @@ It also retains step-specific engine artifacts under
 Within that engine-artifact directory, the IQ-TREE stages preserve the native
 `.iqtree`, `.log`, model-selection sidecar, `.model-candidates.tsv`,
 `.treefile`, `.ufboot`, and `.contree` files where each stage produces them.
-The corresponding manifest entries expose the parsed selected model, selected
-criterion, AIC/AICc/BIC winners, candidate-model counts, log-likelihood, and
-support summary directly.
+The bootstrap-support stage also exports `.support.tsv`, `.low-support.tsv`,
+and `.support-histogram.tsv` so the supported tree can be reviewed without
+re-parsing Newick labels manually. The corresponding manifest entries expose
+the parsed selected model, selected criterion, AIC/AICc/BIC winners,
+candidate-model counts, log-likelihood, support summary, and weak-backbone
+summary directly.
 
 The IQ-TREE part of the workflow now defaults to deterministic execution with
 `--iqtree-seed 1` and `--iqtree-threads 1`. Ultrafast bootstrap support is the
