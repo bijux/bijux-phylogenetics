@@ -530,3 +530,50 @@ def test_validate_inference_engine_outputs_requires_bootstrap_support_summary(
         "bootstrap-support manifest does not record parsed support values"
         in report.issues
     )
+
+
+def test_validate_inference_engine_outputs_requires_bootstrap_review_artifacts(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_bootstrap_support_estimation
+
+    executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
+    workflow = run_bootstrap_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        replicates=1000,
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    del payload["output_paths"]["support_table"]
+    del payload["output_paths"]["low_support_branches"]
+    del payload["output_paths"]["support_histogram"]
+    payload["bootstrap_support_summary"] = None
+    payload["weak_backbone_report"] = None
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert "bootstrap-support manifest is missing the support_table output" in report.issues
+    assert (
+        "bootstrap-support manifest is missing the low_support_branches output"
+        in report.issues
+    )
+    assert (
+        "bootstrap-support manifest is missing the support_histogram output"
+        in report.issues
+    )
+    assert (
+        "bootstrap-support manifest is missing the bootstrap_support_summary"
+        in report.issues
+    )
+    assert (
+        "bootstrap-support manifest is missing the weak_backbone_report"
+        in report.issues
+    )

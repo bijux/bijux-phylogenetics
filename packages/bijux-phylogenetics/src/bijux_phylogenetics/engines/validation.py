@@ -849,6 +849,18 @@ def validate_inference_engine_outputs(
         else:
             bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
             issues.extend(bootstrap_validation.issues)
+        if output_paths.get("support_tree") is None:
+            issues.append("bootstrap-support manifest is missing the support_tree output")
+        if output_paths.get("support_table") is None:
+            issues.append("bootstrap-support manifest is missing the support_table output")
+        if output_paths.get("low_support_branches") is None:
+            issues.append(
+                "bootstrap-support manifest is missing the low_support_branches output"
+            )
+        if output_paths.get("support_histogram") is None:
+            issues.append(
+                "bootstrap-support manifest is missing the support_histogram output"
+            )
         if output_paths.get("iqtree_log") is None:
             issues.append("bootstrap-support manifest is missing the iqtree_log output")
         if manifest.get("selected_model") is None:
@@ -861,6 +873,34 @@ def validate_inference_engine_outputs(
         elif int(iqtree_summary.get("support_value_count", 0)) < 1:
             issues.append(
                 "bootstrap-support manifest does not record parsed support values"
+            )
+        bootstrap_support_summary = manifest.get("bootstrap_support_summary")
+        if not isinstance(bootstrap_support_summary, dict):
+            issues.append(
+                "bootstrap-support manifest is missing the bootstrap_support_summary"
+            )
+        else:
+            if int(bootstrap_support_summary.get("supported_node_count", 0)) < 1:
+                issues.append(
+                    "bootstrap-support manifest does not record any supported internal nodes"
+                )
+            histogram = bootstrap_support_summary.get("support_histogram")
+            if not isinstance(histogram, dict):
+                issues.append(
+                    "bootstrap-support manifest does not record the support histogram"
+                )
+            elif sorted(histogram) != ["50to69", "70to89", "ge90", "lt50"]:
+                issues.append(
+                    "bootstrap-support manifest records an incomplete support histogram"
+                )
+        weak_backbone_report = manifest.get("weak_backbone_report")
+        if not isinstance(weak_backbone_report, dict):
+            issues.append(
+                "bootstrap-support manifest is missing the weak_backbone_report"
+            )
+        elif float(weak_backbone_report.get("threshold", 0.0)) <= 0.0:
+            issues.append(
+                "bootstrap-support manifest records an invalid weak-backbone threshold"
             )
     elif workflow == "bootstrap-consensus":
         if output_paths.get("iqtree_log") is None:
