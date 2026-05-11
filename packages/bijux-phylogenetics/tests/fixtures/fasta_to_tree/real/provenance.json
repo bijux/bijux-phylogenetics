@@ -1,0 +1,32 @@
+[
+  {
+    "fixture_name": "gnathostome-ortholog-proteins.fasta",
+    "sequence_type": "protein",
+    "source_path": "artifacts/trimal/trimal/dataset/example.009.AA.fasta",
+    "source_record_count": 9,
+    "transformation": "Removed alignment gap characters and placeholder missing-data marks from the source aligned FASTA to recover the raw sequence inputs used for end-to-end workflow regression.",
+    "description": "Nine gnathostome ortholog proteins derived from the local trimAl reference corpus after removing alignment gap characters.",
+    "minimum_sequence_length": 142,
+    "maximum_sequence_length": 183
+  },
+  {
+    "fixture_name": "gnathostome-ortholog-coding-sequences.fasta",
+    "sequence_type": "dna",
+    "source_path": "artifacts/trimal/trimal/dataset/example.092.DNA.fasta",
+    "source_record_count": 9,
+    "transformation": "Removed alignment gap characters and placeholder missing-data marks from the source aligned FASTA to recover the raw sequence inputs used for end-to-end workflow regression.",
+    "description": "Nine gnathostome ortholog coding sequences derived from the local trimAl reference corpus after removing alignment gap characters.",
+    "minimum_sequence_length": 429,
+    "maximum_sequence_length": 552
+  },
+  {
+    "fixture_name": "strnog-enog411bqtj-proteins.fasta",
+    "sequence_type": "protein",
+    "source_path": "artifacts/trimal/trimal/dataset/example.085.AA.strNOG.ENOG411BQTJ.fasta",
+    "source_record_count": 31,
+    "transformation": "Removed alignment gap characters and placeholder missing-data marks from the source aligned FASTA to recover the raw sequence inputs used for end-to-end workflow regression.",
+    "description": "Thirty-one strNOG ENOG411BQTJ ortholog proteins derived from the local trimAl reference corpus after removing alignment gap characters.",
+    "minimum_sequence_length": 79,
+    "maximum_sequence_length": 220
+  }
+]
