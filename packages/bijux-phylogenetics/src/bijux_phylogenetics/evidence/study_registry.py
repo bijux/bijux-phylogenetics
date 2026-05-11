@@ -7,8 +7,12 @@ from pathlib import Path
 from bijux_phylogenetics.errors import EvidenceContractError
 
 from .studies.primate_longevity_signal import (
-    STUDY_ID as PRIMATE_PCM1_STUDY_ID,
     EVIDENCE_ID as PRIMATE_PCM1_SUMMARY_EVIDENCE_ID,
+)
+from .studies.primate_longevity_signal import (
+    STUDY_ID as PRIMATE_PCM1_STUDY_ID,
+)
+from .studies.primate_longevity_signal import (
     refresh_primate_summary_bundle,
 )
 from .studies.primate_pcm1_component_bundles import (
@@ -17,9 +21,11 @@ from .studies.primate_pcm1_component_bundles import (
 )
 from .studies.primate_pgls_and_signal import (
     BUNDLE_DEFINITIONS,
-    STUDY_ID as PRIMATE_PCM2_STUDY_ID,
     SUMMARY_EVIDENCE_ID,
-    build_primate_pgls_signal_bundles,
+    build_primate_pgls_signal_bundle,
+)
+from .studies.primate_pgls_and_signal import (
+    STUDY_ID as PRIMATE_PCM2_STUDY_ID,
 )
 from .study_contracts import load_study_contract
 
@@ -176,9 +182,8 @@ def _rerun_primate_pcm2_selection(
 ) -> list[str]:
     study_root = repo_root / "evidence-book" / "studies" / PRIMATE_PCM2_STUDY_ID
     updated_paths: list[str] = []
-    bundles = build_primate_pgls_signal_bundles(repo_root)
     for evidence_id in evidence_ids:
-        bundle = bundles[evidence_id]
+        bundle = build_primate_pgls_signal_bundle(repo_root, evidence_id)
         bundle_root = study_root / evidence_id
         bundle_root.mkdir(parents=True, exist_ok=True)
         _write_json(bundle_root / "manifest.json", bundle["manifest"])

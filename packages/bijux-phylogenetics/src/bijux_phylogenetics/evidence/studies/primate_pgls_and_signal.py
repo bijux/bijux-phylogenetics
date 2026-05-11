@@ -641,8 +641,46 @@ def _ancestral_reconstruction_payload(
 
 @cache
 def _load_python_results(repo_root: Path) -> dict[str, object]:
+    baseline = _baseline_gls_report(repo_root)
+    estimated = _estimated_lambda_pgls_report(repo_root)
+    signal = _signal_report(repo_root)
+    brownian_fit, ou_fit, early_burst_fit = _continuous_mode_fit_reports(repo_root)
+    mode_comparison = _mode_comparison_report(repo_root)
+    transformed_tree_reports = _transformed_tree_reports(repo_root)
+    brownian_ancestral, early_burst_ancestral = _ancestral_reconstruction_reports(
+        repo_root
+    )
+    tip_values = _ordered_trait_values(
+        _source_reference_paths(repo_root)[1],
+        brownian_fit.taxa,
+        trait="longevity",
+        taxon_column="species",
+    )
+    return {
+        "source_contract": _source_contract_payload(baseline),
+        "baseline_gls": _baseline_gls_payload(baseline),
+        "estimated_lambda_pgls": _estimated_lambda_pgls_payload(estimated),
+        "signal_test": _signal_test_payload(signal),
+        "tree_rescaling": _tree_rescaling_payloads(transformed_tree_reports),
+        "continuous_mode_fits": _continuous_mode_fit_payloads(
+            brownian_fit,
+            ou_fit,
+            early_burst_fit,
+            tip_values=tip_values,
+        ),
+        "likelihood_ratio_tests": _likelihood_ratio_test_payloads(mode_comparison),
+        "ancestral_reconstruction": _ancestral_reconstruction_payloads(
+            brownian_ancestral,
+            early_burst_ancestral,
+        ),
+        "coverage_boundaries": _coverage_boundary_payload(),
+    }
+
+
+@cache
+def _baseline_gls_report(repo_root: Path):
     tree_path, traits_path = _source_reference_paths(repo_root)
-    baseline = run_pgls(
+    return run_pgls(
         tree_path,
         traits_path,
         response="longevity",
@@ -650,7 +688,12 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
         taxon_column="species",
         lambda_value=0.0,
     )
-    estimated = run_pgls(
+
+
+@cache
+def _estimated_lambda_pgls_report(repo_root: Path):
+    tree_path, traits_path = _source_reference_paths(repo_root)
+    return run_pgls(
         tree_path,
         traits_path,
         response="longevity",
@@ -658,12 +701,33 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
         taxon_column="species",
         lambda_value="estimate",
     )
-    signal = estimate_pagels_lambda(
+
+
+@cache
+def _signal_report(repo_root: Path):
+    tree_path, traits_path = _source_reference_paths(repo_root)
+    return estimate_pagels_lambda(
         tree_path,
         traits_path,
         trait="longevity",
         taxon_column="species",
     )
+
+
+@cache
+def _transformed_tree_reports(repo_root: Path) -> dict[str, object]:
+    tree_path, _ = _source_reference_paths(repo_root)
+    return {
+        "ou_alpha_1": rescale_tree_ornstein_uhlenbeck(tree_path, alpha=1.0),
+        "ou_alpha_10": rescale_tree_ornstein_uhlenbeck(tree_path, alpha=10.0),
+        "early_burst_2": rescale_tree_early_burst(tree_path, rate_change=2.0),
+        "late_burst_minus_2": rescale_tree_early_burst(tree_path, rate_change=-2.0),
+    }
+
+
+@cache
+def _continuous_mode_fit_reports(repo_root: Path):
+    tree_path, traits_path = _source_reference_paths(repo_root)
     brownian_fit = fit_continuous_evolutionary_mode(
         tree_path,
         traits_path,
@@ -687,7 +751,13 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
         mode="early-burst",
         early_burst_bounds=(1e-6, 50.0),
     )
-    mode_comparison = compare_continuous_evolutionary_modes(
+    return brownian_fit, ou_fit, early_burst_fit
+
+
+@cache
+def _mode_comparison_report(repo_root: Path):
+    tree_path, traits_path = _source_reference_paths(repo_root)
+    return compare_continuous_evolutionary_modes(
         tree_path,
         traits_path,
         trait="longevity",
@@ -695,12 +765,11 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
         ou_bounds=(1e-6, 10.0),
         early_burst_bounds=(1e-6, 50.0),
     )
-    transformed_tree_reports = {
-        "ou_alpha_1": rescale_tree_ornstein_uhlenbeck(tree_path, alpha=1.0),
-        "ou_alpha_10": rescale_tree_ornstein_uhlenbeck(tree_path, alpha=10.0),
-        "early_burst_2": rescale_tree_early_burst(tree_path, rate_change=2.0),
-        "late_burst_minus_2": rescale_tree_early_burst(tree_path, rate_change=-2.0),
-    }
+
+
+@cache
+def _ancestral_reconstruction_reports(repo_root: Path):
+    tree_path, traits_path = _source_reference_paths(repo_root)
     brownian_ancestral = reconstruct_continuous_evolutionary_mode_states(
         tree_path,
         traits_path,
@@ -716,107 +785,134 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
         mode="early-burst",
         rate_change=-2.0,
     )
-    tip_values = _ordered_trait_values(
-        traits_path,
-        brownian_fit.taxa,
-        trait="longevity",
-        taxon_column="species",
-    )
+    return brownian_ancestral, early_burst_ancestral
+
+
+def _source_contract_payload(baseline) -> dict[str, object]:
     return {
-        "source_contract": {
-            "row_count": baseline.taxon_count,
-            "tip_count": baseline.taxon_count,
-            "predictor": "social_group_size",
-            "response": "longevity",
+        "row_count": baseline.taxon_count,
+        "tip_count": baseline.taxon_count,
+        "predictor": "social_group_size",
+        "response": "longevity",
+    }
+
+
+def _baseline_gls_payload(baseline) -> dict[str, object]:
+    return {
+        "coefficients": {
+            row.name: _rounded(row.estimate) for row in baseline.coefficients
         },
-        "baseline_gls": {
-            "coefficients": {
-                row.name: _rounded(row.estimate) for row in baseline.coefficients
-            },
-            "p_values": {
-                row.name: _rounded(row.p_value) for row in baseline.coefficients
-            },
-            "log_likelihood": _rounded(baseline.log_likelihood),
-            "r_squared": _rounded(baseline.r_squared),
-            "diagnostics": _diagnostic_summary_from_series(
-                baseline.fitted_values,
-                baseline.residuals,
-            ),
+        "p_values": {row.name: _rounded(row.p_value) for row in baseline.coefficients},
+        "log_likelihood": _rounded(baseline.log_likelihood),
+        "r_squared": _rounded(baseline.r_squared),
+        "diagnostics": _diagnostic_summary_from_series(
+            baseline.fitted_values,
+            baseline.residuals,
+        ),
+    }
+
+
+def _estimated_lambda_pgls_payload(estimated) -> dict[str, object]:
+    return {
+        "lambda_value": _rounded(estimated.lambda_value),
+        "coefficients": {
+            row.name: _rounded(row.estimate) for row in estimated.coefficients
         },
-        "estimated_lambda_pgls": {
-            "lambda_value": _rounded(estimated.lambda_value),
-            "coefficients": {
-                row.name: _rounded(row.estimate) for row in estimated.coefficients
-            },
-            "p_values": {
-                row.name: _rounded(row.p_value) for row in estimated.coefficients
-            },
-            "log_likelihood": _rounded(estimated.log_likelihood),
-            "r_squared": _rounded(estimated.r_squared),
-            "diagnostics": _diagnostic_summary_from_series(
-                estimated.fitted_values,
-                estimated.residuals,
-            ),
-        },
-        "signal_test": {
-            "estimated_lambda": _rounded(signal.lambda_value),
-            "estimated_log_likelihood": _rounded(signal.log_likelihood),
-            "null_log_likelihood": _rounded(signal.null_log_likelihood),
-            "likelihood_ratio": _rounded(
-                -2.0 * (signal.null_log_likelihood - signal.log_likelihood)
-            ),
-            "p_value": _rounded(
-                math.erfc(
-                    math.sqrt(
-                        max(
-                            0.0,
-                            -2.0 * (signal.null_log_likelihood - signal.log_likelihood),
-                        )
-                        / 2.0
+        "p_values": {row.name: _rounded(row.p_value) for row in estimated.coefficients},
+        "log_likelihood": _rounded(estimated.log_likelihood),
+        "r_squared": _rounded(estimated.r_squared),
+        "diagnostics": _diagnostic_summary_from_series(
+            estimated.fitted_values,
+            estimated.residuals,
+        ),
+    }
+
+
+def _signal_test_payload(signal) -> dict[str, object]:
+    return {
+        "estimated_lambda": _rounded(signal.lambda_value),
+        "estimated_log_likelihood": _rounded(signal.log_likelihood),
+        "null_log_likelihood": _rounded(signal.null_log_likelihood),
+        "likelihood_ratio": _rounded(
+            -2.0 * (signal.null_log_likelihood - signal.log_likelihood)
+        ),
+        "p_value": _rounded(
+            math.erfc(
+                math.sqrt(
+                    max(
+                        0.0,
+                        -2.0 * (signal.null_log_likelihood - signal.log_likelihood),
                     )
+                    / 2.0
                 )
-            ),
-        },
-        "tree_rescaling": {
-            key: _tree_rescaling_payload(report)
-            for key, report in transformed_tree_reports.items()
-        },
-        "continuous_mode_fits": {
-            "brownian": _continuous_mode_fit_payload(
-                brownian_fit,
-                parameter_key=None,
-                parameter_count=2,
-                tip_values=tip_values,
-            ),
-            "ornstein_uhlenbeck": _continuous_mode_fit_payload(
-                ou_fit,
-                parameter_key="alpha",
-                parameter_count=3,
-            ),
-            "early_burst": _continuous_mode_fit_payload(
-                early_burst_fit,
-                parameter_key="rate_change",
-                parameter_count=3,
-            ),
-        },
-        "likelihood_ratio_tests": {
-            report.comparison_id.replace("-", "_"): _likelihood_ratio_payload(report)
-            for report in mode_comparison.likelihood_ratio_tests
-        },
-        "ancestral_reconstruction": {
-            "brownian": _ancestral_reconstruction_payload(brownian_ancestral),
-            "early_burst": _ancestral_reconstruction_payload(
-                early_burst_ancestral,
-                parameter_key="rate_change",
-            ),
-        },
-        "coverage_boundaries": {
-            "uncovered_fragments": ["mode-linked-intercept-models"],
-            "notes": [
-                "The lecture corBlomberg likelihood sweep remains outside the current canonical runtime parity surface.",
-                "The governed evidence closes transformed-tree, fitContinuous, likelihood-ratio, and ancestral-state parity without overstating the remaining intercept-mode boundary.",
-            ],
-        },
+            )
+        ),
+    }
+
+
+def _tree_rescaling_payloads(
+    transformed_tree_reports: dict[str, object],
+) -> dict[str, object]:
+    return {
+        key: _tree_rescaling_payload(report)
+        for key, report in transformed_tree_reports.items()
+    }
+
+
+def _continuous_mode_fit_payloads(
+    brownian_fit,
+    ou_fit,
+    early_burst_fit,
+    *,
+    tip_values: dict[str, float],
+) -> dict[str, object]:
+    return {
+        "brownian": _continuous_mode_fit_payload(
+            brownian_fit,
+            parameter_key=None,
+            parameter_count=2,
+            tip_values=tip_values,
+        ),
+        "ornstein_uhlenbeck": _continuous_mode_fit_payload(
+            ou_fit,
+            parameter_key="alpha",
+            parameter_count=3,
+        ),
+        "early_burst": _continuous_mode_fit_payload(
+            early_burst_fit,
+            parameter_key="rate_change",
+            parameter_count=3,
+        ),
+    }
+
+
+def _likelihood_ratio_test_payloads(mode_comparison) -> dict[str, object]:
+    return {
+        report.comparison_id.replace("-", "_"): _likelihood_ratio_payload(report)
+        for report in mode_comparison.likelihood_ratio_tests
+    }
+
+
+def _ancestral_reconstruction_payloads(
+    brownian_ancestral,
+    early_burst_ancestral,
+) -> dict[str, object]:
+    return {
+        "brownian": _ancestral_reconstruction_payload(brownian_ancestral),
+        "early_burst": _ancestral_reconstruction_payload(
+            early_burst_ancestral,
+            parameter_key="rate_change",
+        ),
+    }
+
+
+def _coverage_boundary_payload() -> dict[str, object]:
+    return {
+        "uncovered_fragments": ["mode-linked-intercept-models"],
+        "notes": [
+            "The lecture corBlomberg likelihood sweep remains outside the current canonical runtime parity surface.",
+            "The governed evidence closes transformed-tree, fitContinuous, likelihood-ratio, and ancestral-state parity without overstating the remaining intercept-mode boundary.",
+        ],
     }
 
 
@@ -1836,9 +1932,8 @@ def build_primate_pgls_signal_family_index(repo_root: Path) -> dict[str, object]
 
 def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, object]:
     r_results = _load_r_reference_results(repo_root)
-    python_results = _load_python_results(repo_root)
-    scalar_table = build_primate_pgls_signal_scalar_parity_table(repo_root)
     if evidence_id == "evidence-001":
+        scalar_table = build_primate_pgls_signal_scalar_parity_table(repo_root)
         return {
             "schema_version": 1,
             "study_id": STUDY_ID,
@@ -1862,7 +1957,7 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "r_baseline": r_results["baseline_gls"],
-            "bijux_baseline": python_results["baseline_gls"],
+            "bijux_baseline": _baseline_gls_payload(_baseline_gls_report(repo_root)),
             "r_fixed_lambda_equivalence": r_results[
                 "fixed_lambda_gls_matches_baseline"
             ],
@@ -1873,7 +1968,9 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "r_estimated_lambda": r_results["estimated_lambda_pgls"],
-            "bijux_estimated_lambda": python_results["estimated_lambda_pgls"],
+            "bijux_estimated_lambda": _estimated_lambda_pgls_payload(
+                _estimated_lambda_pgls_report(repo_root)
+            ),
         }
     if evidence_id == "evidence-004":
         return {
@@ -1881,20 +1978,24 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "r_signal_test": r_results["signal_test"],
-            "bijux_signal_test": python_results["signal_test"],
+            "bijux_signal_test": _signal_test_payload(_signal_report(repo_root)),
         }
     if evidence_id == "evidence-005":
+        baseline = _baseline_gls_payload(_baseline_gls_report(repo_root))
+        estimated = _estimated_lambda_pgls_payload(
+            _estimated_lambda_pgls_report(repo_root)
+        )
         return {
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "baseline_diagnostics": {
                 "r": r_results["baseline_gls"]["diagnostics"],
-                "bijux": python_results["baseline_gls"]["diagnostics"],
+                "bijux": baseline["diagnostics"],
             },
             "estimated_lambda_diagnostics": {
                 "r": r_results["estimated_lambda_pgls"]["diagnostics"],
-                "bijux": python_results["estimated_lambda_pgls"]["diagnostics"],
+                "bijux": estimated["diagnostics"],
             },
         }
     if evidence_id == "evidence-006":
@@ -1903,15 +2004,29 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "r_tree_rescaling": r_results["tree_rescaling"],
-            "bijux_tree_rescaling": python_results["tree_rescaling"],
+            "bijux_tree_rescaling": _tree_rescaling_payloads(
+                _transformed_tree_reports(repo_root)
+            ),
         }
     if evidence_id == "evidence-007":
+        brownian_fit, ou_fit, early_burst_fit = _continuous_mode_fit_reports(repo_root)
+        tip_values = _ordered_trait_values(
+            _source_reference_paths(repo_root)[1],
+            brownian_fit.taxa,
+            trait="longevity",
+            taxon_column="species",
+        )
         return {
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "r_continuous_mode_fits": r_results["continuous_mode_fits"],
-            "bijux_continuous_mode_fits": python_results["continuous_mode_fits"],
+            "bijux_continuous_mode_fits": _continuous_mode_fit_payloads(
+                brownian_fit,
+                ou_fit,
+                early_burst_fit,
+                tip_values=tip_values,
+            ),
         }
     if evidence_id == "evidence-008":
         return {
@@ -1919,24 +2034,61 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "r_likelihood_ratio_tests": r_results["likelihood_ratio_tests"],
-            "bijux_likelihood_ratio_tests": python_results["likelihood_ratio_tests"],
+            "bijux_likelihood_ratio_tests": _likelihood_ratio_test_payloads(
+                _mode_comparison_report(repo_root)
+            ),
         }
     if evidence_id == "evidence-009":
+        brownian_ancestral, early_burst_ancestral = _ancestral_reconstruction_reports(
+            repo_root
+        )
         return {
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "r_ancestral_reconstruction": r_results["ancestral_reconstruction"],
-            "bijux_ancestral_reconstruction": python_results[
-                "ancestral_reconstruction"
-            ],
+            "bijux_ancestral_reconstruction": _ancestral_reconstruction_payloads(
+                brownian_ancestral,
+                early_burst_ancestral,
+            ),
         }
     return {
         "schema_version": 1,
         "study_id": STUDY_ID,
         "evidence_id": evidence_id,
-        "coverage_boundaries": r_results["coverage_boundaries"],
+        "coverage_boundaries": _coverage_boundary_payload(),
     }
+
+
+def build_primate_pgls_signal_bundle(
+    repo_root: Path, evidence_id: str
+) -> dict[str, object]:
+    definition = next(
+        (
+            definition
+            for definition in BUNDLE_DEFINITIONS
+            if definition["evidence_id"] == evidence_id
+        ),
+        None,
+    )
+    if definition is None:
+        raise KeyError(evidence_id)
+    report_payload = _report_payload_for_bundle(repo_root, evidence_id)
+    manifest = _manifest_for_bundle(repo_root, definition, report_payload)
+    bundle = {
+        "manifest": manifest,
+        "claims": _claims_payload(definition),
+        "report_payload": report_payload,
+        "report_filename": definition["report_filename"],
+        "readme": _readme_for_bundle(definition),
+    }
+    if evidence_id == SUMMARY_EVIDENCE_ID:
+        scalar_table = build_primate_pgls_signal_scalar_parity_table(repo_root)
+        bundle["scalar_parity_table"] = scalar_table
+        bundle["scalar_parity_markdown"] = (
+            render_primate_pgls_signal_scalar_parity_table_markdown(scalar_table)
+        )
+    return bundle
 
 
 def build_primate_pgls_signal_evidence_registry(
@@ -2162,24 +2314,8 @@ def _readme_for_bundle(definition: dict[str, object]) -> str:
 
 def build_primate_pgls_signal_bundles(repo_root: Path) -> dict[str, dict[str, object]]:
     bundles: dict[str, dict[str, object]] = {}
-    scalar_table = build_primate_pgls_signal_scalar_parity_table(repo_root)
-    scalar_markdown = render_primate_pgls_signal_scalar_parity_table_markdown(
-        scalar_table
-    )
     for definition in BUNDLE_DEFINITIONS:
-        report_payload = _report_payload_for_bundle(
+        bundles[definition["evidence_id"]] = build_primate_pgls_signal_bundle(
             repo_root, definition["evidence_id"]
         )
-        manifest = _manifest_for_bundle(repo_root, definition, report_payload)
-        bundle = {
-            "manifest": manifest,
-            "claims": _claims_payload(definition),
-            "report_payload": report_payload,
-            "report_filename": definition["report_filename"],
-            "readme": _readme_for_bundle(definition),
-        }
-        if definition["evidence_id"] == SUMMARY_EVIDENCE_ID:
-            bundle["scalar_parity_table"] = scalar_table
-            bundle["scalar_parity_markdown"] = scalar_markdown
-        bundles[definition["evidence_id"]] = bundle
     return bundles
