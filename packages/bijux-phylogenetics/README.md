@@ -158,6 +158,7 @@ bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --mode linsi --json
 bijux-phylogenetics adapter trim aligned.fasta --out trimmed.fasta --mode automated1 --json
+bijux-phylogenetics alignment sequence-type raw-sequences.fasta --json
 bijux-phylogenetics alignment validate-input raw-sequences.fasta --json
 bijux-phylogenetics alignment repair-input raw-sequences.fasta --out artifacts/raw-sequences.repaired.fasta --normalize-identifiers --remove-invalid-records --json
 bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --alignment-mode einsi --trimming-mode strictplus --normalize-identifiers --remove-invalid-records --bootstrap-replicates 1000 --json
@@ -215,13 +216,17 @@ workflow report and manifest record retained sites, removed sites, and
 gap percentage before and after trimming alongside the explicit trimAl command
 and detected version.
 
-Raw sequence hygiene is now explicit. Use `alignment validate-input` to inspect
-duplicate identifiers, illegal sequence characters, empty records, and
-sequence-length outliers before alignment. Use `alignment repair-input` when
-you want the runtime to normalize identifiers or remove invalid records into a
-new FASTA. The same repair controls are available on `adapter fasta-to-tree`;
-without them, the workflow now fails fast instead of silently continuing on
-bad raw input.
+Raw sequence hygiene is now explicit. Use `alignment sequence-type` when you
+need the raw FASTA type decision itself: compatible types, selected default,
+confidence, and mixed or invalid blocking signals. Use `alignment validate-input`
+to inspect duplicate identifiers, illegal sequence characters, empty records,
+sequence-length outliers, and the same sequence-type report in one payload.
+Use `alignment repair-input` when you want the runtime to normalize identifiers
+or remove invalid records into a new FASTA. The same repair controls are
+available on `adapter fasta-to-tree`; without them, the workflow now fails fast
+instead of silently continuing on bad raw input. Mixed raw inputs must now
+either be fixed or forced with an explicit `--sequence-type` choice before the
+workflow continues.
 
 Internal alignment-quality scoring is available without any external engine.
 Use `alignment quality` when you want one scored view that combines

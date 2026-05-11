@@ -33,6 +33,7 @@ Use `adapter fasta-to-tree` when you need one governed command from unaligned
 FASTA to a reviewable inference bundle.
 
 ```bash
+bijux-phylogenetics alignment sequence-type raw-sequences.fasta --json
 bijux-phylogenetics alignment validate-input raw-sequences.fasta --json
 bijux-phylogenetics alignment repair-input raw-sequences.fasta \
   --out artifacts/raw-sequences.repaired.fasta \
@@ -62,15 +63,21 @@ user-facing outputs:
 It also retains step-specific engine artifacts under
 `artifacts/fasta-to-tree/engine-artifacts/mammals/` for auditability.
 
-Use `alignment validate-input` when you need an explicit report of duplicate
-identifiers, illegal sequence characters, empty records, and raw-sequence
-length outliers before any engine is invoked.
+Use `alignment sequence-type` when you need the raw FASTA type decision before
+any engine is invoked. It reports compatible types, the selected default, the
+confidence level, and mixed or invalid blocking signals.
+
+Use `alignment validate-input` when you need one broader report of duplicate
+identifiers, illegal sequence characters, empty records, raw-sequence length
+outliers, and sequence-type detection before any engine is invoked.
 
 Use `alignment repair-input` or the matching `adapter fasta-to-tree`
 `--normalize-identifiers` and `--remove-invalid-records` controls when you want
 the runtime to prepare a repaired FASTA explicitly rather than proceeding on
 silent assumptions. Without those repair flags, `adapter fasta-to-tree` now
 fails fast on duplicate identifiers, empty sequences, or illegal characters.
+Mixed raw inputs also fail fast unless you declare a compatible
+`--sequence-type` explicitly and remove incompatible records.
 
 The checked repository examples that currently exercise this workflow are:
 
