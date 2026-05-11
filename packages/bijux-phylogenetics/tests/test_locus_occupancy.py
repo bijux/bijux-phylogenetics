@@ -6,12 +6,13 @@ import pytest
 
 from bijux_phylogenetics.core.locus_occupancy import (
     build_locus_occupancy_report,
+    build_locus_occupancy_report_from_records,
     filter_locus_occupancy,
     parse_locus_partitions,
     write_locus_partitions,
 )
 from bijux_phylogenetics.errors import InvalidPartitionError
-from bijux_phylogenetics.io.fasta import write_fasta_alignment
+from bijux_phylogenetics.io.fasta import load_fasta_alignment, write_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -101,6 +102,25 @@ def test_build_locus_occupancy_report_tracks_taxon_and_locus_coverage() -> None:
         "gene_beta": 1.0,
         "gene_gamma": 1.0,
     }
+
+
+def test_build_locus_occupancy_report_from_records_reuses_loaded_inputs() -> None:
+    alignment_path = fixture("alignments/example_multilocus_alignment.fasta")
+    partition_path = fixture("alignments/example_multilocus_partitions.txt")
+    records = load_fasta_alignment(alignment_path)
+    partitions = parse_locus_partitions(partition_path)
+
+    report = build_locus_occupancy_report_from_records(
+        records=records,
+        partitions=partitions,
+        alignment_path=alignment_path,
+        partition_path=partition_path,
+    )
+
+    assert report.alignment_path == alignment_path
+    assert report.partition_path == partition_path
+    assert report.taxon_count == 5
+    assert report.locus_count == 3
 
 
 def test_filter_locus_occupancy_can_remove_low_coverage_loci_only() -> None:

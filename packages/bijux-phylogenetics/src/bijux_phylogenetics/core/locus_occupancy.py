@@ -24,6 +24,7 @@ __all__ = [
     "LocusOccupancyCell",
     "LocusOccupancyReport",
     "TaxonCoverageRow",
+    "build_locus_occupancy_report_from_records",
     "build_locus_occupancy_report",
     "filter_locus_occupancy",
 ]
@@ -293,11 +294,33 @@ def build_locus_occupancy_report(
     _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
     _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
 
+    return build_locus_occupancy_report_from_records(
+        records=load_fasta_alignment(alignment_path),
+        partitions=parse_locus_partitions(partition_path),
+        alignment_path=alignment_path,
+        partition_path=partition_path,
+        taxon_coverage_threshold=taxon_coverage_threshold,
+        locus_coverage_threshold=locus_coverage_threshold,
+    )
+
+
+def build_locus_occupancy_report_from_records(
+    *,
+    records: list[AlignmentRecord],
+    partitions: tuple[LocusPartition, ...],
+    alignment_path: Path = Path("<memory>"),
+    partition_path: Path = Path("<memory>"),
+    taxon_coverage_threshold: float | None = None,
+    locus_coverage_threshold: float | None = None,
+) -> LocusOccupancyReport:
+    """Quantify locus occupancy from already loaded aligned records and partitions."""
+    _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
+    _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
     return _build_locus_occupancy_report_from_inputs(
         alignment_path,
         partition_path,
-        records=load_fasta_alignment(alignment_path),
-        partitions=parse_locus_partitions(partition_path),
+        records=records,
+        partitions=partitions,
         taxon_coverage_threshold=taxon_coverage_threshold,
         locus_coverage_threshold=locus_coverage_threshold,
     )
