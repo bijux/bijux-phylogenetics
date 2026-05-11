@@ -109,6 +109,46 @@ def test_detect_fasta_sequence_type_classifies_supported_and_blocked_inputs(
     assert invalid_report.invalid_record_count == 1
 
 
+def test_detect_fasta_sequence_type_handles_ambiguity_codes(tmp_path: Path) -> None:
+    dna_path = tmp_path / "dna-ambiguity.fasta"
+    rna_path = tmp_path / "rna-ambiguity.fasta"
+    protein_path = tmp_path / "protein-ambiguity.fasta"
+
+    write_fasta_alignment(
+        dna_path,
+        [
+            AlignmentRecord(identifier="A", sequence="ACTGNRYM"),
+            AlignmentRecord(identifier="B", sequence="ACTGBDHV"),
+        ],
+    )
+    write_fasta_alignment(
+        rna_path,
+        [
+            AlignmentRecord(identifier="A", sequence="ACUGNRYM"),
+            AlignmentRecord(identifier="B", sequence="ACUGBDHV"),
+        ],
+    )
+    write_fasta_alignment(
+        protein_path,
+        [
+            AlignmentRecord(identifier="P1", sequence="MKTXBZX"),
+            AlignmentRecord(identifier="P2", sequence="MRQXBZX"),
+        ],
+    )
+
+    dna_report = detect_fasta_sequence_type(dna_path)
+    assert dna_report.detected_type == "dna"
+    assert dna_report.selected_type == "dna"
+
+    rna_report = detect_fasta_sequence_type(rna_path)
+    assert rna_report.detected_type == "rna"
+    assert rna_report.selected_type == "rna"
+
+    protein_report = detect_fasta_sequence_type(protein_path)
+    assert protein_report.detected_type == "protein"
+    assert protein_report.selected_type == "protein"
+
+
 def test_validate_fasta_input_reports_real_input_problems() -> None:
     report = validate_fasta_input(
         fixture("alignments/example_sequences_invalid_input.fasta"),
