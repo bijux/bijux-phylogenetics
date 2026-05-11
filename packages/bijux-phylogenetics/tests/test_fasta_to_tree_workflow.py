@@ -388,6 +388,34 @@ def test_write_fasta_to_tree_log_renders_workflow_outputs_relative_to_root(
     assert str(report.out_dir) not in log_text
 
 
+def test_run_fasta_to_tree_workflow_log_preserves_relative_input_spelling(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    relative_input = Path(
+        "packages/bijux-phylogenetics/tests/fixtures/alignments/example_sequences_raw.fasta"
+    )
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    monkeypatch.chdir(repo_root)
+
+    report = run_fasta_to_tree_workflow(
+        relative_input,
+        out_dir=tmp_path / "relative-input-log",
+        prefix="relative-input-log",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+
+    log_text = report.output_paths["log"].read_text(encoding="utf-8")
+    assert f"input_path: {relative_input}" in log_text
+    assert f"command: {mafft} --auto {relative_input}" in log_text
+
+
 def test_run_fasta_to_tree_workflow_rejects_invalid_raw_input_without_repair(
     tmp_path: Path,
 ) -> None:

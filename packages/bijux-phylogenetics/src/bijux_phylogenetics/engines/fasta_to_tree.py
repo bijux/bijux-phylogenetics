@@ -188,9 +188,18 @@ def _display_path(path: Path, *, root_dir: Path | None) -> str:
         return str(path)
 
 
-def _display_command(command: list[str], *, root_dir: Path | None) -> str:
+def _display_command(
+    command: list[str],
+    *,
+    root_dir: Path | None,
+    aliases: dict[str, str] | None = None,
+) -> str:
     rendered: list[str] = []
+    token_aliases = {} if aliases is None else aliases
     for token in command:
+        if token in token_aliases:
+            rendered.append(token_aliases[token])
+            continue
         if token.startswith("/"):
             rendered.append(_display_path(Path(token), root_dir=root_dir))
         else:
@@ -322,12 +331,18 @@ def write_fasta_to_tree_log(
         ("maximum_likelihood", report.maximum_likelihood_workflow),
         ("bootstrap_support", report.bootstrap_workflow),
     ]
+    command_aliases = {str(report.input_path.resolve()): str(report.input_path)}
     for label, workflow in steps:
         lines.extend(
             [
                 f"[{label}]",
                 f"engine: {workflow.engine_name}",
-                f"command: {_display_command(workflow.run.command, root_dir=root_dir)}",
+                "command: "
+                + _display_command(
+                    workflow.run.command,
+                    root_dir=root_dir,
+                    aliases=command_aliases,
+                ),
                 f"version: {workflow.run.version.text}",
                 f"manifest: {_display_path(workflow.manifest_path, root_dir=root_dir)}",
             ]
