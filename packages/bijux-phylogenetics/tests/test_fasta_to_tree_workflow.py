@@ -3,6 +3,8 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeModelRow,
     FastaToTreeSupportRow,
@@ -11,6 +13,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     write_fasta_to_tree_model_table,
     write_fasta_to_tree_support_table,
 )
+from bijux_phylogenetics.errors import InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -289,3 +292,55 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         log_text = report.output_paths["log"].read_text(encoding="utf-8")
         assert "selected_model:" in log_text
         assert "warning: iqtree fixture bootstrap" in log_text
+
+
+def test_run_fasta_to_tree_workflow_rejects_invalid_raw_input_without_repair(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    with pytest.raises(InvalidAlignmentError, match="duplicate identifiers"):
+        run_fasta_to_tree_workflow(
+            fixture("alignments/example_sequences_invalid_input.fasta"),
+            out_dir=tmp_path / "strict",
+            prefix="strict",
+            sequence_type="dna",
+            mafft_executable=mafft,
+            trimal_executable=trimal,
+            iqtree_executable=iqtree,
+        )
+
+
+def test_run_fasta_to_tree_workflow_repairs_invalid_raw_input_when_requested(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_fasta_to_tree_workflow(
+        fixture("alignments/example_sequences_invalid_input.fasta"),
+        out_dir=tmp_path / "repaired",
+        prefix="repaired",
+        sequence_type="dna",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        normalize_identifiers=True,
+        remove_invalid_records=True,
+    )
+
+    assert report.prepared_input_path.name == "input-curation.fasta"
+    assert report.input_repair is not None
+    assert report.repaired_input_validation is not None
+    assert report.input_repair.output_path == report.prepared_input_path
+    assert report.prepared_input_path.read_text(encoding="utf-8") == (
+        ">Alpha_sample\nACTGACTG\n"
+        ">rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
+    )
+    assert any("duplicate sequence identifiers" in warning for warning in report.warnings)
+    assert "prepared_input_path:" in report.output_paths["log"].read_text(
+        encoding="utf-8"
+    )

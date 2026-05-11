@@ -3,10 +3,22 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.alignment import AlignmentAlphabet, AlignmentRecord
-from bijux_phylogenetics.io.fasta import infer_alignment_alphabet
+from bijux_phylogenetics.core.alignment import (
+    AlignmentAlphabet,
+    AlignmentRecord,
+    FastaInputValidationReport,
+    FastaRepairReport,
+)
+from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.io.fasta import (
+    infer_alignment_alphabet,
+    load_permissive_fasta_records,
+    repair_fasta_input,
+    validate_fasta_input,
+    write_fasta_alignment,
+)
 
-from .common import build_file_checksums, load_unaligned_fasta, write_engine_manifest
+from .common import build_file_checksums, write_engine_manifest
 from .validation import (
     BootstrapSupportSummaryReport,
     ModelSelectionValidationReport,
@@ -68,6 +80,7 @@ class FastaToTreeWorkflowReport:
     """End-to-end result for one raw-FASTA-to-tree workflow run."""
 
     input_path: Path
+    prepared_input_path: Path
     out_dir: Path
     prefix: str
     sequence_type: AlignmentAlphabet
@@ -78,6 +91,9 @@ class FastaToTreeWorkflowReport:
     step_manifests: dict[str, Path]
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
+    input_validation: FastaInputValidationReport
+    repaired_input_validation: FastaInputValidationReport | None
+    input_repair: FastaRepairReport | None
     alignment_workflow: EngineWorkflowReport
     trimming_workflow: EngineWorkflowReport
     model_selection_workflow: EngineWorkflowReport
@@ -250,10 +266,27 @@ def write_fasta_to_tree_log(path: Path, report: FastaToTreeWorkflowReport) -> Pa
     lines = [
         "workflow: fasta-to-tree",
         f"input_path: {report.input_path}",
+        f"prepared_input_path: {report.prepared_input_path}",
         f"sequence_type: {report.sequence_type}",
         f"selected_model: {report.selected_model}",
         "",
+        "[input-validation]",
+        f"sequence_count: {report.input_validation.summary.sequence_count}",
     ]
+    if report.input_validation.warnings:
+        lines.append("warnings:")
+        lines.extend(f"- {warning}" for warning in report.input_validation.warnings)
+    lines.append("")
+    if report.input_repair is not None:
+        lines.extend(
+            [
+                "[input-repair]",
+                f"output_path: {report.input_repair.output_path}",
+                f"normalized_identifier_count: {len(report.input_repair.normalized_identifiers)}",
+                f"removed_record_count: {len(report.input_repair.removed_records)}",
+                "",
+            ]
+        )
     steps = [
         ("alignment", report.alignment_workflow),
         ("trimming", report.trimming_workflow),
@@ -301,9 +334,58 @@ def run_fasta_to_tree_workflow(
     iqtree_executable: str | Path = "iqtree2",
     trim_gap_threshold: float = 0.1,
     bootstrap_replicates: int = 1000,
+    normalize_identifiers: bool = False,
+    remove_invalid_records: bool = False,
 ) -> FastaToTreeWorkflowReport:
     """Run alignment, trimming, model selection, ML inference, and bootstrap support in one workflow."""
-    raw_records = load_unaligned_fasta(input_path)
+    workflow_prefix = input_path.stem if prefix is None else prefix
+    engine_artifact_dir = out_dir / "engine-artifacts" / workflow_prefix
+    input_validation = validate_fasta_input(input_path, sequence_type=sequence_type)
+    has_input_blockers = bool(
+        input_validation.duplicate_identifiers
+        or input_validation.illegal_characters
+        or input_validation.empty_sequences
+    )
+    prepared_input_path = input_path
+    repaired_input_validation: FastaInputValidationReport | None = None
+    input_repair: FastaRepairReport | None = None
+    if has_input_blockers and not (
+        normalize_identifiers or remove_invalid_records
+    ):
+        raise InvalidAlignmentError(
+            "fasta-to-tree input contains duplicate identifiers, empty sequences, "
+            "or illegal characters; use normalize_identifiers or "
+            "remove_invalid_records to repair the input explicitly"
+        )
+    if normalize_identifiers or remove_invalid_records:
+        repaired_records, input_repair = repair_fasta_input(
+            input_path,
+            sequence_type=sequence_type,
+            normalize_identifiers=normalize_identifiers,
+            remove_invalid_records=remove_invalid_records,
+        )
+        prepared_input_path = _artifact_prefix(
+            out_dir, workflow_prefix, "input-curation"
+        ).with_suffix(".fasta")
+        write_fasta_alignment(prepared_input_path, repaired_records)
+        input_repair.output_path = prepared_input_path
+        repaired_input_validation = validate_fasta_input(
+            prepared_input_path,
+            sequence_type=sequence_type,
+        )
+        if (
+            repaired_input_validation.duplicate_identifiers
+            or repaired_input_validation.illegal_characters
+            or repaired_input_validation.empty_sequences
+        ):
+            raise InvalidAlignmentError(
+                "fasta-to-tree repair policy left unresolved duplicate identifiers, "
+                "illegal characters, or empty sequences in the prepared input"
+            )
+    raw_records = [
+        (record.identifier, record.sequence)
+        for record in load_permissive_fasta_records(prepared_input_path)
+    ]
     inferred_sequence_type = (
         infer_unaligned_sequence_type(raw_records)
         if sequence_type is None
@@ -313,11 +395,10 @@ def run_fasta_to_tree_workflow(
         raise ValueError(
             "fasta-to-tree workflow could not infer a supported sequence type from the input FASTA"
         )
-    workflow_prefix = input_path.stem if prefix is None else prefix
     final_outputs = _final_output_paths(out_dir, workflow_prefix)
 
     alignment_workflow = run_multiple_sequence_alignment(
-        input_path,
+        prepared_input_path,
         _artifact_prefix(out_dir, workflow_prefix, "alignment").with_suffix(".aln"),
         executable=mafft_executable,
     )
@@ -387,19 +468,31 @@ def run_fasta_to_tree_workflow(
             + maximum_likelihood_workflow.run.warning_lines
             + bootstrap_workflow.run.warning_lines
             + support_summary.warnings
+            + input_validation.warnings
+            + ([] if input_repair is None else input_repair.warnings)
+            + (
+                []
+                if repaired_input_validation is None
+                else repaired_input_validation.warnings
+            )
         )
     )
     notes = [
         "final tree path contains the bootstrap-supported inference tree",
         "engine-specific intermediate artifacts remain under engine-artifacts/",
     ]
+    if input_repair is not None:
+        notes.append(
+            f"prepared input FASTA written to {prepared_input_path} before alignment"
+        )
     report = FastaToTreeWorkflowReport(
         input_path=input_path,
+        prepared_input_path=prepared_input_path,
         out_dir=out_dir,
         prefix=workflow_prefix,
         sequence_type=inferred_sequence_type,
         selected_model=model_selection_workflow.selected_model,
-        engine_artifact_dir=out_dir / "engine-artifacts" / workflow_prefix,
+        engine_artifact_dir=engine_artifact_dir,
         manifest_path=final_outputs["manifest"],
         output_paths=final_outputs,
         step_manifests={
@@ -409,8 +502,15 @@ def run_fasta_to_tree_workflow(
             "maximum_likelihood": maximum_likelihood_workflow.manifest_path,
             "bootstrap_support": bootstrap_workflow.manifest_path,
         },
-        input_checksums=build_file_checksums([input_path]),
+        input_checksums=build_file_checksums(
+            [input_path]
+            if prepared_input_path == input_path
+            else [input_path, prepared_input_path]
+        ),
         output_checksums={},
+        input_validation=input_validation,
+        repaired_input_validation=repaired_input_validation,
+        input_repair=input_repair,
         alignment_workflow=alignment_workflow,
         trimming_workflow=trimming_workflow,
         model_selection_workflow=model_selection_workflow,
