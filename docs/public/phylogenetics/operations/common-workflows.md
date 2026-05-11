@@ -27,6 +27,37 @@ per-taxon and per-locus TSV tables, a taxon-by-locus occupancy matrix, and a
 retained alignment plus remapped partition file after applying explicit
 coverage thresholds.
 
+## Coding DNA Alignment
+
+Use `adapter align --codon-aware` when you need a nucleotide alignment that
+preserves codon triplets for downstream phylogenetic inference.
+
+```bash
+bijux-phylogenetics adapter align coding-cds.fasta \
+  --out artifacts/coding.aligned.fasta \
+  --mode linsi \
+  --codon-aware \
+  --json
+bijux-phylogenetics adapter model-select artifacts/coding.aligned.fasta \
+  --out-dir artifacts/coding-model \
+  --prefix coding \
+  --sequence-type dna \
+  --json
+bijux-phylogenetics adapter infer-ml artifacts/coding.aligned.fasta \
+  --out-dir artifacts/coding-ml \
+  --model GTR+G \
+  --prefix coding \
+  --sequence-type dna \
+  --json
+```
+
+The codon-aware alignment workflow excludes frame-broken sequences and
+sequences with premature stop codons before MAFFT runs. It then aligns a
+translated amino-acid guide and projects guide gaps back as nucleotide triplets,
+so the final alignment length stays divisible by three and codon boundaries are
+retained. The workflow also writes the translated guide input, the aligned
+guide, and a TSV ledger of excluded sequences for review.
+
 ## Raw FASTA To Tree
 
 Use `adapter fasta-to-tree` when you need one governed command from unaligned
@@ -89,3 +120,8 @@ The checked repository examples that currently exercise this workflow are:
 Those checks cover raw DNA input, already aligned DNA input, and protein input,
 and they verify that the workflow emits the aligned matrix, trimmed matrix,
 tree, log, model table, and support table with stable names.
+
+For coding DNA, prefer the codon-aware alignment workflow above and then run
+the downstream adapter steps explicitly. The current `adapter fasta-to-tree`
+path is still a generic trimAl-based pipeline rather than the codon-preserving
+entrypoint.

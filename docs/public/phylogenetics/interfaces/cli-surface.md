@@ -34,6 +34,12 @@ reviewable aligned matrix, trimmed matrix, selected-model table, supported
 tree, support summary table, run log, and manifest in one command instead of
 forcing users to stitch separate adapter steps together by hand.
 
+For coding nucleotide inputs, `adapter align --codon-aware` is the supported
+alignment entrypoint. It excludes frame-broken sequences and sequences with
+premature stop codons, aligns a translated amino-acid guide, and back-translates
+guide gaps as nucleotide triplets so the resulting alignment stays codon-safe
+for downstream inference steps.
+
 For raw input hygiene before alignment, the alignment family now includes
 `alignment sequence-type`, `alignment validate-input`, and
 `alignment repair-input`. Those commands expose the same raw sequence-type,

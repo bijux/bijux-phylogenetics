@@ -157,6 +157,7 @@ bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait reg
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --mode linsi --json
+bijux-phylogenetics adapter align coding-cds.fasta --out coding.aligned.fasta --mode linsi --codon-aware --json
 bijux-phylogenetics adapter trim aligned.fasta --out trimmed.fasta --mode automated1 --json
 bijux-phylogenetics alignment sequence-type raw-sequences.fasta --json
 bijux-phylogenetics alignment validate-input raw-sequences.fasta --json
@@ -209,6 +210,14 @@ Named MAFFT strategies are now first-class on both `adapter align` and
 strategy into the explicit MAFFT arguments it runs, and the workflow manifest
 captures both the resolved command and the detected MAFFT version for review.
 
+Coding-sequence alignment is now first-class on `adapter align` through
+`--codon-aware`. That workflow accepts raw coding DNA or RNA FASTA, excludes
+frame-broken sequences and sequences with premature stop codons, aligns a
+translated amino-acid guide with MAFFT, and back-translates guide gaps into
+codon triplets so the final nucleotide alignment preserves reading-frame
+boundaries. The workflow also writes audit artifacts for the translated guide
+input, the aligned guide, and the excluded-sequence ledger.
+
 Named trimAl strategies are also first-class on `adapter trim` and
 `adapter fasta-to-tree`. Use `--mode` or `--trimming-mode` with one of
 `gap-threshold`, `gappyout`, `strict`, `strictplus`, or `automated1`. The
@@ -227,6 +236,12 @@ available on `adapter fasta-to-tree`; without them, the workflow now fails fast
 instead of silently continuing on bad raw input. Mixed raw inputs must now
 either be fixed or forced with an explicit `--sequence-type` choice before the
 workflow continues.
+
+For coding nucleotide phylogenetics, use `adapter align --codon-aware` first
+and then run downstream inference steps such as `adapter model-select`,
+`adapter infer-ml`, and `adapter bootstrap` on the codon alignment it writes.
+The current `adapter fasta-to-tree` workflow remains a generic alignment and
+trim pipeline, so it is not the codon-preserving entrypoint for coding DNA.
 
 Internal alignment-quality scoring is available without any external engine.
 Use `alignment quality` when you want one scored view that combines
