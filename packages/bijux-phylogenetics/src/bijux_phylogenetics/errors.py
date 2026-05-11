@@ -39,6 +39,10 @@ class InvalidAlignmentError(PhylogeneticsError):
     code = "invalid_alignment_error"
 
 
+class InvalidPartitionError(PhylogeneticsError):
+    code = "invalid_partition_error"
+
+
 class InvalidDistanceMatrixError(PhylogeneticsError):
     code = "invalid_distance_matrix_error"
 
