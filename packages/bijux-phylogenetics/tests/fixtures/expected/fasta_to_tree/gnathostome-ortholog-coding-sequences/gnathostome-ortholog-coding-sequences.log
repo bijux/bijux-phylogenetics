@@ -32,7 +32,10 @@ Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
 Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
 manifest: engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.manifest.json
 output.iqtree_report: engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.iqtree
+output.iqtree_log: engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.log
+output.model_selection_sidecar: engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.model.gz
 output.selected_model: engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.selected-model.txt
+output.model_candidates: engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.model-candidates.tsv
 
 [maximum_likelihood]
 engine: iqtree
@@ -41,8 +44,9 @@ version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
 Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
 Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
 manifest: engine-artifacts/gnathostome-ortholog-coding-sequences/maximum-likelihood/maximum-likelihood.manifest.json
-output.tree: engine-artifacts/gnathostome-ortholog-coding-sequences/maximum-likelihood/maximum-likelihood.treefile
 output.iqtree_report: engine-artifacts/gnathostome-ortholog-coding-sequences/maximum-likelihood/maximum-likelihood.iqtree
+output.iqtree_log: engine-artifacts/gnathostome-ortholog-coding-sequences/maximum-likelihood/maximum-likelihood.log
+output.tree: engine-artifacts/gnathostome-ortholog-coding-sequences/maximum-likelihood/maximum-likelihood.treefile
 
 [bootstrap_support]
 engine: iqtree
@@ -51,9 +55,11 @@ version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
 Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
 Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
 manifest: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.manifest.json
-output.support_tree: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile
-output.bootstrap_trees: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot
 output.iqtree_report: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.iqtree
+output.iqtree_log: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.log
+output.bootstrap_trees: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot
+output.consensus_tree: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.contree
+output.support_tree: engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile
 
 [support-summary]
 - one or more internal nodes did not expose numeric support labels

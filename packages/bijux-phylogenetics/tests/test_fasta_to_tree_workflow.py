@@ -137,8 +137,30 @@ prefix.parent.mkdir(parents=True, exist_ok=True)
 is_protein = "-st" in args and args[args.index("-st") + 1] == "AA"
 selected_model = "LG+G" if is_protein else "GTR+G"
 if "-m" in args and args[args.index("-m") + 1] == "MF":
+    criteria_lines = (
+        " No. Model         -LnL         df  AIC          AICc         BIC\\n"
+        + (
+            "  1  LG+G          123.456      9   264.912      324.912      266.912\\n"
+            "  2  WAG+G         124.000      9   266.000      326.000      268.000\\n"
+            "  3  JTT+G         125.500      9   269.000      329.000      271.000\\n"
+            "Akaike Information Criterion:           LG+G\\n"
+            "Corrected Akaike Information Criterion: LG+G\\n"
+            "Bayesian Information Criterion:         LG+G\\n"
+            "Best-fit model: LG+G chosen according to BIC\\n"
+            if is_protein
+            else
+            "  1  GTR+G         123.456      12  270.912      330.912      272.912\\n"
+            "  2  HKY+G         124.000      10  268.000      320.000      269.000\\n"
+            "  3  JC            130.500      5   271.000      300.000      271.500\\n"
+            "Akaike Information Criterion:           HKY+G\\n"
+            "Corrected Akaike Information Criterion: JC\\n"
+            "Bayesian Information Criterion:         GTR+G\\n"
+            "Best-fit model according to BIC: GTR+G\\n"
+        )
+    )
     prefix.with_suffix(".iqtree").write_text(
-        f"Best-fit model according to BIC: {selected_model}\\nLog-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
+        criteria_lines
+        + "Log-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
         encoding="utf-8",
     )
     prefix.with_suffix(".log").write_text(
