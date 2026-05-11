@@ -14,12 +14,37 @@ Typical public workflows include:
 - validate and inspect a tree before downstream use
 - trim and inspect an alignment before reporting
 - run one command from raw FASTA to a supported inference bundle
+- assemble aligned loci into a concatenated supermatrix
 - audit a concatenated multi-locus matrix before inference
 - run a comparative model and capture JSON plus report artifacts
 - generate a review-ready figure package for a tree
 
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
+
+When your starting point is one aligned FASTA per locus, run
+`alignment concatenate` first. That workflow writes the concatenated alignment,
+the remapped partition file, and the taxon-by-locus occupancy matrix in one
+step while preserving taxon identifiers and inserting `?` blocks for absent
+taxa.
+
+```bash
+bijux-phylogenetics alignment concatenate loci/alpha-dna.fasta \
+  loci/beta-protein.fasta \
+  loci/gamma-dna.fasta \
+  --data-type DNA \
+  --data-type PROTEIN \
+  --data-type DNA \
+  --out artifacts/mixed-locus-supermatrix.aln.fasta \
+  --partitions-out artifacts/mixed-locus-supermatrix.partitions.txt \
+  --matrix-out artifacts/mixed-locus-supermatrix.matrix.tsv \
+  --json
+```
+
+Use repeated `--data-type` flags when short or ambiguity-rich loci would make a
+DNA locus and a protein locus look identical by characters alone. The
+concatenation workflow records those explicit datatypes in the partition file
+so downstream partitioned inference uses the honest locus contract.
 
 For concatenated phylogenomics inputs, run `alignment occupancy` against an
 aligned FASTA plus partition file before tree inference. The command can emit
@@ -34,22 +59,25 @@ can write the review table directly as TSV.
 
 ## Partitioned Multi-Locus Inference
 
-Use the partition summary command before sending a concatenated matrix into the
-adapter inference surface, then pass the same partition file into the adapter
-step that needs it.
+Use the concatenation workflow first, then run the partition summary command
+before sending the resulting matrix into the adapter inference surface. Pass
+the same partition file into the adapter step that needs it.
 
 ```bash
-bijux-phylogenetics alignment partition-summary multilocus.aln.fasta \
-  multilocus.partitions \
+bijux-phylogenetics alignment partition-summary \
+  artifacts/mixed-locus-supermatrix.aln.fasta \
+  artifacts/mixed-locus-supermatrix.partitions.txt \
   --out artifacts/multilocus.partition-summary.tsv \
   --json
-bijux-phylogenetics adapter model-select multilocus.aln.fasta \
-  --partitions multilocus.partitions \
+bijux-phylogenetics adapter model-select \
+  artifacts/mixed-locus-supermatrix.aln.fasta \
+  --partitions artifacts/mixed-locus-supermatrix.partitions.txt \
   --out-dir artifacts/multilocus-model \
   --prefix multilocus \
   --json
-bijux-phylogenetics adapter infer-ml multilocus.aln.fasta \
-  --partitions multilocus.partitions \
+bijux-phylogenetics adapter infer-ml \
+  artifacts/mixed-locus-supermatrix.aln.fasta \
+  --partitions artifacts/mixed-locus-supermatrix.partitions.txt \
   --out-dir artifacts/multilocus-ml \
   --model GTR+G \
   --prefix multilocus \

@@ -104,6 +104,7 @@ bijux-phylogenetics alignment low-information alignment.fasta --json
 bijux-phylogenetics alignment duplicate-policy alignment.fasta --identity-threshold 0.99 --json
 bijux-phylogenetics alignment ambiguous-columns alignment.fasta --threshold 0.5 --json
 bijux-phylogenetics alignment sequence-ranking alignment.fasta --json
+bijux-phylogenetics alignment concatenate loci/gene-alpha.fasta loci/gene-beta.fasta loci/gene-gamma.fasta --out artifacts/supermatrix.aln.fasta --partitions-out artifacts/supermatrix.partitions.txt --matrix-out artifacts/supermatrix.matrix.tsv --json
 bijux-phylogenetics alignment occupancy supermatrix.fasta partitions.txt --taxon-coverage-threshold 0.6 --locus-coverage-threshold 0.6 --taxa-out artifacts/occupancy/taxa.tsv --loci-out artifacts/occupancy/loci.tsv --matrix-out artifacts/occupancy/matrix.tsv --filtered-alignment-out artifacts/occupancy/filtered.fasta --filtered-partitions-out artifacts/occupancy/filtered-partitions.txt --json
 bijux-phylogenetics alignment length-outliers sequences.fasta --json
 bijux-phylogenetics alignment forensic alignment.fasta --json
@@ -186,6 +187,14 @@ bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
+
+For aligned multi-locus datasets, `alignment concatenate` is now the canonical
+supermatrix assembly surface. It preserves taxon identifiers across loci,
+inserts `?` blocks for absent taxa, writes a remapped partition file, and can
+materialize the taxon-by-locus occupancy matrix in the same run. When a locus
+contains residues that are alphabet-ambiguous across DNA and protein codes, use
+repeated `--data-type` flags so the partition file declares the intended
+datatype honestly instead of guessing from overlapping symbols alone.
 
 The `adapter fasta-to-tree` workflow is the canonical one-command bridge from
 raw FASTA to a supported inference bundle. It accepts DNA and protein FASTA

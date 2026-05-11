@@ -23,8 +23,12 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
-The alignment family includes matrix-audit commands such as `alignment occupancy`
-for concatenated multi-locus FASTA plus partition inputs. That workflow reports
+The alignment family includes matrix-assembly and matrix-audit commands for
+concatenated multi-locus inputs. `alignment concatenate` assembles one
+supermatrix from aligned per-locus FASTA inputs, preserves taxon identities,
+inserts `?` blocks for absent taxa, writes the remapped partition file, and can
+emit the taxon-by-locus occupancy matrix in the same run. `alignment occupancy`
+then audits an existing concatenated FASTA plus partition file, reports
 per-taxon coverage, per-locus coverage, low-coverage flags, TSV tables, and an
 optionally filtered retained matrix with remapped partitions.
 
