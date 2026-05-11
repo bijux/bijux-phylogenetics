@@ -7,6 +7,7 @@ import pytest
 from bijux_phylogenetics.core.alignment import AlignmentRecord
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
+    detect_fasta_sequence_type,
     load_fasta_records,
     load_permissive_fasta_records,
     repair_fasta_input,
@@ -39,6 +40,75 @@ def test_strict_loader_rejects_duplicate_identifiers_in_raw_input() -> None:
         load_fasta_records(fixture("alignments/example_sequences_invalid_input.fasta"))
 
 
+def test_detect_fasta_sequence_type_classifies_supported_and_blocked_inputs(
+    tmp_path: Path,
+) -> None:
+    dna_path = tmp_path / "dna.fasta"
+    rna_path = tmp_path / "rna.fasta"
+    protein_path = tmp_path / "protein.fasta"
+    mixed_path = tmp_path / "mixed.fasta"
+
+    write_fasta_alignment(
+        dna_path,
+        [
+            AlignmentRecord(identifier="A", sequence="ACTGACTG"),
+            AlignmentRecord(identifier="B", sequence="ACTTACTA"),
+        ],
+    )
+    write_fasta_alignment(
+        rna_path,
+        [
+            AlignmentRecord(identifier="A", sequence="ACUGACUG"),
+            AlignmentRecord(identifier="B", sequence="ACUGACUA"),
+        ],
+    )
+    write_fasta_alignment(
+        protein_path,
+        [
+            AlignmentRecord(identifier="P1", sequence="MKTWFLIM"),
+            AlignmentRecord(identifier="P2", sequence="MRTWYLVM"),
+        ],
+    )
+    write_fasta_alignment(
+        mixed_path,
+        [
+            AlignmentRecord(identifier="dna_like", sequence="ACTGACTG"),
+            AlignmentRecord(identifier="rna_like", sequence="ACUGACUG"),
+        ],
+    )
+
+    dna_report = detect_fasta_sequence_type(dna_path)
+    assert dna_report.detected_type == "dna"
+    assert dna_report.selected_type == "dna"
+    assert dna_report.compatible_types == ["dna", "protein"]
+    assert dna_report.confidence == "medium"
+
+    rna_report = detect_fasta_sequence_type(rna_path)
+    assert rna_report.detected_type == "rna"
+    assert rna_report.selected_type == "rna"
+    assert rna_report.compatible_types == ["rna"]
+    assert rna_report.confidence == "high"
+
+    protein_report = detect_fasta_sequence_type(protein_path)
+    assert protein_report.detected_type == "protein"
+    assert protein_report.selected_type == "protein"
+    assert protein_report.compatible_types == ["protein"]
+    assert protein_report.confidence == "high"
+
+    mixed_report = detect_fasta_sequence_type(mixed_path)
+    assert mixed_report.detected_type == "mixed"
+    assert mixed_report.selected_type is None
+    assert mixed_report.compatible_types == []
+    assert mixed_report.confidence == "blocked"
+
+    invalid_report = detect_fasta_sequence_type(
+        fixture("alignments/example_sequences_invalid_input.fasta")
+    )
+    assert invalid_report.detected_type == "invalid"
+    assert invalid_report.selected_type is None
+    assert invalid_report.invalid_record_count == 1
+
+
 def test_validate_fasta_input_reports_real_input_problems() -> None:
     report = validate_fasta_input(
         fixture("alignments/example_sequences_invalid_input.fasta"),
@@ -46,6 +116,8 @@ def test_validate_fasta_input_reports_real_input_problems() -> None:
     )
 
     assert report.summary.sequence_count == 4
+    assert report.sequence_type_report.detected_type == "invalid"
+    assert report.sequence_type_report.selected_type is None
     assert report.summary.empty_sequence_count == 1
     assert report.summary.min_sequence_length == 0
     assert report.summary.max_sequence_length == 24
@@ -64,6 +136,18 @@ def test_validate_fasta_input_reports_real_input_problems() -> None:
         "input contains empty sequences",
         "input contains sequence length outliers",
     ]
+
+
+def test_validate_fasta_input_surfaces_automatic_sequence_type_warning() -> None:
+    report = validate_fasta_input(fixture("alignments/example_sequences_raw.fasta"))
+
+    assert report.summary.inferred_alphabet == "dna"
+    assert report.sequence_type_report.detected_type == "dna"
+    assert report.sequence_type_report.confidence == "medium"
+    assert (
+        "automatic sequence type defaults to dna from nucleotide-like characters "
+        "that remain protein-compatible by alphabet alone"
+    ) in report.warnings
 
 
 def test_repair_fasta_input_normalizes_ids_and_removes_invalid_records() -> None:

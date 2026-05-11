@@ -38,6 +38,7 @@ from bijux_phylogenetics.core.alignment import (
     FastaIdentifierRepair,
     FastaIllegalCharacter,
     FastaInputSummary,
+    FastaSequenceTypeReport,
     FastaInputValidationReport,
     FastaRemovedRecord,
     FastaRepairReport,
@@ -77,6 +78,15 @@ _NUCLEOTIDE_GC_CHARACTERS = {"G", "C", "g", "c"}
 _DNA_CANONICAL = ("A", "C", "G", "T")
 _RNA_CANONICAL = ("A", "C", "G", "U")
 _PROTEIN_CHARACTERS = set("ABCDEFGHIKLMNPQRSTVWXYZabcdefghiklmnpqrstvwxyz*")
+_DNA_CHARACTERS_UPPER = {character.upper() for character in _DNA_CHARACTERS}
+_RNA_CHARACTERS_UPPER = {character.upper() for character in _RNA_CHARACTERS}
+_PROTEIN_CHARACTERS_UPPER = {character.upper() for character in _PROTEIN_CHARACTERS}
+_SUPPORTED_SEQUENCE_CHARACTERS_UPPER = (
+    _DNA_CHARACTERS_UPPER | _RNA_CHARACTERS_UPPER | _PROTEIN_CHARACTERS_UPPER
+)
+_PROTEIN_EXCLUSIVE_CHARACTERS_UPPER = _PROTEIN_CHARACTERS_UPPER - (
+    _DNA_CHARACTERS_UPPER | _RNA_CHARACTERS_UPPER
+)
 _PROTEIN_CANONICAL = tuple("ACDEFGHIKLMNPQRSTVWY")
 _DNA_BASES = {"A", "C", "G", "T"}
 _DNA_AMBIGUITY_UPPER = {"N", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V"}
@@ -210,6 +220,200 @@ def _observed_residues(records: list[AlignmentRecord]) -> list[str]:
         for residue in record.sequence
         if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
     ]
+
+
+def _ordered_sequence_types(types: set[AlignmentAlphabet]) -> list[AlignmentAlphabet]:
+    return [alphabet for alphabet in ("dna", "rna", "protein") if alphabet in types]
+
+
+def _observed_raw_sequence_characters(record: AlignmentRecord) -> set[str]:
+    return {
+        residue.upper()
+        for residue in record.sequence
+        if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
+    }
+
+
+def _compatible_raw_sequence_types(record: AlignmentRecord) -> set[AlignmentAlphabet]:
+    observed = _observed_raw_sequence_characters(record)
+    if not observed:
+        return {"dna", "rna", "protein"}
+    if observed - _SUPPORTED_SEQUENCE_CHARACTERS_UPPER:
+        return set()
+
+    compatible: set[AlignmentAlphabet] = set()
+    if observed <= _DNA_CHARACTERS_UPPER:
+        compatible.add("dna")
+    if observed <= _RNA_CHARACTERS_UPPER:
+        compatible.add("rna")
+    if observed <= _PROTEIN_CHARACTERS_UPPER:
+        compatible.add("protein")
+    return compatible
+
+
+def detect_fasta_sequence_type(
+    path: Path,
+    *,
+    records: list[AlignmentRecord] | None = None,
+) -> FastaSequenceTypeReport:
+    """Classify raw FASTA records as DNA, RNA, protein, mixed, or invalid."""
+    rows = load_permissive_fasta_records(path) if records is None else records
+    shared_compatible: set[AlignmentAlphabet] | None = None
+    thymine_record_count = 0
+    uracil_record_count = 0
+    protein_signal_record_count = 0
+    invalid_record_count = 0
+
+    for record in rows:
+        observed = _observed_raw_sequence_characters(record)
+        compatible = _compatible_raw_sequence_types(record)
+        if compatible:
+            if shared_compatible is None:
+                shared_compatible = set(compatible)
+            else:
+                shared_compatible &= compatible
+        else:
+            invalid_record_count += 1
+        if "T" in observed:
+            thymine_record_count += 1
+        if "U" in observed:
+            uracil_record_count += 1
+        if observed & _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER:
+            protein_signal_record_count += 1
+
+    warnings: list[str] = []
+    compatible_types = (
+        []
+        if shared_compatible is None
+        else _ordered_sequence_types(shared_compatible)
+    )
+    if invalid_record_count:
+        warnings.append("input contains unsupported sequence characters")
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="invalid",
+            selected_type=None,
+            compatible_types=[],
+            confidence="blocked",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=invalid_record_count,
+            note=(
+                "one or more records contain characters outside the supported DNA, "
+                "RNA, and protein alphabets"
+            ),
+            warnings=warnings,
+        )
+
+    if not compatible_types:
+        warnings.append("input contains conflicting sequence-type signals")
+        if thymine_record_count and uracil_record_count:
+            note = (
+                "records mix thymine-bearing and uracil-bearing sequences, so one "
+                "shared nucleotide workflow is not defensible"
+            )
+        else:
+            note = (
+                "records do not share one compatible DNA, RNA, or protein type "
+                "without an explicit caller override"
+            )
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="mixed",
+            selected_type=None,
+            compatible_types=[],
+            confidence="blocked",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note=note,
+            warnings=warnings,
+        )
+
+    if protein_signal_record_count:
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="protein",
+            selected_type="protein",
+            compatible_types=compatible_types,
+            confidence="high",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note="protein-exclusive residues were observed in the raw FASTA input",
+            warnings=warnings,
+        )
+
+    if uracil_record_count and not thymine_record_count:
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="rna",
+            selected_type="rna",
+            compatible_types=compatible_types,
+            confidence="high",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note="uracil was observed without thymine, which strongly supports RNA",
+            warnings=warnings,
+        )
+
+    if "dna" in compatible_types:
+        confidence = "medium" if thymine_record_count else "low"
+        if confidence == "medium":
+            warnings.append(
+                "automatic sequence type defaults to dna from nucleotide-like characters that remain protein-compatible by alphabet alone"
+            )
+            note = (
+                "thymine was observed and no protein-exclusive residues were found, "
+                "so the raw input defaults to DNA"
+            )
+        else:
+            warnings.append(
+                "automatic sequence type defaults to dna from characters shared by DNA, RNA, and protein alphabets"
+            )
+            note = (
+                "the raw input uses only characters shared across multiple "
+                "alphabets, so DNA is chosen as the default but an explicit "
+                "sequence type remains safer when the biological context is unclear"
+            )
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="dna",
+            selected_type="dna",
+            compatible_types=compatible_types,
+            confidence=confidence,
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note=note,
+            warnings=warnings,
+        )
+
+    return FastaSequenceTypeReport(
+        path=path,
+        record_count=len(rows),
+        detected_type="unknown",
+        selected_type=None,
+        compatible_types=compatible_types,
+        confidence="blocked",
+        thymine_record_count=thymine_record_count,
+        uracil_record_count=uracil_record_count,
+        protein_signal_record_count=protein_signal_record_count,
+        invalid_record_count=0,
+        note="the raw input could not be resolved to a supported sequence type",
+        warnings=["input sequence type could not be inferred confidently"],
+    )
 
 
 def infer_alignment_alphabet(records: list[AlignmentRecord]) -> AlignmentAlphabet:
@@ -2196,10 +2400,15 @@ def summarize_fasta_input(
     """Summarize a FASTA input without assuming aligned equal-length sequences."""
     rows = load_permissive_fasta_records(path) if records is None else records
     lengths = [len(record.sequence) for record in rows]
+    sequence_type_report = detect_fasta_sequence_type(path, records=list(rows))
     inferred_alphabet = (
         sequence_type
         if sequence_type is not None
-        else infer_alignment_alphabet(list(rows))
+        else (
+            "unknown"
+            if sequence_type_report.selected_type is None
+            else sequence_type_report.selected_type
+        )
     )
     return FastaInputSummary(
         path=path,
@@ -2274,6 +2483,7 @@ def validate_fasta_input(
 ) -> FastaInputValidationReport:
     """Validate a FASTA input before alignment or engine execution."""
     records = load_permissive_fasta_records(path)
+    sequence_type_report = detect_fasta_sequence_type(path, records=records)
     summary = summarize_fasta_input(
         path,
         records=records,
@@ -2295,16 +2505,26 @@ def validate_fasta_input(
         warnings.append("input contains empty sequences")
     if length_outliers:
         warnings.append("input contains sequence length outliers")
+    warnings.extend(sequence_type_report.warnings)
+    if (
+        sequence_type is not None
+        and sequence_type_report.selected_type is not None
+        and sequence_type_report.selected_type != sequence_type
+    ):
+        warnings.append(
+            "declared sequence type overrides automatic raw sequence classification"
+        )
     if summary.inferred_alphabet == "unknown":
         warnings.append("input sequence type could not be inferred confidently")
     return FastaInputValidationReport(
         path=path,
         summary=summary,
+        sequence_type_report=sequence_type_report,
         duplicate_identifiers=duplicate_identifiers,
         illegal_characters=illegal_characters,
         empty_sequences=empty_sequences,
         length_outliers=length_outliers,
-        warnings=warnings,
+        warnings=list(dict.fromkeys(warnings)),
     )
 
 

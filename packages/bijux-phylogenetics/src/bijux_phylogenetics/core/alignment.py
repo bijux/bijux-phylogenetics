@@ -5,6 +5,8 @@ from pathlib import Path
 
 AlignmentAlphabet = str
 AlignmentState = str
+RawSequenceType = str
+SequenceTypeConfidence = str
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +43,24 @@ class FastaInputSummary:
     median_sequence_length: float
     total_residue_count: int
     inferred_alphabet: AlignmentAlphabet
+
+
+@dataclass(frozen=True, slots=True)
+class FastaSequenceTypeReport:
+    """Automatic raw-sequence type classification for one FASTA input."""
+
+    path: Path
+    record_count: int
+    detected_type: RawSequenceType
+    selected_type: AlignmentAlphabet | None
+    compatible_types: list[AlignmentAlphabet]
+    confidence: SequenceTypeConfidence
+    thymine_record_count: int
+    uracil_record_count: int
+    protein_signal_record_count: int
+    invalid_record_count: int
+    note: str
+    warnings: list[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,6 +115,7 @@ class FastaInputValidationReport:
 
     path: Path
     summary: FastaInputSummary
+    sequence_type_report: FastaSequenceTypeReport
     duplicate_identifiers: list[FastaDuplicateIdentifier]
     illegal_characters: list[FastaIllegalCharacter]
     empty_sequences: list[FastaEmptySequence]
