@@ -4975,7 +4975,7 @@ def test_cli_alignment_link_strict_mode_returns_typed_error(capsys) -> None:
     assert payload["errors"][0]["code"] == AlignmentTaxonMismatchError.code
 
 
-def test_cli_alignment_quality_json_output(capsys) -> None:
+def test_cli_alignment_quality_json_output_surfaces_suspicion_metrics(capsys) -> None:
     exit_code = main(
         [
             "alignment",
