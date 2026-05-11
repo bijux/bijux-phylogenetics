@@ -215,7 +215,11 @@ prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree"
 prefix.parent.mkdir(parents=True, exist_ok=True)
 if "-m" in args and args[args.index("-m") + 1] == "MF":
     prefix.with_suffix(".iqtree").write_text(
-        "Best-fit model according to BIC: GTR+G\\nWARNING: model search used a fixture backend\\n",
+        "Best-fit model according to BIC: GTR+G\\nLog-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
         encoding="utf-8",
     )
     prefix.with_suffix(".model").write_text("Best-fit model: GTR+G\\n", encoding="utf-8")
@@ -224,6 +228,10 @@ if "-m" in args and args[args.index("-m") + 1] == "MF":
 
 if "-con" in args:
     prefix.with_suffix(".contree").write_text("((A:0.1,B:0.1)90:0.2,(C:0.1,D:0.1)85:0.2);\\n", encoding="utf-8")
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture consensus log\\n",
+        encoding="utf-8",
+    )
     print("warning: iqtree fixture consensus", file=sys.stderr)
     raise SystemExit(0)
 
@@ -233,12 +241,26 @@ if "-bb" in args:
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
     )
-    prefix.with_suffix(".iqtree").write_text("Bootstrap analysis completed\\n", encoding="utf-8")
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -234.567\\nBootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
     print("warning: iqtree fixture bootstrap", file=sys.stderr)
     raise SystemExit(0)
 
 prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
-prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -345.678\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
+    encoding="utf-8",
+)
 print("warning: iqtree fixture tree inference", file=sys.stderr)
 """,
     )
@@ -293,7 +315,14 @@ if "--version" in args:
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
 prefix.with_suffix(".treefile").write_text({tree_newick!r} + "\\n", encoding="utf-8")
-prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -456.789\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -456.789\\n",
+    encoding="utf-8",
+)
 print("warning: iqtree fixture tree inference", file=sys.stderr)
 """,
     )
@@ -638,6 +667,11 @@ def test_run_model_selection_supports_partitioned_alignment_and_writes_summary(
     assert str(
         fixture("alignments/example_multilocus_alignment.fasta").resolve()
     ) in report.run.command
+    assert report.output_paths["iqtree_log"].exists()
+    assert report.selected_model == "GTR+G"
+    assert report.log_likelihood == pytest.approx(-123.456)
+    assert report.iqtree_summary is not None
+    assert report.iqtree_summary.support_value_count == 0
     summary_path = report.output_paths["partition_summary"]
     assert summary_path.exists()
     assert "gene_beta" in summary_path.read_text(encoding="utf-8")
@@ -699,6 +733,18 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert fast_report.run.warning_lines == [
         "warning: fasttree fixture approximate support only"
     ]
+    assert ml_report.output_paths["iqtree_log"].exists()
+    assert bootstrap_report.output_paths["iqtree_log"].exists()
+    assert consensus_report.output_paths["iqtree_log"].exists()
+    assert ml_report.log_likelihood == pytest.approx(-345.678)
+    assert bootstrap_report.log_likelihood == pytest.approx(-234.567)
+    assert consensus_report.log_likelihood is None
+    assert ml_report.iqtree_summary is not None
+    assert ml_report.iqtree_summary.support_value_count == 0
+    assert bootstrap_report.iqtree_summary is not None
+    assert bootstrap_report.iqtree_summary.support_value_count == 2
+    assert consensus_report.iqtree_summary is not None
+    assert consensus_report.iqtree_summary.support_value_count == 2
 
 
 def test_run_ml_and_bootstrap_support_mixed_partition_datatypes(tmp_path: Path) -> None:
@@ -740,6 +786,10 @@ def test_run_ml_and_bootstrap_support_mixed_partition_datatypes(tmp_path: Path) 
     )
     assert "-p" in bootstrap_report.run.command
     assert "-s" not in bootstrap_report.run.command
+    assert ml_report.selected_model == "GTR+G"
+    assert bootstrap_report.selected_model == "GTR+G"
+    assert ml_report.log_likelihood == pytest.approx(-345.678)
+    assert bootstrap_report.log_likelihood == pytest.approx(-234.567)
 
 
 def test_run_ml_rejects_fixed_model_for_mixed_partition_datatypes(

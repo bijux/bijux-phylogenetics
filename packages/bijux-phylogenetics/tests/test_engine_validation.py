@@ -52,7 +52,14 @@ if "--version" in args:
 
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
-prefix.with_suffix(".iqtree").write_text("Best-fit model according to BIC: GTR+G\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model according to BIC: GTR+G\\nLog-likelihood of the tree: -123.456\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
+    encoding="utf-8",
+)
 prefix.with_suffix(".model").write_text("Best-fit model: GTR+G\\n", encoding="utf-8")
 raise SystemExit(0)
 """,
@@ -74,7 +81,14 @@ if "--version" in args:
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
 prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
-prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -345.678\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
+    encoding="utf-8",
+)
 raise SystemExit(0)
 """,
     )
@@ -95,7 +109,14 @@ if "--version" in args:
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
 prefix.with_suffix(".treefile").write_text({tree_newick!r} + "\\n", encoding="utf-8")
-prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: {model}\\nLog-likelihood of the tree: -456.789\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -456.789\\n",
+    encoding="utf-8",
+)
 prefix.with_suffix(".model").write_text("Best-fit model: {model}\\n", encoding="utf-8")
 raise SystemExit(0)
 """,

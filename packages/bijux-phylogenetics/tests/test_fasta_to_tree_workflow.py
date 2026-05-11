@@ -138,7 +138,11 @@ is_protein = "-st" in args and args[args.index("-st") + 1] == "AA"
 selected_model = "LG+G" if is_protein else "GTR+G"
 if "-m" in args and args[args.index("-m") + 1] == "MF":
     prefix.with_suffix(".iqtree").write_text(
-        f"Best-fit model according to BIC: {selected_model}\\nWARNING: model search used a fixture backend\\n",
+        f"Best-fit model according to BIC: {selected_model}\\nLog-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
         encoding="utf-8",
     )
     prefix.with_suffix(".model").write_text(
@@ -158,7 +162,11 @@ if "-bb" in args:
         encoding="utf-8",
     )
     prefix.with_suffix(".iqtree").write_text(
-        "Bootstrap analysis completed\\n",
+        f"Best-fit model: {selected_model}\\nLog-likelihood of the tree: -234.567\\nBootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
         encoding="utf-8",
     )
     print("warning: iqtree fixture bootstrap", file=sys.stderr)
@@ -169,7 +177,11 @@ prefix.with_suffix(".treefile").write_text(
     encoding="utf-8",
 )
 prefix.with_suffix(".iqtree").write_text(
-    "Tree inference completed\\n",
+    f"Best-fit model: {selected_model}\\nLog-likelihood of the tree: -345.678\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
     encoding="utf-8",
 )
 print("warning: iqtree fixture tree inference", file=sys.stderr)

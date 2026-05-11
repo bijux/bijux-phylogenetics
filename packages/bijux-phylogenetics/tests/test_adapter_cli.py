@@ -125,7 +125,11 @@ prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree"
 prefix.parent.mkdir(parents=True, exist_ok=True)
 if "-m" in args and args[args.index("-m") + 1] == "MF":
     prefix.with_suffix(".iqtree").write_text(
-        "Best-fit model according to BIC: GTR+G\\nWARNING: model search used a fixture backend\\n",
+        "Best-fit model according to BIC: GTR+G\\nLog-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
         encoding="utf-8",
     )
     prefix.with_suffix(".model").write_text("Best-fit model: GTR+G\\n", encoding="utf-8")
@@ -138,12 +142,26 @@ if "-bb" in args:
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
     )
-    prefix.with_suffix(".iqtree").write_text("Bootstrap analysis completed\\n", encoding="utf-8")
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -234.567\\nBootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
     print("warning: iqtree fixture bootstrap", file=sys.stderr)
     raise SystemExit(0)
 
 prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
-prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -345.678\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
+    encoding="utf-8",
+)
 print("warning: iqtree fixture tree inference", file=sys.stderr)
 """,
     )

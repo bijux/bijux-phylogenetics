@@ -50,10 +50,21 @@ from .common import (
     resolve_engine_executable,
     write_engine_manifest,
 )
+from .validation import summarize_bootstrap_support_distribution
 
 _BEST_MODEL_PATTERN = re.compile(
     r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
     re.IGNORECASE,
+)
+_LOG_LIKELIHOOD_PATTERNS = (
+    re.compile(
+        r"(?:log-likelihood(?: of the tree)?|log likelihood)\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"best score found\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
+        re.IGNORECASE,
+    ),
 )
 _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
     "auto": ("--auto",),
@@ -83,9 +94,30 @@ class EngineWorkflowReport:
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
     selected_model: str | None = None
+    log_likelihood: float | None = None
+    iqtree_summary: IqtreeWorkflowSummary | None = None
     trimming_summary: AlignmentTrimmingSummary | None = None
     resumed: bool = False
     notes: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class IqtreeSupportValue:
+    node: str
+    descendant_taxa: list[str]
+    support: float
+    support_fraction: float
+    is_backbone: bool
+
+
+@dataclass(slots=True)
+class IqtreeWorkflowSummary:
+    selected_model: str | None
+    log_likelihood: float | None
+    support_value_count: int
+    minimum_support: float | None
+    maximum_support: float | None
+    support_values: list[IqtreeSupportValue] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -460,6 +492,53 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
         selected_model=None
         if payload.get("selected_model") is None
         else str(payload["selected_model"]),
+        log_likelihood=(
+            None
+            if payload.get("log_likelihood") is None
+            else float(payload["log_likelihood"])
+        ),
+        iqtree_summary=(
+            None
+            if payload.get("iqtree_summary") is None
+            else IqtreeWorkflowSummary(
+                selected_model=(
+                    None
+                    if dict(payload["iqtree_summary"]).get("selected_model") is None
+                    else str(dict(payload["iqtree_summary"])["selected_model"])
+                ),
+                log_likelihood=(
+                    None
+                    if dict(payload["iqtree_summary"]).get("log_likelihood") is None
+                    else float(dict(payload["iqtree_summary"])["log_likelihood"])
+                ),
+                support_value_count=int(
+                    dict(payload["iqtree_summary"])["support_value_count"]
+                ),
+                minimum_support=(
+                    None
+                    if dict(payload["iqtree_summary"]).get("minimum_support") is None
+                    else float(dict(payload["iqtree_summary"])["minimum_support"])
+                ),
+                maximum_support=(
+                    None
+                    if dict(payload["iqtree_summary"]).get("maximum_support") is None
+                    else float(dict(payload["iqtree_summary"])["maximum_support"])
+                ),
+                support_values=[
+                    IqtreeSupportValue(
+                        node=str(dict(item)["node"]),
+                        descendant_taxa=[
+                            str(taxon)
+                            for taxon in list(dict(item)["descendant_taxa"])
+                        ],
+                        support=float(dict(item)["support"]),
+                        support_fraction=float(dict(item)["support_fraction"]),
+                        is_backbone=bool(dict(item)["is_backbone"]),
+                    )
+                    for item in list(dict(payload["iqtree_summary"])["support_values"])
+                ],
+            )
+        ),
         trimming_summary=None
         if payload.get("trimming_summary") is None
         else AlignmentTrimmingSummary(
@@ -601,6 +680,94 @@ def _parse_best_model_artifact(prefix_path: Path) -> str | None:
         if match is not None:
             return match.group("model")
     return None
+
+
+def _parse_log_likelihood_text(text: str) -> float | None:
+    for pattern in _LOG_LIKELIHOOD_PATTERNS:
+        match = pattern.search(text)
+        if match is None:
+            continue
+        try:
+            return float(match.group("value"))
+        except ValueError:
+            continue
+    return None
+
+
+def _parse_log_likelihood_artifact(prefix_path: Path) -> float | None:
+    for candidate in (
+        prefix_path.with_suffix(".iqtree"),
+        prefix_path.with_suffix(".log"),
+    ):
+        if not candidate.exists():
+            continue
+        log_likelihood = _parse_log_likelihood_text(
+            candidate.read_text(encoding="utf-8", errors="replace")
+        )
+        if log_likelihood is not None:
+            return log_likelihood
+    return None
+
+
+def _existing_iqtree_outputs(
+    prefix_path: Path,
+    *,
+    include_tree: bool = False,
+    include_bootstrap: bool = False,
+    include_consensus: bool = False,
+) -> dict[str, Path]:
+    outputs: dict[str, Path] = {}
+    for key, candidate in (
+        ("iqtree_report", prefix_path.with_suffix(".iqtree")),
+        ("iqtree_log", prefix_path.with_suffix(".log")),
+    ):
+        if candidate.exists():
+            outputs[key] = candidate
+    tree_candidate = prefix_path.with_suffix(".treefile")
+    if include_tree and tree_candidate.exists():
+        outputs["tree"] = tree_candidate
+    bootstrap_candidate = prefix_path.with_suffix(".ufboot")
+    if include_bootstrap and bootstrap_candidate.exists():
+        outputs["bootstrap_trees"] = bootstrap_candidate
+    consensus_candidate = prefix_path.with_suffix(".contree")
+    if include_consensus and consensus_candidate.exists():
+        outputs["consensus_tree"] = consensus_candidate
+    return outputs
+
+
+def _build_iqtree_summary(
+    prefix_path: Path,
+    *,
+    default_selected_model: str | None,
+    support_tree_path: Path | None = None,
+) -> IqtreeWorkflowSummary:
+    selected_model = _parse_best_model_artifact(prefix_path) or default_selected_model
+    log_likelihood = _parse_log_likelihood_artifact(prefix_path)
+    support_values: list[IqtreeSupportValue] = []
+    minimum_support: float | None = None
+    maximum_support: float | None = None
+    if support_tree_path is not None and support_tree_path.exists():
+        support_summary = summarize_bootstrap_support_distribution(support_tree_path)
+        support_values = [
+            IqtreeSupportValue(
+                node=node.node,
+                descendant_taxa=list(node.descendant_taxa),
+                support=node.support,
+                support_fraction=node.support_fraction,
+                is_backbone=node.is_backbone,
+            )
+            for node in support_summary.nodes
+        ]
+        minimum_support = support_summary.minimum_support
+        maximum_support = support_summary.maximum_support
+    return IqtreeWorkflowSummary(
+        selected_model=selected_model,
+        log_likelihood=log_likelihood,
+        support_value_count=len(support_values),
+        minimum_support=minimum_support,
+        maximum_support=maximum_support,
+        support_values=support_values,
+    )
 
 
 def run_multiple_sequence_alignment(
@@ -804,6 +971,7 @@ def run_model_selection(
     version = read_engine_version("iqtree", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
     iqtree_report_path = prefix_path.with_suffix(".iqtree")
+    iqtree_log_path = prefix_path.with_suffix(".log")
     prepared_partitions = (
         None
         if partition_path is None
@@ -838,13 +1006,20 @@ def run_model_selection(
         work_dir=out_dir,
         stdout_path=prefix_path.with_suffix(".stdout.log"),
         stderr_path=prefix_path.with_suffix(".stderr.log"),
-        output_paths={"iqtree_report": iqtree_report_path},
+        output_paths={
+            "iqtree_report": iqtree_report_path,
+            "iqtree_log": iqtree_log_path,
+        },
     )
-    selected_model = _parse_best_model_artifact(prefix_path)
-    if selected_model is None:
+    iqtree_summary = _build_iqtree_summary(
+        prefix_path,
+        default_selected_model=None,
+    )
+    if iqtree_summary.selected_model is None:
         raise EngineWorkflowError(
             f"iqtree model-selection did not expose a parsable best-fit model in {iqtree_report_path}"
         )
+    selected_model = iqtree_summary.selected_model
     selected_model_path = prefix_path.with_suffix(".selected-model.txt")
     selected_model_path.write_text(selected_model + "\n", encoding="utf-8")
     manifest_path = prefix_path.with_suffix(".manifest.json")
@@ -859,10 +1034,10 @@ def run_model_selection(
         output_paths={
             **(
                 {}
-                if prepared_partitions is None
-                else prepared_partitions.output_paths
-            ),
-            "iqtree_report": iqtree_report_path,
+            if prepared_partitions is None
+            else prepared_partitions.output_paths
+        ),
+            **_existing_iqtree_outputs(prefix_path),
             "selected_model": selected_model_path,
         },
         run=run,
@@ -872,6 +1047,8 @@ def run_model_selection(
         ),
         output_checksums={},
         selected_model=selected_model,
+        log_likelihood=iqtree_summary.log_likelihood,
+        iqtree_summary=iqtree_summary,
         notes=[
             *(
                 []
@@ -881,6 +1058,13 @@ def run_model_selection(
             f"iqtree random seed: {seed}",
             f"iqtree threads: {threads}",
             "best-fit substitution model parsed from engine output",
+            *(
+                []
+                if iqtree_summary.log_likelihood is None
+                else [
+                    "model-selection workflow exposed a parsable log-likelihood score"
+                ]
+            ),
         ],
     )
     return _persist_workflow_report(report)
@@ -925,6 +1109,7 @@ def run_maximum_likelihood_tree_inference(
         )
     tree_path = prefix_path.with_suffix(".treefile")
     report_path = prefix_path.with_suffix(".iqtree")
+    log_path = prefix_path.with_suffix(".log")
     manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [
         resolved,
@@ -968,9 +1153,15 @@ def run_maximum_likelihood_tree_inference(
         output_paths={
             "tree": tree_path,
             "iqtree_report": report_path,
+            "iqtree_log": log_path,
         },
     )
     _validate_tree_output(tree_path)
+    iqtree_summary = _build_iqtree_summary(
+        prefix_path,
+        default_selected_model=model,
+        support_tree_path=tree_path,
+    )
     report = EngineWorkflowReport(
         workflow="maximum-likelihood-tree",
         engine_name="iqtree",
@@ -982,11 +1173,10 @@ def run_maximum_likelihood_tree_inference(
         output_paths={
             **(
                 {}
-                if prepared_partitions is None
-                else prepared_partitions.output_paths
-            ),
-            "tree": tree_path,
-            "iqtree_report": report_path,
+            if prepared_partitions is None
+            else prepared_partitions.output_paths
+        ),
+            **_existing_iqtree_outputs(prefix_path, include_tree=True),
         },
         run=run,
         manifest_path=manifest_path,
@@ -994,7 +1184,9 @@ def run_maximum_likelihood_tree_inference(
             [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_checksums={},
-        selected_model=model,
+        selected_model=iqtree_summary.selected_model,
+        log_likelihood=iqtree_summary.log_likelihood,
+        iqtree_summary=iqtree_summary,
         notes=[
             *(
                 []
@@ -1004,6 +1196,18 @@ def run_maximum_likelihood_tree_inference(
             f"iqtree random seed: {seed}",
             f"iqtree threads: {threads}",
             "maximum-likelihood tree validated as parseable Newick output",
+            *(
+                []
+                if iqtree_summary.log_likelihood is None
+                else ["log-likelihood parsed from iqtree inference artifacts"]
+            ),
+            *(
+                []
+                if iqtree_summary.support_value_count == 0
+                else [
+                    "support values parsed from the inferred maximum-likelihood tree"
+                ]
+            ),
         ],
     )
     return _persist_workflow_report(report)
@@ -1053,6 +1257,7 @@ def run_bootstrap_support_estimation(
     support_tree_path = prefix_path.with_suffix(".treefile")
     bootstrap_tree_path = prefix_path.with_suffix(".ufboot")
     report_path = prefix_path.with_suffix(".iqtree")
+    log_path = prefix_path.with_suffix(".log")
     manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [
         resolved,
@@ -1100,11 +1305,17 @@ def run_bootstrap_support_estimation(
             "support_tree": support_tree_path,
             "bootstrap_trees": bootstrap_tree_path,
             "iqtree_report": report_path,
+            "iqtree_log": log_path,
         },
     )
     _validate_tree_output(support_tree_path)
     if not bootstrap_tree_path.read_text(encoding="utf-8").strip():
         raise EngineWorkflowError(f"bootstrap tree set is empty: {bootstrap_tree_path}")
+    iqtree_summary = _build_iqtree_summary(
+        prefix_path,
+        default_selected_model=model,
+        support_tree_path=support_tree_path,
+    )
     report = EngineWorkflowReport(
         workflow="bootstrap-support",
         engine_name="iqtree",
@@ -1116,12 +1327,16 @@ def run_bootstrap_support_estimation(
         output_paths={
             **(
                 {}
-                if prepared_partitions is None
-                else prepared_partitions.output_paths
+            if prepared_partitions is None
+            else prepared_partitions.output_paths
+        ),
+            **_existing_iqtree_outputs(
+                prefix_path,
+                include_tree=False,
+                include_bootstrap=True,
+                include_consensus=True,
             ),
             "support_tree": support_tree_path,
-            "bootstrap_trees": bootstrap_tree_path,
-            "iqtree_report": report_path,
         },
         run=run,
         manifest_path=manifest_path,
@@ -1129,7 +1344,9 @@ def run_bootstrap_support_estimation(
             [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_checksums={},
-        selected_model=model,
+        selected_model=iqtree_summary.selected_model,
+        log_likelihood=iqtree_summary.log_likelihood,
+        iqtree_summary=iqtree_summary,
         notes=[
             *(
                 []
@@ -1139,6 +1356,18 @@ def run_bootstrap_support_estimation(
             f"iqtree random seed: {seed}",
             f"iqtree threads: {threads}",
             "bootstrap tree set retained for downstream consensus construction",
+            *(
+                []
+                if iqtree_summary.log_likelihood is None
+                else ["log-likelihood parsed from iqtree bootstrap inference artifacts"]
+            ),
+            *(
+                []
+                if iqtree_summary.support_value_count == 0
+                else [
+                    "support values parsed from the bootstrap-supported tree artifact"
+                ]
+            ),
         ],
     )
     return _persist_workflow_report(report)
@@ -1163,6 +1392,7 @@ def run_bootstrap_consensus_tree(
     version = read_engine_version("iqtree", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
     consensus_tree_path = prefix_path.with_suffix(".contree")
+    log_path = prefix_path.with_suffix(".log")
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="bootstrap-consensus",
@@ -1180,20 +1410,39 @@ def run_bootstrap_consensus_tree(
         work_dir=out_dir,
         stdout_path=prefix_path.with_suffix(".stdout.log"),
         stderr_path=prefix_path.with_suffix(".stderr.log"),
-        output_paths={"consensus_tree": consensus_tree_path},
+        output_paths={
+            "consensus_tree": consensus_tree_path,
+            "iqtree_log": log_path,
+        },
     )
     _validate_tree_output(consensus_tree_path)
     manifest_path = prefix_path.with_suffix(".manifest.json")
+    iqtree_summary = _build_iqtree_summary(
+        prefix_path,
+        default_selected_model=None,
+        support_tree_path=consensus_tree_path,
+    )
     report = EngineWorkflowReport(
         workflow="bootstrap-consensus",
         engine_name="iqtree",
         input_paths=[bootstrap_trees_path],
-        output_paths={"consensus_tree": consensus_tree_path},
+        output_paths=_existing_iqtree_outputs(
+            prefix_path, include_consensus=True
+        ),
         run=run,
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([bootstrap_trees_path]),
         output_checksums={},
-        notes=["consensus tree validated as parseable Newick output"],
+        log_likelihood=iqtree_summary.log_likelihood,
+        iqtree_summary=iqtree_summary,
+        notes=[
+            "consensus tree validated as parseable Newick output",
+            *(
+                []
+                if iqtree_summary.support_value_count == 0
+                else ["support values parsed from the bootstrap consensus tree"]
+            ),
+        ],
     )
     return _persist_workflow_report(report)
 
