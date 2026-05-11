@@ -35,6 +35,9 @@ def _matrix_tsv(report: Any) -> str:
                 "covered_locus_count",
                 "total_locus_count",
                 "locus_coverage_fraction",
+                "observed_site_count",
+                "total_site_count",
+                "site_coverage_fraction",
                 "low_coverage",
             ]
         )
@@ -48,6 +51,9 @@ def _matrix_tsv(report: Any) -> str:
                 row.covered_locus_count,
                 row.total_locus_count,
                 row.locus_coverage_fraction,
+                row.observed_site_count,
+                row.total_site_count,
+                row.site_coverage_fraction,
                 row.low_coverage,
             ]
         )

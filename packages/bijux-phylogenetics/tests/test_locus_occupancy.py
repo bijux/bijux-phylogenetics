@@ -89,13 +89,16 @@ def test_build_locus_occupancy_report_tracks_taxon_and_locus_coverage() -> None:
     assert report.locus_count == 3
     assert report.assigned_site_count == 12
     assert report.unassigned_site_count == 0
+    assert report.minimum_locus_occupancy == 0.0
     assert taxon_rows["TaxonA"].locus_coverage_fraction == 1.0
+    assert taxon_rows["TaxonB"].site_coverage_fraction == 7 / 12
     assert taxon_rows["TaxonB"].locus_coverage_fraction == 2 / 3
     assert taxon_rows["TaxonC"].locus_coverage_fraction == 1 / 3
     assert set(report.low_coverage_taxa) == {"TaxonC", "TaxonD", "TaxonE"}
     assert locus_rows["gene_alpha"].taxon_coverage_fraction == 0.6
     assert locus_rows["gene_beta"].taxon_coverage_fraction == 0.6
     assert locus_rows["gene_gamma"].taxon_coverage_fraction == 0.4
+    assert locus_rows["gene_gamma"].site_coverage_fraction == 0.4
     assert report.low_coverage_loci == ["gene_gamma"]
     assert taxon_rows["TaxonA"].occupancies == {
         "gene_alpha": 1.0,
@@ -121,6 +124,29 @@ def test_build_locus_occupancy_report_from_records_reuses_loaded_inputs() -> Non
     assert report.partition_path == partition_path
     assert report.taxon_count == 5
     assert report.locus_count == 3
+
+
+def test_build_locus_occupancy_report_supports_minimum_cell_occupancy() -> None:
+    report = build_locus_occupancy_report(
+        fixture("alignments/example_multilocus_partial_occupancy.fasta"),
+        fixture("alignments/example_multilocus_partial_occupancy_partitions.txt"),
+        taxon_coverage_threshold=0.5,
+        locus_coverage_threshold=0.75,
+        minimum_locus_occupancy=0.75,
+    )
+
+    taxon_rows = {row.taxon: row for row in report.taxa}
+    locus_rows = {row.locus_name: row for row in report.loci}
+
+    assert report.minimum_locus_occupancy == 0.75
+    assert taxon_rows["TaxonB"].occupancies["gene_gamma"] == 0.25
+    assert taxon_rows["TaxonB"].covered_locus_count == 2
+    assert taxon_rows["TaxonB"].site_coverage_fraction == 0.75
+    assert report.low_coverage_taxa == ["TaxonC", "TaxonD", "TaxonE"]
+    assert locus_rows["gene_gamma"].covered_taxon_count == 2
+    assert locus_rows["gene_gamma"].taxon_coverage_fraction == 0.4
+    assert locus_rows["gene_gamma"].site_coverage_fraction == 0.45
+    assert report.low_coverage_loci == ["gene_alpha", "gene_gamma"]
 
 
 def test_filter_locus_occupancy_can_remove_low_coverage_loci_only() -> None:
@@ -162,6 +188,47 @@ def test_filter_locus_occupancy_iterates_until_taxa_and_loci_stabilize() -> None
     assert filter_report.iterations == 2
     assert filter_report.final_report.low_coverage_taxa == []
     assert filter_report.final_report.low_coverage_loci == []
+
+
+def test_filter_locus_occupancy_records_iteration_history() -> None:
+    records, partitions, filter_report = filter_locus_occupancy(
+        fixture("alignments/example_multilocus_partial_occupancy.fasta"),
+        fixture("alignments/example_multilocus_partial_occupancy_partitions.txt"),
+        taxon_coverage_threshold=0.5,
+        locus_coverage_threshold=0.75,
+        minimum_locus_occupancy=0.75,
+    )
+
+    assert [record.identifier for record in records] == ["TaxonA", "TaxonB"]
+    assert [record.sequence for record in records] == ["AAAACCCC", "AAAACCCC"]
+    assert [partition.name for partition in partitions] == ["gene_alpha", "gene_beta"]
+    assert filter_report.minimum_locus_occupancy == 0.75
+    assert filter_report.removed_taxa == ["TaxonC", "TaxonD", "TaxonE"]
+    assert filter_report.removed_loci == ["gene_gamma"]
+    assert filter_report.iterations == 2
+    assert [step.iteration for step in filter_report.filter_iterations] == [1, 2]
+    assert filter_report.filter_iterations[0].removed_taxa == [
+        "TaxonC",
+        "TaxonD",
+        "TaxonE",
+    ]
+    assert filter_report.filter_iterations[0].removed_loci == ["gene_gamma"]
+    assert filter_report.filter_iterations[1].removed_taxa == []
+    assert filter_report.filter_iterations[1].removed_loci == []
+    assert filter_report.final_report.low_coverage_taxa == []
+    assert filter_report.final_report.low_coverage_loci == []
+
+
+def test_locus_occupancy_rejects_invalid_minimum_cell_occupancy() -> None:
+    with pytest.raises(
+        ValueError,
+        match="minimum locus occupancy must be between 0 and 1 inclusive",
+    ):
+        build_locus_occupancy_report(
+            fixture("alignments/example_multilocus_alignment.fasta"),
+            fixture("alignments/example_multilocus_partitions.txt"),
+            minimum_locus_occupancy=1.1,
+        )
 
 
 def test_write_locus_partitions_persists_remapped_coordinates(tmp_path: Path) -> None:

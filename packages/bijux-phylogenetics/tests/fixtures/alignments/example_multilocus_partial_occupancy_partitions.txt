@@ -1,0 +1,3 @@
+DNA,gene_alpha = 1-4
+DNA,gene_beta = 5-8
+DNA,gene_gamma = 9-12

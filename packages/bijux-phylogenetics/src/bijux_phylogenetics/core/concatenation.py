@@ -204,6 +204,9 @@ def concatenate_locus_alignments(
     occupancy_by_taxon: dict[str, dict[str, float]] = {
         taxon: {} for taxon in ordered_taxa
     }
+    presence_by_taxon: dict[str, dict[str, bool]] = {
+        taxon: {} for taxon in ordered_taxa
+    }
     taxon_site_totals: dict[str, int] = {taxon: 0 for taxon in ordered_taxa}
     locus_rows: list[LocusCoverageRow] = []
     locus_summaries: list[ConcatenatedAlignmentLocusRow] = []
@@ -242,6 +245,7 @@ def concatenate_locus_alignments(
             locus_observed_site_count += observed_site_count
             taxon_site_totals[taxon] += observed_site_count
             occupancy_by_taxon[taxon][locus.name] = occupancy_fraction
+            presence_by_taxon[taxon][locus.name] = present
             occupancy_cells.append(
                 LocusOccupancyCell(
                     taxon=taxon,
@@ -261,6 +265,10 @@ def concatenate_locus_alignments(
                 taxon_coverage_fraction=covered_taxon_count / len(ordered_taxa),
                 observed_site_count=locus_observed_site_count,
                 total_site_count=locus.alignment_length * len(ordered_taxa),
+                site_coverage_fraction=(
+                    locus_observed_site_count
+                    / (locus.alignment_length * len(ordered_taxa))
+                ),
                 low_coverage=False,
             )
         )
@@ -297,16 +305,13 @@ def concatenate_locus_alignments(
     taxon_rows = [
         TaxonCoverageRow(
             taxon=taxon,
-            covered_locus_count=sum(
-                value > 0.0 for value in occupancy_by_taxon[taxon].values()
-            ),
+            covered_locus_count=sum(presence_by_taxon[taxon].values()),
             total_locus_count=len(partitions),
-            locus_coverage_fraction=(
-                sum(value > 0.0 for value in occupancy_by_taxon[taxon].values())
-                / len(partitions)
-            ),
+            locus_coverage_fraction=sum(presence_by_taxon[taxon].values())
+            / len(partitions),
             observed_site_count=taxon_site_totals[taxon],
             total_site_count=total_alignment_length,
+            site_coverage_fraction=taxon_site_totals[taxon] / total_alignment_length,
             low_coverage=False,
             occupancies=occupancy_by_taxon[taxon],
         )
@@ -337,6 +342,7 @@ def concatenate_locus_alignments(
         low_coverage_loci=[],
         taxon_coverage_threshold=None,
         locus_coverage_threshold=None,
+        minimum_locus_occupancy=0.0,
         warnings=list(dict.fromkeys(warnings)),
     )
 

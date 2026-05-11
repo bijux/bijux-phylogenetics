@@ -21,6 +21,7 @@ from bijux_phylogenetics.io.fasta import (
 __all__ = [
     "LocusCoverageRow",
     "LocusOccupancyFilterReport",
+    "LocusOccupancyFilterIteration",
     "LocusOccupancyCell",
     "LocusOccupancyReport",
     "TaxonCoverageRow",
@@ -52,6 +53,7 @@ class TaxonCoverageRow:
     locus_coverage_fraction: float
     observed_site_count: int
     total_site_count: int
+    site_coverage_fraction: float
     low_coverage: bool
     occupancies: dict[str, float]
 
@@ -66,6 +68,7 @@ class LocusCoverageRow:
     taxon_coverage_fraction: float
     observed_site_count: int
     total_site_count: int
+    site_coverage_fraction: float
     low_coverage: bool
 
 
@@ -88,7 +91,23 @@ class LocusOccupancyReport:
     low_coverage_loci: list[str]
     taxon_coverage_threshold: float | None
     locus_coverage_threshold: float | None
+    minimum_locus_occupancy: float
     warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class LocusOccupancyFilterIteration:
+    """One thresholding pass over the current retained matrix."""
+
+    iteration: int
+    input_taxa: list[str]
+    input_loci: list[str]
+    low_coverage_taxa: list[str]
+    retained_taxa: list[str]
+    removed_taxa: list[str]
+    low_coverage_loci: list[str]
+    retained_loci: list[str]
+    removed_loci: list[str]
 
 
 @dataclass(slots=True)
@@ -108,7 +127,10 @@ class LocusOccupancyFilterReport:
     iterations: int
     taxon_coverage_threshold: float | None
     locus_coverage_threshold: float | None
+    minimum_locus_occupancy: float
+    filter_iterations: list[LocusOccupancyFilterIteration]
     final_report: LocusOccupancyReport
+
 
 def _validate_threshold(value: float | None, label: str) -> None:
     if value is None:
@@ -168,6 +190,7 @@ def _build_locus_occupancy_report_from_inputs(
     partitions: tuple[LocusPartition, ...],
     taxon_coverage_threshold: float | None = None,
     locus_coverage_threshold: float | None = None,
+    minimum_locus_occupancy: float = 0.0,
 ) -> LocusOccupancyReport:
     alignment_length = _validate_records(records)
     assigned_site_count, unassigned_site_count = validate_locus_partitions(
@@ -182,6 +205,9 @@ def _build_locus_occupancy_report_from_inputs(
 
     cells: list[LocusOccupancyCell] = []
     occupancies_by_taxon: dict[str, dict[str, float]] = {
+        record.identifier: {} for record in records
+    }
+    presence_by_taxon: dict[str, dict[str, bool]] = {
         record.identifier: {} for record in records
     }
     taxon_site_totals: dict[str, int] = {record.identifier: 0 for record in records}
@@ -205,12 +231,16 @@ def _build_locus_occupancy_report_from_inputs(
                 missing_fraction=profile.missing_fraction,
             )
             occupancy_fraction = observed_site_count / partition.total_sites
-            present = observed_site_count > 0
+            present = (
+                observed_site_count > 0
+                and occupancy_fraction >= minimum_locus_occupancy
+            )
             if present:
                 covered_taxon_count += 1
             locus_observed_site_count += observed_site_count
             taxon_site_totals[record.identifier] += observed_site_count
             occupancies_by_taxon[record.identifier][partition.name] = occupancy_fraction
+            presence_by_taxon[record.identifier][partition.name] = present
             cells.append(
                 LocusOccupancyCell(
                     taxon=record.identifier,
@@ -234,6 +264,9 @@ def _build_locus_occupancy_report_from_inputs(
                 taxon_coverage_fraction=taxon_coverage_fraction,
                 observed_site_count=locus_observed_site_count,
                 total_site_count=partition.total_sites * len(records),
+                site_coverage_fraction=(
+                    locus_observed_site_count / (partition.total_sites * len(records))
+                ),
                 low_coverage=low_coverage,
             )
         )
@@ -241,7 +274,8 @@ def _build_locus_occupancy_report_from_inputs(
     taxon_rows: list[TaxonCoverageRow] = []
     for record in records:
         occupancies = occupancies_by_taxon[record.identifier]
-        covered_locus_count = sum(value > 0.0 for value in occupancies.values())
+        presence = presence_by_taxon[record.identifier]
+        covered_locus_count = sum(presence.values())
         total_locus_count = len(partitions)
         locus_coverage_fraction = covered_locus_count / total_locus_count
         low_coverage = (
@@ -256,6 +290,9 @@ def _build_locus_occupancy_report_from_inputs(
                 locus_coverage_fraction=locus_coverage_fraction,
                 observed_site_count=taxon_site_totals[record.identifier],
                 total_site_count=assigned_site_count,
+                site_coverage_fraction=(
+                    taxon_site_totals[record.identifier] / assigned_site_count
+                ),
                 low_coverage=low_coverage,
                 occupancies=occupancies,
             )
@@ -279,6 +316,7 @@ def _build_locus_occupancy_report_from_inputs(
         low_coverage_loci=low_coverage_loci,
         taxon_coverage_threshold=taxon_coverage_threshold,
         locus_coverage_threshold=locus_coverage_threshold,
+        minimum_locus_occupancy=minimum_locus_occupancy,
         warnings=warnings,
     )
 
@@ -289,10 +327,12 @@ def build_locus_occupancy_report(
     *,
     taxon_coverage_threshold: float | None = None,
     locus_coverage_threshold: float | None = None,
+    minimum_locus_occupancy: float = 0.0,
 ) -> LocusOccupancyReport:
     """Quantify locus occupancy across taxa for a concatenated alignment."""
     _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
     _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
+    _validate_threshold(minimum_locus_occupancy, "minimum locus occupancy")
 
     return build_locus_occupancy_report_from_records(
         records=load_fasta_alignment(alignment_path),
@@ -301,6 +341,7 @@ def build_locus_occupancy_report(
         partition_path=partition_path,
         taxon_coverage_threshold=taxon_coverage_threshold,
         locus_coverage_threshold=locus_coverage_threshold,
+        minimum_locus_occupancy=minimum_locus_occupancy,
     )
 
 
@@ -312,10 +353,12 @@ def build_locus_occupancy_report_from_records(
     partition_path: Path = Path("<memory>"),
     taxon_coverage_threshold: float | None = None,
     locus_coverage_threshold: float | None = None,
+    minimum_locus_occupancy: float = 0.0,
 ) -> LocusOccupancyReport:
     """Quantify locus occupancy from already loaded aligned records and partitions."""
     _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
     _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
+    _validate_threshold(minimum_locus_occupancy, "minimum locus occupancy")
     return _build_locus_occupancy_report_from_inputs(
         alignment_path,
         partition_path,
@@ -323,6 +366,7 @@ def build_locus_occupancy_report_from_records(
         partitions=partitions,
         taxon_coverage_threshold=taxon_coverage_threshold,
         locus_coverage_threshold=locus_coverage_threshold,
+        minimum_locus_occupancy=minimum_locus_occupancy,
     )
 
 
@@ -370,24 +414,29 @@ def _subset_records_to_taxa(
 ) -> list[AlignmentRecord]:
     return [record for record in records if record.identifier in retained_taxa]
 
+
 def filter_locus_occupancy(
     alignment_path: Path,
     partition_path: Path,
     *,
     taxon_coverage_threshold: float | None = None,
     locus_coverage_threshold: float | None = None,
+    minimum_locus_occupancy: float = 0.0,
 ) -> tuple[
     list[AlignmentRecord], tuple[LocusPartition, ...], LocusOccupancyFilterReport
 ]:
     """Filter taxa and loci by occupancy thresholds until the retained matrix stabilizes."""
     _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
     _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
+    _validate_threshold(minimum_locus_occupancy, "minimum locus occupancy")
 
     current_records = load_fasta_alignment(alignment_path)
     current_partitions = parse_locus_partitions(partition_path)
     original_taxa = [record.identifier for record in current_records]
     original_loci = [partition.name for partition in current_partitions]
+    original_alignment_length = _validate_records(current_records)
     iterations = 0
+    filter_iterations: list[LocusOccupancyFilterIteration] = []
 
     while True:
         iterations += 1
@@ -398,17 +447,18 @@ def filter_locus_occupancy(
             partitions=current_partitions,
             taxon_coverage_threshold=taxon_coverage_threshold,
             locus_coverage_threshold=locus_coverage_threshold,
+            minimum_locus_occupancy=minimum_locus_occupancy,
         )
-        retained_taxa = {
+        retained_taxa = [
             row.taxon
             for row in report.taxa
             if taxon_coverage_threshold is None
             or row.locus_coverage_fraction >= taxon_coverage_threshold
-        }
+        ]
         filtered_records = (
             current_records
             if taxon_coverage_threshold is None
-            else _subset_records_to_taxa(current_records, retained_taxa)
+            else _subset_records_to_taxa(current_records, set(retained_taxa))
         )
         if not filtered_records:
             raise InvalidAlignmentError(
@@ -422,22 +472,42 @@ def filter_locus_occupancy(
             partitions=current_partitions,
             taxon_coverage_threshold=taxon_coverage_threshold,
             locus_coverage_threshold=locus_coverage_threshold,
+            minimum_locus_occupancy=minimum_locus_occupancy,
         )
-        retained_locus_names = {
+        retained_locus_names = [
             row.locus_name
             for row in filtered_taxa_report.loci
             if locus_coverage_threshold is None
             or row.taxon_coverage_fraction >= locus_coverage_threshold
-        }
+        ]
         retained_partitions = tuple(
             partition
             for partition in current_partitions
-            if partition.name in retained_locus_names
+            if partition.name in set(retained_locus_names)
         )
         if not retained_partitions:
             raise InvalidPartitionError(
                 "occupancy filtering removed every locus from the partition set"
             )
+        current_taxa = [record.identifier for record in current_records]
+        current_loci = [partition.name for partition in current_partitions]
+        filter_iterations.append(
+            LocusOccupancyFilterIteration(
+                iteration=iterations,
+                input_taxa=current_taxa,
+                input_loci=current_loci,
+                low_coverage_taxa=report.low_coverage_taxa,
+                retained_taxa=retained_taxa,
+                removed_taxa=[
+                    taxon for taxon in current_taxa if taxon not in set(retained_taxa)
+                ],
+                low_coverage_loci=filtered_taxa_report.low_coverage_loci,
+                retained_loci=retained_locus_names,
+                removed_loci=[
+                    locus for locus in current_loci if locus not in set(retained_locus_names)
+                ],
+            )
+        )
 
         next_records = filtered_records
         next_partitions = current_partitions
@@ -460,6 +530,7 @@ def filter_locus_occupancy(
                 partitions=next_partitions,
                 taxon_coverage_threshold=taxon_coverage_threshold,
                 locus_coverage_threshold=locus_coverage_threshold,
+                minimum_locus_occupancy=minimum_locus_occupancy,
             )
             return (
                 next_records,
@@ -469,9 +540,7 @@ def filter_locus_occupancy(
                     partition_path=partition_path,
                     original_taxon_count=len(original_taxa),
                     original_locus_count=len(original_loci),
-                    original_alignment_length=_validate_records(
-                        load_fasta_alignment(alignment_path)
-                    ),
+                    original_alignment_length=original_alignment_length,
                     retained_taxa=[record.identifier for record in next_records],
                     removed_taxa=[
                         taxon
@@ -489,6 +558,8 @@ def filter_locus_occupancy(
                     iterations=iterations,
                     taxon_coverage_threshold=taxon_coverage_threshold,
                     locus_coverage_threshold=locus_coverage_threshold,
+                    minimum_locus_occupancy=minimum_locus_occupancy,
+                    filter_iterations=filter_iterations,
                     final_report=final_report,
                 ),
             )
