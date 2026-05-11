@@ -156,9 +156,10 @@ bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait reg
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --mode linsi --json
+bijux-phylogenetics adapter trim aligned.fasta --out trimmed.fasta --mode automated1 --json
 bijux-phylogenetics alignment validate-input raw-sequences.fasta --json
 bijux-phylogenetics alignment repair-input raw-sequences.fasta --out artifacts/raw-sequences.repaired.fasta --normalize-identifiers --remove-invalid-records --json
-bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --alignment-mode einsi --normalize-identifiers --remove-invalid-records --bootstrap-replicates 1000 --json
+bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --alignment-mode einsi --trimming-mode strictplus --normalize-identifiers --remove-invalid-records --bootstrap-replicates 1000 --json
 bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json
 bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json
 bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json
@@ -205,6 +206,13 @@ Named MAFFT strategies are now first-class on both `adapter align` and
 `auto`, `linsi`, `ginsi`, `einsi`, or `fast`. The runtime expands each named
 strategy into the explicit MAFFT arguments it runs, and the workflow manifest
 captures both the resolved command and the detected MAFFT version for review.
+
+Named trimAl strategies are also first-class on `adapter trim` and
+`adapter fasta-to-tree`. Use `--mode` or `--trimming-mode` with one of
+`gap-threshold`, `gappyout`, `strict`, `strictplus`, or `automated1`. The
+workflow report and manifest record retained sites, removed sites, and
+gap percentage before and after trimming alongside the explicit trimAl command
+and detected version.
 
 Raw sequence hygiene is now explicit. Use `alignment validate-input` to inspect
 duplicate identifiers, illegal sequence characters, empty records, and
