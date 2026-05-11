@@ -99,6 +99,7 @@ bijux-phylogenetics alignment classify sequences.fasta --json
 bijux-phylogenetics alignment profiles --json
 bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json
 bijux-phylogenetics alignment readiness alignment.fasta --json
+bijux-phylogenetics alignment quality alignment.fasta --json
 bijux-phylogenetics alignment low-information alignment.fasta --json
 bijux-phylogenetics alignment duplicate-policy alignment.fasta --identity-threshold 0.99 --json
 bijux-phylogenetics alignment ambiguous-columns alignment.fasta --threshold 0.5 --json
@@ -221,6 +222,14 @@ you want the runtime to normalize identifiers or remove invalid records into a
 new FASTA. The same repair controls are available on `adapter fasta-to-tree`;
 without them, the workflow now fails fast instead of silently continuing on
 bad raw input.
+
+Internal alignment-quality scoring is available without any external engine.
+Use `alignment quality` when you want one scored view that combines
+per-sequence gap fractions, per-column gap fractions, invariant-site counts,
+parsimony-informative-site counts, missing-data concentration, and a direct
+suspicious-alignment verdict. The reviewer-facing alignment reports reuse the
+same scoring contract so command-line JSON, HTML reports, and checked-in
+reference fixtures stay aligned.
 
 ## Alignment Filter Profiles
 
