@@ -15,13 +15,13 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal.py"
     ],
-    "last_generated_on": "2026-05-10",
+    "last_generated_on": "2026-05-11",
     "source_basis_locators": [
       "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
       "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-      "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/residual-diagnostics-parity.json"
+      "evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json"
     ]
   },
   "limitations": [
@@ -69,7 +69,7 @@
     {
       "kind": "repository-reference",
       "label": "Primate residual diagnostics parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/residual-diagnostics-parity.json"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json"
     }
   ],
   "source_fragments": [
@@ -78,7 +78,7 @@
   ],
   "study_id": "primate-pgls-and-signal",
   "summary": "Governed machine-readable residual diagnostics for the baseline and estimated-lambda regression surfaces.",
-  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/residual-diagnostics-parity.json",
+  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json",
   "verdict": {
     "status": "matched_with_tolerance",
     "summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots."

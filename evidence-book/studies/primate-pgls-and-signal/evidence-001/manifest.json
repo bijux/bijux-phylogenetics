@@ -15,14 +15,14 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal.py"
     ],
-    "last_generated_on": "2026-05-10",
+    "last_generated_on": "2026-05-11",
     "source_basis_locators": [
       "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
       "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
-      "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/rdata-reload-semantics.json",
-      "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json"
+      "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+      "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json"
     ]
   },
   "limitations": [
@@ -75,12 +75,12 @@
     {
       "kind": "repository-reference",
       "label": "Primate reload semantics bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/rdata-reload-semantics.json"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json"
     },
     {
       "kind": "repository-reference",
       "label": "scalar parity table",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json"
     }
   ],
   "source_fragments": [
@@ -88,7 +88,7 @@
   ],
   "study_id": "primate-pgls-and-signal",
   "summary": "Governed representation of the lecture one-line primate workspace reload contract.",
-  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/rdata-reload-semantics.json",
+  "supporting_report_locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
   "verdict": {
     "status": "matched",
     "summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."

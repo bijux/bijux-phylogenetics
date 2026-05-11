@@ -15,11 +15,11 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
     ],
-    "last_generated_on": "2026-05-10",
+    "last_generated_on": "2026-05-11",
     "source_basis_locators": [
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
-      "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json"
+      "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json"
     ]
   },
   "limitations": [
@@ -64,7 +64,7 @@
     {
       "kind": "repository-reference",
       "label": "Primate processed export parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json"
     }
   ],
   "source_fragments": [
@@ -72,7 +72,7 @@
   ],
   "study_id": "primate-longevity-signal",
   "summary": "Governed evidence for the exported processed CSV and trimmed tree artifacts consumed by later teaching steps.",
-  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json",
   "verdict": {
     "status": "matched",
     "summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims."

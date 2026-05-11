@@ -29,7 +29,7 @@
   ],
   "source_locators": [
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-004/results/missing-data-accounting-parity.json"
+    "evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json"
   ],
   "study_id": "primate-longevity-signal",
   "study_title": "Primate Longevity Signal"

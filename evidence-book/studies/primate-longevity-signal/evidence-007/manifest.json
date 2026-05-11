@@ -15,10 +15,10 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
     ],
-    "last_generated_on": "2026-05-10",
+    "last_generated_on": "2026-05-11",
     "source_basis_locators": [
       "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
-      "evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json"
+      "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json"
     ]
   },
   "limitations": [
@@ -58,7 +58,7 @@
     {
       "kind": "repository-reference",
       "label": "Primate tree diagnostics parity bundle report payload",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json"
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json"
     }
   ],
   "source_fragments": [
@@ -67,7 +67,7 @@
   ],
   "study_id": "primate-longevity-signal",
   "summary": "Governed evidence for rootedness, binary-tree status, ultrametricity, and node-label interpretation.",
-  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-007/results/tree-diagnostics-parity.json",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json",
   "verdict": {
     "status": "matched",
     "summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces."
