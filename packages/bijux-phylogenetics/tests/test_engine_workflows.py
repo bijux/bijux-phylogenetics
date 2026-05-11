@@ -12,10 +12,12 @@ from bijux_phylogenetics.engines import (
     bundle_inference_workflow_evidence,
     compare_fast_and_ml_trees,
     list_mafft_alignment_modes,
+    list_trimal_trimming_modes,
     render_inference_sensitivity_report,
     render_inference_workflow_report,
     render_model_selection_limitations_report,
     resolve_mafft_alignment_mode,
+    resolve_trimal_trimming_mode,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -109,6 +111,21 @@ if "--version" in sys.argv:
 args = sys.argv[1:]
 input_path = Path(args[args.index("-in") + 1])
 output_path = Path(args[args.index("-out") + 1])
+if "-strictplus" in args:
+    trim_count = 3
+    warning = "warning: trimal fixture strictplus trimmed three trailing sites"
+elif "-strict" in args:
+    trim_count = 2
+    warning = "warning: trimal fixture strict trimmed two trailing sites"
+elif "-automated1" in args:
+    trim_count = 2
+    warning = "warning: trimal fixture automated1 trimmed two trailing sites"
+elif "-gappyout" in args:
+    trim_count = 1
+    warning = "warning: trimal fixture gappyout trimmed one trailing site"
+else:
+    trim_count = 1
+    warning = "warning: trimal fixture gap-threshold trimmed one trailing site"
 records = []
 identifier = None
 sequence = []
@@ -128,8 +145,8 @@ if identifier is not None:
 output_path.parent.mkdir(parents=True, exist_ok=True)
 with output_path.open("w", encoding="utf-8") as handle:
     for identifier, sequence in records:
-        handle.write(f">{identifier}\\n{sequence[:-1]}\\n")
-print("warning: trimal fixture trimmed one trailing site", file=sys.stderr)
+        handle.write(f">{identifier}\\n{sequence[:-trim_count]}\\n")
+print(warning, file=sys.stderr)
 """,
     )
 
@@ -375,6 +392,30 @@ def test_run_multiple_sequence_alignment_with_real_mafft_on_small_dataset(
     assert len(widths) == 1
 
 
+def test_trimal_trimming_modes_resolve_to_explicit_documented_arguments() -> None:
+    assert list_trimal_trimming_modes() == (
+        "gap-threshold",
+        "gappyout",
+        "strict",
+        "strictplus",
+        "automated1",
+    )
+    assert resolve_trimal_trimming_mode("gap-threshold", gap_threshold=0.2) == (
+        "-gt",
+        "0.200000",
+    )
+    assert resolve_trimal_trimming_mode("gappyout", gap_threshold=0.2) == (
+        "-gappyout",
+    )
+    assert resolve_trimal_trimming_mode("strict", gap_threshold=0.2) == ("-strict",)
+    assert resolve_trimal_trimming_mode("strictplus", gap_threshold=0.2) == (
+        "-strictplus",
+    )
+    assert resolve_trimal_trimming_mode("automated1", gap_threshold=0.2) == (
+        "-automated1",
+    )
+
+
 def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(
     tmp_path: Path,
 ) -> None:
@@ -392,9 +433,36 @@ def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(
         == len(load_fasta_alignment(input_path)[0].sequence) - 1
     )
     assert report.run.warning_lines == [
-        "warning: trimal fixture trimmed one trailing site"
+        "warning: trimal fixture gap-threshold trimmed one trailing site"
     ]
     assert report.manifest_path.exists()
+
+
+def test_run_alignment_trimming_supports_all_named_trimal_modes(tmp_path: Path) -> None:
+    executable = _fake_trimal(tmp_path / "trimal-fixture")
+    input_path = fixture("alignments/example_alignment_trim.fasta")
+    expected = {
+        "gap-threshold": (["-gt", "0.200000"], 1),
+        "gappyout": (["-gappyout"], 1),
+        "strict": (["-strict"], 2),
+        "strictplus": (["-strictplus"], 3),
+        "automated1": (["-automated1"], 2),
+    }
+
+    for mode, (mode_args, removed_sites) in expected.items():
+        output_path = tmp_path / f"{mode}.fasta"
+        report = run_alignment_trimming(
+            input_path,
+            output_path,
+            executable=executable,
+            mode=mode,
+            gap_threshold=0.2,
+        )
+
+        assert report.run.command[5:] == mode_args
+        assert report.notes[0] == f"trimal trimming mode: {mode}"
+        trimmed = load_fasta_alignment(output_path)
+        assert len(trimmed[0].sequence) == len(load_fasta_alignment(input_path)[0].sequence) - removed_sites
 
 
 def test_run_model_selection_parses_best_fit_model_and_writes_manifest(

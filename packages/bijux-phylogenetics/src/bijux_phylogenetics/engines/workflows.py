@@ -42,6 +42,13 @@ _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
     "einsi": ("--ep", "0", "--genafpair", "--maxiterate", "1000"),
     "fast": ("--retree", "2", "--maxiterate", "0"),
 }
+_TRIMAL_TRIMMING_MODES: tuple[str, ...] = (
+    "gap-threshold",
+    "gappyout",
+    "strict",
+    "strictplus",
+    "automated1",
+)
 
 
 @dataclass(slots=True)
@@ -80,6 +87,27 @@ def resolve_mafft_alignment_mode(mode: str) -> tuple[str, ...]:
         raise ValueError(
             f"unsupported mafft alignment mode '{mode}', expected one of: {available}"
         ) from error
+
+
+def list_trimal_trimming_modes() -> tuple[str, ...]:
+    """Return the supported named trimAl trimming strategies."""
+    return _TRIMAL_TRIMMING_MODES
+
+
+def resolve_trimal_trimming_mode(
+    mode: str,
+    *,
+    gap_threshold: float,
+) -> tuple[str, ...]:
+    """Resolve one named trimAl strategy into explicit engine arguments."""
+    if mode == "gap-threshold":
+        return ("-gt", f"{gap_threshold:.6f}")
+    if mode in {"gappyout", "strict", "strictplus", "automated1"}:
+        return (f"-{mode}",)
+    available = ", ".join(sorted(_TRIMAL_TRIMMING_MODES))
+    raise ValueError(
+        f"unsupported trimAl trimming mode '{mode}', expected one of: {available}"
+    )
 
 
 def _sidecar(path: Path, label: str) -> Path:
@@ -304,11 +332,13 @@ def run_alignment_trimming(
     out_path: Path,
     *,
     executable: str | Path = "trimal",
+    mode: str = "gap-threshold",
     gap_threshold: float = 0.1,
 ) -> EngineWorkflowReport:
     """Run an external alignment trimming engine against an aligned FASTA file."""
     load_fasta_alignment(input_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    mode_args = resolve_trimal_trimming_mode(mode, gap_threshold=gap_threshold)
     version = read_engine_version("trimal", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
     run = execute_engine_command(
@@ -321,8 +351,7 @@ def run_alignment_trimming(
             str(input_path.resolve()),
             "-out",
             str(out_path.resolve()),
-            "-gt",
-            f"{gap_threshold:.6f}",
+            *mode_args,
         ],
         work_dir=out_path.parent,
         stdout_path=_sidecar(out_path, "stdout.log"),
@@ -340,7 +369,10 @@ def run_alignment_trimming(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
-        notes=["trimmed alignment validated as nonempty equal-length FASTA"],
+        notes=[
+            f"trimal trimming mode: {mode}",
+            "trimmed alignment validated as nonempty equal-length FASTA",
+        ],
     )
     return _persist_workflow_report(report)
 
