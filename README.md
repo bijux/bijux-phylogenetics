@@ -77,6 +77,7 @@ What exists today:
 
 - tree validation, inspection, comparison, rooting, and rendering workflows
 - alignment diagnostics, filtering, trimming, and translation workflows
+- partition parsing, validation, summary tables, and partitioned adapter entrypoints for multi-locus inference
 - comparative trait analysis, ancestral-state workflows, and distance-based analysis
 - governed adapter surfaces for external tools such as alignment and inference engines
 - package handbooks and release automation

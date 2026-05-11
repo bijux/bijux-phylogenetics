@@ -28,6 +28,12 @@ for concatenated multi-locus FASTA plus partition inputs. That workflow reports
 per-taxon coverage, per-locus coverage, low-coverage flags, TSV tables, and an
 optionally filtered retained matrix with remapped partitions.
 
+For partitioned inference preparation, the alignment family also includes
+`alignment partition-summary`. It validates one partition file against an
+aligned matrix, reports assigned versus unassigned sites, detects mixed declared
+datatypes, and can write a stable TSV summary for review before any engine is
+invoked.
+
 The adapter family also includes `adapter fasta-to-tree`, which is the
 supported end-to-end inference entrypoint for raw FASTA inputs. It emits a
 reviewable aligned matrix, trimmed matrix, selected-model table, supported
@@ -39,6 +45,14 @@ alignment entrypoint. It excludes frame-broken sequences and sequences with
 premature stop codons, aligns a translated amino-acid guide, and back-translates
 guide gaps as nucleotide triplets so the resulting alignment stays codon-safe
 for downstream inference steps.
+
+For aligned multi-locus matrices, `adapter model-select`, `adapter infer-ml`,
+and `adapter bootstrap` now accept `--partitions`. On single-datatype matrices
+they pass a normalized partition scheme directly to IQ-TREE. On mixed
+DNA/protein matrices they materialize one partition alignment per locus and a
+generated NEXUS scheme. Fixed single-model requests are not accepted for mixed
+DNA/protein runs; use a model-selection keyword such as `MF`, `MFP`, `TEST`, or
+`TESTMERGE` instead.
 
 For raw input hygiene before alignment, the alignment family now includes
 `alignment sequence-type`, `alignment validate-input`, and

@@ -27,6 +27,43 @@ per-taxon and per-locus TSV tables, a taxon-by-locus occupancy matrix, and a
 retained alignment plus remapped partition file after applying explicit
 coverage thresholds.
 
+When the matrix is already aligned and you need to validate the partition file
+itself, run `alignment partition-summary` first. That command reports assigned
+and unassigned sites, mixed declared datatypes, and one row per locus, and it
+can write the review table directly as TSV.
+
+## Partitioned Multi-Locus Inference
+
+Use the partition summary command before sending a concatenated matrix into the
+adapter inference surface, then pass the same partition file into the adapter
+step that needs it.
+
+```bash
+bijux-phylogenetics alignment partition-summary multilocus.aln.fasta \
+  multilocus.partitions \
+  --out artifacts/multilocus.partition-summary.tsv \
+  --json
+bijux-phylogenetics adapter model-select multilocus.aln.fasta \
+  --partitions multilocus.partitions \
+  --out-dir artifacts/multilocus-model \
+  --prefix multilocus \
+  --json
+bijux-phylogenetics adapter infer-ml multilocus.aln.fasta \
+  --partitions multilocus.partitions \
+  --out-dir artifacts/multilocus-ml \
+  --model GTR+G \
+  --prefix multilocus \
+  --json
+```
+
+If every partition is DNA or every partition is protein, the adapter passes a
+normalized partition scheme to IQ-TREE on the original aligned matrix. If the
+partition file mixes DNA and protein loci, the adapter writes one extracted
+alignment per partition and a generated NEXUS scheme before invoking IQ-TREE.
+For that mixed-datatype path, do not force one fixed single model across every
+partition. Use a model-selection keyword such as `MF`, `MFP`, `TEST`, or
+`TESTMERGE` so the engine can choose partition-appropriate models honestly.
+
 ## Coding DNA Alignment
 
 Use `adapter align --codon-aware` when you need a nucleotide alignment that
