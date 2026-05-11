@@ -191,6 +191,15 @@ def test_infer_unaligned_sequence_type_detects_dna_and_protein_inputs() -> None:
     )
 
 
+def test_infer_unaligned_sequence_type_returns_unknown_for_mixed_inputs() -> None:
+    assert (
+        infer_unaligned_sequence_type(
+            [("dna_like", "ACTGACTG"), ("rna_like", "ACUGACUG")]
+        )
+        == "unknown"
+    )
+
+
 def test_write_fasta_to_tree_tables_emits_expected_tsv(tmp_path: Path) -> None:
     model_path = tmp_path / "example.model.tsv"
     support_path = tmp_path / "example.support.tsv"
@@ -328,6 +337,31 @@ def test_run_fasta_to_tree_workflow_rejects_invalid_raw_input_without_repair(
         )
 
 
+def test_run_fasta_to_tree_workflow_rejects_mixed_raw_input_without_explicit_type(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    mixed_input = tmp_path / "mixed.fasta"
+    mixed_input.write_text(
+        ">dna_like\nACTGACTG\n>rna_like\nACUGACUG\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        InvalidAlignmentError, match="thymine-bearing and uracil-bearing"
+    ):
+        run_fasta_to_tree_workflow(
+            mixed_input,
+            out_dir=tmp_path / "mixed",
+            prefix="mixed",
+            mafft_executable=mafft,
+            trimal_executable=trimal,
+            iqtree_executable=iqtree,
+        )
+
+
 def test_run_fasta_to_tree_workflow_repairs_invalid_raw_input_when_requested(
     tmp_path: Path,
 ) -> None:
@@ -359,6 +393,41 @@ def test_run_fasta_to_tree_workflow_repairs_invalid_raw_input_when_requested(
     assert "prepared_input_path:" in report.output_paths["log"].read_text(
         encoding="utf-8"
     )
+
+
+def test_run_fasta_to_tree_workflow_can_force_declared_type_on_mixed_input(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    mixed_input = tmp_path / "mixed.fasta"
+    mixed_input.write_text(
+        ">dna_a\nACTGACTG\n>dna_b\nACTGACTA\n>rna_like\nACUGACUG\n",
+        encoding="utf-8",
+    )
+
+    report = run_fasta_to_tree_workflow(
+        mixed_input,
+        out_dir=tmp_path / "forced-dna",
+        prefix="forced-dna",
+        sequence_type="dna",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        normalize_identifiers=False,
+        remove_invalid_records=True,
+    )
+
+    assert report.sequence_type == "dna"
+    assert report.input_repair is not None
+    assert [row.identifier for row in report.input_repair.removed_records] == [
+        "rna_like"
+    ]
+    assert report.prepared_input_path.read_text(encoding="utf-8") == (
+        ">dna_a\nACTGACTG\n>dna_b\nACTGACTA\n"
+    )
+    assert "raw sequence type detection: dna (medium)" in report.notes
 
 
 def test_run_fasta_to_tree_workflow_passes_named_mafft_mode_to_alignment_step(

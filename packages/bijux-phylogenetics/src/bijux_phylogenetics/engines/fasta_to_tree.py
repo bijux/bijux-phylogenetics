@@ -11,6 +11,7 @@ from bijux_phylogenetics.core.alignment import (
 )
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
+    detect_fasta_sequence_type,
     infer_alignment_alphabet,
     load_permissive_fasta_records,
     repair_fasta_input,
@@ -109,12 +110,14 @@ class FastaToTreeWorkflowReport:
 
 def infer_unaligned_sequence_type(records: list[tuple[str, str]]) -> AlignmentAlphabet:
     """Infer a stable sequence type from raw FASTA records before alignment."""
-    return infer_alignment_alphabet(
-        [
+    report = detect_fasta_sequence_type(
+        Path("<memory>"),
+        records=[
             AlignmentRecord(identifier=identifier, sequence=sequence)
             for identifier, sequence in records
-        ]
+        ],
     )
+    return "unknown" if report.selected_type is None else report.selected_type
 
 
 def build_fasta_to_tree_model_rows(
@@ -384,18 +387,20 @@ def run_fasta_to_tree_workflow(
                 "fasta-to-tree repair policy left unresolved duplicate identifiers, "
                 "illegal characters, or empty sequences in the prepared input"
             )
-    raw_records = [
-        (record.identifier, record.sequence)
-        for record in load_permissive_fasta_records(prepared_input_path)
-    ]
+    effective_input_validation = (
+        input_validation
+        if repaired_input_validation is None
+        else repaired_input_validation
+    )
     inferred_sequence_type = (
-        infer_unaligned_sequence_type(raw_records)
+        effective_input_validation.sequence_type_report.selected_type
         if sequence_type is None
         else sequence_type
     )
-    if inferred_sequence_type == "unknown":
-        raise ValueError(
-            "fasta-to-tree workflow could not infer a supported sequence type from the input FASTA"
+    if inferred_sequence_type in {None, "unknown"}:
+        raise InvalidAlignmentError(
+            "fasta-to-tree workflow could not resolve one supported raw sequence type: "
+            f"{effective_input_validation.sequence_type_report.note}"
         )
     final_outputs = _final_output_paths(out_dir, workflow_prefix)
 
@@ -486,6 +491,10 @@ def run_fasta_to_tree_workflow(
         "engine-specific intermediate artifacts remain under engine-artifacts/",
         f"mafft alignment mode: {alignment_mode}",
         f"trimal trimming mode: {trimming_mode}",
+        "raw sequence type detection: "
+        f"{effective_input_validation.sequence_type_report.detected_type} "
+        f"({effective_input_validation.sequence_type_report.confidence})",
+        effective_input_validation.sequence_type_report.note,
     ]
     if input_repair is not None:
         notes.append(
