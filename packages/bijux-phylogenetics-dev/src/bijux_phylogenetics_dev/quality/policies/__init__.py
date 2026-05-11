@@ -11,4 +11,3 @@ CONFIG_SSOT_POLICY_PATH = POLICY_ROOT / "config_ssot.toml"
 EXECUTION_SURFACES_POLICY_PATH = POLICY_ROOT / "execution_surfaces.toml"
 PACKAGE_BOUNDARIES_POLICY_PATH = POLICY_ROOT / "package_boundaries.toml"
 PUBLICATION_READINESS_POLICY_PATH = POLICY_ROOT / "publication_readiness.toml"
-

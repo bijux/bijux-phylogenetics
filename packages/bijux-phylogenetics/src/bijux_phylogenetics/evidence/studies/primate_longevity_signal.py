@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 STUDY_ID = "primate-longevity-signal"
 EVIDENCE_ID = "evidence-001"
 SOURCE_LOCATOR = "external:lund/pcm1-plots-signal/script"
@@ -310,7 +309,9 @@ def _component_claim_rows(repo_root: Path) -> list[dict[str, object]]:
     from .primate_pcm1_component_bundles import build_primate_pcm1_component_bundles
 
     rows: list[dict[str, object]] = []
-    for evidence_id, payload in sorted(build_primate_pcm1_component_bundles(repo_root).items()):
+    for evidence_id, payload in sorted(
+        build_primate_pcm1_component_bundles(repo_root).items()
+    ):
         claim = payload["claims"]["claims"][0]
         rows.append(
             {
@@ -390,7 +391,7 @@ def build_primate_source_fragment_map(repo_root: Path) -> dict[str, object]:
 
 def build_primate_claim_registry(repo_root: Path) -> dict[str, object]:
     fragment_map = build_primate_source_fragment_map(repo_root)
-    fragments = fragment_map["fragments"]
+    fragment_map["fragments"]
     claims = build_primate_summary_bundle_claims(repo_root)["claims"]
     claims.extend(_component_claim_rows(repo_root))
     return {
@@ -432,7 +433,10 @@ def build_primate_summary_bundle_claims(repo_root: Path) -> dict[str, object]:
 
 
 def _family_verdict(fragment_statuses: list[str]) -> str:
-    if all(status in {"workflow_only", "artifact_only", "plot_only"} for status in fragment_statuses):
+    if all(
+        status in {"workflow_only", "artifact_only", "plot_only"}
+        for status in fragment_statuses
+    ):
         return "not_comparable"
     if "verified_with_tolerance" in fragment_statuses:
         return "matched_with_tolerance"
@@ -447,7 +451,9 @@ def build_primate_family_index(repo_root: Path) -> dict[str, object]:
     families: list[dict[str, object]] = []
     for family_id, definition in FAMILY_DEFINITIONS.items():
         family_fragments = [
-            fragment for fragment in fragments if fragment["concept_family"] == family_id
+            fragment
+            for fragment in fragments
+            if fragment["concept_family"] == family_id
         ]
         fragment_ids = {fragment["fragment_id"] for fragment in family_fragments}
         family_claim_ids = sorted(
@@ -518,14 +524,20 @@ def build_primate_parity_policy(repo_root: Path) -> dict[str, object]:
             for fragment in fragment_map["fragments"]
             if fragment["concept_family"] == family_id
         ]
-        if family_id in {"workflow-contracts", "visual-surfaces", "artifact-provenance"}:
+        if family_id in {
+            "workflow-contracts",
+            "visual-surfaces",
+            "artifact-provenance",
+        }:
             expectation = "not_comparable"
             metric_tolerances = []
             rule = "Tracked for reviewer transparency without a numerical parity claim."
         elif family_id in {"data-preparation", "tree-operations", "simulation-inputs"}:
             expectation = "exact"
             metric_tolerances = [{"metric_kind": "default", "tolerance_abs_diff": 0.0}]
-            rule = "Scalar counts, boolean checks, and frozen inputs must match exactly."
+            rule = (
+                "Scalar counts, boolean checks, and frozen inputs must match exactly."
+            )
         elif family_id == "comparative-signal":
             expectation = "statistical_tolerance"
             metric_tolerances = [

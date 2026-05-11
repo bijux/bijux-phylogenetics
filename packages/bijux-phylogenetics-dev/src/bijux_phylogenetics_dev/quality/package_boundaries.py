@@ -17,6 +17,8 @@ DEFAULT_JSON_OUT = Path("artifacts/root/package-boundaries.json")
 
 @dataclass(frozen=True)
 class BoundaryIssue:
+    """Describe one package-boundary contract drift."""
+
     code: str
     path: str
     message: str
@@ -24,6 +26,8 @@ class BoundaryIssue:
 
 @dataclass(frozen=True)
 class PackageRolePolicy:
+    """Define one governed repository package role."""
+
     package_name: str
     role: str
     package_dir: str
@@ -35,6 +39,8 @@ class PackageRolePolicy:
 
 @dataclass(frozen=True)
 class TargetPackageRole:
+    """Define one governed external-facing target package role."""
+
     package_name: str
     role: str
     target_module_root: str
@@ -43,6 +49,8 @@ class TargetPackageRole:
 
 @dataclass(frozen=True)
 class RuntimeEvidenceCompatibilityContract:
+    """Define the minimal runtime API promised to evidence consumers."""
+
     runtime_version_spec: str
     supported_api_modules: tuple[str, ...]
     supported_api_locators: tuple[str, ...]
@@ -51,6 +59,8 @@ class RuntimeEvidenceCompatibilityContract:
 
 @dataclass(frozen=True)
 class PackageBoundaryPolicy:
+    """Collect the repository package-boundary policy surfaces."""
+
     known_repo_module_roots: tuple[str, ...]
     forbidden_runtime_top_level_exports: tuple[str, ...]
     alias_allowed_local_files: tuple[str, ...]
@@ -75,6 +85,7 @@ def _as_str_tuple(value: object) -> tuple[str, ...]:
 
 
 def load_package_boundary_policy(repo_root: Path) -> PackageBoundaryPolicy:
+    """Load the repository package-boundary policy from the governed TOML file."""
     payload = _load_toml(repo_root / PACKAGE_BOUNDARIES_POLICY_PATH)
     tool = _as_dict(payload.get("tool"))
     workspace = _as_dict(tool.get("bijux_phylogenetics"))
@@ -103,7 +114,9 @@ def load_package_boundary_policy(repo_root: Path) -> PackageBoundaryPolicy:
             target_module_root=str(values["target_module_root"]),
             required_runtime_dependency=str(values["required_runtime_dependency"]),
         )
-        for package_name, values in _as_dict(section.get("target_package_roles")).items()
+        for package_name, values in _as_dict(
+            section.get("target_package_roles")
+        ).items()
         if isinstance(values, dict)
     }
     compatibility = _as_dict(section.get("runtime_evidence_compatibility"))
@@ -112,7 +125,9 @@ def load_package_boundary_policy(repo_root: Path) -> PackageBoundaryPolicy:
         forbidden_runtime_top_level_exports=_as_str_tuple(
             section.get("forbidden_runtime_top_level_exports")
         ),
-        alias_allowed_local_files=_as_str_tuple(section.get("alias_allowed_local_files")),
+        alias_allowed_local_files=_as_str_tuple(
+            section.get("alias_allowed_local_files")
+        ),
         package_roles=package_roles,
         target_package_roles=target_package_roles,
         runtime_evidence_compatibility=RuntimeEvidenceCompatibilityContract(
@@ -241,6 +256,7 @@ def _module_source_path(
 
 
 def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
+    """Build the package-boundary ownership and export report."""
     repo_root = repo_root.resolve()
     policy = load_package_boundary_policy(repo_root)
     issues: list[BoundaryIssue] = []
@@ -256,7 +272,11 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
         if role_policy.role == "compatibility-alias"
     )
     runtime_init = (
-        repo_root / runtime_policy.package_dir / "src" / runtime_policy.module_root / "__init__.py"
+        repo_root
+        / runtime_policy.package_dir
+        / "src"
+        / runtime_policy.module_root
+        / "__init__.py"
     )
     runtime_exports = sorted(_runtime_init_exports(runtime_init))
     forbidden_exports_present = sorted(
@@ -297,7 +317,10 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
         contract_locators = _tuple_constant_strings(
             evidence_contract_module, "SUPPORTED_EVIDENCE_API_LOCATORS"
         )
-        if contract_modules != policy.runtime_evidence_compatibility.supported_api_modules:
+        if (
+            contract_modules
+            != policy.runtime_evidence_compatibility.supported_api_modules
+        ):
             issues.append(
                 BoundaryIssue(
                     code="runtime-evidence-module-contract-drift",
@@ -305,7 +328,10 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
                     message="runtime evidence API module contract does not match the governed package-boundary policy",
                 )
             )
-        if contract_locators != policy.runtime_evidence_compatibility.supported_api_locators:
+        if (
+            contract_locators
+            != policy.runtime_evidence_compatibility.supported_api_locators
+        ):
             issues.append(
                 BoundaryIssue(
                     code="runtime-evidence-locator-contract-drift",
@@ -324,7 +350,9 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
     unexpected_alias_files = sorted(
         set(actual_alias_files).difference(allowed_alias_files)
     )
-    missing_alias_files = sorted(set(allowed_alias_files).difference(actual_alias_files))
+    missing_alias_files = sorted(
+        set(allowed_alias_files).difference(actual_alias_files)
+    )
     if unexpected_alias_files or missing_alias_files:
         issues.append(
             BoundaryIssue(
@@ -413,9 +441,7 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
         elif module_name not in compatibility.supported_api_modules:
             valid = False
             issue_code = "unsupported-compatibility-module"
-            message = (
-                f"{module_name} is not an allowed supported API module for evidence consumers"
-            )
+            message = f"{module_name} is not an allowed supported API module for evidence consumers"
         else:
             module_path = _module_source_path(repo_root, runtime_policy, module_name)
             if module_path is None:
@@ -427,9 +453,7 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
                 if attribute_name not in exports:
                     valid = False
                     issue_code = "missing-compatibility-export"
-                    message = (
-                        f"{attribute_name} is not exported by supported API module {module_name}"
-                    )
+                    message = f"{attribute_name} is not exported by supported API module {module_name}"
         compatibility_results.append(
             {
                 "locator": locator,
@@ -476,7 +500,9 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
         "package_roles": package_reports,
         "target_package_roles": target_role_reports,
         "runtime_evidence_compatibility": {
-            "contract_module_path": evidence_contract_module.relative_to(repo_root).as_posix(),
+            "contract_module_path": evidence_contract_module.relative_to(
+                repo_root
+            ).as_posix(),
             "contract_modules": list(contract_modules),
             "contract_locators": list(contract_locators),
             "runtime_version_spec": compatibility.runtime_version_spec,
@@ -502,6 +528,7 @@ def check_package_boundaries(
     *,
     json_out: Path | None = None,
 ) -> dict[str, Any]:
+    """Raise when the package-boundary report contains governance issues."""
     payload = build_package_boundary_report(repo_root.resolve())
     if json_out is not None:
         _write_json(json_out, payload)
@@ -511,6 +538,7 @@ def check_package_boundaries(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the package-boundary audit."""
     parser = argparse.ArgumentParser(
         description="Audit package ownership, exports, and cross-package boundaries."
     )
@@ -521,6 +549,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the package-boundary CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     json_out = Path(args.json_out)

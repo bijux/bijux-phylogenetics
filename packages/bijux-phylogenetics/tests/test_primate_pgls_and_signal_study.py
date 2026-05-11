@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 STUDY_ROOT = REPO_ROOT / "evidence-book" / "studies" / "primate-pgls-and-signal"
 ALLOWED_STUDY_ENTRIES = {
@@ -31,7 +30,9 @@ def test_primate_pgls_and_signal_study_root_is_human_first() -> None:
 
 
 def test_primate_pgls_and_signal_bundles_use_one_repeatable_layout() -> None:
-    for evidence_id in sorted(name for name in ALLOWED_STUDY_ENTRIES if name.startswith("evidence-")):
+    for evidence_id in sorted(
+        name for name in ALLOWED_STUDY_ENTRIES if name.startswith("evidence-")
+    ):
         bundle_root = STUDY_ROOT / evidence_id
         assert {path.name for path in bundle_root.iterdir()} == ALLOWED_BUNDLE_ENTRIES
         assert (bundle_root / "results" / "manifest.json").is_file()

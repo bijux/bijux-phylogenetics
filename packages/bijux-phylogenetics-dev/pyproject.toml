@@ -17,7 +17,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/bijux-phylogenetics-dev/"
+Documentation = "https://bijux.io/bijux-phylogenetics/internal/maintain/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md"
@@ -70,3 +70,10 @@ source = "vcs"
 tag-pattern = "^v(?P<version>.*)$"
 fallback-version = "0.1.0"
 raw-options = { git_describe_command = "git describe --dirty --tags --long --match 'v*'", local_scheme = "dirty-tag", version_scheme = "guess-next-dev", root = "../..", search_parent_directories = true }
+
+[tool.interrogate]
+fail-under = 69
+verbose = 0
+ignore-init-method = true
+ignore-private = true
+ignore-semiprivate = true

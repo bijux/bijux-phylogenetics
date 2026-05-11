@@ -21,6 +21,8 @@ WORKFLOWS_DIR = Path(".github/workflows")
 
 @dataclass(frozen=True)
 class ExecutionSurfaceIssue:
+    """Describe one governed execution-surface contract drift."""
+
     code: str
     path: str
     message: str
@@ -60,7 +62,7 @@ def _root_make_targets(text: str) -> dict[str, str]:
             bodies[current_target].append(raw_line.strip())
             continue
         stripped = raw_line.strip()
-        if not stripped or stripped.startswith(".PHONY:") or stripped.startswith("#"):
+        if not stripped or stripped.startswith((".PHONY:", "#")):
             current_target = None
             continue
         if ":" not in stripped:
@@ -141,6 +143,7 @@ def _workflow_run_commands(path: Path) -> str:
 
 
 def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
+    """Build the execution-surface ownership and workflow report."""
     repo_root = repo_root.resolve()
     payload = _load_toml(repo_root / EXECUTION_SURFACES_POLICY_PATH)
     tool = _as_dict(payload.get("tool"))
@@ -167,7 +170,9 @@ def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
     root_make_text = (repo_root / ROOT_MAKEFILE).read_text(encoding="utf-8")
     root_targets = _root_make_targets(root_make_text)
     missing_root_targets = sorted(
-        target for target in required_root_make_targets if target[:-1] not in root_targets
+        target
+        for target in required_root_make_targets
+        if target[:-1] not in root_targets
     )
     for target in missing_root_targets:
         issues.append(
@@ -238,7 +243,9 @@ def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
             )
             continue
         jobs = _workflow_jobs(workflow_path)
-        missing_jobs = sorted(job_name for job_name in expected_jobs if job_name not in jobs)
+        missing_jobs = sorted(
+            job_name for job_name in expected_jobs if job_name not in jobs
+        )
         if missing_jobs:
             issues.append(
                 ExecutionSurfaceIssue(
@@ -262,10 +269,11 @@ def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
                     for evidence_id in evidence_ids
                     if isinstance(evidence_id, str)
                 )
-                expected_snippet = (
-                    f"make rerun-evidence-cleanroom EVIDENCE_STUDY_ID={study_id} EVIDENCE_IDS={ids}"
-                )
-                if expected_snippet not in run_commands and "make rerun-governed-evidence-cleanroom" not in run_commands:
+                expected_snippet = f"make rerun-evidence-cleanroom EVIDENCE_STUDY_ID={study_id} EVIDENCE_IDS={ids}"
+                if (
+                    expected_snippet not in run_commands
+                    and "make rerun-governed-evidence-cleanroom" not in run_commands
+                ):
                     has_cleanroom_commands = False
                     issues.append(
                         ExecutionSurfaceIssue(
@@ -300,7 +308,9 @@ def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def check_execution_surfaces(
@@ -308,6 +318,7 @@ def check_execution_surfaces(
     *,
     json_out: Path | None = None,
 ) -> dict[str, Any]:
+    """Raise when any governed execution-surface requirement is missing."""
     payload = build_execution_surfaces_report(repo_root)
     if json_out is not None:
         _write_json(json_out, payload)
@@ -317,6 +328,7 @@ def check_execution_surfaces(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the execution-surface audit."""
     parser = argparse.ArgumentParser(
         description="Audit repository make, tox, and workflow execution surfaces."
     )
@@ -327,6 +339,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the execution-surface CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     json_out = Path(args.json_out)

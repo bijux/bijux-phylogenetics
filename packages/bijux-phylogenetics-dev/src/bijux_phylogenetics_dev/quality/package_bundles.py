@@ -7,7 +7,6 @@ from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
 import shutil
-import subprocess
 import sys
 import tarfile
 import tomllib
@@ -15,6 +14,7 @@ from typing import Any
 from uuid import uuid4
 import zipfile
 
+from ..trusted_process import run_text
 from .policies import PUBLICATION_READINESS_POLICY_PATH
 
 DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/package-bundles")
@@ -22,6 +22,8 @@ DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/package-bundles")
 
 @dataclass(frozen=True)
 class BundleIssue:
+    """Describe one package bundle policy or artifact violation."""
+
     code: str
     path: str
     message: str
@@ -29,6 +31,8 @@ class BundleIssue:
 
 @dataclass(frozen=True)
 class PackageBundlePolicy:
+    """Define the governed publish artifact policy for one package."""
+
     package_name: str
     package_dir: str
     wheel_module_root: str
@@ -54,6 +58,7 @@ def _as_str_tuple(values: object) -> tuple[str, ...]:
 
 
 def load_publication_readiness_settings(repo_root: Path) -> dict[str, Any]:
+    """Load the repository publication-readiness settings."""
     payload = _load_toml(repo_root / PUBLICATION_READINESS_POLICY_PATH)
     return _as_dict(
         _as_dict(_as_dict(payload.get("tool")).get("bijux_phylogenetics")).get(
@@ -63,6 +68,7 @@ def load_publication_readiness_settings(repo_root: Path) -> dict[str, Any]:
 
 
 def load_package_bundle_policies(repo_root: Path) -> dict[str, PackageBundlePolicy]:
+    """Load publishable package bundle policies from the governed settings."""
     readiness = load_publication_readiness_settings(repo_root)
     package_policy = _as_dict(readiness.get("package_policy"))
     return _load_policy_entries(package_policy)
@@ -71,6 +77,7 @@ def load_package_bundle_policies(repo_root: Path) -> dict[str, PackageBundlePoli
 def load_target_package_bundle_policies(
     repo_root: Path,
 ) -> dict[str, PackageBundlePolicy]:
+    """Load governed target-package bundle policies from the repository settings."""
     readiness = load_publication_readiness_settings(repo_root)
     package_policy = _as_dict(readiness.get("target_package_policy"))
     return _load_policy_entries(package_policy)
@@ -97,6 +104,7 @@ def _load_policy_entries(
 
 
 def build_dependency_policy_report(repo_root: Path) -> dict[str, Any]:
+    """Build the dependency-policy section of the package bundle report."""
     policies = load_package_bundle_policies(repo_root)
     issues: list[BundleIssue] = []
     packages: list[dict[str, Any]] = []
@@ -164,6 +172,7 @@ def audit_package_bundle_directory(
     policy: PackageBundlePolicy,
     dist_dir: Path,
 ) -> dict[str, Any]:
+    """Audit one built wheel and sdist directory against the governed policy."""
     issues: list[BundleIssue] = []
     wheel_path = _find_single(dist_dir, "*.whl")
     sdist_path = _find_single(dist_dir, "*.tar.gz")
@@ -220,6 +229,7 @@ def build_package_bundle_report(
     build_artifacts: bool,
     publish_artifacts: bool = True,
 ) -> dict[str, Any]:
+    """Build the full publish artifact bundle report for governed packages."""
     policies = load_package_bundle_policies(repo_root)
     target_policies = load_target_package_bundle_policies(repo_root)
     settings = load_publication_readiness_settings(repo_root)
@@ -239,13 +249,17 @@ def build_package_bundle_report(
             )
         )
     target_shape_packages = tuple(
-        entry for entry in settings.get("target_shape_packages", []) if isinstance(entry, str)
+        entry
+        for entry in settings.get("target_shape_packages", [])
+        if isinstance(entry, str)
     )
     target_policy_reports: list[dict[str, Any]] = []
     for package_name in target_shape_packages:
         target_policy = target_policies.get(package_name)
         package_dir = (
-            target_policy.package_dir if target_policy is not None else f"packages/{package_name}"
+            target_policy.package_dir
+            if target_policy is not None
+            else f"packages/{package_name}"
         )
         if package_name not in policies and target_policy is None:
             issues.append(
@@ -266,9 +280,7 @@ def build_package_bundle_report(
         )
     artifacts_root.mkdir(parents=True, exist_ok=True)
     staging_root = (
-        artifacts_root / f".package-bundles-{uuid4().hex}"
-        if build_artifacts
-        else None
+        artifacts_root / f".package-bundles-{uuid4().hex}" if build_artifacts else None
     )
     if staging_root is not None:
         shutil.rmtree(staging_root, ignore_errors=True)
@@ -284,7 +296,7 @@ def build_package_bundle_report(
                 audit_dir = staging_root / package_name
                 shutil.rmtree(audit_dir, ignore_errors=True)
                 audit_dir.mkdir(parents=True, exist_ok=True)
-                subprocess.run(
+                run_text(
                     [
                         sys.executable,
                         "-m",
@@ -297,7 +309,6 @@ def build_package_bundle_report(
                     ],
                     check=True,
                     capture_output=True,
-                    text=True,
                 )
             report = audit_package_bundle_directory(policy, audit_dir)
             if build_artifacts and publish_artifacts:
@@ -330,6 +341,7 @@ def check_package_bundles(
     artifacts_root: Path | None = None,
     json_out: Path | None = None,
 ) -> dict[str, Any]:
+    """Raise when the package bundle report contains any issues."""
     payload = build_package_bundle_report(
         repo_root.resolve(),
         artifacts_root=(artifacts_root or repo_root / DEFAULT_ARTIFACTS_ROOT).resolve(),
@@ -351,6 +363,7 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the package bundle audit."""
     parser = argparse.ArgumentParser(
         description="Audit package dependency policy and publishable build bundles."
     )
@@ -362,6 +375,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the package bundle CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     artifacts_root = Path(args.artifacts_root).resolve()

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 COVERAGE_GAPS_JSON = "coverage-gaps.json"
 COVERAGE_GAPS_MARKDOWN = "coverage-gaps.md"
 

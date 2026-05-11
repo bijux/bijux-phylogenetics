@@ -13,7 +13,6 @@ from .coverage import build_evidence_coverage_gap_report
 from .freshness import build_evidence_freshness_report
 from .integrity import build_evidence_integrity_report
 
-
 CLAIM_REAUDIT_JSON = "claim-reaudit.json"
 CLAIM_REAUDIT_MARKDOWN = "claim-reaudit.md"
 ANALYTICAL_SURFACE_COVERAGE_JSON = "analytical-surface-coverage.json"
@@ -300,7 +299,7 @@ def build_claim_reaudit(repo_root: Path) -> dict[str, object]:
         },
         {
             "claim_id": "repository-overview-comparative-scope",
-            "relative_path": "docs/01-bijux-phylogenetics/index.md",
+            "relative_path": "docs/public/phylogenetics/index.md",
             "claim_text": (
                 "Comparative analysis, ancestral-state workflows, and evidence bundles "
                 "are real current repository surfaces."
@@ -312,7 +311,7 @@ def build_claim_reaudit(repo_root: Path) -> dict[str, object]:
         },
         {
             "claim_id": "repository-overview-alignment-scope",
-            "relative_path": "docs/01-bijux-phylogenetics/index.md",
+            "relative_path": "docs/public/phylogenetics/index.md",
             "claim_text": (
                 "Alignment trimming, translation, and identity workflows exist in the "
                 "runtime surface."
@@ -323,7 +322,7 @@ def build_claim_reaudit(repo_root: Path) -> dict[str, object]:
         },
         {
             "claim_id": "repository-overview-distance-scope",
-            "relative_path": "docs/01-bijux-phylogenetics/index.md",
+            "relative_path": "docs/public/phylogenetics/index.md",
             "claim_text": (
                 "Distance workflows and their maturity surfaces exist in the runtime."
             ),

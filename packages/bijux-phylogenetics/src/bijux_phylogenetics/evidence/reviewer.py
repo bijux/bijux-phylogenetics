@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 
-
 REVIEWER_SUMMARY_JSON = "results/reviewer-summary.json"
 REVIEWER_SUMMARY_MARKDOWN = "results/reviewer-summary.md"
 
@@ -41,7 +40,7 @@ def build_bundle_reviewer_summary(
         for entry in bundle_manifest.get("source_basis", [])
         if isinstance(entry, dict) and isinstance(entry.get("locator"), str)
     ]
-    payload = {
+    return {
         "schema_version": 1,
         "study_id": study_manifest["study_id"],
         "study_title": study_manifest["study_title"],
@@ -69,7 +68,6 @@ def build_bundle_reviewer_summary(
             ),
         ],
     }
-    return payload
 
 
 def render_bundle_reviewer_summary(payload: dict[str, object]) -> str:

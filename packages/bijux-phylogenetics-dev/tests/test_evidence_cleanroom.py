@@ -12,8 +12,7 @@ from bijux_phylogenetics_dev.quality.evidence_cleanroom import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
-def test_repository_cleanroom_rerun_keeps_primate_longevity_selection_clean(
-) -> None:
+def test_repository_cleanroom_rerun_keeps_primate_longevity_selection_clean() -> None:
     report = build_evidence_cleanroom_report(
         REPO_ROOT,
         study_id="primate-longevity-signal",

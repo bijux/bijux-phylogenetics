@@ -134,7 +134,11 @@ def test_sync_inputs_manifests_supports_single_bundle_selection(tmp_path: Path) 
 def test_sync_inputs_manifests_ignores_study_registry_files(tmp_path: Path) -> None:
     repo_root = _minimal_repo(tmp_path)
     _write(
-        repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-registry.json",
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-registry.json",
         "{}\n",
     )
 

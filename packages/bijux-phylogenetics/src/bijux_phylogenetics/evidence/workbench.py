@@ -59,6 +59,7 @@ from .reviewer import (
     encode_bundle_reviewer_summary,
     render_bundle_reviewer_summary,
 )
+from .study_contracts import load_study_contract
 from .study_registry import (
     EvidenceStudyBuildReport,
     EvidenceStudyRegistration,
@@ -67,10 +68,10 @@ from .study_registry import (
     rerun_selected_evidence,
     study_registrations,
 )
-from .study_contracts import load_study_contract
 
-
-DOCS_EVIDENCE_OVERVIEW = Path("docs") / "02-evidence-book" / "index.md"
+DOCS_EVIDENCE_OVERVIEW = (
+    Path("docs") / "public" / "phylogenetics-evidence-book" / "index.md"
+)
 
 
 @dataclass(slots=True)

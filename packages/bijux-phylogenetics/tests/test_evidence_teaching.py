@@ -79,13 +79,18 @@ def _bundle_manifests() -> list[dict[str, object]]:
 
 
 def test_teaching_guide_builds_family_narratives_and_topic_tags() -> None:
-    payload = build_teaching_guide(_study_manifest(), _family_index(), _source_fragment_map())
+    payload = build_teaching_guide(
+        _study_manifest(), _family_index(), _source_fragment_map()
+    )
 
     assert payload["study_id"] == "primate-pgls-and-signal"
     assert payload["family_count"] == 2
     assert "gls" in payload["concept_tags"]
     assert payload["families"][0]["teaching_narrative"]
-    assert "external:lund/pcm2-modes-pgls/script#L122-L136" in payload["families"][0]["source_locators"]
+    assert (
+        "external:lund/pcm2-modes-pgls/script#L122-L136"
+        in payload["families"][0]["source_locators"]
+    )
     assert "Baseline regression" in render_teaching_guide_markdown(payload)
 
 
@@ -108,9 +113,10 @@ def test_teaching_guide_falls_back_when_family_metadata_is_missing() -> None:
     )
 
     assert payload["families"][0]["family_id"] == "transformed-tree-workflows"
-    assert "teaching narrative has not been curated yet" in payload["families"][0][
-        "teaching_narrative"
-    ]
+    assert (
+        "teaching narrative has not been curated yet"
+        in payload["families"][0]["teaching_narrative"]
+    )
     assert "transformed" in payload["families"][0]["concept_tags"]
 
 
@@ -135,8 +141,9 @@ def test_student_safe_reproducibility_contract_surfaces_portable_scope() -> None
         "UV_PROJECT_ENVIRONMENT=artifacts/root/venv"
     )
     assert "no workstation-local /Users paths" in payload["forbidden_assumptions"]
-    assert "Student-Safe Reproducibility" in render_student_safe_reproducibility_markdown(
-        payload
+    assert (
+        "Student-Safe Reproducibility"
+        in render_student_safe_reproducibility_markdown(payload)
     )
 
 
@@ -162,6 +169,7 @@ def test_teaching_and_migration_index_aggregates_guides() -> None:
     assert index_payload["teaching_study_count"] == 1
     assert index_payload["migration_study_count"] == 1
     assert index_payload["course_topic_counts"]["gls"] == 1
-    assert "Teaching And Migration Evidence" in render_teaching_and_migration_index_markdown(
-        index_payload
+    assert (
+        "Teaching And Migration Evidence"
+        in render_teaching_and_migration_index_markdown(index_payload)
     )

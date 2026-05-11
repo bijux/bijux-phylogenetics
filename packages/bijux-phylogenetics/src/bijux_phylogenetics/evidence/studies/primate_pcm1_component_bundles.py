@@ -5,8 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from .primate_longevity_signal import SOURCE_LOCATOR, STUDY_ID
-
+from .primate_longevity_signal import STUDY_ID
 
 REFERENCE_SCRIPT_PATH = (
     "evidence-book/studies/primate-longevity-signal/reference/"
@@ -14,10 +13,7 @@ REFERENCE_SCRIPT_PATH = (
 )
 REFERENCE_BUNDLE_ID = "evidence-001"
 REFERENCE_BUNDLE_ROOT = (
-    Path("evidence-book")
-    / "studies"
-    / "primate-longevity-signal"
-    / REFERENCE_BUNDLE_ID
+    Path("evidence-book") / "studies" / "primate-longevity-signal" / REFERENCE_BUNDLE_ID
 )
 COMPONENT_BUNDLE_DEFINITIONS = [
     {
@@ -109,7 +105,12 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_title": "PCM1 duplicate-species aggregation is explicit and quantified",
         "claim_summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks.",
         "verdict": "matched",
-        "claim_tags": ["teaching", "parity", "data-preparation", "duplicate-aggregation"],
+        "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "duplicate-aggregation",
+        ],
         "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
@@ -189,7 +190,12 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "claim_title": "PCM1 tree-data correspondence is explicit before model fitting",
         "claim_summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference.",
         "verdict": "matched",
-        "claim_tags": ["teaching", "parity", "data-preparation", "tree-data-correspondence"],
+        "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "tree-data-correspondence",
+        ],
         "comparison_mode": "direct_parity",
         "analytical_surfaces": ["tree-data-alignment"],
         "limitations": [
@@ -310,13 +316,15 @@ def _load_context(repo_root: Path) -> dict[str, object]:
         ),
         "block_payloads": {
             path.stem: _read_json(path)
-            for path in sorted((bundle_root / "results" / "block-payloads").glob("*.json"))
+            for path in sorted(
+                (bundle_root / "results" / "block-payloads").glob("*.json")
+            )
         },
     }
 
 
 def _missing_counts(rows: list[dict[str, str]]) -> dict[str, int]:
-    counts = {column: 0 for column in rows[0].keys()}
+    counts = dict.fromkeys(rows[0].keys(), 0)
     for row in rows:
         for column, value in row.items():
             if value == "":
@@ -324,7 +332,9 @@ def _missing_counts(rows: list[dict[str, str]]) -> dict[str, int]:
     return counts
 
 
-def _report_payload_for_spec(spec: dict[str, object], context: dict[str, object]) -> dict[str, object]:
+def _report_payload_for_spec(
+    spec: dict[str, object], context: dict[str, object]
+) -> dict[str, object]:
     r_results = context["r_results"]
     bijux_results = context["bijux_results"]
     reference_rows = context["reference_rows"]
@@ -343,7 +353,9 @@ def _report_payload_for_spec(spec: dict[str, object], context: dict[str, object]
             ),
             "raw_row_count": r_results["data_processing"]["raw_row_count"],
             "processed_row_count": r_results["data_processing"]["processed_row_count"],
-            "processed_species_count": r_results["data_processing"]["processed_species_count"],
+            "processed_species_count": r_results["data_processing"][
+                "processed_species_count"
+            ],
             "checked_in_processed_matches_reference": r_results["data_processing"][
                 "checked_in_processed_matches_reference"
             ],
@@ -372,7 +384,9 @@ def _report_payload_for_spec(spec: dict[str, object], context: dict[str, object]
             "numeric_columns_parse_without_error": all(
                 not failures for failures in numeric_parse_failures.values()
             ),
-            "sex_dimorphism_values": sorted({row["sex_dimorphism"] for row in reference_rows}),
+            "sex_dimorphism_values": sorted(
+                {row["sex_dimorphism"] for row in reference_rows}
+            ),
             "mating_system_values_sample": sorted(
                 {row["mating_system"] for row in reference_rows}
             )[:6],
@@ -391,7 +405,9 @@ def _report_payload_for_spec(spec: dict[str, object], context: dict[str, object]
                 column for column, count in missing_counts.items() if count > 0
             ],
             "rows_with_any_missing_values": sum(
-                1 for row in reference_rows if any(value == "" for value in row.values())
+                1
+                for row in reference_rows
+                if any(value == "" for value in row.values())
             ),
             "na_rm_reference_rule": "across(body_mass:social_group_size, ~mean(.x, na.rm = TRUE))",
             "post_repair_row_count": len(reference_rows),
@@ -403,7 +419,9 @@ def _report_payload_for_spec(spec: dict[str, object], context: dict[str, object]
             "evidence_id": evidence_id,
             "raw_row_count": r_results["data_processing"]["raw_row_count"],
             "processed_row_count": r_results["data_processing"]["processed_row_count"],
-            "processed_species_count": r_results["data_processing"]["processed_species_count"],
+            "processed_species_count": r_results["data_processing"][
+                "processed_species_count"
+            ],
             "raw_to_processed_row_delta": r_results["data_processing"]["raw_row_count"]
             - r_results["data_processing"]["processed_row_count"],
             "duplicate_species_contract_count": r_results["data_processing"][
@@ -420,16 +438,16 @@ def _report_payload_for_spec(spec: dict[str, object], context: dict[str, object]
             "original_tree_locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
             "trimmed_tree_locator": "external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex",
             "r_original_tip_count": tree_processing["r"]["original_tip_count"],
-            "bijux_original_tip_count": tree_processing["bijux"]["original_tree"]["inspect"][
-                "tip_count"
-            ],
-            "r_trimmed_tip_count": tree_processing["r"]["trimmed_tip_count"],
-            "bijux_trimmed_tip_count": tree_processing["bijux"]["trimmed_tree"]["inspect"][
-                "tip_count"
-            ],
-            "original_tree_has_branch_lengths": tree_processing["bijux"]["original_tree"][
+            "bijux_original_tip_count": tree_processing["bijux"]["original_tree"][
                 "inspect"
-            ]["has_branch_lengths"],
+            ]["tip_count"],
+            "r_trimmed_tip_count": tree_processing["r"]["trimmed_tip_count"],
+            "bijux_trimmed_tip_count": tree_processing["bijux"]["trimmed_tree"][
+                "inspect"
+            ]["tip_count"],
+            "original_tree_has_branch_lengths": tree_processing["bijux"][
+                "original_tree"
+            ]["inspect"]["has_branch_lengths"],
             "trimmed_tree_has_branch_lengths": tree_processing["bijux"]["trimmed_tree"][
                 "inspect"
             ]["has_branch_lengths"],
@@ -479,7 +497,9 @@ def _report_payload_for_spec(spec: dict[str, object], context: dict[str, object]
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
-            "processed_csv_locator": r_results["data_processing"]["checked_in_processed_path"],
+            "processed_csv_locator": r_results["data_processing"][
+                "checked_in_processed_path"
+            ],
             "governed_processed_reference_locator": r_results["data_processing"][
                 "reference_processed_path"
             ],
@@ -572,7 +592,9 @@ def _build_manifest(
         },
         "limitations": spec["limitations"],
         "source_fragments": spec["source_fragments"],
-        "reference_script_locators": _reference_script_locators(spec["reference_line_specs"]),
+        "reference_script_locators": _reference_script_locators(
+            spec["reference_line_specs"]
+        ),
         "reference_bundle_locator": REFERENCE_BUNDLE_ROOT.as_posix(),
         "supporting_report_locator": (
             f"evidence-book/studies/primate-longevity-signal/{spec['evidence_id']}/"
@@ -604,9 +626,7 @@ def _render_bundle_readme(
         "Reference script locators:",
         "",
     ]
-    lines.extend(
-        f"- `{locator}`" for locator in manifest["reference_script_locators"]
-    )
+    lines.extend(f"- `{locator}`" for locator in manifest["reference_script_locators"])
     lines.extend(
         [
             "",
@@ -656,9 +676,7 @@ def build_primate_data_preparation_bundle_index(repo_root: Path) -> dict[str, ob
                 "title": manifest["evidence_title"],
                 "claim_id": manifest["claim_ids"][0],
                 "relative_path": (
-                    Path("studies")
-                    / "primate-longevity-signal"
-                    / evidence_id
+                    Path("studies") / "primate-longevity-signal" / evidence_id
                 ).as_posix(),
                 "claim_tags": manifest["claim_tags"],
                 "source_fragments": manifest["source_fragments"],
@@ -732,14 +750,18 @@ def build_primate_structural_parity_table(repo_root: Path) -> dict[str, object]:
             evidence_id="evidence-006",
             metric_name="original_tip_count",
             r_value=tree_processing["r"]["original_tip_count"],
-            bijux_value=tree_processing["bijux"]["original_tree"]["inspect"]["tip_count"],
+            bijux_value=tree_processing["bijux"]["original_tree"]["inspect"][
+                "tip_count"
+            ],
         ),
         row(
             row_id="trimmed-tip-count",
             evidence_id="evidence-006",
             metric_name="trimmed_tip_count",
             r_value=tree_processing["r"]["trimmed_tip_count"],
-            bijux_value=tree_processing["bijux"]["trimmed_tree"]["inspect"]["tip_count"],
+            bijux_value=tree_processing["bijux"]["trimmed_tree"]["inspect"][
+                "tip_count"
+            ],
         ),
         row(
             row_id="rooted",
@@ -760,7 +782,9 @@ def build_primate_structural_parity_table(repo_root: Path) -> dict[str, object]:
             evidence_id="evidence-007",
             metric_name="ultrametric",
             r_value=tree_processing["r"]["ultrametric"],
-            bijux_value=tree_processing["bijux"]["trimmed_tree"]["validate"]["ultrametric"],
+            bijux_value=tree_processing["bijux"]["trimmed_tree"]["validate"][
+                "ultrametric"
+            ],
         ),
         row(
             row_id="node-label-match",
@@ -774,7 +798,9 @@ def build_primate_structural_parity_table(repo_root: Path) -> dict[str, object]:
             evidence_id="evidence-008",
             metric_name="missing_tips",
             r_value="|".join(sorted(r_results["tree_processing"]["missing_tips"])),
-            bijux_value="|".join(sorted(tree_processing["bijux"]["pruning"]["removed_taxa"])),
+            bijux_value="|".join(
+                sorted(tree_processing["bijux"]["pruning"]["removed_taxa"])
+            ),
         ),
         row(
             row_id="tip-order-aligned",
@@ -787,7 +813,9 @@ def build_primate_structural_parity_table(repo_root: Path) -> dict[str, object]:
             row_id="first-six-tip-order",
             evidence_id="evidence-008",
             metric_name="aligned_species_first_6",
-            r_value="|".join(r_results["data_tree_alignment"]["aligned_species_first_6"]),
+            r_value="|".join(
+                r_results["data_tree_alignment"]["aligned_species_first_6"]
+            ),
             bijux_value="|".join(
                 bijux_results["data_tree_alignment"]["aligned_species_first_6"]
             ),

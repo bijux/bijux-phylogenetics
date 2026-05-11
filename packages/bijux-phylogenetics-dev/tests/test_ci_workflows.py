@@ -131,7 +131,10 @@ def test_publish_readiness_workflow_keeps_report_and_gate_jobs_separate() -> Non
 
     assert "tox -e publish-readiness" in report_text
     assert "tox -e release-readiness-gate" in gate_text
-    assert gate_job["if"] == "${{ github.event_name == 'workflow_dispatch' && inputs.enforce_release_gate }}"
+    assert (
+        gate_job["if"]
+        == "${{ github.event_name == 'workflow_dispatch' && inputs.enforce_release_gate }}"
+    )
     upload_paths = [
         line.strip()
         for step in report_job.get("steps", [])
@@ -177,4 +180,6 @@ def test_runtime_quality_workflow_isolates_runtime_package_checks() -> None:
         if isinstance(step, dict) and isinstance(step.get("run"), str)
     )
 
-    assert "tox -e lint-core,test-core,quality-core,build-core,sbom-core" in runtime_text
+    assert (
+        "tox -e lint-core,test-core,quality-core,build-core,sbom-core" in runtime_text
+    )

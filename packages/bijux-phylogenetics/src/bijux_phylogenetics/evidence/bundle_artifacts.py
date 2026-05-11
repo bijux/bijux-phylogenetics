@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 from .bundle_contracts import (
-    ARTIFACT_JSON_FILENAMES,
     LOCAL_ARTIFACT_PURPOSES,
     REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
     build_bundle_artifact_contract,
@@ -24,16 +23,16 @@ def render_reference_r(contract: dict[str, Any]) -> str:
         "#!/usr/bin/env Rscript",
         "",
         "suppressPackageStartupMessages({",
-        '  library(jsonlite)',
+        "  library(jsonlite)",
         "})",
         "",
         'script_path <- sub("^--file=", "", commandArgs(trailingOnly = FALSE)[grep("^--file=", commandArgs(trailingOnly = FALSE))][1])',
         "bundle_root <- dirname(normalizePath(script_path, mustWork = TRUE))",
-        "results_root <- file.path(bundle_root, \"results\")",
-        'dir.create(results_root, recursive = TRUE, showWarnings = FALSE)',
-        'args <- commandArgs(trailingOnly = TRUE)',
+        'results_root <- file.path(bundle_root, "results")',
+        "dir.create(results_root, recursive = TRUE, showWarnings = FALSE)",
+        "args <- commandArgs(trailingOnly = TRUE)",
         "out_dir <- if (length(args) >= 1) normalizePath(args[[1]], mustWork = FALSE) else results_root",
-        'dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)',
+        "dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)",
         "",
         "payload <- list(",
         f'  study_id = "{contract["study_id"]}",',
@@ -60,7 +59,7 @@ def render_reference_r(contract: dict[str, Any]) -> str:
             ")",
             "",
             'write_json(payload, file.path(out_dir, "reference-contract.json"), auto_unbox = TRUE, pretty = TRUE)',
-            'cat(toJSON(payload, auto_unbox = TRUE, pretty = TRUE))',
+            "cat(toJSON(payload, auto_unbox = TRUE, pretty = TRUE))",
             'cat("\\n")',
             "",
         ]
@@ -158,19 +157,19 @@ def render_checks_json(contract: dict[str, Any]) -> dict[str, Any]:
         "validation_rules": [
             {
                 "rule_id": "bundle-local-artifacts-present",
-                "pass_when": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",
+                "pass_when": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",  # nosec B105
             },
             {
                 "rule_id": "results-directory-governed",
-                "pass_when": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs",
+                "pass_when": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs",  # nosec B105
             },
             {
                 "rule_id": "primary-outputs-present",
-                "pass_when": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces",
+                "pass_when": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces",  # nosec B105
             },
             {
                 "rule_id": "verdict-still-explicit",
-                "pass_when": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries",
+                "pass_when": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries",  # nosec B105
             },
         ],
     }

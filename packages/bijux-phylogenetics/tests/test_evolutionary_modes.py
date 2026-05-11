@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.ancestral import (
     reconstruct_continuous_evolutionary_mode_states,
 )
@@ -15,7 +14,7 @@ from bijux_phylogenetics.comparative import (
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
 )
-
+from bijux_phylogenetics.errors import ComparativeMethodError
 
 FIXTURE_ROOT = Path(__file__).resolve().parent / "fixtures"
 EXAMPLE_TREE = FIXTURE_ROOT / "trees" / "example_tree.nwk"
@@ -32,7 +31,9 @@ def test_rescale_tree_ornstein_uhlenbeck_reports_deterministic_branch_lengths() 
     assert report.branch_rows[0].node == "A"
     assert math.isclose(report.branch_rows[0].parent_depth, 0.2)
     assert math.isclose(report.branch_rows[0].child_depth, 0.3)
-    assert math.isclose(report.branch_rows[0].transformed_branch_length, 0.090634623461009)
+    assert math.isclose(
+        report.branch_rows[0].transformed_branch_length, 0.090634623461009
+    )
 
 
 def test_rescale_tree_early_burst_zero_matches_original_tree_length() -> None:

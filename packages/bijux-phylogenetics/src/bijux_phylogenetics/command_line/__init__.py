@@ -209,8 +209,8 @@ from bijux_phylogenetics.errors import (
     MetadataJoinError,
     PhylogeneticsError,
 )
-from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.evidence.book import validate_evidence_book
+from bijux_phylogenetics.evidence.bundles import bundle_directory, validate_bundle
 from bijux_phylogenetics.evidence.closure import (
     build_claim_reaudit,
     build_closure_criteria,

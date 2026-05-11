@@ -51,7 +51,9 @@ def test_build_evidence_bundle_template_uses_governed_portable_locators() -> Non
     ]
 
 
-def test_write_evidence_bundle_template_creates_governed_bundle_files(tmp_path: Path) -> None:
+def test_write_evidence_bundle_template_creates_governed_bundle_files(
+    tmp_path: Path,
+) -> None:
     output_root = tmp_path / "bundle"
     written = write_evidence_bundle_template(output_root, _template_spec())
 

@@ -47,9 +47,12 @@ expected_mypy_config_path = "configs/mypy.ini"
     _write(repo_root / "tox.ini", "[tox]\nminversion = 4.11\n")
     _write(
         repo_root / "makes" / "packages" / "runtime.mk",
-        'MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini\n',
+        "MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini\n",
     )
-    _write(repo_root / "packages" / "runtime" / "pyproject.toml", "[project]\nname='runtime'\n")
+    _write(
+        repo_root / "packages" / "runtime" / "pyproject.toml",
+        "[project]\nname='runtime'\n",
+    )
     return repo_root
 
 

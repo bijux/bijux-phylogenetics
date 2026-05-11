@@ -1,0 +1,304 @@
+{
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "EvidenceStudyBundleSummary": {
+        "properties": {
+          "evidence_id": {
+            "type": "string"
+          },
+          "report_path": {
+            "type": "string"
+          },
+          "results_path": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "title",
+          "report_path",
+          "results_path"
+        ],
+        "type": "object"
+      },
+      "EvidenceStudyDetail": {
+        "properties": {
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceStudyBundleSummary"
+            },
+            "type": "array"
+          },
+          "study": {
+            "$ref": "#/components/schemas/EvidenceStudySummary"
+          }
+        },
+        "required": [
+          "study",
+          "evidence"
+        ],
+        "type": "object"
+      },
+      "EvidenceStudyId": {
+        "enum": [
+          "primate-longevity-signal",
+          "primate-pgls-and-signal"
+        ],
+        "type": "string"
+      },
+      "EvidenceStudyListResponse": {
+        "properties": {
+          "generated_on": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "studies": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceStudySummary"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "generated_on",
+          "studies"
+        ],
+        "type": "object"
+      },
+      "EvidenceStudySummary": {
+        "properties": {
+          "datasets_path": {
+            "type": "string"
+          },
+          "evidence_count": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "overview_path": {
+            "type": "string"
+          },
+          "reference_path": {
+            "type": "string"
+          },
+          "study_id": {
+            "$ref": "#/components/schemas/EvidenceStudyId"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "study_id",
+          "title",
+          "evidence_count",
+          "datasets_path",
+          "reference_path",
+          "overview_path"
+        ],
+        "type": "object"
+      },
+      "HealthStatus": {
+        "properties": {
+          "generated_on": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "release": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "release",
+          "generated_on"
+        ],
+        "type": "object"
+      },
+      "PackageMapResponse": {
+        "properties": {
+          "generated_on": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/PackageSummary"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "generated_on",
+          "packages"
+        ],
+        "type": "object"
+      },
+      "PackageSummary": {
+        "properties": {
+          "docs_path": {
+            "type": "string"
+          },
+          "package_name": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "runtime",
+              "compatibility-alias",
+              "maintainer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "package_name",
+          "role",
+          "docs_path"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "This checked-in OpenAPI contract defines the stable public read surface that\nfuture Bijux Phylogenetics HTTP delivery should preserve for repository\nhealth, runtime package ownership, and governed PCM1/PCM2 evidence-study\nsummaries.\n",
+    "summary": "Freeze-only contract for runtime ownership and evidence-study summary surfaces.",
+    "title": "Bijux Phylogenetics Public API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/evidence/studies": {
+      "get": {
+        "operationId": "listEvidenceStudies",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceStudyListResponse"
+                }
+              }
+            },
+            "description": "Evidence-study catalog."
+          }
+        },
+        "summary": "List governed PCM studies in the evidence-book.",
+        "tags": [
+          "evidence"
+        ]
+      }
+    },
+    "/v1/evidence/studies/{studyId}": {
+      "get": {
+        "operationId": "getEvidenceStudy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "studyId",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/EvidenceStudyId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceStudyDetail"
+                }
+              }
+            },
+            "description": "One evidence-study summary."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Study is not available."
+          }
+        },
+        "summary": "Return one governed evidence-study summary.",
+        "tags": [
+          "evidence"
+        ]
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            },
+            "description": "API health details."
+          }
+        },
+        "summary": "Report repository API readiness.",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/v1/runtime/package-map": {
+      "get": {
+        "operationId": "getRuntimePackageMap",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageMapResponse"
+                }
+              }
+            },
+            "description": "Runtime package ownership details."
+          }
+        },
+        "summary": "Return the canonical runtime and compatibility alias package map.",
+        "tags": [
+          "runtime"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://bijux.io/bijux-phylogenetics"
+    }
+  ]
+}

@@ -15,24 +15,24 @@ WORKFLOWS_DIR = Path(".github/workflows")
 ROOT_MAKEFILE = Path("makes/root.mk")
 TOX_FILE = Path("tox.ini")
 REQUIRED_MAKE_TARGETS = {
-    "list-evidence-studies": '$(ROOT_ARTIFACTS_DIR)/evidence-studies.json',
-    "build-evidence-book": '$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json',
-    "build-evidence-study": '$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json',
-    "validate-evidence-book": '$(ROOT_ARTIFACTS_DIR)/evidence-book-validation.json',
-    "report-evidence-completeness": '$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json',
-    "check-evidence-completeness": '$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json',
-    "report-evidence-governance": '$(MAKE) report-artifact-governance',
-    "check-evidence-governance": '$(MAKE) check-artifact-governance',
-    "report-artifact-governance": '$(ROOT_ARTIFACTS_DIR)/artifact-governance.json',
-    "check-artifact-governance": '$(ROOT_ARTIFACTS_DIR)/artifact-governance.json',
-    "report-execution-surfaces": '$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json',
-    "check-execution-surfaces": '$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json',
-    "report-package-boundaries": '$(ROOT_ARTIFACTS_DIR)/package-boundaries.json',
-    "check-package-boundaries": '$(ROOT_ARTIFACTS_DIR)/package-boundaries.json',
-    "report-release-readiness": '$(MAKE) report-publish-readiness',
-    "check-release-readiness": '$(MAKE) check-publish-readiness',
-    "rerun-evidence-cleanroom": '$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom',
-    "rerun-governed-evidence-cleanroom": '$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom',
+    "list-evidence-studies": "$(ROOT_ARTIFACTS_DIR)/evidence-studies.json",
+    "build-evidence-book": "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json",
+    "build-evidence-study": "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json",
+    "validate-evidence-book": "$(ROOT_ARTIFACTS_DIR)/evidence-book-validation.json",
+    "report-evidence-completeness": "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json",
+    "check-evidence-completeness": "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json",
+    "report-evidence-governance": "$(MAKE) report-artifact-governance",
+    "check-evidence-governance": "$(MAKE) check-artifact-governance",
+    "report-artifact-governance": "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json",
+    "check-artifact-governance": "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json",
+    "report-execution-surfaces": "$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json",
+    "check-execution-surfaces": "$(ROOT_ARTIFACTS_DIR)/execution-surfaces.json",
+    "report-package-boundaries": "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json",
+    "check-package-boundaries": "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json",
+    "report-release-readiness": "$(MAKE) report-publish-readiness",
+    "check-release-readiness": "$(MAKE) check-publish-readiness",
+    "rerun-evidence-cleanroom": "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom",
+    "rerun-governed-evidence-cleanroom": "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom",
 }
 REQUIRED_WORKFLOW_ARTIFACT_PATHS = {
     "repository-governance.yml": {
@@ -77,6 +77,8 @@ REQUIRED_WORKFLOW_COMMAND_SNIPPETS = {
 
 @dataclass(frozen=True)
 class ArtifactGovernanceIssue:
+    """Describe one artifact-output contract drift."""
+
     code: str
     path: str
     message: str
@@ -166,12 +168,17 @@ def _run_commands(workflow: dict[str, Any]) -> str:
 
 
 def build_artifact_governance_report(repo_root: Path) -> dict[str, Any]:
+    """Build the repository artifact-governance report."""
     repo_root = repo_root.resolve()
     issues: list[ArtifactGovernanceIssue] = []
 
     tox_text = (repo_root / TOX_FILE).read_text(encoding="utf-8")
     toxworkdir_line = next(
-        (line.strip() for line in tox_text.splitlines() if line.strip().startswith("toxworkdir")),
+        (
+            line.strip()
+            for line in tox_text.splitlines()
+            if line.strip().startswith("toxworkdir")
+        ),
         "",
     )
     expected_toxworkdir = "toxworkdir = {tox_root}/artifacts/root/tox"
@@ -219,7 +226,9 @@ def build_artifact_governance_report(repo_root: Path) -> dict[str, Any]:
         )
 
     workflows: list[dict[str, Any]] = []
-    for workflow_name, expected_paths in sorted(REQUIRED_WORKFLOW_ARTIFACT_PATHS.items()):
+    for workflow_name, expected_paths in sorted(
+        REQUIRED_WORKFLOW_ARTIFACT_PATHS.items()
+    ):
         workflow_path = repo_root / WORKFLOWS_DIR / workflow_name
         if not workflow_path.is_file():
             issues.append(
@@ -298,6 +307,7 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the artifact-governance audit."""
     parser = argparse.ArgumentParser(
         description="Audit repo execution surfaces for governed artifact output paths."
     )
@@ -308,6 +318,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the artifact-governance CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     payload = build_artifact_governance_report(repo_root)

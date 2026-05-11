@@ -28,7 +28,9 @@ class EvidenceBundleTemplateSpec:
     freshness_date: str
 
 
-def build_evidence_bundle_template(spec: EvidenceBundleTemplateSpec) -> dict[str, object]:
+def build_evidence_bundle_template(
+    spec: EvidenceBundleTemplateSpec,
+) -> dict[str, object]:
     manifest = {
         "schema_version": 1,
         "study_id": spec.study_id,
@@ -107,7 +109,7 @@ def build_evidence_bundle_template(spec: EvidenceBundleTemplateSpec) -> dict[str
             f'  evidence_id = "{spec.evidence_id}",',
             '  execution_mode = "template-contract"',
             ")",
-            'cat(jsonlite::toJSON(payload, auto_unbox = TRUE, pretty = TRUE))',
+            "cat(jsonlite::toJSON(payload, auto_unbox = TRUE, pretty = TRUE))",
             'cat("\\n")',
             "",
         ]

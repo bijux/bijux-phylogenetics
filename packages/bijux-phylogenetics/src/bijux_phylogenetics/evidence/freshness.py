@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections import Counter
 import json
 from pathlib import Path
+import shutil
 import subprocess  # nosec B404
-
 
 FRESHNESS_REPORT_JSON = "freshness-report.json"
 FRESHNESS_REPORT_MARKDOWN = "freshness-report.md"
@@ -21,8 +21,11 @@ def _git_last_change_date(repo_root: Path, path: str) -> str | None:
     candidate = repo_root / path
     if not candidate.exists():
         return None
+    git_bin = shutil.which("git")
+    if git_bin is None:
+        return None
     result = subprocess.run(  # nosec B603
-        ["git", "-C", str(repo_root), "log", "-1", "--format=%cs", "--", path],
+        [git_bin, "-C", str(repo_root), "log", "-1", "--format=%cs", "--", path],
         check=False,
         capture_output=True,
         text=True,

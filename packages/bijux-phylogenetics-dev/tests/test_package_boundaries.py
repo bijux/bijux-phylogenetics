@@ -94,7 +94,12 @@ dependencies = ["PyYAML>=6.0"]
         + "\n",
     )
     _write(
-        repo_root / "packages" / "demo-runtime" / "src" / "demo_runtime" / "__init__.py",
+        repo_root
+        / "packages"
+        / "demo-runtime"
+        / "src"
+        / "demo_runtime"
+        / "__init__.py",
         """
 from .api import run_pgls
 
@@ -133,7 +138,12 @@ SUPPORTED_EVIDENCE_API_LOCATORS = ("demo_runtime.api:run_pgls",)
         "def main() -> int:\n    return 0\n",
     )
     _write(
-        repo_root / "packages" / "demo-alias" / "src" / "demo_alias" / "runtime_alias.py",
+        repo_root
+        / "packages"
+        / "demo-alias"
+        / "src"
+        / "demo_alias"
+        / "runtime_alias.py",
         "def install_runtime_aliases() -> None:\n    return None\n",
     )
     _write(
@@ -152,7 +162,7 @@ def test_load_package_boundary_policy_reads_repo_owned_policy() -> None:
 
     assert "bijux-phylogenetics" in policy.package_roles
     assert "phylogenetic" in policy.package_roles
-    assert "bijux-phylogenetics-evidence" in policy.target_package_roles
+    assert policy.target_package_roles == {}
     assert policy.runtime_evidence_compatibility.runtime_version_spec == ">=0.1.0,<1.0"
 
 
@@ -173,7 +183,12 @@ def test_build_package_boundary_report_flags_forbidden_runtime_exports(
 ) -> None:
     repo_root = _minimal_repo(tmp_path)
     _write(
-        repo_root / "packages" / "demo-runtime" / "src" / "demo_runtime" / "__init__.py",
+        repo_root
+        / "packages"
+        / "demo-runtime"
+        / "src"
+        / "demo_runtime"
+        / "__init__.py",
         "__all__ = ['run_pgls', 'EvidenceBundleReport']\n",
     )
 

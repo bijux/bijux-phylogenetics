@@ -8,11 +8,13 @@ import json
 import os
 from pathlib import Path
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tomllib
+from typing import Any
 from uuid import uuid4
 
+from ..trusted_process import run_text
 from .policies import EXECUTION_SURFACES_POLICY_PATH
 
 DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/evidence-cleanroom")
@@ -20,6 +22,8 @@ DEFAULT_ARTIFACTS_ROOT = Path("artifacts/root/evidence-cleanroom")
 
 @dataclass(frozen=True)
 class EvidenceCleanroomReport:
+    """Summarize one clean-room evidence rerun and validation pass."""
+
     study_id: str
     selected_evidence_ids: tuple[str, ...]
     cleanroom_path: str
@@ -35,6 +39,8 @@ class EvidenceCleanroomReport:
 
 @dataclass(frozen=True)
 class SelectedEvidenceCleanroomReport:
+    """Summarize the governed set of clean-room evidence reruns."""
+
     selection_count: int
     reports: tuple[EvidenceCleanroomReport, ...]
 
@@ -45,17 +51,16 @@ def _run(
     cwd: Path,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    return run_text(
         command,
         check=True,
-        cwd=str(cwd),
-        env=env,
-        text=True,
         capture_output=True,
+        cwd=cwd,
+        env=env,
     )
 
 
-def _json_payload(output: str) -> dict[str, object]:
+def _json_payload(output: str) -> dict[str, Any]:
     payload = json.loads(output)
     if not isinstance(payload, dict):
         raise ValueError("expected JSON object output")
@@ -68,11 +73,11 @@ def _load_selected_cleanroom_runs(repo_root: Path) -> list[tuple[str, list[str]]
     tool = payload.get("tool", {})
     workspace = tool.get("bijux_phylogenetics", {}) if isinstance(tool, dict) else {}
     policy = (
-        workspace.get("execution_surfaces", {})
-        if isinstance(workspace, dict)
-        else {}
+        workspace.get("execution_surfaces", {}) if isinstance(workspace, dict) else {}
     )
-    selections = policy.get("cleanroom_selections", []) if isinstance(policy, dict) else []
+    selections = (
+        policy.get("cleanroom_selections", []) if isinstance(policy, dict) else []
+    )
     results: list[tuple[str, list[str]]] = []
     for selection in selections:
         if not isinstance(selection, dict):
@@ -81,7 +86,9 @@ def _load_selected_cleanroom_runs(repo_root: Path) -> list[tuple[str, list[str]]
         evidence_ids = selection.get("evidence_ids", [])
         if not isinstance(study_id, str) or not isinstance(evidence_ids, list):
             continue
-        normalized_ids = [evidence_id for evidence_id in evidence_ids if isinstance(evidence_id, str)]
+        normalized_ids = [
+            evidence_id for evidence_id in evidence_ids if isinstance(evidence_id, str)
+        ]
         if normalized_ids:
             results.append((study_id, normalized_ids))
     return results
@@ -94,6 +101,7 @@ def build_evidence_cleanroom_report(
     evidence_ids: list[str],
     artifacts_root: Path | None = None,
 ) -> EvidenceCleanroomReport:
+    """Run one evidence selection in a detached worktree and report the outcome."""
     repo_root = repo_root.resolve()
     selected_evidence_ids = tuple(evidence_ids)
     if not selected_evidence_ids:
@@ -101,9 +109,21 @@ def build_evidence_cleanroom_report(
     artifacts_root = (artifacts_root or repo_root / DEFAULT_ARTIFACTS_ROOT).resolve()
     artifacts_root.mkdir(parents=True, exist_ok=True)
     cleanroom_root = artifacts_root / f"{study_id}-{uuid4().hex[:8]}-worktree"
+    git_bin = shutil.which("git")
+    if git_bin is None:
+        raise FileNotFoundError("git is required for evidence clean-room reruns")
 
     _run(
-        ["git", "-C", str(repo_root), "worktree", "add", "--detach", str(cleanroom_root), "HEAD"],
+        [
+            git_bin,
+            "-C",
+            str(repo_root),
+            "worktree",
+            "add",
+            "--detach",
+            str(cleanroom_root),
+            "HEAD",
+        ],
         cwd=repo_root,
     )
     try:
@@ -145,6 +165,16 @@ def build_evidence_cleanroom_report(
             _run(validate_command, cwd=cleanroom_root, env=env).stdout
         )
 
+        sync_command = [
+            sys.executable,
+            "-m",
+            "bijux_phylogenetics_dev.quality.evidence_artifacts",
+            "sync",
+            "--repo-root",
+            ".",
+        ]
+        _run(sync_command, cwd=cleanroom_root, env=env)
+
         artifact_command = [
             sys.executable,
             "-m",
@@ -158,7 +188,7 @@ def build_evidence_cleanroom_report(
         )
 
         status_output = _run(
-            ["git", "-C", str(cleanroom_root), "status", "--short"],
+            [git_bin, "-C", str(cleanroom_root), "status", "--short"],
             cwd=cleanroom_root,
         ).stdout
         status_entries = tuple(
@@ -191,11 +221,18 @@ def build_evidence_cleanroom_report(
             status_entries=status_entries,
         )
     finally:
-        subprocess.run(
-            ["git", "-C", str(repo_root), "worktree", "remove", "--force", str(cleanroom_root)],
+        run_text(
+            [
+                git_bin,
+                "-C",
+                str(repo_root),
+                "worktree",
+                "remove",
+                "--force",
+                str(cleanroom_root),
+            ],
             check=True,
-            cwd=str(repo_root),
-            text=True,
+            cwd=repo_root,
             capture_output=True,
         )
         if cleanroom_root.exists():
@@ -207,6 +244,7 @@ def build_selected_evidence_cleanroom_reports(
     *,
     artifacts_root: Path | None = None,
 ) -> SelectedEvidenceCleanroomReport:
+    """Run every governed clean-room evidence selection and collect reports."""
     repo_root = repo_root.resolve()
     reports = tuple(
         build_evidence_cleanroom_report(
@@ -231,43 +269,51 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the clean-room evidence CLI."""
     parser = argparse.ArgumentParser(
         description="Run an evidence rerun in a detached clean-room worktree."
     )
-    parser.add_argument("command", choices=("report", "check", "report-selected", "check-selected"))
+    parser.add_argument(
+        "command", choices=("report", "check", "report-selected", "check-selected")
+    )
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--study-id")
-    parser.add_argument("--evidence-id", dest="evidence_ids", action="append", default=[])
+    parser.add_argument(
+        "--evidence-id", dest="evidence_ids", action="append", default=[]
+    )
     parser.add_argument("--artifacts-root", default=str(DEFAULT_ARTIFACTS_ROOT))
     parser.add_argument("--json-out", default="")
     return parser.parse_args()
 
 
 def main() -> int:
+    """Run the clean-room evidence CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     artifacts_root = Path(args.artifacts_root)
     if not artifacts_root.is_absolute():
         artifacts_root = repo_root / artifacts_root
     if args.command in {"report-selected", "check-selected"}:
-        report = build_selected_evidence_cleanroom_reports(
+        selected_report = build_selected_evidence_cleanroom_reports(
             repo_root,
             artifacts_root=artifacts_root,
         )
         payload: dict[str, object] = {
-            "selection_count": report.selection_count,
-            "reports": [asdict(entry) for entry in report.reports],
+            "selection_count": selected_report.selection_count,
+            "reports": [asdict(entry) for entry in selected_report.reports],
         }
     else:
         if not args.study_id:
-            raise SystemExit("--study-id is required for single-selection clean-room runs")
-        report = build_evidence_cleanroom_report(
+            raise SystemExit(
+                "--study-id is required for single-selection clean-room runs"
+            )
+        single_report = build_evidence_cleanroom_report(
             repo_root,
             study_id=args.study_id,
             evidence_ids=args.evidence_ids,
             artifacts_root=artifacts_root,
         )
-        payload = asdict(report)
+        payload = asdict(single_report)
     json_out = args.json_out
     if json_out:
         json_path = Path(json_out)
@@ -279,14 +325,14 @@ def main() -> int:
     _write_json(json_path, payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     if args.command == "check":
-        if report.validation_issue_count:
+        if single_report.validation_issue_count:
             raise SystemExit("evidence clean-room validation failed")
-        if report.artifact_issue_count:
+        if single_report.artifact_issue_count:
             raise SystemExit("evidence clean-room artifact validation failed")
-        if not report.worktree_clean:
+        if not single_report.worktree_clean:
             raise SystemExit("evidence clean-room rerun produced repository drift")
     if args.command == "check-selected":
-        for entry in report.reports:
+        for entry in selected_report.reports:
             if entry.validation_issue_count:
                 raise SystemExit("evidence clean-room validation failed")
             if entry.artifact_issue_count:

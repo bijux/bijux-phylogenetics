@@ -17,9 +17,7 @@ target_shape_packages = [
     "bijux-phylogenetics",
     "phylogenetic",
     "bijux-phylogenetics-dev",
-    "bijux-phylogenetics-evidence",
 ]
-forbidden_runtime_subpackages = ["evidence"]
 required_root_make_targets = [
     "list-evidence-studies:",
     "build-evidence-book:",
@@ -51,10 +49,8 @@ required_root_make_targets = [
 canonical_runtime_package = "bijux-phylogenetics"
 compatibility_alias_package = "phylogenetic"
 maintainer_package = "bijux-phylogenetics-dev"
-evidence_consumer_package = "bijux-phylogenetics-evidence"
 evidence_book_root = "evidence-book"
 runtime_example_input_root = "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/examples"
-runtime_must_not_own_subpackages = ["evidence"]
 runtime_bundle_contract_module = "bijux_phylogenetics.provenance.bundles"
 evidence_bundle_contract_module = "bijux_phylogenetics.evidence.bundles"
 
@@ -136,30 +132,6 @@ required_wheel_entries = [
     "bijux_phylogenetics_dev/quality/policies/publication_readiness.toml",
     "bijux_phylogenetics_dev/release/publication_guard.py",
     "bijux_phylogenetics_dev/py.typed",
-]
-forbidden_archive_prefixes = [
-    "tests/",
-    "docs/",
-    "evidence-book/",
-    "artifacts/",
-]
-
-[tool.bijux_phylogenetics.publication_readiness.target_package_policy."bijux-phylogenetics-evidence"]
-package_dir = "packages/bijux-phylogenetics-evidence"
-wheel_module_root = "bijux_phylogenetics_evidence"
-allowed_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
-required_sdist_entries = [
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE",
-    "NOTICE",
-    "src/bijux_phylogenetics_evidence/__init__.py",
-    "src/bijux_phylogenetics_evidence/cli.py",
-]
-required_wheel_entries = [
-    "bijux_phylogenetics_evidence/__init__.py",
-    "bijux_phylogenetics_evidence/cli.py",
-    "bijux_phylogenetics_evidence/py.typed",
 ]
 forbidden_archive_prefixes = [
     "tests/",

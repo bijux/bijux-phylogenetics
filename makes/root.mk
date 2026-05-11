@@ -4,13 +4,13 @@ include $(ROOT_MAKEFILE_DIR)/bijux-py/root/env.mk
 include $(ROOT_MAKEFILE_DIR)/env.mk
 include $(ROOT_MAKEFILE_DIR)/packages.mk
 
-ROOT_DEV_PYTHONPATH := $(CURDIR)/packages/bijux-phylogenetics-dev/src
+ROOT_DEV_PYTHONPATH := $(CURDIR)/packages/bijux-phylogenetics-dev/src:$(CURDIR)/packages/bijux-phylogenetics/src
 BIJUX_PY_SYSTEM_REL ?= .bijux/shared/bijux-makes-py
 ROOT_CHECK_VENV := $(ROOT_ARTIFACTS_DIR)/check-venv
 ROOT_DOCS_DEV_ADDR ?= 127.0.0.1:8000
 UV_SYNC := UV_PROJECT_ENVIRONMENT="$(ROOT_CHECK_VENV)" $(UV) sync --frozen --group dev --python "$(PYTHON)"
 CLI := $(ROOT_CHECK_VENV)/bin/bijux-phylogenetics
-DEV_RUN = PYTHONPATH="$(CURDIR)/packages/bijux-phylogenetics-dev/src$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
+DEV_RUN = PYTHONPATH="$(ROOT_DEV_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
 DOCS_RENDER_SERVE_CONFIG := 0
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/repository/root.mk

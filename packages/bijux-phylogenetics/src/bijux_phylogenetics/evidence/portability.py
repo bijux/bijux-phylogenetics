@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 import re
 
-
 PORTABILITY_ALLOWED_REPO_PREFIXES = (
     ".github/",
     "apis/",
@@ -62,14 +61,21 @@ def classify_locator_kind(value: str) -> str:
         return "workstation_absolute"
     if Path(value).is_absolute():
         return "absolute_path"
-    if value.startswith("../") or "/../" in value or value.startswith("..\\") or "\\..\\" in value:
+    if value.startswith(("../", "..\\")) or "/../" in value or "\\..\\" in value:
         return "parent_traversal"
-    if any(value.startswith(prefix) for prefix in PORTABILITY_ALLOWED_EXTERNAL_PREFIXES):
+    if any(
+        value.startswith(prefix) for prefix in PORTABILITY_ALLOWED_EXTERNAL_PREFIXES
+    ):
         return "external_locator"
     normalized = _strip_line_anchor(value)
-    if any(normalized == prefix.rstrip("/") or normalized.startswith(prefix) for prefix in PORTABILITY_ALLOWED_REPO_PREFIXES):
+    if any(
+        normalized == prefix.rstrip("/") or normalized.startswith(prefix)
+        for prefix in PORTABILITY_ALLOWED_REPO_PREFIXES
+    ):
         return "repo_relative"
-    if "/" in normalized or normalized.endswith((".json", ".md", ".py", ".R", ".csv", ".nwk", ".tsv")):
+    if "/" in normalized or normalized.endswith(
+        (".json", ".md", ".py", ".R", ".csv", ".nwk", ".tsv")
+    ):
         return "suspicious_path_like"
     return "non_path_text"
 
@@ -80,11 +86,15 @@ def is_portable_locator(value: str) -> bool:
 
 def collect_payload_path_values(payload: object) -> list[EvidencePathValue]:
     collected: list[EvidencePathValue] = []
-    _collect_payload_path_values(payload, json_pointer="$", parent_key=None, collected=collected)
+    _collect_payload_path_values(
+        payload, json_pointer="$", parent_key=None, collected=collected
+    )
     return collected
 
 
-def audit_payload_path_values(payload: object, *, relative_file_path: str) -> list[EvidencePathIssue]:
+def audit_payload_path_values(
+    payload: object, *, relative_file_path: str
+) -> list[EvidencePathIssue]:
     issues: list[EvidencePathIssue] = []
     for entry in collect_payload_path_values(payload):
         if entry.locator_kind == "non_path_text":
@@ -216,9 +226,9 @@ def _should_track_string(key: str | None, value: str) -> bool:
         return True
     if value.startswith("/Users/") or Path(value).is_absolute():
         return True
-    if value.startswith("../") or "/../" in value or value.startswith("..\\") or "\\..\\" in value:
-        return True
-    return False
+    return bool(
+        value.startswith(("../", "..\\")) or "/../" in value or "\\..\\" in value
+    )
 
 
 def _strip_line_anchor(value: str) -> str:

@@ -5,7 +5,6 @@ import hashlib
 import json
 from pathlib import Path
 
-
 INTEGRITY_REPORT_JSON = "integrity-report.json"
 INTEGRITY_REPORT_MARKDOWN = "integrity-report.md"
 

@@ -1,13 +1,15 @@
 PACKAGE_KIND := python
 PACKAGE_IMPORT_NAME := bijux_phylogenetics_dev
 PACKAGE_INSTALL_SPEC := .[dev]
+PACKAGE_INSTALL_PYTHON_PACKAGES := $(MONOREPO_ROOT)/packages/bijux-phylogenetics
 RUFF_CONFIG = $(MONOREPO_ROOT)/configs/ruff.toml
 BUILD_PRE_TARGETS := sync-license-assets-package
 TEST_PATHS := tests
 TEST_PATHS_UNIT := tests
-TEST_SOURCE_PATHS := src
+TEST_SOURCE_PATHS := src ../bijux-phylogenetics/src
 INTERROGATE_PATHS := src
 QUALITY_PATHS := src tests
+QUALITY_MYPY_TARGETS := src ../bijux-phylogenetics/src
 SECURITY_AUDIT_PREPARE_MODE = pyproject
 PIP_AUDIT_INPUTS = -r "$(SECURITY_REQS)"
 TEST_PRE_TARGETS := sync-license-assets-package

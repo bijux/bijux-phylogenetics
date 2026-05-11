@@ -6,11 +6,11 @@ import zipfile
 
 from bijux_phylogenetics_dev.quality.package_bundles import (
     audit_package_bundle_directory,
-    build_package_bundle_report,
     build_dependency_policy_report,
+    build_package_bundle_report,
     check_package_bundles,
-    load_publication_readiness_settings,
     load_package_bundle_policies,
+    load_publication_readiness_settings,
 )
 from bijux_phylogenetics_dev.quality.policies import PUBLICATION_READINESS_POLICY_PATH
 
@@ -122,7 +122,12 @@ packages = ["src/demo_dev"]
     _write(repo_root / "packages" / "demo-runtime" / "README.md", "# Demo runtime\n")
     _write(repo_root / "packages" / "demo-dev" / "README.md", "# Demo dev\n")
     _write(
-        repo_root / "packages" / "demo-runtime" / "src" / "demo_runtime" / "__init__.py",
+        repo_root
+        / "packages"
+        / "demo-runtime"
+        / "src"
+        / "demo_runtime"
+        / "__init__.py",
         "__version__ = '0.1.0'\n",
     )
     _write(
@@ -136,7 +141,11 @@ def test_load_publication_readiness_settings_reads_repo_owned_policy() -> None:
     settings = load_publication_readiness_settings(REPO_ROOT)
 
     assert settings["required_evidence_input_manifest"] == "inputs.manifest.json"
-    assert "bijux-phylogenetics-evidence" in settings["target_shape_packages"]
+    assert settings["target_shape_packages"] == [
+        "bijux-phylogenetics",
+        "phylogenetic",
+        "bijux-phylogenetics-dev",
+    ]
 
 
 def test_load_package_bundle_policies_reads_repo_owned_policy() -> None:

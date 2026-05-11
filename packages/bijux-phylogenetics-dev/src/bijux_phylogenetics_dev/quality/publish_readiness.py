@@ -7,10 +7,13 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
-import subprocess
+import shutil
 import tomllib
 from typing import Any
 
+from bijux_phylogenetics.evidence.study_contracts import load_study_contract
+
+from ..trusted_process import run_text
 from .config_ssot import build_config_ssot_report
 from .evidence_inputs import INPUT_MANIFEST_FILENAME, check_inputs_manifests
 from .execution_surfaces import build_execution_surfaces_report
@@ -22,10 +25,9 @@ from .package_bundles import (
     load_target_package_bundle_policies,
 )
 from .policies import PUBLICATION_READINESS_POLICY_PATH
-from bijux_phylogenetics.evidence.study_contracts import load_study_contract
 
 TomlTable = dict[str, Any]
-JsonObject = dict[str, object]
+JsonObject = dict[str, Any]
 GOVERNED_JUNK_NAMES = {".DS_Store", "__pycache__"}
 
 
@@ -51,7 +53,10 @@ class Scorecard:
 
 
 def _load_json(path: Path) -> JsonObject:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"expected JSON object at {path}")
+    return payload
 
 
 def _load_toml(path: Path) -> TomlTable:
@@ -79,9 +84,7 @@ def _is_repo_relative_locator(locator: str) -> bool:
     return not locator.startswith("external:")
 
 
-def _source_intake_policy_matches(
-    intake_policy: str, sources: list[object]
-) -> bool:
+def _source_intake_policy_matches(intake_policy: str, sources: list[object]) -> bool:
     locators = [
         str(locator)
         for source in sources
@@ -113,7 +116,7 @@ def _as_str_list(value: object) -> list[str]:
 
 
 def _issue_metadata(code: str) -> dict[str, str]:
-    if code.startswith("config-") or code.startswith("missing-root-make-target"):
+    if code.startswith(("config-", "missing-root-make-target")):
         return {
             "domain": "standards",
             "owner_surface": "repository-governance",
@@ -139,7 +142,7 @@ def _issue_metadata(code: str) -> dict[str, str]:
             "owner_surface": "package-layout",
             "severity": "error",
         }
-    if code.startswith("missing-evidence") or code.startswith("stale-evidence"):
+    if code.startswith(("missing-evidence", "stale-evidence")):
         return {
             "domain": "evidence-program",
             "owner_surface": "evidence-book",
@@ -161,6 +164,7 @@ def _issue_metadata(code: str) -> dict[str, str]:
 def scan_runtime_owner_drift(
     repo_root: Path, *, publication_settings: JsonObject
 ) -> list[ReadinessIssue]:
+    """Report runtime surfaces that still depend on maintainer-owned material."""
     issues: list[ReadinessIssue] = []
     target_shape = _as_dict(publication_settings.get("target_repository_shape"))
     runtime_example_root = str(target_shape.get("runtime_example_input_root", ""))
@@ -212,6 +216,7 @@ def scan_runtime_owner_drift(
 
 
 def iter_study_roots(repo_root: Path) -> list[Path]:
+    """Return every governed evidence study root."""
     studies_root = repo_root / "evidence-book" / "studies"
     return sorted(path for path in studies_root.iterdir() if path.is_dir())
 
@@ -223,9 +228,12 @@ def _git_available(repo_root: Path) -> bool:
 def _is_ignored_junk(repo_root: Path, path: Path) -> bool:
     if not _git_available(repo_root):
         return False
-    completed = subprocess.run(
+    git_bin = shutil.which("git")
+    if git_bin is None:
+        return False
+    completed = run_text(
         [
-            "git",
+            git_bin,
             "-C",
             str(repo_root),
             "check-ignore",
@@ -233,7 +241,6 @@ def _is_ignored_junk(repo_root: Path, path: Path) -> bool:
             str(path.relative_to(repo_root)),
         ],
         capture_output=True,
-        text=True,
         check=False,
     )
     return completed.returncode == 0
@@ -493,8 +500,8 @@ def build_evidence_reproducibility_inventory(
 
         datasets = _as_list(dataset_registry.get("datasets"))
         dataset_entries: list[JsonObject] = []
-        for dataset in datasets:
-            entry = _as_dict(dataset)
+        for dataset_payload in datasets:
+            entry = _as_dict(dataset_payload)
             locator = entry.get("locator")
             if isinstance(locator, str) and _is_repo_relative_locator(locator):
                 target = repo_root / locator
@@ -598,7 +605,9 @@ def build_evidence_reproducibility_inventory(
                     "evidence_id": manifest.get("evidence_id", evidence_root.name),
                     "bundle_local_artifacts": bundle_local_artifacts,
                     "has_input_manifest": input_manifest_path.is_file(),
-                    "input_manifest_locator": input_manifest_path.relative_to(repo_root).as_posix(),
+                    "input_manifest_locator": input_manifest_path.relative_to(
+                        repo_root
+                    ).as_posix(),
                     "governed_local_artifact_count": (
                         int(input_manifest.get("governed_local_artifact_count", 0))
                         if input_manifest_path.is_file()
@@ -666,7 +675,7 @@ def check_publish_readiness(
     payload = build_publish_readiness_report(repo_root.resolve())
     if json_out is not None:
         _write_json(json_out, payload)
-    if payload["summary"]["overall_status"] != "ready":  # type: ignore[index]
+    if payload["summary"]["overall_status"] != "ready":
         raise SystemExit(
             "publish-readiness report failed: repository still has unresolved readiness issues"
         )
@@ -743,13 +752,13 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             )
 
     package_issues.extend(
-        ReadinessIssue(**issue) for issue in dependency_policy["issues"]  # type: ignore[index]
+        ReadinessIssue(**issue) for issue in dependency_policy["issues"]
     )
     package_issues.extend(
-        ReadinessIssue(**issue) for issue in package_boundaries["issues"]  # type: ignore[index]
+        ReadinessIssue(**issue) for issue in package_boundaries["issues"]
     )
     standards_issues.extend(
-        ReadinessIssue(**issue) for issue in execution_surfaces["issues"]  # type: ignore[index]
+        ReadinessIssue(**issue) for issue in execution_surfaces["issues"]
     )
 
     expected_publishable_packages = sorted(
@@ -780,7 +789,10 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             )
         )
     for package_name in target_shape_packages:
-        if package_name in publishable_bundle_policies or package_name in target_bundle_policies:
+        if (
+            package_name in publishable_bundle_policies
+            or package_name in target_bundle_policies
+        ):
             continue
         shape_issues.append(
             ReadinessIssue(
@@ -806,7 +818,9 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 )
             )
 
-    runtime_src_root = repo_root / "packages" / "bijux-phylogenetics" / "src" / "bijux_phylogenetics"
+    runtime_src_root = (
+        repo_root / "packages" / "bijux-phylogenetics" / "src" / "bijux_phylogenetics"
+    )
     observed_runtime_subpackages: list[str] = []
     if runtime_src_root.is_dir():
         observed_runtime_subpackages = sorted(
@@ -826,12 +840,12 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
 
     evidence_issues = [
         issue
-        for issue in evidence_inventory["issues"]  # type: ignore[index]
+        for issue in evidence_inventory["issues"]
         if issue["code"] not in {"governed-junk"}
     ]
     junk_issues = [
         issue
-        for issue in evidence_inventory["issues"]  # type: ignore[index]
+        for issue in evidence_inventory["issues"]
         if issue["code"] == "governed-junk"
     ]
 
@@ -865,18 +879,18 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
         name="reproducibility-and-provenance",
         status="ready"
         if not junk_issues
-        and evidence_inventory["repo_dataset_checksum_count"]  # type: ignore[index]
-        and evidence_inventory["evidence_input_manifest_count"]  # type: ignore[index]
-        and not evidence_inventory["stale_input_manifest_count"]  # type: ignore[index]
+        and evidence_inventory["repo_dataset_checksum_count"]
+        and evidence_inventory["evidence_input_manifest_count"]
+        and not evidence_inventory["stale_input_manifest_count"]
         else "needs-work",
         score=3
-        if not junk_issues and evidence_inventory["repo_dataset_checksum_count"]  # type: ignore[index]
+        if not junk_issues and evidence_inventory["repo_dataset_checksum_count"]
         else 1,
         max_score=3,
         summary="Study datasets, governed local inputs, and evidence outputs must remain traceable and free from junk or stale manifest drift.",
         issue_count=len(junk_issues)
-        + int(evidence_inventory["stale_input_manifest_count"])  # type: ignore[arg-type,index]
-        + int(evidence_inventory["missing_input_manifest_count"]),  # type: ignore[arg-type,index]
+        + int(evidence_inventory["stale_input_manifest_count"])
+        + int(evidence_inventory["missing_input_manifest_count"]),
     )
     blocker_register = []
     for issue in (
@@ -931,7 +945,8 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     standards_closure_blockers = [
         issue["code"]
         for issue in blocker_register
-        if issue["code"] in {
+        if issue["code"]
+        in {
             "missing-root-make-target",
             "missing-governed-root-target",
             "missing-governed-tox-env",
@@ -950,7 +965,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 "runtime top-level exports do not leak evidence-only helper surfaces",
                 "compatibility alias package remains a thin alias surface with no local scientific ownership",
                 "runtime-to-evidence compatibility is declared against supported public runtime locators",
-                "runtime package no longer owns subpackages reserved for a separate evidence consumer layer",
+                "runtime-owned modules remain limited to public comparative APIs, provenance contracts, and packaged example resources",
                 "runtime example workflows consume packaged example resources instead of maintainer test fixtures",
                 "runtime-owned workflow bundling uses the governed provenance bundle contract instead of evidence-only helper modules",
                 "all governed publishable packages declare wheel and sdist targets",
@@ -964,12 +979,14 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 "every evidence input manifest distinguishes actual local inputs from governed local output artifacts",
                 "every evidence bundle carries side-by-side reference and python code surfaces",
                 "study provenance and dataset registries resolve cleanly",
-                "the target evidence consumer package has an explicit shipping policy before the repository claims publication maturity",
+                "the evidence-book stays publishable as a governed repository surface with human-readable study and evidence ownership",
             ],
             "blocker_codes": evidence_closure_blockers,
         },
         "repository_standards_aligned": {
-            "status": "ready" if not standards_closure_blockers and config_report.issue_count == 0 else "blocked",
+            "status": "ready"
+            if not standards_closure_blockers and config_report.issue_count == 0
+            else "blocked",
             "pass_when": [
                 "repository-owned config SSOT audit is clean",
                 "repository make, tox, and workflow execution surfaces are governed explicitly and stay separated by owned responsibilities",
@@ -979,8 +996,9 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "blocker_codes": standards_closure_blockers,
         },
     }
-    release_gate = {
-        "status": "ready" if not blocker_register else "blocked",
+    release_gate_status = "ready" if not blocker_register else "blocked"
+    release_gate: JsonObject = {
+        "status": release_gate_status,
         "publish_allowed": not blocker_register,
         "superficial_completion_refused": bool(blocker_register),
         "blocked_by": [issue["code"] for issue in blocker_register],
@@ -992,8 +1010,8 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
     }
     publication_scorecard = Scorecard(
         name="publication-closure",
-        status=release_gate["status"],
-        score=1 if release_gate["status"] == "ready" else 0,
+        status=release_gate_status,
+        score=1 if release_gate_status == "ready" else 0,
         max_score=1,
         summary="The repository must refuse superficial publication claims until the governed closure criteria are met.",
         issue_count=len(blocker_register),

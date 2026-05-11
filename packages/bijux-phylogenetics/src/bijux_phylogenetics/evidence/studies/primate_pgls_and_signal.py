@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import csv
-from functools import lru_cache
+from functools import cache, lru_cache
 import json
 import math
 from pathlib import Path
@@ -18,7 +18,6 @@ from bijux_phylogenetics.comparative import (
 from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
 
-
 STUDY_ID = "primate-pgls-and-signal"
 SUMMARY_EVIDENCE_ID = "evidence-001"
 PCM2_SOURCE_LOCATOR = "external:lund/pcm2-modes-pgls/script"
@@ -27,10 +26,7 @@ PCM2_REFERENCE_SCRIPT_PATH = (
     "primate_pgls_and_signal_reference_r.R"
 )
 STUDY_ONE_REFERENCE_ROOT = (
-    Path("evidence-book")
-    / "studies"
-    / "primate-longevity-signal"
-    / "datasets"
+    Path("evidence-book") / "studies" / "primate-longevity-signal" / "datasets"
 )
 
 FAMILY_DEFINITIONS = {
@@ -446,7 +442,7 @@ def _read_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load_r_reference_results(repo_root: Path) -> dict[str, object]:
     return _read_json(_study_root(repo_root) / "reference" / "reference_results.json")
 
@@ -475,9 +471,7 @@ def _diagnostic_summary_from_series(
     abs_residuals = [abs(value) for value in residuals]
     mean_abs_residual = sum(abs_residuals) / len(abs_residuals)
     fitted_ss = sum((value - mean_fitted) ** 2 for value in fitted_values)
-    abs_residual_ss = sum(
-        (value - mean_abs_residual) ** 2 for value in abs_residuals
-    )
+    abs_residual_ss = sum((value - mean_abs_residual) ** 2 for value in abs_residuals)
     if fitted_ss == 0.0 or abs_residual_ss == 0.0:
         abs_residual_fitted_correlation = 0.0
     else:
@@ -623,9 +617,7 @@ def _ancestral_reconstruction_payload(
     parameter_key: str | None = None,
 ) -> dict[str, object]:
     internal_rows = [
-        estimate
-        for estimate in report.reconstruction.estimates
-        if not estimate.is_tip
+        estimate for estimate in report.reconstruction.estimates if not estimate.is_tip
     ]
     rows = [
         {
@@ -646,7 +638,7 @@ def _ancestral_reconstruction_payload(
     return payload
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load_python_results(repo_root: Path) -> dict[str, object]:
     tree_path, traits_path = _source_reference_paths(repo_root)
     baseline = run_pgls(
@@ -740,7 +732,9 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
             "coefficients": {
                 row.name: _rounded(row.estimate) for row in baseline.coefficients
             },
-            "p_values": {row.name: _rounded(row.p_value) for row in baseline.coefficients},
+            "p_values": {
+                row.name: _rounded(row.p_value) for row in baseline.coefficients
+            },
             "log_likelihood": _rounded(baseline.log_likelihood),
             "r_squared": _rounded(baseline.r_squared),
             "diagnostics": _diagnostic_summary_from_series(
@@ -753,7 +747,9 @@ def _load_python_results(repo_root: Path) -> dict[str, object]:
             "coefficients": {
                 row.name: _rounded(row.estimate) for row in estimated.coefficients
             },
-            "p_values": {row.name: _rounded(row.p_value) for row in estimated.coefficients},
+            "p_values": {
+                row.name: _rounded(row.p_value) for row in estimated.coefficients
+            },
             "log_likelihood": _rounded(estimated.log_likelihood),
             "r_squared": _rounded(estimated.r_squared),
             "diagnostics": _diagnostic_summary_from_series(
@@ -831,7 +827,9 @@ def _line_spec_to_locators(spec: str) -> list[str]:
             continue
         if "-" in normalized:
             start_text, end_text = normalized.split("-", maxsplit=1)
-            locators.append(f"{PCM2_SOURCE_LOCATOR}#L{int(start_text)}-L{int(end_text)}")
+            locators.append(
+                f"{PCM2_SOURCE_LOCATOR}#L{int(start_text)}-L{int(end_text)}"
+            )
         else:
             locators.append(f"{PCM2_SOURCE_LOCATOR}#L{int(normalized)}")
     return locators
@@ -885,7 +883,10 @@ def build_primate_pgls_signal_external_sources() -> dict[str, object]:
                 "kind": "repository-reference",
                 "label": "Governed primate CSV and trimmed tree from the earlier evidence study",
                 "locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
-                "provides": ["reference_primate.csv", "reference_trimmed_primatetree.nwk"],
+                "provides": [
+                    "reference_primate.csv",
+                    "reference_trimmed_primatetree.nwk",
+                ],
             },
         ],
     }
@@ -904,8 +905,12 @@ def build_primate_pgls_signal_source_fragment_map() -> dict[str, object]:
                 "evidence_id": definition["evidence_id"],
                 "supporting_evidence_ids": definition["supporting_evidence_ids"],
                 "script_line_spec": definition["script_line_spec"],
-                "script_line_spans": _line_spec_to_spans(definition["script_line_spec"]),
-                "script_locators": _line_spec_to_locators(definition["script_line_spec"]),
+                "script_line_spans": _line_spec_to_spans(
+                    definition["script_line_spec"]
+                ),
+                "script_locators": _line_spec_to_locators(
+                    definition["script_line_spec"]
+                ),
                 "parity_expectation": definition["parity_expectation"],
                 "comparison_kind": definition["comparison_kind"],
                 "block_status": definition["block_status"],
@@ -957,9 +962,7 @@ def build_primate_pgls_signal_parity_policy() -> dict[str, object]:
             },
             {
                 "family_id": "continuous-model-fitting",
-                "family_title": FAMILY_DEFINITIONS["continuous-model-fitting"][
-                    "title"
-                ],
+                "family_title": FAMILY_DEFINITIONS["continuous-model-fitting"]["title"],
                 "parity_expectation": "statistical_tolerance",
                 "comparison_kind": "tolerance_or_equivalence",
                 "metric_tolerances": [
@@ -974,9 +977,7 @@ def build_primate_pgls_signal_parity_policy() -> dict[str, object]:
             },
             {
                 "family_id": "likelihood-ratio-tests",
-                "family_title": FAMILY_DEFINITIONS["likelihood-ratio-tests"][
-                    "title"
-                ],
+                "family_title": FAMILY_DEFINITIONS["likelihood-ratio-tests"]["title"],
                 "parity_expectation": "statistical_tolerance",
                 "comparison_kind": "tolerance_or_equivalence",
                 "metric_tolerances": [
@@ -1050,9 +1051,7 @@ def build_primate_pgls_signal_parity_policy() -> dict[str, object]:
             },
             {
                 "family_id": "ancestral-reconstruction",
-                "family_title": FAMILY_DEFINITIONS["ancestral-reconstruction"][
-                    "title"
-                ],
+                "family_title": FAMILY_DEFINITIONS["ancestral-reconstruction"]["title"],
                 "parity_expectation": "statistical_tolerance",
                 "comparison_kind": "tolerance_or_equivalence",
                 "metric_tolerances": [
@@ -1121,10 +1120,9 @@ def _comparison_row_tolerance(
         verdict = "matched"
     elif observed_abs_diff <= tolerance_abs_diff:
         verdict = "matched_with_tolerance"
-    elif (
-        reference_rounding_digits is not None
-        and round(float(bijux_value), reference_rounding_digits) == float(r_value)
-    ):
+    elif reference_rounding_digits is not None and round(
+        float(bijux_value), reference_rounding_digits
+    ) == float(r_value):
         verdict = "mismatch_explained"
         explanation_kind = "reference_rounding"
         verdict_explanation = explained_rounding_message or (
@@ -1243,9 +1241,7 @@ def build_primate_pgls_signal_scalar_parity_table(
             family_id="transformed-tree-workflows",
             fragment_id="transformed-tree-workflows",
             metric_name="early_burst_2_total_branch_length",
-            r_value=r_results["tree_rescaling"]["early_burst_2"][
-                "total_branch_length"
-            ],
+            r_value=r_results["tree_rescaling"]["early_burst_2"]["total_branch_length"],
             bijux_value=python_results["tree_rescaling"]["early_burst_2"][
                 "total_branch_length"
             ],
@@ -1333,9 +1329,7 @@ def build_primate_pgls_signal_scalar_parity_table(
             family_id="continuous-model-fitting",
             fragment_id="continuous-model-comparison",
             metric_name="early_burst_log_likelihood",
-            r_value=r_results["continuous_mode_fits"]["early_burst"][
-                "log_likelihood"
-            ],
+            r_value=r_results["continuous_mode_fits"]["early_burst"]["log_likelihood"],
             bijux_value=python_results["continuous_mode_fits"]["early_burst"][
                 "log_likelihood"
             ],
@@ -1564,9 +1558,7 @@ def build_primate_pgls_signal_scalar_parity_table(
                 < 0.05
             )
             == (
-                python_results["estimated_lambda_pgls"]["p_values"][
-                    "social_group_size"
-                ]
+                python_results["estimated_lambda_pgls"]["p_values"]["social_group_size"]
                 < 0.05
             ),
             rule="Both implementations must keep the predictor on the same side of the 0.05 significance boundary.",
@@ -1627,7 +1619,9 @@ def build_primate_pgls_signal_scalar_parity_table(
             family_id="diagnostics",
             fragment_id="baseline-gls-diagnostics",
             metric_name="outlier_count_abs_z_ge_2_close",
-            r_value=r_results["baseline_gls"]["diagnostics"]["outlier_count_abs_z_ge_2"],
+            r_value=r_results["baseline_gls"]["diagnostics"][
+                "outlier_count_abs_z_ge_2"
+            ],
             bijux_value=python_results["baseline_gls"]["diagnostics"][
                 "outlier_count_abs_z_ge_2"
             ],
@@ -1768,7 +1762,9 @@ def build_primate_pgls_signal_family_index(repo_root: Path) -> dict[str, object]
     families = []
     for family_id, family in FAMILY_DEFINITIONS.items():
         matching_fragments = [
-            fragment for fragment in fragments if fragment["concept_family"] == family_id
+            fragment
+            for fragment in fragments
+            if fragment["concept_family"] == family_id
         ]
         claim_ids = sorted(
             {
@@ -1784,10 +1780,11 @@ def build_primate_pgls_signal_family_index(repo_root: Path) -> dict[str, object]
                 if fragment["evidence_id"]
             }
         )
-        claims = {claim_id: CLAIM_DEFINITIONS[claim_id]["claim_title"] for claim_id in claim_ids}
-        verdicts = {
-            CLAIM_DEFINITIONS[claim_id]["verdict"] for claim_id in claim_ids
+        claims = {
+            claim_id: CLAIM_DEFINITIONS[claim_id]["claim_title"]
+            for claim_id in claim_ids
         }
+        verdicts = {CLAIM_DEFINITIONS[claim_id]["verdict"] for claim_id in claim_ids}
         if verdicts == {"matched"}:
             family_verdict = "matched"
         elif "matched_with_tolerance" in verdicts and not (
@@ -1797,22 +1794,26 @@ def build_primate_pgls_signal_family_index(repo_root: Path) -> dict[str, object]
         elif verdicts == {"not_comparable"}:
             family_verdict = "not_comparable"
         else:
-            family_verdict = "not_comparable" if "not_comparable" in verdicts else "mismatch_unexplained"
+            family_verdict = (
+                "not_comparable"
+                if "not_comparable" in verdicts
+                else "mismatch_unexplained"
+            )
         families.append(
             {
                 "family_id": family_id,
                 "family_title": family["title"],
                 "summary": family["summary"],
                 "fragment_count": len(matching_fragments),
-                "fragment_ids": [fragment["fragment_id"] for fragment in matching_fragments],
+                "fragment_ids": [
+                    fragment["fragment_id"] for fragment in matching_fragments
+                ],
                 "claim_ids": claim_ids,
                 "claim_titles": claims,
                 "evidence_ids": evidence_ids,
                 "family_verdict": family_verdict,
                 "coverage_status": (
-                    "coverage-gap"
-                    if family_id == "coverage-boundaries"
-                    else "covered"
+                    "coverage-gap" if family_id == "coverage-boundaries" else "covered"
                 ),
                 "known_gaps": []
                 if family_id != "coverage-boundaries"
@@ -1847,7 +1848,9 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "species_tip_match": r_results["source_contract"]["species_tip_match"],
             "governed_reload_inputs": [
                 (STUDY_ONE_REFERENCE_ROOT / "reference_primate.csv").as_posix(),
-                (STUDY_ONE_REFERENCE_ROOT / "reference_trimmed_primatetree.nwk").as_posix(),
+                (
+                    STUDY_ONE_REFERENCE_ROOT / "reference_trimmed_primatetree.nwk"
+                ).as_posix(),
             ],
             "scalar_row_count": scalar_table["row_count"],
             "verdict_counts": scalar_table["verdict_counts"],
@@ -1859,7 +1862,9 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "evidence_id": evidence_id,
             "r_baseline": r_results["baseline_gls"],
             "bijux_baseline": python_results["baseline_gls"],
-            "r_fixed_lambda_equivalence": r_results["fixed_lambda_gls_matches_baseline"],
+            "r_fixed_lambda_equivalence": r_results[
+                "fixed_lambda_gls_matches_baseline"
+            ],
         }
     if evidence_id == "evidence-003":
         return {
@@ -2099,9 +2104,7 @@ def _manifest_for_bundle(
         },
         "limitations": definition["limitations"],
         "source_fragments": definition["source_fragments"],
-        "reference_script_locators": [
-            f"{PCM2_REFERENCE_SCRIPT_PATH}#L1-L200"
-        ],
+        "reference_script_locators": [f"{PCM2_REFERENCE_SCRIPT_PATH}#L1-L200"],
         "supporting_report_locator": (
             f"evidence-book/studies/{STUDY_ID}/{evidence_id}/{definition['report_filename']}"
         ),
@@ -2163,7 +2166,9 @@ def build_primate_pgls_signal_bundles(repo_root: Path) -> dict[str, dict[str, ob
         scalar_table
     )
     for definition in BUNDLE_DEFINITIONS:
-        report_payload = _report_payload_for_bundle(repo_root, definition["evidence_id"])
+        report_payload = _report_payload_for_bundle(
+            repo_root, definition["evidence_id"]
+        )
         manifest = _manifest_for_bundle(repo_root, definition, report_payload)
         bundle = {
             "manifest": manifest,

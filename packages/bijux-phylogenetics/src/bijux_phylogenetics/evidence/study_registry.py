@@ -10,10 +10,14 @@ from .studies.primate_longevity_signal import (
     STUDY_ID as PRIMATE_PCM1_STUDY_ID,
 )
 from .studies.primate_pcm1_component_bundles import (
+    COMPONENT_BUNDLE_DEFINITIONS,
+    REFERENCE_BUNDLE_ID,
     build_primate_pcm1_component_bundles,
 )
 from .studies.primate_pgls_and_signal import (
+    BUNDLE_DEFINITIONS,
     STUDY_ID as PRIMATE_PCM2_STUDY_ID,
+    SUMMARY_EVIDENCE_ID,
     build_primate_pgls_signal_bundles,
 )
 from .study_contracts import load_study_contract
@@ -53,6 +57,31 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
     )
 
 
+def _primate_pcm1_supported_evidence_ids() -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            {
+                REFERENCE_BUNDLE_ID,
+                *(
+                    str(definition["evidence_id"])
+                    for definition in COMPONENT_BUNDLE_DEFINITIONS
+                ),
+            }
+        )
+    )
+
+
+def _primate_pcm2_supported_evidence_ids() -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            {
+                SUMMARY_EVIDENCE_ID,
+                *(str(definition["evidence_id"]) for definition in BUNDLE_DEFINITIONS),
+            }
+        )
+    )
+
+
 def study_registrations(repo_root: Path | str) -> tuple[EvidenceStudyRegistration, ...]:
     repo_root = _repo_root(repo_root)
     return (
@@ -60,30 +89,22 @@ def study_registrations(repo_root: Path | str) -> tuple[EvidenceStudyRegistratio
             study_id=PRIMATE_PCM1_STUDY_ID,
             study_title=str(
                 load_study_contract(
-                    repo_root
-                    / "evidence-book"
-                    / "studies"
-                    / PRIMATE_PCM1_STUDY_ID
+                    repo_root / "evidence-book" / "studies" / PRIMATE_PCM1_STUDY_ID
                 )["study_title"]
             ),
             build_script_path=None,
-            supported_evidence_ids=tuple(sorted(build_primate_pcm1_component_bundles(repo_root))),
+            supported_evidence_ids=_primate_pcm1_supported_evidence_ids(),
             supports_partial_rerun=True,
         ),
         EvidenceStudyRegistration(
             study_id=PRIMATE_PCM2_STUDY_ID,
             study_title=str(
                 load_study_contract(
-                    repo_root
-                    / "evidence-book"
-                    / "studies"
-                    / PRIMATE_PCM2_STUDY_ID
+                    repo_root / "evidence-book" / "studies" / PRIMATE_PCM2_STUDY_ID
                 )["study_title"]
             ),
             build_script_path=None,
-            supported_evidence_ids=tuple(
-                sorted(build_primate_pgls_signal_bundles(repo_root))
-            ),
+            supported_evidence_ids=_primate_pcm2_supported_evidence_ids(),
             supports_partial_rerun=True,
         ),
     )
@@ -125,7 +146,8 @@ def _rerun_primate_pcm1_selection(
         _write_json(bundle_root / "manifest.json", bundle["manifest"])
         _write_json(bundle_root / "claims.json", bundle["claims"])
         _write_json(
-            bundle_root / "results" / bundle["report_filename"], bundle["report_payload"]
+            bundle_root / "results" / bundle["report_filename"],
+            bundle["report_payload"],
         )
         (bundle_root / "README.md").write_text(bundle["readme"], encoding="utf-8")
         updated_paths.extend(
@@ -156,7 +178,8 @@ def _rerun_primate_pcm2_selection(
         _write_json(bundle_root / "manifest.json", bundle["manifest"])
         _write_json(bundle_root / "claims.json", bundle["claims"])
         _write_json(
-            bundle_root / "results" / bundle["report_filename"], bundle["report_payload"]
+            bundle_root / "results" / bundle["report_filename"],
+            bundle["report_payload"],
         )
         (bundle_root / "README.md").write_text(bundle["readme"], encoding="utf-8")
         updated_paths.extend(
@@ -183,14 +206,14 @@ def _rerun_primate_pcm2_selection(
             updated_paths.extend(
                 [
                     str(
-                        (bundle_root / "results" / "scalar-parity-table.json").relative_to(
-                            repo_root
-                        )
+                        (
+                            bundle_root / "results" / "scalar-parity-table.json"
+                        ).relative_to(repo_root)
                     ),
                     str(
-                        (bundle_root / "results" / "scalar-parity-table.md").relative_to(
-                            repo_root
-                        )
+                        (
+                            bundle_root / "results" / "scalar-parity-table.md"
+                        ).relative_to(repo_root)
                     ),
                 ]
             )

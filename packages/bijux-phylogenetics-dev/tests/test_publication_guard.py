@@ -361,11 +361,21 @@ packages = ["src/phylogenetic"]
         + "\n",
     )
     _write(
-        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "__init__.py",
+        repo_root
+        / "packages"
+        / "phylogenetic"
+        / "src"
+        / "phylogenetic"
+        / "__init__.py",
         'from bijux_phylogenetics import inspect_pgls_inputs, run_pgls\n\n__version__ = "0.1.0"\n',
     )
     _write(
-        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "__main__.py",
+        repo_root
+        / "packages"
+        / "phylogenetic"
+        / "src"
+        / "phylogenetic"
+        / "__main__.py",
         "from .cli import main\n",
     )
     _write(
@@ -656,7 +666,9 @@ jobs:
         "species\tvalue\nA\t1\n",
     )
     sync_evidence_artifacts(repo_root)
-    bundle_root = repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
+    bundle_root = (
+        repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
+    )
     inputs_manifest = build_inputs_manifest(repo_root, bundle_root)
     _write(
         bundle_root / "inputs.manifest.json",

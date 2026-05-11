@@ -79,21 +79,20 @@ def load_config_ssot_policy(repo_root: Path) -> ConfigSsotPolicy:
 
     def _tuple_from_list(name: str) -> tuple[str, ...]:
         values = config_ssot.get(name, [])
-        if not isinstance(values, list) or not all(isinstance(item, str) for item in values):
+        if not isinstance(values, list) or not all(
+            isinstance(item, str) for item in values
+        ):
             raise ValueError(f"{policy_path}: {name} must be a list of strings")
         return tuple(values)
 
     expected_root_config_dir = config_ssot.get("expected_root_config_dir")
     expected_root_make_dir = config_ssot.get("expected_root_make_dir")
     expected_mypy_config_path = config_ssot.get("expected_mypy_config_path")
-    if not all(
-        isinstance(value, str)
-        for value in (
-            expected_root_config_dir,
-            expected_root_make_dir,
-            expected_mypy_config_path,
-        )
-    ):
+    if not isinstance(expected_root_config_dir, str):
+        raise ValueError(f"{policy_path}: expected_root_config_dir must be a string")
+    if not isinstance(expected_root_make_dir, str):
+        raise ValueError(f"{policy_path}: expected_root_make_dir must be a string")
+    if not isinstance(expected_mypy_config_path, str):
         raise ValueError(f"{policy_path}: expected root config fields must be strings")
 
     return ConfigSsotPolicy(
@@ -215,7 +214,10 @@ def build_config_ssot_report(repo_root: Path) -> ConfigSsotReport:
                     ),
                 )
             )
-        if "QUALITY_MYPY_CONFIG" in text and policy.expected_mypy_config_path not in text:
+        if (
+            "QUALITY_MYPY_CONFIG" in text
+            and policy.expected_mypy_config_path not in text
+        ):
             issues.append(
                 ConfigSsotIssue(
                     code="quality-mypy-config-path-drift",
@@ -241,10 +243,14 @@ def build_config_ssot_report(repo_root: Path) -> ConfigSsotReport:
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
-def check_config_ssot(repo_root: Path, *, json_out: Path | None = None) -> ConfigSsotReport:
+def check_config_ssot(
+    repo_root: Path, *, json_out: Path | None = None
+) -> ConfigSsotReport:
     """Raise on config SSOT violations and optionally write the audit report."""
     report = build_config_ssot_report(repo_root)
     if json_out is not None:
@@ -253,7 +259,9 @@ def check_config_ssot(repo_root: Path, *, json_out: Path | None = None) -> Confi
         details = "\n".join(
             f"- [{issue.code}] {issue.path}: {issue.message}" for issue in report.issues
         )
-        raise SystemExit(f"config SSOT audit failed with {report.issue_count} issue(s):\n{details}")
+        raise SystemExit(
+            f"config SSOT audit failed with {report.issue_count} issue(s):\n{details}"
+        )
     return report
 
 

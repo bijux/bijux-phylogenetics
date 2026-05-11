@@ -228,9 +228,7 @@ def bundle_artifact_files(
     if not input_paths:
         raise EvidenceContractError("artifact bundle requires at least one input file")
     if not output_paths:
-        raise EvidenceContractError(
-            "artifact bundle requires at least one output file"
-        )
+        raise EvidenceContractError("artifact bundle requires at least one output file")
 
     normalized_inputs = [Path(path) for path in input_paths]
     normalized_outputs = [Path(path) for path in output_paths]

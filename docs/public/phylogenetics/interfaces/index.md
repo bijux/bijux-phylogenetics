@@ -14,6 +14,7 @@ touch directly.
 
 ## Interface Families
 
+- checked-in API contract bundles
 - CLI entrypoints
 - Python import surface
 - emitted artifact and report contracts
@@ -21,5 +22,6 @@ touch directly.
 ## Read This Section Next
 
 - [CLI surface](cli-surface.md)
+- [API surface](api-surface.md)
 - [Python surface](python-surface.md)
 - [artifact contracts](artifact-contracts.md)

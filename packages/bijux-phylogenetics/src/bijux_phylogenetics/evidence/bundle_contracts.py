@@ -97,7 +97,9 @@ def _source_basis_locators(bundle_manifest: dict[str, Any]) -> list[str]:
     return locators
 
 
-def build_bundle_artifact_contract(repo_root: Path, bundle_root: Path) -> dict[str, Any]:
+def build_bundle_artifact_contract(
+    repo_root: Path, bundle_root: Path
+) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     bundle_root = bundle_root.resolve()
     study_root = bundle_root.parent

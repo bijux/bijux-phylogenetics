@@ -14,13 +14,18 @@ FORBIDDEN_ROOT_GOVERNANCE_CONFIGS = (
 )
 
 
-def _root_pyproject() -> dict[str, object]:
+def _root_pyproject() -> dict[str, dict[str, object]]:
     with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
-        return tomllib.load(handle)
+        payload = tomllib.load(handle)
+    tool = payload.get("tool")
+    if not isinstance(tool, dict):
+        raise ValueError("pyproject tool table is missing")
+    return {"tool": tool}
 
 
 def test_root_pyproject_points_to_repository_owned_config_and_make_dirs() -> None:
     workspace = _root_pyproject()["tool"]["bijux_phylogenetics"]
+    assert isinstance(workspace, dict)
 
     assert workspace["config_dir"] == "configs"
     assert workspace["make_dir"] == "makes"
@@ -30,7 +35,10 @@ def test_config_ssot_policy_required_root_files_exist() -> None:
     policy = load_config_ssot_policy(REPO_ROOT)
 
     assert policy.required_root_files
-    assert all((REPO_ROOT / relative_path).is_file() for relative_path in policy.required_root_files)
+    assert all(
+        (REPO_ROOT / relative_path).is_file()
+        for relative_path in policy.required_root_files
+    )
 
 
 def test_package_makefiles_keep_mypy_on_the_root_config_surface() -> None:

@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections import Counter
 from copy import deepcopy
 
-
 TEACHING_GUIDE_FILENAME = "teaching-guide.json"
 TEACHING_GUIDE_MARKDOWN_FILENAME = "teaching-guide.md"
 MIGRATION_GUIDE_FILENAME = "migration-guide.json"
@@ -35,7 +34,7 @@ TEACHING_STUDY_METADATA = {
             ),
             "entrypoint_command": (
                 "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 "
-                "python -c \"from pathlib import Path; "
+                'python -c "from pathlib import Path; '
                 "from bijux_phylogenetics.evidence.book import write_evidence_book_index; "
                 "write_evidence_book_index(Path('.'))\""
             ),
@@ -58,7 +57,11 @@ TEACHING_STUDY_METADATA = {
         },
         "families": {
             "workflow-contracts": {
-                "concept_tags": ["reproducibility", "package-loading", "course-context"],
+                "concept_tags": [
+                    "reproducibility",
+                    "package-loading",
+                    "course-context",
+                ],
                 "teaching_narrative": (
                     "Students see which package and environment assumptions belong to the "
                     "lecture setup before any numerical claim is made."
@@ -243,7 +246,11 @@ TEACHING_STUDY_METADATA = {
         },
         "families": {
             "workflow-contracts": {
-                "concept_tags": ["workspace-reload", "course-context", "reproducibility"],
+                "concept_tags": [
+                    "workspace-reload",
+                    "course-context",
+                    "reproducibility",
+                ],
                 "teaching_narrative": (
                     "The lecture's one-line reload assumption is made explicit so students "
                     "know which objects and paths the rest of the workflow depends on."
@@ -276,7 +283,12 @@ TEACHING_STUDY_METADATA = {
                 ],
             },
             "phylogenetic-regression": {
-                "concept_tags": ["pgls", "pagel-lambda", "fixed-lambda", "estimated-lambda"],
+                "concept_tags": [
+                    "pgls",
+                    "pagel-lambda",
+                    "fixed-lambda",
+                    "estimated-lambda",
+                ],
                 "teaching_narrative": (
                     "Fixed-lambda and estimated-lambda regression are kept in one evidence "
                     "family so the lecture transition from GLS to PGLS remains reviewable."
@@ -302,7 +314,11 @@ TEACHING_STUDY_METADATA = {
                 ],
             },
             "phylogenetic-signal": {
-                "concept_tags": ["phylogenetic-signal", "lambda-zero", "likelihood-ratio"],
+                "concept_tags": [
+                    "phylogenetic-signal",
+                    "lambda-zero",
+                    "likelihood-ratio",
+                ],
                 "teaching_narrative": (
                     "Signal testing is treated as its own teaching family so the lecture's "
                     "intercept-only workflow does not get mixed into broader model-comparison claims."
@@ -328,7 +344,12 @@ TEACHING_STUDY_METADATA = {
                 ],
             },
             "diagnostics": {
-                "concept_tags": ["residuals", "qq", "heteroscedasticity", "diagnostics"],
+                "concept_tags": [
+                    "residuals",
+                    "qq",
+                    "heteroscedasticity",
+                    "diagnostics",
+                ],
                 "teaching_narrative": (
                     "Residual and QQ diagnostics are converted into machine-recorded summary "
                     "values so the teaching surface is auditable even without figure matching."

@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.evidence.workbench import (
     DOCS_EVIDENCE_OVERVIEW,
     list_registered_evidence_studies,
     refresh_evidence_book,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
+pytestmark = pytest.mark.slow
 
 
 def test_list_registered_evidence_studies_only_reports_pcm_studies() -> None:

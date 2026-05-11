@@ -60,6 +60,7 @@ def sync_evidence_artifacts(
     study_id: str | None = None,
     evidence_id: str | None = None,
 ) -> list[Path]:
+    """Render governed local artifact files for the selected evidence bundles."""
     repo_root = repo_root.resolve()
     written: list[Path] = []
     for bundle_root in _selected_bundle_roots(
@@ -69,6 +70,8 @@ def sync_evidence_artifacts(
         for relative_path, payload in artifacts.items():
             target = bundle_root / relative_path
             if relative_path in ARTIFACT_JSON_FILENAMES:
+                if not isinstance(payload, dict):
+                    raise TypeError(f"expected JSON payload for {relative_path}")
                 _write_json(target, payload)
             elif relative_path in RESULT_ARTIFACT_JSON_FILENAMES:
                 write_result_artifact(target, payload)
@@ -86,6 +89,7 @@ def check_evidence_artifacts(
     study_id: str | None = None,
     evidence_id: str | None = None,
 ) -> list[str]:
+    """Return mismatches between expected and checked-in evidence artifacts."""
     repo_root = repo_root.resolve()
     mismatches: list[str] = []
     for bundle_root in _selected_bundle_roots(
@@ -124,6 +128,7 @@ def check_evidence_artifacts(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the evidence artifact CLI."""
     parser = argparse.ArgumentParser(
         description="Sync or validate bundle-local evidence artifact surfaces."
     )
@@ -135,6 +140,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the evidence artifact CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     study_id = args.study_id or None
@@ -163,9 +169,7 @@ def main() -> int:
         evidence_id=evidence_id,
     )
     if mismatches:
-        raise SystemExit(
-            "evidence artifact check failed:\n" + "\n".join(mismatches)
-        )
+        raise SystemExit("evidence artifact check failed:\n" + "\n".join(mismatches))
     print(
         json.dumps(
             {

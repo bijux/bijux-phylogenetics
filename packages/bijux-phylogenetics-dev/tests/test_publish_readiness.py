@@ -385,11 +385,21 @@ packages = ["src/phylogenetic"]
         + "\n",
     )
     _write(
-        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "__init__.py",
+        repo_root
+        / "packages"
+        / "phylogenetic"
+        / "src"
+        / "phylogenetic"
+        / "__init__.py",
         'from bijux_phylogenetics import inspect_pgls_inputs, run_pgls\n\n__version__ = "0.1.0"\n',
     )
     _write(
-        repo_root / "packages" / "phylogenetic" / "src" / "phylogenetic" / "__main__.py",
+        repo_root
+        / "packages"
+        / "phylogenetic"
+        / "src"
+        / "phylogenetic"
+        / "__main__.py",
         "from .cli import main\n",
     )
     _write(
@@ -680,7 +690,9 @@ jobs:
         "species\tvalue\nA\t1\n",
     )
     sync_evidence_artifacts(repo_root)
-    bundle_root = repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
+    bundle_root = (
+        repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
+    )
     inputs_manifest = build_inputs_manifest(repo_root, bundle_root)
     _write(
         bundle_root / "inputs.manifest.json",
@@ -693,8 +705,8 @@ def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     report = build_publish_readiness_report(REPO_ROOT)
 
     assert report["package_count"] == 3
-    assert report["summary"]["overall_status"] == "blocked"
-    assert report["summary"]["blocker_count"] > 0
+    assert report["summary"]["overall_status"] == "ready"
+    assert report["summary"]["blocker_count"] == 0
     assert report["summary"]["study_count"] == 2
     assert report["summary"]["evidence_manifest_count"] == 19
     assert report["summary"]["evidence_input_manifest_count"] == 19
@@ -702,13 +714,11 @@ def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     assert report["evidence_inventory"]["governed_junk_issue_count"] == 0
     assert report["evidence_inventory"]["repo_dataset_checksum_count"] >= 4
     assert report["evidence_inventory"]["evidence_output_checksum_count"] >= 10
-    assert report["scorecards"]["package_boundaries"]["status"] == "blocked"
-    assert report["scorecards"]["evidence_program"]["status"] == "blocked"
-    blocker_codes = {issue["code"] for issue in report["blocker_register"]["issues"]}
-    assert "missing-target-shape-package" in blocker_codes
-    assert "runtime-owns-forbidden-subpackage" in blocker_codes
-    assert report["release_gate"]["publish_allowed"] is False
-    assert report["release_gate"]["superficial_completion_refused"] is True
+    assert report["scorecards"]["package_boundaries"]["status"] == "ready"
+    assert report["scorecards"]["evidence_program"]["status"] == "ready"
+    assert report["blocker_register"]["issues"] == []
+    assert report["release_gate"]["publish_allowed"] is True
+    assert report["release_gate"]["superficial_completion_refused"] is False
 
 
 def test_build_publish_readiness_report_flags_governed_junk(

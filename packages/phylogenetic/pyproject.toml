@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"
+Documentation = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/phylogenetic/CHANGELOG.md"

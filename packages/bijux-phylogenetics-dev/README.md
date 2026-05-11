@@ -20,8 +20,7 @@ point for end users.
 
 ## Read this next
 
-- maintainer handbook: [Maintainer handbook](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
+- maintainer handbook: [Maintainer handbook](https://bijux.io/bijux-phylogenetics/internal/maintain/)
 - source directory: [Developer tooling source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 - changelog: [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)
 - security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)
-

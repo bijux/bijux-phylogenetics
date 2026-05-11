@@ -12,10 +12,17 @@ def test_validate_evidence_book_rejects_workstation_paths_in_study_provenance(
     repo_root = tmp_path / "repo"
     study_root = repo_root / "evidence-book" / "studies" / "demo-study"
     bundle_root = study_root / "evidence-001"
-    (repo_root / "evidence-book" / "README.md").parent.mkdir(parents=True, exist_ok=True)
-    (repo_root / "evidence-book" / "README.md").write_text("# Evidence Book\n", encoding="utf-8")
+    (repo_root / "evidence-book" / "README.md").parent.mkdir(
+        parents=True, exist_ok=True
+    )
+    (repo_root / "evidence-book" / "README.md").write_text(
+        "# Evidence Book\n", encoding="utf-8"
+    )
     (repo_root / "evidence-book" / "index").mkdir(parents=True, exist_ok=True)
-    (study_root / "README.md").write_text("# Demo Study\n\nFixture study.\n", encoding="utf-8")
+    study_root.mkdir(parents=True, exist_ok=True)
+    (study_root / "README.md").write_text(
+        "# Demo Study\n\nFixture study.\n", encoding="utf-8"
+    )
     (study_root / "datasets").mkdir(parents=True, exist_ok=True)
     (study_root / "reference").mkdir(parents=True, exist_ok=True)
     (study_root / "provenance").mkdir(parents=True, exist_ok=True)
@@ -132,10 +139,17 @@ def test_validate_evidence_book_rejects_workstation_paths_in_study_provenance(
             encoding="utf-8",
         )
     (bundle_root / "results" / "README.md").write_text("# Results\n", encoding="utf-8")
-    (bundle_root / "results" / "reviewer-summary.json").write_text("{}\n", encoding="utf-8")
-    (bundle_root / "results" / "reviewer-summary.md").write_text("# Reviewer Summary\n", encoding="utf-8")
+    (bundle_root / "results" / "reviewer-summary.json").write_text(
+        "{}\n", encoding="utf-8"
+    )
+    (bundle_root / "results" / "reviewer-summary.md").write_text(
+        "# Reviewer Summary\n", encoding="utf-8"
+    )
 
     report = validate_evidence_book(repo_root, require_index_outputs=False)
 
     assert report.valid is False
-    assert any("/Users/" in issue.message or "/Users/" in issue.path.as_posix() for issue in report.issues)
+    assert any(
+        "/Users/" in issue.message or "/Users/" in issue.path.as_posix()
+        for issue in report.issues
+    )

@@ -5,48 +5,36 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 import re
+from typing import Any
 
 from .bundle_contracts import (
     REQUIRED_BUNDLE_LOCAL_ARTIFACTS,
     REQUIRED_BUNDLE_RESULT_ARTIFACTS,
 )
+from .coverage import COVERAGE_GAPS_JSON, COVERAGE_GAPS_MARKDOWN
+from .freshness import FRESHNESS_REPORT_JSON, FRESHNESS_REPORT_MARKDOWN
+from .integrity import INTEGRITY_REPORT_JSON, INTEGRITY_REPORT_MARKDOWN
 from .portability import (
     audit_payload_path_values,
     classify_locator_kind,
     render_portability_rules_markdown,
 )
-from .coverage import COVERAGE_GAPS_JSON, COVERAGE_GAPS_MARKDOWN
-from .freshness import FRESHNESS_REPORT_JSON, FRESHNESS_REPORT_MARKDOWN
-from .integrity import INTEGRITY_REPORT_JSON, INTEGRITY_REPORT_MARKDOWN
 from .reviewer import REVIEWER_SUMMARY_JSON, REVIEWER_SUMMARY_MARKDOWN
-from .teaching import (
-    ALLOWED_COMPARISON_MODES,
-    ALLOWED_STUDY_CATEGORIES,
-    TEACHING_GUIDE_FILENAME,
-    TEACHING_GUIDE_MARKDOWN_FILENAME,
-    MIGRATION_GUIDE_FILENAME,
-    MIGRATION_GUIDE_MARKDOWN_FILENAME,
-    STUDENT_SAFE_REPRODUCIBILITY_FILENAME,
-    STUDENT_SAFE_REPRODUCIBILITY_MARKDOWN_FILENAME,
-    TEACHING_AND_MIGRATION_INDEX_FILENAME,
-    TEACHING_AND_MIGRATION_SUMMARY_FILENAME,
-    build_teaching_and_migration_index,
-    build_migration_guide,
-    build_student_safe_reproducibility_contract,
-    build_teaching_guide,
-    render_teaching_and_migration_index_markdown,
-    render_student_safe_reproducibility_markdown,
-    render_migration_guide_markdown,
-    render_teaching_guide_markdown,
-    study_metadata,
-    teaching_study_ids,
-)
 from .study_contracts import (
     ALLOWED_STUDY_ROOT_DIRS,
     ALLOWED_STUDY_ROOT_FILES,
     load_study_contract,
 )
-
+from .teaching import (
+    ALLOWED_COMPARISON_MODES,
+    ALLOWED_STUDY_CATEGORIES,
+    TEACHING_AND_MIGRATION_INDEX_FILENAME,
+    TEACHING_AND_MIGRATION_SUMMARY_FILENAME,
+    build_teaching_and_migration_index,
+    render_teaching_and_migration_index_markdown,
+    study_metadata,
+    teaching_study_ids,
+)
 
 EVIDENCE_BOOK_DIRNAME = "evidence-book"
 EVIDENCE_STUDIES_DIRNAME = "studies"
@@ -1698,10 +1686,7 @@ def build_evidence_portability_audit(repo_root: Path) -> dict[str, object]:
                         "message": issue.message,
                     }
                 )
-            if isinstance(payload, dict):
-                stack = [payload]
-            else:
-                stack = [payload]
+            stack: list[dict[str, Any] | list[Any]] = [payload]
             while stack:
                 current = stack.pop()
                 if isinstance(current, dict):
@@ -1832,7 +1817,10 @@ def build_evidence_regeneration_contract(repo_root: Path) -> dict[str, object]:
             candidate for candidate in study_root.rglob("*") if candidate.is_file()
         ):
             relative_path = _relative_to(Path(repo_root), path).as_posix()
-            if any(parent.name in {"reference", "provenance", "datasets"} for parent in path.parents):
+            if any(
+                parent.name in {"reference", "provenance", "datasets"}
+                for parent in path.parents
+            ):
                 source_paths.append(relative_path)
             else:
                 generated_paths.append(relative_path)

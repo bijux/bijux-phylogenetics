@@ -75,6 +75,7 @@ nav:
               - Evidence Consumer Boundary: public/phylogenetics/architecture/evidence-consumer-boundary.md
           - Interfaces:
               - Overview: public/phylogenetics/interfaces/index.md
+              - API Surface: public/phylogenetics/interfaces/api-surface.md
               - CLI Surface: public/phylogenetics/interfaces/cli-surface.md
               - Python Surface: public/phylogenetics/interfaces/python-surface.md
               - Artifact Contracts: public/phylogenetics/interfaces/artifact-contracts.md

@@ -39,7 +39,10 @@ EXPLICIT_LOCAL_INPUT_FILENAMES = {"expected-failure-cases.json"}
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"expected JSON object at {path}")
+    return payload
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -173,6 +176,7 @@ def _local_inputs(local_artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]
 
 
 def build_inputs_manifest(repo_root: Path, bundle_root: Path) -> dict[str, Any]:
+    """Build the governed input manifest for one evidence bundle."""
     manifest = _load_json(bundle_root / "manifest.json")
     source_inputs = _source_inputs(manifest, bundle_root, repo_root)
     local_artifacts = _governed_local_artifacts(manifest, bundle_root, repo_root)
@@ -191,6 +195,7 @@ def build_inputs_manifest(repo_root: Path, bundle_root: Path) -> dict[str, Any]:
 
 
 def iter_bundle_roots(repo_root: Path) -> list[Path]:
+    """Return every governed evidence bundle root in the repository."""
     studies_root = repo_root / "evidence-book" / "studies"
     return sorted(path for path in studies_root.glob("*/evidence-*") if path.is_dir())
 
@@ -215,6 +220,7 @@ def sync_inputs_manifests(
     study_id: str | None = None,
     evidence_id: str | None = None,
 ) -> list[Path]:
+    """Render governed input manifests for the selected evidence bundles."""
     written: list[Path] = []
     for bundle_root in _selected_bundle_roots(
         repo_root,
@@ -234,6 +240,7 @@ def check_inputs_manifests(
     study_id: str | None = None,
     evidence_id: str | None = None,
 ) -> list[str]:
+    """Return mismatches between checked-in and expected input manifests."""
     mismatches: list[str] = []
     for bundle_root in _selected_bundle_roots(
         repo_root,
@@ -254,6 +261,7 @@ def check_inputs_manifests(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the evidence input manifest CLI."""
     parser = argparse.ArgumentParser(
         description="Sync or validate per-evidence input manifests for the evidence-book."
     )
@@ -265,6 +273,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the evidence input manifest CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     study_id = args.study_id or None

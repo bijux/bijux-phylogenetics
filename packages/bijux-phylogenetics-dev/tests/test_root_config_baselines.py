@@ -50,10 +50,13 @@ def test_root_pytest_configuration_matches_shared_python_baseline() -> None:
     assert pytest_config["python_functions"] == "test_*"
     assert pytest_config["asyncio_mode"] == "auto"
     assert pytest_config["cache_dir"] == "../artifacts/root/pytest-cache"
-    assert _resolve_config_relative_path(
-        pytest_ini,
-        pytest_config["cache_dir"],
-    ) == REPO_ROOT / "artifacts" / "root" / "pytest-cache"
+    assert (
+        _resolve_config_relative_path(
+            pytest_ini,
+            pytest_config["cache_dir"],
+        )
+        == REPO_ROOT / "artifacts" / "root" / "pytest-cache"
+    )
     assert pytest_config["timeout"] == "120"
     assert pytest_config["timeout_method"] == "thread"
     assert pytest_config["timeout_func_only"] == "true"
@@ -127,10 +130,13 @@ def test_root_ruff_configuration_matches_shared_python_baseline() -> None:
     assert ruff_config["line-length"] == 88
     assert ruff_config["respect-gitignore"] is True
     assert ruff_config["cache-dir"] == "../artifacts/root/ruff-cache"
-    assert _resolve_config_relative_path(
-        CONFIGS_ROOT / "ruff.toml",
-        ruff_config["cache-dir"],
-    ) == REPO_ROOT / "artifacts" / "root" / "ruff-cache"
+    assert (
+        _resolve_config_relative_path(
+            CONFIGS_ROOT / "ruff.toml",
+            ruff_config["cache-dir"],
+        )
+        == REPO_ROOT / "artifacts" / "root" / "ruff-cache"
+    )
     assert set(ruff_config["src"]) == _package_roots("src") | _package_roots("tests")
     assert ruff_config["exclude"] == [
         ".git",

@@ -24,7 +24,6 @@ from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 
-
 ALLOWED_EVOLUTIONARY_MODES = {
     "brownian",
     "ornstein-uhlenbeck",
@@ -578,9 +577,8 @@ def _early_burst_branch_length(
     if math.isclose(rate_change, 0.0, rel_tol=0.0, abs_tol=1e-12):
         return max(0.0, (child_depth - parent_depth) * sigsq)
     transformed = (
-        (math.exp(rate_change * child_depth) - math.exp(rate_change * parent_depth))
-        / rate_change
-    )
+        math.exp(rate_change * child_depth) - math.exp(rate_change * parent_depth)
+    ) / rate_change
     return max(0.0, transformed * sigsq)
 
 

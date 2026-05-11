@@ -11,3 +11,4 @@ ignore = ["DEP002", "DEP003"]
 [tool.repo_deptry.packages."bijux-phylogenetics-dev"]
 known_first_party = ["bijux_phylogenetics_dev"]
 ignore = ["DEP002", "DEP003"]
+per_rule_ignores = { DEP001 = ["bijux_phylogenetics"] }

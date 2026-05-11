@@ -4,21 +4,38 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.evidence.book import validate_evidence_book
-from bijux_phylogenetics.evidence.bundle_artifacts import build_bundle_governed_artifacts
+from bijux_phylogenetics.evidence.bundle_artifacts import (
+    build_bundle_governed_artifacts,
+)
 from bijux_phylogenetics.evidence.bundle_contracts import (
     ARTIFACT_JSON_FILENAMES,
     RESULT_ARTIFACT_JSON_FILENAMES,
 )
+from bijux_phylogenetics.evidence.reviewer import (
+    build_bundle_reviewer_summary,
+    encode_bundle_reviewer_summary,
+    render_bundle_reviewer_summary,
+)
+from bijux_phylogenetics.evidence.study_contracts import load_study_contract
 
 
-def test_validate_evidence_book_scales_across_many_minimal_bundles(tmp_path: Path) -> None:
+def test_validate_evidence_book_scales_across_many_minimal_bundles(
+    tmp_path: Path,
+) -> None:
     repo_root = tmp_path / "repo"
-    (repo_root / "evidence-book" / "README.md").parent.mkdir(parents=True, exist_ok=True)
-    (repo_root / "evidence-book" / "README.md").write_text("# Evidence Book\n", encoding="utf-8")
+    (repo_root / "evidence-book" / "README.md").parent.mkdir(
+        parents=True, exist_ok=True
+    )
+    (repo_root / "evidence-book" / "README.md").write_text(
+        "# Evidence Book\n", encoding="utf-8"
+    )
     (repo_root / "evidence-book" / "index").mkdir(parents=True, exist_ok=True)
 
     for study_index in range(5):
-        study_root = repo_root / "evidence-book" / "studies" / f"demo-study-{study_index}"
+        study_root = (
+            repo_root / "evidence-book" / "studies" / f"demo-study-{study_index}"
+        )
+        study_root.mkdir(parents=True, exist_ok=True)
         (study_root / "README.md").write_text(
             f"# Demo Study {study_index}\n\nFixture study.\n", encoding="utf-8"
         )
@@ -73,6 +90,9 @@ def test_validate_evidence_book_scales_across_many_minimal_bundles(tmp_path: Pat
         for evidence_index in range(10):
             bundle_root = study_root / f"evidence-{evidence_index + 1:03d}"
             bundle_root.mkdir(parents=True, exist_ok=True)
+            (bundle_root / "README.md").write_text(
+                f"# Evidence {evidence_index + 1:03d}\n", encoding="utf-8"
+            )
             (bundle_root / "manifest.json").write_text(
                 json.dumps(
                     {
@@ -138,10 +158,24 @@ def test_validate_evidence_book_scales_across_many_minimal_bundles(tmp_path: Pat
                 + "\n",
                 encoding="utf-8",
             )
-            for relative_path, payload in build_bundle_governed_artifacts(repo_root, bundle_root).items():
+            reviewer_summary = build_bundle_reviewer_summary(
+                study_manifest=load_study_contract(study_root),
+                bundle_manifest=json.loads(
+                    (bundle_root / "manifest.json").read_text(encoding="utf-8")
+                ),
+                claims_payload=json.loads(
+                    (bundle_root / "claims.json").read_text(encoding="utf-8")
+                ),
+            )
+            for relative_path, payload in build_bundle_governed_artifacts(
+                repo_root, bundle_root
+            ).items():
                 target = bundle_root / relative_path
                 target.parent.mkdir(parents=True, exist_ok=True)
-                if relative_path in ARTIFACT_JSON_FILENAMES or relative_path in RESULT_ARTIFACT_JSON_FILENAMES:
+                if (
+                    relative_path in ARTIFACT_JSON_FILENAMES
+                    or relative_path in RESULT_ARTIFACT_JSON_FILENAMES
+                ):
                     target.write_text(
                         json.dumps(payload, indent=2, sort_keys=True) + "\n",
                         encoding="utf-8",
@@ -149,6 +183,14 @@ def test_validate_evidence_book_scales_across_many_minimal_bundles(tmp_path: Pat
                 else:
                     assert isinstance(payload, str)
                     target.write_text(payload, encoding="utf-8")
+            (bundle_root / "results" / "reviewer-summary.json").write_text(
+                encode_bundle_reviewer_summary(reviewer_summary),
+                encoding="utf-8",
+            )
+            (bundle_root / "results" / "reviewer-summary.md").write_text(
+                render_bundle_reviewer_summary(reviewer_summary),
+                encoding="utf-8",
+            )
 
     report = validate_evidence_book(repo_root, require_index_outputs=False)
     assert report.valid is True

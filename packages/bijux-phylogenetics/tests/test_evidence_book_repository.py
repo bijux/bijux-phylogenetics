@@ -4,7 +4,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.evidence.book import validate_evidence_book
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 STUDIES_ROOT = REPO_ROOT / "evidence-book" / "studies"
 
@@ -25,7 +24,9 @@ def test_repository_evidence_book_only_keeps_pcm_studies() -> None:
 
 
 def test_repository_evidence_book_study_roots_are_minimal() -> None:
-    assert {path.name for path in (STUDIES_ROOT / "primate-longevity-signal").iterdir()} == {
+    assert {
+        path.name for path in (STUDIES_ROOT / "primate-longevity-signal").iterdir()
+    } == {
         "README.md",
         "datasets",
         "evidence-001",
@@ -40,7 +41,9 @@ def test_repository_evidence_book_study_roots_are_minimal() -> None:
         "provenance",
         "reference",
     }
-    assert {path.name for path in (STUDIES_ROOT / "primate-pgls-and-signal").iterdir()} == {
+    assert {
+        path.name for path in (STUDIES_ROOT / "primate-pgls-and-signal").iterdir()
+    } == {
         "README.md",
         "datasets",
         "evidence-001",

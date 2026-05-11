@@ -27,7 +27,9 @@ required_evidence_bundle_artifacts = ["reference.R", "analysis.py", "checks.json
 """.strip()
         + "\n",
     )
-    bundle_root = repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
+    bundle_root = (
+        repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
+    )
     _write(
         bundle_root / "manifest.json",
         json.dumps(
@@ -69,7 +71,14 @@ def test_build_evidence_completeness_report_flags_missing_bundle_surface(
     tmp_path: Path,
 ) -> None:
     repo_root = _minimal_repo(tmp_path)
-    (repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001" / "report.md").unlink()
+    (
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "evidence-001"
+        / "report.md"
+    ).unlink()
 
     report = build_evidence_completeness_report(repo_root)
 

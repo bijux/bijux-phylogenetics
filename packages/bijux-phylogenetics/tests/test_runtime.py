@@ -6147,7 +6147,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         for locator in SUPPORTED_EVIDENCE_API_LOCATORS
     }
 
-    assert resolved["bijux_phylogenetics.comparative:inspect_pgls_inputs"] is inspect_pgls_inputs
+    assert (
+        resolved["bijux_phylogenetics.comparative:inspect_pgls_inputs"]
+        is inspect_pgls_inputs
+    )
     assert resolved["bijux_phylogenetics.comparative:run_pgls"] is run_pgls
 
 
@@ -6308,7 +6311,9 @@ def test_cli_demo_run_json_output_reports_generated_artifacts(
     assert payload["data"]["tree_report"] == str(
         output / "reports" / "tree-report.html"
     )
-    assert payload["data"]["capability_summary"] == str(output / "capability-summary.md")
+    assert payload["data"]["capability_summary"] == str(
+        output / "capability-summary.md"
+    )
 
 
 def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> None:

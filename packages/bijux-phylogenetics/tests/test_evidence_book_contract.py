@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.evidence.book import validate_evidence_book
-from bijux_phylogenetics.evidence.bundle_artifacts import build_bundle_governed_artifacts
+from bijux_phylogenetics.evidence.bundle_artifacts import (
+    build_bundle_governed_artifacts,
+)
 from bijux_phylogenetics.evidence.bundle_contracts import (
     ARTIFACT_JSON_FILENAMES,
     RESULT_ARTIFACT_JSON_FILENAMES,
@@ -20,7 +22,9 @@ def _write_governed_bundle_fixture(repo_root: Path) -> Path:
     (study_root / "provenance").mkdir(parents=True, exist_ok=True)
     (study_root / "reference").mkdir(parents=True, exist_ok=True)
     bundle_root.mkdir(parents=True, exist_ok=True)
-    (repo_root / "evidence-book" / "README.md").write_text("# Evidence Book\n", encoding="utf-8")
+    (repo_root / "evidence-book" / "README.md").write_text(
+        "# Evidence Book\n", encoding="utf-8"
+    )
     (study_root / "README.md").write_text(
         "# Demo Study\n\nHuman-first evidence fixture.\n", encoding="utf-8"
     )
@@ -141,10 +145,15 @@ def _write_governed_bundle_fixture(repo_root: Path) -> Path:
         "# Demo Evidence\n\nHuman-first evidence fixture.\n",
         encoding="utf-8",
     )
-    for relative_path, payload in build_bundle_governed_artifacts(repo_root, bundle_root).items():
+    for relative_path, payload in build_bundle_governed_artifacts(
+        repo_root, bundle_root
+    ).items():
         target = bundle_root / relative_path
         target.parent.mkdir(parents=True, exist_ok=True)
-        if relative_path in ARTIFACT_JSON_FILENAMES or relative_path in RESULT_ARTIFACT_JSON_FILENAMES:
+        if (
+            relative_path in ARTIFACT_JSON_FILENAMES
+            or relative_path in RESULT_ARTIFACT_JSON_FILENAMES
+        ):
             target.write_text(
                 json.dumps(payload, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
@@ -156,7 +165,9 @@ def _write_governed_bundle_fixture(repo_root: Path) -> Path:
     return repo_root
 
 
-def test_validate_evidence_book_accepts_minimal_human_first_layout(tmp_path: Path) -> None:
+def test_validate_evidence_book_accepts_minimal_human_first_layout(
+    tmp_path: Path,
+) -> None:
     repo_root = _write_governed_bundle_fixture(tmp_path)
 
     report = validate_evidence_book(repo_root)
@@ -165,7 +176,9 @@ def test_validate_evidence_book_accepts_minimal_human_first_layout(tmp_path: Pat
     assert report.issues == []
 
 
-def test_validate_evidence_book_rejects_study_root_machine_files(tmp_path: Path) -> None:
+def test_validate_evidence_book_rejects_study_root_machine_files(
+    tmp_path: Path,
+) -> None:
     repo_root = _write_governed_bundle_fixture(tmp_path)
     study_root = repo_root / "evidence-book" / "studies" / "demo-study"
     (study_root / "study.json").write_text("{}\n", encoding="utf-8")
@@ -173,10 +186,14 @@ def test_validate_evidence_book_rejects_study_root_machine_files(tmp_path: Path)
     report = validate_evidence_book(repo_root, require_index_outputs=False)
 
     assert report.valid is False
-    assert any("study root may only contain" in issue.message for issue in report.issues)
+    assert any(
+        "study root may only contain" in issue.message for issue in report.issues
+    )
 
 
-def test_validate_evidence_book_rejects_bundle_root_machine_files(tmp_path: Path) -> None:
+def test_validate_evidence_book_rejects_bundle_root_machine_files(
+    tmp_path: Path,
+) -> None:
     repo_root = _write_governed_bundle_fixture(tmp_path)
     bundle_root = (
         repo_root / "evidence-book" / "studies" / "demo-study" / "evidence-001"
@@ -186,4 +203,7 @@ def test_validate_evidence_book_rejects_bundle_root_machine_files(tmp_path: Path
     report = validate_evidence_book(repo_root, require_index_outputs=False)
 
     assert report.valid is False
-    assert any("move machine outputs under results/" in issue.message for issue in report.issues)
+    assert any(
+        "move machine outputs under results/" in issue.message
+        for issue in report.issues
+    )

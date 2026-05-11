@@ -15,6 +15,8 @@ DEFAULT_JSON_OUT = Path("artifacts/root/evidence-completeness.json")
 
 @dataclass(frozen=True)
 class EvidenceCompletenessIssue:
+    """Describe one missing or incomplete evidence bundle surface."""
+
     code: str
     path: str
     message: str
@@ -28,11 +30,14 @@ def _manifest_payload(path: Path) -> dict[str, Any]:
 def _bundle_roots(repo_root: Path) -> list[Path]:
     return sorted(
         path.parent
-        for path in (repo_root / "evidence-book" / "studies").glob("*/evidence-*/manifest.json")
+        for path in (repo_root / "evidence-book" / "studies").glob(
+            "*/evidence-*/manifest.json"
+        )
     )
 
 
 def build_evidence_completeness_report(repo_root: Path) -> dict[str, Any]:
+    """Build the bundle completeness report for the repository evidence-book."""
     repo_root = repo_root.resolve()
     publication_settings = load_publication_readiness_settings(repo_root)
     required_bundle_artifacts = [
@@ -41,7 +46,9 @@ def build_evidence_completeness_report(repo_root: Path) -> dict[str, Any]:
         if isinstance(name, str)
     ]
     required_input_manifest = str(
-        publication_settings.get("required_evidence_input_manifest", "inputs.manifest.json")
+        publication_settings.get(
+            "required_evidence_input_manifest", "inputs.manifest.json"
+        )
     )
     issues: list[EvidenceCompletenessIssue] = []
     bundle_reports: list[dict[str, Any]] = []
@@ -56,7 +63,14 @@ def build_evidence_completeness_report(repo_root: Path) -> dict[str, Any]:
         ]
         missing_fields = [
             field
-            for field in ("evidence_id", "study_id", "owner_package", "claim_ids", "comparison_mode", "verdict")
+            for field in (
+                "evidence_id",
+                "study_id",
+                "owner_package",
+                "claim_ids",
+                "comparison_mode",
+                "verdict",
+            )
             if field not in manifest or manifest[field] in ("", [], {})
         ]
         if missing_paths:
@@ -96,7 +110,9 @@ def build_evidence_completeness_report(repo_root: Path) -> dict[str, Any]:
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def check_evidence_completeness(
@@ -104,6 +120,7 @@ def check_evidence_completeness(
     *,
     json_out: Path | None = None,
 ) -> dict[str, Any]:
+    """Raise when the evidence completeness report contains any issues."""
     payload = build_evidence_completeness_report(repo_root)
     if json_out is not None:
         _write_json(json_out, payload)
@@ -113,6 +130,7 @@ def check_evidence_completeness(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the evidence completeness audit."""
     parser = argparse.ArgumentParser(
         description="Audit evidence bundle completeness for CI and review."
     )
@@ -123,6 +141,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the evidence completeness CLI entry point."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     json_out = Path(args.json_out)

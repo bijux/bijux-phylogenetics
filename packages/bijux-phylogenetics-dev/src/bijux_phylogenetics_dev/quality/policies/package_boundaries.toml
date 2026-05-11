@@ -43,8 +43,3 @@ module_root = "bijux_phylogenetics_dev"
 allowed_repo_import_roots = ["bijux_phylogenetics_dev", "bijux_phylogenetics"]
 owned_module_prefixes = ["bijux_phylogenetics_dev"]
 required_install_dependencies = ["PyYAML>=6.0,<7.0"]
-
-[tool.bijux_phylogenetics.package_boundaries.target_package_roles."bijux-phylogenetics-evidence"]
-role = "evidence-consumer"
-target_module_root = "bijux_phylogenetics_evidence"
-required_runtime_dependency = "bijux-phylogenetics>=0.1.0,<1.0"

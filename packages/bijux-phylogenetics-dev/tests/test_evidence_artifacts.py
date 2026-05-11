@@ -26,7 +26,12 @@ def _minimal_repo(tmp_path: Path) -> Path:
         "# Demo Study\n\nSmall governed study for bundle artifact checks.\n",
     )
     _write(
-        repo_root / "evidence-book" / "studies" / "demo-study" / "provenance" / "sources.json",
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "provenance"
+        / "sources.json",
         json.dumps(
             {
                 "schema_version": 1,
@@ -49,7 +54,12 @@ def _minimal_repo(tmp_path: Path) -> Path:
         + "\n",
     )
     _write(
-        repo_root / "evidence-book" / "studies" / "demo-study" / "datasets" / "registry.json",
+        repo_root
+        / "evidence-book"
+        / "studies"
+        / "demo-study"
+        / "datasets"
+        / "registry.json",
         json.dumps(
             {
                 "schema_version": 1,
@@ -167,8 +177,13 @@ def test_sync_evidence_artifacts_writes_local_bundle_surfaces(tmp_path: Path) ->
     assert "evidence-book/studies/demo-study/evidence-001/analysis.py" in written_paths
     assert "evidence-book/studies/demo-study/evidence-001/checks.json" in written_paths
     assert "evidence-book/studies/demo-study/evidence-001/report.md" in written_paths
-    assert "evidence-book/studies/demo-study/evidence-001/provenance.json" in written_paths
-    assert "evidence-book/studies/demo-study/evidence-001/results/README.md" in written_paths
+    assert (
+        "evidence-book/studies/demo-study/evidence-001/provenance.json" in written_paths
+    )
+    assert (
+        "evidence-book/studies/demo-study/evidence-001/results/README.md"
+        in written_paths
+    )
     assert (
         "evidence-book/studies/demo-study/evidence-001/results/manifest.json"
         in written_paths
@@ -195,7 +210,9 @@ def test_check_evidence_artifacts_flags_stale_bundle_surface(tmp_path: Path) -> 
     ]
 
 
-def test_check_evidence_artifacts_supports_single_bundle_selection(tmp_path: Path) -> None:
+def test_check_evidence_artifacts_supports_single_bundle_selection(
+    tmp_path: Path,
+) -> None:
     repo_root = _minimal_repo(tmp_path)
     sync_evidence_artifacts(repo_root)
     report_path = (

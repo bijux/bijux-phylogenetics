@@ -5,7 +5,6 @@ from pathlib import Path
 
 from .teaching import study_metadata, teaching_study_ids
 
-
 ALLOWED_STUDY_ROOT_DIRS = {"datasets", "reference", "provenance"}
 ALLOWED_STUDY_ROOT_FILES = {"README.md"}
 DEFAULT_OWNER_PACKAGE = "bijux-phylogenetics"
@@ -126,7 +125,9 @@ def load_study_contract(study_root: Path) -> dict[str, object]:
         _load_json(provenance_paths[0]) if len(provenance_paths) == 1 else None
     )
     dataset_registry_path = study_root / "datasets" / "registry.json"
-    dataset_payload = _load_json(dataset_registry_path) if dataset_registry_path.is_file() else None
+    dataset_payload = (
+        _load_json(dataset_registry_path) if dataset_registry_path.is_file() else None
+    )
     if study_id in teaching_study_ids():
         metadata = study_metadata(study_id)
         study_categories = list(metadata["study_categories"])
