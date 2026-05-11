@@ -330,6 +330,7 @@ def run_fasta_to_tree_workflow(
     prefix: str | None = None,
     sequence_type: AlignmentAlphabet | None = None,
     mafft_executable: str | Path = "mafft",
+    alignment_mode: str = "auto",
     trimal_executable: str | Path = "trimal",
     iqtree_executable: str | Path = "iqtree2",
     trim_gap_threshold: float = 0.1,
@@ -401,6 +402,7 @@ def run_fasta_to_tree_workflow(
         prepared_input_path,
         _artifact_prefix(out_dir, workflow_prefix, "alignment").with_suffix(".aln"),
         executable=mafft_executable,
+        mode=alignment_mode,
     )
     trimming_workflow = run_alignment_trimming(
         alignment_workflow.output_paths["alignment"],
@@ -480,6 +482,7 @@ def run_fasta_to_tree_workflow(
     notes = [
         "final tree path contains the bootstrap-supported inference tree",
         "engine-specific intermediate artifacts remain under engine-artifacts/",
+        f"mafft alignment mode: {alignment_mode}",
     ]
     if input_repair is not None:
         notes.append(

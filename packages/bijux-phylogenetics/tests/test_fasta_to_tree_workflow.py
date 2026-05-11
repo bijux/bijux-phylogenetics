@@ -344,3 +344,31 @@ def test_run_fasta_to_tree_workflow_repairs_invalid_raw_input_when_requested(
     assert "prepared_input_path:" in report.output_paths["log"].read_text(
         encoding="utf-8"
     )
+
+
+def test_run_fasta_to_tree_workflow_passes_named_mafft_mode_to_alignment_step(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_fasta_to_tree_workflow(
+        fixture("alignments/example_sequences_raw.fasta"),
+        out_dir=tmp_path / "workflow-linsi",
+        prefix="workflow-linsi",
+        mafft_executable=mafft,
+        alignment_mode="linsi",
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=200,
+    )
+
+    assert report.alignment_workflow.run.command[1:-1] == [
+        "--localpair",
+        "--maxiterate",
+        "1000",
+    ]
+    assert report.alignment_workflow.notes[0] == "mafft alignment mode: linsi"
+    assert "mafft alignment mode: linsi" in report.notes
+    assert "command:" in report.output_paths["log"].read_text(encoding="utf-8")
