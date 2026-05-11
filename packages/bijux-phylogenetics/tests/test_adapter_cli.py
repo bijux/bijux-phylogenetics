@@ -617,6 +617,87 @@ def test_adapter_fasta_to_tree_cli_repairs_invalid_input_when_requested(
     )
 
 
+def test_adapter_fasta_to_tree_cli_rejects_mixed_input_without_explicit_type(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    mixed_input = tmp_path / "mixed.fasta"
+    mixed_input.write_text(
+        ">dna_like\nACTGACTG\n>rna_like\nACUGACUG\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(mixed_input),
+            "--out-dir",
+            str(tmp_path / "mixed-output"),
+            "--prefix",
+            "mixed",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert "thymine-bearing and uracil-bearing" in payload["errors"][0]["message"]
+
+
+def test_adapter_fasta_to_tree_cli_can_force_declared_type_on_mixed_input(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    mixed_input = tmp_path / "mixed.fasta"
+    mixed_input.write_text(
+        ">dna_a\nACTGACTG\n>dna_b\nACTGACTA\n>rna_like\nACUGACUG\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(mixed_input),
+            "--out-dir",
+            str(tmp_path / "forced-dna"),
+            "--prefix",
+            "mixed",
+            "--sequence-type",
+            "dna",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(iqtree),
+            "--remove-invalid-records",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["sequence_type"] == "dna"
+    assert payload["metrics"]["sequence_type_confidence"] == "medium"
+    prepared_input_path = Path(payload["data"]["prepared_input_path"])
+    assert prepared_input_path.read_text(encoding="utf-8") == (
+        ">dna_a\nACTGACTG\n>dna_b\nACTGACTA\n"
+    )
+
+
 def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     executable = _fake_mrbayes(tmp_path / "mb-fixture")
     alignment_path = fixture("alignments/example_alignment.fasta")

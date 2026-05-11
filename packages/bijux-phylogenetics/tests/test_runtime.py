@@ -5042,6 +5042,9 @@ def test_cli_alignment_validate_input_json_output(capsys) -> None:
     assert payload["metrics"]["illegal_character_count"] == 1
     assert payload["metrics"]["empty_sequence_count"] == 1
     assert payload["metrics"]["sequence_length_outlier_count"] == 2
+    assert payload["metrics"]["detected_type"] == "invalid"
+    assert payload["metrics"]["selected_type"] is None
+    assert payload["metrics"]["sequence_type_confidence"] == "blocked"
 
 
 def test_cli_alignment_repair_input_writes_repaired_fasta(

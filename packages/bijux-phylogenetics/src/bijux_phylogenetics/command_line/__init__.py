@@ -4054,6 +4054,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.length_outliers
                             ),
                             "inferred_alphabet": report.summary.inferred_alphabet,
+                            "detected_type": report.sequence_type_report.detected_type,
+                            "selected_type": report.sequence_type_report.selected_type,
+                            "sequence_type_confidence": report.sequence_type_report.confidence,
                         },
                         data=report,
                     ),
@@ -8809,6 +8812,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "selected_model": report.selected_model,
                             "sequence_type": report.sequence_type,
+                            "sequence_type_confidence": (
+                                report.input_validation.sequence_type_report.confidence
+                                if report.repaired_input_validation is None
+                                else report.repaired_input_validation.sequence_type_report.confidence
+                            ),
                             "normalized_identifier_count": 0
                             if report.input_repair is None
                             else len(report.input_repair.normalized_identifiers),
