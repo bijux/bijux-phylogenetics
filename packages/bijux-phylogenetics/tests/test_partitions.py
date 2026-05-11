@@ -5,9 +5,11 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.core.partitions import (
+    build_partition_summary_report,
     parse_locus_partitions,
     slice_partition_sequence,
     validate_locus_partitions,
+    write_partition_summary_table,
     write_locus_partitions,
 )
 from bijux_phylogenetics.errors import InvalidPartitionError
@@ -71,4 +73,45 @@ def test_write_locus_partitions_preserves_stride_syntax(tmp_path: Path) -> None:
 
     assert output_path.read_text(encoding="utf-8") == (
         "DNA,gene_alpha = 1-9\\3\nPROTEIN,gene_beta = 10-12\n"
+    )
+
+
+def test_build_partition_summary_report_tracks_three_gene_partition_set(
+    tmp_path: Path,
+) -> None:
+    partition_path = tmp_path / "summary.partitions"
+    partition_path.write_text(
+        "DNA,gene_alpha = 1-4\nDNA,gene_beta = 5-9\nPROTEIN,gene_gamma = 10-12\n",
+        encoding="utf-8",
+    )
+    partitions = parse_locus_partitions(partition_path)
+
+    report = build_partition_summary_report(partitions, alignment_length=14)
+
+    assert report.partition_count == 3
+    assert report.assigned_site_count == 12
+    assert report.unassigned_site_count == 2
+    assert report.mixed_data_types is True
+    assert report.declared_data_types == ["DNA", "PROTEIN"]
+    assert report.rows[1].coordinate_text == "5-9"
+    assert report.warnings == ["2 alignment sites are not assigned to any partition"]
+
+
+def test_write_partition_summary_table_persists_tsv_rows(tmp_path: Path) -> None:
+    partition_path = tmp_path / "summary.partitions"
+    partition_path.write_text(
+        "DNA,gene_alpha = 1-4\nDNA,gene_beta = 5-9\nDNA,gene_gamma = 10-12\n",
+        encoding="utf-8",
+    )
+    partitions = parse_locus_partitions(partition_path)
+    report = build_partition_summary_report(partitions, alignment_length=12)
+    output_path = tmp_path / "partition-summary.tsv"
+
+    write_partition_summary_table(output_path, report)
+
+    assert output_path.read_text(encoding="utf-8") == (
+        "locus_name\tdata_type\tsegment_count\ttotal_sites\tstart_site\tend_site\tcoordinate_text\n"
+        "gene_alpha\tDNA\t1\t4\t1\t4\t1-4\n"
+        "gene_beta\tDNA\t1\t5\t5\t9\t5-9\n"
+        "gene_gamma\tDNA\t1\t3\t10\t12\t10-12\n"
     )

@@ -9,11 +9,16 @@ from bijux_phylogenetics.errors import InvalidPartitionError
 __all__ = [
     "LocusPartition",
     "LocusSegment",
+    "PartitionSummaryReport",
+    "PartitionSummaryRow",
+    "build_partition_summary_report",
     "iterate_partition_sites",
     "normalize_partition_data_type",
+    "partition_coordinate_text",
     "parse_locus_partitions",
     "slice_partition_sequence",
     "validate_locus_partitions",
+    "write_partition_summary_table",
     "write_locus_partitions",
 ]
 
@@ -48,6 +53,33 @@ class LocusPartition:
     segments: tuple[LocusSegment, ...]
     total_sites: int
     data_type: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PartitionSummaryRow:
+    """One row in a validated partition summary table."""
+
+    locus_name: str
+    data_type: str | None
+    segment_count: int
+    total_sites: int
+    start_site: int
+    end_site: int
+    coordinate_text: str
+
+
+@dataclass(frozen=True, slots=True)
+class PartitionSummaryReport:
+    """Validated coordinate and datatype summary for one partition file."""
+
+    alignment_length: int
+    partition_count: int
+    assigned_site_count: int
+    unassigned_site_count: int
+    mixed_data_types: bool
+    declared_data_types: list[str]
+    rows: list[PartitionSummaryRow]
+    warnings: list[str]
 
 
 def normalize_partition_data_type(data_type: str | None) -> str | None:
@@ -204,13 +236,99 @@ def _serialize_segment(segment: LocusSegment) -> str:
     return f"{segment.start}-{segment.end}\\{segment.step}"
 
 
+def partition_coordinate_text(partition: LocusPartition) -> str:
+    """Serialize one partition into stable coordinate text."""
+    return ",".join(_serialize_segment(segment) for segment in partition.segments)
+
+
+def build_partition_summary_report(
+    partitions: tuple[LocusPartition, ...],
+    *,
+    alignment_length: int,
+) -> PartitionSummaryReport:
+    """Validate one partition set and summarize its locus coverage."""
+    assigned_site_count, unassigned_site_count = validate_locus_partitions(
+        partitions,
+        alignment_length=alignment_length,
+    )
+    declared_data_types = sorted(
+        {
+            partition.data_type
+            for partition in partitions
+            if partition.data_type is not None
+        }
+    )
+    warnings: list[str] = []
+    if unassigned_site_count > 0:
+        warnings.append(
+            f"{unassigned_site_count} alignment sites are not assigned to any partition"
+        )
+    rows = [
+        PartitionSummaryRow(
+            locus_name=partition.name,
+            data_type=partition.data_type,
+            segment_count=len(partition.segments),
+            total_sites=partition.total_sites,
+            start_site=min(segment.start for segment in partition.segments),
+            end_site=max(segment.end for segment in partition.segments),
+            coordinate_text=partition_coordinate_text(partition),
+        )
+        for partition in partitions
+    ]
+    return PartitionSummaryReport(
+        alignment_length=alignment_length,
+        partition_count=len(partitions),
+        assigned_site_count=assigned_site_count,
+        unassigned_site_count=unassigned_site_count,
+        mixed_data_types=len(declared_data_types) > 1,
+        declared_data_types=declared_data_types,
+        rows=rows,
+        warnings=warnings,
+    )
+
+
 def write_locus_partitions(path: Path, partitions: tuple[LocusPartition, ...]) -> Path:
     """Write a partition file for the retained loci in concatenated alignment order."""
     path.parent.mkdir(parents=True, exist_ok=True)
     lines: list[str] = []
     for partition in partitions:
         prefix = f"{partition.data_type}," if partition.data_type else ""
-        ranges = ",".join(_serialize_segment(segment) for segment in partition.segments)
-        lines.append(f"{prefix}{partition.name} = {ranges}")
+        lines.append(
+            f"{prefix}{partition.name} = {partition_coordinate_text(partition)}"
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def write_partition_summary_table(path: Path, report: PartitionSummaryReport) -> Path:
+    """Persist one stable TSV summary of the validated partition set."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "\t".join(
+            [
+                "locus_name",
+                "data_type",
+                "segment_count",
+                "total_sites",
+                "start_site",
+                "end_site",
+                "coordinate_text",
+            ]
+        )
+    ]
+    lines.extend(
+        "\t".join(
+            [
+                row.locus_name,
+                row.data_type or "",
+                str(row.segment_count),
+                str(row.total_sites),
+                str(row.start_site),
+                str(row.end_site),
+                row.coordinate_text,
+            ]
+        )
+        for row in report.rows
+    )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
