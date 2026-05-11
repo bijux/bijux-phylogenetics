@@ -3440,6 +3440,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Select the named trimAl trimming strategy for the aligned workflow.",
     )
     adapter_fasta_to_tree.add_argument("--iqtree-executable", type=str)
+    adapter_fasta_to_tree.add_argument(
+        "--iqtree-seed",
+        type=int,
+        default=1,
+        help="Set the IQ-TREE random seed for deterministic model selection and support estimation.",
+    )
+    adapter_fasta_to_tree.add_argument(
+        "--iqtree-threads",
+        type=int,
+        default=1,
+        help="Set the IQ-TREE thread count used across model selection and inference.",
+    )
     adapter_fasta_to_tree.add_argument("--trim-gap-threshold", type=float, default=0.1)
     adapter_fasta_to_tree.add_argument("--bootstrap-replicates", type=int, default=1000)
     adapter_fasta_to_tree.add_argument(
@@ -8920,6 +8932,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     trimal_executable=args.trimal_executable or "trimal",
                     trimming_mode=args.trimming_mode,
                     iqtree_executable=args.iqtree_executable or "iqtree2",
+                    iqtree_seed=args.iqtree_seed,
+                    iqtree_threads=args.iqtree_threads,
                     trim_gap_threshold=args.trim_gap_threshold,
                     bootstrap_replicates=args.bootstrap_replicates,
                     normalize_identifiers=args.normalize_identifiers,
@@ -8940,6 +8954,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "alignment_mode": args.alignment_mode,
                             "trimming_mode": args.trimming_mode,
+                            "iqtree_seed": args.iqtree_seed,
+                            "iqtree_threads": args.iqtree_threads,
                             "bootstrap_replicates": args.bootstrap_replicates,
                             "retained_site_count": (
                                 None

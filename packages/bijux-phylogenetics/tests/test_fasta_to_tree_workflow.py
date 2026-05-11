@@ -13,7 +13,7 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     write_fasta_to_tree_model_table,
     write_fasta_to_tree_support_table,
 )
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -284,7 +284,7 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
             mafft_executable=mafft,
             trimal_executable=trimal,
             iqtree_executable=iqtree,
-            bootstrap_replicates=200,
+            bootstrap_replicates=1000,
         )
 
         assert report.sequence_type == expected_sequence_type
@@ -315,6 +315,8 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert support_rows[0]["support"] == "95"
         log_text = report.output_paths["log"].read_text(encoding="utf-8")
         assert "selected_model:" in log_text
+        assert "iqtree random seed: 1" in log_text
+        assert "iqtree threads: 1" in log_text
         assert "warning: iqtree fixture bootstrap" in log_text
 
 
@@ -430,6 +432,28 @@ def test_run_fasta_to_tree_workflow_can_force_declared_type_on_mixed_input(
     assert "raw sequence type detection: dna (medium)" in report.notes
 
 
+def test_run_fasta_to_tree_workflow_rejects_ufboot_replicates_below_iqtree_minimum(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="ultrafast bootstrap requires at least 1000 replicates",
+    ):
+        run_fasta_to_tree_workflow(
+            fixture("alignments/example_sequences_raw.fasta"),
+            out_dir=tmp_path / "workflow-too-few-bootstraps",
+            prefix="workflow-too-few-bootstraps",
+            mafft_executable=mafft,
+            trimal_executable=trimal,
+            iqtree_executable=iqtree,
+            bootstrap_replicates=999,
+        )
+
+
 def test_run_fasta_to_tree_workflow_passes_named_mafft_mode_to_alignment_step(
     tmp_path: Path,
 ) -> None:
@@ -445,7 +469,7 @@ def test_run_fasta_to_tree_workflow_passes_named_mafft_mode_to_alignment_step(
         alignment_mode="linsi",
         trimal_executable=trimal,
         iqtree_executable=iqtree,
-        bootstrap_replicates=200,
+        bootstrap_replicates=1000,
     )
 
     assert report.alignment_workflow.run.command[1:-1] == [
@@ -473,7 +497,7 @@ def test_run_fasta_to_tree_workflow_passes_named_trimal_mode_to_trimming_step(
         trimal_executable=trimal,
         trimming_mode="strictplus",
         iqtree_executable=iqtree,
-        bootstrap_replicates=200,
+        bootstrap_replicates=1000,
     )
 
     assert report.trimming_workflow.run.command[5:] == ["-strictplus"]
@@ -481,3 +505,35 @@ def test_run_fasta_to_tree_workflow_passes_named_trimal_mode_to_trimming_step(
     assert report.trimming_workflow.trimming_summary.mode == "strictplus"
     assert report.trimming_workflow.trimming_summary.removed_site_count == 3
     assert "trimal trimming mode: strictplus" in report.notes
+
+
+def test_run_fasta_to_tree_workflow_passes_deterministic_iqtree_controls(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_fasta_to_tree_workflow(
+        fixture("alignments/example_sequences_raw.fasta"),
+        out_dir=tmp_path / "workflow-deterministic-controls",
+        prefix="workflow-deterministic-controls",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        iqtree_seed=7,
+        iqtree_threads=3,
+        bootstrap_replicates=1000,
+    )
+
+    for workflow in (
+        report.model_selection_workflow,
+        report.maximum_likelihood_workflow,
+        report.bootstrap_workflow,
+    ):
+        seed_index = workflow.run.command.index("-seed")
+        thread_index = workflow.run.command.index("-nt")
+        assert workflow.run.command[seed_index : seed_index + 2] == ["-seed", "7"]
+        assert workflow.run.command[thread_index : thread_index + 2] == ["-nt", "3"]
+    assert "iqtree random seed: 7" in report.notes
+    assert "iqtree threads: 3" in report.notes

@@ -611,6 +611,10 @@ def test_run_model_selection_parses_best_fit_model_and_writes_manifest(
     )
 
     assert report.selected_model == "GTR+G"
+    seed_index = report.run.command.index("-seed")
+    thread_index = report.run.command.index("-nt")
+    assert report.run.command[seed_index : seed_index + 2] == ["-seed", "1"]
+    assert report.run.command[thread_index : thread_index + 2] == ["-nt", "1"]
     selected_model_path = report.output_paths["selected_model"]
     assert selected_model_path.read_text(encoding="utf-8").strip() == "GTR+G"
     assert report.run.warning_lines == ["warning: iqtree fixture model selection"]
@@ -673,6 +677,22 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert bootstrap_report.output_paths["bootstrap_trees"].exists()
     assert consensus_report.output_paths["consensus_tree"].exists()
     assert fast_report.output_paths["tree"].exists()
+    ml_seed_index = ml_report.run.command.index("-seed")
+    ml_thread_index = ml_report.run.command.index("-nt")
+    bootstrap_seed_index = bootstrap_report.run.command.index("-seed")
+    bootstrap_thread_index = bootstrap_report.run.command.index("-nt")
+    assert ml_report.run.command[ml_seed_index : ml_seed_index + 2] == ["-seed", "1"]
+    assert ml_report.run.command[ml_thread_index : ml_thread_index + 2] == ["-nt", "1"]
+    assert (
+        bootstrap_report.run.command[bootstrap_seed_index : bootstrap_seed_index + 2]
+        == ["-seed", "1"]
+    )
+    assert (
+        bootstrap_report.run.command[
+            bootstrap_thread_index : bootstrap_thread_index + 2
+        ]
+        == ["-nt", "1"]
+    )
     assert ml_report.run.warning_lines == ["warning: iqtree fixture tree inference"]
     assert bootstrap_report.run.warning_lines == ["warning: iqtree fixture bootstrap"]
     assert consensus_report.run.warning_lines == ["warning: iqtree fixture consensus"]
@@ -956,6 +976,25 @@ def test_bootstrap_workflow_report_includes_support_and_backbone_sections(
 
     assert "bootstrap-support-summary" in rendered.supplement_sections
     assert "weak-backbone" in rendered.supplement_sections
+
+
+def test_bootstrap_support_rejects_replicate_counts_below_iqtree_minimum(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "bootstrap-iqtree")
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="ultrafast bootstrap requires at least 1000 replicates",
+    ):
+        run_bootstrap_support_estimation(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "bootstrap",
+            model="GTR+G",
+            executable=executable,
+            prefix="bootstrap",
+            replicates=999,
+        )
 
 
 def test_alignment_trimming_workflow_report_includes_trimming_summary_section(

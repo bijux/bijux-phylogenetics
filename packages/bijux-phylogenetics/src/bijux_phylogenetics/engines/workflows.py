@@ -69,6 +69,7 @@ _TRIMAL_TRIMMING_MODES: tuple[str, ...] = (
     "strictplus",
     "automated1",
 )
+_MINIMUM_UFBOOT_REPLICATES = 1000
 
 
 @dataclass(slots=True)
@@ -558,6 +559,22 @@ def _fasttree_args(path: Path, sequence_type: AlignmentAlphabet | None) -> list[
     return [str(path)]
 
 
+def _iqtree_execution_controls(*, seed: int, threads: int) -> list[str]:
+    if seed < 1:
+        raise ValueError(f"iqtree seed must be positive, got {seed}")
+    if threads < 1:
+        raise ValueError(f"iqtree threads must be positive, got {threads}")
+    return ["-seed", str(seed), "-nt", str(threads)]
+
+
+def _validate_ufboot_replicates(replicates: int) -> None:
+    if replicates < _MINIMUM_UFBOOT_REPLICATES:
+        raise EngineWorkflowError(
+            "iqtree ultrafast bootstrap requires at least "
+            f"{_MINIMUM_UFBOOT_REPLICATES} replicates, got {replicates}"
+        )
+
+
 def _parse_best_model(iqtree_report_path: Path) -> str | None:
     if not iqtree_report_path.exists():
         return None
@@ -778,6 +795,8 @@ def run_model_selection(
     executable: str | Path = "iqtree2",
     sequence_type: AlignmentAlphabet | None = None,
     partition_path: Path | None = None,
+    seed: int = 1,
+    threads: int = 1,
 ) -> EngineWorkflowReport:
     """Run a model-selection workflow on an aligned FASTA file."""
     _ensure_inference_ready_alignment(input_path)
@@ -810,6 +829,7 @@ def run_model_selection(
                 if prepared_partitions is not None and prepared_partitions.mixed_data_types
                 else _iqtree_sequence_type_flag(input_path, sequence_type)
             ),
+            *_iqtree_execution_controls(seed=seed, threads=threads),
             "-m",
             "MF",
             "-pre",
@@ -858,6 +878,8 @@ def run_model_selection(
                 if prepared_partitions is None
                 else prepared_partitions.notes
             ),
+            f"iqtree random seed: {seed}",
+            f"iqtree threads: {threads}",
             "best-fit substitution model parsed from engine output",
         ],
     )
@@ -874,6 +896,8 @@ def run_maximum_likelihood_tree_inference(
     sequence_type: AlignmentAlphabet | None = None,
     partition_path: Path | None = None,
     resume: bool = False,
+    seed: int = 1,
+    threads: int = 1,
 ) -> EngineWorkflowReport:
     """Run an external maximum-likelihood tree inference workflow."""
     _ensure_inference_ready_alignment(input_path)
@@ -914,6 +938,7 @@ def run_maximum_likelihood_tree_inference(
             if prepared_partitions is not None and prepared_partitions.mixed_data_types
             else _iqtree_sequence_type_flag(input_path, sequence_type)
         ),
+        *_iqtree_execution_controls(seed=seed, threads=threads),
         "-m",
         model,
         "-pre",
@@ -976,6 +1001,8 @@ def run_maximum_likelihood_tree_inference(
                 if prepared_partitions is None
                 else prepared_partitions.notes
             ),
+            f"iqtree random seed: {seed}",
+            f"iqtree threads: {threads}",
             "maximum-likelihood tree validated as parseable Newick output",
         ],
     )
@@ -993,10 +1020,13 @@ def run_bootstrap_support_estimation(
     sequence_type: AlignmentAlphabet | None = None,
     partition_path: Path | None = None,
     resume: bool = False,
+    seed: int = 1,
+    threads: int = 1,
 ) -> EngineWorkflowReport:
     """Run external bootstrap support estimation and retain bootstrap trees."""
     if replicates < 1:
         raise ValueError(f"replicates must be positive, got {replicates}")
+    _validate_ufboot_replicates(replicates)
     _ensure_inference_ready_alignment(input_path)
     prefix_path = _prefix_path(out_dir, prefix)
     version = read_engine_version("iqtree", executable, version_args=("--version",))
@@ -1036,6 +1066,7 @@ def run_bootstrap_support_estimation(
             if prepared_partitions is not None and prepared_partitions.mixed_data_types
             else _iqtree_sequence_type_flag(input_path, sequence_type)
         ),
+        *_iqtree_execution_controls(seed=seed, threads=threads),
         "-m",
         model,
         "-bb",
@@ -1105,6 +1136,8 @@ def run_bootstrap_support_estimation(
                 if prepared_partitions is None
                 else prepared_partitions.notes
             ),
+            f"iqtree random seed: {seed}",
+            f"iqtree threads: {threads}",
             "bootstrap tree set retained for downstream consensus construction",
         ],
     )

@@ -622,7 +622,7 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
             "--iqtree-executable",
             str(iqtree),
             "--bootstrap-replicates",
-            "200",
+            "1000",
             "--json",
         ]
     )
@@ -631,6 +631,8 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     assert exit_code == 0
     assert payload["metrics"]["selected_model"] == "GTR+G"
     assert payload["metrics"]["sequence_type"] == "dna"
+    assert payload["metrics"]["iqtree_seed"] == 1
+    assert payload["metrics"]["iqtree_threads"] == 1
     assert (
         "warning: trimal fixture gap-threshold trimmed one trailing site"
         in payload["warnings"]
@@ -681,7 +683,7 @@ def test_adapter_fasta_to_tree_cli_passes_named_mafft_mode_to_alignment_step(
             "--iqtree-executable",
             str(iqtree),
             "--bootstrap-replicates",
-            "200",
+            "1000",
             "--json",
         ]
     )
@@ -724,7 +726,7 @@ def test_adapter_fasta_to_tree_cli_passes_named_trimal_mode_to_trimming_step(
             "--iqtree-executable",
             str(iqtree),
             "--bootstrap-replicates",
-            "200",
+            "1000",
             "--json",
         ]
     )
@@ -864,6 +866,92 @@ def test_adapter_fasta_to_tree_cli_can_force_declared_type_on_mixed_input(
     assert prepared_input_path.read_text(encoding="utf-8") == (
         ">dna_a\nACTGACTG\n>dna_b\nACTGACTA\n"
     )
+
+
+def test_adapter_fasta_to_tree_cli_rejects_ufboot_replicates_below_iqtree_minimum(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(tmp_path / "too-few-bootstraps"),
+            "--prefix",
+            "example",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(iqtree),
+            "--bootstrap-replicates",
+            "999",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert "ultrafast bootstrap requires at least 1000 replicates" in payload[
+        "errors"
+    ][0]["message"]
+
+
+def test_adapter_fasta_to_tree_cli_passes_deterministic_iqtree_controls(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(tmp_path / "deterministic-controls"),
+            "--prefix",
+            "example",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(iqtree),
+            "--iqtree-seed",
+            "7",
+            "--iqtree-threads",
+            "3",
+            "--bootstrap-replicates",
+            "1000",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["iqtree_seed"] == 7
+    assert payload["metrics"]["iqtree_threads"] == 3
+    for key in (
+        "model_selection_workflow",
+        "maximum_likelihood_workflow",
+        "bootstrap_workflow",
+    ):
+        command = payload["data"][key]["run"]["command"]
+        seed_index = command.index("-seed")
+        thread_index = command.index("-nt")
+        assert command[seed_index : seed_index + 2] == ["-seed", "7"]
+        assert command[thread_index : thread_index + 2] == ["-nt", "3"]
 
 
 def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:

@@ -335,6 +335,8 @@ def run_fasta_to_tree_workflow(
     trimal_executable: str | Path = "trimal",
     trimming_mode: str = "gap-threshold",
     iqtree_executable: str | Path = "iqtree2",
+    iqtree_seed: int = 1,
+    iqtree_threads: int = 1,
     trim_gap_threshold: float = 0.1,
     bootstrap_replicates: int = 1000,
     normalize_identifiers: bool = False,
@@ -423,6 +425,8 @@ def run_fasta_to_tree_workflow(
         prefix="model-selection",
         executable=iqtree_executable,
         sequence_type=inferred_sequence_type,
+        seed=iqtree_seed,
+        threads=iqtree_threads,
     )
     if model_selection_workflow.selected_model is None:
         raise ValueError("model-selection workflow did not expose a selected model")
@@ -433,6 +437,8 @@ def run_fasta_to_tree_workflow(
         prefix="maximum-likelihood",
         executable=iqtree_executable,
         sequence_type=inferred_sequence_type,
+        seed=iqtree_seed,
+        threads=iqtree_threads,
     )
     bootstrap_workflow = run_bootstrap_support_estimation(
         trimming_workflow.output_paths["trimmed_alignment"],
@@ -442,6 +448,8 @@ def run_fasta_to_tree_workflow(
         prefix="bootstrap-support",
         executable=iqtree_executable,
         sequence_type=inferred_sequence_type,
+        seed=iqtree_seed,
+        threads=iqtree_threads,
     )
 
     model_validation = validate_model_selection_against_engine_outputs(
@@ -489,6 +497,8 @@ def run_fasta_to_tree_workflow(
         "engine-specific intermediate artifacts remain under engine-artifacts/",
         f"mafft alignment mode: {alignment_mode}",
         f"trimal trimming mode: {trimming_mode}",
+        f"iqtree random seed: {iqtree_seed}",
+        f"iqtree threads: {iqtree_threads}",
         "raw sequence type detection: "
         f"{effective_input_validation.sequence_type_report.detected_type} "
         f"({effective_input_validation.sequence_type_report.confidence})",
