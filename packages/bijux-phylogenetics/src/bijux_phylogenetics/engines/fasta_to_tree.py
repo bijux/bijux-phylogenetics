@@ -12,8 +12,6 @@ from bijux_phylogenetics.core.alignment import (
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     detect_fasta_sequence_type,
-    infer_alignment_alphabet,
-    load_permissive_fasta_records,
     repair_fasta_input,
     validate_fasta_input,
     write_fasta_alignment,
