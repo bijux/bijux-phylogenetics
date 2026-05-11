@@ -3361,6 +3361,16 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_fasta_to_tree.add_argument("--trim-gap-threshold", type=float, default=0.1)
     adapter_fasta_to_tree.add_argument("--bootstrap-replicates", type=int, default=1000)
     adapter_fasta_to_tree.add_argument(
+        "--normalize-identifiers",
+        action="store_true",
+        help="Normalize FASTA identifiers before alignment and resolve any collisions.",
+    )
+    adapter_fasta_to_tree.add_argument(
+        "--remove-invalid-records",
+        action="store_true",
+        help="Remove empty or illegal sequence records before alignment.",
+    )
+    adapter_fasta_to_tree.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
     _add_manifest_argument(adapter_fasta_to_tree)
@@ -8674,6 +8684,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     iqtree_executable=args.iqtree_executable or "iqtree2",
                     trim_gap_threshold=args.trim_gap_threshold,
                     bootstrap_replicates=args.bootstrap_replicates,
+                    normalize_identifiers=args.normalize_identifiers,
+                    remove_invalid_records=args.remove_invalid_records,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -8691,6 +8703,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "bootstrap_replicates": args.bootstrap_replicates,
                             "selected_model": report.selected_model,
                             "sequence_type": report.sequence_type,
+                            "normalized_identifier_count": 0
+                            if report.input_repair is None
+                            else len(report.input_repair.normalized_identifiers),
+                            "removed_record_count": 0
+                            if report.input_repair is None
+                            else len(report.input_repair.removed_records),
                         },
                         data=report,
                     ),

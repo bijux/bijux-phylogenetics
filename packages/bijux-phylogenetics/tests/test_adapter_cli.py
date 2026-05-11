@@ -368,6 +368,49 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     assert Path(payload["data"]["manifest_path"]).exists()
 
 
+def test_adapter_fasta_to_tree_cli_repairs_invalid_input_when_requested(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_invalid_input.fasta")
+    out_dir = tmp_path / "fasta-to-tree-repaired"
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--sequence-type",
+            "dna",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(iqtree),
+            "--normalize-identifiers",
+            "--remove-invalid-records",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["normalized_identifier_count"] == 2
+    assert payload["metrics"]["removed_record_count"] == 2
+    prepared_input_path = Path(payload["data"]["prepared_input_path"])
+    assert prepared_input_path.read_text(encoding="utf-8") == (
+        ">Alpha_sample\nACTGACTG\n"
+        ">rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
+    )
+
+
 def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     executable = _fake_mrbayes(tmp_path / "mb-fixture")
     alignment_path = fixture("alignments/example_alignment.fasta")
