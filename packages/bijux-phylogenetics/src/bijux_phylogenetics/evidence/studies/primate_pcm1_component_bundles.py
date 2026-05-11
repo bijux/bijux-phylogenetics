@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from datetime import date
 import hashlib
 import json
 from pathlib import Path
@@ -574,7 +575,7 @@ def _build_manifest(
         "claim_ids": [spec["claim_id"]],
         "source_basis": source_basis,
         "freshness": {
-            "last_generated_on": "2026-05-10",
+            "last_generated_on": date.today().isoformat(),
             "governed_code_paths": [
                 "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
             ],

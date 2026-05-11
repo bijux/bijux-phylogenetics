@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from datetime import date
 from functools import cache, lru_cache
 import json
 import math
@@ -2086,7 +2087,7 @@ def _manifest_for_bundle(
         "claim_ids": [definition["claim_id"]],
         "source_basis": source_basis,
         "freshness": {
-            "last_generated_on": "2026-05-10",
+            "last_generated_on": date.today().isoformat(),
             "governed_code_paths": [
                 "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal.py"
             ],

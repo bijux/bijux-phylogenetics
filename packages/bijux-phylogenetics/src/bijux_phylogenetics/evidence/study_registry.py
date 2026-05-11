@@ -8,10 +8,11 @@ from bijux_phylogenetics.errors import EvidenceContractError
 
 from .studies.primate_longevity_signal import (
     STUDY_ID as PRIMATE_PCM1_STUDY_ID,
+    EVIDENCE_ID as PRIMATE_PCM1_SUMMARY_EVIDENCE_ID,
+    refresh_primate_summary_bundle,
 )
 from .studies.primate_pcm1_component_bundles import (
     COMPONENT_BUNDLE_DEFINITIONS,
-    REFERENCE_BUNDLE_ID,
     build_primate_pcm1_component_bundles,
 )
 from .studies.primate_pgls_and_signal import (
@@ -60,13 +61,8 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
 def _primate_pcm1_supported_evidence_ids() -> tuple[str, ...]:
     return tuple(
         sorted(
-            {
-                REFERENCE_BUNDLE_ID,
-                *(
-                    str(definition["evidence_id"])
-                    for definition in COMPONENT_BUNDLE_DEFINITIONS
-                ),
-            }
+            str(definition["evidence_id"])
+            for definition in COMPONENT_BUNDLE_DEFINITIONS
         )
     )
 
@@ -162,6 +158,16 @@ def _rerun_primate_pcm1_selection(
                 str((bundle_root / "README.md").relative_to(repo_root)),
             ]
         )
+    summary_bundle = refresh_primate_summary_bundle(repo_root)
+    summary_bundle_root = study_root / PRIMATE_PCM1_SUMMARY_EVIDENCE_ID
+    _write_json(summary_bundle_root / "manifest.json", summary_bundle["manifest"])
+    _write_json(summary_bundle_root / "claims.json", summary_bundle["claims"])
+    updated_paths.extend(
+        [
+            str((summary_bundle_root / "manifest.json").relative_to(repo_root)),
+            str((summary_bundle_root / "claims.json").relative_to(repo_root)),
+        ]
+    )
     return sorted(set(updated_paths))
 
 

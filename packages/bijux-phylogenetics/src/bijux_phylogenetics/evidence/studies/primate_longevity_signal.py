@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 import json
 from pathlib import Path
 
@@ -288,7 +289,10 @@ def _bundle_root(repo_root: Path) -> Path:
 
 
 def _comparison_payload(repo_root: Path) -> dict[str, object]:
-    path = _bundle_root(repo_root) / "comparison.json"
+    bundle_root = _bundle_root(repo_root)
+    path = bundle_root / "comparison.json"
+    if not path.exists():
+        path = bundle_root / "results" / "comparison.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -430,6 +434,23 @@ def build_primate_summary_bundle_claims(repo_root: Path) -> dict[str, object]:
         "claim_count": len(claims),
         "claims": claims,
     }
+
+
+def refresh_primate_summary_bundle(repo_root: Path) -> dict[str, object]:
+    bundle_root = _bundle_root(Path(repo_root))
+    manifest = json.loads((bundle_root / "manifest.json").read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict):
+        raise ValueError("expected summary bundle manifest to be a JSON object")
+    claims_payload = build_primate_summary_bundle_claims(Path(repo_root))
+    manifest["claim_ids"] = [
+        claim["claim_id"]
+        for claim in claims_payload["claims"]
+        if isinstance(claim, dict) and isinstance(claim.get("claim_id"), str)
+    ]
+    freshness = manifest.get("freshness")
+    if isinstance(freshness, dict):
+        freshness["last_generated_on"] = date.today().isoformat()
+    return {"manifest": manifest, "claims": claims_payload}
 
 
 def _family_verdict(fragment_statuses: list[str]) -> str:
