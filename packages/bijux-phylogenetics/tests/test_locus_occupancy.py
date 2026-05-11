@@ -6,9 +6,12 @@ import pytest
 
 from bijux_phylogenetics.core.locus_occupancy import (
     build_locus_occupancy_report,
+    filter_locus_occupancy,
     parse_locus_partitions,
+    write_locus_partitions,
 )
 from bijux_phylogenetics.errors import InvalidPartitionError
+from bijux_phylogenetics.io.fasta import write_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -99,3 +102,65 @@ def test_build_locus_occupancy_report_tracks_taxon_and_locus_coverage() -> None:
         "gene_beta": 1.0,
         "gene_gamma": 1.0,
     }
+
+
+def test_filter_locus_occupancy_can_remove_low_coverage_loci_only() -> None:
+    records, partitions, filter_report = filter_locus_occupancy(
+        fixture("alignments/example_multilocus_alignment.fasta"),
+        fixture("alignments/example_multilocus_partitions.txt"),
+        locus_coverage_threshold=0.5,
+    )
+
+    assert [record.identifier for record in records] == [
+        "TaxonA",
+        "TaxonB",
+        "TaxonC",
+        "TaxonD",
+        "TaxonE",
+    ]
+    assert [partition.name for partition in partitions] == ["gene_alpha", "gene_beta"]
+    assert len(records[0].sequence) == 9
+    assert filter_report.retained_loci == ["gene_alpha", "gene_beta"]
+    assert filter_report.removed_loci == ["gene_gamma"]
+    assert filter_report.final_report.locus_count == 2
+
+
+def test_filter_locus_occupancy_iterates_until_taxa_and_loci_stabilize() -> None:
+    records, partitions, filter_report = filter_locus_occupancy(
+        fixture("alignments/example_multilocus_alignment.fasta"),
+        fixture("alignments/example_multilocus_partitions.txt"),
+        taxon_coverage_threshold=0.6,
+        locus_coverage_threshold=0.6,
+    )
+
+    assert [record.identifier for record in records] == ["TaxonA", "TaxonB"]
+    assert [record.sequence for record in records] == ["AAAAGGG", "AAAAGGG"]
+    assert [partition.name for partition in partitions] == ["gene_alpha", "gene_gamma"]
+    assert [partition.total_sites for partition in partitions] == [4, 3]
+    assert filter_report.removed_taxa == ["TaxonC", "TaxonD", "TaxonE"]
+    assert filter_report.removed_loci == ["gene_beta"]
+    assert filter_report.filtered_alignment_length == 7
+    assert filter_report.iterations == 2
+    assert filter_report.final_report.low_coverage_taxa == []
+    assert filter_report.final_report.low_coverage_loci == []
+
+
+def test_write_locus_partitions_persists_remapped_coordinates(tmp_path: Path) -> None:
+    records, partitions, _ = filter_locus_occupancy(
+        fixture("alignments/example_multilocus_alignment.fasta"),
+        fixture("alignments/example_multilocus_partitions.txt"),
+        taxon_coverage_threshold=0.6,
+        locus_coverage_threshold=0.6,
+    )
+    alignment_path = tmp_path / "filtered_alignment.fasta"
+    partition_path = tmp_path / "filtered_partitions.txt"
+
+    write_fasta_alignment(alignment_path, records)
+    write_locus_partitions(partition_path, partitions)
+
+    assert alignment_path.read_text(encoding="utf-8") == (
+        ">TaxonA\nAAAAGGG\n>TaxonB\nAAAAGGG\n"
+    )
+    assert partition_path.read_text(encoding="utf-8") == (
+        "DNA,gene_alpha = 1-4\nDNA,gene_gamma = 5-7\n"
+    )

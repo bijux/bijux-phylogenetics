@@ -13,13 +13,16 @@ from bijux_phylogenetics.io.fasta import (
 
 __all__ = [
     "LocusCoverageRow",
+    "LocusOccupancyFilterReport",
     "LocusOccupancyCell",
     "LocusOccupancyReport",
     "LocusPartition",
     "LocusSegment",
     "TaxonCoverageRow",
     "build_locus_occupancy_report",
+    "filter_locus_occupancy",
     "parse_locus_partitions",
+    "write_locus_partitions",
 ]
 
 _PARTITION_LINE = re.compile(
@@ -110,6 +113,26 @@ class LocusOccupancyReport:
     taxon_coverage_threshold: float | None
     locus_coverage_threshold: float | None
     warnings: list[str]
+
+
+@dataclass(slots=True)
+class LocusOccupancyFilterReport:
+    """Outcome of threshold-based taxon and locus retention."""
+
+    alignment_path: Path
+    partition_path: Path
+    original_taxon_count: int
+    original_locus_count: int
+    original_alignment_length: int
+    retained_taxa: list[str]
+    removed_taxa: list[str]
+    retained_loci: list[str]
+    removed_loci: list[str]
+    filtered_alignment_length: int
+    iterations: int
+    taxon_coverage_threshold: float | None
+    locus_coverage_threshold: float | None
+    final_report: LocusOccupancyReport
 
 
 def _strip_partition_comments(raw_line: str) -> str:
@@ -242,23 +265,27 @@ def _observed_site_count(
     return max(0, observed)
 
 
-def build_locus_occupancy_report(
+def _validate_records(records: list[AlignmentRecord]) -> int:
+    if not records:
+        raise InvalidAlignmentError("alignment does not contain any records")
+    lengths = {len(record.sequence) for record in records}
+    if len(lengths) != 1:
+        raise InvalidAlignmentError(
+            "alignment contains unequal sequence lengths after locus occupancy preparation"
+        )
+    return len(records[0].sequence)
+
+
+def _build_locus_occupancy_report_from_inputs(
     alignment_path: Path,
     partition_path: Path,
     *,
+    records: list[AlignmentRecord],
+    partitions: tuple[LocusPartition, ...],
     taxon_coverage_threshold: float | None = None,
     locus_coverage_threshold: float | None = None,
 ) -> LocusOccupancyReport:
-    """Quantify locus occupancy across taxa for a concatenated alignment."""
-    _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
-    _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
-
-    records = load_fasta_alignment(alignment_path)
-    if not records:
-        raise InvalidAlignmentError("alignment does not contain any records")
-
-    partitions = parse_locus_partitions(partition_path)
-    alignment_length = len(records[0].sequence)
+    alignment_length = _validate_records(records)
     assigned_site_count, unassigned_site_count = _validate_partitions(
         partitions, alignment_length=alignment_length
     )
@@ -370,3 +397,208 @@ def build_locus_occupancy_report(
         locus_coverage_threshold=locus_coverage_threshold,
         warnings=warnings,
     )
+
+
+def build_locus_occupancy_report(
+    alignment_path: Path,
+    partition_path: Path,
+    *,
+    taxon_coverage_threshold: float | None = None,
+    locus_coverage_threshold: float | None = None,
+) -> LocusOccupancyReport:
+    """Quantify locus occupancy across taxa for a concatenated alignment."""
+    _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
+    _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
+
+    return _build_locus_occupancy_report_from_inputs(
+        alignment_path,
+        partition_path,
+        records=load_fasta_alignment(alignment_path),
+        partitions=parse_locus_partitions(partition_path),
+        taxon_coverage_threshold=taxon_coverage_threshold,
+        locus_coverage_threshold=locus_coverage_threshold,
+    )
+
+
+def _project_records_onto_partitions(
+    records: list[AlignmentRecord],
+    partitions: tuple[LocusPartition, ...],
+) -> list[AlignmentRecord]:
+    return [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence="".join(
+                _slice_partition_sequence(record.sequence, partition)
+                for partition in partitions
+            ),
+        )
+        for record in records
+    ]
+
+
+def _remap_partitions_for_concatenation(
+    partitions: tuple[LocusPartition, ...],
+) -> tuple[LocusPartition, ...]:
+    cursor = 1
+    remapped: list[LocusPartition] = []
+    for partition in partitions:
+        remapped_segments: list[LocusSegment] = []
+        for segment in partition.segments:
+            remapped_end = cursor + segment.length - 1
+            remapped_segments.append(LocusSegment(start=cursor, end=remapped_end))
+            cursor = remapped_end + 1
+        remapped.append(
+            LocusPartition(
+                name=partition.name,
+                segments=tuple(remapped_segments),
+                total_sites=partition.total_sites,
+                data_type=partition.data_type,
+            )
+        )
+    return tuple(remapped)
+
+
+def _subset_records_to_taxa(
+    records: list[AlignmentRecord],
+    retained_taxa: set[str],
+) -> list[AlignmentRecord]:
+    return [record for record in records if record.identifier in retained_taxa]
+
+
+def _serialize_segment(segment: LocusSegment) -> str:
+    if segment.start == segment.end:
+        return str(segment.start)
+    return f"{segment.start}-{segment.end}"
+
+
+def write_locus_partitions(path: Path, partitions: tuple[LocusPartition, ...]) -> Path:
+    """Write a partition file for the retained loci in concatenated alignment order."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines: list[str] = []
+    for partition in partitions:
+        prefix = f"{partition.data_type}," if partition.data_type else ""
+        ranges = ",".join(_serialize_segment(segment) for segment in partition.segments)
+        lines.append(f"{prefix}{partition.name} = {ranges}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def filter_locus_occupancy(
+    alignment_path: Path,
+    partition_path: Path,
+    *,
+    taxon_coverage_threshold: float | None = None,
+    locus_coverage_threshold: float | None = None,
+) -> tuple[list[AlignmentRecord], tuple[LocusPartition, ...], LocusOccupancyFilterReport]:
+    """Filter taxa and loci by occupancy thresholds until the retained matrix stabilizes."""
+    _validate_threshold(taxon_coverage_threshold, "taxon coverage threshold")
+    _validate_threshold(locus_coverage_threshold, "locus coverage threshold")
+
+    current_records = load_fasta_alignment(alignment_path)
+    current_partitions = parse_locus_partitions(partition_path)
+    original_taxa = [record.identifier for record in current_records]
+    original_loci = [partition.name for partition in current_partitions]
+    iterations = 0
+
+    while True:
+        iterations += 1
+        report = _build_locus_occupancy_report_from_inputs(
+            alignment_path,
+            partition_path,
+            records=current_records,
+            partitions=current_partitions,
+            taxon_coverage_threshold=taxon_coverage_threshold,
+            locus_coverage_threshold=locus_coverage_threshold,
+        )
+        retained_taxa = {
+            row.taxon
+            for row in report.taxa
+            if taxon_coverage_threshold is None
+            or row.locus_coverage_fraction >= taxon_coverage_threshold
+        }
+        filtered_records = (
+            current_records
+            if taxon_coverage_threshold is None
+            else _subset_records_to_taxa(current_records, retained_taxa)
+        )
+        if not filtered_records:
+            raise InvalidAlignmentError(
+                "occupancy filtering removed every taxon from the alignment"
+            )
+
+        filtered_taxa_report = _build_locus_occupancy_report_from_inputs(
+            alignment_path,
+            partition_path,
+            records=filtered_records,
+            partitions=current_partitions,
+            taxon_coverage_threshold=taxon_coverage_threshold,
+            locus_coverage_threshold=locus_coverage_threshold,
+        )
+        retained_locus_names = {
+            row.locus_name
+            for row in filtered_taxa_report.loci
+            if locus_coverage_threshold is None
+            or row.taxon_coverage_fraction >= locus_coverage_threshold
+        }
+        retained_partitions = tuple(
+            partition
+            for partition in current_partitions
+            if partition.name in retained_locus_names
+        )
+        if not retained_partitions:
+            raise InvalidPartitionError(
+                "occupancy filtering removed every locus from the partition set"
+            )
+
+        next_records = filtered_records
+        next_partitions = current_partitions
+        if locus_coverage_threshold is not None:
+            next_records = _project_records_onto_partitions(
+                filtered_records,
+                retained_partitions,
+            )
+            next_partitions = _remap_partitions_for_concatenation(retained_partitions)
+
+        if (
+            [record.identifier for record in next_records]
+            == [record.identifier for record in current_records]
+            and [partition.name for partition in next_partitions]
+            == [partition.name for partition in current_partitions]
+        ):
+            final_report = _build_locus_occupancy_report_from_inputs(
+                alignment_path,
+                partition_path,
+                records=next_records,
+                partitions=next_partitions,
+                taxon_coverage_threshold=taxon_coverage_threshold,
+                locus_coverage_threshold=locus_coverage_threshold,
+            )
+            return next_records, next_partitions, LocusOccupancyFilterReport(
+                alignment_path=alignment_path,
+                partition_path=partition_path,
+                original_taxon_count=len(original_taxa),
+                original_locus_count=len(original_loci),
+                original_alignment_length=_validate_records(
+                    load_fasta_alignment(alignment_path)
+                ),
+                retained_taxa=[record.identifier for record in next_records],
+                removed_taxa=[
+                    taxon
+                    for taxon in original_taxa
+                    if taxon not in {record.identifier for record in next_records}
+                ],
+                retained_loci=[partition.name for partition in next_partitions],
+                removed_loci=[
+                    locus
+                    for locus in original_loci
+                    if locus not in {partition.name for partition in next_partitions}
+                ],
+                filtered_alignment_length=len(next_records[0].sequence),
+                iterations=iterations,
+                taxon_coverage_threshold=taxon_coverage_threshold,
+                locus_coverage_threshold=locus_coverage_threshold,
+                final_report=final_report,
+            )
+
+        current_records = next_records
+        current_partitions = next_partitions
