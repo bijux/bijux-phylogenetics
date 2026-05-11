@@ -202,10 +202,12 @@ from bijux_phylogenetics.engines import (
     classify_inference_workflow_failure,
     compare_fast_and_ml_trees,
     compare_inferred_tree_to_taxon_metadata,
+    infer_unaligned_sequence_type,
     render_inference_workflow_report,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
+    run_fasta_to_tree_workflow,
     run_fast_tree_inference,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
@@ -794,6 +796,11 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.run_bootstrap_support_estimation
         is run_bootstrap_support_estimation
+    )
+    assert bijux_phylogenetics.run_fasta_to_tree_workflow is run_fasta_to_tree_workflow
+    assert (
+        bijux_phylogenetics.infer_unaligned_sequence_type
+        is infer_unaligned_sequence_type
     )
     assert (
         bijux_phylogenetics.validate_bootstrap_tree_set is validate_bootstrap_tree_set

@@ -6,6 +6,16 @@ from .common import (
     resolve_engine_executable,
 )
 from .evidence import InferenceEvidenceBundleResult, bundle_inference_workflow_evidence
+from .fasta_to_tree import (
+    FastaToTreeModelRow,
+    FastaToTreeSupportRow,
+    FastaToTreeWorkflowReport,
+    infer_unaligned_sequence_type,
+    run_fasta_to_tree_workflow,
+    write_fasta_to_tree_log,
+    write_fasta_to_tree_model_table,
+    write_fasta_to_tree_support_table,
+)
 from .reports import (
     InferenceSensitivityReport,
     InferenceSensitivityReportBuildResult,
@@ -54,6 +64,9 @@ __all__ = [
     "compare_inferred_tree_to_taxon_metadata",
     "EngineRunReport",
     "EngineVersionInfo",
+    "FastaToTreeModelRow",
+    "FastaToTreeSupportRow",
+    "FastaToTreeWorkflowReport",
     "InferenceEvidenceBundleResult",
     "EngineWorkflowReport",
     "ExternalTreeComparisonReport",
@@ -74,6 +87,7 @@ __all__ = [
     "build_inference_sensitivity_report",
     "build_model_selection_limitations_report",
     "InferenceOutputConsistencyReport",
+    "infer_unaligned_sequence_type",
     "validate_ml_tree_contains_expected_taxa",
     "validate_bootstrap_tree_set",
     "validate_inference_engine_outputs",
@@ -89,8 +103,12 @@ __all__ = [
     "run_alignment_trimming",
     "run_bootstrap_consensus_tree",
     "run_bootstrap_support_estimation",
+    "run_fasta_to_tree_workflow",
     "run_fast_tree_inference",
     "run_maximum_likelihood_tree_inference",
     "run_model_selection",
     "run_multiple_sequence_alignment",
+    "write_fasta_to_tree_log",
+    "write_fasta_to_tree_model_table",
+    "write_fasta_to_tree_support_table",
 ]
