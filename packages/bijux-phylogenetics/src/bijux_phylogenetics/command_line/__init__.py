@@ -87,6 +87,7 @@ from bijux_phylogenetics.compare.topology import (
     prune_trees_to_shared_taxa,
     write_tree_comparison_table,
 )
+from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.locus_occupancy import (
@@ -673,6 +674,17 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.alignment]
         if args.alignment_command == "repair-input":
             return [args.alignment, args.out]
+        if args.alignment_command == "concatenate":
+            inputs: list[Path | str] = [
+                *args.alignments,
+                args.out,
+                args.partitions_out,
+                args.matrix_out,
+            ]
+            for optional_path in (args.taxa_out, args.loci_out):
+                if optional_path is not None:
+                    inputs.append(optional_path)
+            return inputs
         if args.alignment_command == "occupancy":
             inputs: list[Path | str] = [args.alignment, args.partitions]
             for optional_path in (
@@ -1185,6 +1197,40 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the occupancy report as JSON."
     )
     _add_manifest_argument(alignment_occupancy)
+    alignment_concatenate = alignment_subparsers.add_parser(
+        "concatenate",
+        help="Concatenate aligned per-locus FASTA inputs into one partitioned supermatrix.",
+    )
+    alignment_concatenate.add_argument("alignments", nargs="+", type=Path)
+    alignment_concatenate.add_argument(
+        "--locus-name",
+        action="append",
+        dest="locus_names",
+        help="Override one locus name in input order. Repeat once per alignment when stems are not the durable locus names you want in the partition file.",
+    )
+    alignment_concatenate.add_argument(
+        "--data-type",
+        action="append",
+        dest="data_types",
+        help="Override one partition data type in input order. Repeat once per alignment when ambiguous residues make DNA and protein loci indistinguishable by content alone.",
+    )
+    alignment_concatenate.add_argument("--out", required=True, type=Path)
+    alignment_concatenate.add_argument("--partitions-out", required=True, type=Path)
+    alignment_concatenate.add_argument("--matrix-out", required=True, type=Path)
+    alignment_concatenate.add_argument(
+        "--taxa-out",
+        type=Path,
+        help="Write per-taxon locus coverage as TSV.",
+    )
+    alignment_concatenate.add_argument(
+        "--loci-out",
+        type=Path,
+        help="Write per-locus taxon coverage as TSV.",
+    )
+    alignment_concatenate.add_argument(
+        "--json", action="store_true", help="Emit the concatenation report as JSON."
+    )
+    _add_manifest_argument(alignment_concatenate)
     alignment_partition_summary = alignment_subparsers.add_parser(
         "partition-summary",
         help="Validate one partition file against an aligned matrix and summarize each locus as TSV-ready rows.",
@@ -4509,6 +4555,64 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "highest_score": None
                             if not report.rows
                             else report.rows[-1].score,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "concatenate":
+                records, partitions, report = concatenate_locus_alignments(
+                    list(args.alignments),
+                    locus_names=(
+                        None
+                        if args.locus_names is None
+                        else tuple(args.locus_names)
+                    ),
+                    data_types=(
+                        None if args.data_types is None else tuple(args.data_types)
+                    ),
+                    concatenated_alignment_path=args.out,
+                    concatenated_partition_path=args.partitions_out,
+                )
+                command_outputs = [
+                    write_fasta_alignment(args.out, records),
+                    write_locus_partitions(args.partitions_out, partitions),
+                    _write_locus_occupancy_matrix_tsv(
+                        args.matrix_out,
+                        report.occupancy_report,
+                    ),
+                ]
+                if args.taxa_out is not None:
+                    command_outputs.append(
+                        _write_locus_occupancy_taxa_tsv(
+                            args.taxa_out,
+                            report.occupancy_report,
+                        )
+                    )
+                if args.loci_out is not None:
+                    command_outputs.append(
+                        _write_locus_occupancy_loci_tsv(
+                            args.loci_out,
+                            report.occupancy_report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="alignment",
+                    inputs=list(args.alignments),
+                    outputs=command_outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=list(args.alignments),
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "taxon_count": report.taxon_count,
+                            "locus_count": report.locus_count,
+                            "alignment_length": report.alignment_length,
                         },
                         data=report,
                     ),
