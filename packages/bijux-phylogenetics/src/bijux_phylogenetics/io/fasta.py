@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 from statistics import median
 
@@ -31,6 +32,14 @@ from bijux_phylogenetics.core.alignment import (
     DuplicateSequenceGroup,
     DuplicateSequencePolicyAction,
     DuplicateSequencePolicyReport,
+    FastaDuplicateIdentifier,
+    FastaEmptySequence,
+    FastaIdentifierRepair,
+    FastaIllegalCharacter,
+    FastaInputSummary,
+    FastaInputValidationReport,
+    FastaRemovedRecord,
+    FastaRepairReport,
     FrameshiftLikeSequence,
     InvalidAlignmentCharacter,
     NearDuplicateSequencePair,
@@ -1940,6 +1949,18 @@ def build_alignment_forensic_report(path: Path) -> AlignmentForensicReport:
 
 def load_fasta_records(path: Path) -> list[AlignmentRecord]:
     """Load FASTA records without imposing equal-length alignment requirements."""
+    records = load_permissive_fasta_records(path)
+    duplicate_rows = _detect_duplicate_identifiers(records)
+    if duplicate_rows:
+        raise InvalidAlignmentError(
+            "alignment contains duplicate sequence ids: "
+            + ", ".join(row.identifier for row in duplicate_rows)
+        )
+    return records
+
+
+def load_permissive_fasta_records(path: Path) -> list[AlignmentRecord]:
+    """Load FASTA records while preserving duplicates and empty sequences."""
     if not path.exists():
         raise FileNotFoundError(f"alignment file not found: {path}")
 
@@ -1979,21 +2000,12 @@ def load_fasta_records(path: Path) -> list[AlignmentRecord]:
     if not records:
         raise InvalidAlignmentError(f"alignment contains no FASTA records: {path}")
 
-    ids = [record.identifier for record in records]
-    duplicate_ids = sorted(
-        identifier for identifier in set(ids) if ids.count(identifier) > 1
-    )
-    if duplicate_ids:
-        raise InvalidAlignmentError(
-            f"alignment contains duplicate sequence ids: {', '.join(duplicate_ids)}"
-        )
-
     return records
 
 
 def classify_alignment_sequences(path: Path) -> AlignmentSequenceKindReport:
     """Classify whether a FASTA input already behaves like an aligned dataset."""
-    records = load_fasta_records(path)
+    records = load_permissive_fasta_records(path)
     lengths = [len(record.sequence) for record in records]
     min_length = min(lengths)
     max_length = max(lengths)
@@ -2025,7 +2037,7 @@ def classify_alignment_sequences(path: Path) -> AlignmentSequenceKindReport:
 
 def detect_sequence_length_outliers(path: Path) -> list[SequenceLengthOutlier]:
     """Detect unusually short or long raw sequences before alignment assumptions are imposed."""
-    records = load_fasta_records(path)
+    records = load_permissive_fasta_records(path)
     lengths = [len(record.sequence) for record in records]
     if len(lengths) < 3:
         return []
@@ -2055,6 +2067,242 @@ def detect_sequence_length_outliers(path: Path) -> list[SequenceLengthOutlier]:
                 )
             )
     return sorted(outliers, key=lambda item: (item.raw_length, item.identifier))
+
+
+def _allowed_characters_for_sequence_type(
+    alphabet: AlignmentAlphabet | None,
+) -> set[str] | None:
+    if alphabet == "dna":
+        return _DNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+    if alphabet == "rna":
+        return _RNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+    if alphabet == "protein":
+        return _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+    return None
+
+
+def summarize_fasta_input(
+    path: Path,
+    *,
+    records: list[AlignmentRecord] | None = None,
+    sequence_type: AlignmentAlphabet | None = None,
+) -> FastaInputSummary:
+    """Summarize a FASTA input without assuming aligned equal-length sequences."""
+    rows = load_permissive_fasta_records(path) if records is None else records
+    lengths = [len(record.sequence) for record in rows]
+    inferred_alphabet = (
+        sequence_type
+        if sequence_type is not None
+        else infer_alignment_alphabet(list(rows))
+    )
+    return FastaInputSummary(
+        path=path,
+        sequence_count=len(rows),
+        unique_identifier_count=len({record.identifier for record in rows}),
+        empty_sequence_count=sum(1 for record in rows if not record.sequence),
+        min_sequence_length=min(lengths),
+        max_sequence_length=max(lengths),
+        median_sequence_length=float(median(lengths)),
+        total_residue_count=sum(lengths),
+        inferred_alphabet=inferred_alphabet,
+    )
+
+
+def _detect_duplicate_identifiers(
+    records: list[AlignmentRecord],
+) -> list[FastaDuplicateIdentifier]:
+    positions: dict[str, list[int]] = {}
+    for index, record in enumerate(records, start=1):
+        positions.setdefault(record.identifier, []).append(index)
+    return [
+        FastaDuplicateIdentifier(
+            identifier=identifier,
+            occurrences=len(record_indices),
+            record_indices=record_indices,
+        )
+        for identifier, record_indices in sorted(positions.items())
+        if len(record_indices) > 1
+    ]
+
+
+def _detect_empty_sequences(records: list[AlignmentRecord]) -> list[FastaEmptySequence]:
+    return [
+        FastaEmptySequence(identifier=record.identifier, record_index=index)
+        for index, record in enumerate(records, start=1)
+        if not record.sequence
+    ]
+
+
+def _detect_illegal_sequence_characters(
+    records: list[AlignmentRecord],
+    *,
+    alphabet: AlignmentAlphabet | None,
+) -> list[FastaIllegalCharacter]:
+    allowed = _allowed_characters_for_sequence_type(alphabet)
+    if allowed is None:
+        supported = (
+            _DNA_CHARACTERS
+            | _RNA_CHARACTERS
+            | _PROTEIN_CHARACTERS
+            | _GAP_CHARACTERS
+            | _EXPLICIT_MISSING_CHARACTERS
+        )
+        allowed = supported
+    return [
+        FastaIllegalCharacter(
+            identifier=record.identifier,
+            record_index=record_index,
+            position=position,
+            character=residue,
+        )
+        for record_index, record in enumerate(records, start=1)
+        for position, residue in enumerate(record.sequence, start=1)
+        if residue not in allowed
+    ]
+
+
+def validate_fasta_input(
+    path: Path,
+    *,
+    sequence_type: AlignmentAlphabet | None = None,
+) -> FastaInputValidationReport:
+    """Validate a FASTA input before alignment or engine execution."""
+    records = load_permissive_fasta_records(path)
+    summary = summarize_fasta_input(
+        path,
+        records=records,
+        sequence_type=sequence_type,
+    )
+    duplicate_identifiers = _detect_duplicate_identifiers(records)
+    illegal_characters = _detect_illegal_sequence_characters(
+        records,
+        alphabet=summary.inferred_alphabet if sequence_type is None else sequence_type,
+    )
+    empty_sequences = _detect_empty_sequences(records)
+    length_outliers = detect_sequence_length_outliers(path)
+    warnings: list[str] = []
+    if duplicate_identifiers:
+        warnings.append("input contains duplicate sequence identifiers")
+    if illegal_characters:
+        warnings.append("input contains unsupported sequence characters")
+    if empty_sequences:
+        warnings.append("input contains empty sequences")
+    if length_outliers:
+        warnings.append("input contains sequence length outliers")
+    if summary.inferred_alphabet == "unknown":
+        warnings.append("input sequence type could not be inferred confidently")
+    return FastaInputValidationReport(
+        path=path,
+        summary=summary,
+        duplicate_identifiers=duplicate_identifiers,
+        illegal_characters=illegal_characters,
+        empty_sequences=empty_sequences,
+        length_outliers=length_outliers,
+        warnings=warnings,
+    )
+
+
+def _normalize_fasta_identifier(identifier: str) -> str:
+    normalized = [
+        character
+        if character.isalnum() or character in {".", "_", "-"}
+        else "_"
+        for character in identifier.strip()
+    ]
+    collapsed = "".join(normalized)
+    while "__" in collapsed:
+        collapsed = collapsed.replace("__", "_")
+    collapsed = collapsed.strip("._-")
+    return collapsed or "sequence"
+
+
+def repair_fasta_input(
+    path: Path,
+    *,
+    sequence_type: AlignmentAlphabet | None = None,
+    normalize_identifiers: bool = False,
+    remove_invalid_records: bool = False,
+) -> tuple[list[AlignmentRecord], FastaRepairReport]:
+    """Repair a FASTA input through explicit identifier and record policies."""
+    records = load_permissive_fasta_records(path)
+    validation = validate_fasta_input(path, sequence_type=sequence_type)
+    illegal_record_indices = {
+        row.record_index for row in validation.illegal_characters
+    }
+    empty_record_indices = {row.record_index for row in validation.empty_sequences}
+    retained_records: list[AlignmentRecord] = []
+    normalized_identifiers: list[FastaIdentifierRepair] = []
+    removed_records: list[FastaRemovedRecord] = []
+    seen_identifiers: Counter[str] = Counter()
+
+    for record_index, record in enumerate(records, start=1):
+        removal_reasons: list[str] = []
+        if remove_invalid_records and record_index in empty_record_indices:
+            removal_reasons.append("empty-sequence")
+        if remove_invalid_records and record_index in illegal_record_indices:
+            removal_reasons.append("illegal-characters")
+        if removal_reasons:
+            removed_records.append(
+                FastaRemovedRecord(
+                    identifier=record.identifier,
+                    record_index=record_index,
+                    reason="+".join(removal_reasons),
+                )
+            )
+            continue
+
+        repaired_identifier = (
+            _normalize_fasta_identifier(record.identifier)
+            if normalize_identifiers
+            else record.identifier
+        )
+        seen_identifiers[repaired_identifier] += 1
+        duplicate_occurrence = seen_identifiers[repaired_identifier]
+        if normalize_identifiers and duplicate_occurrence > 1:
+            repaired_identifier = f"{repaired_identifier}_{duplicate_occurrence}"
+        if repaired_identifier != record.identifier:
+            note = "normalized identifier"
+            if duplicate_occurrence > 1:
+                note = "normalized identifier and resolved duplicate collision"
+            normalized_identifiers.append(
+                FastaIdentifierRepair(
+                    original_identifier=record.identifier,
+                    repaired_identifier=repaired_identifier,
+                    record_index=record_index,
+                    note=note,
+                )
+            )
+        retained_records.append(
+            AlignmentRecord(
+                identifier=repaired_identifier,
+                sequence=record.sequence,
+            )
+        )
+
+    if not retained_records:
+        raise InvalidAlignmentError(
+            f"FASTA repair removed every sequence record from {path}"
+        )
+
+    after_summary = summarize_fasta_input(
+        path,
+        records=retained_records,
+        sequence_type=sequence_type,
+    )
+    warnings = list(validation.warnings)
+    if remove_invalid_records and removed_records:
+        warnings.append("repair removed invalid sequence records")
+    if normalize_identifiers and normalized_identifiers:
+        warnings.append("repair normalized FASTA identifiers")
+    return retained_records, FastaRepairReport(
+        source_path=path,
+        output_path=None,
+        before=validation.summary,
+        after=after_summary,
+        normalized_identifiers=normalized_identifiers,
+        removed_records=removed_records,
+        warnings=list(dict.fromkeys(warnings)),
+    )
 
 
 def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:

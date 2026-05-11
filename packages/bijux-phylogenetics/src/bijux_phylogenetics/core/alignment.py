@@ -29,6 +29,93 @@ class AlignmentSequenceKindReport:
 
 
 @dataclass(frozen=True, slots=True)
+class FastaInputSummary:
+    """Summary of a raw or aligned FASTA input before downstream validation."""
+
+    path: Path
+    sequence_count: int
+    unique_identifier_count: int
+    empty_sequence_count: int
+    min_sequence_length: int
+    max_sequence_length: int
+    median_sequence_length: float
+    total_residue_count: int
+    inferred_alphabet: AlignmentAlphabet
+
+
+@dataclass(frozen=True, slots=True)
+class FastaDuplicateIdentifier:
+    """One identifier observed more than once in a FASTA input."""
+
+    identifier: str
+    occurrences: int
+    record_indices: list[int]
+
+
+@dataclass(frozen=True, slots=True)
+class FastaIllegalCharacter:
+    """One unsupported sequence character observed in a FASTA input."""
+
+    identifier: str
+    record_index: int
+    position: int
+    character: str
+
+
+@dataclass(frozen=True, slots=True)
+class FastaEmptySequence:
+    """One FASTA record whose sequence body is empty."""
+
+    identifier: str
+    record_index: int
+
+
+@dataclass(frozen=True, slots=True)
+class FastaIdentifierRepair:
+    """One identifier rewrite applied during FASTA repair."""
+
+    original_identifier: str
+    repaired_identifier: str
+    record_index: int
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
+class FastaRemovedRecord:
+    """One record removed during FASTA repair."""
+
+    identifier: str
+    record_index: int
+    reason: str
+
+
+@dataclass(slots=True)
+class FastaInputValidationReport:
+    """Validation report for one FASTA sequence input before alignment."""
+
+    path: Path
+    summary: FastaInputSummary
+    duplicate_identifiers: list[FastaDuplicateIdentifier]
+    illegal_characters: list[FastaIllegalCharacter]
+    empty_sequences: list[FastaEmptySequence]
+    length_outliers: list["SequenceLengthOutlier"]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class FastaRepairReport:
+    """Repair report describing how a FASTA input changed."""
+
+    source_path: Path
+    output_path: Path | None
+    before: FastaInputSummary
+    after: FastaInputSummary
+    normalized_identifiers: list[FastaIdentifierRepair]
+    removed_records: list[FastaRemovedRecord]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
 class SequenceMissingness:
     """Missing-data fraction for one alignment sequence."""
 
