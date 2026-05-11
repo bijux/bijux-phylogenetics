@@ -419,6 +419,11 @@ def _report_summary_and_limitations(
             if flag
         )
         summary.append(f"alignment safe-for flags passed: {safe_methods}/5")
+        summary.append(
+            "alignment suspicious diagnostics: flagged"
+            if alignment_forensic.quality.suspicious_alignment
+            else "alignment suspicious diagnostics: clear"
+        )
         limitations.extend(alignment_forensic.limitations)
     if inspection.mixed_support_scales:
         limitations.append(
@@ -866,6 +871,11 @@ def render_alignment_report(
     reviewer_summary = [
         f"alignment quality score: {alignment_quality.quality_score}",
         (
+            "alignment suspicious diagnostics: flagged"
+            if alignment_quality.suspicious_alignment
+            else "alignment suspicious diagnostics: clear"
+        ),
+        (
             "alignment remains suitable for at least one inference family"
             if any(
                 (
@@ -879,6 +889,11 @@ def render_alignment_report(
         ),
         f"reviewer-facing warnings: {len(alignment_forensic.warnings)}",
     ]
+    if alignment_quality.suspicious_alignment:
+        reviewer_summary.append(
+            "longest concentrated missing-data run: "
+            f"{alignment_quality.missing_data_concentration.longest_concentrated_run}"
+        )
     limitations = sorted(
         dict.fromkeys(
             [

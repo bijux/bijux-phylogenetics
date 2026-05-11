@@ -2043,7 +2043,11 @@ def build_alignment_forensic_report(path: Path) -> AlignmentForensicReport:
         safe_for_maximum_likelihood=method_by_name["maximum_likelihood"].ready,
         safe_for_bayesian_inference=method_by_name["bayesian"].ready,
         safe_for_coding_analysis=method_by_name["coding"].ready,
-        safe_for_publication=quality.quality_score >= 75.0 and not warnings,
+        safe_for_publication=(
+            quality.quality_score >= 75.0
+            and not quality.suspicious_alignment
+            and not warnings
+        ),
         warnings=warnings,
         limitations=limitations,
     )

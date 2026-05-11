@@ -5815,7 +5815,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     output = tmp_path / "phylo-inputs-report.html"
     result = render_phylo_inputs_report(
         tree_path=fixture("example_tree.nwk"),
-        alignment_path=fixture("example_alignment.fasta"),
+        alignment_path=fixture("example_alignment_missingness.fasta"),
         out_path=output,
     )
     text = output.read_text(encoding="utf-8")
@@ -5845,6 +5845,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     ]
     assert result.machine_manifest_path.exists()
     assert "Bijux Phylo Inputs Report" in text
+    assert "alignment suspicious diagnostics: flagged" in text
     assert result.alignment_low_information is not None
     assert result.alignment_duplicate_policy is not None
     assert result.alignment_ambiguous_columns is not None
@@ -5854,7 +5855,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
 def test_render_alignment_report_writes_alignment_sections(tmp_path: Path) -> None:
     output = tmp_path / "alignment-report.html"
     result = render_alignment_report(
-        alignment_path=fixture("example_alignment_coding.fasta"),
+        alignment_path=fixture("example_alignment_filtering.fasta"),
         out_path=output,
     )
 
@@ -5878,6 +5879,8 @@ def test_render_alignment_report_writes_alignment_sections(tmp_path: Path) -> No
     ]
     assert result.machine_manifest_path.exists()
     assert "Bijux Alignment Report" in text
+    assert "alignment suspicious diagnostics: flagged" in text
+    assert "longest concentrated missing-data run: 4" in text
 
 
 def test_render_taxon_report_writes_taxon_sections(tmp_path: Path) -> None:
