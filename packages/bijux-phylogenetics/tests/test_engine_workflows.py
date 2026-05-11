@@ -617,6 +617,28 @@ def test_run_model_selection_parses_best_fit_model_and_writes_manifest(
     assert report.manifest_path.exists()
 
 
+def test_run_model_selection_supports_partitioned_alignment_and_writes_summary(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_model_selection(
+        fixture("alignments/example_multilocus_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="partitioned",
+        partition_path=fixture("alignments/example_multilocus_partitions.txt"),
+    )
+
+    assert "-p" in report.run.command
+    assert str(
+        fixture("alignments/example_multilocus_alignment.fasta").resolve()
+    ) in report.run.command
+    summary_path = report.output_paths["partition_summary"]
+    assert summary_path.exists()
+    assert "gene_beta" in summary_path.read_text(encoding="utf-8")
+
+
 def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> None:
     iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
     fasttree = _fake_fasttree(tmp_path / "FastTree-fixture")
@@ -657,6 +679,76 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert fast_report.run.warning_lines == [
         "warning: fasttree fixture approximate support only"
     ]
+
+
+def test_run_ml_and_bootstrap_support_mixed_partition_datatypes(tmp_path: Path) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = tmp_path / "mixed-alignment.fasta"
+    input_path.write_text(
+        ">A\nACGTACMKTW\n>B\nACGTACMKTA\n>C\nACGTACMKTF\n>D\nACGTACMKTY\n",
+        encoding="utf-8",
+    )
+    partition_path = tmp_path / "mixed.partitions"
+    partition_path.write_text(
+        "DNA,gene_alpha = 1-6\nPROTEIN,gene_beta = 7-10\n",
+        encoding="utf-8",
+    )
+
+    ml_report = run_maximum_likelihood_tree_inference(
+        input_path,
+        out_dir=tmp_path / "ml",
+        model="MFP",
+        executable=executable,
+        prefix="mixed",
+        partition_path=partition_path,
+    )
+    bootstrap_report = run_bootstrap_support_estimation(
+        input_path,
+        out_dir=tmp_path / "bootstrap",
+        model="MFP",
+        executable=executable,
+        prefix="mixed",
+        partition_path=partition_path,
+    )
+
+    assert "-p" in ml_report.run.command
+    assert "-s" not in ml_report.run.command
+    assert ml_report.output_paths["partition_scheme"].suffix == ".nex"
+    assert ml_report.output_paths["partition_summary"].exists()
+    assert any(
+        key.startswith("partition_alignment_") for key in ml_report.output_paths
+    )
+    assert "-p" in bootstrap_report.run.command
+    assert "-s" not in bootstrap_report.run.command
+
+
+def test_run_ml_rejects_fixed_model_for_mixed_partition_datatypes(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = tmp_path / "mixed-alignment.fasta"
+    input_path.write_text(
+        ">A\nACGTACMKTW\n>B\nACGTACMKTA\n>C\nACGTACMKTF\n>D\nACGTACMKTY\n",
+        encoding="utf-8",
+    )
+    partition_path = tmp_path / "mixed.partitions"
+    partition_path.write_text(
+        "DNA,gene_alpha = 1-6\nPROTEIN,gene_beta = 7-10\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="mixed DNA/protein partition analyses require a model-selection keyword",
+    ):
+        run_maximum_likelihood_tree_inference(
+            input_path,
+            out_dir=tmp_path / "ml",
+            model="GTR+G",
+            executable=executable,
+            prefix="mixed",
+            partition_path=partition_path,
+        )
 
 
 def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(

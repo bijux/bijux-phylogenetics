@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import gzip
+import hashlib
 from pathlib import Path
 import re
 
@@ -11,8 +12,19 @@ from bijux_phylogenetics.compare.reports import (
 )
 from bijux_phylogenetics.core.alignment import (
     AlignmentAlphabet,
+    AlignmentRecord,
     AlignmentSummary,
     CodingSequenceExclusion,
+)
+from bijux_phylogenetics.core.partitions import (
+    LocusPartition,
+    PartitionSummaryReport,
+    build_partition_summary_report,
+    normalize_partition_data_type,
+    parse_locus_partitions,
+    slice_partition_sequence,
+    write_locus_partitions,
+    write_partition_summary_table,
 )
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import EngineWorkflowError
@@ -116,6 +128,15 @@ class CodonAwareAlignmentWorkflowReport:
     warnings: list[str] = field(default_factory=list)
 
 
+@dataclass(frozen=True, slots=True)
+class _PreparedIqtreePartitions:
+    command_args: list[str]
+    summary: PartitionSummaryReport
+    output_paths: dict[str, Path]
+    notes: list[str]
+    mixed_data_types: bool
+
+
 def list_mafft_alignment_modes() -> tuple[str, ...]:
     """Return the supported named MAFFT alignment strategies."""
     return tuple(_MAFFT_ALIGNMENT_MODE_ARGUMENTS)
@@ -164,6 +185,10 @@ def _prefix_path(out_dir: Path, prefix: str) -> Path:
 
 def _manifest_path_from_output(path: Path) -> Path:
     return _sidecar(path, "manifest.json")
+
+
+def _partition_support_path(prefix_path: Path, suffix: str) -> Path:
+    return prefix_path.parent / f"{prefix_path.name}.{suffix}"
 
 
 def _validate_alignment_output(path: Path) -> None:
@@ -253,6 +278,135 @@ def _ensure_inference_ready_alignment(path: Path) -> None:
             f"inference alignment is empty after filtering: {path}"
         )
     summarise_fasta(path)
+
+
+def _partition_alignment_file_name(partition: LocusPartition) -> str:
+    normalized = re.sub(r"[^A-Za-z0-9._-]+", "-", partition.name.strip().lower())
+    normalized = normalized.strip("-._") or "partition"
+    digest = hashlib.sha1(partition.name.encode("utf-8")).hexdigest()[:8]  # nosec B324
+    return f"{normalized}-{digest}.fasta"
+
+
+def _iqtree_partition_supports_fixed_model(
+    *,
+    model: str,
+    mixed_data_types: bool,
+) -> bool:
+    if not mixed_data_types:
+        return True
+    normalized = model.strip().upper()
+    return normalized in {
+        "TEST",
+        "TESTONLY",
+        "TESTNEWONLY",
+        "MF",
+        "MFP",
+        "TESTMERGE",
+        "TESTMERGEONLY",
+        "MF+MERGE",
+        "MFP+MERGE",
+    }
+
+
+def _prepare_iqtree_partitions(
+    input_path: Path,
+    partition_path: Path,
+    *,
+    prefix_path: Path,
+) -> _PreparedIqtreePartitions:
+    records = load_fasta_alignment(input_path)
+    alignment_summary = summarise_fasta(input_path)
+    partitions = parse_locus_partitions(partition_path)
+    summary = build_partition_summary_report(
+        partitions,
+        alignment_length=alignment_summary.alignment_length,
+    )
+    summary_path = _partition_support_path(prefix_path, "partition-summary.tsv")
+    write_partition_summary_table(summary_path, summary)
+    notes = [
+        f"validated {summary.partition_count} partitions across {summary.assigned_site_count} assigned sites",
+    ]
+    output_paths: dict[str, Path] = {
+        "partition_summary": summary_path,
+    }
+
+    declared_types = {
+        normalize_partition_data_type(partition.data_type)
+        for partition in partitions
+        if partition.data_type is not None
+    }
+    if len(declared_types) <= 1:
+        normalized_partition_path = _partition_support_path(
+            prefix_path, "partition-scheme.partitions"
+        )
+        write_locus_partitions(normalized_partition_path, partitions)
+        output_paths["partition_scheme"] = normalized_partition_path
+        notes.append("prepared a normalized partition scheme for single-alignment IQ-TREE analysis")
+        return _PreparedIqtreePartitions(
+            command_args=[
+                "-s",
+                str(input_path.resolve()),
+                "-p",
+                str(normalized_partition_path.resolve()),
+            ],
+            summary=summary,
+            output_paths=output_paths,
+            notes=notes,
+            mixed_data_types=False,
+        )
+
+    if any(partition.data_type is None for partition in partitions):
+        raise EngineWorkflowError(
+            "mixed partition analyses require every partition to declare a data_type"
+        )
+    unsupported_types = sorted(
+        {
+            data_type
+            for data_type in declared_types
+            if data_type not in {"DNA", "RNA", "PROTEIN"}
+        }
+    )
+    if unsupported_types:
+        raise EngineWorkflowError(
+            "mixed partition analyses currently support only DNA, RNA, and PROTEIN datatypes; "
+            f"got: {', '.join(unsupported_types)}"
+        )
+
+    partition_alignment_dir = _partition_support_path(prefix_path, "partition-alignments")
+    partition_alignment_dir.mkdir(parents=True, exist_ok=True)
+    lines = ["#nexus", "begin sets;"]
+    for partition in partitions:
+        partition_alignment_path = (
+            partition_alignment_dir / _partition_alignment_file_name(partition)
+        )
+        write_fasta_alignment(
+            partition_alignment_path,
+            [
+                AlignmentRecord(
+                    identifier=record.identifier,
+                    sequence=slice_partition_sequence(record.sequence, partition),
+                )
+                for record in records
+            ],
+        )
+        output_paths[f"partition_alignment_{partition.name}"] = partition_alignment_path
+        lines.append(
+            f"    charset {partition.name} = {partition_alignment_path.name}: *;"
+        )
+    lines.append("end;")
+    mixed_partition_path = _partition_support_path(prefix_path, "partition-scheme.nex")
+    mixed_partition_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    output_paths["partition_scheme"] = mixed_partition_path
+    notes.append(
+        "prepared a mixed-datatype NEXUS partition scheme with one extracted alignment per partition"
+    )
+    return _PreparedIqtreePartitions(
+        command_args=["-p", str(mixed_partition_path.resolve())],
+        summary=summary,
+        output_paths=output_paths,
+        notes=notes,
+        mixed_data_types=True,
+    )
 
 
 def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport:
@@ -623,6 +777,7 @@ def run_model_selection(
     prefix: str = "model-selection",
     executable: str | Path = "iqtree2",
     sequence_type: AlignmentAlphabet | None = None,
+    partition_path: Path | None = None,
 ) -> EngineWorkflowReport:
     """Run a model-selection workflow on an aligned FASTA file."""
     _ensure_inference_ready_alignment(input_path)
@@ -630,15 +785,31 @@ def run_model_selection(
     version = read_engine_version("iqtree", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
     iqtree_report_path = prefix_path.with_suffix(".iqtree")
+    prepared_partitions = (
+        None
+        if partition_path is None
+        else _prepare_iqtree_partitions(
+            input_path,
+            partition_path,
+            prefix_path=prefix_path,
+        )
+    )
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="model-selection",
         executable=resolved,
         version=version,
         command_args=[
-            "-s",
-            str(input_path.resolve()),
-            *(_iqtree_sequence_type_flag(input_path, sequence_type)),
+            *(
+                prepared_partitions.command_args
+                if prepared_partitions is not None
+                else ["-s", str(input_path.resolve())]
+            ),
+            *(
+                []
+                if prepared_partitions is not None and prepared_partitions.mixed_data_types
+                else _iqtree_sequence_type_flag(input_path, sequence_type)
+            ),
             "-m",
             "MF",
             "-pre",
@@ -660,17 +831,35 @@ def run_model_selection(
     report = EngineWorkflowReport(
         workflow="model-selection",
         engine_name="iqtree",
-        input_paths=[input_path],
+        input_paths=(
+            [input_path]
+            if partition_path is None
+            else [input_path, partition_path]
+        ),
         output_paths={
+            **(
+                {}
+                if prepared_partitions is None
+                else prepared_partitions.output_paths
+            ),
             "iqtree_report": iqtree_report_path,
             "selected_model": selected_model_path,
         },
         run=run,
         manifest_path=manifest_path,
-        input_checksums=build_file_checksums([input_path]),
+        input_checksums=build_file_checksums(
+            [input_path] if partition_path is None else [input_path, partition_path]
+        ),
         output_checksums={},
         selected_model=selected_model,
-        notes=["best-fit substitution model parsed from engine output"],
+        notes=[
+            *(
+                []
+                if prepared_partitions is None
+                else prepared_partitions.notes
+            ),
+            "best-fit substitution model parsed from engine output",
+        ],
     )
     return _persist_workflow_report(report)
 
@@ -683,6 +872,7 @@ def run_maximum_likelihood_tree_inference(
     prefix: str = "maximum-likelihood",
     executable: str | Path = "iqtree2",
     sequence_type: AlignmentAlphabet | None = None,
+    partition_path: Path | None = None,
     resume: bool = False,
 ) -> EngineWorkflowReport:
     """Run an external maximum-likelihood tree inference workflow."""
@@ -690,14 +880,40 @@ def run_maximum_likelihood_tree_inference(
     prefix_path = _prefix_path(out_dir, prefix)
     version = read_engine_version("iqtree", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
+    prepared_partitions = (
+        None
+        if partition_path is None
+        else _prepare_iqtree_partitions(
+            input_path,
+            partition_path,
+            prefix_path=prefix_path,
+        )
+    )
+    if (
+        prepared_partitions is not None
+        and not _iqtree_partition_supports_fixed_model(
+            model=model,
+            mixed_data_types=prepared_partitions.mixed_data_types,
+        )
+    ):
+        raise EngineWorkflowError(
+            "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
+        )
     tree_path = prefix_path.with_suffix(".treefile")
     report_path = prefix_path.with_suffix(".iqtree")
     manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [
         resolved,
-        "-s",
-        str(input_path.resolve()),
-        *(_iqtree_sequence_type_flag(input_path, sequence_type)),
+        *(
+            prepared_partitions.command_args
+            if prepared_partitions is not None
+            else ["-s", str(input_path.resolve())]
+        ),
+        *(
+            []
+            if prepared_partitions is not None and prepared_partitions.mixed_data_types
+            else _iqtree_sequence_type_flag(input_path, sequence_type)
+        ),
         "-m",
         model,
         "-pre",
@@ -706,7 +922,11 @@ def run_maximum_likelihood_tree_inference(
     if resume:
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,
-            input_paths=[input_path],
+            input_paths=(
+                [input_path]
+                if partition_path is None
+                else [input_path, partition_path]
+            ),
             expected_command=command,
         )
         if resumed is not None:
@@ -729,17 +949,35 @@ def run_maximum_likelihood_tree_inference(
     report = EngineWorkflowReport(
         workflow="maximum-likelihood-tree",
         engine_name="iqtree",
-        input_paths=[input_path],
+        input_paths=(
+            [input_path]
+            if partition_path is None
+            else [input_path, partition_path]
+        ),
         output_paths={
+            **(
+                {}
+                if prepared_partitions is None
+                else prepared_partitions.output_paths
+            ),
             "tree": tree_path,
             "iqtree_report": report_path,
         },
         run=run,
         manifest_path=manifest_path,
-        input_checksums=build_file_checksums([input_path]),
+        input_checksums=build_file_checksums(
+            [input_path] if partition_path is None else [input_path, partition_path]
+        ),
         output_checksums={},
         selected_model=model,
-        notes=["maximum-likelihood tree validated as parseable Newick output"],
+        notes=[
+            *(
+                []
+                if prepared_partitions is None
+                else prepared_partitions.notes
+            ),
+            "maximum-likelihood tree validated as parseable Newick output",
+        ],
     )
     return _persist_workflow_report(report)
 
@@ -753,6 +991,7 @@ def run_bootstrap_support_estimation(
     prefix: str = "bootstrap-support",
     executable: str | Path = "iqtree2",
     sequence_type: AlignmentAlphabet | None = None,
+    partition_path: Path | None = None,
     resume: bool = False,
 ) -> EngineWorkflowReport:
     """Run external bootstrap support estimation and retain bootstrap trees."""
@@ -762,15 +1001,41 @@ def run_bootstrap_support_estimation(
     prefix_path = _prefix_path(out_dir, prefix)
     version = read_engine_version("iqtree", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
+    prepared_partitions = (
+        None
+        if partition_path is None
+        else _prepare_iqtree_partitions(
+            input_path,
+            partition_path,
+            prefix_path=prefix_path,
+        )
+    )
+    if (
+        prepared_partitions is not None
+        and not _iqtree_partition_supports_fixed_model(
+            model=model,
+            mixed_data_types=prepared_partitions.mixed_data_types,
+        )
+    ):
+        raise EngineWorkflowError(
+            "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
+        )
     support_tree_path = prefix_path.with_suffix(".treefile")
     bootstrap_tree_path = prefix_path.with_suffix(".ufboot")
     report_path = prefix_path.with_suffix(".iqtree")
     manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [
         resolved,
-        "-s",
-        str(input_path.resolve()),
-        *(_iqtree_sequence_type_flag(input_path, sequence_type)),
+        *(
+            prepared_partitions.command_args
+            if prepared_partitions is not None
+            else ["-s", str(input_path.resolve())]
+        ),
+        *(
+            []
+            if prepared_partitions is not None and prepared_partitions.mixed_data_types
+            else _iqtree_sequence_type_flag(input_path, sequence_type)
+        ),
         "-m",
         model,
         "-bb",
@@ -782,7 +1047,11 @@ def run_bootstrap_support_estimation(
     if resume:
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,
-            input_paths=[input_path],
+            input_paths=(
+                [input_path]
+                if partition_path is None
+                else [input_path, partition_path]
+            ),
             expected_command=command,
         )
         if resumed is not None:
@@ -808,18 +1077,36 @@ def run_bootstrap_support_estimation(
     report = EngineWorkflowReport(
         workflow="bootstrap-support",
         engine_name="iqtree",
-        input_paths=[input_path],
+        input_paths=(
+            [input_path]
+            if partition_path is None
+            else [input_path, partition_path]
+        ),
         output_paths={
+            **(
+                {}
+                if prepared_partitions is None
+                else prepared_partitions.output_paths
+            ),
             "support_tree": support_tree_path,
             "bootstrap_trees": bootstrap_tree_path,
             "iqtree_report": report_path,
         },
         run=run,
         manifest_path=manifest_path,
-        input_checksums=build_file_checksums([input_path]),
+        input_checksums=build_file_checksums(
+            [input_path] if partition_path is None else [input_path, partition_path]
+        ),
         output_checksums={},
         selected_model=model,
-        notes=["bootstrap tree set retained for downstream consensus construction"],
+        notes=[
+            *(
+                []
+                if prepared_partitions is None
+                else prepared_partitions.notes
+            ),
+            "bootstrap tree set retained for downstream consensus construction",
+        ],
     )
     return _persist_workflow_report(report)
 
