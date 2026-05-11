@@ -204,6 +204,11 @@ Engine-specific intermediate manifests and working files stay under
 `out-dir/engine-artifacts/prefix/` so the final output set remains compact
 without hiding reviewable run details.
 
+The workflow now defaults IQ-TREE to `--iqtree-seed 1` and `--iqtree-threads 1`
+so the checked output bundle is reproducible across reruns. Ultrafast bootstrap
+support remains the supported branch-support backend here, which means
+`--bootstrap-replicates` must be at least `1000`.
+
 Named MAFFT strategies are now first-class on both `adapter align` and
 `adapter fasta-to-tree`. Use `--mode` or `--alignment-mode` with one of
 `auto`, `linsi`, `ginsi`, `einsi`, or `fast`. The runtime expands each named
@@ -236,6 +241,14 @@ available on `adapter fasta-to-tree`; without them, the workflow now fails fast
 instead of silently continuing on bad raw input. Mixed raw inputs must now
 either be fixed or forced with an explicit `--sequence-type` choice before the
 workflow continues.
+
+The checked real-dataset regression corpus for this end-to-end workflow now
+lives under `packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/`.
+It currently pins reviewer-facing output bundles for:
+
+- `gnathostome-ortholog-proteins`
+- `gnathostome-ortholog-coding-sequences`
+- `strnog-enog411bqtj-proteins`
 
 For coding nucleotide phylogenetics, use `adapter align --codon-aware` first
 and then run downstream inference steps such as `adapter model-select`,

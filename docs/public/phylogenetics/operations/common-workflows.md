@@ -111,6 +111,8 @@ bijux-phylogenetics alignment repair-input raw-sequences.fasta \
 bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta \
   --out-dir artifacts/fasta-to-tree \
   --prefix mammals \
+  --iqtree-seed 1 \
+  --iqtree-threads 1 \
   --normalize-identifiers \
   --remove-invalid-records \
   --bootstrap-replicates 1000 \
@@ -131,6 +133,11 @@ user-facing outputs:
 It also retains step-specific engine artifacts under
 `artifacts/fasta-to-tree/engine-artifacts/mammals/` for auditability.
 
+The IQ-TREE part of the workflow now defaults to deterministic execution with
+`--iqtree-seed 1` and `--iqtree-threads 1`. Ultrafast bootstrap support is the
+governed support workflow here, so `--bootstrap-replicates` must be at least
+`1000`.
+
 Use `alignment sequence-type` when you need the raw FASTA type decision before
 any engine is invoked. It reports compatible types, the selected default, the
 confidence level, and mixed or invalid blocking signals.
@@ -147,16 +154,20 @@ fails fast on duplicate identifiers, empty sequences, or illegal characters.
 Mixed raw inputs also fail fast unless you declare a compatible
 `--sequence-type` explicitly and remove incompatible records.
 
-The checked repository examples that currently exercise this workflow are:
+The checked real-dataset workflow corpus now lives under:
 
-- `packages/bijux-phylogenetics/tests/fixtures/alignments/example_sequences_raw.fasta`
-- `packages/bijux-phylogenetics/tests/fixtures/alignments/example_alignment.fasta`
-- `packages/bijux-phylogenetics/tests/fixtures/alignments/example_alignment_protein.fasta`
-- `packages/bijux-phylogenetics/tests/fixtures/alignments/example_sequences_invalid_input.fasta`
+- `packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/`
+- `packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/`
 
-Those checks cover raw DNA input, already aligned DNA input, and protein input,
-and they verify that the workflow emits the aligned matrix, trimmed matrix,
-tree, log, model table, and support table with stable names.
+Those checks pin reviewer-facing output bundles for:
+
+- `gnathostome-ortholog-proteins`
+- `gnathostome-ortholog-coding-sequences`
+- `strnog-enog411bqtj-proteins`
+
+They verify that the workflow emits the aligned matrix, trimmed matrix, tree,
+log, model table, and support table with stable names on real DNA and protein
+inputs.
 
 For coding DNA, prefer the codon-aware alignment workflow above and then run
 the downstream adapter steps explicitly. The current `adapter fasta-to-tree`

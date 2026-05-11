@@ -38,7 +38,9 @@ The adapter family also includes `adapter fasta-to-tree`, which is the
 supported end-to-end inference entrypoint for raw FASTA inputs. It emits a
 reviewable aligned matrix, trimmed matrix, selected-model table, supported
 tree, support summary table, run log, and manifest in one command instead of
-forcing users to stitch separate adapter steps together by hand.
+forcing users to stitch separate adapter steps together by hand. The workflow
+also exposes `--iqtree-seed` and `--iqtree-threads` so the checked inference
+bundle can be reproduced exactly when the same engine versions are available.
 
 For coding nucleotide inputs, `adapter align --codon-aware` is the supported
 alignment entrypoint. It excludes frame-broken sequences and sequences with
