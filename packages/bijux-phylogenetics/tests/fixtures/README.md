@@ -4,6 +4,7 @@ This fixture corpus is organized by durable surface:
 
 - `trees/` for tree-format inputs
 - `alignments/` for aligned FASTA inputs
+- `concatenation/` for aligned per-locus FASTA inputs used to assemble checked supermatrices
 - `metadata/` for metadata and trait tables
 - `fasta_to_tree/real/` for biologically real raw FASTA inputs used to exercise the canonical end-to-end workflow
 - `expected/` for checked-in expected outputs and goldens

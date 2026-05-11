@@ -1,0 +1,3 @@
+DNA,alpha-dna = 1-4
+PROTEIN,beta-protein = 5-8
+DNA,gamma-dna = 9-11
