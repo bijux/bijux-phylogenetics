@@ -1,38 +1,54 @@
 {
   "evidence_id": "evidence-006",
-  "governed_local_artifact_count": 4,
+  "governed_local_artifact_count": 6,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
-      "kind": "governed-local-input",
-      "label": "coverage-boundaries.json",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/README.md",
+      "read_only": false,
+      "sha256": "1f36e3fb3776a6f0b1fb045e79ab9289f106a154f97bb6c3b51021c44b8e3b84"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/coverage-boundaries.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/coverage-boundaries.json",
       "read_only": false,
       "sha256": "567aa109665bfc19af021c24d9085934508e327a9d3928ae3ce4908eae047ddc"
     },
     {
-      "input_id": "local-input-002",
-      "kind": "governed-local-input",
-      "label": "transformed-tree-parity.json",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/transformed-tree-parity.json",
-      "read_only": false,
-      "sha256": "8486c37f7329699d35a94cffb873ce63db2a520da17c24b4087f54bfb32340e7"
-    },
-    {
       "input_id": "local-input-003",
-      "kind": "governed-result-surface",
-      "label": "results/README.md",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/README.md",
-      "read_only": false,
-      "sha256": "4995c208e7c2e68e857f031de5094aa6731dfc22a07577109dac3ad5af4b9b1a"
-    },
-    {
-      "input_id": "local-input-004",
       "kind": "governed-result-surface",
       "label": "results/manifest.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/manifest.json",
       "read_only": false,
-      "sha256": "d4d850541ca09b6f1848ccc240ea3c64e8fab0bc483dd0aee3ffb26bc598f37b"
+      "sha256": "edab85f0cddf255658f3ab735ca70966415657a62c39a6f8ef58f2c553a792ad"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "3770b05fe3000a2bdb704e727cf91f8fe51183f15896fcd9ac0b6e48d04cac04"
+    },
+    {
+      "input_id": "local-input-005",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "be79500803ed3fa7647095370cb29b041d205cb2e8e9ac2580dbd1db81052fb8"
+    },
+    {
+      "input_id": "local-input-006",
+      "kind": "governed-result-surface",
+      "label": "results/transformed-tree-parity.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-006/results/transformed-tree-parity.json",
+      "read_only": false,
+      "sha256": "8486c37f7329699d35a94cffb873ce63db2a520da17c24b4087f54bfb32340e7"
     }
   ],
   "local_input_count": 0,
@@ -46,7 +62,7 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "533651c7b313d5b147a292ac39cf7854d4b3326e7b208e1e0eaea463570fbbcb"
+      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
     },
     {
       "input_id": "source-input-002",

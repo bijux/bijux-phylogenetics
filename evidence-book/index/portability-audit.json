@@ -4,8 +4,8 @@
   "issues": [],
   "locator_kind_counts": {
     "external_locator": 72,
-    "repo_relative": 1160,
-    "suspicious_path_like": 303
+    "repo_relative": 1196,
+    "suspicious_path_like": 339
   },
   "report_like_file_count": 321,
   "rule_count": 3,

@@ -31,3 +31,8 @@ Shared study inputs and provenance:
 - [datasets](./datasets/)
 - [provenance](./provenance/)
 - [reference adapters](./reference/)
+
+Untouched Lund source locators:
+
+- `external:lund/pcm2-modes-pgls/script`
+- `external:lund/pcm2-modes-pgls/data/primate.RData`

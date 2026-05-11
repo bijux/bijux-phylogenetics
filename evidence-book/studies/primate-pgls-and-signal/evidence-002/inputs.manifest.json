@@ -1,22 +1,22 @@
 {
   "evidence_id": "evidence-002",
-  "governed_local_artifact_count": 3,
+  "governed_local_artifact_count": 5,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
-      "kind": "governed-local-input",
-      "label": "baseline-gls-parity.json",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/baseline-gls-parity.json",
-      "read_only": false,
-      "sha256": "0f6bf47b2d83497e4e8f8ec04488b03f5c4187ba72872fb2b2bc7ef25f8df97b"
-    },
-    {
-      "input_id": "local-input-002",
       "kind": "governed-result-surface",
       "label": "results/README.md",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/README.md",
       "read_only": false,
-      "sha256": "9bc1881e19ff4bc10f9a7c5e58b33526229f07bc2fa20bf4f1490c525d11e376"
+      "sha256": "275f601a9df996f5b06d40ab3621491c9201f07a4d595debba19c328a19a2554"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/baseline-gls-parity.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/baseline-gls-parity.json",
+      "read_only": false,
+      "sha256": "0f6bf47b2d83497e4e8f8ec04488b03f5c4187ba72872fb2b2bc7ef25f8df97b"
     },
     {
       "input_id": "local-input-003",
@@ -24,7 +24,23 @@
       "label": "results/manifest.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/manifest.json",
       "read_only": false,
-      "sha256": "dac8d2882afdda6ff68e8562e5779610ef5c7a302293c4604fe2760f06da2d09"
+      "sha256": "c70fcf72594f6e4e89dcde8ea4d7debbc5a7806d94abe0239323ad24d28457e3"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "cd9186011cc45286767d145468b05a481562ddf10642ce7a01fd9141b2d391d9"
+    },
+    {
+      "input_id": "local-input-005",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "f91d93659756af45d58e82ed40bd802aa5c5d702333c13e5f9ef7c3775363257"
     }
   ],
   "local_input_count": 0,
@@ -38,7 +54,7 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "533651c7b313d5b147a292ac39cf7854d4b3326e7b208e1e0eaea463570fbbcb"
+      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
     },
     {
       "input_id": "source-input-002",
@@ -68,9 +84,8 @@
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "Primate baseline GLS parity bundle report payload",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/baseline-gls-parity.json",
-      "read_only": false,
-      "sha256": "0f6bf47b2d83497e4e8f8ec04488b03f5c4187ba72872fb2b2bc7ef25f8df97b"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/baseline-gls-parity.json",
+      "read_only": false
     }
   ],
   "study_id": "primate-pgls-and-signal"

@@ -1,35 +1,63 @@
 ---
-title: Evidence Book Guide
+title: Evidence Book
 audience: public
-type: index
-status: canonical
-owner: bijux-phylogenetics-docs
+type: evidence-navigation
+status: active
+owner: bijux-phylogenetics-dev
 last_reviewed: 2026-05-10
 ---
 
-# Phylogenetics Evidence Book
+# Evidence Book
 
-The public evidence-book guide explains the two Lund-derived study families
-that currently ground the repository’s strongest governed parity claims.
+The evidence-book is the repository trust surface for governed parity,
+teaching, migration, and explicit coverage boundaries.
 
-This is not the full evidence-book internals. It is the reader-facing guide to
-what the two studies are, why they matter, and how to read them without being
-buried in machine-generated review files.
+- studies: `2`
+- evidence bundles: `19`
+- teaching studies: `0`
+- migration studies: `0`
+- freshness statuses: `current=19`
+- coverage gaps: `4` debt entries
+- foundational numerical trust: `bounded`
+- reviewer readiness: `bounded`
+- maturity tier: `reviewable_but_incomplete`
 
-<div class="bijux-quicklinks">
-  <a class="md-button md-button--primary" href="../../index.md">Open the documentation home</a>
-  <a class="md-button" href="pcm1-primate-longevity-signal/">Read PCM1</a>
-  <a class="md-button" href="pcm2-primate-pgls-and-signal/">Read PCM2</a>
-</div>
+## Review Surfaces
 
-## Why These Studies Matter
+- repository evidence root: [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)
+- teaching and migration index: [`evidence-book/index/teaching-and-migration.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/teaching-and-migration.md)
+- parity dashboard: [`evidence-book/index/parity-dashboard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md)
+- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
+- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)
+- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)
+- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)
+- analytical surface coverage: [`evidence-book/index/analytical-surface-coverage.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/analytical-surface-coverage.md)
+- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)
+- maturity scorecard: [`evidence-book/index/evidence-maturity-scorecard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-maturity-scorecard.md)
+- completion gates: [`evidence-book/index/completion-gates.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/completion-gates.md)
 
-- they come from real Lund teaching material rather than invented toy examples
-- they let R and Bijux behavior be compared on bounded, reviewable slices
-- they teach users what each analytical step is doing instead of hiding the
-  comparison behind one large script
+## Studies
 
-## The Two Current Studies
+### Primate Longevity Signal
 
-- [PCM1: primate longevity signal](pcm1-primate-longevity-signal/index.md)
-- [PCM2: primate PGLS and signal](pcm2-primate-pgls-and-signal/index.md)
+- study id: `primate-longevity-signal`
+- categories: `teaching-study, migration-study`
+- bundles: `9`
+- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-longevity-signal/README.md)
+
+### Primate PGLS And Signal
+
+- study id: `primate-pgls-and-signal`
+- categories: `teaching-study, migration-study`
+- bundles: `10`
+- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/README.md)
+
+## Integrity
+
+- tracked bundles: `19`
+- action required: `0`
+
+## Coverage
+
+- family gaps: `0`
+- debt gaps: `4`

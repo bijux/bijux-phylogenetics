@@ -1,30 +1,46 @@
 {
   "evidence_id": "evidence-009",
-  "governed_local_artifact_count": 3,
+  "governed_local_artifact_count": 5,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
-      "kind": "governed-local-input",
-      "label": "processed-export-parity.json",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json",
-      "read_only": false,
-      "sha256": "b583117bd8b83cdba404b278e0f69ea0bde1010bffb358ff345616c3f7d778d1"
-    },
-    {
-      "input_id": "local-input-002",
       "kind": "governed-result-surface",
       "label": "results/README.md",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/README.md",
       "read_only": false,
-      "sha256": "4c8a00b1299e57ac974e34aaed740ad06cfb57c105456ce11bec2679556e158e"
+      "sha256": "0d49bc61345b99126d548e58fa65c675c0f4eef4951c66f3121c8ef296b31c0a"
     },
     {
-      "input_id": "local-input-003",
+      "input_id": "local-input-002",
       "kind": "governed-result-surface",
       "label": "results/manifest.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/manifest.json",
       "read_only": false,
-      "sha256": "8481b3393cb6e4f568fe893b52b3d400c56b8ef01ec366318d71a5f590a3d1df"
+      "sha256": "cb1ec1e2feff523f778a2661de175595c10537b73bd5f723fb44e49bb31252b7"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/processed-export-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json",
+      "read_only": false,
+      "sha256": "2459ea8a3b9b9b2d56a3315ba7fd98f58f4e73e11f96bb2f7acb55bf00e16ece"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "81618ef82aae53b738761738ed499290a121a77d240e3ec631743740ef2d65c3"
+    },
+    {
+      "input_id": "local-input-005",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "e2ce1db6946d83ca779b9c2e90b7d51d01993c3bc0eeb5aeaf93ec3fdf000595"
     }
   ],
   "local_input_count": 0,
@@ -54,7 +70,7 @@
       "label": "Primate processed export parity bundle report payload",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-009/results/processed-export-parity.json",
       "read_only": false,
-      "sha256": "b583117bd8b83cdba404b278e0f69ea0bde1010bffb358ff345616c3f7d778d1"
+      "sha256": "2459ea8a3b9b9b2d56a3315ba7fd98f58f4e73e11f96bb2f7acb55bf00e16ece"
     }
   ],
   "study_id": "primate-longevity-signal"

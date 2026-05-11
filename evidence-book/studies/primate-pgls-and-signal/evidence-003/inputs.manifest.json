@@ -1,30 +1,46 @@
 {
   "evidence_id": "evidence-003",
-  "governed_local_artifact_count": 3,
+  "governed_local_artifact_count": 5,
   "governed_local_artifacts": [
     {
       "input_id": "local-input-001",
-      "kind": "governed-local-input",
-      "label": "pagel-lambda-regression-parity.json",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/README.md",
+      "read_only": false,
+      "sha256": "0fec76ce34923cfa1743ebdd9891c0eec591e4663bb65daabd62a493b5e9bcec"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/manifest.json",
+      "read_only": false,
+      "sha256": "59e0db4216dc86b8739b68ef5c80a8000d4e280add4f39ff98ebc19cfdde240a"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/pagel-lambda-regression-parity.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json",
       "read_only": false,
       "sha256": "a0b04e048613c270e8e7f838e7d7ef3bf642dfee127d3ff81f27582e7016bce0"
     },
     {
-      "input_id": "local-input-002",
+      "input_id": "local-input-004",
       "kind": "governed-result-surface",
-      "label": "results/README.md",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/README.md",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "83eca28b2daad811ac24ac3bf90735a17a7060d8872dcaadf6eff25787bd065b"
+      "sha256": "254ddcc0a49ef2caaf0e6ba174cac022f1c79bcfc7e33a394dc10cfa06292740"
     },
     {
-      "input_id": "local-input-003",
+      "input_id": "local-input-005",
       "kind": "governed-result-surface",
-      "label": "results/manifest.json",
-      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/manifest.json",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/reviewer-summary.md",
       "read_only": false,
-      "sha256": "46a3e2a0b98361a5f970c88faf36efac2d9c998b8647b90c3a28851a0e0a3977"
+      "sha256": "e9299667c2f20f6f67780e401b4a4ac39a322acd3422b2a00083260d73c3bb70"
     }
   ],
   "local_input_count": 0,
@@ -38,7 +54,7 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "533651c7b313d5b147a292ac39cf7854d4b3326e7b208e1e0eaea463570fbbcb"
+      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
     },
     {
       "input_id": "source-input-002",

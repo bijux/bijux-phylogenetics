@@ -25,7 +25,7 @@ Governed parity for the non-phylogenetic baseline regression before phylogenetic
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
-- `evidence-book/studies/primate-pgls-and-signal/evidence-002/results/baseline-gls-parity.json`
+- `evidence-book/studies/primate-pgls-and-signal/evidence-002/baseline-gls-parity.json`
 
 ## Governed Primary Outputs
 

@@ -26,14 +26,14 @@ evidence-book reality and downgrades them wherever portable closure is still mis
   Claim: The repository is a reproducible phylogenetics workbench across trees, alignments, evidence capture, and reports.
   Recommendation: Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.
 - `repository-overview-comparative-scope` — `supported_with_limits`
-  Path: `docs/01-bijux-phylogenetics/index.md`
+  Path: `docs/public/phylogenetics/index.md`
   Claim: Comparative analysis, ancestral-state workflows, and evidence bundles are real current repository surfaces.
   Recommendation: Keep the claim, but pair it with an explicit evidence-book coverage link so reviewers can see the remaining boundaries.
 - `repository-overview-alignment-scope` — `downgraded_to_bounded`
-  Path: `docs/01-bijux-phylogenetics/index.md`
+  Path: `docs/public/phylogenetics/index.md`
   Claim: Alignment trimming, translation, and identity workflows exist in the runtime surface.
   Recommendation: Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.
 - `repository-overview-distance-scope` — `downgraded_to_bounded`
-  Path: `docs/01-bijux-phylogenetics/index.md`
+  Path: `docs/public/phylogenetics/index.md`
   Claim: Distance workflows and their maturity surfaces exist in the runtime.
   Recommendation: Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.

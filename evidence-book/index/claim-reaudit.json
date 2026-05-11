@@ -69,7 +69,7 @@
         "reporting-surfaces": "bounded"
       },
       "recommendation": "Keep the claim, but pair it with an explicit evidence-book coverage link so reviewers can see the remaining boundaries.",
-      "relative_path": "docs/01-bijux-phylogenetics/index.md"
+      "relative_path": "docs/public/phylogenetics/index.md"
     },
     {
       "audit_status": "downgraded_to_bounded",
@@ -82,7 +82,7 @@
         "alignment-diagnostics": "uncovered"
       },
       "recommendation": "Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.",
-      "relative_path": "docs/01-bijux-phylogenetics/index.md"
+      "relative_path": "docs/public/phylogenetics/index.md"
     },
     {
       "audit_status": "downgraded_to_bounded",
@@ -95,7 +95,7 @@
         "distance-analysis": "uncovered"
       },
       "recommendation": "Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.",
-      "relative_path": "docs/01-bijux-phylogenetics/index.md"
+      "relative_path": "docs/public/phylogenetics/index.md"
     }
   ],
   "downgraded_claim_count": 4,

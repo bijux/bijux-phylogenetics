@@ -22,7 +22,7 @@ payload <- list(
   source_basis_locators = c(
     "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/evidence-002/results/workbook-loading-parity.json",
+    "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json",
   ),
   reference_scripts = c(
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",
