@@ -27,3 +27,9 @@ The alignment family includes matrix-audit commands such as `alignment occupancy
 for concatenated multi-locus FASTA plus partition inputs. That workflow reports
 per-taxon coverage, per-locus coverage, low-coverage flags, TSV tables, and an
 optionally filtered retained matrix with remapped partitions.
+
+The adapter family also includes `adapter fasta-to-tree`, which is the
+supported end-to-end inference entrypoint for raw FASTA inputs. It emits a
+reviewable aligned matrix, trimmed matrix, selected-model table, supported
+tree, support summary table, run log, and manifest in one command instead of
+forcing users to stitch separate adapter steps together by hand.

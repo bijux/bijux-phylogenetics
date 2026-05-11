@@ -156,6 +156,7 @@ bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait reg
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
 bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json
+bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --bootstrap-replicates 1000 --json
 bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json
 bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json
 bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json
@@ -179,6 +180,23 @@ bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
+
+The `adapter fasta-to-tree` workflow is the canonical one-command bridge from
+raw FASTA to a supported inference bundle. It accepts DNA and protein FASTA
+inputs, runs alignment, trimming, model selection, maximum-likelihood
+inference, and bootstrap support estimation, then writes:
+
+- `prefix.aln`
+- `prefix.trimmed.aln`
+- `prefix.tree`
+- `prefix.log`
+- `prefix.model.tsv`
+- `prefix.support.tsv`
+- `prefix.manifest.json`
+
+Engine-specific intermediate manifests and working files stay under
+`out-dir/engine-artifacts/prefix/` so the final output set remains compact
+without hiding reviewable run details.
 
 ## Alignment Filter Profiles
 
