@@ -54,6 +54,23 @@ def _real_mafft_executable() -> Path | None:
     return None
 
 
+def _real_trimal_executable() -> Path | None:
+    configured = os.environ.get("BIJUX_PHYLOGENETICS_TRIMAL_EXECUTABLE")
+    if configured:
+        candidate = Path(configured)
+        if candidate.exists():
+            return candidate
+    resolved = shutil.which("trimal")
+    if resolved is not None:
+        return Path(resolved)
+    artifact_candidate = (
+        REPOSITORY_ROOT / "artifacts" / "trimal" / "trimal" / "source" / "trimal"
+    )
+    if artifact_candidate.exists():
+        return artifact_candidate
+    return None
+
+
 def _write_executable(path: Path, body: str) -> Path:
     path.write_text(body, encoding="utf-8")
     path.chmod(0o755)
@@ -390,6 +407,38 @@ def test_run_multiple_sequence_alignment_with_real_mafft_on_small_dataset(
     assert report.manifest_path.exists()
     assert len(alignment) == 4
     assert len(widths) == 1
+
+
+def test_run_alignment_trimming_with_real_trimal_on_small_dataset(
+    tmp_path: Path,
+) -> None:
+    executable = _real_trimal_executable()
+    if executable is None:
+        pytest.skip("real trimAl executable is not available for integration coverage")
+
+    input_path = fixture("alignments/example_alignment_trim.fasta")
+    output_path = tmp_path / "real-trimal-trimmed.fasta"
+    report = run_alignment_trimming(
+        input_path,
+        output_path,
+        executable=executable,
+        mode="gap-threshold",
+        gap_threshold=0.8,
+    )
+
+    input_records = load_fasta_alignment(input_path)
+    trimmed_records = load_fasta_alignment(output_path)
+
+    assert report.run.exit_code == 0
+    assert report.run.command[5:] == ["-gt", "0.800000"]
+    assert "trimal v" in report.run.version.text.lower()
+    assert report.manifest_path.exists()
+    assert report.trimming_summary is not None
+    assert report.trimming_summary.removed_site_count >= 1
+    assert report.trimming_summary.trimmed_alignment_length == len(
+        trimmed_records[0].sequence
+    )
+    assert len(trimmed_records[0].sequence) < len(input_records[0].sequence)
 
 
 def test_trimal_trimming_modes_resolve_to_explicit_documented_arguments() -> None:
