@@ -28,6 +28,16 @@ _BEST_MODEL_PATTERN = re.compile(
     r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
     re.IGNORECASE,
 )
+_LOG_LIKELIHOOD_PATTERNS = (
+    re.compile(
+        r"(?:log-likelihood(?: of the tree)?|log likelihood)\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"best score found\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
+        re.IGNORECASE,
+    ),
+)
 
 
 @dataclass(slots=True)
@@ -252,6 +262,24 @@ def _parse_best_model_file(path: Path) -> str | None:
     return _parse_best_model_text(path.read_text(encoding="utf-8"))
 
 
+def _parse_log_likelihood_text(text: str) -> float | None:
+    for pattern in _LOG_LIKELIHOOD_PATTERNS:
+        match = pattern.search(text)
+        if match is None:
+            continue
+        try:
+            return float(match.group("value"))
+        except ValueError:
+            continue
+    return None
+
+
+def _parse_log_likelihood_file(path: Path) -> float | None:
+    if not path.exists():
+        return None
+    return _parse_log_likelihood_text(path.read_text(encoding="utf-8"))
+
+
 def validate_model_selection_against_engine_outputs(
     manifest_path: Path,
 ) -> ModelSelectionValidationReport:
@@ -261,10 +289,16 @@ def validate_model_selection_against_engine_outputs(
         key: Path(value) for key, value in dict(manifest["output_paths"]).items()
     }
     iqtree_report = output_paths.get("iqtree_report")
+    iqtree_log = output_paths.get("iqtree_log")
     selected_model_file = output_paths.get("selected_model")
     report_selected_model = (
         None if iqtree_report is None else _parse_best_model_file(iqtree_report)
     )
+    report_log_likelihood = (
+        None if iqtree_report is None else _parse_log_likelihood_file(iqtree_report)
+    )
+    if report_log_likelihood is None and iqtree_log is not None:
+        report_log_likelihood = _parse_log_likelihood_file(iqtree_log)
     artifact_selected_model = None
     if selected_model_file is not None and selected_model_file.exists():
         artifact_selected_model = (
@@ -283,13 +317,20 @@ def validate_model_selection_against_engine_outputs(
                     )
                 )
     manifest_selected_model = manifest.get("selected_model")
+    manifest_log_likelihood = manifest.get("log_likelihood")
     issues: list[str] = []
     if manifest.get("workflow") != "model-selection":
         issues.append("manifest does not describe a model-selection workflow")
+    if iqtree_log is None or not iqtree_log.exists():
+        issues.append("iqtree log artifact is missing")
     if manifest_selected_model is None:
         issues.append("manifest selected_model field is missing")
+    if manifest_log_likelihood is None:
+        issues.append("manifest log_likelihood field is missing")
     if report_selected_model is None:
         issues.append("engine report does not expose a parsable best-fit model")
+    if report_log_likelihood is None:
+        issues.append("engine artifacts do not expose a parsable log-likelihood")
     if artifact_selected_model is None:
         issues.append("selected-model artifact is missing or blank")
     comparable = [
@@ -304,6 +345,14 @@ def validate_model_selection_against_engine_outputs(
     if comparable and len(set(comparable)) > 1:
         issues.append(
             "selected model disagrees across manifest, report, and exported artifact"
+        )
+    if (
+        manifest_log_likelihood is not None
+        and report_log_likelihood is not None
+        and float(manifest_log_likelihood) != report_log_likelihood
+    ):
+        issues.append(
+            "log-likelihood disagrees between manifest and iqtree inference artifacts"
         )
     return ModelSelectionValidationReport(
         manifest_path=manifest_path,
@@ -775,6 +824,16 @@ def validate_inference_engine_outputs(
     elif workflow == "maximum-likelihood-tree":
         tree_validation = validate_ml_tree_contains_expected_taxa(manifest_path)
         issues.extend(tree_validation.issues)
+        if output_paths.get("iqtree_log") is None:
+            issues.append("maximum-likelihood manifest is missing the iqtree_log output")
+        if manifest.get("selected_model") is None:
+            issues.append(
+                "maximum-likelihood manifest is missing the selected model"
+            )
+        if manifest.get("log_likelihood") is None:
+            issues.append(
+                "maximum-likelihood manifest is missing the log_likelihood field"
+            )
     elif workflow == "bootstrap-support":
         bootstrap_path = output_paths.get("bootstrap_trees")
         if bootstrap_path is None:
@@ -784,8 +843,31 @@ def validate_inference_engine_outputs(
         else:
             bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
             issues.extend(bootstrap_validation.issues)
+        if output_paths.get("iqtree_log") is None:
+            issues.append("bootstrap-support manifest is missing the iqtree_log output")
         if manifest.get("selected_model") is None:
             issues.append("bootstrap-support manifest is missing the selected model")
+        if manifest.get("log_likelihood") is None:
+            issues.append("bootstrap-support manifest is missing the log_likelihood field")
+        iqtree_summary = manifest.get("iqtree_summary")
+        if not isinstance(iqtree_summary, dict):
+            issues.append("bootstrap-support manifest is missing the iqtree_summary")
+        elif int(iqtree_summary.get("support_value_count", 0)) < 1:
+            issues.append(
+                "bootstrap-support manifest does not record parsed support values"
+            )
+    elif workflow == "bootstrap-consensus":
+        if output_paths.get("iqtree_log") is None:
+            issues.append(
+                "bootstrap-consensus manifest is missing the iqtree_log output"
+            )
+        iqtree_summary = manifest.get("iqtree_summary")
+        if not isinstance(iqtree_summary, dict):
+            issues.append("bootstrap-consensus manifest is missing the iqtree_summary")
+        elif int(iqtree_summary.get("support_value_count", 0)) < 1:
+            issues.append(
+                "bootstrap-consensus manifest does not record parsed support values"
+            )
     return InferenceOutputConsistencyReport(
         manifest_path=manifest_path,
         workflow=workflow,

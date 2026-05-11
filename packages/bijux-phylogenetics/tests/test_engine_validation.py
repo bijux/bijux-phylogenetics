@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.engines import run_model_selection
@@ -80,6 +81,24 @@ if "--version" in args:
 
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
+if "-bb" in args:
+    prefix.with_suffix(".treefile").write_text(
+        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -234.567\\nBootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
+    raise SystemExit(0)
 prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
 prefix.with_suffix(".iqtree").write_text(
     "Best-fit model: GTR+G\\nLog-likelihood of the tree: -345.678\\nTree inference completed\\n",
@@ -177,6 +196,29 @@ def test_validate_model_selection_against_engine_outputs_requires_exact_match(
     assert report.manifest_selected_model == "GTR+G"
     assert report.report_selected_model == "GTR+G"
     assert report.artifact_selected_model == "GTR+G"
+
+
+def test_validate_model_selection_against_engine_outputs_requires_manifest_likelihood(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    workflow = run_model_selection(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="example",
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    payload["log_likelihood"] = None
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_model_selection_against_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert "manifest log_likelihood field is missing" in report.issues
 
 
 def test_validate_ml_tree_contains_expected_taxa_matches_alignment_ids(
@@ -419,4 +461,35 @@ def test_validate_inference_engine_outputs_checks_manifest_consistency(
     assert any(
         "checksums" in issue or "expected taxa" in issue
         for issue in drift_report.issues
+    )
+
+
+def test_validate_inference_engine_outputs_requires_bootstrap_support_summary(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_bootstrap_support_estimation
+
+    executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
+    workflow = run_bootstrap_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        replicates=1000,
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    payload["iqtree_summary"]["support_value_count"] = 0
+    payload["iqtree_summary"]["support_values"] = []
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert (
+        "bootstrap-support manifest does not record parsed support values"
+        in report.issues
     )
