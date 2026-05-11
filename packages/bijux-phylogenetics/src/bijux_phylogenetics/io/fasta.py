@@ -30,6 +30,8 @@ from bijux_phylogenetics.core.alignment import (
     AlignmentWindowSummary,
     AmbiguousAlignmentColumn,
     CodingAlignmentDiagnostics,
+    CodingSequenceExclusion,
+    CodingSequencePreparationReport,
     DuplicateSequenceGroup,
     DuplicateSequencePolicyAction,
     DuplicateSequencePolicyReport,
@@ -1248,9 +1250,9 @@ def _coding_residues(sequence: str) -> str:
     )
 
 
-def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]:
-    """Detect coding sequences whose comparable length is not divisible by three."""
-    records = load_fasta_alignment(path)
+def _detect_frameshift_like_records(
+    records: list[AlignmentRecord],
+) -> list[FrameshiftLikeSequence]:
     flagged: list[FrameshiftLikeSequence] = []
     for record in records:
         comparable_length = len(_coding_residues(record.sequence))
@@ -1266,6 +1268,12 @@ def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]
     return flagged
 
 
+def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]:
+    """Detect coding sequences whose comparable length is not divisible by three."""
+    records = load_fasta_alignment(path)
+    return _detect_frameshift_like_records(records)
+
+
 def _iter_codon_windows(sequence: str) -> list[tuple[int, str]]:
     return [
         (position, sequence[position - 1 : position + 2])
@@ -1274,9 +1282,9 @@ def _iter_codon_windows(sequence: str) -> list[tuple[int, str]]:
     ]
 
 
-def detect_stop_codons(path: Path) -> list[StopCodonObservation]:
-    """Detect stop codons in a coding alignment under the standard genetic code."""
-    records = load_fasta_alignment(path)
+def _detect_stop_codons_in_records(
+    records: list[AlignmentRecord],
+) -> list[StopCodonObservation]:
     stop_codons: list[StopCodonObservation] = []
     for record in records:
         coding_sequence = _coding_residues(record.sequence)
@@ -1299,10 +1307,16 @@ def detect_stop_codons(path: Path) -> list[StopCodonObservation]:
     return stop_codons
 
 
-def classify_sequence_coding_behavior(path: Path) -> list[SequenceCodingBehavior]:
-    """Classify each sequence as coding-like or noncoding-like within a nucleotide alignment."""
+def detect_stop_codons(path: Path) -> list[StopCodonObservation]:
+    """Detect stop codons in a coding alignment under the standard genetic code."""
     records = load_fasta_alignment(path)
-    stop_codons = detect_stop_codons(path)
+    return _detect_stop_codons_in_records(records)
+
+
+def _classify_sequence_coding_behavior_records(
+    records: list[AlignmentRecord],
+) -> list[SequenceCodingBehavior]:
+    stop_codons = _detect_stop_codons_in_records(records)
     stop_counts_by_identifier: dict[str, list[StopCodonObservation]] = {}
     for stop in stop_codons:
         stop_counts_by_identifier.setdefault(stop.identifier, []).append(stop)
@@ -1339,6 +1353,137 @@ def classify_sequence_coding_behavior(path: Path) -> list[SequenceCodingBehavior
     return sorted(behaviors, key=lambda item: item.identifier)
 
 
+def classify_sequence_coding_behavior(path: Path) -> list[SequenceCodingBehavior]:
+    """Classify each sequence as coding-like or noncoding-like within a nucleotide alignment."""
+    records = load_fasta_alignment(path)
+    return _classify_sequence_coding_behavior_records(records)
+
+
+def _sequence_type_for_coding_preparation(
+    path: Path,
+    *,
+    records: list[AlignmentRecord],
+    sequence_type: AlignmentAlphabet | None,
+) -> AlignmentAlphabet:
+    if sequence_type is not None and sequence_type not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            "codon-aware alignment requires dna or rna coding input"
+        )
+    detected = detect_fasta_sequence_type(path, records=records)
+    effective = sequence_type if sequence_type is not None else detected.selected_type
+    if effective not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            "codon-aware alignment requires nucleotide coding input: "
+            f"{detected.note}"
+        )
+    return effective
+
+
+def prepare_coding_sequences_for_alignment(
+    path: Path,
+    *,
+    sequence_type: AlignmentAlphabet | None = None,
+) -> tuple[list[AlignmentRecord], CodingSequencePreparationReport]:
+    """Filter raw coding sequences into a translation-ready set for codon-aware alignment."""
+    records = load_fasta_records(path)
+    effective_sequence_type = _sequence_type_for_coding_preparation(
+        path,
+        records=records,
+        sequence_type=sequence_type,
+    )
+    frameshifts = {
+        row.identifier: row for row in _detect_frameshift_like_records(records)
+    }
+    sequences_by_identifier = {
+        record.identifier: record.sequence for record in records
+    }
+
+    accepted_records: list[AlignmentRecord] = []
+    accepted_identifiers: list[str] = []
+    excluded_sequences: list[CodingSequenceExclusion] = []
+    terminal_stop_sequence_count = 0
+
+    for behavior in _classify_sequence_coding_behavior_records(records):
+        normalized_sequence = _coding_residues(
+            sequences_by_identifier[behavior.identifier]
+        )
+        if not normalized_sequence:
+            excluded_sequences.append(
+                CodingSequenceExclusion(
+                    identifier=behavior.identifier,
+                    comparable_length=0,
+                    reason="empty-coding-sequence",
+                    premature_stop_count=0,
+                    terminal_stop_count=0,
+                    trailing_bases=0,
+                    note="sequence contains no comparable coding residues after gaps and missing data are removed",
+                )
+            )
+            continue
+        if behavior.premature_stop_count:
+            excluded_sequences.append(
+                CodingSequenceExclusion(
+                    identifier=behavior.identifier,
+                    comparable_length=behavior.comparable_length,
+                    reason="internal-stop-codon",
+                    premature_stop_count=behavior.premature_stop_count,
+                    terminal_stop_count=behavior.terminal_stop_count,
+                    trailing_bases=0,
+                    note="sequence contains one or more premature stop codons",
+                )
+            )
+            continue
+        if not behavior.divisible_by_three:
+            frameshift = frameshifts[behavior.identifier]
+            excluded_sequences.append(
+                CodingSequenceExclusion(
+                    identifier=behavior.identifier,
+                    comparable_length=behavior.comparable_length,
+                    reason="frame-error",
+                    premature_stop_count=behavior.premature_stop_count,
+                    terminal_stop_count=behavior.terminal_stop_count,
+                    trailing_bases=frameshift.remainder,
+                    note="sequence is not frame-consistent after gaps and missing data are removed",
+                )
+            )
+            continue
+
+        if behavior.terminal_stop_count:
+            terminal_stop_sequence_count += 1
+        normalized = normalized_sequence
+        if effective_sequence_type == "rna":
+            normalized = normalized.replace("T", "U")
+        accepted_records.append(
+            AlignmentRecord(identifier=behavior.identifier, sequence=normalized)
+        )
+        accepted_identifiers.append(behavior.identifier)
+
+    if not accepted_records:
+        raise InvalidAlignmentError(
+            "codon-aware alignment excluded every sequence because of frame or stop-codon problems"
+        )
+
+    warnings: list[str] = []
+    if excluded_sequences:
+        warnings.append(
+            "one or more coding sequences were excluded before codon-aware alignment"
+        )
+    if terminal_stop_sequence_count:
+        warnings.append(
+            "terminal stop codons were retained in accepted coding sequences"
+        )
+    return accepted_records, CodingSequencePreparationReport(
+        source_path=path,
+        sequence_type=effective_sequence_type,
+        input_sequence_count=len(records),
+        accepted_sequence_count=len(accepted_records),
+        accepted_identifiers=accepted_identifiers,
+        excluded_sequences=excluded_sequences,
+        terminal_stop_sequence_count=terminal_stop_sequence_count,
+        warnings=warnings,
+    )
+
+
 def inspect_coding_alignment(path: Path) -> CodingAlignmentDiagnostics:
     """Inspect one nucleotide alignment as a coding sequence dataset."""
     summary = summarise_fasta(path)
@@ -1346,26 +1491,27 @@ def inspect_coding_alignment(path: Path) -> CodingAlignmentDiagnostics:
         raise InvalidAlignmentError(
             f"coding diagnostics require a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
         )
-    coding_behaviors = classify_sequence_coding_behavior(path)
+    records = load_fasta_alignment(path)
+    coding_behaviors = _classify_sequence_coding_behavior_records(records)
     partial_codon_sequences = [
         PartialCodonSequence(
             identifier=row.identifier,
             comparable_length=row.comparable_length,
             trailing_bases=row.remainder,
         )
-        for row in detect_frameshift_like_sequences(path)
+        for row in _detect_frameshift_like_records(records)
     ]
     return CodingAlignmentDiagnostics(
         path=path,
         sequence_count=summary.sequence_count,
         alignment_length=summary.alignment_length,
         alignment_length_multiple_of_three=summary.alignment_length % 3 == 0,
-        frameshift_like_sequences=detect_frameshift_like_sequences(path),
+        frameshift_like_sequences=_detect_frameshift_like_records(records),
         partial_codon_sequences=partial_codon_sequences,
         coding_behaviors=coding_behaviors,
         mixed_coding_signals=any(row.coding_like for row in coding_behaviors)
         and any(not row.coding_like for row in coding_behaviors),
-        stop_codons=detect_stop_codons(path),
+        stop_codons=_detect_stop_codons_in_records(records),
     )
 
 

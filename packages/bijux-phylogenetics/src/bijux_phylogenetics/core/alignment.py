@@ -308,6 +308,19 @@ class SequenceCodingBehavior:
 
 
 @dataclass(frozen=True, slots=True)
+class CodingSequenceExclusion:
+    """One raw coding sequence excluded before codon-aware alignment."""
+
+    identifier: str
+    comparable_length: int
+    reason: str
+    premature_stop_count: int
+    terminal_stop_count: int
+    trailing_bases: int
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
 class StopCodonObservation:
     """Observed stop codon within an aligned coding sequence."""
 
@@ -343,6 +356,20 @@ class TranslationReport:
     translated_alignment_length: int
     stop_codon_count: int
     frameshift_like_sequence_count: int
+
+
+@dataclass(slots=True)
+class CodingSequencePreparationReport:
+    """Preparation summary for codon-aware alignment from raw coding sequences."""
+
+    source_path: Path
+    sequence_type: AlignmentAlphabet
+    input_sequence_count: int
+    accepted_sequence_count: int
+    accepted_identifiers: list[str]
+    excluded_sequences: list[CodingSequenceExclusion]
+    terminal_stop_sequence_count: int
+    warnings: list[str]
 
 
 @dataclass(slots=True)

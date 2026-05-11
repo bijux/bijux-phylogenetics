@@ -80,7 +80,7 @@ from bijux_phylogenetics.compare.topology import (
     prune_trees_to_shared_taxa,
     write_tree_comparison_table,
 )
-from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
     audit_dataset_taxon_ordering,
@@ -265,6 +265,7 @@ from bijux_phylogenetics.io.fasta import (
     link_alignment_to_tree,
     list_alignment_filter_profiles,
     load_fasta_alignment,
+    prepare_coding_sequences_for_alignment,
     repair_fasta_input,
     remove_all_gap_columns,
     remove_all_missing_columns,
@@ -2859,6 +2860,60 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
     assert report.translated_alignment_length == 3
     assert report.stop_codon_count == 2
     assert report.frameshift_like_sequence_count == 1
+
+
+def test_prepare_coding_sequences_for_alignment_excludes_frame_and_stop_failures(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-raw.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="good", sequence="ATGGAATGG"),
+            AlignmentRecord(identifier="terminal_stop", sequence="ATGGAATAA"),
+            AlignmentRecord(identifier="frameshift", sequence="ATGGAATG"),
+            AlignmentRecord(identifier="internal_stop", sequence="ATGTAGTGG"),
+        ],
+    )
+
+    records, report = prepare_coding_sequences_for_alignment(input_path)
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("good", "ATGGAATGG"),
+        ("terminal_stop", "ATGGAATAA"),
+    ]
+    assert report.sequence_type == "dna"
+    assert report.input_sequence_count == 4
+    assert report.accepted_sequence_count == 2
+    assert report.accepted_identifiers == ["good", "terminal_stop"]
+    assert report.terminal_stop_sequence_count == 1
+    assert [(row.identifier, row.reason, row.trailing_bases) for row in report.excluded_sequences] == [
+        ("frameshift", "frame-error", 2),
+        ("internal_stop", "internal-stop-codon", 0),
+    ]
+    assert "one or more coding sequences were excluded before codon-aware alignment" in report.warnings
+    assert "terminal stop codons were retained in accepted coding sequences" in report.warnings
+
+
+def test_prepare_coding_sequences_for_alignment_preserves_rna_residues(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-rna.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="rna_a", sequence="AUGGAAUGG"),
+            AlignmentRecord(identifier="rna_b", sequence="AUGGAAUAA"),
+        ],
+    )
+
+    records, report = prepare_coding_sequences_for_alignment(input_path)
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("rna_a", "AUGGAAUGG"),
+        ("rna_b", "AUGGAAUAA"),
+    ]
+    assert report.sequence_type == "rna"
 
 
 def test_cli_alignment_trim_writes_trimmed_fasta_and_report(
