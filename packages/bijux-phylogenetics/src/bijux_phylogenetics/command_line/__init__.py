@@ -8967,6 +8967,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.run.warning_lines,
                         metrics={
                             "selected_model": report.selected_model,
+                            "log_likelihood": report.log_likelihood,
                             "partitioned": args.partitions is not None,
                         },
                         data=report,
@@ -9003,6 +9004,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.run.warning_lines,
                         metrics={
                             "selected_model": report.selected_model,
+                            "log_likelihood": report.log_likelihood,
+                            "support_value_count": (
+                                0
+                                if report.iqtree_summary is None
+                                else report.iqtree_summary.support_value_count
+                            ),
                             "partitioned": args.partitions is not None,
                         },
                         data=report,
@@ -9040,6 +9047,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.run.warning_lines,
                         metrics={
                             "bootstrap_replicates": args.replicates,
+                            "selected_model": report.selected_model,
+                            "log_likelihood": report.log_likelihood,
+                            "support_value_count": (
+                                0
+                                if report.iqtree_summary is None
+                                else report.iqtree_summary.support_value_count
+                            ),
                             "partitioned": args.partitions is not None,
                         },
                         data=report,

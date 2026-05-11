@@ -137,7 +137,7 @@ if "-m" in args and args[args.index("-m") + 1] == "MF":
     raise SystemExit(0)
 
 if "-bb" in args:
-    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
+    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -463,6 +463,8 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     model_payload = json.loads(capsys.readouterr().out)
     assert model_exit == 0
     assert model_payload["metrics"]["selected_model"] == "GTR+G"
+    assert model_payload["metrics"]["log_likelihood"] == -123.456
+    assert Path(model_payload["data"]["output_paths"]["iqtree_log"]).exists()
 
     ml_exit = main(
         [
@@ -482,6 +484,10 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     )
     ml_payload = json.loads(capsys.readouterr().out)
     assert ml_exit == 0
+    assert ml_payload["metrics"]["selected_model"] == "GTR+G"
+    assert ml_payload["metrics"]["log_likelihood"] == -345.678
+    assert ml_payload["metrics"]["support_value_count"] == 0
+    assert Path(ml_payload["data"]["output_paths"]["iqtree_log"]).exists()
     ml_tree_path = Path(ml_payload["data"]["output_paths"]["tree"])
 
     fast_exit = main(
@@ -571,7 +577,9 @@ def test_adapter_model_select_cli_supports_partitioned_alignment(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["partitioned"] is True
+    assert payload["metrics"]["log_likelihood"] == -123.456
     assert Path(payload["data"]["output_paths"]["partition_summary"]).exists()
+    assert Path(payload["data"]["output_paths"]["iqtree_log"]).exists()
 
 
 def test_adapter_infer_ml_cli_supports_mixed_partition_inputs(
@@ -610,9 +618,48 @@ def test_adapter_infer_ml_cli_supports_mixed_partition_inputs(
 
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
+    assert payload["metrics"]["selected_model"] == "GTR+G"
+    assert payload["metrics"]["log_likelihood"] == -345.678
+    assert payload["metrics"]["support_value_count"] == 0
     assert payload["metrics"]["partitioned"] is True
     assert payload["data"]["run"]["command"].count("-s") == 0
     assert payload["data"]["output_paths"]["partition_scheme"].endswith(".nex")
+    assert payload["data"]["output_paths"]["iqtree_log"].endswith(".log")
+
+
+def test_adapter_bootstrap_cli_reports_support_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+
+    exit_code = main(
+        [
+            "adapter",
+            "bootstrap",
+            str(input_path),
+            "--out-dir",
+            str(tmp_path / "bootstrap"),
+            "--model",
+            "GTR+G",
+            "--prefix",
+            "example",
+            "--replicates",
+            "1000",
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["bootstrap_replicates"] == 1000
+    assert payload["metrics"]["selected_model"] == "GTR+G"
+    assert payload["metrics"]["log_likelihood"] == -234.567
+    assert payload["metrics"]["support_value_count"] == 2
+    assert Path(payload["data"]["output_paths"]["iqtree_log"]).exists()
+    assert Path(payload["data"]["output_paths"]["bootstrap_trees"]).exists()
 
 
 def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
