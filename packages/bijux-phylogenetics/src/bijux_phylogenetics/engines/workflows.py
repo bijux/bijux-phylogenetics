@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import gzip
 import hashlib
 from pathlib import Path
 import re
@@ -50,22 +49,16 @@ from .common import (
     resolve_engine_executable,
     write_engine_manifest,
 )
+from .iqtree_artifacts import (
+    IqtreeModelCandidate,
+    IqtreeModelSelectionSummary,
+    parse_best_model_file,
+    parse_iqtree_model_selection_summary,
+    parse_log_likelihood_file,
+    resolve_iqtree_model_sidecar,
+    write_iqtree_model_candidates_table,
+)
 from .validation import summarize_bootstrap_support_distribution
-
-_BEST_MODEL_PATTERN = re.compile(
-    r"(?:best-fit model(?: according to [A-Z0-9]+)?|best model)\s*[:=]\s*(?P<model>[A-Za-z0-9+._-]+)",
-    re.IGNORECASE,
-)
-_LOG_LIKELIHOOD_PATTERNS = (
-    re.compile(
-        r"(?:log-likelihood(?: of the tree)?|log likelihood)\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"best score found\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
-        re.IGNORECASE,
-    ),
-)
 _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
     "auto": ("--auto",),
     "linsi": ("--localpair", "--maxiterate", "1000"),
@@ -96,6 +89,7 @@ class EngineWorkflowReport:
     selected_model: str | None = None
     log_likelihood: float | None = None
     iqtree_summary: IqtreeWorkflowSummary | None = None
+    model_selection_summary: IqtreeModelSelectionSummary | None = None
     trimming_summary: AlignmentTrimmingSummary | None = None
     resumed: bool = False
     notes: list[str] = field(default_factory=list)
@@ -539,6 +533,105 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ],
             )
         ),
+        model_selection_summary=(
+            None
+            if payload.get("model_selection_summary") is None
+            else IqtreeModelSelectionSummary(
+                selected_model=(
+                    None
+                    if dict(payload["model_selection_summary"]).get("selected_model")
+                    is None
+                    else str(
+                        dict(payload["model_selection_summary"])["selected_model"]
+                    )
+                ),
+                selected_criterion=(
+                    None
+                    if dict(payload["model_selection_summary"]).get(
+                        "selected_criterion"
+                    )
+                    is None
+                    else str(
+                        dict(payload["model_selection_summary"])[
+                            "selected_criterion"
+                        ]
+                    )
+                ),
+                best_model_aic=(
+                    None
+                    if dict(payload["model_selection_summary"]).get("best_model_aic")
+                    is None
+                    else str(
+                        dict(payload["model_selection_summary"])["best_model_aic"]
+                    )
+                ),
+                best_model_aicc=(
+                    None
+                    if dict(payload["model_selection_summary"]).get("best_model_aicc")
+                    is None
+                    else str(
+                        dict(payload["model_selection_summary"])["best_model_aicc"]
+                    )
+                ),
+                best_model_bic=(
+                    None
+                    if dict(payload["model_selection_summary"]).get("best_model_bic")
+                    is None
+                    else str(
+                        dict(payload["model_selection_summary"])["best_model_bic"]
+                    )
+                ),
+                best_score_aic=(
+                    None
+                    if dict(payload["model_selection_summary"]).get("best_score_aic")
+                    is None
+                    else float(
+                        dict(payload["model_selection_summary"])["best_score_aic"]
+                    )
+                ),
+                best_score_aicc=(
+                    None
+                    if dict(payload["model_selection_summary"]).get("best_score_aicc")
+                    is None
+                    else float(
+                        dict(payload["model_selection_summary"])["best_score_aicc"]
+                    )
+                ),
+                best_score_bic=(
+                    None
+                    if dict(payload["model_selection_summary"]).get("best_score_bic")
+                    is None
+                    else float(
+                        dict(payload["model_selection_summary"])["best_score_bic"]
+                    )
+                ),
+                candidate_count=int(
+                    dict(payload["model_selection_summary"])["candidate_count"]
+                ),
+                candidates=[
+                    IqtreeModelCandidate(
+                        rank=int(dict(item)["rank"]),
+                        model=str(dict(item)["model"]),
+                        log_likelihood=float(dict(item)["log_likelihood"]),
+                        parameter_count=(
+                            None
+                            if dict(item).get("parameter_count") is None
+                            else int(dict(item)["parameter_count"])
+                        ),
+                        aic=float(dict(item)["aic"]),
+                        aicc=float(dict(item)["aicc"]),
+                        bic=float(dict(item)["bic"]),
+                    )
+                    for item in list(dict(payload["model_selection_summary"])["candidates"])
+                ],
+                bic_near_best_models=[
+                    str(item)
+                    for item in list(
+                        dict(payload["model_selection_summary"])["bic_near_best_models"]
+                    )
+                ],
+            )
+        ),
         trimming_summary=None
         if payload.get("trimming_summary") is None
         else AlignmentTrimmingSummary(
@@ -654,43 +747,16 @@ def _validate_ufboot_replicates(replicates: int) -> None:
         )
 
 
-def _parse_best_model(iqtree_report_path: Path) -> str | None:
-    if not iqtree_report_path.exists():
-        return None
-    match = _BEST_MODEL_PATTERN.search(iqtree_report_path.read_text(encoding="utf-8"))
-    if match is not None:
-        return match.group("model")
-    return None
-
-
 def _parse_best_model_artifact(prefix_path: Path) -> str | None:
     for candidate in (
         prefix_path.with_suffix(".iqtree"),
-        prefix_path.with_suffix(".model"),
+        resolve_iqtree_model_sidecar(prefix_path),
     ):
-        model = _parse_best_model(candidate)
+        if candidate is None:
+            continue
+        model = parse_best_model_file(candidate)
         if model is not None:
             return model
-    gz_candidate = prefix_path.with_suffix(".model.gz")
-    if gz_candidate.exists():
-        text = gzip.decompress(gz_candidate.read_bytes()).decode(
-            "utf-8", errors="replace"
-        )
-        match = _BEST_MODEL_PATTERN.search(text)
-        if match is not None:
-            return match.group("model")
-    return None
-
-
-def _parse_log_likelihood_text(text: str) -> float | None:
-    for pattern in _LOG_LIKELIHOOD_PATTERNS:
-        match = pattern.search(text)
-        if match is None:
-            continue
-        try:
-            return float(match.group("value"))
-        except ValueError:
-            continue
     return None
 
 
@@ -701,9 +767,7 @@ def _parse_log_likelihood_artifact(prefix_path: Path) -> float | None:
     ):
         if not candidate.exists():
             continue
-        log_likelihood = _parse_log_likelihood_text(
-            candidate.read_text(encoding="utf-8", errors="replace")
-        )
+        log_likelihood = parse_log_likelihood_file(candidate)
         if log_likelihood is not None:
             return log_likelihood
     return None
@@ -723,6 +787,9 @@ def _existing_iqtree_outputs(
     ):
         if candidate.exists():
             outputs[key] = candidate
+    model_sidecar = resolve_iqtree_model_sidecar(prefix_path)
+    if model_sidecar is not None:
+        outputs["model_selection_sidecar"] = model_sidecar
     tree_candidate = prefix_path.with_suffix(".treefile")
     if include_tree and tree_candidate.exists():
         outputs["tree"] = tree_candidate
@@ -767,6 +834,15 @@ def _build_iqtree_summary(
         minimum_support=minimum_support,
         maximum_support=maximum_support,
         support_values=support_values,
+    )
+
+
+def _build_iqtree_model_selection_summary(
+    prefix_path: Path,
+) -> IqtreeModelSelectionSummary | None:
+    return parse_iqtree_model_selection_summary(
+        iqtree_report_path=prefix_path.with_suffix(".iqtree"),
+        model_sidecar_path=resolve_iqtree_model_sidecar(prefix_path),
     )
 
 
@@ -1015,13 +1091,20 @@ def run_model_selection(
         prefix_path,
         default_selected_model=None,
     )
+    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
     if iqtree_summary.selected_model is None:
         raise EngineWorkflowError(
             f"iqtree model-selection did not expose a parsable best-fit model in {iqtree_report_path}"
         )
+    if model_selection_summary is None or model_selection_summary.candidate_count < 1:
+        raise EngineWorkflowError(
+            f"iqtree model-selection did not expose a parsable candidate-model table in {iqtree_report_path}"
+        )
     selected_model = iqtree_summary.selected_model
     selected_model_path = prefix_path.with_suffix(".selected-model.txt")
     selected_model_path.write_text(selected_model + "\n", encoding="utf-8")
+    model_candidates_path = prefix_path.with_suffix(".model-candidates.tsv")
+    write_iqtree_model_candidates_table(model_candidates_path, model_selection_summary)
     manifest_path = prefix_path.with_suffix(".manifest.json")
     report = EngineWorkflowReport(
         workflow="model-selection",
@@ -1039,6 +1122,7 @@ def run_model_selection(
         ),
             **_existing_iqtree_outputs(prefix_path),
             "selected_model": selected_model_path,
+            "model_candidates": model_candidates_path,
         },
         run=run,
         manifest_path=manifest_path,
@@ -1049,6 +1133,7 @@ def run_model_selection(
         selected_model=selected_model,
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
+        model_selection_summary=model_selection_summary,
         notes=[
             *(
                 []
@@ -1058,6 +1143,14 @@ def run_model_selection(
             f"iqtree random seed: {seed}",
             f"iqtree threads: {threads}",
             "best-fit substitution model parsed from engine output",
+            f"parsed {model_selection_summary.candidate_count} candidate substitution models from iqtree output",
+            *(
+                []
+                if model_selection_summary.selected_criterion is None
+                else [
+                    "model-selection workflow exposed the governing information criterion"
+                ]
+            ),
             *(
                 []
                 if iqtree_summary.log_likelihood is None
@@ -1162,6 +1255,7 @@ def run_maximum_likelihood_tree_inference(
         default_selected_model=model,
         support_tree_path=tree_path,
     )
+    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
     report = EngineWorkflowReport(
         workflow="maximum-likelihood-tree",
         engine_name="iqtree",
@@ -1187,6 +1281,7 @@ def run_maximum_likelihood_tree_inference(
         selected_model=iqtree_summary.selected_model,
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
+        model_selection_summary=model_selection_summary,
         notes=[
             *(
                 []
@@ -1316,6 +1411,7 @@ def run_bootstrap_support_estimation(
         default_selected_model=model,
         support_tree_path=support_tree_path,
     )
+    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
     report = EngineWorkflowReport(
         workflow="bootstrap-support",
         engine_name="iqtree",
@@ -1347,6 +1443,7 @@ def run_bootstrap_support_estimation(
         selected_model=iqtree_summary.selected_model,
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
+        model_selection_summary=model_selection_summary,
         notes=[
             *(
                 []
@@ -1422,6 +1519,7 @@ def run_bootstrap_consensus_tree(
         default_selected_model=None,
         support_tree_path=consensus_tree_path,
     )
+    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
     report = EngineWorkflowReport(
         workflow="bootstrap-consensus",
         engine_name="iqtree",
@@ -1435,6 +1533,7 @@ def run_bootstrap_consensus_tree(
         output_checksums={},
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
+        model_selection_summary=model_selection_summary,
         notes=[
             "consensus tree validated as parseable Newick output",
             *(

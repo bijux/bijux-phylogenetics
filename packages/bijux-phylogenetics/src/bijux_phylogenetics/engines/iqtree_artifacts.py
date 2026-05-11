@@ -35,6 +35,19 @@ _MODEL_CANDIDATE_PATTERN = re.compile(
     r"(?P<aicc>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s+"
     r"(?P<bic>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s*$"
 )
+_MODEL_CANDIDATE_SORTED_PATTERN = re.compile(
+    rf"^\s*(?P<model>{_MODEL_TOKEN_PATTERN})\s+"
+    r"(?P<log_likelihood>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s+"
+    r"(?P<aic>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s+[+-]\s+\S+\s+"
+    r"(?P<aicc>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s+[+-]\s+\S+\s+"
+    r"(?P<bic>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s+[+-]\s+\S+\s*$"
+)
+_SIDECAR_CANDIDATE_PATTERN = re.compile(
+    rf"^(?P<model>{_MODEL_TOKEN_PATTERN})\s*:\s*"
+    r"(?P<log_likelihood>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s+"
+    r"(?P<parameter_count>\d+)\s+"
+    r"(?P<score>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)\s*$"
+)
 _CRITERION_REPORT_PATTERNS = {
     "AIC": re.compile(
         rf"^\s*Akaike Information Criterion:\s+(?P<model>{_MODEL_TOKEN_PATTERN})\s*$",
@@ -66,7 +79,7 @@ class IqtreeModelCandidate:
     rank: int
     model: str
     log_likelihood: float
-    parameter_count: int
+    parameter_count: int | None
     aic: float
     aicc: float
     bic: float
@@ -155,13 +168,21 @@ def parse_iqtree_model_selection_summary(
         if iqtree_report_path.exists()
         else ""
     )
+    sidecar_text = None
+    sidecar_candidates: dict[str, tuple[float, int]] = {}
+    if model_sidecar_path is not None and model_sidecar_path.exists():
+        sidecar_text = read_iqtree_model_sidecar(model_sidecar_path)
+        sidecar_candidates = _parse_sidecar_candidates(sidecar_text)
     selected_model = None
     selected_criterion = None
     decision = parse_selected_model_decision_text(report_text)
     if decision is not None:
         selected_model, selected_criterion = decision
     criteria = _parse_report_criteria(report_text)
-    candidates = _parse_report_candidates(report_text)
+    candidates = _parse_report_candidates(
+        report_text,
+        sidecar_candidates=sidecar_candidates,
+    )
     summary = IqtreeModelSelectionSummary(
         selected_model=selected_model,
         selected_criterion=selected_criterion,
@@ -174,14 +195,31 @@ def parse_iqtree_model_selection_summary(
         candidate_count=len(candidates),
         candidates=candidates,
     )
-    if model_sidecar_path is not None and model_sidecar_path.exists():
-        _merge_model_sidecar(summary, read_iqtree_model_sidecar(model_sidecar_path))
+    if sidecar_text is not None:
+        _merge_model_sidecar(summary, sidecar_text)
     if summary.selected_model is None:
         summary.selected_model = (
             summary.best_model_bic
             or summary.best_model_aicc
             or summary.best_model_aic
         )
+    if not summary.candidates and sidecar_candidates:
+        summary.candidates = [
+            IqtreeModelCandidate(
+                rank=index,
+                model=model,
+                log_likelihood=log_likelihood,
+                parameter_count=parameter_count,
+                aic=float("nan"),
+                aicc=float("nan"),
+                bic=float("nan"),
+            )
+            for index, (model, (log_likelihood, parameter_count)) in enumerate(
+                sidecar_candidates.items(),
+                start=1,
+            )
+        ]
+        summary.candidate_count = len(summary.candidates)
     if summary.selected_criterion is None and summary.selected_model is not None:
         summary.selected_criterion = _infer_selected_criterion(summary)
     if not _has_model_selection_data(summary):
@@ -215,7 +253,11 @@ def write_iqtree_model_candidates_table(
                     str(candidate.rank),
                     candidate.model,
                     format(candidate.log_likelihood, ".12g"),
-                    str(candidate.parameter_count),
+                    (
+                        ""
+                        if candidate.parameter_count is None
+                        else str(candidate.parameter_count)
+                    ),
                     format(candidate.aic, ".12g"),
                     format(candidate.aicc, ".12g"),
                     format(candidate.bic, ".12g"),
@@ -244,22 +286,63 @@ def _normalize_model_selection_criterion(value: str | None) -> str | None:
     return normalized
 
 
-def _parse_report_candidates(report_text: str) -> list[IqtreeModelCandidate]:
+def _parse_report_candidates(
+    report_text: str,
+    *,
+    sidecar_candidates: dict[str, tuple[float, int]],
+) -> list[IqtreeModelCandidate]:
     candidates: list[IqtreeModelCandidate] = []
     for line in report_text.splitlines():
-        match = _MODEL_CANDIDATE_PATTERN.match(line)
-        if match is None:
+        ranked_match = _MODEL_CANDIDATE_PATTERN.match(line)
+        if ranked_match is not None:
+            model = ranked_match.group("model")
+            sidecar_metadata = sidecar_candidates.get(model)
+            candidates.append(
+                IqtreeModelCandidate(
+                    rank=int(ranked_match.group("rank")),
+                    model=model,
+                    log_likelihood=-float(
+                        ranked_match.group("negative_log_likelihood")
+                    ),
+                    parameter_count=(
+                        None if sidecar_metadata is None else sidecar_metadata[1]
+                    ),
+                    aic=float(ranked_match.group("aic")),
+                    aicc=float(ranked_match.group("aicc")),
+                    bic=float(ranked_match.group("bic")),
+                )
+            )
             continue
+        sorted_match = _MODEL_CANDIDATE_SORTED_PATTERN.match(line)
+        if sorted_match is None:
+            continue
+        model = sorted_match.group("model")
+        sidecar_metadata = sidecar_candidates.get(model)
         candidates.append(
             IqtreeModelCandidate(
-                rank=int(match.group("rank")),
-                model=match.group("model"),
-                log_likelihood=-float(match.group("negative_log_likelihood")),
-                parameter_count=int(match.group("parameter_count")),
-                aic=float(match.group("aic")),
-                aicc=float(match.group("aicc")),
-                bic=float(match.group("bic")),
+                rank=len(candidates) + 1,
+                model=model,
+                log_likelihood=float(sorted_match.group("log_likelihood")),
+                parameter_count=(
+                    None if sidecar_metadata is None else sidecar_metadata[1]
+                ),
+                aic=float(sorted_match.group("aic")),
+                aicc=float(sorted_match.group("aicc")),
+                bic=float(sorted_match.group("bic")),
             )
+        )
+    return candidates
+
+
+def _parse_sidecar_candidates(text: str) -> dict[str, tuple[float, int]]:
+    candidates: dict[str, tuple[float, int]] = {}
+    for line in text.splitlines():
+        match = _SIDECAR_CANDIDATE_PATTERN.match(line.strip())
+        if match is None:
+            continue
+        candidates[match.group("model")] = (
+            float(match.group("log_likelihood")),
+            int(match.group("parameter_count")),
         )
     return candidates
 

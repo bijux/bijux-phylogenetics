@@ -226,15 +226,42 @@ if "--version" in args:
 prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
 prefix.parent.mkdir(parents=True, exist_ok=True)
 if "-m" in args and args[args.index("-m") + 1] == "MF":
+    is_protein = "-st" in args and args[args.index("-st") + 1] == "AA"
+    selected_model = "LG+G4" if is_protein else "GTR+G"
+    criteria_lines = (
+        " No. Model         -LnL         df  AIC          AICc         BIC\\n"
+        + (
+            "  1  LG+G4         120.100      9   258.200      310.200      260.200\\n"
+            "  2  LG+I+G4       119.900      10  259.800      323.800      262.000\\n"
+            "  3  WAG+G4        121.500      9   261.000      313.000      263.000\\n"
+            "Akaike Information Criterion:           LG+G4\\n"
+            "Corrected Akaike Information Criterion: LG+G4\\n"
+            "Bayesian Information Criterion:         LG+G4\\n"
+            "Best-fit model: LG+G4 chosen according to BIC\\n"
+            if is_protein
+            else
+            "  1  GTR+G         123.456      12  270.912      330.912      272.912\\n"
+            "  2  HKY+G         124.000      10  268.000      320.000      269.000\\n"
+            "  3  JC            130.500      5   271.000      300.000      271.500\\n"
+            "Akaike Information Criterion:           HKY+G\\n"
+            "Corrected Akaike Information Criterion: JC\\n"
+            "Bayesian Information Criterion:         GTR+G\\n"
+            "Best-fit model according to BIC: GTR+G\\n"
+        )
+    )
     prefix.with_suffix(".iqtree").write_text(
-        "Best-fit model according to BIC: GTR+G\\nLog-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
+        criteria_lines
+        + f"Log-likelihood of the tree: -123.456\\nWARNING: model search used a fixture backend\\n",
         encoding="utf-8",
     )
     prefix.with_suffix(".log").write_text(
         "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
         encoding="utf-8",
     )
-    prefix.with_suffix(".model").write_text("Best-fit model: GTR+G\\n", encoding="utf-8")
+    prefix.with_suffix(".model").write_text(
+        f"Best-fit model: {selected_model}\\n",
+        encoding="utf-8",
+    )
     print("warning: iqtree fixture model selection", file=sys.stderr)
     raise SystemExit(0)
 
@@ -596,7 +623,11 @@ def test_run_iqtree_backend_with_real_executable_on_small_dataset(
 
     assert model_report.output_paths["iqtree_report"].exists()
     assert model_report.output_paths["iqtree_log"].exists()
+    assert model_report.output_paths["model_candidates"].exists()
     assert model_report.log_likelihood is not None
+    assert model_report.model_selection_summary is not None
+    assert model_report.model_selection_summary.candidate_count >= 1
+    assert model_report.model_selection_summary.best_model_bic is not None
     assert ml_report.output_paths["tree"].exists()
     assert ml_report.output_paths["iqtree_log"].exists()
     assert ml_report.log_likelihood is not None
@@ -716,8 +747,18 @@ def test_run_model_selection_parses_best_fit_model_and_writes_manifest(
     assert report.run.command[thread_index : thread_index + 2] == ["-nt", "1"]
     selected_model_path = report.output_paths["selected_model"]
     assert selected_model_path.read_text(encoding="utf-8").strip() == "GTR+G"
+    assert report.output_paths["model_candidates"].exists()
+    assert "HKY+G" in report.output_paths["model_candidates"].read_text(
+        encoding="utf-8"
+    )
     assert report.run.warning_lines == ["warning: iqtree fixture model selection"]
     assert report.manifest_path.exists()
+    assert report.model_selection_summary is not None
+    assert report.model_selection_summary.selected_criterion == "BIC"
+    assert report.model_selection_summary.best_model_aic == "HKY+G"
+    assert report.model_selection_summary.best_model_aicc == "JC"
+    assert report.model_selection_summary.best_model_bic == "GTR+G"
+    assert report.model_selection_summary.candidate_count == 3
 
 
 def test_run_model_selection_supports_partitioned_alignment_and_writes_summary(
@@ -742,9 +783,34 @@ def test_run_model_selection_supports_partitioned_alignment_and_writes_summary(
     assert report.log_likelihood == pytest.approx(-123.456)
     assert report.iqtree_summary is not None
     assert report.iqtree_summary.support_value_count == 0
+    assert report.model_selection_summary is not None
+    assert report.model_selection_summary.candidate_count == 3
     summary_path = report.output_paths["partition_summary"]
     assert summary_path.exists()
     assert "gene_beta" in summary_path.read_text(encoding="utf-8")
+
+
+def test_run_model_selection_supports_protein_alignment_candidates(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_model_selection(
+        fixture("alignments/example_alignment_protein.fasta"),
+        out_dir=tmp_path / "protein-model",
+        executable=executable,
+        prefix="protein",
+        sequence_type="protein",
+    )
+
+    assert report.selected_model == "LG+G4"
+    assert report.model_selection_summary is not None
+    assert report.model_selection_summary.selected_criterion == "BIC"
+    assert report.model_selection_summary.best_model_bic == "LG+G4"
+    assert report.model_selection_summary.candidate_count == 3
+    assert "LG+G4" in report.output_paths["model_candidates"].read_text(
+        encoding="utf-8"
+    )
 
 
 def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> None:
