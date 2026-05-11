@@ -340,9 +340,7 @@ def run_fasta_to_tree_workflow(
         raise ValueError("model-selection workflow did not expose a selected model")
     maximum_likelihood_workflow = run_maximum_likelihood_tree_inference(
         trimming_workflow.output_paths["trimmed_alignment"],
-        out_dir=_artifact_prefix(
-            out_dir, workflow_prefix, "maximum-likelihood"
-        ).parent,
+        out_dir=_artifact_prefix(out_dir, workflow_prefix, "maximum-likelihood").parent,
         model=model_selection_workflow.selected_model,
         prefix="maximum-likelihood",
         executable=iqtree_executable,
@@ -361,7 +359,9 @@ def run_fasta_to_tree_workflow(
     model_validation = validate_model_selection_against_engine_outputs(
         model_selection_workflow.manifest_path
     )
-    _copy_output(alignment_workflow.output_paths["alignment"], final_outputs["alignment"])
+    _copy_output(
+        alignment_workflow.output_paths["alignment"], final_outputs["alignment"]
+    )
     _copy_output(
         trimming_workflow.output_paths["trimmed_alignment"],
         final_outputs["trimmed_alignment"],

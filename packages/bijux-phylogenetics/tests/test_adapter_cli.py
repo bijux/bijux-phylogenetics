@@ -350,7 +350,9 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     assert payload["metrics"]["sequence_type"] == "dna"
     assert "warning: trimal fixture trimmed one trailing site" in payload["warnings"]
     assert Path(payload["data"]["engine_artifact_dir"]).name == "example"
-    assert Path(payload["data"]["engine_artifact_dir"]).parent.name == "engine-artifacts"
+    assert (
+        Path(payload["data"]["engine_artifact_dir"]).parent.name == "engine-artifacts"
+    )
     outputs = {Path(path).name for path in payload["outputs"]}
     assert {
         "example",
