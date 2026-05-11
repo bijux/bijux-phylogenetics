@@ -230,18 +230,24 @@ from .core.dataset import (
     build_dataset_mismatch_report,
     summarize_dataset_readiness,
 )
+from .core.partitions import (
+    LocusPartition,
+    LocusSegment,
+    PartitionSummaryReport,
+    PartitionSummaryRow,
+    build_partition_summary_report,
+    parse_locus_partitions,
+    write_locus_partitions,
+    write_partition_summary_table,
+)
 from .core.locus_occupancy import (
     LocusCoverageRow,
     LocusOccupancyCell,
     LocusOccupancyFilterReport,
     LocusOccupancyReport,
-    LocusPartition,
-    LocusSegment,
     TaxonCoverageRow,
     build_locus_occupancy_report,
     filter_locus_occupancy,
-    parse_locus_partitions,
-    write_locus_partitions,
 )
 from .core.pruning import PruningInformationLoss
 from .core.taxon_workflows import (
@@ -1040,6 +1046,7 @@ __all__ = [
     "ladderize_tree",
     "load_taxon_run_source",
     "parse_locus_partitions",
+    "build_partition_summary_report",
     "LevelOneReleaseGateDecision",
     "LevelOneReleaseGateReport",
     "MemoryBenchmarkDashboard",
@@ -1261,6 +1268,8 @@ __all__ = [
     "LocusOccupancyReport",
     "LocusPartition",
     "LocusSegment",
+    "PartitionSummaryReport",
+    "PartitionSummaryRow",
     "PruningInformationLoss",
     "AcceptedNameExport",
     "AcceptedNameRow",
@@ -1273,6 +1282,7 @@ __all__ = [
     "TaxonRankConsistencyReport",
     "DiscreteEvolutionNarrative",
     "ModelSensitiveRegionRow",
+    "write_partition_summary_table",
     "StochasticMapBranchHistory",
     "StochasticMapCollectionReport",
     "StochasticMapReplicate",

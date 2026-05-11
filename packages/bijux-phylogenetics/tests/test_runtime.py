@@ -94,8 +94,12 @@ from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.locus_occupancy import (
     build_locus_occupancy_report,
     filter_locus_occupancy,
+)
+from bijux_phylogenetics.core.partitions import (
+    build_partition_summary_report,
     parse_locus_partitions,
     write_locus_partitions,
+    write_partition_summary_table,
 )
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
@@ -595,8 +599,16 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.build_locus_occupancy_report is build_locus_occupancy_report
     )
+    assert (
+        bijux_phylogenetics.build_partition_summary_report
+        is build_partition_summary_report
+    )
     assert bijux_phylogenetics.filter_locus_occupancy is filter_locus_occupancy
     assert bijux_phylogenetics.parse_locus_partitions is parse_locus_partitions
+    assert (
+        bijux_phylogenetics.write_partition_summary_table
+        is write_partition_summary_table
+    )
     assert bijux_phylogenetics.write_locus_partitions is write_locus_partitions
     assert bijux_phylogenetics.build_taxon_audit_report is build_taxon_audit_report
     assert (
