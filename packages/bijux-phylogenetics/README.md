@@ -70,7 +70,7 @@ bijux-phylogenetics --help
 - define named alignment-filtering profiles, generate cleaned alignments, compare original versus cleaned versions, and warn when filtering removes signal or biases taxon groups
 - score alignment quality with transparent components and emit one-shot alignment forensic reports
 - detect low-information alignments, ambiguity-heavy columns, duplicate-handling policy needs, and per-sequence quality rankings before inference
-- quantify per-taxon locus occupancy, per-locus taxon occupancy, low-coverage taxa, and low-coverage loci from concatenated multi-locus alignments with retained-matrix exports
+- quantify per-taxon locus occupancy, per-locus taxon occupancy, site-coverage fractions, low-coverage taxa, and low-coverage loci from concatenated multi-locus alignments with retained-matrix exports
 - audit tree, metadata, traits, alignment, tip dates, and calibrations together through one-shot dataset readiness decisions
 - render dedicated reviewer-facing alignment, dataset, phylo-input, and taxonomy HTML reports with machine-readable sidecars
 - validate checked-in Level 1 reference fixtures, aggregate workflow coverage, document known failure cases, classify workflow maturity, and render reviewer-facing workflow-validation or release-gate reports
@@ -105,7 +105,7 @@ bijux-phylogenetics alignment duplicate-policy alignment.fasta --identity-thresh
 bijux-phylogenetics alignment ambiguous-columns alignment.fasta --threshold 0.5 --json
 bijux-phylogenetics alignment sequence-ranking alignment.fasta --json
 bijux-phylogenetics alignment concatenate loci/gene-alpha.fasta loci/gene-beta.fasta loci/gene-gamma.fasta --out artifacts/supermatrix.aln.fasta --partitions-out artifacts/supermatrix.partitions.txt --matrix-out artifacts/supermatrix.matrix.tsv --json
-bijux-phylogenetics alignment occupancy supermatrix.fasta partitions.txt --taxon-coverage-threshold 0.6 --locus-coverage-threshold 0.6 --taxa-out artifacts/occupancy/taxa.tsv --loci-out artifacts/occupancy/loci.tsv --matrix-out artifacts/occupancy/matrix.tsv --filtered-alignment-out artifacts/occupancy/filtered.fasta --filtered-partitions-out artifacts/occupancy/filtered-partitions.txt --json
+bijux-phylogenetics alignment occupancy supermatrix.fasta partitions.txt --taxon-coverage-threshold 0.6 --locus-coverage-threshold 0.6 --minimum-locus-occupancy 0.75 --taxa-out artifacts/occupancy/taxa.tsv --loci-out artifacts/occupancy/loci.tsv --matrix-out artifacts/occupancy/matrix.tsv --filtered-alignment-out artifacts/occupancy/filtered.fasta --filtered-partitions-out artifacts/occupancy/filtered-partitions.txt --json
 bijux-phylogenetics alignment length-outliers sequences.fasta --json
 bijux-phylogenetics alignment forensic alignment.fasta --json
 bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cleaned.fasta --json
@@ -195,6 +195,14 @@ materialize the taxon-by-locus occupancy matrix in the same run. When a locus
 contains residues that are alphabet-ambiguous across DNA and protein codes, use
 repeated `--data-type` flags so the partition file declares the intended
 datatype honestly instead of guessing from overlapping symbols alone.
+
+Run `alignment occupancy` before inference when the supermatrix contains partial
+fragments, short recovered loci, or uneven locus completeness. By default, a
+locus counts as covered when at least one non-missing site is present. Raise
+`--minimum-locus-occupancy` when thin fragments should count as absent for
+taxon/locus thresholding instead. The occupancy TSV outputs include both
+binary-coverage summaries and `site_coverage_fraction` columns so reviewers can
+see the difference between locus presence and overall retained signal.
 
 The `adapter fasta-to-tree` workflow is the canonical one-command bridge from
 raw FASTA to a supported inference bundle. It accepts DNA and protein FASTA
