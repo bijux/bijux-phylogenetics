@@ -230,6 +230,11 @@ from .core.dataset import (
     build_dataset_mismatch_report,
     summarize_dataset_readiness,
 )
+from .core.concatenation import (
+    ConcatenatedAlignmentLocusRow,
+    ConcatenatedAlignmentReport,
+    concatenate_locus_alignments,
+)
 from .core.partitions import (
     LocusPartition,
     LocusSegment,
@@ -951,8 +956,11 @@ __all__ = [
     "build_taxon_workflow_loss_report",
     "build_dataset_completeness_matrix",
     "build_dataset_crosswalk",
-    "build_locus_occupancy_report",
     "build_dataset_mismatch_report",
+    "ConcatenatedAlignmentLocusRow",
+    "ConcatenatedAlignmentReport",
+    "concatenate_locus_alignments",
+    "build_locus_occupancy_report",
     "build_broken_benchmark_corpus",
     "build_clean_benchmark_corpus",
     "build_inference_sensitivity_report",
