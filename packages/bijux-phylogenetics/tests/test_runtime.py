@@ -249,6 +249,7 @@ from bijux_phylogenetics.io.fasta import (
     compute_amino_acid_composition,
     compute_nucleotide_composition,
     compute_pairwise_sequence_identity_matrix,
+    detect_fasta_sequence_type,
     detect_composition_outlier_sequences,
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
@@ -541,6 +542,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.detect_sequence_length_outliers
         is detect_sequence_length_outliers
     )
+    assert bijux_phylogenetics.detect_fasta_sequence_type is detect_fasta_sequence_type
     assert bijux_phylogenetics.validate_fasta_input is validate_fasta_input
     assert bijux_phylogenetics.repair_fasta_input is repair_fasta_input
     assert bijux_phylogenetics.summarize_fasta_input is summarize_fasta_input
@@ -5002,6 +5004,24 @@ def test_cli_alignment_classify_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["state"] == "raw_sequence_fasta"
     assert payload["data"]["sequence_count"] == 4
+
+
+def test_cli_alignment_sequence_type_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "sequence-type",
+            str(fixture("example_sequences_raw.fasta")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["detected_type"] == "dna"
+    assert payload["metrics"]["selected_type"] == "dna"
+    assert payload["metrics"]["confidence"] == "medium"
+    assert payload["data"]["compatible_types"] == ["dna", "protein"]
 
 
 def test_cli_alignment_validate_input_json_output(capsys) -> None:

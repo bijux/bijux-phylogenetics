@@ -248,6 +248,7 @@ from bijux_phylogenetics.io.fasta import (
     compare_alignment_versions,
     compute_pairwise_sequence_identity_matrix,
     detect_composition_outlier_sequences,
+    detect_fasta_sequence_type,
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
@@ -970,6 +971,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the report as JSON."
     )
     _add_manifest_argument(alignment_classify)
+    alignment_sequence_type = alignment_subparsers.add_parser(
+        "sequence-type",
+        help="Classify raw FASTA sequence type compatibility and confidence.",
+    )
+    alignment_sequence_type.add_argument("alignment", type=Path)
+    alignment_sequence_type.add_argument(
+        "--json", action="store_true", help="Emit the report as JSON."
+    )
+    _add_manifest_argument(alignment_sequence_type)
     alignment_validate_input = alignment_subparsers.add_parser(
         "validate-input",
         help="Validate raw FASTA input for duplicates, illegal characters, empty sequences, and length outliers.",
@@ -3991,6 +4001,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "min_sequence_length": report.min_sequence_length,
                             "max_sequence_length": report.max_sequence_length,
                             "state": report.state,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.alignment_command == "sequence-type":
+                report = detect_fasta_sequence_type(args.alignment)
+                outputs = _finalize_outputs(
+                    args, command="alignment", inputs=[args.alignment]
+                )
+                _print_result(
+                    build_command_result(
+                        command="alignment",
+                        inputs=[args.alignment],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "detected_type": report.detected_type,
+                            "selected_type": report.selected_type,
+                            "confidence": report.confidence,
+                            "compatible_type_count": len(report.compatible_types),
                         },
                         data=report,
                     ),
