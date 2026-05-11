@@ -9099,6 +9099,31 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 if report.iqtree_summary is None
                                 else report.iqtree_summary.support_value_count
                             ),
+                            "minimum_support": (
+                                None
+                                if report.bootstrap_support_summary is None
+                                else report.bootstrap_support_summary.minimum_support
+                            ),
+                            "maximum_support": (
+                                None
+                                if report.bootstrap_support_summary is None
+                                else report.bootstrap_support_summary.maximum_support
+                            ),
+                            "weakly_supported_clade_count": (
+                                0
+                                if report.bootstrap_support_summary is None
+                                else report.bootstrap_support_summary.weakly_supported_clade_count
+                            ),
+                            "weak_backbone_node_count": (
+                                0
+                                if report.weak_backbone_report is None
+                                else report.weak_backbone_report.weak_backbone_node_count
+                            ),
+                            "support_histogram": (
+                                {}
+                                if report.bootstrap_support_summary is None
+                                else report.bootstrap_support_summary.support_histogram
+                            ),
                             "partitioned": args.partitions is not None,
                         },
                         data=report,

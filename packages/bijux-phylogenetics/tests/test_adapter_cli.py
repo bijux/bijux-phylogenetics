@@ -728,8 +728,21 @@ def test_adapter_bootstrap_cli_reports_support_metrics(
     assert payload["metrics"]["selected_model"] == "GTR+G"
     assert payload["metrics"]["log_likelihood"] == -234.567
     assert payload["metrics"]["support_value_count"] == 2
+    assert payload["metrics"]["minimum_support"] == 88.0
+    assert payload["metrics"]["maximum_support"] == 95.0
+    assert payload["metrics"]["weakly_supported_clade_count"] == 0
+    assert payload["metrics"]["weak_backbone_node_count"] == 0
+    assert payload["metrics"]["support_histogram"] == {
+        "lt50": 0,
+        "50to69": 0,
+        "70to89": 1,
+        "ge90": 1,
+    }
     assert Path(payload["data"]["output_paths"]["iqtree_log"]).exists()
     assert Path(payload["data"]["output_paths"]["bootstrap_trees"]).exists()
+    assert Path(payload["data"]["output_paths"]["support_table"]).exists()
+    assert Path(payload["data"]["output_paths"]["low_support_branches"]).exists()
+    assert Path(payload["data"]["output_paths"]["support_histogram"]).exists()
 
 
 def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
