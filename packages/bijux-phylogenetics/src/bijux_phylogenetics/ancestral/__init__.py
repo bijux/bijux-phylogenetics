@@ -93,6 +93,10 @@ from .service import (
     write_ancestral_state_table,
     write_discrete_ancestral_comparison_table,
 )
+from .visualization import (
+    AncestralVisualizationResult,
+    render_ancestral_state_visualization,
+)
 
 __all__ = [
     "AncestralStateReportBuildResult",
@@ -106,6 +110,7 @@ __all__ = [
     "AncestralTransitionTreeSetCountRow",
     "AncestralTransitionTreeSetReport",
     "AncestralTransitionTreeSetSummary",
+    "AncestralVisualizationResult",
     "AncestralFigurePackageResult",
     "AncestralSensitivityReport",
     "AncestralSensitivitySummary",
@@ -143,6 +148,7 @@ __all__ = [
     "reconstruct_discrete_ancestral_states",
     "render_ancestral_state_report",
     "render_ancestral_state_tree",
+    "render_ancestral_state_visualization",
     "summarize_discrete_ancestral_report",
     "summarize_continuous_ancestral_report",
     "summarize_continuous_ancestral_tree_set",

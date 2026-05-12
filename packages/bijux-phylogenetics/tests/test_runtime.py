@@ -17,6 +17,7 @@ from bijux_phylogenetics.ancestral import (
     reconstruct_discrete_ancestral_states,
     render_ancestral_state_report,
     render_ancestral_state_tree,
+    render_ancestral_state_visualization,
     summarize_ancestral_transition_report,
     summarize_ancestral_transition_tree_set,
     summarize_ancestral_transition_tree_set_report,
@@ -1753,6 +1754,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert (
         bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
+    )
+    assert (
+        bijux_phylogenetics.render_ancestral_state_visualization
+        is render_ancestral_state_visualization
     )
     assert (
         bijux_phylogenetics.summarize_continuous_ancestral_tree_set
