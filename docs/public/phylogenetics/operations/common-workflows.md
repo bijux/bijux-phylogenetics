@@ -208,6 +208,40 @@ residual-heavy flag, and rank. That makes it possible to distinguish one
 isolated outlier taxon from a whole subtree that is carrying consistent model
 misspecification.
 
+When the question is not residual burden after one fit but whether the fitted
+comparative conclusion itself depends on one major subtree, use
+`comparative clade-stability`. This workflow fits one comparative model on the
+baseline analyzed taxon set, derives major internal non-root clades from that
+baseline tree, removes each candidate clade in turn, and refits the same model
+on the retained taxa.
+
+```bash
+bijux-phylogenetics comparative clade-stability \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --formula "longevity ~ brain_mass_g + habitat" \
+  --taxon-column species \
+  --lambda-value estimate \
+  --clades-out artifacts/primates.clade-stability.tsv \
+  --terms-out artifacts/primates.clade-stability-terms.tsv \
+  --json
+```
+
+The clade ledger keeps one row per candidate removal with the dropped clade,
+retained taxon count, fit status, blocked-refit reason when one exists,
+coefficient comparison count, sign-change count, significance-change count,
+largest coefficient and p-value shifts, delta log-likelihood, and the final
+influence rank. The term ledger then keeps one row per comparable coefficient
+for each successful clade removal, including baseline and refit estimates,
+baseline and refit p-values, and explicit sign-change and
+significance-change flags.
+
+This surface matters when a biological interpretation looks fragile. A large
+or influential clade can drive coefficient direction, apparent significance,
+or fit quality without leaving obviously extreme single-taxon residuals. The
+workflow keeps those subtree dependencies explicit and preserves blocked rows
+instead of silently skipping removals that would collapse the remaining fit.
+
 When the covariance assumption itself must stay fixed to Brownian shared branch
 lengths, use `comparative brownian-pgls`. This keeps the regression surface
 separate from Pagel-lambda fitting and writes an explicit covariance ledger
