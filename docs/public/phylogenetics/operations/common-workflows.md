@@ -331,6 +331,29 @@ Newick tree set that can be handed directly to the existing tree-set
 consensus, topology-diversity, and MCC review surfaces without re-scraping the
 original BEAST NEXUS container.
 
+Use `adapter beast-subsample` when the posterior tree file is already too large
+for the next review step, but you still want a governed retained subset instead
+of ad hoc copying. The command supports either evenly spaced thinning or a
+seeded random subset and preserves the native `STATE_*` labels in the retained
+sample ledger.
+
+```bash
+bijux-phylogenetics adapter beast-subsample \
+  artifacts/multilocus-beast.1.trees \
+  --method evenly-spaced \
+  --burnin-fraction 0.1 \
+  --thinning-interval 5 \
+  --tree-set-out artifacts/multilocus-beast.subsample.nwk \
+  --sample-table-out artifacts/multilocus-beast.subsample.tsv \
+  --json
+```
+
+For random retained subsets, switch to `--method random`, pass
+`--sample-count`, and set `--seed` explicitly when you need the same retained
+trees again later. The retained tree-set file stays normalized Newick, while
+the TSV ledger records the retained source index, post-burn-in index, tree
+name, sampled state, and rooted flag for each kept tree.
+
 Use `adapter beast-consensus` when you want a governed majority-rule summary
 tree from BEAST posterior samples instead of chaining generic tree-set commands
 by hand.
@@ -392,6 +415,7 @@ surfaces instead of through manual text scraping:
 - `adapter mrbayes-traces` for tabular parameter traces from `.run1.p`
 - `adapter mrbayes-parameters` for burn-in-aware posterior mean, median, SD, 95% HPD, and ESS summaries from `.run1.p`
 - `adapter mrbayes-trees` for sampled posterior trees and generation tags from `.run1.t`
+- `adapter mrbayes-subsample` for governed retained posterior subsets with generation metadata from `.run1.t`
 - `adapter mrbayes-mcmc` for acceptance-rate and split-frequency diagnostics from `.mcmc`
 - `adapter mrbayes-consensus` for the annotated consensus topology and posterior-probability range from `.con.tre`
 
@@ -433,6 +457,27 @@ This workflow tests the same governed default fractions `5%`, `10%`, `25%`,
 and `50%` unless you pass an explicit custom set. It reports parameter
 instability from non-overlapping 95% HPD intervals and clade instability from
 posterior probabilities that move across the majority-rule threshold.
+
+Use `adapter mrbayes-subsample` when a downstream audit only needs a retained
+posterior subset instead of the full `.run1.t` file.
+
+```bash
+bijux-phylogenetics adapter mrbayes-subsample \
+  artifacts/multilocus-bayesian.nex.run1.t \
+  --method random \
+  --burnin-fraction 0.25 \
+  --sample-count 200 \
+  --seed 7 \
+  --tree-set-out artifacts/multilocus-bayesian.subsample.nwk \
+  --sample-table-out artifacts/multilocus-bayesian.subsample.tsv \
+  --json
+```
+
+That workflow supports both evenly spaced thinning and seeded random
+subsampling. The retained tree-set file is normalized Newick, and the sample
+ledger keeps the retained source index, post-burn-in index, tree name,
+sampled generation, and rooted flag so the subset remains traceable back to the
+native MrBayes posterior output.
 
 For ultrafast bootstrap review specifically, `adapter bootstrap` now writes
 three reviewer-facing TSV artifacts alongside the native IQ-TREE files:
