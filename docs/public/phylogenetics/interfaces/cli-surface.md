@@ -105,6 +105,16 @@ SH-like local support and IQ-TREE UFBoot support are both rendered as fractions
 for side-by-side review, but that normalization does not claim the two support
 families are biologically or statistically interchangeable.
 
+`adapter reproducibility` is the governed rerun-check surface for one aligned
+matrix when you need to detect deterministic versus unstable supported IQ-TREE
+outputs. It runs model selection once to choose a fixed model, reruns the same
+bootstrap-supported inference settings multiple times, and emits
+`.runs.tsv`, `.comparisons.tsv`, `.support-deltas.tsv`, and `.manifest.json`
+artifacts in one command. Its JSON summary exposes the selected model,
+`overall_status`, repeat count, unstable-comparison count, and
+equivalent-comparison count so automation can separate exact repeatability from
+acceptable equivalence and from genuine instability.
+
 For raw input hygiene before alignment, the alignment family now includes
 `alignment sequence-type`, `alignment validate-input`, and
 `alignment repair-input`. Those commands expose the same raw sequence-type,
