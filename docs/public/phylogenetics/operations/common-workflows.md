@@ -45,6 +45,27 @@ are not monophyletic in the input tree, the workflow still records the rooted
 tree but also reports the MRCA spillover taxa and a warning that the root does
 not cleanly isolate the requested outgroup as one coherent clade.
 
+When no explicit outgroup is available, use `topology reroot-midpoint` for an
+exploratory rooted tree. The command writes the rerooted tree and can also
+emit a one-row TSV report that records the anchor tip pair that defined the
+selected midpoint path, the total tip-to-tip path length, the midpoint
+distance from the anchor tip, whether the midpoint landed on an original node
+or within an original branch, and which taxa ended up on each side of the new
+root.
+
+```bash
+bijux-phylogenetics topology reroot-midpoint \
+  artifacts/mammals.unrooted.nwk \
+  --out artifacts/mammals.midpoint-rooted.nwk \
+  --report-out artifacts/mammals.midpoint-rooting.tsv \
+  --json
+```
+
+The midpoint report also records whether the input tree was suitable for
+straightforward midpoint interpretation. Trees that are not strictly
+bifurcating are still rerooted, but the report marks them as exploratory and
+adds an explicit warning so downstream review does not overclaim the result.
+
 When your starting point is one aligned FASTA per locus, run
 `alignment concatenate` first. That workflow writes the concatenated alignment,
 the remapped partition file, and the taxon-by-locus occupancy matrix in one
