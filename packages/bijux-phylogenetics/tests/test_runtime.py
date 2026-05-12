@@ -205,6 +205,7 @@ from bijux_phylogenetics.diversification import (
 from bijux_phylogenetics.engines import (
     audit_alignment_inference_readiness,
     classify_inference_workflow_failure,
+    build_inference_comparison_shared_clade_rows,
     compare_fast_and_ml_trees,
     compare_inferred_tree_to_taxon_metadata,
     infer_unaligned_sequence_type,
@@ -219,10 +220,12 @@ from bijux_phylogenetics.engines import (
     run_model_selection,
     run_multiple_sequence_alignment,
     run_sh_alrt_support_estimation,
+    run_tree_inference_comparison,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
+    write_inference_comparison_clade_table,
 )
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
@@ -849,7 +852,19 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
     )
     assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
+    assert (
+        bijux_phylogenetics.run_tree_inference_comparison
+        is run_tree_inference_comparison
+    )
     assert bijux_phylogenetics.compare_fast_and_ml_trees is compare_fast_and_ml_trees
+    assert (
+        bijux_phylogenetics.build_inference_comparison_shared_clade_rows
+        is build_inference_comparison_shared_clade_rows
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_clade_table
+        is write_inference_comparison_clade_table
+    )
     assert (
         bijux_phylogenetics.compare_inferred_tree_to_taxon_metadata
         is compare_inferred_tree_to_taxon_metadata
