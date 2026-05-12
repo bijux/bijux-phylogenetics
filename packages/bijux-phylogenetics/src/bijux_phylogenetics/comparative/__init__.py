@@ -52,6 +52,8 @@ from .pgls import (
     ComparativeFormulaSpecification,
     ComparativeHypothesisTestRow,
     ComparativeMultipleTestingReport,
+    PGLSLambdaFitReport,
+    PGLSLambdaProfileRow,
     PGLSModelMatrixReport,
     PGLSModelMatrixRow,
     PGLSCoefficient,
@@ -70,6 +72,10 @@ from .pgls import (
     run_pgls,
     run_pgls_multiple_testing,
     write_pgls_model_matrix_table,
+)
+from .pgls_lambda_fit import (
+    summarize_pgls_lambda_fit,
+    write_pgls_lambda_profile_table,
 )
 from .pgls_categorical_contrasts import (
     PGLSCategoricalContrastReport,
@@ -152,6 +158,8 @@ __all__ = [
     "LikelihoodRatioTestResult",
     "LeaveOneTaxonOutRow",
     "NumericTraitSummary",
+    "PGLSLambdaFitReport",
+    "PGLSLambdaProfileRow",
     "PGLSCategoricalContrastReport",
     "PGLSCategoricalContrastRow",
     "PGLSInteractionCoefficientReport",
@@ -197,6 +205,7 @@ __all__ = [
     "run_comparative_sensitivity_analysis",
     "run_pgls_multiple_testing",
     "run_pgls",
+    "summarize_pgls_lambda_fit",
     "summarize_pgls_categorical_contrasts",
     "summarize_pgls_interaction_coefficients",
     "summarize_numeric_trait",
@@ -204,6 +213,7 @@ __all__ = [
     "validate_comparative_reference_examples",
     "write_pgls_categorical_contrast_table",
     "write_pgls_interaction_coefficient_table",
+    "write_pgls_lambda_profile_table",
     "write_pgls_model_matrix_table",
     "write_comparative_method_report",
 ]
