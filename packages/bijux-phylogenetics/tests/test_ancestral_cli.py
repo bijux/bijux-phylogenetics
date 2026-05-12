@@ -311,6 +311,57 @@ def test_ancestral_ordered_discrete_cli_can_export_review(
     )
 
 
+def test_ancestral_irreversible_discrete_cli_can_export_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "irreversible-discrete-summary.tsv"
+    fits_path = tmp_path / "irreversible-discrete-fits.tsv"
+    nodes_path = tmp_path / "irreversible-discrete-nodes.tsv"
+    transitions_path = tmp_path / "irreversible-discrete-transitions.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "irreversible-discrete",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "all-rates-different",
+            "--allowed-transitions",
+            "north->south,south->island",
+            "--summary-out",
+            str(summary_path),
+            "--fits-out",
+            str(fits_path),
+            "--nodes-out",
+            str(nodes_path),
+            "--transitions-out",
+            str(transitions_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "all-rates-different"
+    assert payload["metrics"]["allowed_transition_count"] == 2
+    assert payload["metrics"]["fit_count"] == 2
+    assert payload["metrics"]["forbidden_transition_count"] == 4
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tanalyzed_taxon_count\tconstrained_log_likelihood"
+    )
+    assert fits_path.read_text(encoding="utf-8").startswith(
+        "constraint_mode\tmodel\tanalyzed_taxon_count\tlog_likelihood"
+    )
+    assert nodes_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tconstrained_state\tunconstrained_state"
+    )
+    assert transitions_path.read_text(encoding="utf-8").startswith(
+        "source_state\ttarget_state\tconstrained_transition_allowed"
+    )
+
+
 def test_ancestral_confidence_cli_can_export_tree_set_review(
     tmp_path: Path, capsys
 ) -> None:

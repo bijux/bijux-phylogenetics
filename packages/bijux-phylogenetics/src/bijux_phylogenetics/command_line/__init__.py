@@ -54,6 +54,14 @@ from bijux_phylogenetics.ancestral.ordered_discrete import (
     write_ordered_discrete_summary_table,
     write_ordered_discrete_transition_table,
 )
+from bijux_phylogenetics.ancestral.irreversible_discrete import (
+    summarize_irreversible_discrete_reconstruction,
+    summarize_irreversible_discrete_report,
+    write_irreversible_discrete_fit_table,
+    write_irreversible_discrete_node_table,
+    write_irreversible_discrete_summary_table,
+    write_irreversible_discrete_transition_table,
+)
 from bijux_phylogenetics.ancestral.tree_set import (
     summarize_continuous_ancestral_tree_set,
     summarize_continuous_ancestral_tree_set_report,
@@ -777,6 +785,22 @@ def _parse_assignment_map(raw: str | None) -> dict[str, str]:
             )
         assignments[key.strip()] = value.strip()
     return assignments
+
+
+def _parse_transition_pairs(raw: str | None) -> list[tuple[str, str]]:
+    pairs: list[tuple[str, str]] = []
+    for item in _split_csv_values(raw):
+        if "->" not in item:
+            raise ValueError(
+                f"transition item must be SOURCE->TARGET, got '{item}'"
+            )
+        source_state, target_state = item.split("->", 1)
+        if not source_state.strip() or not target_state.strip():
+            raise ValueError(
+                f"transition item must include both SOURCE and TARGET, got '{item}'"
+            )
+        pairs.append((source_state.strip(), target_state.strip()))
+    return pairs
 
 
 def _parse_labelled_run(raw: str) -> tuple[str, Path]:
@@ -3177,6 +3201,34 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the ordered discrete review as JSON."
     )
     _add_manifest_argument(ancestral_ordered_discrete)
+    ancestral_irreversible_discrete = ancestral_subparsers.add_parser(
+        "irreversible-discrete",
+        help="Compare constrained and unconstrained discrete ancestral likelihood reconstructions under an allowed transition graph.",
+    )
+    ancestral_irreversible_discrete.add_argument("tree", type=Path)
+    ancestral_irreversible_discrete.add_argument("table", type=Path)
+    ancestral_irreversible_discrete.add_argument("--trait", required=True)
+    ancestral_irreversible_discrete.add_argument("--taxon-column")
+    ancestral_irreversible_discrete.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="all-rates-different",
+    )
+    ancestral_irreversible_discrete.add_argument(
+        "--allowed-transitions",
+        required=True,
+        help="Comma-delimited directed transition graph in SOURCE->TARGET form.",
+    )
+    ancestral_irreversible_discrete.add_argument("--summary-out", type=Path)
+    ancestral_irreversible_discrete.add_argument("--fits-out", type=Path)
+    ancestral_irreversible_discrete.add_argument("--nodes-out", type=Path)
+    ancestral_irreversible_discrete.add_argument("--transitions-out", type=Path)
+    ancestral_irreversible_discrete.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the irreversible discrete review as JSON.",
+    )
+    _add_manifest_argument(ancestral_irreversible_discrete)
     ancestral_transitions = ancestral_subparsers.add_parser(
         "transitions",
         help="Count inferred ancestral transitions on one tree or tree set.",
@@ -9388,6 +9440,82 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 summary.restricted_transition_count
                             ),
                             "preferred_ordering": summary.preferred_ordering,
+                        },
+                        data={
+                            "report": report,
+                            "summary": summary,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "irreversible-discrete":
+                report = summarize_irreversible_discrete_reconstruction(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    allowed_transition_pairs=_parse_transition_pairs(
+                        args.allowed_transitions
+                    ),
+                )
+                summary = summarize_irreversible_discrete_report(report)
+                outputs = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_irreversible_discrete_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.fits_out is not None:
+                    outputs.append(
+                        write_irreversible_discrete_fit_table(
+                            args.fits_out,
+                            report,
+                        )
+                    )
+                if args.nodes_out is not None:
+                    outputs.append(
+                        write_irreversible_discrete_node_table(
+                            args.nodes_out,
+                            report,
+                        )
+                    )
+                if args.transitions_out is not None:
+                    outputs.append(
+                        write_irreversible_discrete_transition_table(
+                            args.transitions_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "allowed_transition_count": len(
+                                report.allowed_transition_pairs
+                            ),
+                            "fit_count": len(report.fit_rows),
+                            "differing_node_count": summary.differing_node_count,
+                            "ambiguity_change_count": (
+                                summary.ambiguity_change_count
+                            ),
+                            "forbidden_transition_count": (
+                                summary.forbidden_transition_count
+                            ),
+                            "preferred_constraint": summary.preferred_constraint,
                         },
                         data={
                             "report": report,
