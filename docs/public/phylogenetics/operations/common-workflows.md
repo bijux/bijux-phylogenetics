@@ -235,6 +235,43 @@ still writes valid XML, but the JSON warnings mark that combination as
 exploratory because BEAST's own validator reports that the standard birth-death
 prior is not serial-sampling aware.
 
+Use `adapter beast-log` once a BEAST run has produced a posterior log and you
+need a governed review surface instead of manual spreadsheet work. The command
+parses native BEAST log files, accepts BEAST's own `Sample` state header, and
+can discard an explicit burn-in fraction before computing summary statistics
+and effective sample sizes.
+
+```bash
+bijux-phylogenetics adapter beast-log \
+  artifacts/multilocus-beast.1.log \
+  --burnin-fraction 0.1 \
+  --summary-out artifacts/multilocus-beast.log-summary.tsv \
+  --json
+```
+
+The JSON output keeps the raw parsed log plus a summary block that separates
+posterior, likelihood, prior, clock, and tree-related parameters into explicit
+lists. The optional `--summary-out` table writes one row per sampled parameter
+with the post-burn-in mean, min/max range, first-half and second-half means,
+standardized drift, and effective sample size so reviewers can audit BEAST log
+behaviour without re-parsing the engine file themselves.
+
+Use `adapter beast-convergence` when you want the same burn-in handling applied
+to convergence warnings directly.
+
+```bash
+bijux-phylogenetics adapter beast-convergence \
+  artifacts/multilocus-beast.1.log \
+  --burnin-fraction 0.1 \
+  --ess-threshold 200 \
+  --mean-shift-threshold 0.5 \
+  --json
+```
+
+That command emits structured warnings for low ESS and mean drift after the
+requested burn-in has been discarded, so convergence review stays aligned with
+the same retained posterior window described in the summary table.
+
 Use `adapter mrbayes-run` after preparation when you want the governed runtime
 to execute MrBayes and preserve the native posterior artifacts for later
 inspection instead of leaving the engine outputs implicit.
