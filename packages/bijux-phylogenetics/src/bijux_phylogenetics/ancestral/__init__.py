@@ -14,8 +14,15 @@ from .continuous import (
 )
 from .discrete import (
     DiscreteAncestralEstimate,
+    DiscreteAncestralExclusion,
     DiscreteAncestralReport,
+    DiscreteAncestralSummary,
+    discrete_ancestral_exclusions,
     reconstruct_discrete_ancestral_states,
+    summarize_discrete_ancestral_report,
+    write_discrete_ancestral_exclusion_table,
+    write_discrete_ancestral_probability_table,
+    write_discrete_ancestral_summary_table,
 )
 from .package import AncestralFigurePackageResult, build_ancestral_figure_package
 from .sensitivity import (
@@ -48,19 +55,26 @@ __all__ = [
     "ContinuousAncestralReport",
     "ContinuousAncestralSummary",
     "DiscreteAncestralEstimate",
+    "DiscreteAncestralExclusion",
     "DiscreteAncestralReport",
+    "DiscreteAncestralSummary",
     "build_ancestral_figure_package",
     "build_ancestral_sensitivity_report",
     "compare_continuous_ancestral_models",
     "continuous_ancestral_exclusions",
+    "discrete_ancestral_exclusions",
     "reconstruct_continuous_evolutionary_mode_states",
     "reconstruct_continuous_ancestral_states",
     "reconstruct_discrete_ancestral_states",
     "render_ancestral_state_report",
     "render_ancestral_state_tree",
+    "summarize_discrete_ancestral_report",
     "summarize_continuous_ancestral_report",
     "write_ancestral_state_table",
     "write_continuous_ancestral_exclusion_table",
     "write_continuous_ancestral_summary_table",
     "write_continuous_ancestral_uncertainty_table",
+    "write_discrete_ancestral_exclusion_table",
+    "write_discrete_ancestral_probability_table",
+    "write_discrete_ancestral_summary_table",
 ]
