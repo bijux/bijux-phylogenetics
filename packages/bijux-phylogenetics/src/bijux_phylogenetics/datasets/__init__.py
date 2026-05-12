@@ -36,6 +36,18 @@ from .plants import (
     run_central_european_seashore_flora_workflow,
     write_central_european_seashore_flora_workflow_bundle,
 )
+from .viruses import (
+    InfluenzaAHAReferenceDataset,
+    InfluenzaAHAReferenceDatasetExportResult,
+    InfluenzaAHAReferenceDemoResult,
+    InfluenzaAHAReferenceWorkflowBundle,
+    InfluenzaAHAReferenceWorkflowReport,
+    export_influenza_a_ha_reference_dataset,
+    load_influenza_a_ha_reference_dataset,
+    run_influenza_a_ha_reference_demo,
+    run_influenza_a_ha_reference_workflow,
+    write_influenza_a_ha_reference_workflow_bundle,
+)
 
 __all__ = [
     "AvianReproductiveTraitDataset",
@@ -58,6 +70,16 @@ __all__ = [
     "run_central_european_seashore_flora_demo",
     "run_central_european_seashore_flora_workflow",
     "write_central_european_seashore_flora_workflow_bundle",
+    "InfluenzaAHAReferenceDataset",
+    "InfluenzaAHAReferenceDatasetExportResult",
+    "InfluenzaAHAReferenceDemoResult",
+    "InfluenzaAHAReferenceWorkflowBundle",
+    "InfluenzaAHAReferenceWorkflowReport",
+    "export_influenza_a_ha_reference_dataset",
+    "load_influenza_a_ha_reference_dataset",
+    "run_influenza_a_ha_reference_demo",
+    "run_influenza_a_ha_reference_workflow",
+    "write_influenza_a_ha_reference_workflow_bundle",
     "PrimateComparativeDataset",
     "PrimateComparativeDatasetExportResult",
     "PrimateComparativeDemoResult",

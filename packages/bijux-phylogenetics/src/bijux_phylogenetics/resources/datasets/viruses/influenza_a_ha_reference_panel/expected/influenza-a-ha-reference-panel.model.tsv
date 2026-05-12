@@ -1,0 +1,2 @@
+workflow	engine_name	sequence_type	selected_model	report_selected_model	artifact_selected_model	model_consistent	alignment_path	trimmed_alignment_path	manifest_path
+model-selection	iqtree	dna	TPM3u+F+R2	TPM3u+F+R2	TPM3u+F+R2	true	influenza-a-ha-reference-panel.aln	influenza-a-ha-reference-panel.trimmed.aln	engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json
