@@ -421,6 +421,37 @@ total-variation shift from the analyzed global state distribution. That makes
 clade ranking auditable without overstating it as a formal one-size-fits-all
 hypothesis test.
 
+When the goal is to identify taxa whose continuous trait values are unusual
+given the fitted phylogenetic covariance, use `comparative trait-outliers`.
+This workflow fits Brownian and OU continuous-trait baselines, selects the
+better standalone model by AICc, then scores each analyzed taxon by its
+leave-one-taxon-out conditional residual under the selected covariance model.
+The ranked taxon ledger also keeps local clade context so reviewers can see
+whether an outlier departs from a nearby sister lineage or from a broader
+cluster.
+
+```bash
+bijux-phylogenetics comparative trait-outliers \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait body_mass \
+  --taxon-column species \
+  --summary-out artifacts/primates.trait-outlier-summary.tsv \
+  --outliers-out artifacts/primates.trait-outliers.tsv \
+  --excluded-taxa-out artifacts/primates.trait-outlier-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the selected model, the selected mean
+parameter name and value, the selected `sigma²`, the Brownian and OU AICc
+values, the outlier threshold, the outlier count, and the top-ranked taxon.
+The ranked taxon ledger keeps one row per analyzed tip with observed value,
+conditional expected value, conditional variance, standardized residual, local
+context clade, sibling context, and a stable reviewer-facing rank. The
+excluded-taxa ledger keeps one row per taxon that was absent from the tree,
+absent from the trait table, missing the target trait value, or pruned because
+the trait value was non-numeric.
+
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
