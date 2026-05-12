@@ -110,6 +110,10 @@ from bijux_phylogenetics.comparative import (
     ComparativeCladeResidualReport,
     ComparativeCladeStabilityReport,
     ComparativeCladeStabilityRow,
+    PosteriorTreePGLSCoefficientRow,
+    PosteriorTreePGLSCoefficientSummaryRow,
+    PosteriorTreePGLSReport,
+    PosteriorTreePGLSTreeFitRow,
     IndependentContrastRegressionReport,
     IndependentContrastRegressionRow,
     ComparativeRegressionModelExclusion,
@@ -131,6 +135,7 @@ from bijux_phylogenetics.comparative import (
     assess_comparative_method_maturity,
     analyze_comparative_clade_stability,
     analyze_comparative_residual_clades,
+    run_posterior_tree_pgls,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
     build_pgls_model_matrix,
@@ -157,6 +162,9 @@ from bijux_phylogenetics.comparative import (
     write_comparative_clade_stability_table,
     write_comparative_residual_clade_table,
     write_comparative_residual_taxon_table,
+    write_posterior_tree_pgls_coefficient_table,
+    write_posterior_tree_pgls_summary_table,
+    write_posterior_tree_pgls_tree_table,
     write_comparative_regression_excluded_taxa_table,
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
@@ -1041,6 +1049,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_multivariate_comparative_regression
     )
     assert (
+        bijux_phylogenetics.run_posterior_tree_pgls
+        is run_posterior_tree_pgls
+    )
+    assert (
         bijux_phylogenetics.analyze_comparative_clade_stability
         is analyze_comparative_clade_stability
     )
@@ -1106,6 +1118,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.ComparativeCladeStabilityRow
         is ComparativeCladeStabilityRow
+    )
+    assert (
+        bijux_phylogenetics.PosteriorTreePGLSTreeFitRow
+        is PosteriorTreePGLSTreeFitRow
+    )
+    assert (
+        bijux_phylogenetics.PosteriorTreePGLSCoefficientRow
+        is PosteriorTreePGLSCoefficientRow
+    )
+    assert (
+        bijux_phylogenetics.PosteriorTreePGLSCoefficientSummaryRow
+        is PosteriorTreePGLSCoefficientSummaryRow
+    )
+    assert (
+        bijux_phylogenetics.PosteriorTreePGLSReport
+        is PosteriorTreePGLSReport
     )
     assert (
         bijux_phylogenetics.ComparativeResidualTaxonRow
@@ -1206,6 +1234,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_comparative_clade_coefficient_change_table
         is write_comparative_clade_coefficient_change_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_pgls_tree_table
+        is write_posterior_tree_pgls_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_pgls_coefficient_table
+        is write_posterior_tree_pgls_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_pgls_summary_table
+        is write_posterior_tree_pgls_summary_table
     )
     assert (
         bijux_phylogenetics.write_comparative_residual_taxon_table
@@ -7686,6 +7726,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_phylogenetic_logistic
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:run_posterior_tree_pgls"]
+        is run_posterior_tree_pgls
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:analyze_comparative_clade_stability"]
         is analyze_comparative_clade_stability
     )
@@ -7723,6 +7767,24 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
             "bijux_phylogenetics.comparative:write_comparative_clade_coefficient_change_table"
         ]
         is write_comparative_clade_coefficient_change_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_posterior_tree_pgls_tree_table"
+        ]
+        is write_posterior_tree_pgls_tree_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_posterior_tree_pgls_coefficient_table"
+        ]
+        is write_posterior_tree_pgls_coefficient_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_posterior_tree_pgls_summary_table"
+        ]
+        is write_posterior_tree_pgls_summary_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_comparative_residual_taxon_table"]
