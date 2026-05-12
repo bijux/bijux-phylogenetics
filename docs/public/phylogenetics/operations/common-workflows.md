@@ -116,6 +116,27 @@ lacks a branch length on one side, the per-split ledger records that missing
 length explicitly and the branch-score summary becomes unavailable instead of
 silently treating the missing value as zero.
 
+When the main question is which clades agree or conflict across several trees,
+use `compare clades`. The command accepts two required tree paths plus
+additional trees through repeated `--tree` flags, computes clade overlap on the
+shared taxon set, preserves support values where the underlying tree labels
+carry them, and can write one flat clade-overlap table with `--out`.
+
+```bash
+bijux-phylogenetics compare clades \
+  artifacts/mammals.reference.nwk \
+  artifacts/mammals.bootstrap.nwk \
+  --tree artifacts/mammals.fasttree.nwk \
+  --out artifacts/mammals.clade-overlap.tsv \
+  --json
+```
+
+The JSON summary separates clades present in every tree from clades that are
+conflicting or tree-specific. The written table then gives one row per
+clade-per-tree observation, including whether that clade is present in the
+given tree and which support value was observed when the tree format exposed
+one.
+
 When your starting point is one aligned FASTA per locus, run
 `alignment concatenate` first. That workflow writes the concatenated alignment,
 the remapped partition file, and the taxon-by-locus occupancy matrix in one
