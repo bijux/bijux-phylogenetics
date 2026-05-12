@@ -1021,6 +1021,131 @@ def _build_tree_comparison_report(
     )
 
 
+def _pipe_join(values: list[str]) -> str:
+    return "|".join(values)
+
+
+def write_shared_taxa_pruning_table(
+    path: Path,
+    left_path: Path,
+    right_path: Path,
+) -> Path:
+    """Write one row per tree summarizing shared-taxon pruning evidence."""
+    _, _, report = prune_trees_to_shared_taxa(left_path, right_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "tree_side",
+                "tree_path",
+                "original_tip_count",
+                "retained_tip_count",
+                "removed_tip_count",
+                "requested_taxa",
+                "kept_taxa",
+                "removed_taxa",
+                "absent_requested_taxa",
+                "removed_taxa_with_reasons",
+                "transformation",
+                "root_to_tip_complete",
+                "min_root_to_tip",
+                "max_root_to_tip",
+                "unary_internal_nodes",
+                "original_total_branch_length",
+                "pruned_total_branch_length",
+                "branch_length_delta",
+                "lost_taxa_count",
+                "lost_taxa_fraction",
+                "lost_clade_count",
+                "lost_clade_fraction",
+                "lost_branch_length",
+                "lost_branch_length_fraction",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for tree_side, pruning in (
+            ("left", report.left_pruning),
+            ("right", report.right_pruning),
+        ):
+            writer.writerow(
+                {
+                    "tree_side": tree_side,
+                    "tree_path": str(pruning.tree_path),
+                    "original_tip_count": pruning.original_tip_count,
+                    "retained_tip_count": len(pruning.kept_taxa),
+                    "removed_tip_count": len(pruning.removed_taxa),
+                    "requested_taxa": _pipe_join(pruning.requested_taxa),
+                    "kept_taxa": _pipe_join(pruning.kept_taxa),
+                    "removed_taxa": _pipe_join(pruning.removed_taxa),
+                    "absent_requested_taxa": _pipe_join(pruning.absent_requested_taxa),
+                    "removed_taxa_with_reasons": _pipe_join(
+                        [
+                            f"{row.taxon}:{row.reason}"
+                            for row in pruning.removed_taxa_with_reasons
+                        ]
+                    ),
+                    "transformation": pruning.summary.transformation,
+                    "root_to_tip_complete": str(
+                        pruning.pruning_audit.root_to_tip_complete
+                    ).lower(),
+                    "min_root_to_tip": pruning.pruning_audit.min_root_to_tip,
+                    "max_root_to_tip": pruning.pruning_audit.max_root_to_tip,
+                    "unary_internal_nodes": _pipe_join(
+                        pruning.pruning_audit.unary_internal_nodes
+                    ),
+                    "original_total_branch_length": (
+                        pruning.pruning_audit.original_total_branch_length
+                    ),
+                    "pruned_total_branch_length": (
+                        pruning.pruning_audit.pruned_total_branch_length
+                    ),
+                    "branch_length_delta": pruning.pruning_audit.branch_length_delta,
+                    "lost_taxa_count": pruning.information_loss.lost_taxa_count,
+                    "lost_taxa_fraction": pruning.information_loss.lost_taxa_fraction,
+                    "lost_clade_count": pruning.information_loss.lost_clade_count,
+                    "lost_clade_fraction": pruning.information_loss.lost_clade_fraction,
+                    "lost_branch_length": pruning.information_loss.lost_branch_length,
+                    "lost_branch_length_fraction": (
+                        pruning.information_loss.lost_branch_length_fraction
+                    ),
+                }
+            )
+    return path
+
+
+def write_shared_taxa_removed_taxa_table(
+    path: Path,
+    left_path: Path,
+    right_path: Path,
+) -> Path:
+    """Write one row per removed taxon from shared-taxon pruning."""
+    _, _, report = prune_trees_to_shared_taxa(left_path, right_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["tree_side", "tree_path", "taxon", "reason"],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for tree_side, pruning in (
+            ("left", report.left_pruning),
+            ("right", report.right_pruning),
+        ):
+            for removed in pruning.removed_taxa_with_reasons:
+                writer.writerow(
+                    {
+                        "tree_side": tree_side,
+                        "tree_path": str(pruning.tree_path),
+                        "taxon": removed.taxon,
+                        "reason": removed.reason,
+                    }
+                )
+    return path
+
+
 def compare_support_values(
     left_path: Path,
     right_path: Path,
