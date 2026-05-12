@@ -29,6 +29,7 @@ from bijux_phylogenetics.bayesian import (
     compute_mrbayes_effective_sample_sizes,
     detect_impossible_calibration_constraints,
     parse_beast_log,
+    parse_beast_posterior_tree_samples,
     parse_mrbayes_consensus_tree,
     parse_mrbayes_mcmc_diagnostics,
     parse_mrbayes_parameter_traces,
@@ -50,6 +51,7 @@ from bijux_phylogenetics.bayesian import (
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
     write_beast_log_summary_table,
+    write_beast_posterior_tree_set,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -950,6 +952,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert bijux_phylogenetics.BeastCalibration is BeastCalibration
     assert bijux_phylogenetics.parse_beast_log is parse_beast_log
+    assert (
+        bijux_phylogenetics.parse_beast_posterior_tree_samples
+        is parse_beast_posterior_tree_samples
+    )
     assert bijux_phylogenetics.summarize_beast_log is summarize_beast_log
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
     assert (
@@ -963,6 +969,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_beast_log_summary_table
         is write_beast_log_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_beast_posterior_tree_set
+        is write_beast_posterior_tree_set
     )
     assert (
         bijux_phylogenetics.summarize_maximum_clade_credibility_tree
