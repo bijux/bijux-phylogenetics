@@ -8,6 +8,7 @@ from Bio import Phylo
 from Bio.Phylo.BaseTree import Clade, Tree
 
 from bijux_phylogenetics.core.pruning import (
+    RequestedTaxaPruningReport,
     _prune_tree_against_taxa,
     prune_tree_to_requested_taxa,
 )
@@ -77,6 +78,9 @@ class SharedTaxaPruningReport:
     shared_taxa: list[str]
     left_only_taxa: list[str]
     right_only_taxa: list[str]
+    left_pruning: RequestedTaxaPruningReport
+    right_pruning: RequestedTaxaPruningReport
+    post_pruning_comparison: TreeComparisonReport
 
 
 @dataclass(slots=True)
@@ -744,8 +748,16 @@ def prune_trees_to_shared_taxa(
     if len(shared_taxa) < 2:
         raise ValueError("shared-taxon pruning requires at least two shared taxa")
 
-    pruned_left, _ = prune_tree_to_requested_taxa(left_path, shared_taxa)
-    pruned_right, _ = prune_tree_to_requested_taxa(right_path, shared_taxa)
+    pruned_left, left_pruning = prune_tree_to_requested_taxa(left_path, shared_taxa)
+    pruned_right, right_pruning = prune_tree_to_requested_taxa(right_path, shared_taxa)
+    post_pruning_comparison = _build_tree_comparison_report(
+        left_path,
+        right_path,
+        pruned_left,
+        pruned_right,
+        rf_mode="rooted",
+        taxon_overlap_policy="require-identical",
+    )
     return (
         pruned_left,
         pruned_right,
@@ -755,6 +767,9 @@ def prune_trees_to_shared_taxa(
             shared_taxa=shared_taxa,
             left_only_taxa=sorted(left_taxa - right_taxa),
             right_only_taxa=sorted(right_taxa - left_taxa),
+            left_pruning=left_pruning,
+            right_pruning=right_pruning,
+            post_pruning_comparison=post_pruning_comparison,
         ),
     )
 
@@ -940,6 +955,25 @@ def compare_tree_paths(
     """Compare two trees over their shared taxa."""
     left = _load_tree(left_path)
     right = _load_tree(right_path)
+    return _build_tree_comparison_report(
+        left_path,
+        right_path,
+        left,
+        right,
+        rf_mode=rf_mode,
+        taxon_overlap_policy=taxon_overlap_policy,
+    )
+
+
+def _build_tree_comparison_report(
+    left_path: Path,
+    right_path: Path,
+    left: PhyloTree,
+    right: PhyloTree,
+    *,
+    rf_mode: RobinsonFouldsMode,
+    taxon_overlap_policy: TaxonOverlapPolicy,
+) -> TreeComparisonReport:
     comparison = _compare_tree_objects(
         left,
         right,
