@@ -79,6 +79,14 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
+from bijux_phylogenetics.clades import (
+    CladeMetadataObservation,
+    CladeTableReport,
+    CladeTableRow,
+    extract_tree_clades,
+    extract_tree_set_clades,
+    write_clade_table,
+)
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
@@ -495,6 +503,11 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is CladeOverlapComparisonReport
     )
     assert (
+        bijux_phylogenetics.CladeMetadataObservation is CladeMetadataObservation
+    )
+    assert bijux_phylogenetics.CladeTableReport is CladeTableReport
+    assert bijux_phylogenetics.CladeTableRow is CladeTableRow
+    assert (
         bijux_phylogenetics.SharedTaxaPruningReport is SharedTaxaPruningReport
     )
     assert (
@@ -506,8 +519,11 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is compare_branch_score_distance
     )
     assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
+    assert bijux_phylogenetics.extract_tree_clades is extract_tree_clades
+    assert bijux_phylogenetics.extract_tree_set_clades is extract_tree_set_clades
     assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
+    assert bijux_phylogenetics.write_clade_table is write_clade_table
     assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
     assert (
         bijux_phylogenetics.write_shared_taxa_pruning_table

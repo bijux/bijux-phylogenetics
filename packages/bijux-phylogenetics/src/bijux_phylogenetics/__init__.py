@@ -148,6 +148,14 @@ from .bayesian import (
     write_posterior_tree_subsample_table,
     write_supplementary_bayesian_diagnostics_table,
 )
+from .clades import (
+    CladeMetadataObservation,
+    CladeTableReport,
+    CladeTableRow,
+    extract_tree_clades,
+    extract_tree_set_clades,
+    write_clade_table,
+)
 from .benchmark import (
     AlignmentDiagnosticsBenchmarkReport,
     AlignmentSiteBenchmarkReport,
@@ -1000,6 +1008,9 @@ __all__ = [
     "TreeDistancePair",
     "BranchScoreComparisonReport",
     "CladeOverlapComparisonReport",
+    "CladeMetadataObservation",
+    "CladeTableReport",
+    "CladeTableRow",
     "SharedTaxaPruningReport",
     "TreeComparisonReport",
     "RobinsonFouldsComparisonReport",
@@ -1152,6 +1163,8 @@ __all__ = [
     "estimate_diversification_rate",
     "estimate_pagels_lambda",
     "export_tree_accepted_names",
+    "extract_tree_clades",
+    "extract_tree_set_clades",
     "extract_named_clade",
     "infer_unaligned_sequence_type",
     "assess_distance_method_maturity",
@@ -1389,6 +1402,7 @@ __all__ = [
     "write_bootstrap_tree_set_artifacts",
     "write_bootstrap_tree_set_summary_table",
     "write_bootstrap_unstable_branch_table",
+    "write_clade_table",
     "write_clade_overlap_table",
     "write_shared_taxa_pruning_table",
     "write_shared_taxa_removed_taxa_table",
