@@ -164,6 +164,35 @@ clade-per-tree observation, including whether that clade is present in the
 given tree and which support value was observed when the tree format exposed
 one.
 
+When the input is a bootstrap replicate tree file and the goal is one governed
+review bundle rather than a chain of separate tree-set commands, use
+`tree-set bootstrap-summary`. The command reads the bootstrap trees directly,
+builds a consensus tree, computes clade frequencies and topology diversity, and
+exports a dedicated unstable-branch ledger for consensus branches that are not
+yet robust.
+
+```bash
+bijux-phylogenetics tree-set bootstrap-summary \
+  artifacts/mammals.bootstrap.ufboot \
+  --out-dir artifacts/mammals-bootstrap-review \
+  --prefix mammals-bootstrap \
+  --json
+```
+
+The written artifact set includes:
+- `mammals-bootstrap.summary.tsv`
+- `mammals-bootstrap.consensus.nwk`
+- `mammals-bootstrap.clade-frequencies.tsv`
+- `mammals-bootstrap.unstable-branches.tsv`
+- `mammals-bootstrap.unstable-clades.tsv`
+- `mammals-bootstrap.distance-matrix.tsv`
+- `mammals-bootstrap.topology-clusters.tsv`
+
+This bootstrap-specific bundle matters because majority-rule consensus alone can
+hide whether its retained branches are only weakly recovered or compete with
+clear alternative clades across the replicate set. The unstable-branch ledger
+keeps that distinction explicit.
+
 When your starting point is one aligned FASTA per locus, run
 `alignment concatenate` first. That workflow writes the concatenated alignment,
 the remapped partition file, and the taxon-by-locus occupancy matrix in one
