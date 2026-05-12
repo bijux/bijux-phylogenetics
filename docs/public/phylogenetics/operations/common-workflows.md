@@ -180,6 +180,48 @@ trait value, or pruned because the trait value was non-numeric. This makes the
 Brownian fit auditable as a tree-plus-trait workflow rather than a detached
 scalar estimate.
 
+When the goal is to test whether named branches or clades evolve under
+different Brownian rates, use `comparative brownian-regimes`. This workflow
+fits one rate per user-supplied branch regime, compares that fit against the
+single-rate Brownian baseline on the same analyzed taxon set, and exposes the
+rate-profile uncertainty directly instead of reducing the outcome to one model
+winner.
+
+The regime map is a separate tabular input keyed by deterministic branch
+identifiers. By default the workflow expects a `branch_id` column and a
+`regime` column. Each `branch_id` is the normalized descendant-tip signature
+for one non-root branch, such as `A|B` or `A|B|C|D`. Every non-root branch in
+the tree must be assigned exactly one regime.
+
+```bash
+bijux-phylogenetics comparative brownian-regimes \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  artifacts/primates.branch-regimes.tsv \
+  --trait longevity \
+  --taxon-column species \
+  --summary-out artifacts/primates.brownian-regimes-summary.tsv \
+  --rates-out artifacts/primates.brownian-regimes-rates.tsv \
+  --comparison-out artifacts/primates.brownian-regimes-comparison.tsv \
+  --profile-out artifacts/primates.brownian-regimes-profile.tsv \
+  --branches-out artifacts/primates.brownian-regimes-branches.tsv \
+  --excluded-taxa-out artifacts/primates.brownian-regimes-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, excluded taxon
+count, fitted root state, multi-rate log-likelihood, AIC, AICc, the preferred
+model between single-rate Brownian and regime-specific Brownian, and the
+likelihood-ratio context for that comparison. The regime-rate ledger keeps one
+row per regime with the fitted `sigma²`, conditional 95% profile interval, and
+the amount of contributing branch length actually retained after taxon
+filtering. The comparison ledger keeps both model-fit rows and the
+Brownian-vs-regime likelihood-ratio row. The profile ledger keeps one row per
+evaluated regime-rate candidate so weak identifiability can be reviewed
+directly. The branch ledger keeps the normalized branch-to-regime assignment
+that was actually used, including filtered descendant taxa, so the rate fit is
+auditable end to end.
+
 When the goal is to test whether a continuous trait is better explained by
 constrained evolution toward an optimum, use `comparative ou`. This workflow
 fits the stationary-root Ornstein-Uhlenbeck surface directly and reports the
