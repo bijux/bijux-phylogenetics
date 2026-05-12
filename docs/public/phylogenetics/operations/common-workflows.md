@@ -192,6 +192,35 @@ The packaged metadata carries both exact `host_species` labels and the grouped
 intentional: it keeps the compact rabies panel interpretable for host-switch
 review instead of overstating species-level certainty from a tiny demo panel.
 
+When the goal is to review geographic state evolution on a real pathogen
+panel, use `demo rabies-geographic-transition-panel`. This workflow
+materializes the packaged rabies geography dataset, which ships with a rooted
+nucleoprotein tree, raw sequences, and grouped macroregion metadata, and then
+reruns the owned biogeography review surfaces over that grouped region trait.
+
+```bash
+bijux-phylogenetics demo rabies-geographic-transition-panel \
+  --out artifacts/rabies-geographic-transition-panel \
+  --json
+```
+
+The packaged geography workflow writes the same dataset/workflow split as the
+other demos, but focuses on ancestral region reconstruction and branchwise
+movement evidence:
+
+- geographic-state summary ledger
+- internal-node region probability ledger
+- geographic transition-rate ledger
+- branchwise geographic transition-event ledger
+- geographic migration summary and event ledgers
+- geographic exclusion ledgers
+
+The packaged metadata carries both raw `country` provenance and the grouped
+`region_group` trait used by the governed workflow. That grouping is explicit
+and intentional: it keeps the compact rabies panel interpretable for geography
+review instead of overstating locality-level movement certainty from a tiny
+demo panel.
+
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
