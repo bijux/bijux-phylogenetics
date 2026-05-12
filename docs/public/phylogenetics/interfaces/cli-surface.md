@@ -86,6 +86,15 @@ generated NEXUS scheme. Fixed single-model requests are not accepted for mixed
 DNA/protein runs; use a model-selection keyword such as `MF`, `MFP`, `TEST`, or
 `TESTMERGE` instead.
 
+`adapter mrbayes-prepare` is the governed Bayesian input-generation surface for
+one aligned FASTA file. It writes a MrBayes NEXUS analysis file with the data
+matrix, model block, and MCMC settings, and it also accepts `--partitions` for
+same-datatype partition files. When partitions are present, the generated
+NEXUS includes named charsets plus one active partition declaration inside the
+MrBayes block, and the JSON summary exposes `partitioned`, `partition_count`,
+and `partition_warning_count` so review surfaces can separate flat versus
+partitioned Bayesian preparation without scraping the written NEXUS text.
+
 The direct IQ-TREE adapter commands also preserve the native engine artifacts
 that correspond to each run. `adapter model-select` keeps `.iqtree`, `.log`,
 the native model sidecar, and a generated `.model-candidates.tsv`; `adapter infer-ml`
