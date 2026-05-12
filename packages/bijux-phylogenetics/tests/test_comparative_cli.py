@@ -410,6 +410,78 @@ def test_comparative_brownian_pgls_cli_writes_covariance_table(
     assert len(written_rows) == 17
 
 
+def test_comparative_ou_pgls_cli_reports_alpha_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "ou-pgls",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--alpha",
+            "1.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    coefficients = {
+        coefficient["name"]: coefficient["estimate"]
+        for coefficient in payload["data"]["model"]["coefficients"]
+    }
+    assert exit_code == 0
+    assert payload["metrics"]["covariance_model"] == "ou-stationary-root"
+    assert payload["metrics"]["alpha"] == 1.0
+    assert payload["metrics"]["alpha_estimation_mode"] == "fixed"
+    assert payload["metrics"]["alpha_profile_point_count"] == 1
+    assert payload["metrics"]["covariance_row_count"] == 16
+    assert payload["metrics"]["aic"] > 0.0
+    assert math.isclose(coefficients["intercept"], 0.43120431282304317, abs_tol=1e-6)
+    assert math.isclose(
+        coefficients["predictor_one"], 0.9087628025668772, abs_tol=1e-6
+    )
+
+
+def test_comparative_ou_pgls_cli_writes_covariance_and_alpha_profile_tables(
+    tmp_path: Path, capsys
+) -> None:
+    covariance_out = tmp_path / "ou-covariance.tsv"
+    profile_out = tmp_path / "ou-alpha-profile.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "ou-pgls",
+            str(fixture("example_tree_internal_long_branch.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--alpha",
+            "estimate",
+            "--covariance-out",
+            str(covariance_out),
+            "--alpha-profile-out",
+            str(profile_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["alpha_estimation_mode"] == "estimated"
+    assert payload["metrics"]["alpha_profile_point_count"] == 8
+    assert covariance_out.exists()
+    assert profile_out.exists()
+    covariance_rows = covariance_out.read_text(encoding="utf-8").splitlines()
+    profile_rows = profile_out.read_text(encoding="utf-8").splitlines()
+    assert covariance_rows[0].startswith("left_taxon\tright_taxon\tis_diagonal")
+    assert profile_rows[0].startswith("alpha_estimation_mode\talpha\tlog_likelihood")
+    assert len(covariance_rows) == 17
+    assert len(profile_rows) == 9
+
+
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
     exit_code = main(
         [
