@@ -17,11 +17,23 @@ The CLI is the primary operational surface for most users.
 - `alignment ...`
 - `comparative ...`
 - `ancestral ...`
+- `topology ...`
 - `adapter ...`
 - `bundle` and `report`
 
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
+
+The topology family provides direct tree-transformation commands for already
+inferred trees. `topology root-outgroup` accepts one outgroup taxon or one
+expected outgroup clade, writes the rooted tree, and can emit a one-row TSV
+report with `--report-out`. That report records requested taxa, matched taxa,
+absent taxa, ingroup taxa, whether the matched outgroup is monophyletic in the
+input tree, the matched outgroup MRCA, any extra MRCA taxa that break
+monophyly, the taxa isolated on the rooted outgroup side, and any rooting
+warnings. Its JSON metrics also expose matched, absent, ingroup, rooted
+outgroup, rooted ingroup, MRCA spillover, and warning counts so pipelines can
+detect non-monophyletic or incomplete outgroup requests without scraping text.
 
 The alignment family includes matrix-assembly and matrix-audit commands for
 concatenated multi-locus inputs. `alignment concatenate` assembles one
