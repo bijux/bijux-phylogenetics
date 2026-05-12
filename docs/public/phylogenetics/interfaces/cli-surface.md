@@ -381,6 +381,89 @@ This surface exists so OU trait-evolution review preserves the fitted optimum,
 pull strength, diffusion rate, and the pruning contract instead of reducing the
 workflow to one preferred-alpha summary line.
 
+`comparative early-burst` is the governed standalone early-burst trait-evolution
+surface for one numeric trait on a rooted tree with branch lengths. Its JSON
+metrics report:
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `rate_change`
+- `root_state`
+- `sigma_squared`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `better_model`
+- `identifiability_warning_count`
+- `profile_row_count`
+
+The command preserves the full summary under `data`, including:
+- `analyzed_taxa`
+- `excluded_taxa`
+- `confidence_intervals`
+- `comparison_rows`
+- `likelihood_ratio_tests`
+- `profile_rows`
+- `identifiability_warnings`
+- `residual_diagnostics`
+- `readiness`
+
+When `--summary-out` is supplied, `comparative early-burst` writes one flat
+summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `rate_change`
+- `rate_change_lower_95`
+- `rate_change_upper_95`
+- `root_state`
+- `sigma_squared`
+- `sigma_squared_lower_95`
+- `sigma_squared_upper_95`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `better_model`
+- `identifiability_warning_count`
+- `residual_variance`
+- `max_abs_standardized_residual`
+- `phylogenetic_residual_lambda`
+
+When `--excluded-taxa-out` is supplied, `comparative early-burst` also writes
+one excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `missing_from_trait_table`
+- `missing_trait_value`
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+When `--comparison-out` is supplied, `comparative early-burst` also writes one
+combined comparison ledger as CSV or TSV. The ledger preserves:
+- model-fit rows with `model`, `parameter_count`, `log_likelihood`, `aic`,
+  `aicc`, `delta_aicc`, and `selected`
+- likelihood-ratio rows with `comparison_id`, `left_mode`, `right_mode`,
+  `statistic`, `degrees_of_freedom`, and `p_value`
+
+When `--profile-out` is supplied, `comparative early-burst` also writes one
+bounded rate-change likelihood profile as CSV or TSV. Each row preserves:
+- `trait`
+- `rate_change`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `delta_log_likelihood`
+- `in_support_interval`
+- `selected`
+
+This surface exists so early-burst review preserves the bounded rate-change
+profile, the explicit BM/OU comparison contract, and weak-identifiability
+warnings instead of reducing the workflow to one optimistic point estimate.
+
 `comparative multivariate` is the governed review surface for fitting the same
 comparative predictor set across multiple response traits on one shared
 complete-case taxon set. Its JSON metrics report:
