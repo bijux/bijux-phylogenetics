@@ -144,6 +144,21 @@ warnings directly. Its JSON metrics expose `warning_count`, `converged`,
 lists each warning by parameter and warning code so convergence review does not
 depend on re-reading the BEAST log manually.
 
+`adapter beast-burnin-sensitivity` is the governed cross-fraction review
+surface for one posterior tree set plus an optional BEAST log. By default it
+tests burn-in fractions `0.05`, `0.1`, `0.25`, and `0.5`, though
+`--burnin-fractions` can override that set explicitly. Its JSON metrics expose
+`slice_count`, `parameter_shift_count`, `unstable_parameter_count`,
+`clade_shift_count`, and `unstable_clade_count`. Optional `--slice-out`,
+`--parameter-out`, and `--clade-out` ledgers write the per-fraction summary,
+the cross-fraction parameter comparison table, and the cross-fraction clade
+comparison table respectively.
+
+The instability contract is explicit: a parameter is flagged when the tested
+95% HPD intervals do not share a common overlap, and a clade is flagged when
+its posterior probability crosses the majority-rule threshold across the
+tested burn-in fractions.
+
 `adapter beast-trees` is the governed parser surface for one BEAST posterior
 tree file. It accepts native `.trees` NEXUS files, records the sampled
 `STATE_*` generations, applies `--burnin-fraction`, extracts clade-frequency
@@ -197,6 +212,7 @@ The matching parser commands expose those artifacts directly:
 
 - `adapter mrbayes-traces` reports trace `row_count` and `column_count` from `.run1.p`
 - `adapter mrbayes-parameters` reports `burnin_fraction`, `kept_row_count`, and `parameter_count` from `.run1.p` after applying the requested burn-in cut
+- `adapter mrbayes-burnin-sensitivity` reports `slice_count`, `parameter_shift_count`, `unstable_parameter_count`, `clade_shift_count`, and `unstable_clade_count` from `.run1.t` plus optional `.run1.p`
 - `adapter mrbayes-trees` reports `tree_count`, `rooted_tree_count`, and `sampled_generation_count` from `.run1.t`
 - `adapter mrbayes-mcmc` reports `row_count`, `column_count`, and `comment_count` from `.mcmc`
 - `adapter mrbayes-consensus` reports `tip_count`, `annotated_node_count`, and `maximum_posterior_probability` from `.con.tre`
@@ -205,6 +221,15 @@ The `mrbayes-parameters` table and JSON payload expose posterior mean, median,
 sample standard deviation, 95% HPD interval, effective sample size, and the
 retained generation window for every retained parameter, so trace review does
 not have to be reconstructed from the raw `.run1.p` table manually.
+
+`adapter mrbayes-burnin-sensitivity` uses the same default burn-in fractions
+`0.05`, `0.1`, `0.25`, and `0.5` unless overridden. Its optional
+`--slice-out`, `--parameter-out`, and `--clade-out` outputs mirror the BEAST
+burn-in workflow: one per-fraction summary ledger, one parameter-shift ledger,
+and one clade-probability-shift ledger. Parameter instability is defined by
+non-overlapping 95% HPD intervals, while clade instability is defined by
+posterior probabilities that cross the majority-rule threshold across the
+tested burn-in fractions.
 
 The consensus parser exists because MrBayes writes posterior-probability and
 branch-length summaries as inline bracket annotations inside the NEXUS tree
