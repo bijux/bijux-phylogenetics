@@ -229,6 +229,78 @@ def test_comparative_ou_cli_writes_summary_and_exclusion_ledgers(
     ]
 
 
+def test_comparative_early_burst_cli_reports_model_fit_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "early-burst",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 4
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["rate_change"] == 50.0
+    assert payload["metrics"]["better_model"] == "brownian"
+    assert payload["metrics"]["identifiability_warning_count"] == 4
+    assert payload["metrics"]["profile_row_count"] == 161
+    assert "aic" in payload["metrics"]
+    assert "aicc" in payload["metrics"]
+
+
+def test_comparative_early_burst_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "early-burst-summary.tsv"
+    excluded_out = tmp_path / "early-burst-excluded.tsv"
+    comparison_out = tmp_path / "early-burst-comparison.tsv"
+    profile_out = tmp_path / "early-burst-profile.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "early-burst",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_continuous_evolution_missing.tsv")),
+            "--trait",
+            "response_growth",
+            "--summary-out",
+            str(summary_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--comparison-out",
+            str(comparison_out),
+            "--profile-out",
+            str(profile_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 3
+    assert summary_out.exists()
+    assert excluded_out.exists()
+    assert comparison_out.exists()
+    assert profile_out.exists()
+    excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    comparison_rows = comparison_out.read_text(encoding="utf-8").splitlines()
+    profile_rows = profile_out.read_text(encoding="utf-8").splitlines()
+    assert excluded_rows == [
+        "taxon\treason",
+        "B\tmissing_trait_value",
+        "C\tnon_numeric_trait_value",
+        "G\tabsent_from_tree",
+    ]
+    assert comparison_rows[0].startswith("row_kind\tmodel\tcomparison_id")
+    assert profile_rows[0].startswith("trait\trate_change\tlog_likelihood")
+
+
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
     exit_code = main(
         [
