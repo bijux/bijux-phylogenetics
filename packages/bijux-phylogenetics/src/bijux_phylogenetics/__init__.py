@@ -246,8 +246,10 @@ from .comparative import (
     write_comparative_method_report,
 )
 from .compare.topology import (
+    BranchScoreComparisonReport,
     RobinsonFouldsComparisonReport,
     TreeComparisonReport,
+    compare_branch_score_distance,
     compare_robinson_foulds,
     compare_tree_paths,
 )
@@ -978,6 +980,7 @@ __all__ = [
     "TreeFigurePackageResult",
     "TreeDistanceMatrixReport",
     "TreeDistancePair",
+    "BranchScoreComparisonReport",
     "TreeComparisonReport",
     "RobinsonFouldsComparisonReport",
     "TreeInspectionReport",
@@ -1071,6 +1074,7 @@ __all__ = [
     "compare_discrete_state_models",
     "compare_bootstrap_and_posterior_uncertainty",
     "compare_posterior_topological_diversity",
+    "compare_branch_score_distance",
     "compare_robinson_foulds",
     "compare_tree_paths",
     "compare_posterior_tree_sets",
