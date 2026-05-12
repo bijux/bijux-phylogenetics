@@ -375,6 +375,11 @@ from bijux_phylogenetics.tree_set import (
     write_tree_distance_matrix,
     write_unstable_clade_table,
 )
+from bijux_phylogenetics.tree_shape import (
+    summarize_tree_set_shapes,
+    summarize_tree_shape,
+    write_tree_shape_table,
+)
 
 
 def _json_ready(value: Any) -> Any:
@@ -2754,6 +2759,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the clade table report as JSON."
     )
     _add_manifest_argument(tree_set_clade_rows)
+    tree_set_shape = tree_set_subparsers.add_parser(
+        "shape",
+        help="Summarize tree balance, ladderization, and height across a tree set.",
+    )
+    tree_set_shape.add_argument("tree_set", type=Path)
+    tree_set_shape.add_argument(
+        "--out", type=Path, help="Write one shape-summary row per tree as TSV."
+    )
+    tree_set_shape.add_argument(
+        "--json", action="store_true", help="Emit the tree-shape report as JSON."
+    )
+    _add_manifest_argument(tree_set_shape)
     tree_set_distances = tree_set_subparsers.add_parser(
         "distance-matrix",
         help="Compute pairwise RF distances across a tree set.",
@@ -3209,6 +3226,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the clade table report as JSON."
     )
     _add_manifest_argument(topology_clades)
+    topology_shape = topology_subparsers.add_parser(
+        "shape",
+        help="Summarize tree balance, ladderization, and shape metrics for one tree.",
+    )
+    topology_shape.add_argument("tree", type=Path)
+    topology_shape.add_argument(
+        "--out", type=Path, help="Write the tree-shape summary row as TSV."
+    )
+    topology_shape.add_argument(
+        "--json", action="store_true", help="Emit the tree-shape report as JSON."
+    )
+    _add_manifest_argument(topology_shape)
     topology_outgroup = topology_subparsers.add_parser(
         "root-outgroup", help="Root a tree on explicit outgroup taxa."
     )
@@ -7522,6 +7551,34 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.tree_set_command == "shape":
+                report = summarize_tree_set_shapes(args.tree_set)
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_tree_shape_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "balanced_tree_count": report.aggregate.balanced_tree_count,
+                            "ladderized_tree_count": report.aggregate.ladderized_tree_count,
+                            "star_like_tree_count": report.aggregate.star_like_tree_count,
+                            "comb_like_tree_count": report.aggregate.comb_like_tree_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.tree_set_command == "distance-matrix":
                 report = compute_tree_distance_matrix(args.tree_set)
                 outputs = []
@@ -8354,6 +8411,36 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "tree_count": report.tree_count,
                             "clade_count": len(report.rows),
                             "metadata_column_count": len(report.metadata_columns),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.topology_command == "shape":
+                report = summarize_tree_shape(args.tree)
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_tree_shape_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="topology",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                )
+                row = report.rows[0]
+                _print_result(
+                    build_command_result(
+                        command="topology",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "cherry_count": row.cherry_count,
+                            "sackin_imbalance_index": row.sackin_imbalance_index,
+                            "colless_imbalance_index": row.colless_imbalance_index,
+                            "tree_height_edges": row.tree_height_edges,
+                            "imbalance_summary": row.imbalance_summary,
                         },
                         data=report,
                     ),
