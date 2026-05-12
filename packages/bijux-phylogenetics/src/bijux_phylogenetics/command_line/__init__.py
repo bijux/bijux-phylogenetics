@@ -157,13 +157,20 @@ from bijux_phylogenetics.benchmark import (
 )
 from bijux_phylogenetics.biogeography import (
     TimeBinDefinition,
+    summarize_constrained_geographic_model,
+    summarize_constrained_geographic_report,
     summarize_geographic_state_model,
     summarize_time_stratified_geographic_transitions,
+    write_constrained_geographic_exclusion_table,
+    write_constrained_geographic_fit_table,
+    write_constrained_geographic_summary_table,
+    write_constrained_geographic_transition_table,
     write_geographic_exclusion_table,
     write_geographic_region_probability_table,
     write_geographic_state_summary_table,
     write_geographic_transition_event_table,
     write_geographic_transition_rate_table,
+    write_unsupported_geographic_transition_claim_table,
     write_time_stratified_branch_table,
     write_time_stratified_exclusion_table,
     write_time_stratified_transition_matrix_table,
@@ -3472,6 +3479,29 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the biogeography review as JSON."
     )
     _add_manifest_argument(biogeography_model)
+    biogeography_constrained = biogeography_subparsers.add_parser(
+        "constrained",
+        help="Compare constrained and unconstrained geographic fits under an explicit region adjacency matrix.",
+    )
+    biogeography_constrained.add_argument("tree", type=Path)
+    biogeography_constrained.add_argument("table", type=Path)
+    biogeography_constrained.add_argument("adjacency", type=Path)
+    biogeography_constrained.add_argument("--trait", required=True)
+    biogeography_constrained.add_argument("--taxon-column")
+    biogeography_constrained.add_argument(
+        "--model",
+        choices=("er", "sym", "ard"),
+        default="ard",
+    )
+    biogeography_constrained.add_argument("--summary-out", type=Path)
+    biogeography_constrained.add_argument("--fits-out", type=Path)
+    biogeography_constrained.add_argument("--transitions-out", type=Path)
+    biogeography_constrained.add_argument("--unsupported-out", type=Path)
+    biogeography_constrained.add_argument("--exclusions-out", type=Path)
+    biogeography_constrained.add_argument(
+        "--json", action="store_true", help="Emit the biogeography review as JSON."
+    )
+    _add_manifest_argument(biogeography_constrained)
     biogeography_time_stratified = biogeography_subparsers.add_parser(
         "time-stratified",
         help="Estimate interval-specific geographic transitions across explicit root-depth bins.",
@@ -10082,6 +10112,83 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "excluded_taxon_count": (
                                 report.summary.excluded_taxon_count
                             ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.biogeography_command == "constrained":
+                report = summarize_constrained_geographic_model(
+                    args.tree,
+                    args.table,
+                    args.adjacency,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                )
+                summary = summarize_constrained_geographic_report(report)
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_constrained_geographic_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.fits_out is not None:
+                    outputs.append(
+                        write_constrained_geographic_fit_table(
+                            args.fits_out,
+                            report,
+                        )
+                    )
+                if args.transitions_out is not None:
+                    outputs.append(
+                        write_constrained_geographic_transition_table(
+                            args.transitions_out,
+                            report,
+                        )
+                    )
+                if args.unsupported_out is not None:
+                    outputs.append(
+                        write_unsupported_geographic_transition_claim_table(
+                            args.unsupported_out,
+                            report,
+                        )
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_constrained_geographic_exclusion_table(
+                            args.exclusions_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="biogeography",
+                    inputs=[args.tree, args.table, args.adjacency],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="biogeography",
+                        inputs=[args.tree, args.table, args.adjacency],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "allowed_transition_count": (
+                                summary.allowed_transition_count
+                            ),
+                            "forbidden_transition_count": (
+                                summary.forbidden_transition_count
+                            ),
+                            "unsupported_transition_claim_count": (
+                                summary.unsupported_transition_claim_count
+                            ),
+                            "preferred_constraint": summary.preferred_constraint,
+                            "excluded_taxon_count": summary.excluded_taxon_count,
                         },
                         data=report,
                     ),

@@ -91,6 +91,53 @@ def test_biogeography_model_cli_accepts_region_vocabulary(capsys) -> None:
     assert payload["metrics"]["observed_region_count"] == 3
 
 
+def test_biogeography_constrained_cli_can_export_review(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    summary_path = tmp_path / "summary.tsv"
+    fits_path = tmp_path / "fits.tsv"
+    transitions_path = tmp_path / "transitions.tsv"
+    unsupported_path = tmp_path / "unsupported.tsv"
+    exclusions_path = tmp_path / "exclusions.tsv"
+
+    exit_code = main(
+        [
+            "biogeography",
+            "constrained",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            str(fixture("example_geographic_adjacency.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "ard",
+            "--summary-out",
+            str(summary_path),
+            "--fits-out",
+            str(fits_path),
+            "--transitions-out",
+            str(transitions_path),
+            "--unsupported-out",
+            str(unsupported_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "ard"
+    assert payload["metrics"]["allowed_transition_count"] > 0
+    assert payload["metrics"]["forbidden_transition_count"] > 0
+    assert "preferred_constraint" in summary_path.read_text(encoding="utf-8")
+    assert "constraint_mode" in fits_path.read_text(encoding="utf-8")
+    assert "transition_allowed" in transitions_path.read_text(encoding="utf-8")
+    assert "claim_resolved" in unsupported_path.read_text(encoding="utf-8")
+    assert "reason" in exclusions_path.read_text(encoding="utf-8")
+
+
 def test_biogeography_time_stratified_cli_can_export_review(
     tmp_path: Path,
     capsys,
