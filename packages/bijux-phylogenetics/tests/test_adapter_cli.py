@@ -1384,6 +1384,42 @@ def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     assert report_path.exists()
 
 
+def test_adapter_mrbayes_prepare_cli_supports_partitioned_alignment(
+    tmp_path: Path, capsys
+) -> None:
+    alignment_path = fixture("alignments/example_multilocus_alignment.fasta")
+    partition_path = fixture("alignments/example_multilocus_partitions.txt")
+    nexus_path = tmp_path / "partitioned-analysis.nex"
+
+    exit_code = main(
+        [
+            "adapter",
+            "mrbayes-prepare",
+            str(alignment_path),
+            "--out",
+            str(nexus_path),
+            "--partitions",
+            str(partition_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["partitioned"] is True
+    assert payload["metrics"]["partition_count"] == 3
+    assert payload["metrics"]["partition_warning_count"] == 0
+    assert payload["data"]["partition_names"] == [
+        "gene_alpha",
+        "gene_beta",
+        "gene_gamma",
+    ]
+    assert payload["data"]["partition_data_types"] == ["DNA"]
+    text = nexus_path.read_text(encoding="utf-8")
+    assert "partition loci = 3: gene_alpha, gene_beta, gene_gamma;" in text
+    assert "set partition=loci;" in text
+
+
 def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(
     tmp_path: Path, capsys
 ) -> None:

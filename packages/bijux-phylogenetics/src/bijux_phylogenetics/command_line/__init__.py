@@ -3716,6 +3716,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     adapter_mrbayes_prepare.add_argument("input_path", type=Path)
     adapter_mrbayes_prepare.add_argument("--out", required=True, type=Path)
+    adapter_mrbayes_prepare.add_argument("--partitions", type=Path)
     adapter_mrbayes_prepare.add_argument("--model", default="gtr")
     adapter_mrbayes_prepare.add_argument("--rates", default="gamma")
     adapter_mrbayes_prepare.add_argument("--ngen", type=int, default=10000)
@@ -9530,6 +9531,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 report = prepare_mrbayes_analysis(
                     args.input_path,
                     args.out,
+                    partition_path=args.partitions,
                     model=args.model,
                     rates=args.rates,
                     ngen=args.ngen,
@@ -9552,6 +9554,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "taxon_count": report.taxon_count,
                             "character_count": report.character_count,
+                            "partitioned": report.partition_path is not None,
+                            "partition_count": report.partition_count,
+                            "partition_warning_count": len(report.partition_warnings),
                         },
                         data=report,
                     ),
