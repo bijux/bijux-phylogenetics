@@ -54,7 +54,14 @@ class TreeRootingReport:
     requested_taxa: list[str]
     matched_taxa: list[str]
     absent_taxa: list[str]
+    ingroup_taxa: list[str]
+    outgroup_monophyletic: bool | None
+    outgroup_mrca_taxa: list[str]
+    outgroup_mrca_extra_taxa: list[str]
+    rooted_outgroup_taxa: list[str]
+    rooted_ingroup_taxa: list[str]
     tip_order: list[str]
+    warnings: list[str]
     summary: TreeTransformationSummary
 
 
@@ -114,6 +121,64 @@ def _node_signature(node: TreeNode) -> str:
     if taxa:
         return "|".join(taxa)
     return node.name or "<unnamed>"
+
+
+def _join_taxa(taxa: list[str]) -> str:
+    return ",".join(taxa)
+
+
+def _biophylo_clade_taxa(clade: object) -> list[str]:
+    get_terminals = getattr(clade, "get_terminals")
+    return sorted(
+        terminal.name
+        for terminal in get_terminals()
+        if getattr(terminal, "name", None) is not None
+    )
+
+
+def write_tree_rooting_report(path: Path, report: TreeRootingReport) -> Path:
+    """Write one durable TSV summary for a rooting transform."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "\t".join(
+            [
+                "tree_path",
+                "strategy",
+                "requested_taxa",
+                "matched_taxa",
+                "absent_taxa",
+                "ingroup_taxa",
+                "outgroup_monophyletic",
+                "outgroup_mrca_taxa",
+                "outgroup_mrca_extra_taxa",
+                "rooted_outgroup_taxa",
+                "rooted_ingroup_taxa",
+                "tip_order",
+                "warnings",
+            ]
+        ),
+        "\t".join(
+            [
+                str(report.tree_path),
+                report.strategy,
+                _join_taxa(report.requested_taxa),
+                _join_taxa(report.matched_taxa),
+                _join_taxa(report.absent_taxa),
+                _join_taxa(report.ingroup_taxa),
+                ""
+                if report.outgroup_monophyletic is None
+                else ("true" if report.outgroup_monophyletic else "false"),
+                _join_taxa(report.outgroup_mrca_taxa),
+                _join_taxa(report.outgroup_mrca_extra_taxa),
+                _join_taxa(report.rooted_outgroup_taxa),
+                _join_taxa(report.rooted_ingroup_taxa),
+                _join_taxa(report.tip_order),
+                " | ".join(report.warnings),
+            ]
+        ),
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
 
 
 def _leaf_count(node: TreeNode) -> int:
@@ -556,10 +621,44 @@ def root_tree_on_outgroup(
             f"none of the requested outgroup taxa were found in {tree_path}"
         )
 
+    requested_taxa_set = set(matched_taxa)
+    ingroup_taxa = sorted(set(tree.tip_names) - requested_taxa_set)
+    outgroup_mrca_taxa: list[str] = []
+    outgroup_mrca_extra_taxa: list[str] = []
+    outgroup_monophyletic: bool | None = None
+    warnings: list[str] = []
+    if matched_taxa:
+        outgroup_mrca = biophylo_tree.common_ancestor(
+            *[clade for clade in matched_clades if clade is not None]
+        )
+        outgroup_mrca_taxa = _biophylo_clade_taxa(outgroup_mrca)
+        outgroup_mrca_extra_taxa = sorted(set(outgroup_mrca_taxa) - requested_taxa_set)
+        outgroup_monophyletic = outgroup_mrca_extra_taxa == []
+        if not outgroup_monophyletic:
+            warnings.append(
+                "requested outgroup taxa are not monophyletic in the input tree"
+            )
+        if absent_taxa:
+            warnings.append(
+                "one or more requested outgroup taxa were absent from the input tree"
+            )
+
     biophylo_tree.root_with_outgroup(
         *[clade for clade in matched_clades if clade is not None]
     )
     rooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
+    rooted_outgroup_taxa_set: set[str] = set()
+    for child in biophylo_tree.root.clades:
+        child_taxa = _biophylo_clade_taxa(child)
+        child_taxa_set = set(child_taxa)
+        if child_taxa_set and child_taxa_set.issubset(requested_taxa_set):
+            rooted_outgroup_taxa_set.update(child_taxa_set)
+    rooted_outgroup_taxa = sorted(rooted_outgroup_taxa_set)
+    rooted_ingroup_taxa = sorted(set(rooted_tree.tip_names) - rooted_outgroup_taxa_set)
+    if matched_taxa and not rooted_outgroup_taxa:
+        warnings.append(
+            "rooted tree does not isolate every matched outgroup taxon on one root child"
+        )
     summary = _summarize_transformation(
         tree, rooted_tree, transformation="root-outgroup"
     )
@@ -569,7 +668,14 @@ def root_tree_on_outgroup(
         requested_taxa=sorted(outgroup_taxa),
         matched_taxa=sorted(matched_taxa),
         absent_taxa=absent_taxa,
+        ingroup_taxa=ingroup_taxa,
+        outgroup_monophyletic=outgroup_monophyletic,
+        outgroup_mrca_taxa=outgroup_mrca_taxa,
+        outgroup_mrca_extra_taxa=outgroup_mrca_extra_taxa,
+        rooted_outgroup_taxa=rooted_outgroup_taxa,
+        rooted_ingroup_taxa=rooted_ingroup_taxa,
         tip_order=rooted_tree.tip_names,
+        warnings=warnings,
         summary=summary,
     )
 
@@ -595,7 +701,14 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
         requested_taxa=[],
         matched_taxa=[],
         absent_taxa=[],
+        ingroup_taxa=sorted(rerooted_tree.tip_names),
+        outgroup_monophyletic=None,
+        outgroup_mrca_taxa=[],
+        outgroup_mrca_extra_taxa=[],
+        rooted_outgroup_taxa=[],
+        rooted_ingroup_taxa=sorted(rerooted_tree.tip_names),
         tip_order=rerooted_tree.tip_names,
+        warnings=[],
         summary=summary,
     )
 
@@ -642,6 +755,13 @@ def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
         requested_taxa=[],
         matched_taxa=[],
         absent_taxa=[],
+        ingroup_taxa=sorted(unrooted_tree.tip_names),
+        outgroup_monophyletic=None,
+        outgroup_mrca_taxa=[],
+        outgroup_mrca_extra_taxa=[],
+        rooted_outgroup_taxa=[],
+        rooted_ingroup_taxa=sorted(unrooted_tree.tip_names),
         tip_order=unrooted_tree.tip_names,
+        warnings=[],
         summary=summary,
     )

@@ -134,6 +134,7 @@ from bijux_phylogenetics.core.topology import (
     rotate_named_node,
     sort_tree_tips_alphabetically,
     unroot_tree,
+    write_tree_rooting_report,
 )
 from bijux_phylogenetics.core.traits import (
     detect_missing_trait_values,
@@ -2003,9 +2004,71 @@ def test_root_tree_on_outgroup_reports_absent_taxa_and_roots_tree() -> None:
     assert report.requested_taxa == ["D", "Z"]
     assert report.matched_taxa == ["D"]
     assert report.absent_taxa == ["Z"]
+    assert report.ingroup_taxa == ["A", "B", "C"]
+    assert report.outgroup_monophyletic is True
+    assert report.outgroup_mrca_taxa == ["D"]
+    assert report.outgroup_mrca_extra_taxa == []
+    assert report.rooted_outgroup_taxa == ["D"]
+    assert report.rooted_ingroup_taxa == ["A", "B", "C"]
+    assert report.warnings == [
+        "one or more requested outgroup taxa were absent from the input tree"
+    ]
     assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);"
     assert report.summary.retained_taxa == ["A", "B", "C", "D"]
     assert report.summary.removed_taxa == []
+
+
+def test_root_tree_on_outgroup_reports_monophyletic_outgroup_clade() -> None:
+    _tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["C", "D"],
+    )
+
+    assert report.matched_taxa == ["C", "D"]
+    assert report.absent_taxa == []
+    assert report.ingroup_taxa == ["A", "B"]
+    assert report.outgroup_monophyletic is True
+    assert report.outgroup_mrca_taxa == ["C", "D"]
+    assert report.outgroup_mrca_extra_taxa == []
+    assert report.rooted_outgroup_taxa == ["C", "D"]
+    assert report.rooted_ingroup_taxa == ["A", "B"]
+    assert report.warnings == []
+
+
+def test_root_tree_on_outgroup_reports_non_monophyletic_outgroup_clade() -> None:
+    _tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["B", "D"],
+    )
+
+    assert report.matched_taxa == ["B", "D"]
+    assert report.absent_taxa == []
+    assert report.outgroup_monophyletic is False
+    assert report.outgroup_mrca_taxa == ["A", "B", "C", "D"]
+    assert report.outgroup_mrca_extra_taxa == ["A", "C"]
+    assert report.rooted_outgroup_taxa == []
+    assert report.rooted_ingroup_taxa == ["A", "B", "C", "D"]
+    assert report.warnings == [
+        "requested outgroup taxa are not monophyletic in the input tree",
+        "rooted tree does not isolate every matched outgroup taxon on one root child",
+    ]
+
+
+def test_write_tree_rooting_report_writes_monophyly_and_root_partition_fields(
+    tmp_path: Path,
+) -> None:
+    _tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["C", "D"],
+    )
+    output_path = tmp_path / "rooting.tsv"
+
+    write_tree_rooting_report(output_path, report)
+
+    text = output_path.read_text(encoding="utf-8")
+    assert "outgroup_monophyletic" in text
+    assert "rooted_outgroup_taxa" in text
+    assert "\ttrue\tC,D\t\tC,D\tA,B\t" in text
 
 
 def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
