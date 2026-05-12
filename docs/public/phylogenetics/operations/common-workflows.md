@@ -108,6 +108,33 @@ using the following governed review choices:
 This gives users a real non-animal comparative surface without requiring them
 to assemble or subset the published flora tree and trait matrix by hand.
 
+When the goal is to start from a real packaged viral FASTA panel rather than a
+checked example alignment, use `demo influenza-a-ha-reference-panel`. This
+workflow materializes the packaged Influenza A hemagglutinin dataset and reruns
+the owned raw-sequence workflow for alignment, trimming, maximum-likelihood
+inference, and bootstrap support review.
+
+```bash
+bijux-phylogenetics demo influenza-a-ha-reference-panel \
+  --out artifacts/influenza-a-ha-reference-panel \
+  --json
+```
+
+This packaged viral workflow requires executable access to MAFFT, trimAl, and
+IQ-TREE. The governed run keeps the source accession panel explicit and uses
+the following deterministic inference controls:
+
+- sequence type `dna`
+- MAFFT alignment on the raw FASTA panel
+- trimAl trimming on the aligned FASTA
+- IQ-TREE model selection and maximum-likelihood inference
+- IQ-TREE bootstrap support with `1000` replicates
+- IQ-TREE random seed `1`
+- IQ-TREE threads `1`
+
+This gives users a real viral sequence-to-tree surface without requiring them
+to assemble accession panels or wire the external engine chain by hand.
+
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
