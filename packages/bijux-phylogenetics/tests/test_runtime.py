@@ -507,6 +507,24 @@ from bijux_phylogenetics.biogeography import (
     write_time_stratified_transition_matrix_table,
     write_time_stratified_transition_summary_table,
 )
+from bijux_phylogenetics.host_association import (
+    HostStateNodeRow,
+    HostSwitchBranchRow,
+    HostSwitchCountRow,
+    HostSwitchExclusionRow,
+    HostSwitchFitRow,
+    HostSwitchSummary,
+    HostSwitchingReport,
+    UnsupportedHostSwitchClaimRow,
+    summarize_host_switching,
+    write_host_state_node_table,
+    write_host_switch_branch_table,
+    write_host_switch_count_table,
+    write_host_switch_exclusion_table,
+    write_host_switch_fit_table,
+    write_host_switch_summary_table,
+    write_unsupported_host_switch_claim_table,
+)
 from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
     build_distance_method_report,
@@ -1079,6 +1097,46 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_time_stratified_exclusion_table
         is write_time_stratified_exclusion_table
     )
+    assert bijux_phylogenetics.summarize_host_switching is summarize_host_switching
+    assert bijux_phylogenetics.HostStateNodeRow is HostStateNodeRow
+    assert bijux_phylogenetics.HostSwitchBranchRow is HostSwitchBranchRow
+    assert bijux_phylogenetics.HostSwitchCountRow is HostSwitchCountRow
+    assert bijux_phylogenetics.HostSwitchExclusionRow is HostSwitchExclusionRow
+    assert bijux_phylogenetics.HostSwitchFitRow is HostSwitchFitRow
+    assert bijux_phylogenetics.HostSwitchSummary is HostSwitchSummary
+    assert bijux_phylogenetics.HostSwitchingReport is HostSwitchingReport
+    assert (
+        bijux_phylogenetics.UnsupportedHostSwitchClaimRow
+        is UnsupportedHostSwitchClaimRow
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_summary_table
+        is write_host_switch_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_state_node_table
+        is write_host_state_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_branch_table
+        is write_host_switch_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_count_table
+        is write_host_switch_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_fit_table
+        is write_host_switch_fit_table
+    )
+    assert (
+        bijux_phylogenetics.write_unsupported_host_switch_claim_table
+        is write_unsupported_host_switch_claim_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_exclusion_table
+        is write_host_switch_exclusion_table
+    )
     assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
         is simulate_discrete_stochastic_maps
@@ -1379,6 +1437,13 @@ def test_command_registry_exposes_biogeography_surface() -> None:
 
     assert spec.domain == "biogeography"
     assert spec.outputs == ("biogeography-report",)
+
+
+def test_command_registry_exposes_host_association_surface() -> None:
+    spec = get_command_spec("host-association")
+
+    assert spec.domain == "host-association"
+    assert spec.outputs == ("host-association-report",)
 
 
 def test_command_registry_exposes_diversification_surface() -> None:
