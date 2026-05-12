@@ -525,6 +525,24 @@ from bijux_phylogenetics.host_association import (
     write_host_switch_summary_table,
     write_unsupported_host_switch_claim_table,
 )
+from bijux_phylogenetics.ecological_niche import (
+    NicheStateNodeRow,
+    NicheTransitionBranchRow,
+    NicheTransitionCladeRow,
+    NicheTransitionCountRow,
+    NicheTransitionExclusionRow,
+    NicheTransitionRateRow,
+    NicheTransitionReport,
+    NicheTransitionSummary,
+    summarize_niche_transitions,
+    write_niche_state_node_table,
+    write_niche_transition_branch_table,
+    write_niche_transition_clade_table,
+    write_niche_transition_count_table,
+    write_niche_transition_exclusion_table,
+    write_niche_transition_rate_table,
+    write_niche_transition_summary_table,
+)
 from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
     build_distance_method_report,
@@ -1137,6 +1155,46 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_host_switch_exclusion_table
         is write_host_switch_exclusion_table
     )
+    assert bijux_phylogenetics.summarize_niche_transitions is summarize_niche_transitions
+    assert bijux_phylogenetics.NicheStateNodeRow is NicheStateNodeRow
+    assert bijux_phylogenetics.NicheTransitionBranchRow is NicheTransitionBranchRow
+    assert bijux_phylogenetics.NicheTransitionCladeRow is NicheTransitionCladeRow
+    assert bijux_phylogenetics.NicheTransitionCountRow is NicheTransitionCountRow
+    assert (
+        bijux_phylogenetics.NicheTransitionExclusionRow
+        is NicheTransitionExclusionRow
+    )
+    assert bijux_phylogenetics.NicheTransitionRateRow is NicheTransitionRateRow
+    assert bijux_phylogenetics.NicheTransitionReport is NicheTransitionReport
+    assert bijux_phylogenetics.NicheTransitionSummary is NicheTransitionSummary
+    assert (
+        bijux_phylogenetics.write_niche_transition_summary_table
+        is write_niche_transition_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_state_node_table
+        is write_niche_state_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_rate_table
+        is write_niche_transition_rate_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_branch_table
+        is write_niche_transition_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_count_table
+        is write_niche_transition_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_clade_table
+        is write_niche_transition_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_exclusion_table
+        is write_niche_transition_exclusion_table
+    )
     assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
         is simulate_discrete_stochastic_maps
@@ -1444,6 +1502,13 @@ def test_command_registry_exposes_host_association_surface() -> None:
 
     assert spec.domain == "host-association"
     assert spec.outputs == ("host-association-report",)
+
+
+def test_command_registry_exposes_ecological_niche_surface() -> None:
+    spec = get_command_spec("ecological-niche")
+
+    assert spec.domain == "ecological-niche"
+    assert spec.outputs == ("ecological-niche-report",)
 
 
 def test_command_registry_exposes_diversification_surface() -> None:
