@@ -92,6 +92,7 @@ from bijux_phylogenetics.comparative.pgls import (
     inspect_pgls_inputs,
     run_pgls,
     run_pgls_multiple_testing,
+    write_pgls_model_matrix_table,
 )
 from bijux_phylogenetics.comparative.reporting import (
     build_comparative_method_report,
@@ -2010,6 +2011,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--lambda-value",
         default="estimate",
         help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_pgls.add_argument(
+        "--model-matrix-out",
+        type=Path,
+        help="Write the encoded comparative model matrix as TSV or CSV.",
     )
     comparative_pgls.add_argument(
         "--json", action="store_true", help="Emit the model result as JSON."
@@ -6492,8 +6498,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 taxon_column=args.taxon_column,
                 lambda_value=lambda_value,
             )
+            outputs: list[Path | str] = []
+            if args.model_matrix_out is not None:
+                outputs.append(
+                    write_pgls_model_matrix_table(
+                        args.model_matrix_out,
+                        input_report.model_matrix,
+                    )
+                )
             outputs = _finalize_outputs(
-                args, command="comparative", inputs=[args.tree, args.table]
+                args, command="comparative", inputs=[args.tree, args.table], outputs=outputs
             )
             _print_result(
                 build_command_result(
@@ -6506,6 +6520,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "predictor_count": len(report.predictors),
                         "coefficient_count": len(report.coefficients),
                         "confidence_interval_count": len(report.coefficients),
+                        "intercept_included": input_report.formula.include_intercept,
+                        "model_matrix_row_count": input_report.model_matrix.row_count,
+                        "model_matrix_column_count": len(
+                            input_report.model_matrix.encoded_columns
+                        ),
                         "residual_degrees_of_freedom": (
                             report.coefficients[0].degrees_of_freedom
                             if report.coefficients
@@ -6516,7 +6535,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             if report.coefficients
                             else None
                         ),
-                        "encoded_predictor_count": len(report.encoded_columns) - 1,
+                        "encoded_predictor_count": len(
+                            input_report.model_matrix.encoded_columns
+                        )
+                        - (1 if input_report.formula.include_intercept else 0),
                         "categorical_predictor_count": len(
                             input_report.categorical_predictors
                         ),

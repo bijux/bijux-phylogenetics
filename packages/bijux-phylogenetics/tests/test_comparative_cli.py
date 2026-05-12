@@ -183,6 +183,40 @@ def test_comparative_pgls_cli_reports_transformed_terms(capsys) -> None:
     ]
 
 
+def test_comparative_pgls_cli_writes_interceptless_model_matrix(
+    tmp_path: Path, capsys
+) -> None:
+    matrix_out = tmp_path / "comparative-model-matrix.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "pgls",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--formula",
+            "response ~ 0 + habitat",
+            "--model-matrix-out",
+            str(matrix_out),
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["intercept_included"] is False
+    assert payload["metrics"]["model_matrix_row_count"] == 4
+    assert payload["metrics"]["model_matrix_column_count"] == 2
+    assert payload["data"]["inputs"]["formula"]["include_intercept"] is False
+    assert payload["data"]["inputs"]["model_matrix"]["encoded_columns"] == [
+        "habitat[forest]",
+        "habitat[tundra]",
+    ]
+    assert matrix_out.exists()
+    written_rows = matrix_out.read_text(encoding="utf-8").splitlines()
+    assert written_rows[0] == "taxon\tresponse_value\thabitat[forest]\thabitat[tundra]"
+
+
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
     exit_code = main(
         [
