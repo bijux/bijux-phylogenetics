@@ -81,6 +81,61 @@ tip ledger. Each row preserves:
 - `taxon`
 - `reason`
 
+`ancestral discrete` is the governed reconstruction surface for one categorical
+trait on one rooted dichotomous tree. It supports Fitch parsimony for a fast
+set-based reconstruction and supports `equal-rates`, `symmetric`, and
+`all-rates-different` likelihood models for Mk-style marginal ancestral
+probabilities. Its JSON metrics report:
+- `taxon_count`
+- `estimate_count`
+- `internal_node_count`
+- `excluded_taxon_count`
+- `state_count`
+- `unstable_node_count`
+- `model`
+
+For the likelihood models, the owned runtime fits an explicit Mk rate matrix
+and reports node-level marginal probabilities. The governed parity surface is
+checked against `ape::ace` on ER, SYM, and ARD reference cases with explicit
+bounded tolerances instead of a vague compatibility claim.
+
+When `--table-out` is supplied, `ancestral discrete` writes one flat node
+ledger as CSV or TSV with both tips and internal nodes. When `--summary-out` is
+supplied, it also writes one summary ledger. The summary row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `state_ordering`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `internal_node_count`
+- `unstable_node_count`
+- `weak_support_node_count`
+- `observed_state_count`
+- `sparse_state_count`
+- `root_node`
+- `root_most_likely_state`
+- `root_confidence`
+- `warning_count`
+
+When `--probabilities-out` is supplied, the command writes one internal-node
+marginal-probability ledger. Each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `most_likely_state`
+- `state_set`
+- `state_probabilities`
+- `confidence`
+- `ambiguous`
+- `unstable`
+- `interpretation`
+
+When `--exclusions-out` is supplied, the command writes one explicit excluded
+tip ledger. Each row preserves:
+- `taxon`
+- `reason`
+
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
