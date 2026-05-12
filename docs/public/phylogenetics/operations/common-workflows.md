@@ -95,6 +95,33 @@ bijux-phylogenetics compare \
   --json
 ```
 
+When the first question is whether two trees can be reduced to the same taxon
+set safely before any deeper comparison, use `compare prune`. That command
+writes the two pruned trees plus a governed pruning review bundle in one output
+directory.
+
+```bash
+bijux-phylogenetics compare prune \
+  artifacts/mammals.reference.nwk \
+  artifacts/mammals.candidate.nwk \
+  --out artifacts/mammals.shared-taxa \
+  --json
+```
+
+The pruning bundle keeps the evidence explicit:
+- `left-shared.nwk` and `right-shared.nwk` are the retained shared-taxon trees
+- `shared-taxa-pruning.tsv` records one row per input tree with retained and
+  removed taxa, branch-length audit fields, and information-loss fields
+- `shared-taxa-removed.tsv` records one row per removed taxon with the side and
+  removal reason
+- `shared-taxa-comparison.tsv` compares the retained trees directly so the
+  post-pruning topology review is durable instead of implicit
+
+The JSON payload also preserves the full left and right pruning audits plus a
+`post_pruning_comparison` report. That makes it possible to inspect branch
+length preservation, removed taxa, and retained-tree topology without
+reconstructing the review from separate commands.
+
 When branch lengths matter as well as topology, use
 `compare branch-lengths`. That surface preserves the per-split length table
 for shared rooted clades and also computes Felsenstein branch-score distance on
