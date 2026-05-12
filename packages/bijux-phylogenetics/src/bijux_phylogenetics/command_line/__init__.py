@@ -88,6 +88,15 @@ from bijux_phylogenetics.comparative.brownian_trait_evolution import (
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,
 )
+from bijux_phylogenetics.comparative.brownian_regime_rates import (
+    summarize_brownian_regime_rates,
+    write_brownian_regime_branch_table,
+    write_brownian_regime_comparison_table,
+    write_brownian_regime_exclusion_table,
+    write_brownian_regime_profile_table,
+    write_brownian_regime_rate_table,
+    write_brownian_regime_summary_table,
+)
 from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
     summarize_early_burst_trait_evolution,
     write_early_burst_rate_change_profile_table,
@@ -2035,6 +2044,53 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the Brownian model fit as JSON."
     )
     _add_manifest_argument(comparative_brownian)
+    comparative_brownian_regimes = comparative_subparsers.add_parser(
+        "brownian-regimes",
+        help="Fit a multi-rate Brownian trait-evolution model from a branch regime map.",
+    )
+    comparative_brownian_regimes.add_argument("tree", type=Path)
+    comparative_brownian_regimes.add_argument("table", type=Path)
+    comparative_brownian_regimes.add_argument("regime_map", type=Path)
+    comparative_brownian_regimes.add_argument("--trait", required=True)
+    comparative_brownian_regimes.add_argument("--taxon-column")
+    comparative_brownian_regimes.add_argument("--branch-id-column")
+    comparative_brownian_regimes.add_argument("--regime-column", default="regime")
+    comparative_brownian_regimes.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one overall multi-rate Brownian summary ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--rates-out",
+        type=Path,
+        help="Write one regime-rate ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--comparison-out",
+        type=Path,
+        help="Write one single-rate versus multi-rate comparison ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--profile-out",
+        type=Path,
+        help="Write one conditional regime-rate profile ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--branches-out",
+        type=Path,
+        help="Write one normalized branch-regime assignment ledger as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for the multi-rate Brownian fit as TSV or CSV.",
+    )
+    comparative_brownian_regimes.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the multi-rate Brownian model fit as JSON.",
+    )
+    _add_manifest_argument(comparative_brownian_regimes)
     comparative_ou = comparative_subparsers.add_parser(
         "ou",
         help="Fit a standalone Ornstein-Uhlenbeck continuous-trait model.",
@@ -6640,6 +6696,67 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "log_likelihood": report.log_likelihood,
                             "aic": report.aic,
                             "aicc": report.aicc,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "brownian-regimes":
+                report = summarize_brownian_regime_rates(
+                    args.tree,
+                    args.table,
+                    args.regime_map,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    branch_id_column=args.branch_id_column,
+                    regime_column=args.regime_column,
+                )
+                if args.summary_out:
+                    write_brownian_regime_summary_table(args.summary_out, report)
+                if args.rates_out:
+                    write_brownian_regime_rate_table(args.rates_out, report)
+                if args.comparison_out:
+                    write_brownian_regime_comparison_table(
+                        args.comparison_out,
+                        report,
+                    )
+                if args.profile_out:
+                    write_brownian_regime_profile_table(args.profile_out, report)
+                if args.branches_out:
+                    write_brownian_regime_branch_table(args.branches_out, report)
+                if args.excluded_taxa_out:
+                    write_brownian_regime_exclusion_table(
+                        args.excluded_taxa_out,
+                        report,
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="comparative",
+                    inputs=[args.tree, args.table, args.regime_map],
+                )
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table, args.regime_map],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tree_taxon_count": report.tree_taxon_count,
+                            "analyzed_taxon_count": report.analyzed_taxon_count,
+                            "excluded_taxon_count": len(report.excluded_taxa),
+                            "regime_count": len(report.regime_rows),
+                            "root_state": report.root_state,
+                            "log_likelihood": report.log_likelihood,
+                            "aic": report.aic,
+                            "aicc": report.aicc,
+                            "better_model": report.better_model,
+                            "likelihood_ratio_statistic": report.likelihood_ratio_statistic,
+                            "likelihood_ratio_p_value": report.likelihood_ratio_p_value,
+                            "identifiability_warning_count": len(
+                                report.identifiability_warnings
+                            ),
+                            "profile_row_count": len(report.profile_rows),
                         },
                         data=report,
                     ),

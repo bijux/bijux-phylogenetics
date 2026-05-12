@@ -167,6 +167,99 @@ def test_comparative_brownian_cli_writes_summary_and_exclusion_ledgers(
     ]
 
 
+def test_comparative_brownian_regimes_cli_reports_model_fit_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "brownian-regimes",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            str(fixture("example_branch_regimes.tsv")),
+            "--trait",
+            "response",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 4
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["regime_count"] == 2
+    assert payload["metrics"]["profile_row_count"] >= 162
+    assert payload["metrics"]["better_model"] in {"brownian", "brownian-regimes"}
+    assert 0.0 <= payload["metrics"]["likelihood_ratio_p_value"] <= 1.0
+
+
+def test_comparative_brownian_regimes_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "brownian-regimes-summary.tsv"
+    rates_out = tmp_path / "brownian-regimes-rates.tsv"
+    comparison_out = tmp_path / "brownian-regimes-comparison.tsv"
+    profile_out = tmp_path / "brownian-regimes-profile.tsv"
+    branch_out = tmp_path / "brownian-regimes-branches.tsv"
+    excluded_out = tmp_path / "brownian-regimes-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "brownian-regimes",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_brownian_missing.tsv")),
+            str(fixture("example_branch_regimes_six_taxa.tsv")),
+            "--trait",
+            "response_growth",
+            "--summary-out",
+            str(summary_out),
+            "--rates-out",
+            str(rates_out),
+            "--comparison-out",
+            str(comparison_out),
+            "--profile-out",
+            str(profile_out),
+            "--branches-out",
+            str(branch_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 3
+    assert summary_out.exists()
+    assert rates_out.exists()
+    assert comparison_out.exists()
+    assert profile_out.exists()
+    assert branch_out.exists()
+    assert excluded_out.exists()
+    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "trait\ttaxon_column\tbranch_id_column\tregime_column"
+    )
+    assert rates_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "regime\tbranch_count\tcontributing_branch_count"
+    )
+    comparison_rows = comparison_out.read_text(encoding="utf-8").splitlines()
+    assert comparison_rows[0].startswith("row_kind\tmodel\tcomparison_id")
+    assert any(
+        row.startswith("likelihood_ratio_test\t\tbrownian-vs-brownian-regimes\t")
+        for row in comparison_rows[1:]
+    )
+    assert profile_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "regime\tsigma_squared\tlog_likelihood"
+    )
+    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "branch_id\tregime\tbranch_length"
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason",
+        "B\tmissing_trait_value",
+        "C\tnon_numeric_trait_value",
+        "G\tabsent_from_tree",
+    ]
+
+
 def test_comparative_ou_cli_reports_model_fit_metrics(capsys) -> None:
     exit_code = main(
         [
