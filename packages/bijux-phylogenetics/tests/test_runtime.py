@@ -17,6 +17,7 @@ from bijux_phylogenetics.ancestral import (
 from bijux_phylogenetics.bayesian import (
     BeastCalibration,
     BeastPosteriorConsensusReport,
+    BeastPosteriorTopologyDiversityReport,
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
     assess_beast_convergence,
@@ -43,6 +44,7 @@ from bijux_phylogenetics.bayesian import (
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
     summarize_beast_log,
+    summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
     summarize_maximum_clade_credibility_tree,
     summarize_mrbayes_posterior_trees,
@@ -957,6 +959,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.BeastPosteriorConsensusReport
         is BeastPosteriorConsensusReport
     )
+    assert (
+        bijux_phylogenetics.BeastPosteriorTopologyDiversityReport
+        is BeastPosteriorTopologyDiversityReport
+    )
     assert bijux_phylogenetics.parse_beast_log is parse_beast_log
     assert (
         bijux_phylogenetics.parse_beast_posterior_tree_samples
@@ -966,6 +972,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_beast_posterior_trees
         is summarize_beast_posterior_trees
+    )
+    assert (
+        bijux_phylogenetics.summarize_beast_posterior_topology_diversity
+        is summarize_beast_posterior_topology_diversity
     )
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
     assert (
