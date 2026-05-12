@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.reports.service import render_tree_uncertainty_report
 from bijux_phylogenetics.tree_set import (
     assess_tree_set_maturity,
@@ -9,6 +11,9 @@ from bijux_phylogenetics.tree_set import (
     assess_tree_set_thinning_sensitivity,
     benchmark_tree_set_uncertainty,
     compare_consensus_thresholds,
+    detect_unstable_clades,
+    summarize_posterior_topology_diversity,
+    write_unstable_clade_table,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "trees"
@@ -35,6 +40,26 @@ def test_assess_tree_set_storage_risk_reports_low_risk_for_small_fixture() -> No
 
     assert report.tree_count == 3
     assert report.risk_level == "low"
+
+
+def test_summarize_posterior_topology_diversity_reports_dispersion_metrics(
+    tmp_path: Path,
+) -> None:
+    report = summarize_posterior_topology_diversity(fixture("example_tree_set_left.nwk"))
+    unstable_path = tmp_path / "unstable-clades.tsv"
+    write_unstable_clade_table(
+        unstable_path,
+        detect_unstable_clades(fixture("example_tree_set_left.nwk")),
+    )
+
+    assert report.tree_count == 3
+    assert report.rooted_topology_count == 2
+    assert report.dominant_topology_frequency == pytest.approx(2 / 3)
+    assert report.pair_count == 3
+    assert report.mean_normalized_robinson_foulds_distance > 0.0
+    assert report.maximum_robinson_foulds_distance >= 0
+    assert report.unstable_clade_count >= 1
+    assert "support_classification" in unstable_path.read_text(encoding="utf-8")
 
 
 def test_assess_tree_set_thinning_sensitivity_reports_retained_counts() -> None:

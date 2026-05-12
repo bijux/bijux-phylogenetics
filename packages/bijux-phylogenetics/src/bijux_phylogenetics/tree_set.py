@@ -83,6 +83,21 @@ class TreeDistanceMatrixReport:
     pairs: list[TreeDistancePair]
 
 
+@dataclass(slots=True)
+class PosteriorTopologyDiversityReport:
+    path: Path
+    tree_count: int
+    rooted_topology_count: int
+    dominant_topology_frequency: float
+    effective_topology_count: float
+    pair_count: int
+    mean_robinson_foulds_distance: float
+    mean_normalized_robinson_foulds_distance: float
+    maximum_robinson_foulds_distance: int
+    maximum_normalized_robinson_foulds_distance: float
+    unstable_clade_count: int
+
+
 @dataclass(frozen=True, slots=True)
 class TreeTopologyCluster:
     rooted_topology_id: str
@@ -787,6 +802,54 @@ def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> 
     return path
 
 
+def summarize_posterior_topology_diversity(path: Path) -> PosteriorTopologyDiversityReport:
+    """Summarize topology dispersion and instability across one posterior tree set."""
+    summary = load_tree_set(path)
+    clusters = cluster_trees_by_topology(path)
+    distances = compute_tree_distance_matrix(path)
+    unstable_clades = detect_unstable_clades(path)
+    informative_pairs = [
+        row for row in distances.pairs if row.left_index != row.right_index
+    ]
+    pair_count = len(informative_pairs)
+    mean_rf = 0.0
+    mean_normalized_rf = 0.0
+    maximum_rf = 0
+    maximum_normalized_rf = 0.0
+    if informative_pairs:
+        mean_rf = round(
+            sum(row.robinson_foulds_distance for row in informative_pairs) / pair_count,
+            15,
+        )
+        mean_normalized_rf = round(
+            sum(row.normalized_robinson_foulds for row in informative_pairs)
+            / pair_count,
+            15,
+        )
+        maximum_rf = max(row.robinson_foulds_distance for row in informative_pairs)
+        maximum_normalized_rf = round(
+            max(row.normalized_robinson_foulds for row in informative_pairs), 15
+        )
+    dominant_topology_frequency = (
+        0.0 if not clusters.clusters else clusters.clusters[0].frequency
+    )
+    return PosteriorTopologyDiversityReport(
+        path=path,
+        tree_count=summary.tree_count,
+        rooted_topology_count=summary.rooted_topology_count,
+        dominant_topology_frequency=dominant_topology_frequency,
+        effective_topology_count=_shannon_effective_count(
+            [cluster.frequency for cluster in clusters.clusters]
+        ),
+        pair_count=pair_count,
+        mean_robinson_foulds_distance=mean_rf,
+        mean_normalized_robinson_foulds_distance=mean_normalized_rf,
+        maximum_robinson_foulds_distance=maximum_rf,
+        maximum_normalized_robinson_foulds_distance=maximum_normalized_rf,
+        unstable_clade_count=len(unstable_clades.clades),
+    )
+
+
 def write_topology_cluster_table(path: Path, report: TreeTopologyClusterReport) -> Path:
     """Write rooted topology clusters as a TSV table."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -925,6 +988,39 @@ def detect_unstable_clades(path: Path) -> UnstableCladeReport:
         key=lambda row: (-row.instability_score, -row.conflict_count, row.clade)
     )
     return UnstableCladeReport(path=path, tree_count=len(trees), clades=unstable_clades)
+
+
+def write_unstable_clade_table(path: Path, report: UnstableCladeReport) -> Path:
+    """Write unstable clades and their conflicting alternatives as a TSV table."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "clade",
+                "tree_count",
+                "frequency",
+                "conflict_count",
+                "instability_score",
+                "support_classification",
+                "conflicting_clades",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.clades:
+            writer.writerow(
+                {
+                    "clade": row.clade,
+                    "tree_count": row.tree_count,
+                    "frequency": format(row.frequency, ".15g"),
+                    "conflict_count": row.conflict_count,
+                    "instability_score": format(row.instability_score, ".15g"),
+                    "support_classification": row.support_classification,
+                    "conflicting_clades": ",".join(row.conflicting_clades),
+                }
+            )
+    return path
 
 
 def compare_posterior_topological_diversity(
