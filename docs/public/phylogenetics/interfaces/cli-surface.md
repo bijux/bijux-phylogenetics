@@ -25,6 +25,62 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+`ancestral continuous` is the governed reconstruction surface for one numeric
+trait on one rooted dichotomous tree. It estimates internal-node values under
+the selected continuous model, reports 95% uncertainty intervals, and prunes
+tips with missing or non-numeric trait values instead of hiding them. Its JSON
+metrics report:
+- `taxon_count`
+- `estimate_count`
+- `internal_node_count`
+- `excluded_taxon_count`
+- `unstable_node_count`
+- `model`
+
+The command supports `brownian` and `ou` reconstruction modes. The Brownian
+path is aligned to the governed `ape::ace(method='pic')` reference surface with
+explicit bounded tolerance rather than an undocumented local convention.
+
+When `--table-out` is supplied, `ancestral continuous` writes one flat node
+ledger as CSV or TSV with both tips and internal nodes. When `--summary-out` is
+supplied, it also writes one summary ledger. The summary row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `alpha`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `missing_tip_taxon_count`
+- `non_numeric_tip_taxon_count`
+- `internal_node_count`
+- `unstable_node_count`
+- `weak_support_node_count`
+- `root_node`
+- `root_estimate`
+- `root_standard_error`
+- `root_lower_95_interval`
+- `root_upper_95_interval`
+- `warning_count`
+
+When `--uncertainty-out` is supplied, the command writes one internal-node
+uncertainty ledger. Each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `estimate`
+- `standard_error`
+- `lower_95_interval`
+- `upper_95_interval`
+- `uncertainty_width`
+- `confidence`
+- `interpretation`
+- `unstable`
+
+When `--exclusions-out` is supplied, the command writes one explicit excluded
+tip ledger. Each row preserves:
+- `taxon`
+- `reason`
+
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
