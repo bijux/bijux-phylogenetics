@@ -206,6 +206,15 @@ from bijux_phylogenetics.ecological_niche import (
     write_niche_transition_rate_table,
     write_niche_transition_summary_table,
 )
+from bijux_phylogenetics.phylogeography import (
+    render_coordinate_movement_visualization,
+    summarize_continuous_phylogeography,
+    write_coordinate_estimate_table,
+    write_coordinate_movement_branch_table,
+    write_coordinate_movement_exclusion_table,
+    write_coordinate_movement_outlier_table,
+    write_coordinate_movement_summary_table,
+)
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.comparative.common import (
     summarize_numeric_trait,
@@ -3674,6 +3683,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the ecological-niche review as JSON.",
     )
     _add_manifest_argument(ecological_niche_transitions)
+    phylogeography = subparsers.add_parser(
+        get_command_spec("phylogeography").name,
+        help=get_command_spec("phylogeography").summary,
+    )
+    phylogeography_subparsers = phylogeography.add_subparsers(
+        dest="phylogeography_command",
+        required=True,
+    )
+    phylogeography_coordinates = phylogeography_subparsers.add_parser(
+        "coordinates",
+        help="Reconstruct continuous geographic coordinates, review branch movement, and render coordinate-space movement output.",
+    )
+    phylogeography_coordinates.add_argument("tree", type=Path)
+    phylogeography_coordinates.add_argument("table", type=Path)
+    phylogeography_coordinates.add_argument("--latitude-column", required=True)
+    phylogeography_coordinates.add_argument("--longitude-column", required=True)
+    phylogeography_coordinates.add_argument("--taxon-column")
+    phylogeography_coordinates.add_argument(
+        "--model",
+        choices=("brownian", "ou"),
+        default="brownian",
+    )
+    phylogeography_coordinates.add_argument("--alpha", type=float, default=1.0)
+    phylogeography_coordinates.add_argument("--summary-out", type=Path)
+    phylogeography_coordinates.add_argument("--estimates-out", type=Path)
+    phylogeography_coordinates.add_argument("--branches-out", type=Path)
+    phylogeography_coordinates.add_argument("--outliers-out", type=Path)
+    phylogeography_coordinates.add_argument("--exclusions-out", type=Path)
+    phylogeography_coordinates.add_argument("--visualization-out", type=Path)
+    phylogeography_coordinates.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the phylogeography review as JSON.",
+    )
+    _add_manifest_argument(phylogeography_coordinates)
 
     discrete_evolution = subparsers.add_parser(
         get_command_spec("discrete-evolution").name,
@@ -10741,6 +10785,92 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "repeated_shift_clade_count": (
                                 report.summary.repeated_shift_clade_count
                             ),
+                            "excluded_taxon_count": (
+                                report.summary.excluded_taxon_count
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+        if args.command == "phylogeography":
+            if args.phylogeography_command == "coordinates":
+                report = summarize_continuous_phylogeography(
+                    args.tree,
+                    args.table,
+                    latitude_column=args.latitude_column,
+                    longitude_column=args.longitude_column,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    alpha=args.alpha,
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_coordinate_movement_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.estimates_out is not None:
+                    outputs.append(
+                        write_coordinate_estimate_table(
+                            args.estimates_out,
+                            report,
+                        )
+                    )
+                if args.branches_out is not None:
+                    outputs.append(
+                        write_coordinate_movement_branch_table(
+                            args.branches_out,
+                            report,
+                        )
+                    )
+                if args.outliers_out is not None:
+                    outputs.append(
+                        write_coordinate_movement_outlier_table(
+                            args.outliers_out,
+                            report,
+                        )
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_coordinate_movement_exclusion_table(
+                            args.exclusions_out,
+                            report,
+                        )
+                    )
+                if args.visualization_out is not None:
+                    outputs.append(
+                        render_coordinate_movement_visualization(
+                            report,
+                            out_path=args.visualization_out,
+                        ).output_path
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="phylogeography",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="phylogeography",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "analyzed_taxon_count": report.summary.analyzed_taxon_count,
+                            "outlier_jump_count": report.summary.outlier_jump_count,
+                            "impossible_jump_count": (
+                                report.summary.impossible_jump_count
+                            ),
+                            "flagged_branch_count": (
+                                report.summary.flagged_branch_count
+                            ),
+                            "maximum_jump_km": report.summary.maximum_jump_km,
                             "excluded_taxon_count": (
                                 report.summary.excluded_taxon_count
                             ),

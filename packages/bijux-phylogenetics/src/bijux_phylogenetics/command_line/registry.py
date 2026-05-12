@@ -86,6 +86,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("ecological-niche-report",),
     ),
     CommandSpec(
+        name="phylogeography",
+        domain="continuous-phylogeography",
+        summary="Reconstruct continuous geographic coordinates and report movement evidence on a phylogeny.",
+        inputs=("tree", "traits-table"),
+        outputs=("continuous-phylogeography-report",),
+    ),
+    CommandSpec(
         name="discrete-evolution",
         domain="discrete-state-evolution",
         summary="Model, compare, render, and report discrete-state evolution on a phylogeny.",
