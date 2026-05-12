@@ -124,11 +124,17 @@ def test_comparative_pgls_cli_encodes_categorical_predictor(capsys) -> None:
     assert exit_code == 0
     assert payload["data"]["inputs"]["predictors"][1]["reference_level"] == "forest"
     assert payload["data"]["inputs"]["formula_audit"]["parameter_count"] == 3
+    assert payload["metrics"]["categorical_contrast_predictor_count"] == 1
+    assert payload["metrics"]["categorical_contrast_row_count"] == 2
     coefficients = {
         coefficient["name"]: coefficient["estimate"]
         for coefficient in payload["data"]["model"]["coefficients"]
     }
     assert math.isclose(coefficients["habitat[tundra]"], -2.0)
+    contrast_rows = payload["data"]["categorical_contrasts"]["rows"]
+    assert contrast_rows[0]["is_reference_level"] is True
+    assert contrast_rows[0]["level"] == "forest"
+    assert contrast_rows[1]["coefficient_name"] == "habitat[tundra]"
 
 
 def test_comparative_pgls_cli_accepts_formula_interactions(capsys) -> None:
@@ -215,6 +221,38 @@ def test_comparative_pgls_cli_writes_interceptless_model_matrix(
     assert matrix_out.exists()
     written_rows = matrix_out.read_text(encoding="utf-8").splitlines()
     assert written_rows[0] == "taxon\tresponse_value\thabitat[forest]\thabitat[tundra]"
+
+
+def test_comparative_pgls_cli_writes_categorical_contrast_table(
+    tmp_path: Path, capsys
+) -> None:
+    contrasts_out = tmp_path / "categorical-contrasts.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "pgls",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "habitat",
+            "--categorical-contrasts-out",
+            str(contrasts_out),
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["categorical_contrast_predictor_count"] == 1
+    assert payload["metrics"]["categorical_contrast_row_count"] == 2
+    assert contrasts_out.exists()
+    written_rows = contrasts_out.read_text(encoding="utf-8").splitlines()
+    assert written_rows[0].startswith("predictor\tsource_column\tencoding_scheme")
+    assert any("habitat\thabitat\treference-level\tforest\tforest\ttrue" in row for row in written_rows[1:])
 
 
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
