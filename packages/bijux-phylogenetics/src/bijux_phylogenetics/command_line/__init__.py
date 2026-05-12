@@ -27,6 +27,7 @@ from bijux_phylogenetics.bayesian import (
     build_posterior_uncertainty_figure_package,
     compute_mrbayes_effective_sample_sizes,
     parse_beast_log,
+    parse_beast_posterior_tree_samples,
     parse_mrbayes_consensus_tree,
     parse_mrbayes_mcmc_diagnostics,
     parse_mrbayes_parameter_traces,
@@ -42,6 +43,7 @@ from bijux_phylogenetics.bayesian import (
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
     write_beast_log_summary_table,
+    write_beast_posterior_tree_set,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -3891,6 +3893,26 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the parsed log report as JSON."
     )
     _add_manifest_argument(adapter_beast_log)
+    adapter_beast_trees = adapter_subparsers.add_parser(
+        "beast-trees",
+        help="Parse a BEAST posterior tree set into state-tagged normalized trees.",
+    )
+    adapter_beast_trees.add_argument("input_path", type=Path)
+    adapter_beast_trees.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.0,
+        help="Discard this fraction of early sampled trees before reporting summaries.",
+    )
+    adapter_beast_trees.add_argument(
+        "--tree-set-out",
+        type=Path,
+        help="Write the retained posterior tree set as normalized Newick.",
+    )
+    adapter_beast_trees.add_argument(
+        "--json", action="store_true", help="Emit the posterior tree set report as JSON."
+    )
+    _add_manifest_argument(adapter_beast_trees)
     adapter_beast_convergence = adapter_subparsers.add_parser(
         "beast-convergence",
         help="Assess BEAST log convergence from ESS and trace drift.",
@@ -9941,6 +9963,40 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "tree_parameter_count": len(summary.tree_parameters),
                         },
                         data={"log": report, "summary": summary},
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-trees":
+                report = parse_beast_posterior_tree_samples(
+                    args.input_path,
+                    burnin_fraction=args.burnin_fraction,
+                )
+                outputs: list[Path | str] = []
+                if args.tree_set_out is not None:
+                    outputs.append(
+                        write_beast_posterior_tree_set(args.tree_set_out, report)
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "total_tree_count": report.total_tree_count,
+                            "kept_tree_count": report.kept_tree_count,
+                            "rooted_tree_count": report.rooted_tree_count,
+                            "burnin_fraction": report.burnin_fraction,
+                            "clade_count": len(report.clades),
+                            "sampled_state_count": len(report.sampled_states),
+                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )

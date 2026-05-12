@@ -1867,3 +1867,49 @@ def test_adapter_beast_log_cli_writes_summary_table_with_parameter_categories(
     assert payload["data"]["summary"]["kept_row_count"] == 3
     assert "prior\tprior\t3" in text
     assert "tree\tbirthRate\t3" in text
+
+
+def test_adapter_beast_trees_cli_writes_normalized_tree_set(
+    tmp_path: Path, capsys
+) -> None:
+    posterior_path = tmp_path / "posterior.trees"
+    normalized_path = tmp_path / "posterior.nwk"
+    posterior_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "  Translate\n"
+        "    1 A,\n"
+        "    2 B,\n"
+        "    3 C,\n"
+        "    4 D\n"
+        "  ;\n"
+        "tree STATE_0 = ((1:0.1,2:0.1):0.2,(3:0.1,4:0.1):0.2):0.0;\n"
+        "tree STATE_10 = ((1:0.1,3:0.1):0.2,(2:0.1,4:0.1):0.2):0.0;\n"
+        "tree STATE_20 = ((1:0.1,2:0.1):0.2,(3:0.1,4:0.1):0.2):0.0;\n"
+        "tree STATE_30 = ((1:0.1,2:0.1):0.2,(3:0.1,4:0.1):0.2):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-trees",
+            str(posterior_path),
+            "--burnin-fraction",
+            "0.25",
+            "--tree-set-out",
+            str(normalized_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    text = normalized_path.read_text(encoding="utf-8")
+
+    assert exit_code == 0
+    assert payload["metrics"]["total_tree_count"] == 4
+    assert payload["metrics"]["kept_tree_count"] == 3
+    assert payload["metrics"]["clade_count"] >= 1
+    assert payload["data"]["sampled_states"] == [10, 20, 30]
+    assert "((A:0.1,B:0.1):0.2,(C:0.1,D:0.2)" not in text
+    assert "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);" in text
