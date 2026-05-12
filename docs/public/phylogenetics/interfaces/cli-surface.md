@@ -849,6 +849,86 @@ This surface exists so rate-through-time review preserves the interval ledger,
 trend metrics, and pruning contract instead of reducing the workflow to one
 visual impression from a plot or one unqualified scalar trend claim.
 
+`comparative clade-traits` is the governed review surface for summarizing one
+continuous or categorical trait across internal non-root clades in the analyzed
+tree. Its JSON metrics report:
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `trait_kind`
+- `clade_count`
+- `exceptional_clade_count`
+- `top_exceptional_clade`
+- `top_exceptionality_score`
+
+The command analyzes one trait at a time. `--trait-kind auto` uses the table
+schema inference, while `--trait-kind continuous` or `--trait-kind categorical`
+can be used when a dirty column would otherwise infer the wrong family. Only
+internal non-root clades meeting `--min-clade-size` are ranked.
+
+When `--summary-out` is supplied, `comparative clade-traits` writes one flat
+summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `trait_kind`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `minimum_clade_size`
+- `clade_count`
+- `exceptional_clade_count`
+- `top_exceptional_clade`
+- `top_exceptionality_score`
+- `baseline_mean`
+- `baseline_median`
+- `baseline_minimum`
+- `baseline_maximum`
+- `baseline_range_width`
+- `baseline_dominant_state`
+- `baseline_dominant_state_fraction`
+- `assumptions`
+- `warnings`
+
+When `--clades-out` is supplied, the command also writes one internal-clade
+ledger as CSV or TSV. Each row preserves:
+- `clade_id`
+- `node_label`
+- `trait_kind`
+- `taxon_count`
+- `taxa`
+- `coverage_fraction`
+- `mean`
+- `median`
+- `minimum`
+- `maximum`
+- `range_width`
+- `mean_delta_from_global`
+- `dominant_state`
+- `dominant_state_count`
+- `dominant_state_fraction`
+- `dominant_state_enrichment`
+- `distinct_state_count`
+- `state_counts`
+- `distribution_shift`
+- `exceptionality_score`
+- `exceptional`
+- `rank`
+
+When `--excluded-taxa-out` is supplied, the command also writes one explicit
+excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `missing_from_trait_table`
+- `missing_trait_value`
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+This surface exists so clade-level trait review preserves the ranking
+heuristic, sample sizes, and pruning contract instead of reducing the question
+to a visual impression or an undocumented spreadsheet sort.
+
 `comparative multivariate` is the governed review surface for fitting the same
 comparative predictor set across multiple response traits on one shared
 complete-case taxon set. Its JSON metrics report:
