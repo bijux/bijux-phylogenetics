@@ -497,6 +497,47 @@ not a full time-varying stochastic biogeographic process fit. Equal-width age
 bins are explicit reviewer-facing chronology bins rather than hidden model
 parameters.
 
+When the goal is to test whether ancestral geographic conclusions are being
+driven by uneven region sampling instead of the phylogenetic signal itself, use
+`biogeography sampling-bias`. This workflow accepts one rooted tree, one
+taxon-region table, and an optional region-weight table. It reports raw region
+sample counts, applies either automatic inverse-frequency weights or explicit
+user weights, reruns the owned deterministic geographic reconstruction under
+that weighting scheme, and compares the weighted and unweighted conclusions
+directly.
+
+```bash
+bijux-phylogenetics biogeography sampling-bias \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait region \
+  --taxon-column species \
+  --model ard \
+  --weights artifacts/region-weights.tsv \
+  --summary-out artifacts/primates.biogeography-sampling-summary.tsv \
+  --regions-out artifacts/primates.biogeography-region-counts.tsv \
+  --nodes-out artifacts/primates.biogeography-weighted-nodes.tsv \
+  --transitions-out artifacts/primates.biogeography-weighted-transitions.tsv \
+  --exclusions-out artifacts/primates.biogeography-sampling-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the weighting mode, observed-region
+count, dominant-region fraction before and after weighting, whether the root
+region changes, how many internal nodes change, how many branch transitions
+change, and the warning burden. The region-count ledger is the main sampling
+audit surface. Each row preserves the raw sample count, raw sample fraction,
+applied weight, weighted sample count, weighted sample fraction, and whether
+the region dominates before or after weighting.
+
+The node ledger compares weighted and unweighted ancestral region probabilities
+for each internal node. The transition ledger compares weighted and unweighted
+branchwise transitions, including whether the correction changes the inferred
+source or target region on that branch. This surface is intentionally explicit
+about scope: it is a reviewer-facing weighted reanalysis over the owned
+deterministic geographic reconstruction, not a full hierarchical sampling model
+or a hidden claim that the weighting scheme is uniquely correct.
+
 When the goal is to reconstruct host association evolution and count inferred
 host shifts on one pathogen or parasite tree, use `host-association switches`.
 This workflow accepts one rooted tree, one host metadata table, and
