@@ -86,6 +86,51 @@ def test_ancestral_discrete_cli_reports_sparse_state_warning(capsys) -> None:
     )
 
 
+def test_ancestral_discrete_cli_can_export_probability_review(
+    tmp_path: Path, capsys
+) -> None:
+    table_path = tmp_path / "ancestral-discrete.tsv"
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    probabilities_path = tmp_path / "ancestral-discrete-probabilities.tsv"
+    exclusions_path = tmp_path / "ancestral-discrete-excluded.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "equal-rates",
+            "--table-out",
+            str(table_path),
+            "--summary-out",
+            str(summary_path),
+            "--probabilities-out",
+            str(probabilities_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["internal_node_count"] == 3
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["unstable_node_count"] >= 0
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tstate_ordering"
+    )
+    assert probabilities_path.read_text(encoding="utf-8").startswith(
+        "node\tnode_name\tdescendant_taxa\tmost_likely_state\tstate_set"
+    )
+    assert exclusions_path.read_text(encoding="utf-8") == "taxon\treason\n"
+    assert "most_likely_state\tstate_set" in table_path.read_text(encoding="utf-8")
+
+
 def test_ancestral_render_cli_writes_svg_with_internal_annotations(
     tmp_path: Path, capsys
 ) -> None:
