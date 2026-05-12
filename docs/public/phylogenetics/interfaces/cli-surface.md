@@ -167,6 +167,125 @@ tip ledger. Each row preserves:
 - `taxon`
 - `reason`
 
+`ancestral tree-set` is the governed reconstruction-stability surface for one
+trait across a posterior or bootstrap tree set. It reruns ancestral
+reconstruction on every retained tree, maps comparable internal clades by
+descendant taxa, and reports how often each clade and ancestral conclusion
+survive topology uncertainty. Its JSON metrics report:
+- `kind`
+- `model`
+- `total_tree_count`
+- `kept_tree_count`
+- `rooted_topology_count`
+- `unrooted_topology_count`
+- `node_row_count`
+- `clade_summary_count`
+- `excluded_taxon_count`
+- `unstable_clade_count`
+
+The command requires `--kind continuous` or `--kind discrete`. Continuous mode
+supports `brownian` and `ou`. Discrete mode supports `fitch`, `equal-rates`,
+`symmetric`, and `all-rates-different`. `--burnin-fraction` removes the
+requested leading fraction of trees before reconstruction, and every retained
+tree keeps both its original one-based source index and its post-burnin index.
+
+When `--summary-out` is supplied, `ancestral tree-set` writes one overall
+summary ledger. In continuous mode the row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `alpha`
+- `total_tree_count`
+- `burnin_tree_count`
+- `kept_tree_count`
+- `shared_tree_taxon_count`
+- `analysis_taxon_count`
+- `rooted_topology_count`
+- `unrooted_topology_count`
+- `clade_summary_count`
+- `unstable_clade_count`
+- `top_unstable_clade`
+- `warning_count`
+
+In discrete mode the same summary ledger preserves `state_ordering` instead of
+`alpha`.
+
+When `--trees-out` is supplied, the command writes one retained-tree ledger.
+Each row preserves:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+- `internal_clade_count`
+
+When `--nodes-out` is supplied, the command writes one per-tree internal-node
+ledger. Continuous rows preserve:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+- `clade_id`
+- `clade_taxa`
+- `estimate`
+- `standard_error`
+- `lower_95_interval`
+- `upper_95_interval`
+- `confidence`
+- `unstable`
+
+Discrete rows preserve:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+- `clade_id`
+- `clade_taxa`
+- `most_likely_state`
+- `state_set`
+- `confidence`
+- `ambiguous`
+- `unstable`
+
+When `--clades-out` is supplied, the command writes one comparable-clade
+summary ledger. Continuous rows preserve:
+- `clade_id`
+- `clade_taxa`
+- `tree_presence_count`
+- `tree_presence_fraction`
+- `mean_estimate`
+- `median_estimate`
+- `standard_deviation`
+- `minimum_estimate`
+- `maximum_estimate`
+- `lower_95_empirical_estimate`
+- `upper_95_empirical_estimate`
+- `empirical_interval_width`
+- `mean_standard_error`
+- `unstable_tree_count`
+- `unstable_tree_fraction`
+- `instability_score`
+- `stability_class`
+
+Discrete rows preserve:
+- `clade_id`
+- `clade_taxa`
+- `tree_presence_count`
+- `tree_presence_fraction`
+- `unique_state_count`
+- `dominant_state`
+- `dominant_state_tree_count`
+- `dominant_state_fraction`
+- `ambiguous_tree_count`
+- `ambiguous_tree_fraction`
+- `unstable_tree_count`
+- `unstable_tree_fraction`
+- `state_distribution`
+- `instability_score`
+- `stability_class`
+
+When `--exclusions-out` is supplied, the command writes one explicit excluded
+tip ledger with `taxon` and `reason`.
+
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
