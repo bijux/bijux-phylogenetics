@@ -87,6 +87,14 @@ from bijux_phylogenetics.clades import (
     extract_tree_set_clades,
     write_clade_table,
 )
+from bijux_phylogenetics.branch_lengths import (
+    BranchLengthAggregate,
+    BranchLengthDistributionReport,
+    BranchLengthRow,
+    analyze_branch_length_distribution,
+    analyze_tree_set_branch_lengths,
+    write_branch_length_table,
+)
 from bijux_phylogenetics.tree_shape import (
     TreeShapeAggregate,
     TreeShapeReport,
@@ -513,6 +521,12 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.CladeMetadataObservation is CladeMetadataObservation
     )
+    assert bijux_phylogenetics.BranchLengthAggregate is BranchLengthAggregate
+    assert (
+        bijux_phylogenetics.BranchLengthDistributionReport
+        is BranchLengthDistributionReport
+    )
+    assert bijux_phylogenetics.BranchLengthRow is BranchLengthRow
     assert bijux_phylogenetics.CladeTableReport is CladeTableReport
     assert bijux_phylogenetics.CladeTableRow is CladeTableRow
     assert bijux_phylogenetics.TreeShapeAggregate is TreeShapeAggregate
@@ -530,12 +544,21 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is compare_branch_score_distance
     )
     assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
+    assert (
+        bijux_phylogenetics.analyze_branch_length_distribution
+        is analyze_branch_length_distribution
+    )
+    assert (
+        bijux_phylogenetics.analyze_tree_set_branch_lengths
+        is analyze_tree_set_branch_lengths
+    )
     assert bijux_phylogenetics.extract_tree_clades is extract_tree_clades
     assert bijux_phylogenetics.extract_tree_set_clades is extract_tree_set_clades
     assert bijux_phylogenetics.summarize_tree_shape is summarize_tree_shape
     assert bijux_phylogenetics.summarize_tree_set_shapes is summarize_tree_set_shapes
     assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
+    assert bijux_phylogenetics.write_branch_length_table is write_branch_length_table
     assert bijux_phylogenetics.write_clade_table is write_clade_table
     assert bijux_phylogenetics.write_tree_shape_table is write_tree_shape_table
     assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
