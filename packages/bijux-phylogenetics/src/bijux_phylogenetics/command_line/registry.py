@@ -72,6 +72,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("biogeography-report",),
     ),
     CommandSpec(
+        name="host-association",
+        domain="host-association",
+        summary="Reconstruct host-state evolution and report host-switch evidence on a phylogeny.",
+        inputs=("tree", "traits-table"),
+        outputs=("host-association-report",),
+    ),
+    CommandSpec(
         name="discrete-evolution",
         domain="discrete-state-evolution",
         summary="Model, compare, render, and report discrete-state evolution on a phylogeny.",
