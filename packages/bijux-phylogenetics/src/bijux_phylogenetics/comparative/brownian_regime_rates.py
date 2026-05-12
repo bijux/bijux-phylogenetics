@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-import csv
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -16,9 +14,7 @@ from bijux_phylogenetics.comparative._math import (
 from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     ComparativeReadinessReport,
-    descendant_taxa,
     load_comparative_dataset,
-    node_signature,
     summarize_numeric_trait_readiness,
 )
 from bijux_phylogenetics.comparative.models import (
@@ -29,6 +25,10 @@ from bijux_phylogenetics.comparative.models import (
     _comparison_row,
     _estimate_lambda_for_values,
     fit_brownian_motion_model,
+)
+from bijux_phylogenetics.comparative.trait_regime_mapping import (
+    build_branch_identity_lookup,
+    resolve_branch_regime_id_column,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree
@@ -639,7 +639,7 @@ def _load_branch_regime_rows(
     branch_id_column: str | None,
     regime_column: str,
 ) -> tuple[list[BrownianRegimeBranchRow], str]:
-    resolved_branch_id_column = _resolve_branch_id_column(
+    resolved_branch_id_column = resolve_branch_regime_id_column(
         regime_map_path,
         requested=branch_id_column,
     )
@@ -651,7 +651,7 @@ def _load_branch_regime_rows(
         raise ComparativeMethodError(
             f"regime map does not contain column '{regime_column}'"
         )
-    branch_lookup = _branch_lookup(tree, analyzed_taxa)
+    branch_lookup = build_branch_identity_lookup(tree, analyzed_taxa=analyzed_taxa)
     mapped_branch_ids = {row[table.taxon_column] for row in table.rows}
     expected_branch_ids = set(branch_lookup)
     missing = sorted(expected_branch_ids - mapped_branch_ids)
@@ -690,49 +690,6 @@ def _load_branch_regime_rows(
             "regime map must expose at least two regimes that contribute analyzed branch length"
         )
     return sorted(rows, key=lambda row: row.branch_id), resolved_branch_id_column
-
-
-@dataclass(slots=True)
-class _BranchMetadata:
-    branch_id: str
-    branch_length: float
-    descendant_taxa: list[str]
-    analyzed_descendant_taxa: list[str]
-    contributes_to_analysis: bool
-
-
-def _branch_lookup(
-    tree: PhyloTree,
-    analyzed_taxa: list[str],
-) -> dict[str, _BranchMetadata]:
-    analyzed_set = set(analyzed_taxa)
-    rows: dict[str, _BranchMetadata] = {}
-    for node in tree.iter_nodes():
-        if node is tree.root:
-            continue
-        branch_id = node_signature(node)
-        descendants = descendant_taxa(node)
-        analyzed_descendants = [taxon for taxon in descendants if taxon in analyzed_set]
-        rows[branch_id] = _BranchMetadata(
-            branch_id=branch_id,
-            branch_length=float(node.branch_length or 0.0),
-            descendant_taxa=descendants,
-            analyzed_descendant_taxa=analyzed_descendants,
-            contributes_to_analysis=bool(analyzed_descendants),
-        )
-    return rows
-
-
-def _resolve_branch_id_column(path: Path, *, requested: str | None) -> str:
-    if requested is not None:
-        return requested
-    first_line = path.read_text(encoding="utf-8").splitlines()[0]
-    delimiter = "\t" if ("\t" in first_line or path.suffix.lower() == ".tsv") else ","
-    columns = [column.strip() for column in next(csv.reader([first_line], delimiter=delimiter))]
-    for candidate in ("branch_id", "branch", "node"):
-        if candidate in columns:
-            return candidate
-    return columns[0]
 
 
 def _build_regime_covariance_components(
