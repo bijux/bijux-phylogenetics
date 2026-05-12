@@ -171,6 +171,13 @@ from bijux_phylogenetics.comparative.trait_outliers import (
     write_trait_outlier_summary_table,
     write_trait_outlier_taxon_table,
 )
+from bijux_phylogenetics.comparative.trait_imputation import (
+    summarize_trait_imputation,
+    write_trait_imputation_exclusion_table,
+    write_trait_imputation_holdout_table,
+    write_trait_imputation_summary_table,
+    write_trait_imputation_table,
+)
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     run_posterior_tree_pgls,
     write_posterior_tree_pgls_coefficient_table,
@@ -2399,6 +2406,40 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the trait outlier review as JSON.",
     )
     _add_manifest_argument(comparative_trait_outliers)
+    comparative_trait_imputation = comparative_subparsers.add_parser(
+        "trait-imputation",
+        help="Impute missing continuous-trait values under a Brownian phylogenetic model.",
+    )
+    comparative_trait_imputation.add_argument("tree", type=Path)
+    comparative_trait_imputation.add_argument("table", type=Path)
+    comparative_trait_imputation.add_argument("--trait", required=True)
+    comparative_trait_imputation.add_argument("--taxon-column")
+    comparative_trait_imputation.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one Brownian trait-imputation summary ledger as TSV or CSV.",
+    )
+    comparative_trait_imputation.add_argument(
+        "--imputations-out",
+        type=Path,
+        help="Write one imputed-value ledger as TSV or CSV.",
+    )
+    comparative_trait_imputation.add_argument(
+        "--holdout-out",
+        type=Path,
+        help="Write one leave-one-observed-out validation ledger as TSV or CSV.",
+    )
+    comparative_trait_imputation.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for trait imputation as TSV or CSV.",
+    )
+    comparative_trait_imputation.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the trait-imputation review as JSON.",
+    )
+    _add_manifest_argument(comparative_trait_imputation)
     comparative_compare_models = comparative_subparsers.add_parser(
         "compare-models",
         help="Compare standalone Brownian-motion and OU models for one continuous trait.",
@@ -7383,6 +7424,52 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "top_outlier_taxon": report.top_outlier_taxon,
                             "top_abs_standardized_residual": (
                                 report.top_abs_standardized_residual
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "trait-imputation":
+                report = summarize_trait_imputation(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                if args.summary_out:
+                    write_trait_imputation_summary_table(args.summary_out, report)
+                if args.imputations_out:
+                    write_trait_imputation_table(args.imputations_out, report)
+                if args.holdout_out:
+                    write_trait_imputation_holdout_table(args.holdout_out, report)
+                if args.excluded_taxa_out:
+                    write_trait_imputation_exclusion_table(
+                        args.excluded_taxa_out,
+                        report,
+                    )
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tree_taxon_count": report.tree_taxon_count,
+                            "observed_taxon_count": report.observed_taxon_count,
+                            "imputed_taxon_count": len(report.imputation_rows),
+                            "excluded_taxon_count": len(report.excluded_taxa),
+                            "holdout_validation_status": report.holdout_validation_status,
+                            "holdout_count": len(report.holdout_rows),
+                            "holdout_mean_absolute_error": (
+                                report.holdout_mean_absolute_error
+                            ),
+                            "holdout_interval_coverage": (
+                                report.holdout_interval_coverage
                             ),
                         },
                         data=report,

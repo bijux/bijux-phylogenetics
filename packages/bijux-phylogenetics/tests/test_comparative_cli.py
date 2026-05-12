@@ -780,6 +780,81 @@ def test_comparative_trait_outliers_cli_writes_review_ledgers(
     ]
 
 
+def test_comparative_trait_imputation_cli_reports_holdout_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "trait-imputation",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_trait_imputation.tsv")),
+            "--trait",
+            "body_mass",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 6
+    assert payload["metrics"]["observed_taxon_count"] == 5
+    assert payload["metrics"]["imputed_taxon_count"] == 1
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["holdout_validation_status"] == "performed"
+    assert payload["metrics"]["holdout_count"] == 5
+    assert payload["metrics"]["holdout_mean_absolute_error"] is not None
+    assert 0.0 <= payload["metrics"]["holdout_interval_coverage"] <= 1.0
+
+
+def test_comparative_trait_imputation_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "trait-imputation-summary.tsv"
+    imputations_out = tmp_path / "trait-imputations.tsv"
+    holdout_out = tmp_path / "trait-imputation-holdout.tsv"
+    excluded_out = tmp_path / "trait-imputation-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "trait-imputation",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_continuous_evolution_missing.tsv")),
+            "--trait",
+            "response_growth",
+            "--summary-out",
+            str(summary_out),
+            "--imputations-out",
+            str(imputations_out),
+            "--holdout-out",
+            str(holdout_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["observed_taxon_count"] == 4
+    assert payload["metrics"]["imputed_taxon_count"] == 1
+    assert payload["metrics"]["excluded_taxon_count"] == 2
+    assert summary_out.exists()
+    assert imputations_out.exists()
+    assert holdout_out.exists()
+    assert excluded_out.exists()
+    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "trait\ttaxon_column\tmodel"
+    )
+    assert imputations_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "taxon\tmissing_reason\tobserved_support_taxon_count"
+    )
+    assert holdout_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "taxon\tobserved_value\tpredicted_value\tresidual"
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason",
+        "C\tnon_numeric_trait_value",
+        "G\tabsent_from_tree",
+    ]
+
+
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
     exit_code = main(
         [
