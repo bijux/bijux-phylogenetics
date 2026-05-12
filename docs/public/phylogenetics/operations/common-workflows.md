@@ -364,6 +364,53 @@ Its value is to show where unconstrained geographic transition claims are not
 compatible with the supplied region-connectivity contract and whether the
 constrained fit remains competitive.
 
+When the goal is to list inferred dispersal or migration events directly, use
+`biogeography events`. This workflow accepts one rooted tree and one
+taxon-region table, or the same inputs plus `--tree-set` when the tree input is
+a posterior or bootstrap tree set. It reuses the owned ancestral geographic
+reconstruction, keeps only changed source-target branches as event rows, and
+writes reviewer-facing ledgers for branch identity, root-depth interval,
+midpoint depth estimate, support, and excluded taxa. In tree-set mode it also
+writes retained-tree ledgers and comparable event summaries across trees.
+
+```bash
+bijux-phylogenetics biogeography events \
+  artifacts/primates.posterior.nwk \
+  artifacts/primates.csv \
+  --trait region \
+  --taxon-column species \
+  --model ard \
+  --tree-set \
+  --burnin-fraction 0.25 \
+  --summary-out artifacts/primates.biogeography-events-summary.tsv \
+  --trees-out artifacts/primates.biogeography-events-trees.tsv \
+  --events-out artifacts/primates.biogeography-events.tsv \
+  --event-summaries-out artifacts/primates.biogeography-event-summaries.tsv \
+  --exclusions-out artifacts/primates.biogeography-events-excluded.tsv \
+  --json
+```
+
+On one tree, the summary ledger keeps one row with the analyzed taxon count,
+tree depth, event count, strongly supported event count, mean event support,
+and earliest and latest event midpoint depths. The event ledger keeps one row
+per inferred geographic movement event with the source region, target region,
+branch identity, descendant taxa, branch length, parent and child depths,
+midpoint depth, support, and confidence class. The excluded-taxa ledger keeps
+dropped raw region rows.
+
+In tree-set mode, the retained-tree ledger keeps one row per retained tree with
+rooted and unrooted topology identifiers plus tree-level event counts. The
+event ledger keeps one row per inferred event per retained tree. The
+event-summary ledger groups comparable source-target events by branch identity
+across retained trees and reports presence fractions, strongly supported tree
+fractions, mean support, empirical midpoint-depth bounds, and stability class.
+
+The migration-event surface is explicit about what its time column means. It
+does not claim an exact stochastic event time on a branch. Instead, it reports
+the branch depth interval and a deterministic midpoint-depth estimate so
+reviewers can place likely movement events on the tree without overstating
+temporal precision.
+
 When the goal is to compare inferred geographic transition pressure across
 explicit historical intervals, use `biogeography time-stratified`. This
 workflow accepts one rooted tree with positive branch lengths, one taxon-region
