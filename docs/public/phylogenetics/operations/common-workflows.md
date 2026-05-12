@@ -22,6 +22,29 @@ Typical public workflows include:
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
 
+When a tree is already inferred and you need to root it on one known outgroup
+taxon or one expected outgroup clade, use `topology root-outgroup`. The
+command writes the rooted tree and can also emit a one-row TSV report that
+records which requested taxa were found, which requested taxa were absent,
+whether the matched outgroup is monophyletic in the input tree, which extra
+taxa fall inside the matched outgroup MRCA when it is not monophyletic, and
+which taxa end up isolated on the rooted outgroup side.
+
+```bash
+bijux-phylogenetics topology root-outgroup \
+  artifacts/mammals.unrooted.nwk \
+  --taxa Ornithorhynchus_anatinus Tachyglossus_aculeatus \
+  --out artifacts/mammals.rooted.nwk \
+  --report-out artifacts/mammals.rooting.tsv \
+  --json
+```
+
+If the requested outgroup taxa are missing, the TSV and JSON report that
+explicitly instead of silently dropping them. If the requested outgroup taxa
+are not monophyletic in the input tree, the workflow still records the rooted
+tree but also reports the MRCA spillover taxa and a warning that the root does
+not cleanly isolate the requested outgroup as one coherent clade.
+
 When your starting point is one aligned FASTA per locus, run
 `alignment concatenate` first. That workflow writes the concatenated alignment,
 the remapped partition file, and the taxon-by-locus occupancy matrix in one
