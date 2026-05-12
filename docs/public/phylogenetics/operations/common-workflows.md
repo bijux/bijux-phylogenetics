@@ -135,6 +135,28 @@ flag low-support branches directly, and preserve the same `lt50`, `50to69`,
 `70to89`, and `ge90` buckets that appear in the manifest and HTML workflow
 report.
 
+Use `adapter sh-alrt` when you need SH-aLRT support alongside ultrafast
+bootstrap support on the same supported tree.
+
+```bash
+bijux-phylogenetics adapter sh-alrt \
+  aligned-matrix.fasta \
+  --out-dir artifacts/sh-alrt-support \
+  --model GTR+G \
+  --alrt-replicates 1000 \
+  --bootstrap-replicates 1000 \
+  --prefix mammals \
+  --json
+```
+
+That workflow runs IQ-TREE with both `-alrt` and `-bb`, retains the native
+`.treefile`, `.ufboot`, `.iqtree`, and `.log` outputs, writes
+`mammals.support.tsv` with both support measures on each branch, and writes
+`mammals.conflicting-support.tsv` for branches where SH-aLRT and UFBoot imply
+different confidence postures under the governed thresholds. The structured
+manifest and JSON also expose parsed SH-aLRT minima, maxima, annotated-branch
+counts, and conflicting-signal counts directly.
+
 ## Coding DNA Alignment
 
 Use `adapter align --codon-aware` when you need a nucleotide alignment that
@@ -213,6 +235,11 @@ re-parsing Newick labels manually. The corresponding manifest entries expose
 the parsed selected model, selected criterion, AIC/AICc/BIC winners,
 candidate-model counts, log-likelihood, support summary, and weak-backbone
 summary directly.
+
+The dedicated SH-aLRT support workflow follows the same pattern: it retains the
+native IQ-TREE files, exports `.support.tsv` and
+`.conflicting-support.tsv`, and records the parsed combined SH-aLRT/UFBoot
+branch summary in the manifest.
 
 The IQ-TREE part of the workflow now defaults to deterministic execution with
 `--iqtree-seed 1` and `--iqtree-threads 1`. Ultrafast bootstrap support is the
