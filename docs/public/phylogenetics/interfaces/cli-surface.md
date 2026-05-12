@@ -1005,6 +1005,84 @@ This surface exists so taxon-level anomaly review preserves the selected model,
 the conditional residual contract, and the local clade context instead of
 reducing the question to an informal scan of raw values.
 
+`comparative trait-imputation` is the governed review surface for imputing
+missing continuous traits under a Brownian phylogenetic model. Its JSON metrics
+report:
+- `tree_taxon_count`
+- `observed_taxon_count`
+- `imputed_taxon_count`
+- `excluded_taxon_count`
+- `holdout_validation_status`
+- `holdout_count`
+- `holdout_mean_absolute_error`
+- `holdout_interval_coverage`
+
+The command requires one rooted tree with complete branch lengths and at least
+three observed taxa with numeric values for the requested trait. Bijux fits the
+Brownian mean and diffusion rate on the observed taxa, predicts every missing
+tree taxon from the conditional Brownian distribution, and then validates that
+prediction path by refitting after holding out each observed taxon in turn when
+enough observed taxa remain.
+
+When `--summary-out` is supplied, `comparative trait-imputation` writes one
+flat summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `tree_taxon_count`
+- `observed_taxon_count`
+- `imputed_taxon_count`
+- `excluded_taxon_count`
+- `root_state`
+- `sigma_squared`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `holdout_validation_status`
+- `holdout_count`
+- `holdout_mean_absolute_error`
+- `holdout_root_mean_squared_error`
+- `holdout_interval_coverage`
+
+When `--imputations-out` is supplied, the command also writes one imputed-value
+ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `missing_reason`
+- `observed_support_taxon_count`
+- `predicted_value`
+- `conditional_variance`
+- `conditional_standard_error`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+
+When `--holdout-out` is supplied, the command also writes one
+leave-one-observed-out validation ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `observed_value`
+- `predicted_value`
+- `residual`
+- `absolute_error`
+- `conditional_variance`
+- `conditional_standard_error`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+- `covered_by_95_confidence_interval`
+- `observed_support_taxon_count`
+- `rank`
+
+When `--excluded-taxa-out` is supplied, the command also writes one explicit
+excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+This surface exists so missing-value prediction preserves the Brownian fit,
+per-taxon uncertainty intervals, and holdout evidence instead of reducing the
+question to one opaque filled-in spreadsheet column.
+
 `comparative multivariate` is the governed review surface for fitting the same
 comparative predictor set across multiple response traits on one shared
 complete-case taxon set. Its JSON metrics report:
