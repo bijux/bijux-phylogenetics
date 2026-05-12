@@ -248,6 +248,39 @@ keeps one row per directed state change so reviewers can see which transitions
 the ordered model forbids entirely and which adjacent transitions remain
 allowed.
 
+When the goal is to model irreversible gains or losses, use
+`ancestral irreversible-discrete`. This workflow fits one constrained discrete
+likelihood model under an explicit directed transition graph and compares it to
+the unconstrained baseline of the same model family. It is the owned review
+surface for one-way losses, forbidden reversals, and similar trait histories
+where some transitions should be impossible.
+
+```bash
+bijux-phylogenetics ancestral irreversible-discrete \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait trait_state \
+  --taxon-column species \
+  --model all-rates-different \
+  --allowed-transitions present->absent \
+  --summary-out artifacts/primates.irreversible-summary.tsv \
+  --fits-out artifacts/primates.irreversible-fits.tsv \
+  --nodes-out artifacts/primates.irreversible-nodes.tsv \
+  --transitions-out artifacts/primates.irreversible-transitions.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the constrained and unconstrained
+likelihoods, likelihood difference, AIC difference, preferred constraint,
+differing node count, ambiguity change count, and forbidden transition count.
+The fit ledger keeps one row for the constrained fit and one for the
+unconstrained baseline, including root state and root confidence. The node
+ledger keeps one row per internal node with the constrained state,
+unconstrained state, confidence delta, and ambiguity change flag. The
+transition ledger keeps one row per directed state change so reviewers can see
+which transitions the constraint forbids and what rate the unconstrained model
+would otherwise assign to them.
+
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
 ancestral reconstruction surfaces and turns their uncertainty into one ranked
