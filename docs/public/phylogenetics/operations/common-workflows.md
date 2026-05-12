@@ -299,6 +299,47 @@ tree, and the count ledger adds tree-presence and stability summaries so
 reviewers can see whether one reported transition depends on one sampled
 topology or persists across the retained tree distribution.
 
+When the goal is to inspect reconstructed histories directly on the tree, use
+`ancestral render`. This workflow turns one continuous or discrete ancestral
+reconstruction into a reviewer-facing figure and now supports three durable
+export paths from the same owned visualization surface:
+- SVG for publication or editing
+- PNG for slideware and static sharing
+- HTML for inline figure review with the governed visualization manifest
+
+```bash
+bijux-phylogenetics ancestral render \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait habitat \
+  --kind discrete \
+  --model equal-rates \
+  --discrete-node-style pies \
+  --branch-coloring state \
+  --layout phylogram \
+  --out artifacts/primates.ancestral-visualization.html \
+  --json
+```
+
+For continuous traits, the workflow keeps numeric internal-node labels and can
+color branches by the descendant reconstructed value regime. For discrete
+traits, the workflow supports either state labels or marginal-state pie charts
+at internal nodes and can color branches by the inferred descendant state. The
+HTML path writes the governed SVG as a sibling artifact and embeds that same
+figure directly into the review page. The PNG path also writes the sibling SVG
+so the raster export still preserves one editable source figure.
+
+When the goal is to hand off a complete reviewer or publication bundle rather
+than one standalone figure, use `ancestral package`. The package now writes the
+same node-state and uncertainty ledgers as before, but it also emits:
+- `ancestral-figure.svg`
+- `ancestral-figure.png`
+- `ancestral-figure.html`
+
+That bundle keeps one rich visual surface alongside the node tables, legend,
+caption, and manifest instead of forcing reviewers to regenerate alternate
+formats from the SVG by hand.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
