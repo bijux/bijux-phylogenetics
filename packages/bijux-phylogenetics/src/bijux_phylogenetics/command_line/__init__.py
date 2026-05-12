@@ -78,6 +78,11 @@ from bijux_phylogenetics.comparative.common import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
 )
+from bijux_phylogenetics.comparative.phylogenetic_signal import (
+    summarize_phylogenetic_signal,
+    write_phylogenetic_signal_permutation_table,
+    write_phylogenetic_signal_summary_table,
+)
 from bijux_phylogenetics.comparative.independent_contrasts import (
     summarize_independent_contrast_regression,
     write_independent_contrast_regression_table,
@@ -127,10 +132,7 @@ from bijux_phylogenetics.comparative.reporting import (
     write_comparative_method_report,
 )
 from bijux_phylogenetics.comparative.signal import (
-    compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
-    compute_phylogenetic_signal_test,
-    estimate_pagels_lambda,
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.taxon_influence import (
@@ -1946,6 +1948,16 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_signal.add_argument("table", type=Path)
     comparative_signal.add_argument("--trait", required=True)
     comparative_signal.add_argument("--taxon-column")
+    comparative_signal.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one phylogenetic signal summary ledger as TSV or CSV.",
+    )
+    comparative_signal.add_argument(
+        "--permutations-out",
+        type=Path,
+        help="Write one permutation ledger for the Blomberg-K test as TSV or CSV.",
+    )
     comparative_signal.add_argument("--permutations", type=int, default=199)
     comparative_signal.add_argument("--seed", type=int, default=1)
     comparative_signal.add_argument(
@@ -6232,19 +6244,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.comparative_command == "signal":
-                blomberg = compute_blombergs_k(
-                    args.tree,
-                    args.table,
-                    trait=args.trait,
-                    taxon_column=args.taxon_column,
-                )
-                lambda_report = estimate_pagels_lambda(
-                    args.tree,
-                    args.table,
-                    trait=args.trait,
-                    taxon_column=args.taxon_column,
-                )
-                test_report = compute_phylogenetic_signal_test(
+                report = summarize_phylogenetic_signal(
                     args.tree,
                     args.table,
                     trait=args.trait,
@@ -6252,6 +6252,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     permutations=args.permutations,
                     seed=args.seed,
                 )
+                if args.summary_out:
+                    write_phylogenetic_signal_summary_table(args.summary_out, report)
+                if args.permutations_out:
+                    write_phylogenetic_signal_permutation_table(
+                        args.permutations_out, report
+                    )
                 outputs = _finalize_outputs(
                     args, command="comparative", inputs=[args.tree, args.table]
                 )
@@ -6261,16 +6267,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.tree, args.table],
                         outputs=outputs,
                         metrics={
-                            "taxon_count": blomberg.taxon_count,
-                            "blombergs_k": blomberg.k,
-                            "pagels_lambda": lambda_report.lambda_value,
-                            "signal_p_value": test_report.p_value,
+                            "taxon_count": report.taxon_count,
+                            "blombergs_k": report.blombergs_k.k,
+                            "pagels_lambda": report.pagels_lambda.lambda_value,
+                            "signal_p_value": report.signal_test.p_value,
+                            "lambda_likelihood_ratio_p_value": (
+                                report.lambda_likelihood_ratio_p_value
+                            ),
+                            "permutation_row_count": len(
+                                report.signal_test.permutation_rows
+                            ),
                         },
-                        data={
-                            "blombergs_k": blomberg,
-                            "pagels_lambda": lambda_report,
-                            "signal_test": test_report,
-                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )

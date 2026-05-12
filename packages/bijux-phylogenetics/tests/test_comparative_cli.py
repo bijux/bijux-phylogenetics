@@ -63,6 +63,48 @@ def test_comparative_signal_cli_reports_lambda_and_p_value(capsys) -> None:
     assert exit_code == 0
     assert 0.0 <= payload["metrics"]["pagels_lambda"] <= 1.0
     assert 0.0 < payload["metrics"]["signal_p_value"] <= 1.0
+    assert 0.0 <= payload["metrics"]["lambda_likelihood_ratio_p_value"] <= 1.0
+    assert payload["metrics"]["permutation_row_count"] == 19
+    assert len(payload["data"]["signal_test"]["permutation_rows"]) == 19
+
+
+def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "phylogenetic-signal-summary.tsv"
+    permutations_out = tmp_path / "phylogenetic-signal-permutations.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--permutations",
+            "7",
+            "--seed",
+            "5",
+            "--summary-out",
+            str(summary_out),
+            "--permutations-out",
+            str(permutations_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["permutation_row_count"] == 7
+    assert summary_out.exists()
+    assert permutations_out.exists()
+    summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
+    permutation_rows = permutations_out.read_text(encoding="utf-8").splitlines()
+    assert summary_rows[0].startswith("trait\ttaxon_count\tblombergs_k")
+    assert permutation_rows[0].startswith(
+        "trait\tobserved_k\testimated_lambda\tpermutations"
+    )
+    assert len(summary_rows) == 2
+    assert len(permutation_rows) == 8
 
 
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
