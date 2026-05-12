@@ -126,9 +126,17 @@ JSON metrics expose `row_count`, `column_count`, `burnin_fraction`,
 `kept_row_count`, `posterior_parameter_count`, `likelihood_parameter_count`,
 `prior_parameter_count`, `clock_parameter_count`, and `tree_parameter_count`.
 When `--summary-out` is provided, the command also writes a TSV table with one
-row per retained parameter containing effective sample size, mean, min/max,
-first-half mean, second-half mean, standardized mean shift, and the retained
-state window.
+row per retained parameter containing effective sample size, mean, median,
+sample standard deviation, 95% HPD interval, min/max, first-half mean,
+second-half mean, standardized mean shift, and the retained state window.
+
+`adapter beast-parameters` is the governed posterior-parameter diagnostics
+surface for one BEAST posterior log. It applies the same burn-in handling as
+`adapter beast-log` but reports only the burn-in-aware parameter summaries
+instead of the raw parsed rows. Its JSON metrics expose `burnin_fraction`,
+`kept_row_count`, `parameter_count`, and `posterior_parameter_count`. When
+`--summary-out` is provided, the written TSV contains the same per-parameter
+posterior diagnostics table used by the log parser surface.
 
 `adapter beast-convergence` applies the same burn-in handling to ESS and drift
 warnings directly. Its JSON metrics expose `warning_count`, `converged`,
@@ -188,9 +196,15 @@ copied snippets.
 The matching parser commands expose those artifacts directly:
 
 - `adapter mrbayes-traces` reports trace `row_count` and `column_count` from `.run1.p`
+- `adapter mrbayes-parameters` reports `burnin_fraction`, `kept_row_count`, and `parameter_count` from `.run1.p` after applying the requested burn-in cut
 - `adapter mrbayes-trees` reports `tree_count`, `rooted_tree_count`, and `sampled_generation_count` from `.run1.t`
 - `adapter mrbayes-mcmc` reports `row_count`, `column_count`, and `comment_count` from `.mcmc`
 - `adapter mrbayes-consensus` reports `tip_count`, `annotated_node_count`, and `maximum_posterior_probability` from `.con.tre`
+
+The `mrbayes-parameters` table and JSON payload expose posterior mean, median,
+sample standard deviation, 95% HPD interval, effective sample size, and the
+retained generation window for every retained parameter, so trace review does
+not have to be reconstructed from the raw `.run1.p` table manually.
 
 The consensus parser exists because MrBayes writes posterior-probability and
 branch-length summaries as inline bracket annotations inside the NEXUS tree
