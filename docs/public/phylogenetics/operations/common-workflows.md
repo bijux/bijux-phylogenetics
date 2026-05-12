@@ -242,6 +242,43 @@ or fit quality without leaving obviously extreme single-taxon residuals. The
 workflow keeps those subtree dependencies explicit and preserves blocked rows
 instead of silently skipping removals that would collapse the remaining fit.
 
+When the question is not whether one clade drives the fit but whether topology
+uncertainty across a posterior or bootstrap tree set changes the comparative
+conclusion, use `comparative posterior-pgls`. This workflow keeps one
+continuous-trait PGLS formula fixed, applies it to every retained tree in a
+tree set, and then summarizes how the coefficients and support calls vary
+across those trees.
+
+```bash
+bijux-phylogenetics comparative posterior-pgls \
+  artifacts/primates.posterior.trees \
+  artifacts/primates.csv \
+  --formula "longevity ~ social_group_size" \
+  --taxon-column species \
+  --lambda-value estimate \
+  --burnin-fraction 0.25 \
+  --significance-threshold 0.05 \
+  --trees-out artifacts/primates.posterior-pgls-trees.tsv \
+  --coefficients-out artifacts/primates.posterior-pgls-coefficients.tsv \
+  --summary-out artifacts/primates.posterior-pgls-summary.tsv \
+  --json
+```
+
+The per-tree ledger keeps one row per retained tree with its post-burn-in
+position, topology identifiers, fitted lambda, and log-likelihood. The
+coefficient ledger then keeps one row per coefficient per retained tree,
+including estimate, p-value, direction, and whether the coefficient met the
+chosen support threshold on that tree. The summary ledger collapses those
+coefficient rows into reviewer-facing distributions with empirical estimate
+ranges, direction consistency, support fractions, and a conclusion-stability
+classification such as `stable_supported`, `stable_unsupported`,
+`mixed_support`, or `direction_conflict`.
+
+This surface matters when one MCC tree or one consensus tree would hide the
+fact that coefficient support is topology-sensitive. It lets users propagate
+tree uncertainty into the comparative conclusion directly instead of treating
+the posterior tree set and the trait model as separate review steps.
+
 When the covariance assumption itself must stay fixed to Brownian shared branch
 lengths, use `comparative brownian-pgls`. This keeps the regression surface
 separate from Pagel-lambda fitting and writes an explicit covariance ledger
