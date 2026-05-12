@@ -102,12 +102,13 @@ from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
     CladeOverlapComparisonReport,
+    RobinsonFouldsComparisonReport,
+    SharedTaxaPruningReport,
     SupportComparisonReport,
     SupportConflictRow,
-    compare_clade_overlap,
-    RobinsonFouldsComparisonReport,
     compare_branch_score_distance,
     compare_branch_lengths,
+    compare_clade_overlap,
     compare_clade_sets,
     compare_robinson_foulds,
     compare_support_values,
@@ -115,6 +116,8 @@ from bijux_phylogenetics.compare.topology import (
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
+    write_shared_taxa_pruning_table,
+    write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
@@ -492,6 +495,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is CladeOverlapComparisonReport
     )
     assert (
+        bijux_phylogenetics.SharedTaxaPruningReport is SharedTaxaPruningReport
+    )
+    assert (
         bijux_phylogenetics.SupportComparisonReport is SupportComparisonReport
     )
     assert bijux_phylogenetics.SupportConflictRow is SupportConflictRow
@@ -500,8 +506,17 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is compare_branch_score_distance
     )
     assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
+    assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
     assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
+    assert (
+        bijux_phylogenetics.write_shared_taxa_pruning_table
+        is write_shared_taxa_pruning_table
+    )
+    assert (
+        bijux_phylogenetics.write_shared_taxa_removed_taxa_table
+        is write_shared_taxa_removed_taxa_table
+    )
     assert (
         bijux_phylogenetics.write_support_comparison_table
         is write_support_comparison_table
@@ -511,11 +526,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is RobinsonFouldsComparisonReport
     )
     assert compare_api.CladeOverlapComparisonReport is CladeOverlapComparisonReport
+    assert compare_api.SharedTaxaPruningReport is SharedTaxaPruningReport
     assert compare_api.SupportComparisonReport is SupportComparisonReport
     assert compare_api.SupportConflictRow is SupportConflictRow
     assert compare_api.compare_clade_overlap is compare_clade_overlap
+    assert compare_api.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert compare_api.compare_support_values is compare_support_values
     assert compare_api.write_clade_overlap_table is write_clade_overlap_table
+    assert compare_api.write_shared_taxa_pruning_table is write_shared_taxa_pruning_table
+    assert (
+        compare_api.write_shared_taxa_removed_taxa_table
+        is write_shared_taxa_removed_taxa_table
+    )
     assert compare_api.write_support_comparison_table is write_support_comparison_table
     assert compare_api.BranchScoreComparisonReport is BranchScoreComparisonReport
     assert compare_api.compare_branch_score_distance is compare_branch_score_distance
