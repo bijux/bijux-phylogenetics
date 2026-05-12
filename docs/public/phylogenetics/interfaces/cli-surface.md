@@ -32,6 +32,22 @@ association under phylogenetic covariance. Its JSON metrics now report
 review tooling can distinguish a minimally identified model from one with
 meaningful residual support.
 
+`comparative brownian-pgls` is the fixed-covariance companion surface when the
+scientific question specifically assumes Brownian shared-path covariance rather
+than an estimated Pagel lambda. Its JSON metrics report:
+- `covariance_model`
+- `lambda_value`
+- `covariance_row_count`
+- `tree_is_ultrametric`
+- `minimum_root_to_tip_depth`
+- `maximum_root_to_tip_depth`
+- `raw_log_determinant`
+- `positive_definite_before_stabilization`
+
+The command does not estimate or optimize lambda. It fixes lambda at `1.0`,
+audits the raw Brownian covariance before stabilization, and fails explicitly if
+zero or negative branch lengths make that covariance invalid.
+
 The same command also owns the public formula-expansion contract. Use
 `--formula` when the scientific hypothesis is easier to express as one formula
 than as separate `--response` plus `--predictors` flags. The formula surface
@@ -118,6 +134,20 @@ The interaction ledger is explicit about effect modification:
 
 This surface exists so interaction coefficients are interpreted as explicit
 effect-modification terms instead of opaque colon-delimited names.
+
+When `--covariance-out` is supplied, `comparative brownian-pgls` writes one
+pairwise Brownian covariance ledger as CSV or TSV. Each row preserves:
+- `left_taxon`
+- `right_taxon`
+- `is_diagonal`
+- `shared_path_length`
+- `left_root_depth`
+- `right_root_depth`
+
+The written ledger also repeats the tree-level covariance audit fields on every
+row so a single extracted table still preserves whether the fitted tree was
+ultrametric, the root-depth range, the branch-length range, and whether the raw
+covariance was positive definite before stabilization.
 
 The `compare` family includes direct topology-distance review for two existing
 trees. `compare LEFT RIGHT` now exposes `--rf-mode rooted|unrooted` and
