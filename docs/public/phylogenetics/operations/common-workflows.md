@@ -192,6 +192,36 @@ FastTree SH-like local support and IQ-TREE UFBoot support are shown together as
 fractions only for side-by-side review, not as proof that the two support
 methods are interchangeable.
 
+Use `adapter reproducibility` when you need to test whether repeated
+bootstrap-supported IQ-TREE inference stays deterministic under fixed settings.
+
+```bash
+bijux-phylogenetics adapter reproducibility \
+  aligned-matrix.fasta \
+  --out-dir artifacts/inference-reproducibility \
+  --prefix mammals \
+  --sequence-type dna \
+  --bootstrap-replicates 1000 \
+  --repeats 3 \
+  --json
+```
+
+That workflow runs model selection once to choose a fixed model, then reruns
+the same supported IQ-TREE inference settings multiple times on the same
+alignment. It writes these review outputs:
+
+- `mammals.runs.tsv`
+- `mammals.comparisons.tsv`
+- `mammals.support-deltas.tsv`
+- `mammals.manifest.json`
+
+The run ledger records one manifest and supported tree per rerun. The
+comparison ledger classifies each rerun relative to the baseline as
+`deterministic`, `equivalent`, or `unstable` after checking topology,
+log-likelihood, and clade support values. The support-delta ledger preserves
+the per-clade support shifts as normalized fractions so support drift can be
+reviewed directly instead of being inferred from summary text alone.
+
 Use `adapter sh-alrt` when you need SH-aLRT support alongside ultrafast
 bootstrap support on the same supported tree.
 
