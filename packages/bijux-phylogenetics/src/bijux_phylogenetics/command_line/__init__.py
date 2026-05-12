@@ -208,12 +208,19 @@ from bijux_phylogenetics.ecological_niche import (
 )
 from bijux_phylogenetics.phylogeography import (
     render_coordinate_movement_visualization,
+    render_geographic_map_html,
     summarize_continuous_phylogeography,
+    summarize_continuous_phylogeography_map,
+    summarize_discrete_region_map,
     write_coordinate_estimate_table,
     write_coordinate_movement_branch_table,
     write_coordinate_movement_exclusion_table,
     write_coordinate_movement_outlier_table,
     write_coordinate_movement_summary_table,
+    write_geographic_map_exclusion_table,
+    write_geographic_map_line_table,
+    write_geographic_map_marker_table,
+    write_geographic_map_summary_table,
 )
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.comparative.common import (
@@ -3718,6 +3725,85 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the phylogeography review as JSON.",
     )
     _add_manifest_argument(phylogeography_coordinates)
+    phylogeography_coordinates_map = phylogeography_subparsers.add_parser(
+        "coordinates-map",
+        help="Render one HTML world map from continuous geographic coordinate reconstruction.",
+    )
+    phylogeography_coordinates_map.add_argument("tree", type=Path)
+    phylogeography_coordinates_map.add_argument("table", type=Path)
+    phylogeography_coordinates_map.add_argument("--latitude-column", required=True)
+    phylogeography_coordinates_map.add_argument("--longitude-column", required=True)
+    phylogeography_coordinates_map.add_argument("--taxon-column")
+    phylogeography_coordinates_map.add_argument(
+        "--model",
+        choices=("brownian", "ou"),
+        default="brownian",
+    )
+    phylogeography_coordinates_map.add_argument("--alpha", type=float, default=1.0)
+    phylogeography_coordinates_map.add_argument(
+        "--minimum-midpoint-depth",
+        type=float,
+    )
+    phylogeography_coordinates_map.add_argument(
+        "--maximum-midpoint-depth",
+        type=float,
+    )
+    phylogeography_coordinates_map.add_argument("--summary-out", type=Path)
+    phylogeography_coordinates_map.add_argument("--markers-out", type=Path)
+    phylogeography_coordinates_map.add_argument("--lines-out", type=Path)
+    phylogeography_coordinates_map.add_argument("--exclusions-out", type=Path)
+    phylogeography_coordinates_map.add_argument("--html-out", type=Path)
+    phylogeography_coordinates_map.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the mapped phylogeography review as JSON.",
+    )
+    _add_manifest_argument(phylogeography_coordinates_map)
+    phylogeography_regions_map = phylogeography_subparsers.add_parser(
+        "regions-map",
+        help="Render one HTML world map from discrete ancestral geographic region reconstruction.",
+    )
+    phylogeography_regions_map.add_argument("tree", type=Path)
+    phylogeography_regions_map.add_argument("table", type=Path)
+    phylogeography_regions_map.add_argument("--trait", required=True)
+    phylogeography_regions_map.add_argument("--centroids", type=Path, required=True)
+    phylogeography_regions_map.add_argument("--taxon-column")
+    phylogeography_regions_map.add_argument(
+        "--model",
+        choices=("er", "sym", "ard"),
+        default="er",
+    )
+    phylogeography_regions_map.add_argument(
+        "--region-column",
+        default="region",
+    )
+    phylogeography_regions_map.add_argument(
+        "--latitude-column",
+        default="latitude",
+    )
+    phylogeography_regions_map.add_argument(
+        "--longitude-column",
+        default="longitude",
+    )
+    phylogeography_regions_map.add_argument(
+        "--minimum-midpoint-depth",
+        type=float,
+    )
+    phylogeography_regions_map.add_argument(
+        "--maximum-midpoint-depth",
+        type=float,
+    )
+    phylogeography_regions_map.add_argument("--summary-out", type=Path)
+    phylogeography_regions_map.add_argument("--markers-out", type=Path)
+    phylogeography_regions_map.add_argument("--lines-out", type=Path)
+    phylogeography_regions_map.add_argument("--exclusions-out", type=Path)
+    phylogeography_regions_map.add_argument("--html-out", type=Path)
+    phylogeography_regions_map.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the mapped regional reconstruction review as JSON.",
+    )
+    _add_manifest_argument(phylogeography_regions_map)
 
     discrete_evolution = subparsers.add_parser(
         get_command_spec("discrete-evolution").name,
@@ -10873,6 +10959,173 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "maximum_jump_km": report.summary.maximum_jump_km,
                             "excluded_taxon_count": (
                                 report.summary.excluded_taxon_count
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.phylogeography_command == "coordinates-map":
+                report = summarize_continuous_phylogeography_map(
+                    args.tree,
+                    args.table,
+                    latitude_column=args.latitude_column,
+                    longitude_column=args.longitude_column,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    alpha=args.alpha,
+                    minimum_midpoint_depth=args.minimum_midpoint_depth,
+                    maximum_midpoint_depth=args.maximum_midpoint_depth,
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_geographic_map_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.markers_out is not None:
+                    outputs.append(
+                        write_geographic_map_marker_table(
+                            args.markers_out,
+                            report,
+                        )
+                    )
+                if args.lines_out is not None:
+                    outputs.append(
+                        write_geographic_map_line_table(
+                            args.lines_out,
+                            report,
+                        )
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_geographic_map_exclusion_table(
+                            args.exclusions_out,
+                            report,
+                        )
+                    )
+                if args.html_out is not None:
+                    outputs.append(
+                        render_geographic_map_html(
+                            report,
+                            out_path=args.html_out,
+                        ).output_path
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="phylogeography",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="phylogeography",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "map_mode": report.summary.mode,
+                            "model": report.summary.model,
+                            "tip_marker_count": report.summary.tip_marker_count,
+                            "internal_marker_count": (
+                                report.summary.internal_marker_count
+                                + report.summary.root_marker_count
+                            ),
+                            "line_count": report.summary.line_count,
+                            "visible_line_count": report.summary.visible_line_count,
+                            "time_filter_applied": (
+                                report.summary.time_filter_applied
+                            ),
+                            "excluded_record_count": (
+                                report.summary.excluded_record_count
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.phylogeography_command == "regions-map":
+                report = summarize_discrete_region_map(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    centroids_path=args.centroids,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    region_column=args.region_column,
+                    latitude_column=args.latitude_column,
+                    longitude_column=args.longitude_column,
+                    minimum_midpoint_depth=args.minimum_midpoint_depth,
+                    maximum_midpoint_depth=args.maximum_midpoint_depth,
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_geographic_map_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.markers_out is not None:
+                    outputs.append(
+                        write_geographic_map_marker_table(
+                            args.markers_out,
+                            report,
+                        )
+                    )
+                if args.lines_out is not None:
+                    outputs.append(
+                        write_geographic_map_line_table(
+                            args.lines_out,
+                            report,
+                        )
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_geographic_map_exclusion_table(
+                            args.exclusions_out,
+                            report,
+                        )
+                    )
+                if args.html_out is not None:
+                    outputs.append(
+                        render_geographic_map_html(
+                            report,
+                            out_path=args.html_out,
+                        ).output_path
+                    )
+                inputs = [args.tree, args.table, args.centroids]
+                outputs = _finalize_outputs(
+                    args,
+                    command="phylogeography",
+                    inputs=inputs,
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="phylogeography",
+                        inputs=inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "map_mode": report.summary.mode,
+                            "model": report.summary.model,
+                            "tip_marker_count": report.summary.tip_marker_count,
+                            "internal_marker_count": (
+                                report.summary.internal_marker_count
+                                + report.summary.root_marker_count
+                            ),
+                            "line_count": report.summary.line_count,
+                            "visible_line_count": report.summary.visible_line_count,
+                            "time_filter_applied": (
+                                report.summary.time_filter_applied
+                            ),
+                            "excluded_record_count": (
+                                report.summary.excluded_record_count
                             ),
                         },
                         data=report,
