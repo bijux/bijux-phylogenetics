@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.cli import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -1913,3 +1915,51 @@ def test_adapter_beast_trees_cli_writes_normalized_tree_set(
     assert payload["data"]["sampled_states"] == [10, 20, 30]
     assert "((A:0.1,B:0.1):0.2,(C:0.1,D:0.2)" not in text
     assert "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);" in text
+
+
+def test_adapter_beast_consensus_cli_writes_consensus_and_clade_ledger(
+    tmp_path: Path, capsys
+) -> None:
+    posterior_path = tmp_path / "posterior.trees"
+    consensus_path = tmp_path / "posterior-consensus.nwk"
+    retained_path = tmp_path / "posterior-retained.nwk"
+    clade_table_path = tmp_path / "posterior-clades.tsv"
+    posterior_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_10 = ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_20 = ((A:0.1,B:0.1):0.4,(C:0.1,D:0.1):0.4):0.0;\n"
+        "tree STATE_30 = ((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-consensus",
+            str(posterior_path),
+            "--burnin-fraction",
+            "0.25",
+            "--out",
+            str(consensus_path),
+            "--tree-set-out",
+            str(retained_path),
+            "--clade-table-out",
+            str(clade_table_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["kept_tree_count"] == 3
+    assert payload["metrics"]["annotated_node_count"] == 2
+    assert payload["metrics"]["clade_frequency_count"] == 4
+    assert payload["data"]["maximum_posterior_probability"] == pytest.approx(2 / 3)
+    assert consensus_path.read_text(encoding="utf-8").strip() == (
+        "((A:0.1,B:0.1)0.666666666666667:0.35,(C:0.1,D:0.1)0.666666666666667:0.35);"
+    )
+    assert retained_path.read_text(encoding="utf-8").count("\n") == 3
+    assert "A|B\t2\t0.666666666666667" in clade_table_path.read_text(encoding="utf-8")

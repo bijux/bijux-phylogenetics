@@ -38,6 +38,7 @@ from bijux_phylogenetics.bayesian import (
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
     summarize_beast_log,
+    summarize_beast_posterior_trees,
     summarize_mrbayes_posterior_trees,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
@@ -3913,6 +3914,37 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the posterior tree set report as JSON."
     )
     _add_manifest_argument(adapter_beast_trees)
+    adapter_beast_consensus = adapter_subparsers.add_parser(
+        "beast-consensus",
+        help="Build a majority-rule consensus tree from BEAST posterior tree samples.",
+    )
+    adapter_beast_consensus.add_argument("input_path", type=Path)
+    adapter_beast_consensus.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.25,
+        help="Discard this fraction of early sampled trees before consensus building.",
+    )
+    adapter_beast_consensus.add_argument(
+        "--out",
+        required=True,
+        type=Path,
+        help="Write the posterior-probability-annotated consensus tree as Newick.",
+    )
+    adapter_beast_consensus.add_argument(
+        "--tree-set-out",
+        type=Path,
+        help="Write the retained posterior tree set as normalized Newick.",
+    )
+    adapter_beast_consensus.add_argument(
+        "--clade-table-out",
+        type=Path,
+        help="Write the retained clade-frequency ledger as TSV.",
+    )
+    adapter_beast_consensus.add_argument(
+        "--json", action="store_true", help="Emit the posterior consensus report as JSON."
+    )
+    _add_manifest_argument(adapter_beast_consensus)
     adapter_beast_convergence = adapter_subparsers.add_parser(
         "beast-convergence",
         help="Assess BEAST log convergence from ESS and trace drift.",
@@ -9995,6 +10027,49 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "burnin_fraction": report.burnin_fraction,
                             "clade_count": len(report.clades),
                             "sampled_state_count": len(report.sampled_states),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-consensus":
+                consensus_tree, report = summarize_beast_posterior_trees(
+                    args.input_path,
+                    burnin_fraction=args.burnin_fraction,
+                )
+                outputs: list[Path | str] = [write_newick(args.out, consensus_tree)]
+                if args.tree_set_out is not None:
+                    args.tree_set_out.parent.mkdir(parents=True, exist_ok=True)
+                    args.tree_set_out.write_text(
+                        report.retained_tree_set_path.read_text(encoding="utf-8"),
+                        encoding="utf-8",
+                    )
+                    outputs.append(args.tree_set_out)
+                if args.clade_table_out is not None:
+                    outputs.append(
+                        write_clade_frequency_table(
+                            args.clade_table_out,
+                            compute_clade_frequency_table(report.retained_tree_set_path),
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "total_tree_count": report.total_tree_count,
+                            "kept_tree_count": report.kept_tree_count,
+                            "annotated_node_count": report.annotated_node_count,
+                            "clade_frequency_count": report.clade_frequency_count,
+                            "burnin_fraction": report.burnin_fraction,
                         },
                         data=report,
                     ),
