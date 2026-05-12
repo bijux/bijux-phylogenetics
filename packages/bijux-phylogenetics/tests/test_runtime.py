@@ -10,11 +10,16 @@ from bijux_phylogenetics.ancestral import (
     build_ancestral_figure_package,
     build_ancestral_sensitivity_report,
     compare_continuous_ancestral_models,
+    continuous_ancestral_exclusions,
     reconstruct_continuous_ancestral_states,
     reconstruct_discrete_ancestral_states,
     render_ancestral_state_report,
     render_ancestral_state_tree,
+    summarize_continuous_ancestral_report,
     write_ancestral_state_table,
+    write_continuous_ancestral_exclusion_table,
+    write_continuous_ancestral_summary_table,
+    write_continuous_ancestral_uncertainty_table,
 )
 from bijux_phylogenetics.bayesian import (
     BeastCalibration,
@@ -1645,6 +1650,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is reconstruct_continuous_ancestral_states
     )
     assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_report
+        is summarize_continuous_ancestral_report
+    )
+    assert (
+        bijux_phylogenetics.continuous_ancestral_exclusions
+        is continuous_ancestral_exclusions
+    )
+    assert (
         bijux_phylogenetics.reconstruct_discrete_ancestral_states
         is reconstruct_discrete_ancestral_states
     )
@@ -1662,6 +1675,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert (
         bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_summary_table
+        is write_continuous_ancestral_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_uncertainty_table
+        is write_continuous_ancestral_uncertainty_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_exclusion_table
+        is write_continuous_ancestral_exclusion_table
     )
     assert (
         bijux_phylogenetics.render_ancestral_state_report
