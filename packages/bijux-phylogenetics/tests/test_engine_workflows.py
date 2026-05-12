@@ -632,6 +632,16 @@ def test_run_iqtree_backend_with_real_executable_on_small_dataset(
         sequence_type="dna",
         replicates=1000,
     )
+    sh_alrt_report = run_sh_alrt_support_estimation(
+        input_path,
+        out_dir=tmp_path / "sh-alrt",
+        model=model_report.selected_model,
+        executable=executable,
+        prefix="real",
+        sequence_type="dna",
+        sh_alrt_replicates=1000,
+        bootstrap_replicates=1000,
+    )
     consensus_report = run_bootstrap_consensus_tree(
         bootstrap_report.output_paths["bootstrap_trees"],
         out_dir=tmp_path / "consensus",
@@ -660,6 +670,14 @@ def test_run_iqtree_backend_with_real_executable_on_small_dataset(
     assert bootstrap_report.iqtree_summary.support_value_count >= 1
     assert bootstrap_report.bootstrap_support_summary is not None
     assert bootstrap_report.weak_backbone_report is not None
+    assert sh_alrt_report.output_paths["support_tree"].exists()
+    assert sh_alrt_report.output_paths["bootstrap_trees"].exists()
+    assert sh_alrt_report.output_paths["support_table"].exists()
+    assert sh_alrt_report.output_paths["conflicting_support_branches"].exists()
+    assert sh_alrt_report.iqtree_summary is not None
+    assert sh_alrt_report.iqtree_summary.support_value_count >= 1
+    assert sh_alrt_report.sh_alrt_support_summary is not None
+    assert sh_alrt_report.sh_alrt_support_summary.annotated_node_count >= 1
     assert consensus_report.output_paths["consensus_tree"].exists()
     assert consensus_report.output_paths["iqtree_log"].exists()
     assert consensus_report.iqtree_summary is not None
