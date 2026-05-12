@@ -11,7 +11,7 @@ from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestra
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
     compare_continuous_ancestral_trees,
-    compare_discrete_ancestral_models,
+    compare_discrete_ancestral_reconstructions,
     compare_discrete_ancestral_trees,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
@@ -194,68 +194,19 @@ def _model_sensitivity_summary(
             changed_node_count=changed,
             notes=[f"compared continuous models {model} and {compare_model}"],
         )
-    comparison = (
-        compare_discrete_ancestral_models(
-            tree_path,
-            traits_path,
-            trait=trait,
-            taxon_column=taxon_column,
-            models=(
-                model,
-                compare_model,
-                "all-rates-different"
-                if compare_model != "all-rates-different"
-                else "equal-rates",
-            ),
-            state_ordering=state_ordering,
-            ordered_states=ordered_states,
-        )
-        if model != "fitch" and compare_model != "fitch"
-        else None
-    )
-    if comparison is not None:
-        changed = sum(1 for row in comparison.node_differences if row.differs)
-        return AncestralSensitivitySummary(
-            label="model",
-            changed_node_count=changed,
-            notes=[
-                f"selected discrete model {comparison.selected_model} from {', '.join(row.model for row in comparison.rows)}"
-            ],
-        )
-    baseline = reconstruct_discrete_ancestral_states(
+    comparison = compare_discrete_ancestral_reconstructions(
         tree_path,
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
-        model=model,
+        left_model=model,
+        right_model=compare_model,
         state_ordering=state_ordering,
         ordered_states=ordered_states,
-    )
-    alternative = reconstruct_discrete_ancestral_states(
-        tree_path,
-        traits_path,
-        trait=trait,
-        taxon_column=taxon_column,
-        model=compare_model,
-        state_ordering=state_ordering,
-        ordered_states=ordered_states,
-    )
-    alternative_by_node = {
-        estimate.node: estimate
-        for estimate in alternative.estimates
-        if not estimate.is_tip
-    }
-    changed = sum(
-        1
-        for estimate in baseline.estimates
-        if not estimate.is_tip
-        and estimate.node in alternative_by_node
-        and estimate.most_likely_state
-        != alternative_by_node[estimate.node].most_likely_state
     )
     return AncestralSensitivitySummary(
         label="model",
-        changed_node_count=changed,
+        changed_node_count=comparison.differing_node_count,
         notes=[f"compared discrete models {model} and {compare_model}"],
     )
 

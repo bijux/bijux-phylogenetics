@@ -10,6 +10,7 @@ from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestra
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
     compare_continuous_ancestral_trees,
+    compare_discrete_ancestral_reconstructions,
     compare_discrete_ancestral_models,
     compare_discrete_ancestral_trees,
     render_ancestral_state_report,
@@ -81,6 +82,22 @@ def test_compare_discrete_ancestral_models_selects_supported_model() -> None:
     )
 
 
+def test_compare_discrete_ancestral_reconstructions_supports_fitch_baseline() -> None:
+    report = compare_discrete_ancestral_reconstructions(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_ancestral_sparse.tsv"),
+        trait="habitat",
+        left_model="fitch",
+        right_model="equal-rates",
+    )
+    assert report.left_model == "fitch"
+    assert report.right_model == "equal-rates"
+    assert report.left_minimal_change_count == 1
+    assert report.right_minimal_change_count is None
+    assert len(report.rows) == 3
+    assert any(row.ambiguity_changed for row in report.rows)
+
+
 def test_compare_ancestral_reconstructions_across_trees_reports_shared_nodes() -> None:
     continuous = compare_continuous_ancestral_trees(
         fixture("example_tree.nwk"),
@@ -148,3 +165,21 @@ def test_render_ancestral_state_report_writes_html_and_svg(tmp_path: Path) -> No
     ]
     assert result.supplement_sections == manifest["supplement_sections"]
     assert result.sensitivity is not None
+
+
+def test_render_ancestral_state_report_supports_fitch_comparison(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "ancestral-discrete-report.html"
+    result = render_ancestral_state_report(
+        tree_path=fixture("example_tree.nwk"),
+        traits_path=fixture("example_traits_ancestral_sparse.tsv"),
+        trait="habitat",
+        reconstruction_kind="discrete",
+        model="fitch",
+        compare_model="equal-rates",
+        out_path=output,
+    )
+    html = output.read_text(encoding="utf-8")
+    assert result.output_path == output
+    assert "ancestral-comparison" in html
