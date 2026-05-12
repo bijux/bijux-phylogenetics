@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-11
+last_reviewed: 2026-05-12
 ---
 
 # CLI Surface
@@ -80,6 +80,16 @@ governed support histogram so review surfaces can rely on structured engine
 outputs instead of re-parsing free text. The SH-aLRT command also exposes
 annotated-branch counts, SH-aLRT minima and maxima, and conflicting-signal
 counts for the combined SH-aLRT/UFBoot review surface.
+
+`adapter infer-fast` is the governed FastTree surface for aligned matrices when
+speed matters more than fully optimized ML search. It keeps the inferred tree
+plus `.support.tsv`, `.low-support.tsv`, and `.support-histogram.tsv` sidecars,
+and its JSON summary exposes `approximate_method`, `support_label_kind`,
+`support_scale`, `annotated_node_count`, local-support minima and maxima, and
+weakly supported clade counts. The public interpretation rule is explicit:
+FastTree support labels are SH-like local-support proportions on a `0..1`
+scale, and the workflow should be treated as approximate evidence rather than
+as a silent substitute for the IQ-TREE ML workflows.
 
 For raw input hygiene before alignment, the alignment family now includes
 `alignment sequence-type`, `alignment validate-input`, and
