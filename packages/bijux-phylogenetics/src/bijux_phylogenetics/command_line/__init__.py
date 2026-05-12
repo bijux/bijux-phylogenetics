@@ -220,6 +220,9 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
 )
+from bijux_phylogenetics.engines.inference_reproducibility import (
+    run_inference_reproducibility_check,
+)
 from bijux_phylogenetics.errors import (
     EngineUnavailableError,
     EvidenceContractError,
@@ -3484,7 +3487,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_manifest_argument(adapter_bootstrap)
     adapter_sh_alrt = adapter_subparsers.add_parser(
-        "sh-alrt", help="Run combined sh-alrt and ultrafast bootstrap support estimation."
+        "sh-alrt",
+        help="Run combined sh-alrt and ultrafast bootstrap support estimation.",
     )
     adapter_sh_alrt.add_argument("input_path", type=Path)
     adapter_sh_alrt.add_argument("--out-dir", required=True, type=Path)
@@ -3623,9 +3627,54 @@ def build_parser() -> argparse.ArgumentParser:
         help="Set the ultrafast bootstrap replicate count used for the IQ-TREE support workflow.",
     )
     adapter_compare_engines.add_argument(
-        "--json", action="store_true", help="Emit the comparison workflow report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the comparison workflow report as JSON.",
     )
     _add_manifest_argument(adapter_compare_engines)
+    adapter_reproducibility = adapter_subparsers.add_parser(
+        "reproducibility",
+        help="Rerun supported IQ-TREE inference and classify deterministic versus unstable outputs.",
+    )
+    adapter_reproducibility.add_argument("input_path", type=Path)
+    adapter_reproducibility.add_argument("--out-dir", required=True, type=Path)
+    adapter_reproducibility.add_argument(
+        "--prefix", default="inference-reproducibility"
+    )
+    adapter_reproducibility.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
+    adapter_reproducibility.add_argument("--iqtree-executable", type=str)
+    adapter_reproducibility.add_argument(
+        "--iqtree-seed",
+        type=int,
+        default=1,
+        help="Set the IQ-TREE random seed used for every rerun.",
+    )
+    adapter_reproducibility.add_argument(
+        "--iqtree-threads",
+        type=int,
+        default=1,
+        help="Set the IQ-TREE thread count used for every rerun.",
+    )
+    adapter_reproducibility.add_argument(
+        "--bootstrap-replicates",
+        type=int,
+        default=1000,
+        help="Set the ultrafast bootstrap replicate count used for every rerun.",
+    )
+    adapter_reproducibility.add_argument(
+        "--repeats",
+        type=int,
+        default=3,
+        help="Set how many repeated supported-inference runs to compare.",
+    )
+    adapter_reproducibility.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the reproducibility workflow report as JSON.",
+    )
+    _add_manifest_argument(adapter_reproducibility)
     adapter_mrbayes_prepare = adapter_subparsers.add_parser(
         "mrbayes-prepare",
         help="Prepare a MrBayes NEXUS analysis from an aligned FASTA file.",
@@ -4642,9 +4691,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 records, partitions, report = concatenate_locus_alignments(
                     list(args.alignments),
                     locus_names=(
-                        None
-                        if args.locus_names is None
-                        else tuple(args.locus_names)
+                        None if args.locus_names is None else tuple(args.locus_names)
                     ),
                     data_types=(
                         None if args.data_types is None else tuple(args.data_types)
@@ -8912,7 +8959,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "codon_aware": True,
                                 "sequence_type": report.sequence_type,
                                 "accepted_sequence_count": report.accepted_sequence_count,
-                                "excluded_sequence_count": len(report.excluded_sequences),
+                                "excluded_sequence_count": len(
+                                    report.excluded_sequences
+                                ),
                                 "terminal_stop_sequence_count": report.terminal_stop_sequence_count,
                             },
                             data=report,
@@ -9898,14 +9947,62 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.warnings,
                         metrics={
                             "selected_model": report.selected_model,
-                            "shared_taxa": len(report.engine_comparison.topology.shared_taxa),
+                            "shared_taxa": len(
+                                report.engine_comparison.topology.shared_taxa
+                            ),
                             "robinson_foulds_distance": report.engine_comparison.topology.robinson_foulds_distance,
                             "shared_clade_count": len(report.shared_clade_rows),
-                            "conflicting_clade_count": len(report.conflicting_clade_rows),
+                            "conflicting_clade_count": len(
+                                report.conflicting_clade_rows
+                            ),
                             "support_disagreement_count": sum(
                                 1
                                 for row in report.conflicting_clade_rows
                                 if row.conflict_kind == "support_disagreement"
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "reproducibility":
+                report = run_inference_reproducibility_check(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    prefix=args.prefix,
+                    sequence_type=args.sequence_type,
+                    executable=args.iqtree_executable or "iqtree2",
+                    repeats=args.repeats,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                    seed=args.iqtree_seed,
+                    threads=args.iqtree_threads,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values()],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "selected_model": report.selected_model,
+                            "overall_status": report.overall_status,
+                            "repeat_count": report.repeat_count,
+                            "unstable_comparison_count": sum(
+                                1
+                                for row in report.comparison_rows
+                                if row.classification == "unstable"
+                            ),
+                            "equivalent_comparison_count": sum(
+                                1
+                                for row in report.comparison_rows
+                                if row.classification == "equivalent"
                             ),
                         },
                         data=report,

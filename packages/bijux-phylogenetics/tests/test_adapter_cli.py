@@ -384,9 +384,7 @@ def test_adapter_align_cli_can_run_codon_aware_alignment(
     assert Path(payload["data"]["output_paths"]["excluded_sequences"]).exists()
 
 
-def test_adapter_align_cli_reports_codon_aware_failures(
-    tmp_path: Path, capsys
-) -> None:
+def test_adapter_align_cli_reports_codon_aware_failures(tmp_path: Path, capsys) -> None:
     executable = _fake_mafft(tmp_path / "mafft-fixture")
     input_path = tmp_path / "coding-invalid.fasta"
     input_path.write_text(
@@ -632,6 +630,50 @@ def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
     )
 
 
+def test_adapter_reproducibility_cli_reports_deterministic_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+    out_dir = tmp_path / "reproducibility"
+
+    exit_code = main(
+        [
+            "adapter",
+            "reproducibility",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--sequence-type",
+            "dna",
+            "--iqtree-executable",
+            str(iqtree),
+            "--bootstrap-replicates",
+            "1000",
+            "--repeats",
+            "3",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["selected_model"] == "GTR+G"
+    assert payload["metrics"]["overall_status"] == "deterministic"
+    assert payload["metrics"]["repeat_count"] == 3
+    assert payload["metrics"]["unstable_comparison_count"] == 0
+    assert payload["metrics"]["equivalent_comparison_count"] == 0
+    assert Path(payload["data"]["output_paths"]["runs_table"]).exists()
+    assert Path(payload["data"]["output_paths"]["comparison_table"]).exists()
+    assert Path(payload["data"]["output_paths"]["support_delta_table"]).exists()
+    assert any(
+        "classify each rerun as deterministic, equivalent, or unstable" in note
+        for note in payload["data"]["notes"]
+    )
+
+
 def test_alignment_partition_summary_cli_writes_summary_table(
     tmp_path: Path, capsys
 ) -> None:
@@ -769,9 +811,7 @@ def test_adapter_infer_ml_cli_supports_mixed_partition_inputs(
     assert payload["data"]["output_paths"]["iqtree_log"].endswith(".log")
 
 
-def test_adapter_bootstrap_cli_reports_support_metrics(
-    tmp_path: Path, capsys
-) -> None:
+def test_adapter_bootstrap_cli_reports_support_metrics(tmp_path: Path, capsys) -> None:
     iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
     input_path = fixture("alignments/example_alignment.fasta")
 
@@ -858,7 +898,9 @@ def test_adapter_sh_alrt_cli_reports_combined_support_metrics(
     assert payload["metrics"]["minimum_ufboot_support"] == 96.0
     assert payload["metrics"]["maximum_ufboot_support"] == 97.0
     assert Path(payload["data"]["output_paths"]["support_table"]).exists()
-    assert Path(payload["data"]["output_paths"]["conflicting_support_branches"]).exists()
+    assert Path(
+        payload["data"]["output_paths"]["conflicting_support_branches"]
+    ).exists()
 
 
 def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
@@ -999,12 +1041,11 @@ def test_adapter_fasta_to_tree_cli_passes_named_trimal_mode_to_trimming_step(
     assert exit_code == 0
     assert payload["metrics"]["trimming_mode"] == "strictplus"
     assert payload["metrics"]["removed_site_count"] == 3
-    assert payload["data"]["trimming_workflow"]["run"]["command"][5:] == [
-        "-strictplus"
-    ]
-    assert payload["data"]["trimming_workflow"]["trimming_summary"][
-        "removed_site_count"
-    ] == 3
+    assert payload["data"]["trimming_workflow"]["run"]["command"][5:] == ["-strictplus"]
+    assert (
+        payload["data"]["trimming_workflow"]["trimming_summary"]["removed_site_count"]
+        == 3
+    )
     assert "trimal trimming mode: strictplus" in payload["data"]["notes"]
 
 
@@ -1046,8 +1087,7 @@ def test_adapter_fasta_to_tree_cli_repairs_invalid_input_when_requested(
     assert payload["metrics"]["removed_record_count"] == 2
     prepared_input_path = Path(payload["data"]["prepared_input_path"])
     assert prepared_input_path.read_text(encoding="utf-8") == (
-        ">Alpha_sample\nACTGACTG\n"
-        ">rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
+        ">Alpha_sample\nACTGACTG\n>rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
     )
 
 
@@ -1164,9 +1204,10 @@ def test_adapter_fasta_to_tree_cli_rejects_ufboot_replicates_below_iqtree_minimu
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 2
     assert payload["status"] == "error"
-    assert "ultrafast bootstrap requires at least 1000 replicates" in payload[
-        "errors"
-    ][0]["message"]
+    assert (
+        "ultrafast bootstrap requires at least 1000 replicates"
+        in payload["errors"][0]["message"]
+    )
 
 
 def test_adapter_fasta_to_tree_cli_passes_deterministic_iqtree_controls(
