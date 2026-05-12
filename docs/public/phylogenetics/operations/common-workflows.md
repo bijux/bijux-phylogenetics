@@ -214,6 +214,40 @@ baseline model and the requested comparison model. The excluded-taxa ledger
 keeps one row per dropped tip with an explicit reason such as
 `missing_discrete_trait_state`.
 
+When the goal is to decide whether a discrete trait should be reconstructed as
+ordered rather than unordered, use `ancestral ordered-discrete`. This workflow
+fits the same discrete likelihood model twice on one tree: once with the
+supplied ordered state vocabulary and once with the unrestricted unordered
+baseline. It then writes the fit comparison, node-wise ancestral differences,
+and directed transition restrictions so reviewers can see exactly what the
+ordered assumption changed.
+
+```bash
+bijux-phylogenetics ancestral ordered-discrete \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait habitat_stage \
+  --taxon-column species \
+  --model equal-rates \
+  --ordered-states absent,partial,complete \
+  --summary-out artifacts/primates.ordered-discrete-summary.tsv \
+  --fits-out artifacts/primates.ordered-discrete-fits.tsv \
+  --nodes-out artifacts/primates.ordered-discrete-nodes.tsv \
+  --transitions-out artifacts/primates.ordered-discrete-transitions.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the ordered and unordered likelihoods,
+AIC values, delta AIC, preferred ordering, differing node count, ambiguity
+change count, and restricted transition count. The fit ledger keeps one row
+for the ordered fit and one for the unordered baseline, including the ordered
+state vocabulary, parameter count, root state, and root confidence. The node
+ledger keeps one row per internal node with the ordered state, unordered
+state, confidence delta, and ambiguity change flag. The transition ledger
+keeps one row per directed state change so reviewers can see which transitions
+the ordered model forbids entirely and which adjacent transitions remain
+allowed.
+
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
 ancestral reconstruction surfaces and turns their uncertainty into one ranked
