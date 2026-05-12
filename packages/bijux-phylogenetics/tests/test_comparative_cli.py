@@ -352,6 +352,64 @@ def test_comparative_pgls_cli_writes_lambda_profile_table(
     assert len(written_rows) == 102
 
 
+def test_comparative_brownian_pgls_cli_reports_covariance_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "brownian-pgls",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    coefficients = {
+        coefficient["name"]: coefficient["estimate"]
+        for coefficient in payload["data"]["model"]["coefficients"]
+    }
+    assert exit_code == 0
+    assert payload["metrics"]["covariance_model"] == "brownian-shared-path"
+    assert payload["metrics"]["lambda_value"] == 1.0
+    assert payload["metrics"]["tree_is_ultrametric"] is True
+    assert payload["metrics"]["covariance_row_count"] == 16
+    assert payload["metrics"]["positive_definite_before_stabilization"] is True
+    assert math.isclose(coefficients["intercept"], 0.305084745762712, abs_tol=1e-6)
+    assert math.isclose(coefficients["predictor_one"], 0.957627118644068, abs_tol=1e-6)
+
+
+def test_comparative_brownian_pgls_cli_writes_covariance_table(
+    tmp_path: Path, capsys
+) -> None:
+    covariance_out = tmp_path / "brownian-covariance.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "brownian-pgls",
+            str(fixture("example_tree_internal_long_branch.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--covariance-out",
+            str(covariance_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_is_ultrametric"] is False
+    assert payload["metrics"]["covariance_row_count"] == 16
+    assert covariance_out.exists()
+    written_rows = covariance_out.read_text(encoding="utf-8").splitlines()
+    assert written_rows[0].startswith("left_taxon\tright_taxon\tis_diagonal")
+    assert len(written_rows) == 17
+
+
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
     exit_code = main(
         [
