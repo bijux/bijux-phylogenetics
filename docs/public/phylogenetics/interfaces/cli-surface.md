@@ -119,6 +119,23 @@ validates, but the JSON warnings mark that combination as exploratory because
 BEAST reports that the standard birth-death prior is not serial-sampling
 aware.
 
+`adapter beast-log` is the governed parser surface for one BEAST posterior log.
+It accepts BEAST's native `Sample` header as well as lowercase `state`
+variants, and it can apply `--burnin-fraction` before reporting summaries. Its
+JSON metrics expose `row_count`, `column_count`, `burnin_fraction`,
+`kept_row_count`, `posterior_parameter_count`, `likelihood_parameter_count`,
+`prior_parameter_count`, `clock_parameter_count`, and `tree_parameter_count`.
+When `--summary-out` is provided, the command also writes a TSV table with one
+row per retained parameter containing effective sample size, mean, min/max,
+first-half mean, second-half mean, standardized mean shift, and the retained
+state window.
+
+`adapter beast-convergence` applies the same burn-in handling to ESS and drift
+warnings directly. Its JSON metrics expose `warning_count`, `converged`,
+`burnin_fraction`, and the post-burn-in `sample_count`, while the payload
+lists each warning by parameter and warning code so convergence review does not
+depend on re-reading the BEAST log manually.
+
 `adapter mrbayes-run` is the governed execution surface for one prepared
 MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
 posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC
