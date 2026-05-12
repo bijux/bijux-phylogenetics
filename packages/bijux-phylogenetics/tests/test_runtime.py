@@ -48,6 +48,9 @@ from bijux_phylogenetics.bayesian import (
     render_bayesian_run_comparison_report,
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
+    subsample_beast_posterior_tree_set,
+    subsample_mrbayes_posterior_tree_set,
+    subsample_posterior_tree_set,
     summarize_beast_log,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
@@ -65,6 +68,8 @@ from bijux_phylogenetics.bayesian import (
     write_beast_posterior_tree_set,
     write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
+    write_posterior_tree_subsample,
+    write_posterior_tree_subsample_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -1037,6 +1042,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is write_beast_posterior_tree_set
     )
     assert (
+        bijux_phylogenetics.subsample_beast_posterior_tree_set
+        is subsample_beast_posterior_tree_set
+    )
+    assert (
+        bijux_phylogenetics.subsample_mrbayes_posterior_tree_set
+        is subsample_mrbayes_posterior_tree_set
+    )
+    assert (
+        bijux_phylogenetics.subsample_posterior_tree_set
+        is subsample_posterior_tree_set
+    )
+    assert (
         bijux_phylogenetics.summarize_maximum_clade_credibility_tree
         is summarize_maximum_clade_credibility_tree
     )
@@ -1073,6 +1090,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_supplementary_bayesian_diagnostics_table
         is write_supplementary_bayesian_diagnostics_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_subsample
+        is write_posterior_tree_subsample
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_subsample_table
+        is write_posterior_tree_subsample_table
     )
     assert (
         bijux_phylogenetics.write_bayesian_methods_summary_text
