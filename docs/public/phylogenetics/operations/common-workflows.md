@@ -155,6 +155,31 @@ context, both p-values, and the permutation exceedance count. The permutation
 ledger keeps one row per shuffled trait realization so reviewers can see the
 null K distribution directly instead of only one final exceedance count.
 
+When the goal is to fit a standalone continuous-trait evolution model rather
+than a regression, use `comparative brownian`. This workflow keeps the
+Brownian motion surface explicit by reporting the fitted root state,
+evolutionary rate `sigma²`, log-likelihood, AIC, and AICc, while preserving the
+taxa pruned before fitting.
+
+```bash
+bijux-phylogenetics comparative brownian \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait longevity \
+  --taxon-column species \
+  --summary-out artifacts/primates.brownian-summary.tsv \
+  --excluded-taxa-out artifacts/primates.brownian-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, excluded taxon
+count, fitted root state, `sigma²`, log-likelihood, AIC, AICc, and residual
+diagnostic summary fields. The excluded-taxa ledger keeps one row per taxon
+that was absent from the tree, absent from the trait table, missing the target
+trait value, or pruned because the trait value was non-numeric. This makes the
+Brownian fit auditable as a tree-plus-trait workflow rather than a detached
+scalar estimate.
+
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
