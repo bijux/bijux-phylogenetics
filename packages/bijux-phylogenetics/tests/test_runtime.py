@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics
+import bijux_phylogenetics.compare as compare_api
 from bijux_phylogenetics.ancestral import (
     build_ancestral_figure_package,
     build_ancestral_sensitivity_report,
@@ -99,6 +100,7 @@ from bijux_phylogenetics.comparative.evidence_contract import (
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
+    RobinsonFouldsComparisonReport,
     compare_branch_lengths,
     compare_clade_sets,
     compare_robinson_foulds,
@@ -462,6 +464,13 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.compare_distance_tree_topologies
         is compare_distance_tree_topologies
     )
+    assert (
+        bijux_phylogenetics.RobinsonFouldsComparisonReport
+        is RobinsonFouldsComparisonReport
+    )
+    assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
+    assert compare_api.RobinsonFouldsComparisonReport is RobinsonFouldsComparisonReport
+    assert compare_api.compare_robinson_foulds is compare_robinson_foulds
     assert (
         bijux_phylogenetics.assess_distance_method_maturity
         is assess_distance_method_maturity

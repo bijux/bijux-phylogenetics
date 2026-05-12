@@ -245,7 +245,12 @@ from .comparative import (
     validate_comparative_reference_examples,
     write_comparative_method_report,
 )
-from .compare.topology import TreeComparisonReport, compare_tree_paths
+from .compare.topology import (
+    RobinsonFouldsComparisonReport,
+    TreeComparisonReport,
+    compare_robinson_foulds,
+    compare_tree_paths,
+)
 from .core.dataset import (
     DatasetAuditReport,
     DatasetCompletenessMatrix,
@@ -974,6 +979,7 @@ __all__ = [
     "TreeDistanceMatrixReport",
     "TreeDistancePair",
     "TreeComparisonReport",
+    "RobinsonFouldsComparisonReport",
     "TreeInspectionReport",
     "TreeRenderResult",
     "TreeSetRecord",
@@ -1065,6 +1071,7 @@ __all__ = [
     "compare_discrete_state_models",
     "compare_bootstrap_and_posterior_uncertainty",
     "compare_posterior_topological_diversity",
+    "compare_robinson_foulds",
     "compare_tree_paths",
     "compare_posterior_tree_sets",
     "compare_distance_tree_topologies",
