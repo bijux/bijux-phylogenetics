@@ -52,6 +52,34 @@ full packaged workflow immediately, or they can point individual comparative
 commands at `dataset/tree.nwk` and `dataset/traits.csv` with
 `--taxon-column species`.
 
+When the goal is to start from a real packaged bird dataset focused on trait
+evolution and clade-pattern review, use `demo avian-reproductive-traits`. This
+workflow materializes the packaged avian reproductive dataset, which ships with
+one rooted 94-taxon bird tree and one cleaned reproductive trait table, and
+then recomputes the governed workflow bundle for regression, trait evolution,
+ancestral reconstruction, and clade summaries.
+
+```bash
+bijux-phylogenetics demo avian-reproductive-traits \
+  --out artifacts/avian-reproductive-traits \
+  --json
+```
+
+The packaged bird workflow writes the same dataset and workflow split as the
+primate surface, but uses bird-specific review choices:
+
+- PGLS with `testes_mass ~ body_mass`
+- Brownian trait evolution for `testes_mass`
+- OU trait evolution for `testes_mass`
+- phylogenetic signal for `testes_mass`
+- continuous ancestral reconstruction for `testes_mass`
+- discrete ancestral reconstruction for `mating_system`
+- clade-specific trait summaries for `mating_system`
+
+This makes the packaged bird dataset usable for both trait-evolution examples
+and clade-pattern review without requiring users to assemble a bird tree and
+trait matrix by hand.
+
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
