@@ -566,6 +566,82 @@ def test_comparative_early_burst_cli_writes_review_ledgers(
     assert profile_rows[0].startswith("trait\trate_change\tlog_likelihood")
 
 
+def test_comparative_rate_through_time_cli_reports_interval_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "rate-through-time",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--interval-count",
+            "4",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 4
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["interval_count"] == 4
+    assert payload["metrics"]["nonempty_interval_count"] >= 2
+    assert payload["metrics"]["tree_depth"] > 0.0
+    assert payload["metrics"]["trend_direction"] in {
+        "slowdown",
+        "acceleration",
+        "stable",
+        "insufficient_data",
+    }
+
+
+def test_comparative_rate_through_time_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "trait-rate-through-time-summary.tsv"
+    intervals_out = tmp_path / "trait-rate-through-time-intervals.tsv"
+    excluded_out = tmp_path / "trait-rate-through-time-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "rate-through-time",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_continuous_evolution_missing.tsv")),
+            "--trait",
+            "response_growth",
+            "--interval-count",
+            "4",
+            "--summary-out",
+            str(summary_out),
+            "--intervals-out",
+            str(intervals_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 3
+    assert summary_out.exists()
+    assert intervals_out.exists()
+    assert excluded_out.exists()
+    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "trait\ttaxon_column\ttree_taxon_count"
+    )
+    assert intervals_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "interval_index\tstart_depth\tend_depth"
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason",
+        "B\tmissing_trait_value",
+        "C\tnon_numeric_trait_value",
+        "G\tabsent_from_tree",
+    ]
+
+
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
     exit_code = main(
         [
