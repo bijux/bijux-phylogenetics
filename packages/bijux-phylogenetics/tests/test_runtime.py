@@ -550,14 +550,27 @@ from bijux_phylogenetics.phylogeography import (
     CoordinateMovementOutlierRow,
     CoordinateMovementSummary,
     CoordinateMovementVisualization,
+    GeographicMapArtifact,
+    GeographicMapExclusionRow,
+    GeographicMapLineRow,
+    GeographicMapMarkerRow,
+    GeographicMapReport,
+    GeographicMapSummary,
     PhylogeographicCoordinateReport,
     render_coordinate_movement_visualization,
+    render_geographic_map_html,
     summarize_continuous_phylogeography,
+    summarize_continuous_phylogeography_map,
+    summarize_discrete_region_map,
     write_coordinate_estimate_table,
     write_coordinate_movement_branch_table,
     write_coordinate_movement_exclusion_table,
     write_coordinate_movement_outlier_table,
     write_coordinate_movement_summary_table,
+    write_geographic_map_exclusion_table,
+    write_geographic_map_line_table,
+    write_geographic_map_marker_table,
+    write_geographic_map_summary_table,
 )
 from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
@@ -1265,6 +1278,43 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is render_coordinate_movement_visualization
     )
     assert (
+        bijux_phylogenetics.summarize_continuous_phylogeography_map
+        is summarize_continuous_phylogeography_map
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_region_map
+        is summarize_discrete_region_map
+    )
+    assert bijux_phylogenetics.GeographicMapArtifact is GeographicMapArtifact
+    assert (
+        bijux_phylogenetics.GeographicMapExclusionRow
+        is GeographicMapExclusionRow
+    )
+    assert bijux_phylogenetics.GeographicMapLineRow is GeographicMapLineRow
+    assert bijux_phylogenetics.GeographicMapMarkerRow is GeographicMapMarkerRow
+    assert bijux_phylogenetics.GeographicMapReport is GeographicMapReport
+    assert bijux_phylogenetics.GeographicMapSummary is GeographicMapSummary
+    assert (
+        bijux_phylogenetics.write_geographic_map_summary_table
+        is write_geographic_map_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_map_marker_table
+        is write_geographic_map_marker_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_map_line_table
+        is write_geographic_map_line_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_map_exclusion_table
+        is write_geographic_map_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.render_geographic_map_html
+        is render_geographic_map_html
+    )
+    assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
         is simulate_discrete_stochastic_maps
     )
@@ -1583,8 +1633,8 @@ def test_command_registry_exposes_ecological_niche_surface() -> None:
 def test_command_registry_exposes_phylogeography_surface() -> None:
     spec = get_command_spec("phylogeography")
 
-    assert spec.domain == "continuous-phylogeography"
-    assert spec.outputs == ("continuous-phylogeography-report",)
+    assert spec.domain == "geographic-reconstruction"
+    assert spec.outputs == ("geographic-reconstruction-report",)
 
 
 def test_command_registry_exposes_diversification_surface() -> None:
