@@ -1032,6 +1032,104 @@ one-tree continuous-coordinate review over the owned continuous ancestral
 runtime, not a projected map output, direct route reconstruction, or a full
 spatial diffusion engine with historical cartography.
 
+`phylogeography coordinates-map` is the governed map-rendering surface for one
+continuous latitude/longitude reconstruction. It reuses the owned continuous
+phylogeography review, projects tip and ancestral coordinates onto one fixed
+world latitude/longitude extent, and can filter the visible branchwise
+movement layer by midpoint depth. Its JSON metrics report:
+- `map_mode`
+- `model`
+- `tip_marker_count`
+- `internal_marker_count`
+- `line_count`
+- `visible_line_count`
+- `time_filter_applied`
+- `excluded_record_count`
+
+The command supports `brownian` and `ou`. `--minimum-midpoint-depth` and
+`--maximum-midpoint-depth` are optional visible-line filters over reconstructed
+branch midpoints. `--html-out` writes one self-contained HTML map artifact.
+
+When `--summary-out` is supplied, `phylogeography coordinates-map` writes one
+overall map summary ledger. The row preserves:
+- `mode`
+- `model`
+- `analyzed_taxon_count`
+- `excluded_record_count`
+- `tip_marker_count`
+- `internal_marker_count`
+- `root_marker_count`
+- `line_count`
+- `visible_line_count`
+- `tree_depth`
+- `time_filter_applied`
+- `minimum_midpoint_depth_filter`
+- `maximum_midpoint_depth_filter`
+- `earliest_visible_midpoint_depth`
+- `latest_visible_midpoint_depth`
+- `warning_count`
+
+When `--markers-out` is supplied, the command writes one geographic marker
+ledger. Each row preserves:
+- `marker_id`
+- `label`
+- `marker_kind`
+- `latitude`
+- `longitude`
+- `state_label`
+- `descendant_taxa`
+- `confidence`
+- `uncertainty_km`
+- `is_tip`
+- `is_root`
+- `active_line_count`
+
+When `--lines-out` is supplied, the command writes one geographic line ledger.
+Each row preserves:
+- `line_id`
+- `line_kind`
+- `source_label`
+- `target_label`
+- `source_latitude`
+- `source_longitude`
+- `target_latitude`
+- `target_longitude`
+- `child_descendant_taxa`
+- `support`
+- `midpoint_depth`
+- `branch_length`
+- `distance_km`
+- `state_transition`
+- `flag_codes`
+- `visible`
+
+When `--exclusions-out` is supplied, the command writes one map exclusion
+ledger. Each row preserves:
+- `subject_id`
+- `subject_kind`
+- `raw_left`
+- `raw_right`
+- `reason`
+- `note`
+
+`phylogeography regions-map` is the governed map-rendering surface for one
+discrete ancestral geographic-region reconstruction plus one explicit region
+centroid table. It reuses the owned biogeography reconstruction and movement
+event surfaces, places tip and ancestral regions at their supplied centroids,
+and renders directed transition lines on the same fixed world extent. Its JSON
+metrics report the same map metrics as `phylogeography coordinates-map`.
+
+The command requires `--trait` and `--centroids`. It supports `er`, `sym`,
+and `ard`. `--region-column`, `--latitude-column`, and `--longitude-column`
+resolve centroid-table columns. The same midpoint-depth filters control which
+transition lines remain visible on the rendered map layer.
+
+This map-rendering surface is intentionally explicit about scope. It does not
+replace the underlying continuous or discrete geographic reconstruction.
+Instead, it turns owned markers and owned movement or transition lines into a
+reviewable HTML map without depending on a network tile service. Depth
+filtering is a reviewer-facing visibility filter, not a new temporal model fit.
+
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
 ancestral model. Instead, it reuses the owned reconstruction surfaces and
