@@ -320,6 +320,53 @@ This surface exists so correlated-evolution review can inspect which traits
 still move together after the fitted predictors are accounted for, while also
 making the shared complete-case taxon policy auditable.
 
+`comparative clade-residuals` is the governed review surface for asking whether
+one fitted comparative model leaves concentrated residual burden in particular
+subtrees. Its JSON metrics report:
+- `model_family`
+- `taxon_count`
+- `clade_count`
+- `residual_heavy_clade_count`
+- `top_influential_clade`
+- `standardized_residual_method`
+
+The command fits one comparative model first and then aggregates residuals
+across every internal non-root clade in the analyzed tree. The model family is
+inferred from the fitted response:
+- binary `0/1` response => phylogenetic logistic residual surface
+- otherwise => PGLS residual surface
+
+When `--taxa-out` is supplied, `comparative clade-residuals` writes one taxon
+ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `observed_value`
+- `fitted_value`
+- `residual`
+- `standardized_residual`
+
+When `--clades-out` is supplied, the command also writes one internal-clade
+aggregation ledger as CSV or TSV. Each row preserves:
+- `clade_id`
+- `node_label`
+- `taxon_count`
+- `taxa`
+- `mean_residual`
+- `mean_abs_residual`
+- `mean_standardized_residual`
+- `mean_abs_standardized_residual`
+- `max_abs_standardized_residual`
+- `residual_sum_of_squares`
+- `residual_sum_of_squares_share`
+- `positive_residual_taxa`
+- `negative_residual_taxa`
+- `influence_score`
+- `residual_heavy`
+- `rank`
+
+This surface exists so residual review does not stop at single outlier taxa.
+It makes subtree-level model misspecification explicit and ranks the clades
+that carry the largest residual burden.
+
 `comparative brownian-pgls` is the fixed-covariance companion surface when the
 scientific question specifically assumes Brownian shared-path covariance rather
 than an estimated Pagel lambda. Its JSON metrics report:
