@@ -415,6 +415,67 @@ tip ledger. Each row preserves:
 - `taxon`
 - `reason`
 
+`ancestral render` is the governed visualization surface for one ancestral
+reconstruction. It accepts one continuous or discrete ancestral model input and
+emits one reviewer-facing tree figure as SVG, PNG, or HTML depending on the
+`--out` suffix. Its JSON metrics report:
+- `tip_count`
+- `format`
+- `layout`
+- `rendered_internal_annotation_count`
+- `rendered_internal_pie_count`
+- `rendered_branch_color_count`
+
+The command requires `--kind continuous` or `--kind discrete`. Continuous mode
+supports `brownian` and `ou`. Discrete mode supports `fitch`, `equal-rates`,
+`symmetric`, and `all-rates-different`. The `--layout` surface remains
+`cladogram`, `phylogram`, or `circular`.
+
+For discrete visualization, `--discrete-node-style` chooses:
+- `labels`: one internal text label per node
+- `pies`: one marginal-state pie marker per node
+
+For branch coloring, `--branch-coloring` chooses:
+- `none`: keep branch lines neutral
+- `state`: color descendant branches by inferred discrete state
+- `regime`: color descendant branches by reconstructed continuous value regime
+
+Continuous rendering rejects `state` branch coloring, and discrete rendering
+rejects `regime` branch coloring, so the branch palette always matches the
+underlying ancestral evidence type instead of silently coercing one mode into
+another.
+
+When `--out` ends in `.svg`, the command writes one standalone SVG figure. When
+`--out` ends in `.png`, the command writes one raster PNG and also writes the
+governed sibling SVG used to create that raster. When `--out` ends in `.html`,
+the command writes one standalone HTML review page with the governed sibling
+SVG embedded directly in the figure section.
+
+`ancestral package` is the governed publication-bundle companion surface for
+ancestral visualization. Its JSON metrics report:
+- `output_dir`
+- `artifact_count`
+
+The package writes one figure bundle plus the node and uncertainty ledgers. The
+visual artifacts are:
+- `ancestral-figure.svg`
+- `ancestral-figure.png`
+- `ancestral-figure.html`
+
+The tabular and descriptive artifacts remain:
+- `node-states.tsv`
+- `uncertainty.tsv`
+- `legend.md`
+- `model-description.md`
+- `figure-caption.md`
+- `figure-manifest.json`
+
+The package uses the same owned visualization contract as `ancestral render`.
+Continuous bundles color branches by reconstructed value regime. Discrete
+bundles render marginal-state pies and color branches by inferred descendant
+state, so the publication bundle preserves the richer visual evidence surface
+without needing a separate styling step.
+
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
