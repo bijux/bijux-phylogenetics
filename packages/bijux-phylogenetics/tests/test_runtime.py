@@ -6298,9 +6298,45 @@ def test_cli_compare_clades_json_output(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 2
     assert payload["data"]["shared_clades"] == ["A|B"]
-    assert payload["data"]["left_only_clades"] == ["C|D"]
-    assert payload["data"]["right_only_clades"] == ["A|B|C"]
+    assert payload["data"]["conflicting_clades"] == ["C|D", "A|B|C"]
+    assert [
+        (row["tree_path"].split("/")[-1], row["unique_clades"])
+        for row in payload["data"]["tree_summaries"]
+    ] == [
+        ("example_tree.nwk", ["C|D"]),
+        ("example_tree_alt.nwk", ["A|B|C"]),
+    ]
+
+
+def test_cli_compare_clades_supports_multiple_trees_and_table_output(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "clade-overlap.tsv"
+    exit_code = main(
+        [
+            "compare",
+            "clades",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_support_left.nwk")),
+            "--tree",
+            str(fixture("example_tree_alt.nwk")),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 3
+    assert payload["metrics"]["shared_clades"] == 1
+    assert payload["metrics"]["conflicting_clades"] == 2
+    assert output.exists()
+    assert "clade_id\ttree_path\tpresent\tsupport" in output.read_text(
+        encoding="utf-8"
+    )
 
 
 def test_cli_compare_json_output_supports_unrooted_rf_mode(capsys) -> None:

@@ -104,11 +104,12 @@ from bijux_phylogenetics.comparative.signal import (
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
-    compare_clade_sets,
+    compare_clade_overlap,
     compare_support_values,
     compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
+    write_clade_overlap_table,
     write_tree_comparison_table,
 )
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
@@ -809,6 +810,15 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "topology":
         return [args.tree, args.out]
     if args.command == "compare":
+        if args.left == "clades":
+            inputs = [Path(args.right)]
+            if getattr(args, "third", None) is not None:
+                inputs.append(Path(args.third))
+            for path in getattr(args, "extra_trees", []) or []:
+                inputs.append(path)
+            if getattr(args, "out", None) is not None:
+                inputs.append(args.out)
+            return inputs
         if getattr(args, "third", None) is not None:
             return [Path(args.right), Path(args.third)]
         return [Path(args.left), Path(args.right)]
@@ -3167,6 +3177,13 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("left")
     compare.add_argument("right")
     compare.add_argument("third", nargs="?")
+    compare.add_argument(
+        "--tree",
+        dest="extra_trees",
+        action="append",
+        type=Path,
+        help="Add another tree path for compare clades.",
+    )
     compare.add_argument("--out", type=Path)
     compare.add_argument(
         "--rf-mode",
@@ -8388,21 +8405,28 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     parser.exit(
                         status=2, message="compare clades requires two tree paths\n"
                     )
-                left_path = Path(args.right)
-                right_path = Path(args.third)
-                report = compare_clade_sets(left_path, right_path)
+                tree_paths = [Path(args.right), Path(args.third)]
+                if args.extra_trees:
+                    tree_paths.extend(args.extra_trees)
+                report = compare_clade_overlap(tree_paths)
+                output_paths: list[Path | str] = []
+                if args.out is not None:
+                    output_paths.append(write_clade_overlap_table(args.out, tree_paths))
                 outputs = _finalize_outputs(
-                    args, command="compare", inputs=[left_path, right_path]
+                    args,
+                    command="compare",
+                    inputs=tree_paths,
+                    outputs=output_paths,
                 )
                 _print_result(
                     build_command_result(
                         command="compare",
-                        inputs=[left_path, right_path],
+                        inputs=tree_paths,
                         outputs=outputs,
                         metrics={
                             "shared_clades": len(report.shared_clades),
-                            "left_only_clades": len(report.left_only_clades),
-                            "right_only_clades": len(report.right_only_clades),
+                            "conflicting_clades": len(report.conflicting_clades),
+                            "tree_count": len(report.tree_paths),
                         },
                         data=report,
                     ),
