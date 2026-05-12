@@ -63,6 +63,11 @@ from bijux_phylogenetics.bayesian.burnin import (
     write_burnin_clade_shift_table,
     write_burnin_parameter_shift_table,
 )
+from bijux_phylogenetics.branch_lengths import (
+    analyze_branch_length_distribution,
+    analyze_tree_set_branch_lengths,
+    write_branch_length_table,
+)
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_tree_comparison,
@@ -2771,6 +2776,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the tree-shape report as JSON."
     )
     _add_manifest_argument(tree_set_shape)
+    tree_set_branch_lengths = tree_set_subparsers.add_parser(
+        "branch-lengths",
+        help="Summarize branch-length distributions across a tree set.",
+    )
+    tree_set_branch_lengths.add_argument("tree_set", type=Path)
+    tree_set_branch_lengths.add_argument(
+        "--out", type=Path, help="Write one row per branch as TSV."
+    )
+    tree_set_branch_lengths.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the branch-length distribution report as JSON.",
+    )
+    _add_manifest_argument(tree_set_branch_lengths)
     tree_set_distances = tree_set_subparsers.add_parser(
         "distance-matrix",
         help="Compute pairwise RF distances across a tree set.",
@@ -3238,6 +3257,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the tree-shape report as JSON."
     )
     _add_manifest_argument(topology_shape)
+    topology_branch_lengths = topology_subparsers.add_parser(
+        "branch-lengths",
+        help="Summarize branch-length distributions for one tree.",
+    )
+    topology_branch_lengths.add_argument("tree", type=Path)
+    topology_branch_lengths.add_argument(
+        "--out", type=Path, help="Write one row per branch as TSV."
+    )
+    topology_branch_lengths.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the branch-length distribution report as JSON.",
+    )
+    _add_manifest_argument(topology_branch_lengths)
     topology_outgroup = topology_subparsers.add_parser(
         "root-outgroup", help="Root a tree on explicit outgroup taxa."
     )
@@ -7579,6 +7612,34 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.tree_set_command == "branch-lengths":
+                report = analyze_tree_set_branch_lengths(args.tree_set)
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_branch_length_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "branch_count": report.aggregate.branch_count,
+                            "zero_length_branch_count": report.aggregate.zero_length_branch_count,
+                            "negative_branch_count": report.aggregate.negative_branch_count,
+                            "long_outlier_count": report.aggregate.long_outlier_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.tree_set_command == "distance-matrix":
                 report = compute_tree_distance_matrix(args.tree_set)
                 outputs = []
@@ -8441,6 +8502,35 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "colless_imbalance_index": row.colless_imbalance_index,
                             "tree_height_edges": row.tree_height_edges,
                             "imbalance_summary": row.imbalance_summary,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.topology_command == "branch-lengths":
+                report = analyze_branch_length_distribution(args.tree)
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_branch_length_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="topology",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="topology",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "branch_count": report.aggregate.branch_count,
+                            "zero_length_branch_count": report.aggregate.zero_length_branch_count,
+                            "negative_branch_count": report.aggregate.negative_branch_count,
+                            "long_outlier_count": report.aggregate.long_outlier_count,
+                            "median_branch_length": report.aggregate.median_branch_length,
                         },
                         data=report,
                     ),
