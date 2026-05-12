@@ -386,6 +386,89 @@ ledger. Each row preserves:
 - `reason`
 - `note`
 
+`biogeography constrained` is the governed constrained-versus-unconstrained
+geographic review surface for one taxon-region table on one rooted tree. It
+accepts one explicit region adjacency matrix and fits one constrained and one
+unconstrained likelihood geography model on the same analyzed region set. Its
+JSON metrics report:
+- `model`
+- `allowed_transition_count`
+- `forbidden_transition_count`
+- `unsupported_transition_claim_count`
+- `preferred_constraint`
+- `excluded_taxon_count`
+
+When `--summary-out` is supplied, `biogeography constrained` writes one overall
+summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observed_region_count`
+- `allowed_transition_count`
+- `forbidden_transition_count`
+- `constrained_log_likelihood`
+- `unconstrained_log_likelihood`
+- `likelihood_difference`
+- `constrained_parameter_count`
+- `unconstrained_parameter_count`
+- `constrained_aic`
+- `unconstrained_aic`
+- `delta_aic`
+- `preferred_constraint`
+- `unsupported_transition_claim_count`
+- `warning_count`
+
+When `--fits-out` is supplied, the command writes one fit-comparison ledger.
+Each row preserves:
+- `constraint_mode`
+- `model`
+- `analyzed_taxon_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `root_region`
+- `root_confidence`
+
+When `--transitions-out` is supplied, the command writes one directed
+transition-comparison ledger. Each row preserves:
+- `source_region`
+- `target_region`
+- `transition_allowed`
+- `unconstrained_rate`
+- `constrained_rate`
+- `rate_delta`
+
+When `--unsupported-out` is supplied, the command writes one forbidden-claim
+ledger. Each row preserves:
+- `parent_node`
+- `child_node`
+- `descendant_taxa`
+- `unconstrained_source_region`
+- `unconstrained_target_region`
+- `unconstrained_support`
+- `constrained_source_region`
+- `constrained_target_region`
+- `constrained_support`
+- `claim_resolved`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_region`
+- `normalized_region`
+- `reason`
+- `note`
+
+This constrained geography surface is intentionally explicit about scope. It is
+an adjacency-constrained likelihood review over the owned discrete ancestral
+runtime, not a full historical biogeography process model. It should be used
+to test whether unconstrained geographic transition claims are compatible with
+an explicit region-connectivity contract and how much fit is lost when those
+forbidden transitions are removed.
+
 `biogeography time-stratified` is the governed interval-specific geographic
 transition review surface for one taxon-region table on one rooted tree with
 positive branch lengths. It accepts ER, SYM, and ARD model aliases plus one or
