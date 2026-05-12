@@ -154,6 +154,10 @@ from bijux_phylogenetics.comparative import (
     TraitOutlierExclusion,
     TraitOutlierSummaryReport,
     TraitOutlierTaxonRow,
+    TraitImputationExclusion,
+    TraitImputationHoldoutRow,
+    TraitImputationRow,
+    TraitImputationSummaryReport,
     TraitRateThroughTimeExclusion,
     TraitRateThroughTimeIntervalRow,
     TraitRateThroughTimeSummaryReport,
@@ -186,6 +190,7 @@ from bijux_phylogenetics.comparative import (
     summarize_early_burst_trait_evolution,
     summarize_clade_traits,
     summarize_trait_outliers,
+    summarize_trait_imputation,
     summarize_trait_rate_through_time,
     summarize_independent_contrast_regression,
     summarize_ou_covariance_pgls,
@@ -247,6 +252,10 @@ from bijux_phylogenetics.comparative import (
     write_trait_outlier_exclusion_table,
     write_trait_outlier_summary_table,
     write_trait_outlier_taxon_table,
+    write_trait_imputation_exclusion_table,
+    write_trait_imputation_holdout_table,
+    write_trait_imputation_summary_table,
+    write_trait_imputation_table,
     write_trait_rate_through_time_exclusion_table,
     write_trait_rate_through_time_interval_table,
     write_trait_rate_through_time_summary_table,
@@ -1202,6 +1211,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert bijux_phylogenetics.summarize_clade_traits is summarize_clade_traits
     assert bijux_phylogenetics.summarize_trait_outliers is summarize_trait_outliers
+    assert bijux_phylogenetics.summarize_trait_imputation is summarize_trait_imputation
     assert (
         bijux_phylogenetics.summarize_trait_rate_through_time
         is summarize_trait_rate_through_time
@@ -1261,6 +1271,19 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.TraitOutlierSummaryReport is TraitOutlierSummaryReport
     assert bijux_phylogenetics.TraitOutlierTaxonRow is TraitOutlierTaxonRow
     assert bijux_phylogenetics.TraitOutlierExclusion is TraitOutlierExclusion
+    assert (
+        bijux_phylogenetics.TraitImputationSummaryReport
+        is TraitImputationSummaryReport
+    )
+    assert bijux_phylogenetics.TraitImputationRow is TraitImputationRow
+    assert (
+        bijux_phylogenetics.TraitImputationHoldoutRow
+        is TraitImputationHoldoutRow
+    )
+    assert (
+        bijux_phylogenetics.TraitImputationExclusion
+        is TraitImputationExclusion
+    )
     assert (
         bijux_phylogenetics.TraitRateThroughTimeSummaryReport
         is TraitRateThroughTimeSummaryReport
@@ -1352,6 +1375,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_trait_outlier_exclusion_table
         is write_trait_outlier_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_summary_table
+        is write_trait_imputation_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_table
+        is write_trait_imputation_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_holdout_table
+        is write_trait_imputation_holdout_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_exclusion_table
+        is write_trait_imputation_exclusion_table
     )
     assert (
         bijux_phylogenetics.write_trait_rate_through_time_summary_table
@@ -8011,6 +8050,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_trait_outliers
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_trait_imputation"]
+        is summarize_trait_imputation
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_trait_rate_through_time"]
         is summarize_trait_rate_through_time
     )
@@ -8097,6 +8140,24 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_trait_outlier_exclusion_table"]
         is write_trait_outlier_exclusion_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_imputation_summary_table"]
+        is write_trait_imputation_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_imputation_table"]
+        is write_trait_imputation_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_imputation_holdout_table"]
+        is write_trait_imputation_holdout_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_imputation_exclusion_table"
+        ]
+        is write_trait_imputation_exclusion_table
     )
     assert (
         resolved[
