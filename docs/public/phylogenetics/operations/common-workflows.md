@@ -389,6 +389,38 @@ label. The excluded-taxa ledger keeps one row per taxon that was absent from
 the tree, absent from the trait table, missing the target trait value, or
 pruned because the trait value was non-numeric.
 
+When the goal is to ask whether particular internal clades have unusual trait
+distributions, use `comparative clade-traits`. This workflow prunes the tree to
+the analyzed taxa for one requested trait, summarizes every internal non-root
+clade above a chosen size threshold, and ranks clades by reviewer-facing
+exceptionality against the analyzed global trait distribution.
+
+```bash
+bijux-phylogenetics comparative clade-traits \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait habitat \
+  --taxon-column species \
+  --trait-kind categorical \
+  --summary-out artifacts/primates.clade-traits-summary.tsv \
+  --clades-out artifacts/primates.clade-traits.tsv \
+  --excluded-taxa-out artifacts/primates.clade-traits-excluded.tsv \
+  --json
+```
+
+For continuous traits the clade ledger keeps mean, median, minimum, maximum,
+range width, and the mean shift from the analyzed global mean. For categorical
+traits it keeps dominant state, dominant-state fraction, state counts, and the
+distribution shift from the analyzed global state frequencies. In both cases
+the rank is explicit and reviewer-facing rather than hidden behind a plot or an
+informal scan of the tree.
+
+The exceptionality score is intentionally descriptive. For continuous traits it
+is a weighted standardized mean shift; for categorical traits it is a weighted
+total-variation shift from the analyzed global state distribution. That makes
+clade ranking auditable without overstating it as a formal one-size-fits-all
+hypothesis test.
+
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
