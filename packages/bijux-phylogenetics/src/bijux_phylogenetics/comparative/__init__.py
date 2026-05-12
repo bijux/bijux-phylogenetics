@@ -83,6 +83,15 @@ from .pgls_brownian_covariance import (
     summarize_brownian_covariance_pgls,
     write_brownian_covariance_table,
 )
+from .pgls_ou_covariance import (
+    OUCovarianceModelFit,
+    OUCovariancePGLSReport,
+    OUCovarianceRow,
+    OUPGLSAlphaProfileRow,
+    summarize_ou_covariance_pgls,
+    write_ou_alpha_profile_table,
+    write_ou_covariance_table,
+)
 from .pgls_categorical_contrasts import (
     PGLSCategoricalContrastReport,
     PGLSCategoricalContrastRow,
@@ -168,6 +177,10 @@ __all__ = [
     "PGLSLambdaProfileRow",
     "BrownianCovariancePGLSReport",
     "BrownianCovarianceRow",
+    "OUCovarianceModelFit",
+    "OUCovariancePGLSReport",
+    "OUCovarianceRow",
+    "OUPGLSAlphaProfileRow",
     "PGLSCategoricalContrastReport",
     "PGLSCategoricalContrastRow",
     "PGLSInteractionCoefficientReport",
@@ -214,6 +227,7 @@ __all__ = [
     "run_pgls_multiple_testing",
     "run_pgls",
     "summarize_brownian_covariance_pgls",
+    "summarize_ou_covariance_pgls",
     "summarize_pgls_lambda_fit",
     "summarize_pgls_categorical_contrasts",
     "summarize_pgls_interaction_coefficients",
@@ -225,5 +239,7 @@ __all__ = [
     "write_pgls_lambda_profile_table",
     "write_pgls_model_matrix_table",
     "write_brownian_covariance_table",
+    "write_ou_alpha_profile_table",
+    "write_ou_covariance_table",
     "write_comparative_method_report",
 ]
