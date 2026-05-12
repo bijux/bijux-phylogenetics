@@ -214,6 +214,52 @@ baseline model and the requested comparison model. The excluded-taxa ledger
 keeps one row per dropped tip with an explicit reason such as
 `missing_discrete_trait_state`.
 
+When the goal is to see whether ancestral conclusions survive topology
+uncertainty instead of relying on one summary tree, use `ancestral tree-set`.
+This workflow reruns ancestral reconstruction across every retained
+posterior/bootstrap tree, maps comparable internal clades by descendant taxon
+set, and writes both per-tree node ledgers and cross-tree clade summaries. The
+surface supports continuous reconstruction under `brownian` or `ou` and
+discrete reconstruction under `fitch`, `equal-rates`, `symmetric`, or
+`all-rates-different`.
+
+```bash
+bijux-phylogenetics ancestral tree-set \
+  artifacts/primates.posterior.nwk \
+  artifacts/primates.csv \
+  --trait habitat \
+  --kind discrete \
+  --model equal-rates \
+  --taxon-column species \
+  --burnin-fraction 0.25 \
+  --summary-out artifacts/primates.ancestral-tree-set-summary.tsv \
+  --trees-out artifacts/primates.ancestral-tree-set-trees.tsv \
+  --nodes-out artifacts/primates.ancestral-tree-set-nodes.tsv \
+  --clades-out artifacts/primates.ancestral-tree-set-clades.tsv \
+  --exclusions-out artifacts/primates.ancestral-tree-set-excluded.tsv \
+  --json
+```
+
+The tree ledger keeps one row per retained tree with the original tree index,
+post-burnin index, and rooted/unrooted topology identifiers so reviewers can
+trace any unstable ancestral call back to the exact sampled topology. The node
+ledger keeps one row per internal node per retained tree. For continuous
+traits, each row preserves the reconstructed estimate, standard error, 95%
+interval, confidence, and unstable flag. For discrete traits, each row
+preserves the most likely state, candidate state set, confidence, ambiguity,
+and unstable flag.
+
+The clade ledger is the cross-tree review surface. It keys every comparable
+clade by descendant taxa, reports how often that clade is present across the
+retained trees, and summarizes whether its ancestral conclusion is stable or
+topology-sensitive. Continuous clade rows preserve empirical value ranges and
+mean uncertainty; discrete clade rows preserve dominant-state fractions and
+state distributions. The summary ledger keeps one row with total tree counts,
+retained tree counts, topology diversity, analyzed taxon counts, and unstable
+clade counts. The excluded-taxa ledger keeps one row per dropped tip with an
+explicit reason, so tree-set uncertainty is never mixed with silent trait-table
+loss.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
