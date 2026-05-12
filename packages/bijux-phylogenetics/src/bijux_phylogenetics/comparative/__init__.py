@@ -7,6 +7,13 @@ from .common import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
 )
+from .independent_contrasts import (
+    IndependentContrastRegressionReport,
+    IndependentContrastRegressionRow,
+    summarize_independent_contrast_regression,
+    write_independent_contrast_regression_table,
+    write_independent_contrast_table,
+)
 from .evolutionary_modes import (
     ComparativeTreeRescalingReport,
     ContinuousEvolutionaryModeComparisonReport,
@@ -170,6 +177,8 @@ __all__ = [
     "EvolutionaryModeBranchLengthRow",
     "IndependentContrast",
     "IndependentContrastReport",
+    "IndependentContrastRegressionReport",
+    "IndependentContrastRegressionRow",
     "LikelihoodRatioTestResult",
     "LeaveOneTaxonOutRow",
     "NumericTraitSummary",
@@ -227,6 +236,7 @@ __all__ = [
     "run_pgls_multiple_testing",
     "run_pgls",
     "summarize_brownian_covariance_pgls",
+    "summarize_independent_contrast_regression",
     "summarize_ou_covariance_pgls",
     "summarize_pgls_lambda_fit",
     "summarize_pgls_categorical_contrasts",
@@ -239,6 +249,8 @@ __all__ = [
     "write_pgls_lambda_profile_table",
     "write_pgls_model_matrix_table",
     "write_brownian_covariance_table",
+    "write_independent_contrast_regression_table",
+    "write_independent_contrast_table",
     "write_ou_alpha_profile_table",
     "write_ou_covariance_table",
     "write_comparative_method_report",
