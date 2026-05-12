@@ -775,6 +775,103 @@ age bins are reviewer-facing chronology bins over one owned reconstruction, not
 a claim that the command fitted a fully time-varying stochastic biogeographic
 process.
 
+`biogeography sampling-bias` is the governed weighted-versus-unweighted
+geographic review surface for one taxon-region table on one rooted tree. It
+accepts ER, SYM, and ARD model aliases plus an optional explicit region-weight
+table. When `--weights` is absent, the command applies automatic
+inverse-frequency region weights. Its JSON metrics report:
+- `model`
+- `weighting_mode`
+- `region_dominated`
+- `dominant_region`
+- `dominant_region_fraction`
+- `root_region_changed`
+- `changed_internal_node_count`
+- `changed_transition_count`
+- `excluded_taxon_count`
+
+When `--summary-out` is supplied, `biogeography sampling-bias` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `weighting_mode`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observed_region_count`
+- `region_dominated`
+- `dominant_region`
+- `dominant_region_fraction`
+- `weighted_region_dominated`
+- `weighted_dominant_region`
+- `weighted_dominant_region_fraction`
+- `root_region_unweighted`
+- `root_region_weighted`
+- `root_region_changed`
+- `compared_internal_node_count`
+- `changed_internal_node_count`
+- `compared_transition_count`
+- `changed_transition_count`
+- `warning_count`
+
+When `--regions-out` is supplied, the command writes one region-count and
+weight ledger. Each row preserves:
+- `region`
+- `sample_count`
+- `sample_fraction`
+- `applied_weight`
+- `weighted_sample_count`
+- `weighted_sample_fraction`
+- `dominant_unweighted`
+- `dominant_weighted`
+
+When `--nodes-out` is supplied, the command writes one weighted-versus-unweighted
+internal-node ledger. Each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `is_root`
+- `unweighted_region`
+- `weighted_region`
+- `unweighted_confidence`
+- `weighted_confidence`
+- `confidence_delta`
+- `changed`
+- `unweighted_region_probabilities`
+- `weighted_region_probabilities`
+
+When `--transitions-out` is supplied, the command writes one weighted-versus-unweighted
+branch transition ledger. Each row preserves:
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `unweighted_source_region`
+- `unweighted_target_region`
+- `weighted_source_region`
+- `weighted_target_region`
+- `unweighted_transition`
+- `weighted_transition`
+- `unweighted_changed`
+- `weighted_changed`
+- `changed_by_weighting`
+- `unweighted_support`
+- `weighted_support`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_region`
+- `normalized_region`
+- `reason`
+- `note`
+
+This weighted review surface is intentionally explicit about scope. It
+reweights the owned deterministic geographic reconstruction so reviewers can
+see how uneven sampling changes the conclusion surface. It is not presented as
+one uniquely correct sampling model or as a substitute for richer generative
+biogeographic process inference.
+
 `host-association switches` is the governed host-switch review surface for one
 host metadata table on one rooted parasite or pathogen tree. It reconstructs
 internal host states, classifies branchwise host switches as certain or
