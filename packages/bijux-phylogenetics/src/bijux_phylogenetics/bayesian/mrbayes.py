@@ -5,6 +5,14 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from bijux_phylogenetics.bayesian.burnin import (
+    DEFAULT_BURNIN_FRACTIONS,
+    BurninSensitivityCladeShift,
+    BurninSensitivityParameterShift,
+    normalize_burnin_fractions,
+    summarize_burnin_clade_shifts,
+    summarize_burnin_parameter_shifts,
+)
 from bijux_phylogenetics.bayesian.diagnostics import (
     TraceConvergenceReport,
     summarize_trace_parameters,
@@ -151,6 +159,34 @@ class MrBayesPosteriorSummaryReport:
     shared_taxa: list[str]
     consensus_newick: str
     clade_frequency_count: int
+
+
+@dataclass(slots=True)
+class MrBayesBurninSensitivitySlice:
+    burnin_fraction: float
+    burnin_tree_count: int
+    kept_tree_count: int
+    rooted_topology_count: int
+    clade_frequency_count: int
+    consensus_newick: str
+    kept_row_count: int | None
+    first_kept_generation: int | None
+    last_kept_generation: int | None
+    lnl_mean: float | None
+    tree_length_mean: float | None
+
+
+@dataclass(slots=True)
+class MrBayesBurninSensitivityReport:
+    posterior_tree_path: Path
+    trace_path: Path | None
+    slices: list[MrBayesBurninSensitivitySlice]
+    changed_consensus_count: int
+    parameter_shifts: list[BurninSensitivityParameterShift]
+    clade_shifts: list[BurninSensitivityCladeShift]
+    unstable_parameter_count: int
+    unstable_clade_count: int
+    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -979,3 +1015,151 @@ def summarize_mrbayes_posterior_trees(
         consensus_newick=consensus.consensus_newick,
         clade_frequency_count=len(clade_frequencies.clade_frequencies),
     )
+
+
+def assess_mrbayes_burnin_sensitivity(
+    posterior_tree_path: Path,
+    *,
+    trace_path: Path | None = None,
+    burnin_fractions: tuple[float, ...] = DEFAULT_BURNIN_FRACTIONS,
+) -> MrBayesBurninSensitivityReport:
+    """Compare MrBayes posterior summaries across multiple burn-in fractions."""
+    ordered_fractions = normalize_burnin_fractions(burnin_fractions)
+    slices: list[MrBayesBurninSensitivitySlice] = []
+    previous_consensus: str | None = None
+    changed_consensus_count = 0
+    parameter_summaries_by_fraction: dict[float, list[MrBayesParameterSummary]] = {}
+    clade_frequencies_by_fraction: dict[float, list[object]] = {}
+    for fraction in ordered_fractions:
+        _, posterior_summary = summarize_mrbayes_posterior_trees(
+            posterior_tree_path,
+            burnin_fraction=fraction,
+        )
+        clade_report = compute_clade_frequency_table(
+            posterior_summary.filtered_tree_set_path
+        )
+        kept_row_count = None
+        first_kept_generation = None
+        last_kept_generation = None
+        lnl_mean = None
+        tree_length_mean = None
+        if trace_path is not None:
+            trace_summary = summarize_mrbayes_parameter_diagnostics(
+                trace_path,
+                burnin_fraction=fraction,
+            )
+            parameter_summaries_by_fraction[fraction] = trace_summary.parameter_summaries
+            kept_row_count = trace_summary.kept_row_count
+            first_kept_generation = trace_summary.first_kept_generation
+            last_kept_generation = trace_summary.last_kept_generation
+            lnl_mean = _mean_mrbayes_parameter(trace_summary, "LnL")
+            tree_length_mean = _mean_mrbayes_parameter(trace_summary, "TL")
+            if tree_length_mean is None:
+                tree_length_mean = _mean_mrbayes_parameter(trace_summary, "TL{all}")
+        clade_frequencies_by_fraction[fraction] = list(clade_report.clade_frequencies)
+        slices.append(
+            MrBayesBurninSensitivitySlice(
+                burnin_fraction=fraction,
+                burnin_tree_count=posterior_summary.burnin_tree_count,
+                kept_tree_count=posterior_summary.kept_tree_count,
+                rooted_topology_count=posterior_summary.rooted_topology_count,
+                clade_frequency_count=posterior_summary.clade_frequency_count,
+                consensus_newick=posterior_summary.consensus_newick,
+                kept_row_count=kept_row_count,
+                first_kept_generation=first_kept_generation,
+                last_kept_generation=last_kept_generation,
+                lnl_mean=lnl_mean,
+                tree_length_mean=tree_length_mean,
+            )
+        )
+        if (
+            previous_consensus is not None
+            and previous_consensus != posterior_summary.consensus_newick
+        ):
+            changed_consensus_count += 1
+        previous_consensus = posterior_summary.consensus_newick
+    parameter_shifts = summarize_burnin_parameter_shifts(parameter_summaries_by_fraction)
+    clade_shifts = summarize_burnin_clade_shifts(clade_frequencies_by_fraction)
+    warnings: list[str] = []
+    if changed_consensus_count:
+        warnings.append(
+            "majority-rule consensus topology changes across tested burn-in fractions"
+        )
+    if any(shift.unstable for shift in parameter_shifts):
+        warnings.append(
+            "one or more posterior parameter 95% HPD intervals do not overlap across tested burn-in fractions"
+        )
+    if any(shift.unstable for shift in clade_shifts):
+        warnings.append(
+            "one or more posterior clade probabilities cross the majority-rule threshold across tested burn-in fractions"
+        )
+    return MrBayesBurninSensitivityReport(
+        posterior_tree_path=posterior_tree_path,
+        trace_path=trace_path,
+        slices=slices,
+        changed_consensus_count=changed_consensus_count,
+        parameter_shifts=parameter_shifts,
+        clade_shifts=clade_shifts,
+        unstable_parameter_count=sum(1 for shift in parameter_shifts if shift.unstable),
+        unstable_clade_count=sum(1 for shift in clade_shifts if shift.unstable),
+        warnings=warnings,
+    )
+
+
+def write_mrbayes_burnin_sensitivity_slice_table(
+    path: Path,
+    report: MrBayesBurninSensitivityReport,
+) -> Path:
+    """Write one row per tested MrBayes burn-in fraction."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "burnin_fraction",
+            "burnin_tree_count",
+            "kept_tree_count",
+            "rooted_topology_count",
+            "clade_frequency_count",
+            "kept_row_count",
+            "first_kept_generation",
+            "last_kept_generation",
+            "lnl_mean",
+            "tree_length_mean",
+            "consensus_newick",
+        ],
+        rows=[
+            {
+                "burnin_fraction": format(row.burnin_fraction, ".15g"),
+                "burnin_tree_count": str(row.burnin_tree_count),
+                "kept_tree_count": str(row.kept_tree_count),
+                "rooted_topology_count": str(row.rooted_topology_count),
+                "clade_frequency_count": str(row.clade_frequency_count),
+                "kept_row_count": ""
+                if row.kept_row_count is None
+                else str(row.kept_row_count),
+                "first_kept_generation": ""
+                if row.first_kept_generation is None
+                else str(row.first_kept_generation),
+                "last_kept_generation": ""
+                if row.last_kept_generation is None
+                else str(row.last_kept_generation),
+                "lnl_mean": ""
+                if row.lnl_mean is None
+                else format(row.lnl_mean, ".15g"),
+                "tree_length_mean": ""
+                if row.tree_length_mean is None
+                else format(row.tree_length_mean, ".15g"),
+                "consensus_newick": row.consensus_newick,
+            }
+            for row in report.slices
+        ],
+    )
+
+
+def _mean_mrbayes_parameter(
+    report: MrBayesParameterDiagnosticsReport,
+    parameter: str,
+) -> float | None:
+    for summary in report.parameter_summaries:
+        if summary.parameter == parameter:
+            return summary.mean
+    return None

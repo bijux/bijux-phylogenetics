@@ -6,6 +6,7 @@ import shutil
 from statistics import stdev
 
 from bijux_phylogenetics.bayesian import (
+    assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
     parse_mrbayes_consensus_tree,
@@ -427,6 +428,48 @@ def test_summarize_mrbayes_parameter_diagnostics_supports_burnin_and_hpd(
     text = summary_path.read_text(encoding="utf-8")
     assert "median\tstandard_deviation" in text
     assert "first_kept_generation\tlast_kept_generation" in text
+
+
+def test_assess_mrbayes_burnin_sensitivity_reports_parameter_and_clade_instability(
+    tmp_path: Path,
+) -> None:
+    posterior_path = tmp_path / "burnin-sensitive.run1.t"
+    trace_path = tmp_path / "burnin-sensitive.run1.p"
+    posterior_path.write_text(
+        "#NEXUS\n"
+        "begin trees;\n"
+        "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "tree gen3 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "tree gen4 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "end;\n",
+        encoding="utf-8",
+    )
+    rows = ["Gen\tLnL\tTL"]
+    for index in range(19):
+        rows.append(f"{index * 10}\t0.0\t0.5")
+    rows.append("190\t100.0\t0.5")
+    trace_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    report = assess_mrbayes_burnin_sensitivity(
+        posterior_path,
+        trace_path=trace_path,
+        burnin_fractions=(0.0, 0.95),
+    )
+
+    ab_shift = next(shift for shift in report.clade_shifts if shift.clade == "A|B")
+    lnl_shift = next(
+        shift for shift in report.parameter_shifts if shift.parameter == "LnL"
+    )
+
+    assert report.changed_consensus_count == 1
+    assert report.unstable_parameter_count >= 1
+    assert report.unstable_clade_count >= 1
+    assert report.slices[1].first_kept_generation == 190
+    assert report.slices[1].lnl_mean == 100.0
+    assert ab_shift.crosses_majority_threshold is True
+    assert lnl_shift.unstable is True
+    assert lnl_shift.common_hpd_95_lower is None
 
 
 def test_render_bayesian_posterior_report_writes_consensus_and_convergence_sections(
