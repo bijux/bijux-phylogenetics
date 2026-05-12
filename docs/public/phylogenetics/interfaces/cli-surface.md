@@ -20,6 +20,7 @@ The CLI is the primary operational surface for most users.
 - `biogeography ...`
 - `host-association ...`
 - `ecological-niche ...`
+- `phylogeography ...`
 - `tree-set ...`
 - `topology ...`
 - `adapter ...`
@@ -926,6 +927,110 @@ This ecological-niche surface is intentionally explicit about scope. It is a
 one-tree discrete niche-evolution review over the owned ancestral runtime, not
 a full macroecological process model or a direct habitat-dependent
 diversification inference surface.
+
+`phylogeography coordinates` is the governed continuous-coordinate review
+surface for one latitude/longitude table on one rooted tree. It reconstructs
+ancestral coordinates under Brownian or OU continuous evolution, measures
+branchwise great-circle displacement, flags jump outliers, and can render one
+coordinate-space movement visualization. Its JSON metrics report:
+- `model`
+- `analyzed_taxon_count`
+- `outlier_jump_count`
+- `impossible_jump_count`
+- `flagged_branch_count`
+- `maximum_jump_km`
+- `excluded_taxon_count`
+
+The command supports `brownian` and `ou`. `--alpha` is accepted for the OU
+path and remains explicit in the review summary. `--visualization-out` accepts
+`.svg` or `.html` and produces a coordinate-space movement artifact rather
+than a projected map.
+
+When `--summary-out` is supplied, `phylogeography coordinates` writes one
+overall summary ledger. The row preserves:
+- `taxon_column`
+- `latitude_column`
+- `longitude_column`
+- `model`
+- `alpha`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `internal_node_count`
+- `weak_support_node_count`
+- `outlier_jump_count`
+- `impossible_jump_count`
+- `flagged_branch_count`
+- `maximum_jump_km`
+- `root_latitude`
+- `root_longitude`
+- `root_radial_standard_error_km`
+- `warning_count`
+
+When `--estimates-out` is supplied, the command writes one coordinate-estimate
+ledger for tips and internal nodes. Each row preserves:
+- `node`
+- `node_name`
+- `is_tip`
+- `descendant_taxa`
+- `latitude`
+- `longitude`
+- `latitude_standard_error`
+- `longitude_standard_error`
+- `radial_standard_error_km`
+- `lower_95_latitude`
+- `upper_95_latitude`
+- `lower_95_longitude`
+- `upper_95_longitude`
+- `confidence`
+- `unstable`
+- `is_root`
+
+When `--branches-out` is supplied, the command writes one branchwise movement
+ledger. Each row preserves:
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `branch_length`
+- `parent_latitude`
+- `parent_longitude`
+- `child_latitude`
+- `child_longitude`
+- `great_circle_km`
+- `branch_rate_km_per_unit`
+- `support`
+- `impossible_jump`
+- `outlier_jump`
+- `flag_codes`
+
+When `--outliers-out` is supplied, the command writes one flagged movement
+ledger. Each row preserves:
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `great_circle_km`
+- `branch_rate_km_per_unit`
+- `median_distance_km`
+- `distance_threshold_km`
+- `median_rate_km_per_unit`
+- `rate_threshold_km`
+- `impossible_jump`
+- `outlier_jump`
+- `flag_codes`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_latitude`
+- `raw_longitude`
+- `reason`
+- `note`
+
+This phylogeography surface is intentionally explicit about scope. It is a
+one-tree continuous-coordinate review over the owned continuous ancestral
+runtime, not a projected map output, direct route reconstruction, or a full
+spatial diffusion engine with historical cartography.
 
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
