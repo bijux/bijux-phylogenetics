@@ -32,6 +32,68 @@ association under phylogenetic covariance. Its JSON metrics now report
 review tooling can distinguish a minimally identified model from one with
 meaningful residual support.
 
+`comparative logistic` is the governed binary-response companion surface. It
+preserves the same formula and predictor-encoding contract as `comparative
+pgls`, but the fitted model is an explicit
+`phylogenetic-working-correlation-gee` approximation rather than continuous
+generalized least squares. Its JSON metrics report:
+- `taxon_count`
+- `success_count`
+- `failure_count`
+- `coefficient_count`
+- `fitted_row_count`
+- `lambda_value`
+- `approximation_method`
+- `converged`
+- `iteration_count`
+- `binomial_log_likelihood`
+- `separation_detected`
+- `warning_count`
+- `coefficient_inference_distribution`
+
+The command requires the response to be encoded as `0` and `1`. One-class
+responses are rejected instead of silently producing degenerate output.
+
+When `--coefficients-out` is supplied, `comparative logistic` writes one flat
+coefficient ledger as CSV or TSV. Each row preserves:
+- `response`
+- `term`
+- `estimate`
+- `standard_error`
+- `test_statistic`
+- `p_value`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+- `inference_distribution`
+- `approximation_method`
+- `lambda_value`
+- `taxon_count`
+- `success_count`
+- `failure_count`
+- `converged`
+- `iteration_count`
+- `binomial_log_likelihood`
+- `separation_detected`
+
+When `--fitted-out` is supplied, the command also writes one taxon-level
+probability ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `observed_response`
+- `fitted_probability`
+- `linear_predictor`
+- `residual`
+
+When `--excluded-taxa-out` is supplied, the command writes one explicit
+excluded-taxa ledger with:
+- `taxon`
+- `reason`
+- `details`
+
+Warnings are not hidden. If the fit requires information-matrix stabilization,
+reaches the iteration limit, drives fitted probabilities to the `0/1`
+boundary, or produces very large coefficients, the JSON output marks that as
+`separation_detected` and preserves the warning messages directly.
+
 `comparative contrasts` is the governed review surface for phylogenetic
 independent contrasts. Its JSON metrics report:
 - `taxon_count`
