@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
+import shutil
+import subprocess
 
 import pytest
 
@@ -126,3 +129,73 @@ def test_write_phylogenetic_logistic_tables_write_rows(tmp_path: Path) -> None:
     )
     assert len(fitted_rows) == 7
     assert excluded_rows == ["taxon\treason\tdetails"]
+
+
+def test_summarize_phylogenetic_logistic_tracks_live_phyloglm_when_available() -> None:
+    rscript = shutil.which("Rscript")
+    if rscript is None:
+        pytest.skip("Rscript is not available")
+    repository_root = Path(__file__).resolve().parents[2]
+    r_library = repository_root / "artifacts" / "r-lib"
+    environment = dict(os.environ)
+    if r_library.is_dir():
+        environment["R_LIBS_USER"] = str(r_library)
+    package_check = subprocess.run(
+        [
+            rscript,
+            "-e",
+            (
+                "cat(requireNamespace('ape', quietly=TRUE), '\\n');"
+                "cat(requireNamespace('phylolm', quietly=TRUE), '\\n');"
+                "cat(requireNamespace('jsonlite', quietly=TRUE), '\\n')"
+            ),
+        ],
+        capture_output=True,
+        check=False,
+        cwd=repository_root,
+        env=environment,
+        text=True,
+    )
+    if package_check.returncode != 0:
+        pytest.skip("R package availability could not be checked")
+    if package_check.stdout.strip().splitlines() != ["TRUE", "TRUE", "TRUE"]:
+        pytest.skip("ape, phylolm, and jsonlite are required for live phyloglm validation")
+    live_fit = subprocess.run(
+        [
+            rscript,
+            "-e",
+            (
+                "library(ape);"
+                "library(phylolm);"
+                "library(jsonlite);"
+                "tree <- read.tree('packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_six_taxa.nwk');"
+                "dat <- read.delim('packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_phylogenetic_logistic.tsv', stringsAsFactors=FALSE);"
+                "rownames(dat) <- dat$taxon;"
+                "fit <- phyloglm(presence ~ body_size, data=dat, phy=tree, method='logistic_MPLE', btol=50);"
+                "payload <- list(coefficients=coef(fit), fitted_probabilities=fit$fitted.values);"
+                "cat(toJSON(payload, auto_unbox=TRUE))"
+            ),
+        ],
+        capture_output=True,
+        check=False,
+        cwd=repository_root,
+        env=environment,
+        text=True,
+    )
+    if live_fit.returncode != 0:
+        pytest.skip("live phyloglm execution failed in this environment")
+    payload = json.loads(live_fit.stdout)
+    report = summarize_phylogenetic_logistic(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_phylogenetic_logistic.tsv"),
+        response="presence",
+        predictors=["body_size"],
+    )
+    coefficients = {row.name: row.estimate for row in report.coefficients}
+    fitted_probabilities = {row.taxon: row.fitted_probability for row in report.fitted_rows}
+    assert abs(coefficients["intercept"] - payload["coefficients"]["(Intercept)"]) < 0.5
+    assert abs(coefficients["body_size"] - payload["coefficients"]["body_size"]) < 0.2
+    assert all(
+        abs(fitted_probabilities[taxon] - probability) < 0.1
+        for taxon, probability in payload["fitted_probabilities"].items()
+    )
