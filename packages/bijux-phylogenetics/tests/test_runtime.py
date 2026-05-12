@@ -15,6 +15,7 @@ from bijux_phylogenetics.ancestral import (
     write_ancestral_state_table,
 )
 from bijux_phylogenetics.bayesian import (
+    BeastCalibration,
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
     assess_beast_convergence,
@@ -945,6 +946,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.prepare_beast_time_tree_analysis
         is prepare_beast_time_tree_analysis
     )
+    assert bijux_phylogenetics.BeastCalibration is BeastCalibration
     assert bijux_phylogenetics.parse_beast_log is parse_beast_log
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
     assert (

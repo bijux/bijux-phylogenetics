@@ -1,4 +1,5 @@
 from .beast import (
+    BeastCalibration,
     BeastBurninSensitivityReport,
     BeastBurninSensitivitySlice,
     BeastChainMixingIssue,
@@ -116,6 +117,7 @@ __all__ = [
     "BayesianRunComparisonReportBuildResult",
     "BayesianRunTreeComparison",
     "BayesianScenarioAgeDifference",
+    "BeastCalibration",
     "BeastBurninSensitivityReport",
     "BeastBurninSensitivitySlice",
     "BeastChainMixingIssue",
