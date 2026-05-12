@@ -45,6 +45,37 @@ phylogenetic covariance, pass that exact numeric lambda instead. That keeps
 coefficient and p-value review tied to one covariance assumption rather than
 silently mixing model-selection differences with coefficient-level inference.
 
+When the response is binary rather than continuous, use `comparative logistic`.
+This workflow keeps the comparative formula surface, but fits a binary
+working-correlation approximation instead of reusing continuous-trait PGLS
+output. It requires the response to be encoded explicitly as `0` and `1`,
+supports the same predictor encoding rules as `comparative pgls`, and reports
+Wald-normal coefficient uncertainty plus explicit separation-risk warnings.
+
+```bash
+bijux-phylogenetics comparative logistic \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --response sociality_present \
+  --predictors brain_mass_g habitat \
+  --taxon-column species \
+  --lambda-value 1.0 \
+  --coefficients-out artifacts/primates.logistic-coefficients.tsv \
+  --fitted-out artifacts/primates.logistic-fitted.tsv \
+  --excluded-taxa-out artifacts/primates.logistic-excluded.tsv \
+  --json
+```
+
+The coefficient ledger keeps one row per fitted term with the estimate,
+standard error, Wald test statistic, p-value, and 95% confidence interval. The
+fitted ledger keeps one row per analyzed taxon with the observed binary
+response, fitted probability, linear predictor, and raw residual. The
+excluded-taxa ledger keeps the same explicit pruning contract as the other
+comparative workflows. If the fitted probabilities collapse toward `0` or `1`,
+or the working information matrix becomes singular enough to require
+stabilization, the JSON result marks that as separation risk instead of
+pretending the approximation is as stable as an ordinary continuous-trait fit.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
