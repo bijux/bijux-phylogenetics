@@ -716,6 +716,88 @@ def test_comparative_logistic_cli_writes_review_ledgers(
     assert excluded_rows == ["taxon\treason\tdetails"]
 
 
+def test_comparative_model_selection_cli_reports_ranked_formula_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "model-selection",
+            str(fixture("example_tree_eight_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_logistic_model_selection.tsv")),
+            "--formula",
+            "presence ~ body_size",
+            "--formula",
+            "presence ~ habitat",
+            "--formula",
+            "presence ~ body_size + habitat",
+            "--lambda-value",
+            "1.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    ranked_formulas = [
+        row["formula"]
+        for row in sorted(payload["data"]["rows"], key=lambda row: row["rank"])
+    ]
+    assert exit_code == 0
+    assert payload["metrics"]["model_family"] == "logistic"
+    assert payload["metrics"]["model_count"] == 3
+    assert payload["metrics"]["analysis_taxon_count"] == 8
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["pairwise_comparison_count"] == 3
+    assert payload["metrics"]["best_formula"] == "presence ~ body_size"
+    assert ranked_formulas == [
+        "presence ~ body_size",
+        "presence ~ body_size + habitat",
+        "presence ~ habitat",
+    ]
+
+
+def test_comparative_model_selection_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    ranking_out = tmp_path / "comparative-model-ranking.tsv"
+    pairwise_out = tmp_path / "comparative-model-pairwise.tsv"
+    excluded_out = tmp_path / "comparative-model-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "model-selection",
+            str(fixture("example_tree_eight_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_logistic_model_selection.tsv")),
+            "--formula",
+            "presence ~ body_size",
+            "--formula",
+            "presence ~ habitat",
+            "--formula",
+            "presence ~ body_size + habitat",
+            "--lambda-value",
+            "1.0",
+            "--ranking-out",
+            str(ranking_out),
+            "--pairwise-out",
+            str(pairwise_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["selected_criterion"] == "AICc"
+    assert ranking_out.exists()
+    assert pairwise_out.exists()
+    assert excluded_out.exists()
+    ranking_rows = ranking_out.read_text(encoding="utf-8").splitlines()
+    pairwise_rows = pairwise_out.read_text(encoding="utf-8").splitlines()
+    excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    assert ranking_rows[0].startswith("formula\tmodel_family\tparameter_count")
+    assert pairwise_rows[0].startswith("left_formula\tright_formula\tcomparison_kind")
+    assert excluded_rows == ["taxon\treason\tmissing_columns"]
+    assert len(ranking_rows) == 4
+    assert len(pairwise_rows) == 4
+
+
 def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     capsys,
 ) -> None:
