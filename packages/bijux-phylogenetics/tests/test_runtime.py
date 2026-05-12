@@ -10,6 +10,7 @@ from bijux_phylogenetics.ancestral import (
     build_ancestral_figure_package,
     build_ancestral_sensitivity_report,
     compare_continuous_ancestral_models,
+    compare_discrete_ancestral_reconstructions,
     continuous_ancestral_exclusions,
     discrete_ancestral_exclusions,
     reconstruct_continuous_ancestral_states,
@@ -22,6 +23,7 @@ from bijux_phylogenetics.ancestral import (
     write_continuous_ancestral_exclusion_table,
     write_continuous_ancestral_summary_table,
     write_continuous_ancestral_uncertainty_table,
+    write_discrete_ancestral_comparison_table,
     write_discrete_ancestral_exclusion_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
@@ -1687,6 +1689,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is compare_continuous_ancestral_models
     )
     assert (
+        bijux_phylogenetics.compare_discrete_ancestral_reconstructions
+        is compare_discrete_ancestral_reconstructions
+    )
+    assert (
         bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
     )
     assert (
@@ -1708,6 +1714,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_discrete_ancestral_probability_table
         is write_discrete_ancestral_probability_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_comparison_table
+        is write_discrete_ancestral_comparison_table
     )
     assert (
         bijux_phylogenetics.write_discrete_ancestral_exclusion_table
