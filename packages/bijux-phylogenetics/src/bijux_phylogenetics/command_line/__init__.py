@@ -21,7 +21,9 @@ from bijux_phylogenetics.ancestral.service import (
     write_ancestral_state_table,
 )
 from bijux_phylogenetics.bayesian import (
+    assess_beast_burnin_sensitivity,
     assess_beast_convergence,
+    assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
     build_posterior_uncertainty_figure_package,
@@ -45,10 +47,17 @@ from bijux_phylogenetics.bayesian import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
+    write_beast_burnin_sensitivity_slice_table,
     write_beast_log_summary_table,
     write_beast_posterior_tree_set,
+    write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
     write_supplementary_bayesian_diagnostics_table,
+)
+from bijux_phylogenetics.bayesian.burnin import (
+    DEFAULT_BURNIN_FRACTIONS,
+    write_burnin_clade_shift_table,
+    write_burnin_parameter_shift_table,
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
@@ -3829,6 +3838,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the parameter diagnostics as JSON."
     )
     _add_manifest_argument(adapter_mrbayes_parameters)
+    adapter_mrbayes_burnin = adapter_subparsers.add_parser(
+        "mrbayes-burnin-sensitivity",
+        help="Compare MrBayes posterior summaries across multiple burn-in fractions.",
+    )
+    adapter_mrbayes_burnin.add_argument("posterior_trees", type=Path)
+    adapter_mrbayes_burnin.add_argument("--traces", type=Path)
+    adapter_mrbayes_burnin.add_argument(
+        "--burnin-fractions",
+        nargs="+",
+        type=float,
+        default=list(DEFAULT_BURNIN_FRACTIONS),
+    )
+    adapter_mrbayes_burnin.add_argument("--slice-out", type=Path)
+    adapter_mrbayes_burnin.add_argument("--parameter-out", type=Path)
+    adapter_mrbayes_burnin.add_argument("--clade-out", type=Path)
+    adapter_mrbayes_burnin.add_argument(
+        "--json", action="store_true", help="Emit the burn-in sensitivity report as JSON."
+    )
+    _add_manifest_argument(adapter_mrbayes_burnin)
     adapter_mrbayes_convergence = adapter_subparsers.add_parser(
         "mrbayes-convergence",
         help="Assess MrBayes trace convergence from ESS and trace drift.",
@@ -3919,6 +3947,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the parsed log report as JSON."
     )
     _add_manifest_argument(adapter_beast_log)
+    adapter_beast_burnin = adapter_subparsers.add_parser(
+        "beast-burnin-sensitivity",
+        help="Compare BEAST posterior summaries across multiple burn-in fractions.",
+    )
+    adapter_beast_burnin.add_argument("posterior_trees", type=Path)
+    adapter_beast_burnin.add_argument("--log", type=Path)
+    adapter_beast_burnin.add_argument(
+        "--burnin-fractions",
+        nargs="+",
+        type=float,
+        default=list(DEFAULT_BURNIN_FRACTIONS),
+    )
+    adapter_beast_burnin.add_argument("--slice-out", type=Path)
+    adapter_beast_burnin.add_argument("--parameter-out", type=Path)
+    adapter_beast_burnin.add_argument("--clade-out", type=Path)
+    adapter_beast_burnin.add_argument(
+        "--json", action="store_true", help="Emit the burn-in sensitivity report as JSON."
+    )
+    _add_manifest_argument(adapter_beast_burnin)
     adapter_beast_parameters = adapter_subparsers.add_parser(
         "beast-parameters",
         help="Summarize burn-in-aware posterior parameter diagnostics from a BEAST log.",
@@ -9933,6 +9980,62 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.adapter_command == "mrbayes-burnin-sensitivity":
+                report = assess_mrbayes_burnin_sensitivity(
+                    args.posterior_trees,
+                    trace_path=args.traces,
+                    burnin_fractions=tuple(args.burnin_fractions),
+                )
+                inputs = [
+                    args.posterior_trees,
+                    *([args.traces] if args.traces is not None else []),
+                ]
+                outputs: list[Path | str] = []
+                if args.slice_out is not None:
+                    outputs.append(
+                        write_mrbayes_burnin_sensitivity_slice_table(
+                            args.slice_out,
+                            report,
+                        )
+                    )
+                if args.parameter_out is not None:
+                    outputs.append(
+                        write_burnin_parameter_shift_table(
+                            args.parameter_out,
+                            report.parameter_shifts,
+                        )
+                    )
+                if args.clade_out is not None:
+                    outputs.append(
+                        write_burnin_clade_shift_table(
+                            args.clade_out,
+                            report.clade_shifts,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=inputs,
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "slice_count": len(report.slices),
+                            "parameter_shift_count": len(report.parameter_shifts),
+                            "unstable_parameter_count": report.unstable_parameter_count,
+                            "clade_shift_count": len(report.clade_shifts),
+                            "unstable_clade_count": report.unstable_clade_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.adapter_command == "mrbayes-convergence":
                 report = assess_mrbayes_convergence(
                     args.input_path,
@@ -10109,6 +10212,62 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "tree_parameter_count": len(summary.tree_parameters),
                         },
                         data={"log": report, "summary": summary},
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-burnin-sensitivity":
+                report = assess_beast_burnin_sensitivity(
+                    args.posterior_trees,
+                    log_path=args.log,
+                    burnin_fractions=tuple(args.burnin_fractions),
+                )
+                inputs = [
+                    args.posterior_trees,
+                    *([args.log] if args.log is not None else []),
+                ]
+                outputs: list[Path | str] = []
+                if args.slice_out is not None:
+                    outputs.append(
+                        write_beast_burnin_sensitivity_slice_table(
+                            args.slice_out,
+                            report,
+                        )
+                    )
+                if args.parameter_out is not None:
+                    outputs.append(
+                        write_burnin_parameter_shift_table(
+                            args.parameter_out,
+                            report.parameter_shifts,
+                        )
+                    )
+                if args.clade_out is not None:
+                    outputs.append(
+                        write_burnin_clade_shift_table(
+                            args.clade_out,
+                            report.clade_shifts,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=inputs,
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=inputs,
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "slice_count": len(report.slices),
+                            "parameter_shift_count": len(report.parameter_shifts),
+                            "unstable_parameter_count": report.unstable_parameter_count,
+                            "clade_shift_count": len(report.clade_shifts),
+                            "unstable_clade_count": report.unstable_clade_count,
+                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )

@@ -1572,6 +1572,60 @@ def test_adapter_mrbayes_parameters_cli_writes_burnin_aware_summary_table(
     assert "hpd_95_lower\thpd_95_upper" in text
 
 
+def test_adapter_mrbayes_burnin_sensitivity_cli_writes_shift_tables(
+    tmp_path: Path, capsys
+) -> None:
+    posterior_path = tmp_path / "burnin-sensitive.run1.t"
+    trace_path = tmp_path / "burnin-sensitive.run1.p"
+    slice_path = tmp_path / "mrbayes-burnin-slices.tsv"
+    parameter_path = tmp_path / "mrbayes-burnin-parameters.tsv"
+    clade_path = tmp_path / "mrbayes-burnin-clades.tsv"
+    posterior_path.write_text(
+        "#NEXUS\n"
+        "begin trees;\n"
+        "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "tree gen3 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "tree gen4 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "end;\n",
+        encoding="utf-8",
+    )
+    rows = ["Gen\tLnL\tTL"]
+    for index in range(19):
+        rows.append(f"{index * 10}\t0.0\t0.5")
+    rows.append("190\t100.0\t0.5")
+    trace_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    exit_code = main(
+        [
+            "adapter",
+            "mrbayes-burnin-sensitivity",
+            str(posterior_path),
+            "--traces",
+            str(trace_path),
+            "--slice-out",
+            str(slice_path),
+            "--parameter-out",
+            str(parameter_path),
+            "--clade-out",
+            str(clade_path),
+            "--burnin-fractions",
+            "0.0",
+            "0.95",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["slice_count"] == 2
+    assert payload["metrics"]["unstable_parameter_count"] >= 1
+    assert payload["metrics"]["unstable_clade_count"] >= 1
+    assert "burnin_fraction\tburnin_tree_count" in slice_path.read_text(encoding="utf-8")
+    assert "parameter\tminimum_mean" in parameter_path.read_text(encoding="utf-8")
+    assert "crosses_majority_threshold" in clade_path.read_text(encoding="utf-8")
+
+
 def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     tmp_path: Path, capsys
 ) -> None:
@@ -1939,6 +1993,60 @@ def test_adapter_beast_parameters_cli_reports_posterior_diagnostics(
     assert payload["data"]["parameter_summaries"][0]["hpd_95_upper"] >= 0
     assert "median\tstandard_deviation" in text
     assert "hpd_95_lower\thpd_95_upper" in text
+
+
+def test_adapter_beast_burnin_sensitivity_cli_writes_shift_tables(
+    tmp_path: Path, capsys
+) -> None:
+    posterior_path = tmp_path / "burnin-sensitive.trees"
+    log_path = tmp_path / "burnin-sensitive.log"
+    slice_path = tmp_path / "beast-burnin-slices.tsv"
+    parameter_path = tmp_path / "beast-burnin-parameters.tsv"
+    clade_path = tmp_path / "beast-burnin-clades.tsv"
+    posterior_path.write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n",
+        encoding="utf-8",
+    )
+    lines = [
+        "# burnin sensitivity fixture",
+        "state\tposterior\tlikelihood\ttreeHeight",
+    ]
+    for index in range(19):
+        lines.append(f"{index * 10}\t0.0\t{-100.0 + index}\t10.0")
+    lines.append("190\t100.0\t-81.0\t10.0")
+    log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-burnin-sensitivity",
+            str(posterior_path),
+            "--log",
+            str(log_path),
+            "--slice-out",
+            str(slice_path),
+            "--parameter-out",
+            str(parameter_path),
+            "--clade-out",
+            str(clade_path),
+            "--burnin-fractions",
+            "0.0",
+            "0.95",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["slice_count"] == 2
+    assert payload["metrics"]["unstable_parameter_count"] >= 1
+    assert payload["metrics"]["unstable_clade_count"] >= 1
+    assert "consensus_newick" in slice_path.read_text(encoding="utf-8")
+    assert "common_hpd_95_lower" in parameter_path.read_text(encoding="utf-8")
+    assert "crosses_majority_threshold" in clade_path.read_text(encoding="utf-8")
 
 
 def test_adapter_beast_trees_cli_writes_normalized_tree_set(
