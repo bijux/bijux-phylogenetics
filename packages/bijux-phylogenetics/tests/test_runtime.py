@@ -460,18 +460,30 @@ from bijux_phylogenetics.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.biogeography import (
+    ConstrainedGeographicFitRow,
+    ConstrainedGeographicReport,
+    ConstrainedGeographicSummary,
+    ConstrainedGeographicTransitionRow,
     TimeBinDefinition,
     TimeStratifiedBranchRow,
     TimeStratifiedTransitionMatrixRow,
     TimeStratifiedTransitionReport,
     TimeStratifiedTransitionSummary,
+    UnsupportedGeographicTransitionClaimRow,
+    summarize_constrained_geographic_model,
+    summarize_constrained_geographic_report,
     summarize_geographic_state_model,
     summarize_time_stratified_geographic_transitions,
+    write_constrained_geographic_exclusion_table,
+    write_constrained_geographic_fit_table,
+    write_constrained_geographic_summary_table,
+    write_constrained_geographic_transition_table,
     write_geographic_exclusion_table,
     write_geographic_region_probability_table,
     write_geographic_state_summary_table,
     write_geographic_transition_event_table,
     write_geographic_transition_rate_table,
+    write_unsupported_geographic_transition_claim_table,
     write_time_stratified_branch_table,
     write_time_stratified_exclusion_table,
     write_time_stratified_transition_matrix_table,
@@ -887,12 +899,40 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is write_transition_summary_table
     )
     assert (
+        bijux_phylogenetics.summarize_constrained_geographic_model
+        is summarize_constrained_geographic_model
+    )
+    assert (
+        bijux_phylogenetics.summarize_constrained_geographic_report
+        is summarize_constrained_geographic_report
+    )
+    assert (
         bijux_phylogenetics.summarize_geographic_state_model
         is summarize_geographic_state_model
     )
     assert (
         bijux_phylogenetics.summarize_time_stratified_geographic_transitions
         is summarize_time_stratified_geographic_transitions
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_summary_table
+        is write_constrained_geographic_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_fit_table
+        is write_constrained_geographic_fit_table
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_transition_table
+        is write_constrained_geographic_transition_table
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_exclusion_table
+        is write_constrained_geographic_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_unsupported_geographic_transition_claim_table
+        is write_unsupported_geographic_transition_claim_table
     )
     assert (
         bijux_phylogenetics.write_geographic_state_summary_table
@@ -915,6 +955,16 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is write_geographic_exclusion_table
     )
     assert bijux_phylogenetics.TimeBinDefinition is TimeBinDefinition
+    assert bijux_phylogenetics.ConstrainedGeographicFitRow is ConstrainedGeographicFitRow
+    assert bijux_phylogenetics.ConstrainedGeographicReport is ConstrainedGeographicReport
+    assert (
+        bijux_phylogenetics.ConstrainedGeographicSummary
+        is ConstrainedGeographicSummary
+    )
+    assert (
+        bijux_phylogenetics.ConstrainedGeographicTransitionRow
+        is ConstrainedGeographicTransitionRow
+    )
     assert bijux_phylogenetics.TimeStratifiedBranchRow is TimeStratifiedBranchRow
     assert (
         bijux_phylogenetics.TimeStratifiedTransitionMatrixRow
@@ -923,6 +973,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.TimeStratifiedTransitionReport
         is TimeStratifiedTransitionReport
+    )
+    assert (
+        bijux_phylogenetics.UnsupportedGeographicTransitionClaimRow
+        is UnsupportedGeographicTransitionClaimRow
     )
     assert (
         bijux_phylogenetics.TimeStratifiedTransitionSummary
