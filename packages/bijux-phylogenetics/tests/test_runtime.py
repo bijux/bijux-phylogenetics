@@ -18,11 +18,14 @@ from bijux_phylogenetics.bayesian import (
     BeastCalibration,
     BeastPosteriorConsensusReport,
     BeastPosteriorTopologyDiversityReport,
+    MrBayesBurninSensitivityReport,
+    MrBayesBurninSensitivitySlice,
     MrBayesParameterDiagnosticsReport,
     MrBayesParameterSummary,
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
     assess_beast_convergence,
+    assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
     build_posterior_uncertainty_figure_package,
@@ -57,8 +60,10 @@ from bijux_phylogenetics.bayesian import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
+    write_beast_burnin_sensitivity_slice_table,
     write_beast_log_summary_table,
     write_beast_posterior_tree_set,
+    write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
     write_supplementary_bayesian_diagnostics_table,
 )
@@ -946,11 +951,27 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.write_mrbayes_parameter_summary_table
         is write_mrbayes_parameter_summary_table
     )
+    assert (
+        bijux_phylogenetics.assess_mrbayes_burnin_sensitivity
+        is assess_mrbayes_burnin_sensitivity
+    )
+    assert (
+        bijux_phylogenetics.write_mrbayes_burnin_sensitivity_slice_table
+        is write_mrbayes_burnin_sensitivity_slice_table
+    )
     assert bijux_phylogenetics.assess_mrbayes_convergence is assess_mrbayes_convergence
     assert bijux_phylogenetics.MrBayesParameterSummary is MrBayesParameterSummary
     assert (
         bijux_phylogenetics.MrBayesParameterDiagnosticsReport
         is MrBayesParameterDiagnosticsReport
+    )
+    assert (
+        bijux_phylogenetics.MrBayesBurninSensitivityReport
+        is MrBayesBurninSensitivityReport
+    )
+    assert (
+        bijux_phylogenetics.MrBayesBurninSensitivitySlice
+        is MrBayesBurninSensitivitySlice
     )
     assert (
         bijux_phylogenetics.render_bayesian_posterior_report
@@ -1003,6 +1024,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is assess_beast_burnin_sensitivity
     )
     assert bijux_phylogenetics.assess_beast_chain_mixing is assess_beast_chain_mixing
+    assert (
+        bijux_phylogenetics.write_beast_burnin_sensitivity_slice_table
+        is write_beast_burnin_sensitivity_slice_table
+    )
     assert (
         bijux_phylogenetics.write_beast_log_summary_table
         is write_beast_log_summary_table

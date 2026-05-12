@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
 
+from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
@@ -183,7 +184,7 @@ def write_supplementary_bayesian_diagnostics_table(
     posterior_tree_path: Path,
     primary_log_path: Path,
     additional_log_paths: list[Path] | None = None,
-    burnin_fractions: tuple[float, ...] = (0.1, 0.25, 0.5),
+    burnin_fractions: tuple[float, ...] = DEFAULT_BURNIN_FRACTIONS,
     required_columns: tuple[str, ...] = ("posterior", "likelihood"),
     ess_threshold: float = 200.0,
     mean_shift_threshold: float = 0.5,
@@ -305,7 +306,7 @@ def write_bayesian_methods_summary_text(
     additional_log_paths: list[Path] | None = None,
     tree_prior: str = "unspecified",
     clock_model: str = "unspecified",
-    burnin_fractions: tuple[float, ...] = (0.1, 0.25, 0.5),
+    burnin_fractions: tuple[float, ...] = DEFAULT_BURNIN_FRACTIONS,
     required_columns: tuple[str, ...] = ("posterior", "likelihood"),
     ess_threshold: float = 200.0,
     mean_shift_threshold: float = 0.5,
@@ -379,7 +380,7 @@ def write_bayesian_limitations_text(
     calibration_path: Path | None = None,
     tip_dates_path: Path | None = None,
     alignment_path: Path | None = None,
-    burnin_fractions: tuple[float, ...] = (0.1, 0.25, 0.5),
+    burnin_fractions: tuple[float, ...] = DEFAULT_BURNIN_FRACTIONS,
     ess_threshold: float = 200.0,
     mean_shift_threshold: float = 0.5,
     cross_chain_mean_shift_threshold: float = 0.75,
