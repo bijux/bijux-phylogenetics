@@ -40,6 +40,7 @@ from bijux_phylogenetics.bayesian import (
     render_bayesian_run_comparison_report,
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
+    summarize_beast_log,
     summarize_maximum_clade_credibility_tree,
     summarize_mrbayes_posterior_trees,
     summarize_posterior_node_ages,
@@ -48,6 +49,7 @@ from bijux_phylogenetics.bayesian import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
+    write_beast_log_summary_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -948,6 +950,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert bijux_phylogenetics.BeastCalibration is BeastCalibration
     assert bijux_phylogenetics.parse_beast_log is parse_beast_log
+    assert bijux_phylogenetics.summarize_beast_log is summarize_beast_log
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
     assert (
         bijux_phylogenetics.validate_beast_posterior_log is validate_beast_posterior_log
@@ -957,6 +960,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is assess_beast_burnin_sensitivity
     )
     assert bijux_phylogenetics.assess_beast_chain_mixing is assess_beast_chain_mixing
+    assert (
+        bijux_phylogenetics.write_beast_log_summary_table
+        is write_beast_log_summary_table
+    )
     assert (
         bijux_phylogenetics.summarize_maximum_clade_credibility_tree
         is summarize_maximum_clade_credibility_tree
