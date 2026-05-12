@@ -66,6 +66,35 @@ straightforward midpoint interpretation. Trees that are not strictly
 bifurcating are still rerooted, but the report marks them as exploratory and
 adds an explicit warning so downstream review does not overclaim the result.
 
+When you already have two inferred trees and need an explicit topology
+distance, use `compare`. The command now supports rooted and unrooted
+Robinson-Foulds review directly, and it records which taxa were shared versus
+present on only one side before the distance is computed.
+
+```bash
+bijux-phylogenetics compare \
+  artifacts/mammals.iqtree.nwk \
+  artifacts/mammals.fasttree.nwk \
+  --rf-mode unrooted \
+  --json
+```
+
+Use rooted RF when root placement is part of the scientific claim. Use
+unrooted RF when the question is only whether the same splits were recovered
+regardless of root placement. By default the command prunes both trees to
+their shared taxa before computing RF distance, which is appropriate for
+reviewing partially overlapping outputs. If taxon-set mismatch itself should
+fail the comparison, add `--taxon-overlap-policy require-identical`.
+
+```bash
+bijux-phylogenetics compare \
+  artifacts/mammals.reference.nwk \
+  artifacts/mammals.candidate.nwk \
+  --rf-mode rooted \
+  --taxon-overlap-policy require-identical \
+  --json
+```
+
 When your starting point is one aligned FASTA per locus, run
 `alignment concatenate` first. That workflow writes the concatenated alignment,
 the remapped partition file, and the taxon-by-locus occupancy matrix in one
