@@ -95,6 +95,24 @@ MrBayes block, and the JSON summary exposes `partitioned`, `partition_count`,
 and `partition_warning_count` so review surfaces can separate flat versus
 partitioned Bayesian preparation without scraping the written NEXUS text.
 
+`adapter beast-prepare` is the governed BEAST2 input-generation surface for
+one aligned FASTA file plus optional dating metadata. It writes a real BEAST2
+XML document rather than a placeholder summary file: the XML includes the
+alignment block, a provided-tree or UPGMA starting tree, an HKY or JTT site
+model chosen from the inferred sequence alphabet, a strict or uncorrelated
+lognormal clock, a Yule or birth-death tree prior, explicit MCMC loggers, and
+one MRCA prior per validated calibration target. Its JSON metrics expose
+`taxon_count`, `calibration_count`, `tip_date_count`, `warning_count`,
+`starting_tree_source`, and `beast_data_type`.
+
+When `--calibrations` or `--tip-dates` are supplied, `--tree` is required.
+That rule keeps the dated template anchored to the same guide topology and
+named clades that were validated during preparation. Calibration translation is
+also explicit in the JSON payload: bounded calibrations are preserved as hard
+uniform bounds, while lower-bound-only calibrations are translated into offset
+parametric priors with reviewable warnings instead of being copied as if BEAST2
+accepted a one-sided hard uniform interval directly.
+
 `adapter mrbayes-run` is the governed execution surface for one prepared
 MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
 posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC
