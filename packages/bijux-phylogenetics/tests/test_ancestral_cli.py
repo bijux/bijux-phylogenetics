@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 
 from bijux_phylogenetics.cli import main
 
@@ -383,8 +384,77 @@ def test_ancestral_render_cli_writes_svg_with_internal_annotations(
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
+    assert payload["metrics"]["format"] == "svg"
     assert payload["metrics"]["rendered_internal_annotation_count"] == 3
     assert 'class="internal-annotation-label"' in output.read_text(encoding="utf-8")
+
+
+def test_ancestral_render_cli_can_export_discrete_pie_html(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "ancestral-discrete.html"
+    exit_code = main(
+        [
+            "ancestral",
+            "render",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--kind",
+            "discrete",
+            "--model",
+            "equal-rates",
+            "--discrete-node-style",
+            "pies",
+            "--branch-coloring",
+            "state",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["format"] == "html"
+    assert payload["metrics"]["rendered_internal_pie_count"] == 3
+    assert payload["metrics"]["rendered_branch_color_count"] >= 4
+    assert "<figure><svg" in output.read_text(encoding="utf-8")
+    assert output.with_suffix(".svg").exists()
+
+
+def test_ancestral_render_cli_can_export_png(tmp_path: Path, capsys) -> None:
+    if shutil.which("rsvg-convert") is None and shutil.which("sips") is None:
+        return
+    output = tmp_path / "ancestral-discrete.png"
+    exit_code = main(
+        [
+            "ancestral",
+            "render",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--kind",
+            "discrete",
+            "--model",
+            "equal-rates",
+            "--discrete-node-style",
+            "pies",
+            "--branch-coloring",
+            "state",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["format"] == "png"
+    assert output.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert output.with_suffix(".svg").exists()
 
 
 def test_ancestral_report_cli_writes_html_and_svg(tmp_path: Path, capsys) -> None:
@@ -461,8 +531,10 @@ def test_ancestral_package_cli_writes_publication_bundle(
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["artifact_count"] == 7
+    assert payload["metrics"]["artifact_count"] == 9
     assert (output_dir / "figure-manifest.json").exists()
+    assert (output_dir / "ancestral-figure.png").exists()
+    assert (output_dir / "ancestral-figure.html").exists()
 
 
 def test_ancestral_discrete_cli_rejects_ordered_fitch_model(capsys) -> None:

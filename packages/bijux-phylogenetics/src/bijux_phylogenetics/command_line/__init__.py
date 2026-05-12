@@ -58,9 +58,11 @@ from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
     compare_discrete_ancestral_reconstructions,
     render_ancestral_state_report,
-    render_ancestral_state_tree,
     write_ancestral_state_table,
     write_discrete_ancestral_comparison_table,
+)
+from bijux_phylogenetics.ancestral.visualization import (
+    render_ancestral_state_visualization,
 )
 from bijux_phylogenetics.bayesian import (
     assess_beast_burnin_sensitivity,
@@ -3155,6 +3157,12 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_render.add_argument("--alpha", type=float, default=1.0)
     ancestral_render.add_argument(
         "--layout", choices=("cladogram", "phylogram", "circular"), default="phylogram"
+    )
+    ancestral_render.add_argument(
+        "--discrete-node-style", choices=("labels", "pies"), default="labels"
+    )
+    ancestral_render.add_argument(
+        "--branch-coloring", choices=("none", "state", "regime"), default="none"
     )
     ancestral_render.add_argument("--out", required=True, type=Path)
     ancestral_render.add_argument(
@@ -9077,6 +9085,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.ancestral_command == "render":
                 _validate_ancestral_discrete_model_arguments(args, parser)
+                if args.kind == "continuous" and args.branch_coloring == "state":
+                    parser.error(
+                        "continuous ancestral rendering does not support branch coloring 'state'"
+                    )
+                if args.kind == "discrete" and args.branch_coloring == "regime":
+                    parser.error(
+                        "discrete ancestral rendering does not support branch coloring 'regime'"
+                    )
                 if args.kind == "continuous":
                     resolved_model = args.model or "brownian"
                     reconstruction = reconstruct_continuous_ancestral_states(
@@ -9098,17 +9114,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         state_ordering=args.state_ordering,
                         ordered_states=_split_csv_values(args.ordered_states) or None,
                     )
-                result = render_ancestral_state_tree(
+                result = render_ancestral_state_visualization(
                     args.tree,
                     reconstruction,
                     out_path=args.out,
                     layout=args.layout,
+                    discrete_node_style=args.discrete_node_style,
+                    branch_coloring=args.branch_coloring,
+                )
+                rendered_outputs = (
+                    [result.output_path]
+                    if result.format == "svg"
+                    else [result.output_path, result.svg_path]
                 )
                 outputs = _finalize_outputs(
                     args,
                     command="ancestral",
                     inputs=[args.tree, args.table],
-                    outputs=[result.output_path],
+                    outputs=rendered_outputs,
                 )
                 _print_result(
                     build_command_result(
@@ -9117,13 +9140,22 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         warnings=getattr(reconstruction, "warnings", []),
                         metrics={
-                            "tip_count": result.tip_count,
-                            "rendered_internal_annotation_count": result.rendered_internal_annotation_count,
+                            "tip_count": result.tree_render.tip_count,
+                            "format": result.format,
                             "layout": result.layout,
+                            "rendered_internal_annotation_count": (
+                                result.tree_render.rendered_internal_annotation_count
+                            ),
+                            "rendered_internal_pie_count": (
+                                result.tree_render.rendered_internal_pie_count
+                            ),
+                            "rendered_branch_color_count": (
+                                result.tree_render.rendered_branch_color_count
+                            ),
                         },
                         data={
                             "reconstruction": reconstruction,
-                            "render": result,
+                            "visualization": result,
                         },
                     ),
                     json_output=args.json,
@@ -9153,6 +9185,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     inputs=[args.tree, args.table],
                     outputs=[
                         result.figure_path,
+                        result.figure_png_path,
+                        result.figure_html_path,
                         result.node_table_path,
                         result.uncertainty_table_path,
                         result.legend_path,
@@ -9168,7 +9202,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "output_dir": str(result.output_dir),
-                            "artifact_count": 7,
+                            "artifact_count": 9,
                         },
                         data=result,
                     ),
