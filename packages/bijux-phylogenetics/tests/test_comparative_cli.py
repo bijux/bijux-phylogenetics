@@ -260,6 +260,95 @@ def test_comparative_brownian_regimes_cli_writes_review_ledgers(
     ]
 
 
+def test_comparative_regime_map_cli_reconstructs_and_renders_regimes(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "trait-regime-summary.tsv"
+    branch_out = tmp_path / "trait-regime-branches.tsv"
+    node_out = tmp_path / "trait-regime-nodes.tsv"
+    excluded_out = tmp_path / "trait-regime-excluded.tsv"
+    svg_out = tmp_path / "trait-regime.svg"
+    exit_code = main(
+        [
+            "comparative",
+            "regime-map",
+            str(fixture("example_tree.nwk")),
+            "--table",
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--summary-out",
+            str(summary_out),
+            "--branches-out",
+            str(branch_out),
+            "--nodes-out",
+            str(node_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--svg-out",
+            str(svg_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["source_kind"] == "tip-state-reconstruction"
+    assert payload["metrics"]["tree_taxon_count"] == 4
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["regime_count"] == 3
+    assert payload["metrics"]["branch_count"] == 6
+    assert payload["metrics"]["node_count"] == 7
+    assert payload["metrics"]["ambiguous_branch_count"] == 1
+    assert payload["metrics"]["rendered_internal_annotation_count"] >= 2
+    assert payload["metrics"]["rendered_categorical_trait_count"] == 4
+    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "source_kind\ttrait\ttaxon_column\treconstruction_model"
+    )
+    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "branch_id\tchild_node_name\tis_tip_branch"
+    )
+    assert node_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "node_id\tnode_name\tis_tip"
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == ["taxon\treason"]
+    assert svg_out.exists()
+
+
+def test_comparative_regime_map_cli_normalizes_user_map(tmp_path: Path, capsys) -> None:
+    branch_out = tmp_path / "trait-regime-branches.tsv"
+    svg_out = tmp_path / "trait-regime.svg"
+    exit_code = main(
+        [
+            "comparative",
+            "regime-map",
+            str(fixture("example_tree.nwk")),
+            "--regime-map",
+            str(fixture("example_branch_regimes.tsv")),
+            "--branches-out",
+            str(branch_out),
+            "--svg-out",
+            str(svg_out),
+            "--layout",
+            "circular",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["source_kind"] == "user-provided-map"
+    assert payload["metrics"]["regime_count"] == 2
+    assert payload["metrics"]["branch_count"] == 6
+    assert payload["metrics"]["node_count"] == 0
+    assert payload["metrics"]["ambiguous_branch_count"] == 0
+    assert payload["metrics"]["rendered_internal_annotation_count"] >= 2
+    assert payload["metrics"]["rendered_categorical_trait_count"] == 4
+    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "branch_id\tchild_node_name\tis_tip_branch"
+    )
+    assert svg_out.exists()
+
+
 def test_comparative_ou_cli_reports_model_fit_metrics(capsys) -> None:
     exit_code = main(
         [
