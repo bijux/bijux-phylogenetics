@@ -22,6 +22,8 @@ from bijux_phylogenetics.ancestral import (
     render_ancestral_state_report,
     render_ancestral_state_tree,
     render_ancestral_state_visualization,
+    summarize_ordered_discrete_reconstruction,
+    summarize_ordered_discrete_report,
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
     summarize_continuous_ancestral_confidence,
@@ -39,6 +41,10 @@ from bijux_phylogenetics.ancestral import (
     summarize_discrete_ancestral_tree_set,
     summarize_discrete_ancestral_tree_set_report,
     write_ancestral_confidence_summary_table,
+    write_ordered_discrete_fit_table,
+    write_ordered_discrete_node_table,
+    write_ordered_discrete_summary_table,
+    write_ordered_discrete_transition_table,
     write_ancestral_root_assumption_table,
     write_ancestral_root_sensitivity_node_table,
     write_ancestral_root_sensitivity_summary_table,
@@ -1838,6 +1844,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_discrete_ancestral_tree_set_confidence_rows
     )
     assert (
+        bijux_phylogenetics.summarize_ordered_discrete_reconstruction
+        is summarize_ordered_discrete_reconstruction
+    )
+    assert (
+        bijux_phylogenetics.summarize_ordered_discrete_report
+        is summarize_ordered_discrete_report
+    )
+    assert (
         bijux_phylogenetics.summarize_ancestral_root_sensitivity
         is summarize_ancestral_root_sensitivity
     )
@@ -1860,6 +1874,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_ancestral_transition_tree_set_report
         is summarize_ancestral_transition_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_summary_table
+        is write_ordered_discrete_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_fit_table
+        is write_ordered_discrete_fit_table
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_node_table
+        is write_ordered_discrete_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_transition_table
+        is write_ordered_discrete_transition_table
     )
     assert (
         bijux_phylogenetics.write_ancestral_root_sensitivity_summary_table
