@@ -226,6 +226,33 @@ into either strong conflict or weak noise. If the present-side tree did not
 carry a parseable support label, the conflict row is marked
 `support_unavailable`.
 
+When the question is which shared taxa are driving disagreement, use
+`compare influence`. That workflow performs a leave-one-taxon-out comparison
+for every shared taxon, recomputes the topology and support conflict surfaces
+after each exclusion, and ranks taxa by how much the disagreement surface
+changes.
+
+```bash
+bijux-phylogenetics compare influence \
+  artifacts/mammals.reference.nwk \
+  artifacts/mammals.candidate.nwk \
+  --out artifacts/mammals.taxon-influence.tsv \
+  --json
+```
+
+The written ledger keeps one row per excluded taxon and preserves:
+- whether the baseline rooted conflict disappeared or persisted after exclusion
+- rooted and unrooted Robinson-Foulds deltas after the taxon was removed
+- support-disagreement, conflicting-clade, and high-support-conflict deltas
+- a transparent influence score and resulting rank
+
+This review surface is useful when one taxon appears unstable, misplaced, or
+poorly aligned and the practical question is whether disagreement is global or
+concentrated around that single tip. The ranking is deliberately heuristic: it
+adds the normalized topology shift to the absolute support-surface count shifts
+so reviewers can see why one taxon outranks another instead of treating the
+rank as an opaque diagnostic.
+
 When the main question is which clades agree or conflict across several trees,
 use `compare clades`. The command accepts two required tree paths plus
 additional trees through repeated `--tree` flags, computes clade overlap on the
