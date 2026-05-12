@@ -155,6 +155,14 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
+from bijux_phylogenetics.biogeography import (
+    summarize_geographic_state_model,
+    write_geographic_exclusion_table,
+    write_geographic_region_probability_table,
+    write_geographic_state_summary_table,
+    write_geographic_transition_event_table,
+    write_geographic_transition_rate_table,
+)
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.comparative.common import (
     summarize_numeric_trait,
@@ -3400,6 +3408,41 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the package build result as JSON."
     )
     _add_manifest_argument(ancestral_package)
+
+    biogeography = subparsers.add_parser(
+        get_command_spec("biogeography").name,
+        help=get_command_spec("biogeography").summary,
+    )
+    biogeography_subparsers = biogeography.add_subparsers(
+        dest="biogeography_command",
+        required=True,
+    )
+    biogeography_model = biogeography_subparsers.add_parser(
+        "model",
+        help="Reconstruct ancestral geographic regions under an ER, SYM, or ARD transition model.",
+    )
+    biogeography_model.add_argument("tree", type=Path)
+    biogeography_model.add_argument("table", type=Path)
+    biogeography_model.add_argument("--trait", required=True)
+    biogeography_model.add_argument("--taxon-column")
+    biogeography_model.add_argument(
+        "--model",
+        choices=("er", "sym", "ard"),
+        default="er",
+    )
+    biogeography_model.add_argument(
+        "--allowed-regions",
+        help="Comma-delimited explicit region vocabulary.",
+    )
+    biogeography_model.add_argument("--summary-out", type=Path)
+    biogeography_model.add_argument("--nodes-out", type=Path)
+    biogeography_model.add_argument("--rates-out", type=Path)
+    biogeography_model.add_argument("--events-out", type=Path)
+    biogeography_model.add_argument("--exclusions-out", type=Path)
+    biogeography_model.add_argument(
+        "--json", action="store_true", help="Emit the biogeography review as JSON."
+    )
+    _add_manifest_argument(biogeography_model)
 
     discrete_evolution = subparsers.add_parser(
         get_command_spec("discrete-evolution").name,
@@ -9917,6 +9960,73 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 json_output=args.json,
             )
             return 0
+        if args.command == "biogeography":
+            if args.biogeography_command == "model":
+                report = summarize_geographic_state_model(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    allowed_regions=_split_csv_values(args.allowed_regions) or None,
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_geographic_state_summary_table(args.summary_out, report)
+                    )
+                if args.nodes_out is not None:
+                    outputs.append(
+                        write_geographic_region_probability_table(args.nodes_out, report)
+                    )
+                if args.rates_out is not None:
+                    outputs.append(
+                        write_geographic_transition_rate_table(args.rates_out, report)
+                    )
+                if args.events_out is not None:
+                    outputs.append(
+                        write_geographic_transition_event_table(args.events_out, report)
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_geographic_exclusion_table(args.exclusions_out, report)
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="biogeography",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="biogeography",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "observed_region_count": (
+                                report.summary.observed_region_count
+                            ),
+                            "internal_node_count": report.summary.internal_node_count,
+                            "transition_rate_row_count": (
+                                report.summary.transition_rate_row_count
+                            ),
+                            "changed_branch_count": (
+                                report.summary.changed_branch_count
+                            ),
+                            "strongly_supported_transition_count": (
+                                report.summary.strongly_supported_transition_count
+                            ),
+                            "excluded_taxon_count": (
+                                report.summary.excluded_taxon_count
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
         if args.command == "discrete-evolution":
             allowed_states = (
                 _split_csv_values(args.allowed_states)
