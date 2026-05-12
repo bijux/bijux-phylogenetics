@@ -426,6 +426,7 @@ from bijux_phylogenetics.datasets import (
     run_central_european_seashore_flora_demo,
     run_influenza_a_ha_reference_demo,
     run_primate_comparative_demo,
+    run_rabies_geographic_transition_panel_demo,
     run_rabies_cross_host_panel_demo,
 )
 from bijux_phylogenetics.core.environment import inspect_environment
@@ -5238,6 +5239,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_rabies)
+    demo_rabies_geography = demo_subparsers.add_parser(
+        "rabies-geographic-transition-panel",
+        help="Materialize the packaged rabies geography dataset and rerun the governed geographic transition review outputs.",
+    )
+    demo_rabies_geography.add_argument("--out", required=True, type=Path)
+    demo_rabies_geography.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_rabies_geography)
 
     adapter = subparsers.add_parser(
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
@@ -14435,6 +14445,70 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "uncertain_host_switch_count": (
                                     result.workflow_bundle.uncertain_host_switch_count
+                                ),
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "rabies-geographic-transition-panel":
+                result = run_rabies_geographic_transition_panel_demo(args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.sequences_path,
+                        result.dataset_export.tree_path,
+                        result.dataset_export.regions_path,
+                        result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.geographic_state_summary_path,
+                        result.workflow_bundle.geographic_region_probability_path,
+                        result.workflow_bundle.geographic_transition_rate_path,
+                        result.workflow_bundle.geographic_transition_event_path,
+                        result.workflow_bundle.geographic_state_exclusion_path,
+                        result.workflow_bundle.geographic_migration_summary_path,
+                        result.workflow_bundle.geographic_migration_event_path,
+                        result.workflow_bundle.geographic_migration_exclusion_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "taxon_count": result.dataset.taxon_count,
+                                "workflow_trait": result.dataset.workflow_trait,
+                                "observed_region_group_count": (
+                                    result.dataset.observed_region_group_count
+                                ),
+                                "root_region": result.workflow_bundle.root_region,
+                                "root_region_probability": (
+                                    result.workflow_bundle.root_region_probability
+                                ),
+                                "changed_branch_count": (
+                                    result.workflow_bundle.changed_branch_count
+                                ),
+                                "strongly_supported_transition_count": (
+                                    result.workflow_bundle.strongly_supported_transition_count
+                                ),
+                                "migration_event_count": (
+                                    result.workflow_bundle.migration_event_count
+                                ),
+                                "strongly_supported_migration_event_count": (
+                                    result.workflow_bundle.strongly_supported_migration_event_count
                                 ),
                                 "reference_output_count": expected_output_count,
                             },
