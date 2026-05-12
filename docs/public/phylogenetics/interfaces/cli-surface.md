@@ -156,6 +156,48 @@ This command is intentionally a public non-animal comparative entrypoint rather
 than a generic flora dump. It exposes one documented published subset with a
 fully rerunnable workflow contract.
 
+`demo influenza-a-ha-reference-panel` is the governed packaged viral
+sequence-to-tree surface. It materializes the shipped Influenza A
+hemagglutinin FASTA panel into one output directory and reruns the owned
+MAFFT, trimAl, and IQ-TREE workflow over those packaged inputs. Its JSON
+metrics report:
+
+- `artifact_count`
+- `sequence_count`
+- `sequence_type`
+- `selected_model`
+- `minimum_support`
+- `maximum_support`
+- `weakly_supported_clade_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/sequences.fasta`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/influenza-a-ha-reference-panel.aln`
+- `workflow/influenza-a-ha-reference-panel.trimmed.aln`
+- `workflow/influenza-a-ha-reference-panel.tree`
+- `workflow/influenza-a-ha-reference-panel.model.tsv`
+- `workflow/influenza-a-ha-reference-panel.support.tsv`
+- `workflow/influenza-a-ha-reference-panel.log`
+- `workflow/influenza-a-ha-reference-panel.manifest.json`
+- `overview.md`
+
+The packaged dataset carries raw unaligned viral nucleotide sequences and uses
+the following governed inference controls:
+
+- sequence type `dna`
+- IQ-TREE seed `1`
+- IQ-TREE threads `1`
+- bootstrap replicates `1000`
+
+This command requires MAFFT, trimAl, and IQ-TREE executables. Use
+`--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
+they are not available on the default `PATH`.
+
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
 the selected continuous model, reports 95% uncertainty intervals, and prunes
