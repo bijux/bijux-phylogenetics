@@ -146,6 +146,22 @@ JSON metrics expose the same placement fields plus `midpoint_suitable` and
 warning counts so exploratory midpoint-rooted trees can be filtered or flagged
 without re-parsing the written TSV.
 
+`topology clades` is the governed clade-extraction surface for one tree. It
+writes one row per node-derived clade, including tips, internal clades, and
+the root, and preserves member taxa, parsed support labels, incoming branch
+length, root depth, descendant tip depths, and `node_age` when branch lengths
+are complete and the tree is ultrametric. When `--metadata` plus repeated
+`--metadata-column` flags are supplied, the command also flattens taxon-keyed
+metadata into stable per-clade review fields such as matched taxa, missing
+taxa, per-taxon values, and distinct observed values for each requested
+column.
+
+`tree-set clades` applies the same clade-table contract to every tree in one
+tree-set file. It preserves the one-based source tree index for each row and
+requires every tree in the set to carry the same taxon set before clades are
+tabulated. That keeps the resulting table reviewable across posterior or
+bootstrap samples instead of silently merging incompatible tree contents.
+
 The alignment family includes matrix-assembly and matrix-audit commands for
 concatenated multi-locus inputs. `alignment concatenate` assembles one
 supermatrix from aligned per-locus FASTA inputs, preserves taxon identities,
