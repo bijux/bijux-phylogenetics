@@ -14,7 +14,7 @@ from bijux_phylogenetics.bayesian.posterior import (
     summarize_maximum_clade_credibility_tree,
 )
 from bijux_phylogenetics.comparative.common import descendant_taxa
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.engines.workflows import _ensure_inference_ready_alignment
@@ -179,6 +179,37 @@ class BeastLogReport:
 
 
 @dataclass(slots=True)
+class BeastLogParameterSummary:
+    parameter: str
+    parameter_category: str
+    sample_count: int
+    effective_sample_size: float
+    mean: float
+    minimum: float
+    maximum: float
+    first_half_mean: float
+    second_half_mean: float
+    standardized_mean_shift: float
+
+
+@dataclass(slots=True)
+class BeastLogSummaryReport:
+    path: Path
+    burnin_fraction: float
+    burnin_row_count: int
+    kept_row_count: int
+    first_kept_state: int
+    last_kept_state: int
+    posterior_parameters: list[str]
+    likelihood_parameters: list[str]
+    prior_parameters: list[str]
+    clock_parameters: list[str]
+    tree_parameters: list[str]
+    other_parameters: list[str]
+    parameter_summaries: list[BeastLogParameterSummary]
+
+
+@dataclass(slots=True)
 class BeastLogValidationIssue:
     code: str
     message: str
@@ -242,6 +273,8 @@ class BeastChainMixingReport:
 @dataclass(slots=True)
 class BeastConvergenceReport:
     path: Path
+    burnin_fraction: float
+    burnin_row_count: int
     sample_count: int
     converged: bool
     ess_threshold: float
@@ -1570,6 +1603,114 @@ def parse_beast_log(path: Path) -> BeastLogReport:
     return BeastLogReport(path=path, row_count=len(rows), columns=columns, rows=rows)
 
 
+def summarize_beast_log(
+    path: Path,
+    *,
+    burnin_fraction: float = 0.0,
+) -> BeastLogSummaryReport:
+    """Summarize a BEAST posterior log after discarding an optional burn-in fraction."""
+    report = parse_beast_log(path)
+    burnin_row_count, kept_rows = _split_beast_log_rows(
+        report, burnin_fraction=burnin_fraction
+    )
+    convergence = summarize_trace_convergence(
+        path=path,
+        rows=[row.values for row in kept_rows],
+        columns=report.columns,
+        ess_threshold=0.0,
+        mean_shift_threshold=float("inf"),
+    )
+    parameter_summaries = [
+        BeastLogParameterSummary(
+            parameter=summary.parameter,
+            parameter_category=_classify_beast_parameter(summary.parameter),
+            sample_count=summary.sample_count,
+            effective_sample_size=summary.effective_sample_size,
+            mean=summary.mean,
+            minimum=summary.minimum,
+            maximum=summary.maximum,
+            first_half_mean=summary.first_half_mean,
+            second_half_mean=summary.second_half_mean,
+            standardized_mean_shift=summary.standardized_mean_shift,
+        )
+        for summary in convergence.series
+    ]
+    return BeastLogSummaryReport(
+        path=path,
+        burnin_fraction=burnin_fraction,
+        burnin_row_count=burnin_row_count,
+        kept_row_count=len(kept_rows),
+        first_kept_state=kept_rows[0].state,
+        last_kept_state=kept_rows[-1].state,
+        posterior_parameters=_summary_parameters_by_category(
+            parameter_summaries, category="posterior"
+        ),
+        likelihood_parameters=_summary_parameters_by_category(
+            parameter_summaries, category="likelihood"
+        ),
+        prior_parameters=_summary_parameters_by_category(
+            parameter_summaries, category="prior"
+        ),
+        clock_parameters=_summary_parameters_by_category(
+            parameter_summaries, category="clock"
+        ),
+        tree_parameters=_summary_parameters_by_category(
+            parameter_summaries, category="tree"
+        ),
+        other_parameters=_summary_parameters_by_category(
+            parameter_summaries, category="other"
+        ),
+        parameter_summaries=parameter_summaries,
+    )
+
+
+def write_beast_log_summary_table(path: Path, report: BeastLogSummaryReport) -> Path:
+    """Write a reviewer-facing TSV summary of one BEAST posterior log."""
+    rows = [
+        {
+            "parameter_category": summary.parameter_category,
+            "parameter": summary.parameter,
+            "sample_count": str(summary.sample_count),
+            "effective_sample_size": format(summary.effective_sample_size, ".15g"),
+            "mean": format(summary.mean, ".15g"),
+            "minimum": format(summary.minimum, ".15g"),
+            "maximum": format(summary.maximum, ".15g"),
+            "first_half_mean": format(summary.first_half_mean, ".15g"),
+            "second_half_mean": format(summary.second_half_mean, ".15g"),
+            "standardized_mean_shift": format(
+                summary.standardized_mean_shift, ".15g"
+            ),
+            "burnin_fraction": format(report.burnin_fraction, ".15g"),
+            "burnin_row_count": str(report.burnin_row_count),
+            "kept_row_count": str(report.kept_row_count),
+            "first_kept_state": str(report.first_kept_state),
+            "last_kept_state": str(report.last_kept_state),
+        }
+        for summary in report.parameter_summaries
+    ]
+    return write_taxon_rows(
+        path,
+        columns=[
+            "parameter_category",
+            "parameter",
+            "sample_count",
+            "effective_sample_size",
+            "mean",
+            "minimum",
+            "maximum",
+            "first_half_mean",
+            "second_half_mean",
+            "standardized_mean_shift",
+            "burnin_fraction",
+            "burnin_row_count",
+            "kept_row_count",
+            "first_kept_state",
+            "last_kept_state",
+        ],
+        rows=rows,
+    )
+
+
 def validate_beast_posterior_log(
     path: Path,
     *,
@@ -1866,26 +2007,39 @@ def assess_beast_chain_mixing(
 def assess_beast_convergence(
     path: Path,
     *,
+    burnin_fraction: float = 0.0,
     ess_threshold: float = 200.0,
     mean_shift_threshold: float = 0.5,
 ) -> BeastConvergenceReport:
     """Flag low-ESS or unstable BEAST trace parameters."""
     report = parse_beast_log(path)
+    burnin_row_count, kept_rows = _split_beast_log_rows(
+        report, burnin_fraction=burnin_fraction
+    )
     convergence = summarize_trace_convergence(
         path=path,
-        rows=[row.values for row in report.rows],
+        rows=[row.values for row in kept_rows],
         columns=report.columns,
         ess_threshold=ess_threshold,
         mean_shift_threshold=mean_shift_threshold,
     )
-    return _build_beast_convergence_report(convergence)
+    return _build_beast_convergence_report(
+        convergence,
+        burnin_fraction=burnin_fraction,
+        burnin_row_count=burnin_row_count,
+    )
 
 
 def _build_beast_convergence_report(
     convergence: TraceConvergenceReport,
+    *,
+    burnin_fraction: float,
+    burnin_row_count: int,
 ) -> BeastConvergenceReport:
     return BeastConvergenceReport(
         path=convergence.path,
+        burnin_fraction=burnin_fraction,
+        burnin_row_count=burnin_row_count,
         sample_count=convergence.sample_count,
         converged=convergence.converged,
         ess_threshold=convergence.ess_threshold,
@@ -1921,3 +2075,69 @@ def _mean_or_none(values: list[float]) -> float | None:
     if not values:
         return None
     return round(sum(values) / len(values), 6)
+
+
+def _split_beast_log_rows(
+    report: BeastLogReport,
+    *,
+    burnin_fraction: float,
+) -> tuple[int, list[BeastLogRow]]:
+    if not 0.0 <= burnin_fraction < 1.0:
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
+    burnin_row_count = int(report.row_count * burnin_fraction)
+    kept_rows = report.rows[burnin_row_count:]
+    if not kept_rows:
+        raise ValueError(
+            f"BEAST log contains no sampled rows after burn-in filtering: {report.path}"
+        )
+    return burnin_row_count, kept_rows
+
+
+def _classify_beast_parameter(parameter: str) -> str:
+    normalized = parameter.lower()
+    if normalized == "posterior" or normalized.endswith(".posterior"):
+        return "posterior"
+    if normalized == "likelihood" or "likelihood" in normalized:
+        return "likelihood"
+    if normalized == "prior" or "prior" in normalized:
+        return "prior"
+    if any(
+        token in normalized
+        for token in (
+            "clock",
+            "clockrate",
+            "ucld",
+            "branchrate",
+            "mutationrate",
+            "meanrate",
+        )
+    ):
+        return "clock"
+    if any(
+        token in normalized
+        for token in (
+            "tree",
+            "birthrate",
+            "deathrate",
+            "popsize",
+            "coalescent",
+            "tmrca",
+            "origin",
+        )
+    ):
+        return "tree"
+    return "other"
+
+
+def _summary_parameters_by_category(
+    parameter_summaries: list[BeastLogParameterSummary],
+    *,
+    category: str,
+) -> list[str]:
+    return [
+        summary.parameter
+        for summary in parameter_summaries
+        if summary.parameter_category == category
+    ]

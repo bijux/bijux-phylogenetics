@@ -11,9 +11,11 @@ from bijux_phylogenetics.bayesian.beast import (
     detect_impossible_calibration_constraints,
     parse_beast_log,
     prepare_beast_time_tree_analysis,
+    summarize_beast_log,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
+    write_beast_log_summary_table,
 )
 from bijux_phylogenetics.bayesian.evidence import build_bayesian_evidence_package
 from bijux_phylogenetics.bayesian.reports import (
@@ -229,6 +231,54 @@ def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> 
         "low-ess",
         "mean-drift",
     }
+
+
+def test_summarize_beast_log_classifies_parameters_and_writes_summary_table(
+    tmp_path: Path,
+) -> None:
+    log_path = tmp_path / "classified-beast.log"
+    summary_path = tmp_path / "classified-beast-summary.tsv"
+    log_path.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tprior\tclockRate\ttreeHeight\tbirthRate\talpha\n"
+        "0\t-510.0\t-490.0\t-20.0\t0.0010\t12.0\t0.30\t0.90\n"
+        "1000\t-505.0\t-486.0\t-19.0\t0.0011\t12.3\t0.35\t0.95\n"
+        "2000\t-500.0\t-482.0\t-18.0\t0.0012\t12.8\t0.40\t1.00\n"
+        "3000\t-497.0\t-479.0\t-18.0\t0.0013\t13.4\t0.45\t1.05\n",
+        encoding="utf-8",
+    )
+
+    report = summarize_beast_log(log_path, burnin_fraction=0.25)
+    output_path = write_beast_log_summary_table(summary_path, report)
+
+    text = summary_path.read_text(encoding="utf-8")
+    assert report.burnin_row_count == 1
+    assert report.kept_row_count == 3
+    assert report.first_kept_state == 1000
+    assert report.last_kept_state == 3000
+    assert report.posterior_parameters == ["posterior"]
+    assert report.likelihood_parameters == ["likelihood"]
+    assert report.prior_parameters == ["prior"]
+    assert report.clock_parameters == ["clockRate"]
+    assert set(report.tree_parameters) == {"treeHeight", "birthRate"}
+    assert report.other_parameters == ["alpha"]
+    assert output_path == summary_path
+    assert "parameter_category\tparameter\tsample_count" in text
+    assert "posterior\tposterior\t3" in text
+    assert "tree\tbirthRate\t3" in text
+
+
+def test_assess_beast_convergence_respects_burnin_fraction() -> None:
+    convergence = assess_beast_convergence(
+        fixture("example_beast.log"),
+        burnin_fraction=0.25,
+        ess_threshold=5.0,
+        mean_shift_threshold=0.1,
+    )
+
+    assert convergence.burnin_fraction == 0.25
+    assert convergence.burnin_row_count == 1
+    assert convergence.sample_count == 3
 
 
 def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(
