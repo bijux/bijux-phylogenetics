@@ -95,6 +95,26 @@ MrBayes block, and the JSON summary exposes `partitioned`, `partition_count`,
 and `partition_warning_count` so review surfaces can separate flat versus
 partitioned Bayesian preparation without scraping the written NEXUS text.
 
+`adapter mrbayes-run` is the governed execution surface for one prepared
+MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
+posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC
+diagnostics table (`.mcmc`), and consensus tree (`.con.tre`) together so the
+downstream review surface can stay on durable engine outputs rather than on
+copied snippets.
+
+The matching parser commands expose those artifacts directly:
+
+- `adapter mrbayes-traces` reports trace `row_count` and `column_count` from `.run1.p`
+- `adapter mrbayes-trees` reports `tree_count`, `rooted_tree_count`, and `sampled_generation_count` from `.run1.t`
+- `adapter mrbayes-mcmc` reports `row_count`, `column_count`, and `comment_count` from `.mcmc`
+- `adapter mrbayes-consensus` reports `tip_count`, `annotated_node_count`, and `maximum_posterior_probability` from `.con.tre`
+
+The consensus parser exists because MrBayes writes posterior-probability and
+branch-length summaries as inline bracket annotations inside the NEXUS tree
+text. The governed CLI strips those annotations only after parsing their
+probability fields into structured metrics, which keeps the public review
+contract honest about what the engine produced.
+
 The direct IQ-TREE adapter commands also preserve the native engine artifacts
 that correspond to each run. `adapter model-select` keeps `.iqtree`, `.log`,
 the native model sidecar, and a generated `.model-candidates.tsv`; `adapter infer-ml`
