@@ -106,12 +106,15 @@ from bijux_phylogenetics.tree_shape import (
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
+    ComparativeCladeResidualReport,
     IndependentContrastRegressionReport,
     IndependentContrastRegressionRow,
     ComparativeRegressionModelExclusion,
     ComparativeRegressionModelRow,
     ComparativeRegressionModelSelectionReport,
     ComparativeRegressionPairwiseComparisonRow,
+    ComparativeResidualCladeRow,
+    ComparativeResidualTaxonRow,
     MultivariateComparativeRegressionReport,
     MultivariateResidualAssociationRow,
     MultivariateResidualCovarianceRow,
@@ -123,6 +126,7 @@ from bijux_phylogenetics.comparative import (
     PhylogeneticSignalPermutation,
     PhylogeneticSignalSummaryReport,
     assess_comparative_method_maturity,
+    analyze_comparative_residual_clades,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
     build_pgls_model_matrix,
@@ -145,6 +149,8 @@ from bijux_phylogenetics.comparative import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
     write_brownian_covariance_table,
+    write_comparative_residual_clade_table,
+    write_comparative_residual_taxon_table,
     write_comparative_regression_excluded_taxa_table,
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
@@ -1029,6 +1035,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_multivariate_comparative_regression
     )
     assert (
+        bijux_phylogenetics.analyze_comparative_residual_clades
+        is analyze_comparative_residual_clades
+    )
+    assert (
         bijux_phylogenetics.compare_comparative_regression_models
         is compare_comparative_regression_models
     )
@@ -1070,6 +1080,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_pgls_categorical_contrasts
         is summarize_pgls_categorical_contrasts
+    )
+    assert (
+        bijux_phylogenetics.ComparativeCladeResidualReport
+        is ComparativeCladeResidualReport
+    )
+    assert (
+        bijux_phylogenetics.ComparativeResidualTaxonRow
+        is ComparativeResidualTaxonRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeResidualCladeRow
+        is ComparativeResidualCladeRow
     )
     assert (
         bijux_phylogenetics.ComparativeRegressionModelSelectionReport
@@ -1154,6 +1176,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_independent_contrast_table
         is write_independent_contrast_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_residual_taxon_table
+        is write_comparative_residual_taxon_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_residual_clade_table
+        is write_comparative_residual_clade_table
     )
     assert (
         bijux_phylogenetics.write_comparative_regression_model_ranking_table
@@ -7626,6 +7656,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_phylogenetic_logistic
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:analyze_comparative_residual_clades"]
+        is analyze_comparative_residual_clades
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:compare_comparative_regression_models"]
         is compare_comparative_regression_models
     )
@@ -7643,6 +7677,14 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_covariance_table"]
         is write_brownian_covariance_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_comparative_residual_taxon_table"]
+        is write_comparative_residual_taxon_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_comparative_residual_clade_table"]
+        is write_comparative_residual_clade_table
     )
     assert (
         resolved[

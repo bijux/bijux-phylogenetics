@@ -71,6 +71,14 @@ from .multivariate_regression import (
     write_multivariate_residual_association_table,
     write_multivariate_residual_covariance_table,
 )
+from .clade_residuals import (
+    ComparativeCladeResidualReport,
+    ComparativeResidualCladeRow,
+    ComparativeResidualTaxonRow,
+    analyze_comparative_residual_clades,
+    write_comparative_residual_clade_table,
+    write_comparative_residual_taxon_table,
+)
 from .regression_model_selection import (
     ComparativeRegressionModelExclusion,
     ComparativeRegressionModelRow,
@@ -185,6 +193,7 @@ __all__ = [
     "ComparativeFormulaSpecification",
     "ComparativeHypothesisTestRow",
     "ComparativeInfluenceReport",
+    "ComparativeCladeResidualReport",
     "ComparativeMethodMaturityReport",
     "ComparativeMethodReport",
     "ComparativeModelComparisonReport",
@@ -203,6 +212,8 @@ __all__ = [
     "ComparativeRegressionModelRow",
     "ComparativeRegressionModelSelectionReport",
     "ComparativeRegressionPairwiseComparisonRow",
+    "ComparativeResidualCladeRow",
+    "ComparativeResidualTaxonRow",
     "ComparativeReferenceObservation",
     "ComparativeReferenceValidationReport",
     "ComparativeResidualDiagnosticSurface",
@@ -259,6 +270,7 @@ __all__ = [
     "OUIdentifiabilityWarning",
     "OUTraitModelReport",
     "compare_brownian_and_ou_models",
+    "analyze_comparative_residual_clades",
     "compare_comparative_regression_models",
     "compare_comparative_results_across_pruning",
     "compare_comparative_results_across_trees",
@@ -304,6 +316,8 @@ __all__ = [
     "write_pgls_lambda_profile_table",
     "write_pgls_model_matrix_table",
     "write_brownian_covariance_table",
+    "write_comparative_residual_clade_table",
+    "write_comparative_residual_taxon_table",
     "write_comparative_regression_excluded_taxa_table",
     "write_comparative_regression_model_ranking_table",
     "write_comparative_regression_pairwise_table",
