@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import xml.etree.ElementTree as ET
+
+import pytest
 
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
@@ -25,6 +30,7 @@ from bijux_phylogenetics.bayesian.reports import (
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
 
 def fixture(name: str) -> Path:
@@ -36,6 +42,28 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def _real_beast_executable() -> Path | None:
+    configured = os.environ.get("BIJUX_PHYLOGENETICS_BEAST_EXECUTABLE")
+    if configured:
+        candidate = Path(configured)
+        if candidate.exists():
+            return candidate
+    resolved = shutil.which("beast")
+    if resolved is not None:
+        return Path(resolved)
+    artifact_candidate = (
+        REPOSITORY_ROOT
+        / "artifacts"
+        / "beast2-runtime"
+        / "BEAST 2.7.7"
+        / "bin"
+        / "beast"
+    )
+    if artifact_candidate.exists():
+        return artifact_candidate
+    return None
 
 
 def test_validate_fossil_calibration_table_accepts_named_and_taxon_targets() -> None:
@@ -299,6 +327,66 @@ def test_parse_beast_log_accepts_native_sample_header(tmp_path: Path) -> None:
     assert summary.kept_row_count == 1
     assert summary.prior_parameters == ["prior"]
     assert set(summary.tree_parameters) == {"tree.height", "birthRate"}
+
+
+def test_summarize_beast_log_reads_real_beast_fixture() -> None:
+    report = parse_beast_log(fixture("beast2_strict_yule_posterior.log"))
+    summary = summarize_beast_log(
+        fixture("beast2_strict_yule_posterior.log"),
+        burnin_fraction=0.1,
+    )
+
+    assert report.row_count >= 50
+    assert report.columns[:3] == ["posterior", "prior", "likelihood"]
+    assert "clockRate" in report.columns
+    assert summary.kept_row_count >= 40
+    assert summary.posterior_parameters == ["posterior"]
+    assert {"prior", "treePrior"} <= set(summary.prior_parameters)
+    assert {"tree.height", "birthRate"} <= set(summary.tree_parameters)
+    assert summary.clock_parameters == ["clockRate"]
+
+
+def test_summarize_beast_log_with_real_executable_on_small_alignment(
+    tmp_path: Path,
+) -> None:
+    executable = _real_beast_executable()
+    if executable is None:
+        pytest.skip("real BEAST executable is not available for integration coverage")
+
+    output_path = tmp_path / "live-strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        output_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+    subprocess.run(
+        [
+            str(executable),
+            "-overwrite",
+            "-threads",
+            "1",
+            "-seed",
+            "1",
+            output_path.name,
+        ],
+        cwd=tmp_path,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+
+    log_path = tmp_path / "live-strict-yule.1.log"
+    summary = summarize_beast_log(log_path, burnin_fraction=0.1)
+
+    assert log_path.exists()
+    assert summary.kept_row_count >= 40
+    assert summary.posterior_parameters == ["posterior"]
+    assert "clockRate" in summary.clock_parameters
+    assert "birthRate" in summary.tree_parameters
 
 
 def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(
