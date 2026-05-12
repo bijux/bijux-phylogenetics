@@ -486,6 +486,7 @@ from .engines import (
     render_inference_sensitivity_report,
     render_inference_workflow_report,
     render_model_selection_limitations_report,
+    run_large_alignment_inference,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -507,6 +508,8 @@ from .engines import (
     write_fasta_to_tree_support_table,
     write_inference_comparison_clade_table,
     write_inference_reproducibility_table,
+    write_large_alignment_inference_log,
+    write_large_alignment_resource_table,
 )
 from .identity import (
     CLI_NAME,
@@ -1103,6 +1106,7 @@ __all__ = [
     "render_inference_sensitivity_report",
     "render_inference_workflow_report",
     "render_model_selection_limitations_report",
+    "run_large_alignment_inference",
     "run_alignment_trimming",
     "run_bootstrap_consensus_tree",
     "run_bootstrap_support_estimation",
@@ -1251,6 +1255,8 @@ __all__ = [
     "write_fasta_to_tree_support_table",
     "write_inference_comparison_clade_table",
     "write_inference_reproducibility_table",
+    "write_large_alignment_inference_log",
+    "write_large_alignment_resource_table",
     "write_synonym_resolution_mapping",
     "write_taxon_mapping",
     "write_locus_partitions",

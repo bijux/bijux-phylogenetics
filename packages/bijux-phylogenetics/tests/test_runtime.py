@@ -216,6 +216,7 @@ from bijux_phylogenetics.engines import (
     run_codon_aware_multiple_sequence_alignment,
     run_fast_tree_inference,
     run_fasta_to_tree_workflow,
+    run_large_alignment_inference,
     run_inference_reproducibility_check,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
@@ -853,6 +854,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
     )
     assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
+    assert (
+        bijux_phylogenetics.run_large_alignment_inference
+        is run_large_alignment_inference
+    )
     assert (
         bijux_phylogenetics.run_inference_reproducibility_check
         is run_inference_reproducibility_check
