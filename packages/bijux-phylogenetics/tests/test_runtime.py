@@ -101,6 +101,7 @@ from bijux_phylogenetics.comparative.evidence_contract import (
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     RobinsonFouldsComparisonReport,
+    compare_branch_score_distance,
     compare_branch_lengths,
     compare_clade_sets,
     compare_robinson_foulds,
@@ -410,6 +411,11 @@ def _load_robinson_foulds_reference_rows() -> list[dict[str, str]]:
     with fixture("robinson_foulds_reference.tsv").open(
         encoding="utf-8", newline=""
     ) as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _load_branch_score_reference_rows() -> list[dict[str, str]]:
+    with fixture("branch_score_reference.tsv").open(encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
 
 
@@ -4951,6 +4957,18 @@ def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> Non
         ("A|B", 0.2, 2.0),
         ("C|D", 0.1, 2.0),
     ]
+    assert scaled.same_taxon_set is True
+    assert scaled.branch_score.branch_score_distance == 0.33166247903554
+    assert [
+        (row.split_id, row.comparison_status, row.left_length, row.right_length)
+        for row in scaled.branch_score.splits
+    ] == [
+        ("A", "shared", 0.1, 0.2),
+        ("B", "shared", 0.1, 0.2),
+        ("C", "shared", 0.2, 0.2),
+        ("D", "shared", 0.2, 0.2),
+        ("A|B", "shared", 0.30000000000000004, 0.6000000000000001),
+    ]
     assert [
         (row.split_id, row.left_length, row.right_length, row.delta, row.ratio)
         for row in missing.shared_splits
@@ -4958,6 +4976,32 @@ def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> Non
         ("A|B", 0.2, None, None, None),
         ("C|D", 0.1, 0.2, 0.1, 2.0),
     ]
+    assert missing.branch_score.branch_score_distance is None
+    assert missing.branch_score.missing_length_split_count == 1
+
+
+def test_compare_branch_score_distance_matches_reference_fixture_cases() -> None:
+    for row in _load_branch_score_reference_rows():
+        report = compare_branch_score_distance(
+            fixture(row["left_tree"]),
+            fixture(row["right_tree"]),
+            taxon_overlap_policy=row["taxon_overlap_policy"],
+        )
+        assert report.same_taxon_set is (row["same_taxon_set"] == "true")
+        assert report.branch_score_distance == float(row["branch_score_distance"])
+
+
+def test_compare_branch_score_distance_enforces_identical_taxa_when_requested() -> None:
+    try:
+        compare_branch_score_distance(
+            fixture("example_tree.nwk"),
+            fixture("example_tree_overlap.nwk"),
+            taxon_overlap_policy="require-identical",
+        )
+    except ValueError as error:
+        assert "identical taxon sets" in str(error)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected identical-taxon branch-score comparison to fail")
 
 
 def test_write_tree_comparison_table_writes_one_row_per_compared_split(
