@@ -91,6 +91,20 @@ FastTree support labels are SH-like local-support proportions on a `0..1`
 scale, and the workflow should be treated as approximate evidence rather than
 as a silent substitute for the IQ-TREE ML workflows.
 
+`adapter compare-engines` is the governed side-by-side inference mode for one
+aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
+support inference, and FastTree approximate inference on the same input, then
+emits the two inferred trees, an HTML comparison report, a flat comparison
+table, a shared-clade ledger, a conflicting-clade ledger, and a manifest in
+one command. Its JSON summary exposes the selected model, shared-taxon count,
+Robinson-Foulds distance, shared-clade count, conflicting-clade count, and the
+count of support disagreements detected after fraction normalization.
+
+The support-normalization rule is public and narrow by design: FastTree
+SH-like local support and IQ-TREE UFBoot support are both rendered as fractions
+for side-by-side review, but that normalization does not claim the two support
+families are biologically or statistically interchangeable.
+
 For raw input hygiene before alignment, the alignment family now includes
 `alignment sequence-type`, `alignment validate-input`, and
 `alignment repair-input`. Those commands expose the same raw sequence-type,
