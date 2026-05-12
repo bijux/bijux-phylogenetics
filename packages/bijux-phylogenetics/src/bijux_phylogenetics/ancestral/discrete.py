@@ -34,6 +34,30 @@ class DiscreteAncestralEstimate:
 
 
 @dataclass(slots=True)
+class DiscreteTransitionRateRow:
+    """One directed transition rate from a fitted discrete likelihood model."""
+
+    source_state: str
+    target_state: str
+    transition_allowed: bool
+    step_distance: int
+    rate: float
+
+
+@dataclass(slots=True)
+class DiscreteLikelihoodFitResult:
+    """Internal likelihood fit details for one discrete ancestral reconstruction."""
+
+    estimates: list[DiscreteAncestralEstimate]
+    ordered_states: list[str]
+    state_order: list[str]
+    log_likelihood: float
+    parameter_count: int
+    aic: float
+    transition_rate_rows: list[DiscreteTransitionRateRow]
+
+
+@dataclass(slots=True)
 class DiscreteAncestralReport:
     """Discrete ancestral-state reconstruction report."""
 
@@ -56,6 +80,10 @@ class DiscreteAncestralReport:
     unstable_nodes: list[str]
     weak_support_nodes: list[str]
     estimates: list[DiscreteAncestralEstimate]
+    log_likelihood: float | None
+    parameter_count: int | None
+    aic: float | None
+    transition_rate_rows: list[DiscreteTransitionRateRow]
 
 
 @dataclass(slots=True)
@@ -121,7 +149,7 @@ def reconstruct_discrete_ancestral_states(
         taxon_column=taxon_column,
     )
     if resolved_model != "fitch":
-        estimates, resolved_ordered_states = _reconstruct_likelihood_estimates(
+        fit_result = _reconstruct_likelihood_estimates(
             dataset,
             model=resolved_model,
             state_ordering=state_ordering,
@@ -131,12 +159,12 @@ def reconstruct_discrete_ancestral_states(
         )
         unstable_nodes = [
             estimate.node
-            for estimate in estimates
+            for estimate in fit_result.estimates
             if estimate.unstable and not estimate.is_tip
         ]
         weak_support_nodes = [
             estimate.node
-            for estimate in estimates
+            for estimate in fit_result.estimates
             if not estimate.is_tip and estimate.confidence < 0.75
         ]
         warnings = list(dataset.warnings)
@@ -155,7 +183,7 @@ def reconstruct_discrete_ancestral_states(
             trait=trait,
             model=resolved_model,
             state_ordering=state_ordering,
-            ordered_states=resolved_ordered_states,
+            ordered_states=fit_result.ordered_states,
             taxon_count=len(dataset.taxa),
             observed_states=dataset.observed_states,
             state_counts=dataset.state_counts,
@@ -167,7 +195,11 @@ def reconstruct_discrete_ancestral_states(
             warnings=warnings,
             unstable_nodes=unstable_nodes,
             weak_support_nodes=weak_support_nodes,
-            estimates=estimates,
+            estimates=fit_result.estimates,
+            log_likelihood=fit_result.log_likelihood,
+            parameter_count=fit_result.parameter_count,
+            aic=fit_result.aic,
+            transition_rate_rows=fit_result.transition_rate_rows,
         )
     estimates: list[DiscreteAncestralEstimate] = []
 
@@ -258,6 +290,10 @@ def reconstruct_discrete_ancestral_states(
         unstable_nodes=unstable_nodes,
         weak_support_nodes=weak_support_nodes,
         estimates=estimates,
+        log_likelihood=None,
+        parameter_count=None,
+        aic=None,
+        transition_rate_rows=[],
     )
 
 
@@ -458,7 +494,7 @@ def _reconstruct_likelihood_estimates(
     ordered_states: list[str] | None,
     root_prior_mode: str = "equal",
     fixed_root_state: str | None = None,
-) -> tuple[list[DiscreteAncestralEstimate], list[str]]:
+) -> DiscreteLikelihoodFitResult:
     state_order = _resolve_state_order(
         dataset.observed_states,
         state_ordering=state_ordering,
@@ -477,6 +513,13 @@ def _reconstruct_likelihood_estimates(
         mode=root_prior_mode,
         fixed_root_state=fixed_root_state,
         default_root_prior=default_root_prior,
+    )
+    log_likelihood = _tree_log_likelihood(
+        dataset.tree,
+        dataset.states_by_taxon,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
     )
     posterior_by_node = _estimate_marginal_state_probabilities(
         dataset.tree,
@@ -504,7 +547,24 @@ def _reconstruct_likelihood_estimates(
                 state_probabilities=probabilities,
             )
         )
-    return estimates, (state_order if state_ordering == "ordered" else [])
+    parameter_count = _parameter_count(
+        len(state_order),
+        model=model,
+        state_ordering=state_ordering,
+    )
+    return DiscreteLikelihoodFitResult(
+        estimates=estimates,
+        ordered_states=(state_order if state_ordering == "ordered" else []),
+        state_order=state_order,
+        log_likelihood=log_likelihood,
+        parameter_count=parameter_count,
+        aic=(2.0 * parameter_count) - (2.0 * log_likelihood),
+        transition_rate_rows=_build_transition_rate_rows(
+            state_order=state_order,
+            state_ordering=state_ordering,
+            rate_matrix=rate_matrix,
+        ),
+    )
 
 
 def _resolve_state_order(
@@ -804,7 +864,39 @@ def _transition_allowed(
         return False
     if state_ordering == "unordered":
         return True
-    return abs(left_index - right_index) == 1 and max(left_index, right_index) < state_count
+    return (
+        abs(left_index - right_index) == 1
+        and max(left_index, right_index) < state_count
+    )
+
+
+def _build_transition_rate_rows(
+    *,
+    state_order: list[str],
+    state_ordering: str,
+    rate_matrix: numpy.ndarray,
+) -> list[DiscreteTransitionRateRow]:
+    rows: list[DiscreteTransitionRateRow] = []
+    state_count = len(state_order)
+    for left_index, source_state in enumerate(state_order):
+        for right_index, target_state in enumerate(state_order):
+            if left_index == right_index:
+                continue
+            rows.append(
+                DiscreteTransitionRateRow(
+                    source_state=source_state,
+                    target_state=target_state,
+                    transition_allowed=_transition_allowed(
+                        left_index,
+                        right_index,
+                        state_count=state_count,
+                        state_ordering=state_ordering,
+                    ),
+                    step_distance=abs(left_index - right_index),
+                    rate=float(rate_matrix[left_index, right_index]),
+                )
+            )
+    return rows
 
 
 def _tree_log_likelihood(
