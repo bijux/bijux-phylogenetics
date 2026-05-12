@@ -89,15 +89,25 @@ probabilities. Its JSON metrics report:
 - `taxon_count`
 - `estimate_count`
 - `internal_node_count`
+- `ambiguous_internal_node_count`
 - `excluded_taxon_count`
 - `state_count`
+- `minimal_change_count`
+- `parsimonious_root_state_count`
 - `unstable_node_count`
+- `comparison_node_count`
+- `comparison_differing_node_count`
 - `model`
 
 For the likelihood models, the owned runtime fits an explicit Mk rate matrix
 and reports node-level marginal probabilities. The governed parity surface is
 checked against `ape::ace` on ER, SYM, and ARD reference cases with explicit
 bounded tolerances instead of a vague compatibility claim.
+
+For Fitch, the owned runtime now also reports the exact minimum parsimony
+change count for the analyzed tree and the number of parsimonious root states.
+That keeps the fast path reviewable instead of reducing it to only one chosen
+state label per internal node.
 
 When `--table-out` is supplied, `ancestral discrete` writes one flat node
 ledger as CSV or TSV with both tips and internal nodes. When `--summary-out` is
@@ -109,10 +119,13 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `analyzed_taxon_count`
 - `excluded_taxon_count`
 - `internal_node_count`
+- `ambiguous_internal_node_count`
 - `unstable_node_count`
 - `weak_support_node_count`
 - `observed_state_count`
 - `sparse_state_count`
+- `minimal_change_count`
+- `parsimonious_root_state_count`
 - `root_node`
 - `root_most_likely_state`
 - `root_confidence`
@@ -130,6 +143,24 @@ marginal-probability ledger. Each row preserves:
 - `ambiguous`
 - `unstable`
 - `interpretation`
+
+When `--comparison-out` is supplied, the command writes one direct node-wise
+comparison ledger between the requested `--model` and `--compare-model`. Each
+row preserves:
+- `node`
+- `descendant_taxa`
+- `left_model`
+- `right_model`
+- `left_state`
+- `right_state`
+- `left_state_set`
+- `right_state_set`
+- `left_confidence`
+- `right_confidence`
+- `left_ambiguous`
+- `right_ambiguous`
+- `differs`
+- `ambiguity_changed`
 
 When `--exclusions-out` is supplied, the command writes one explicit excluded
 tip ledger. Each row preserves:
