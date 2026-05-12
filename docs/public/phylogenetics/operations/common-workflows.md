@@ -260,6 +260,40 @@ unstable-tree fraction, and final uncertainty rank. This keeps topology
 uncertainty and within-tree state uncertainty visible in the same governed
 surface.
 
+When the goal is to decide whether one discrete ancestral conclusion depends
+on the root assumption rather than the likelihood model itself, use
+`ancestral root-sensitivity`. This workflow reruns the owned discrete
+likelihood reconstruction path under an equal root prior, an empirical root
+prior derived from the observed tip-state counts, and an optional fixed-root
+scenario. It then compares every internal node directly across those root
+assumptions so reviewers can see whether the state changes, whether only the
+support changes, and which nodes remain stable.
+
+```bash
+bijux-phylogenetics ancestral root-sensitivity \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait habitat \
+  --taxon-column species \
+  --model equal-rates \
+  --fixed-root-state island \
+  --summary-out artifacts/primates.root-sensitivity-summary.tsv \
+  --assumptions-out artifacts/primates.root-assumptions.tsv \
+  --nodes-out artifacts/primates.root-sensitive-nodes.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, assumption
+count, compared node count, state-changed node count, support-changed node
+count, the top sensitive node, and warning count. The assumption ledger keeps
+one row per root assumption with the explicit prior distribution, the inferred
+root state, its confidence, its entropy, and the unstable or weak-support node
+counts under that assumption. The node ledger is the main review surface: it
+keeps one row per internal node with the per-assumption states, per-assumption
+confidences, per-assumption entropies, the maximum confidence and entropy
+deltas, the final sensitivity score, the rank, and the stability class
+(`stable`, `root_sensitive_support`, or `root_sensitive_state`).
+
 When the goal is to see whether ancestral conclusions survive topology
 uncertainty instead of relying on one summary tree, use `ancestral tree-set`.
 This workflow reruns ancestral reconstruction across every retained
