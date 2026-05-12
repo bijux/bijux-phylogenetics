@@ -116,8 +116,10 @@ from bijux_phylogenetics.comparative import (
     estimate_pagels_lambda,
     inspect_pgls_inputs,
     run_pgls,
+    summarize_pgls_categorical_contrasts,
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
+    write_pgls_categorical_contrast_table,
     write_pgls_model_matrix_table,
 )
 from bijux_phylogenetics.comparative.evidence_contract import (
@@ -996,6 +998,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.build_pgls_model_matrix is build_pgls_model_matrix
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
+    assert (
+        bijux_phylogenetics.summarize_pgls_categorical_contrasts
+        is summarize_pgls_categorical_contrasts
+    )
+    assert (
+        bijux_phylogenetics.write_pgls_categorical_contrast_table
+        is write_pgls_categorical_contrast_table
+    )
     assert (
         bijux_phylogenetics.write_pgls_model_matrix_table
         is write_pgls_model_matrix_table
@@ -7377,7 +7387,15 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         resolved["bijux_phylogenetics.comparative:build_pgls_model_matrix"]
         is build_pgls_model_matrix
     )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_pgls_categorical_contrasts"]
+        is summarize_pgls_categorical_contrasts
+    )
     assert resolved["bijux_phylogenetics.comparative:run_pgls"] is run_pgls
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_pgls_categorical_contrast_table"]
+        is write_pgls_categorical_contrast_table
+    )
     assert (
         resolved["bijux_phylogenetics.comparative:write_pgls_model_matrix_table"]
         is write_pgls_model_matrix_table

@@ -71,6 +71,12 @@ from .pgls import (
     run_pgls_multiple_testing,
     write_pgls_model_matrix_table,
 )
+from .pgls_categorical_contrasts import (
+    PGLSCategoricalContrastReport,
+    PGLSCategoricalContrastRow,
+    summarize_pgls_categorical_contrasts,
+    write_pgls_categorical_contrast_table,
+)
 from .reporting import (
     ComparativeAuditRow,
     ComparativeCoefficientDeltaRow,
@@ -140,6 +146,8 @@ __all__ = [
     "LikelihoodRatioTestResult",
     "LeaveOneTaxonOutRow",
     "NumericTraitSummary",
+    "PGLSCategoricalContrastReport",
+    "PGLSCategoricalContrastRow",
     "PGLSCoefficient",
     "PGLSDiagnosticsReport",
     "PGLSFormulaAudit",
@@ -181,9 +189,11 @@ __all__ = [
     "run_comparative_sensitivity_analysis",
     "run_pgls_multiple_testing",
     "run_pgls",
+    "summarize_pgls_categorical_contrasts",
     "summarize_numeric_trait",
     "summarize_numeric_trait_readiness",
     "validate_comparative_reference_examples",
+    "write_pgls_categorical_contrast_table",
     "write_pgls_model_matrix_table",
     "write_comparative_method_report",
 ]
