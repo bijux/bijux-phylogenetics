@@ -90,6 +90,25 @@ both shared-clade support rows and conflicting-clade severity rows in one file.
 That ledger is intended for reviewer-facing conflict triage, not just raw
 support extraction.
 
+`compare influence` is the governed leave-one-taxon-out comparison surface for
+two trees. It starts from the shared taxon set, excludes one shared taxon at a
+time from both trees, reruns the topology comparison and the support-aware
+conflict comparison, and ranks taxa by how much those disagreement surfaces
+change.
+
+The JSON payload keeps the baseline topology and baseline support reports under
+`data.baseline_topology` and `data.baseline_support`, then one ranked row per
+excluded taxon under `data.rows`. Each row preserves the retained taxon set,
+rooted and unrooted Robinson-Foulds deltas, changes in support disagreement
+count, changes in conflicting-clade count, changes in high-support-conflict
+count, and the final influence score.
+
+When `--out` is supplied, `compare influence` writes one flat TSV ledger with
+one row per excluded taxon. That ledger is intended for reviewer-facing taxon
+triage: a high rank means that excluding the taxon materially changes the
+disagreement surface, not that the taxon is automatically erroneous or should
+always be removed.
+
 `compare clades` is the governed overlap surface for two or more trees. It
 takes two required tree paths plus additional trees through repeated `--tree`
 flags, computes rooted clade overlap on the shared taxon set, and reports
