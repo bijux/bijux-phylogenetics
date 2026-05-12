@@ -182,6 +182,32 @@ plus a correlation test statistic, p-value, and Fisher-style interval. The
 excluded-taxa ledger makes the complete-case rule explicit by recording which
 taxa were dropped because a required response or predictor column was blank.
 
+When the goal is to detect whether one fitted comparative model is leaving
+systematic residual structure inside particular subtrees, use
+`comparative clade-residuals`. This workflow keeps the fitted taxon-level
+residuals from one comparative model and then aggregates those residuals across
+every internal non-root clade in the analyzed tree.
+
+```bash
+bijux-phylogenetics comparative clade-residuals \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --formula "longevity ~ brain_mass_g + habitat" \
+  --taxon-column species \
+  --lambda-value estimate \
+  --taxa-out artifacts/primates.residual-taxa.tsv \
+  --clades-out artifacts/primates.residual-clades.tsv \
+  --json
+```
+
+The taxon ledger keeps one row per analyzed taxon with the observed value,
+fitted value, raw residual, and standardized residual used for clade
+aggregation. The clade ledger keeps one row per internal clade with its member
+taxa, residual averages, residual sum-of-squares share, influence score,
+residual-heavy flag, and rank. That makes it possible to distinguish one
+isolated outlier taxon from a whole subtree that is carrying consistent model
+misspecification.
+
 When the covariance assumption itself must stay fixed to Brownian shared branch
 lengths, use `comparative brownian-pgls`. This keeps the regression surface
 separate from Pagel-lambda fitting and writes an explicit covariance ledger
