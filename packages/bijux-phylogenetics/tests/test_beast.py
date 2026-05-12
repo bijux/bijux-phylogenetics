@@ -15,18 +15,22 @@ from bijux_phylogenetics.bayesian.beast import (
     assess_beast_convergence,
     detect_impossible_calibration_constraints,
     parse_beast_log,
+    parse_beast_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
     summarize_beast_log,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
     write_beast_log_summary_table,
+    write_beast_posterior_tree_set,
 )
 from bijux_phylogenetics.bayesian.evidence import build_bayesian_evidence_package
+from bijux_phylogenetics.bayesian.posterior import summarize_maximum_clade_credibility_tree
 from bijux_phylogenetics.bayesian.reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
 )
+from bijux_phylogenetics.tree_set import compute_consensus_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -346,6 +350,86 @@ def test_summarize_beast_log_reads_real_beast_fixture() -> None:
     assert summary.clock_parameters == ["clockRate"]
 
 
+def test_parse_beast_posterior_tree_samples_handles_translate_and_burnin(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "posterior.trees"
+    normalized_path = tmp_path / "posterior.nwk"
+    tree_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "  Translate\n"
+        "    1 A,\n"
+        "    2 B,\n"
+        "    3 C,\n"
+        "    4 D\n"
+        "  ;\n"
+        "tree STATE_0 = [&R] ((1:0.1,2:0.1):0.2,(3:0.1,4:0.1):0.2):0.0;\n"
+        "tree STATE_20 = [&R] ((1:0.1,3:0.1):0.2,(2:0.1,4:0.1):0.2):0.0[&lnP=-10.0];\n"
+        "tree STATE_40 = [&R] ((1:0.1,2:0.1):0.2,(3:0.1,4:0.1):0.2):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    report = parse_beast_posterior_tree_samples(tree_path, burnin_fraction=0.25)
+    output_path = write_beast_posterior_tree_set(normalized_path, report)
+    _tree, mcc_report = summarize_maximum_clade_credibility_tree(output_path, burnin_fraction=0.0)
+    _consensus_tree, consensus_report = compute_consensus_tree(output_path)
+
+    assert report.total_tree_count == 3
+    assert report.burnin_tree_count == 0
+    assert report.kept_tree_count == 3
+    assert report.rooted_tree_count == 3
+    assert report.sampled_states == [0, 20, 40]
+    assert report.tip_names == ["A", "B", "C", "D"]
+    assert report.trees[1].newick == "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);"
+    assert report.clades[0].clade == "A|B"
+    assert output_path == normalized_path
+    assert mcc_report.kept_tree_count == 3
+    assert consensus_report.tree_count == 3
+
+
+def test_parse_beast_posterior_tree_samples_applies_burnin_fraction(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "posterior.trees"
+    tree_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = (A:0.1,(B:0.1,(C:0.1,D:0.1):0.1):0.1):0.0;\n"
+        "tree STATE_10 = ((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.0;\n"
+        "tree STATE_20 = ((A:0.1,C:0.1):0.1,(B:0.1,D:0.1):0.1):0.0;\n"
+        "tree STATE_30 = ((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    report = parse_beast_posterior_tree_samples(tree_path, burnin_fraction=0.25)
+
+    assert report.total_tree_count == 4
+    assert report.burnin_tree_count == 1
+    assert report.kept_tree_count == 3
+    assert report.sampled_states == [10, 20, 30]
+    assert report.clades[0].clade == "A|B"
+    assert report.clades[0].tree_count == 2
+
+
+def test_parse_beast_posterior_tree_samples_reads_real_beast_fixture() -> None:
+    report = parse_beast_posterior_tree_samples(
+        fixture("beast2_strict_yule_posterior.trees"),
+        burnin_fraction=0.1,
+    )
+
+    assert report.total_tree_count == 101
+    assert report.burnin_tree_count == 10
+    assert report.kept_tree_count == 91
+    assert report.rooted_tree_count == 91
+    assert report.sampled_states[0] == 200
+    assert report.sampled_states[-1] == 2000
+    assert report.tip_names == ["A", "B", "C", "D"]
+    assert report.clades
+
+
 def test_summarize_beast_log_with_real_executable_on_small_alignment(
     tmp_path: Path,
 ) -> None:
@@ -387,6 +471,50 @@ def test_summarize_beast_log_with_real_executable_on_small_alignment(
     assert summary.posterior_parameters == ["posterior"]
     assert "clockRate" in summary.clock_parameters
     assert "birthRate" in summary.tree_parameters
+
+
+def test_parse_beast_posterior_tree_samples_with_real_executable_on_small_alignment(
+    tmp_path: Path,
+) -> None:
+    executable = _real_beast_executable()
+    if executable is None:
+        pytest.skip("real BEAST executable is not available for integration coverage")
+
+    output_path = tmp_path / "live-strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        output_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+    subprocess.run(
+        [
+            str(executable),
+            "-overwrite",
+            "-threads",
+            "1",
+            "-seed",
+            "1",
+            output_path.name,
+        ],
+        cwd=tmp_path,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+
+    report = parse_beast_posterior_tree_samples(
+        tmp_path / "live-strict-yule.1.trees",
+        burnin_fraction=0.1,
+    )
+
+    assert report.kept_tree_count >= 40
+    assert report.sampled_states[0] == 100
+    assert report.tip_names == ["A", "B", "C", "D"]
+    assert report.clades
 
 
 def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(
