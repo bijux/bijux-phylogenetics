@@ -65,6 +65,26 @@ one encoded column per fitted predictor term. That makes it possible to review
 continuous predictors, categorical indicator columns, interaction columns, and
 intercept inclusion before interpreting the fitted coefficients.
 
+When categorical predictors are present and the question is how each biological
+group was encoded and interpreted, write the governed categorical-contrast
+ledger in the same run.
+
+```bash
+bijux-phylogenetics comparative pgls \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --response longevity \
+  --predictors social_group_size habitat \
+  --taxon-column species \
+  --categorical-contrasts-out artifacts/primates.categorical-contrasts.tsv \
+  --json
+```
+
+That ledger keeps one row for the baseline group when treatment coding is used
+and one row for every estimated non-baseline group coefficient. It also records
+missing-category taxa explicitly, so a dropped or blank category value does not
+disappear into a generic exclusion count.
+
 When a tree is already inferred and you need to root it on one known outgroup
 taxon or one expected outgroup clade, use `topology root-outgroup`. The
 command writes the rooted tree and can also emit a one-row TSV report that
