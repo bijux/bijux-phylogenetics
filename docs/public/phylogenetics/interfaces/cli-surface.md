@@ -929,6 +929,82 @@ This surface exists so clade-level trait review preserves the ranking
 heuristic, sample sizes, and pruning contract instead of reducing the question
 to a visual impression or an undocumented spreadsheet sort.
 
+`comparative trait-outliers` is the governed review surface for ranking
+continuous-trait taxa by leave-one-taxon-out conditional phylogenetic residual
+size. Its JSON metrics report:
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `selected_model`
+- `outlier_count`
+- `top_outlier_taxon`
+- `top_abs_standardized_residual`
+
+The command requires one rooted tree with complete branch lengths and one
+numeric trait. Bijux fits standalone Brownian and OU continuous-trait models,
+selects the better fit by AICc, then conditions each analyzed tip on all other
+retained tips under that selected covariance surface. The taxon rank is thus a
+real model-based conditional residual review, not a flat z-score over raw trait
+values.
+
+When `--summary-out` is supplied, `comparative trait-outliers` writes one flat
+summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `selected_model`
+- `selected_mean_parameter`
+- `selected_mean_value`
+- `selected_alpha`
+- `selected_sigma_squared`
+- `brownian_aicc`
+- `ou_aicc`
+- `outlier_threshold`
+- `outlier_count`
+- `top_outlier_taxon`
+- `top_abs_standardized_residual`
+
+When `--outliers-out` is supplied, the command also writes one ranked taxon
+ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `observed_value`
+- `conditional_expected_value`
+- `residual`
+- `residual_direction`
+- `conditional_variance`
+- `conditional_standard_error`
+- `standardized_residual`
+- `abs_standardized_residual`
+- `context_clade_id`
+- `context_node_label`
+- `context_taxon_count`
+- `context_taxa`
+- `context_mean`
+- `sibling_context_id`
+- `sibling_taxon_count`
+- `sibling_taxa`
+- `sibling_mean`
+- `context_mean_shift`
+- `outlier`
+- `rank`
+
+When `--excluded-taxa-out` is supplied, the command also writes one explicit
+excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `missing_from_trait_table`
+- `missing_trait_value`
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+This surface exists so taxon-level anomaly review preserves the selected model,
+the conditional residual contract, and the local clade context instead of
+reducing the question to an informal scan of raw values.
+
 `comparative multivariate` is the governed review surface for fitting the same
 comparative predictor set across multiple response traits on one shared
 complete-case taxon set. Its JSON metrics report:
