@@ -144,6 +144,36 @@ claiming a full native reimplementation of an external Pagel binary-correlation
 fit. That approximation boundary is preserved in the warnings and JSON output
 instead of being hidden behind the same wording as the continuous-trait path.
 
+When the goal is to reconstruct one continuous ancestral trait directly, use
+`ancestral continuous`. This workflow estimates internal-node values for one
+numeric trait on the analyzed rooted tree, reports 95% uncertainty intervals
+for internal nodes, and keeps explicit ledgers for dropped missing or
+non-numeric tips instead of silently excluding them.
+
+```bash
+bijux-phylogenetics ancestral continuous \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait longevity \
+  --taxon-column species \
+  --model brownian \
+  --table-out artifacts/primates.ancestral-nodes.tsv \
+  --summary-out artifacts/primates.ancestral-summary.tsv \
+  --uncertainty-out artifacts/primates.ancestral-uncertainty.tsv \
+  --exclusions-out artifacts/primates.ancestral-excluded.tsv \
+  --json
+```
+
+The node ledger keeps one row per analyzed tip or internal node so reviewers
+can inspect the reconstructed value surface directly. The summary ledger keeps
+one row with the analyzed taxon count, excluded taxon count, internal node
+count, unstable node count, and the root estimate with its 95% interval. The
+uncertainty ledger keeps one row per internal node with the standard error,
+interval width, confidence score, and interpretation label so broad intervals
+cannot be hidden behind only point estimates. The excluded-taxa ledger keeps
+one row per dropped tip with an explicit reason such as
+`missing_trait_value` or `non_numeric_trait_value`.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
