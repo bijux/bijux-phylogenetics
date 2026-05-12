@@ -158,6 +158,8 @@ def test_comparative_pgls_cli_accepts_formula_interactions(capsys) -> None:
         for coefficient in payload["data"]["model"]["coefficients"]
     }
     assert exit_code == 0
+    assert payload["metrics"]["interaction_term_count"] == 1
+    assert payload["metrics"]["interaction_coefficient_row_count"] == 1
     assert payload["data"]["inputs"]["formula"]["interaction_terms"] == [
         "predictor_one:habitat"
     ]
@@ -165,6 +167,9 @@ def test_comparative_pgls_cli_accepts_formula_interactions(capsys) -> None:
         "encoded_columns"
     ] == ["predictor_one:habitat[tundra]"]
     assert math.isclose(coefficients["predictor_one:habitat[tundra]"], 0.5)
+    interaction_row = payload["data"]["interaction_coefficients"]["rows"][0]
+    assert interaction_row["interaction_kind"] == "continuous-by-categorical"
+    assert interaction_row["component_levels"] == [None, "tundra"]
 
 
 def test_comparative_pgls_cli_reports_transformed_terms(capsys) -> None:
@@ -253,6 +258,41 @@ def test_comparative_pgls_cli_writes_categorical_contrast_table(
     written_rows = contrasts_out.read_text(encoding="utf-8").splitlines()
     assert written_rows[0].startswith("predictor\tsource_column\tencoding_scheme")
     assert any("habitat\thabitat\treference-level\tforest\tforest\ttrue" in row for row in written_rows[1:])
+
+
+def test_comparative_pgls_cli_writes_interaction_coefficient_table(
+    tmp_path: Path, capsys
+) -> None:
+    interaction_out = tmp_path / "interaction-coefficients.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "pgls",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_interaction.tsv")),
+            "--formula",
+            "response ~ predictor_one * habitat",
+            "--interaction-coefficients-out",
+            str(interaction_out),
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["interaction_term_count"] == 1
+    assert payload["metrics"]["interaction_coefficient_row_count"] == 1
+    assert interaction_out.exists()
+    written_rows = interaction_out.read_text(encoding="utf-8").splitlines()
+    assert written_rows[0].startswith(
+        "interaction_term\tinteraction_kind\tcoefficient_name"
+    )
+    assert any(
+        "predictor_one:habitat\tcontinuous-by-categorical\tpredictor_one:habitat[tundra]"
+        in row
+        for row in written_rows[1:]
+    )
 
 
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:
