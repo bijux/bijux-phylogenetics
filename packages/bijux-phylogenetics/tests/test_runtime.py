@@ -109,6 +109,7 @@ from bijux_phylogenetics.comparative import (
     assess_comparative_method_maturity,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
+    build_pgls_model_matrix,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_signal_test,
@@ -117,6 +118,7 @@ from bijux_phylogenetics.comparative import (
     run_pgls,
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
+    write_pgls_model_matrix_table,
 )
 from bijux_phylogenetics.comparative.evidence_contract import (
     SUPPORTED_EVIDENCE_API_LOCATORS,
@@ -991,8 +993,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.audit_ou_identifiability_reference_examples
         is audit_ou_identifiability_reference_examples
     )
+    assert bijux_phylogenetics.build_pgls_model_matrix is build_pgls_model_matrix
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
+    assert (
+        bijux_phylogenetics.write_pgls_model_matrix_table
+        is write_pgls_model_matrix_table
+    )
     assert (
         bijux_phylogenetics.reconstruct_continuous_ancestral_states
         is reconstruct_continuous_ancestral_states
@@ -7366,7 +7373,15 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         resolved["bijux_phylogenetics.comparative:inspect_pgls_inputs"]
         is inspect_pgls_inputs
     )
+    assert (
+        resolved["bijux_phylogenetics.comparative:build_pgls_model_matrix"]
+        is build_pgls_model_matrix
+    )
     assert resolved["bijux_phylogenetics.comparative:run_pgls"] is run_pgls
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_pgls_model_matrix_table"]
+        is write_pgls_model_matrix_table
+    )
 
 
 def test_run_capability_demo_creates_expected_artifacts(tmp_path: Path) -> None:
