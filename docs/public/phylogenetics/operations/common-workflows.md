@@ -70,6 +70,29 @@ matched node with the predictor contrast, response contrast, fitted
 through-origin response contrast, residual, and leverage fraction, while the
 JSON metrics report the fitted slope and p-value explicitly.
 
+When the goal is to measure whether one numeric trait shows phylogenetic
+structure rather than fit a regression, use `comparative signal`. That
+workflow reports Blomberg's K, Pagel's lambda, a permutation p-value for the
+observed K value, and a likelihood-ratio-style p-value for the fitted lambda
+against the zero-signal lambda boundary.
+
+```bash
+bijux-phylogenetics comparative signal \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait longevity \
+  --taxon-column species \
+  --permutations 199 \
+  --summary-out artifacts/primates.signal-summary.tsv \
+  --permutations-out artifacts/primates.signal-permutations.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the fitted K, lambda, log-likelihood
+context, both p-values, and the permutation exceedance count. The permutation
+ledger keeps one row per shuffled trait realization so reviewers can see the
+null K distribution directly instead of only one final exceedance count.
+
 When the covariance assumption itself must stay fixed to Brownian shared branch
 lengths, use `comparative brownian-pgls`. This keeps the regression surface
 separate from Pagel-lambda fitting and writes an explicit covariance ledger
