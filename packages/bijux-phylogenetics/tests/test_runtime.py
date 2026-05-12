@@ -6128,6 +6128,44 @@ def test_render_tree_svg_can_render_internal_support_values(tmp_path: Path) -> N
     assert ">88<" in svg
 
 
+def test_render_tree_svg_can_render_branch_color_overlays(tmp_path: Path) -> None:
+    output = tmp_path / "branch-colors.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        branch_colors={
+            "A": "#dc2626",
+            "C|D": "#0f766e",
+        },
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_branch_color_count == 2
+    assert 'class="branch branch-colored"' in svg
+    assert '#dc2626' in svg
+    assert '#0f766e' in svg
+
+
+def test_render_tree_svg_can_render_internal_pie_markers(tmp_path: Path) -> None:
+    output = tmp_path / "internal-pies.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        internal_pies={
+            "A|B": {"forest": 1.0},
+            "C|D": {"forest": 0.25, "desert": 0.75},
+        },
+        internal_pie_colors={
+            "forest": "#0f766e",
+            "desert": "#c2410c",
+        },
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_internal_pie_count == 2
+    assert 'class="internal-pie-slice"' in svg
+    assert '#0f766e' in svg
+    assert '#c2410c' in svg
+
+
 def test_render_tree_svg_can_render_categorical_tip_traits(tmp_path: Path) -> None:
     output = tmp_path / "categorical.svg"
     result = render_tree_svg(
