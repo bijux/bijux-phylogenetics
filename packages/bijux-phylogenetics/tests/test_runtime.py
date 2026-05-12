@@ -87,6 +87,14 @@ from bijux_phylogenetics.clades import (
     extract_tree_set_clades,
     write_clade_table,
 )
+from bijux_phylogenetics.tree_shape import (
+    TreeShapeAggregate,
+    TreeShapeReport,
+    TreeShapeRow,
+    summarize_tree_set_shapes,
+    summarize_tree_shape,
+    write_tree_shape_table,
+)
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
@@ -507,6 +515,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert bijux_phylogenetics.CladeTableReport is CladeTableReport
     assert bijux_phylogenetics.CladeTableRow is CladeTableRow
+    assert bijux_phylogenetics.TreeShapeAggregate is TreeShapeAggregate
+    assert bijux_phylogenetics.TreeShapeReport is TreeShapeReport
+    assert bijux_phylogenetics.TreeShapeRow is TreeShapeRow
     assert (
         bijux_phylogenetics.SharedTaxaPruningReport is SharedTaxaPruningReport
     )
@@ -521,9 +532,12 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
     assert bijux_phylogenetics.extract_tree_clades is extract_tree_clades
     assert bijux_phylogenetics.extract_tree_set_clades is extract_tree_set_clades
+    assert bijux_phylogenetics.summarize_tree_shape is summarize_tree_shape
+    assert bijux_phylogenetics.summarize_tree_set_shapes is summarize_tree_set_shapes
     assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert bijux_phylogenetics.compare_support_values is compare_support_values
     assert bijux_phylogenetics.write_clade_table is write_clade_table
+    assert bijux_phylogenetics.write_tree_shape_table is write_tree_shape_table
     assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
     assert (
         bijux_phylogenetics.write_shared_taxa_pruning_table
