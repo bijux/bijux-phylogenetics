@@ -89,6 +89,23 @@ review fields such as `species_values`, `species_distinct_values`, and
 `species_missing_taxa`. That keeps trait inspection tied directly to clade
 membership instead of forcing a separate join step.
 
+When the goal is to inspect tree shape directly rather than individual clades,
+use `topology shape`. That command writes one review row with balance and shape
+metrics including Sackin imbalance, Colless imbalance where defined, cherry
+count, tree height in edges, branch-length tree height where available, and the
+governed `balanced`, `skewed`, or `ladderized` summary.
+
+```bash
+bijux-phylogenetics topology shape \
+  artifacts/mammals.supported.nwk \
+  --out artifacts/mammals.shape.tsv \
+  --json
+```
+
+The JSON output also preserves whether the tree is star-like, comb-like, or
+unusually imbalanced. That keeps obvious ladderization or star-topology risks
+visible without forcing users to infer them from raw node depths alone.
+
 When you already have two inferred trees and need an explicit topology
 distance, use `compare`. The command now supports rooted and unrooted
 Robinson-Foulds review directly, and it records which taxa were shared versus
@@ -233,6 +250,23 @@ This surface is for reviewer-readable extraction, not just summary counts. It
 is especially useful before consensus-building because it keeps minority and
 tree-specific clades visible instead of collapsing them into one consensus or
 frequency table immediately.
+
+When the question is how shape varies across many sampled trees rather than how
+individual clades vary, use `tree-set shape`. That command writes one row per
+tree with the same balance and height metrics as `topology shape`, and its JSON
+aggregate counts how many sampled trees are balanced, skewed, ladderized,
+star-like, or comb-like.
+
+```bash
+bijux-phylogenetics tree-set shape \
+  artifacts/mammals.posterior.nwk \
+  --out artifacts/mammals.posterior-shape.tsv \
+  --json
+```
+
+This surface is for tree-set review before or alongside consensus-building. It
+keeps the distribution of imbalance and ladderization explicit instead of
+reducing a posterior or bootstrap set to one representative tree immediately.
 
 When the input is a bootstrap replicate tree file and the goal is one governed
 review bundle rather than a chain of separate tree-set commands, use
