@@ -452,6 +452,35 @@ excluded-taxa ledger keeps one row per taxon that was absent from the tree,
 absent from the trait table, missing the target trait value, or pruned because
 the trait value was non-numeric.
 
+When the goal is to estimate missing continuous trait values from observed tips
+and the phylogeny, use `comparative trait-imputation`. This workflow fits a
+Brownian trait-evolution baseline on the observed taxa, imputes every missing
+tree taxon from the conditional Brownian distribution, and then validates the
+same prediction contract by leave-one-observed-out holdout runs.
+
+```bash
+bijux-phylogenetics comparative trait-imputation \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait body_mass \
+  --taxon-column species \
+  --summary-out artifacts/primates.trait-imputation-summary.tsv \
+  --imputations-out artifacts/primates.trait-imputations.tsv \
+  --holdout-out artifacts/primates.trait-imputation-holdout.tsv \
+  --excluded-taxa-out artifacts/primates.trait-imputation-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the fitted Brownian root state,
+`sigma²`, likelihood criteria, the count of imputed taxa, and the holdout
+validation metrics. The imputation ledger keeps one row per missing tree taxon
+with the predicted value, conditional variance, and 95% uncertainty interval.
+The holdout ledger keeps one row per observed taxon with the leave-one-out
+prediction error and interval coverage so the imputation contract can be
+reviewed directly rather than assumed. The excluded-taxa ledger keeps one row
+per taxon that could not enter the Brownian workflow because the trait value
+was non-numeric or the row referred to a taxon absent from the tree.
+
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
