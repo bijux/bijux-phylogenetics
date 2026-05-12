@@ -32,6 +32,53 @@ association under phylogenetic covariance. Its JSON metrics now report
 review tooling can distinguish a minimally identified model from one with
 meaningful residual support.
 
+`comparative contrasts` is the governed review surface for phylogenetic
+independent contrasts. Its JSON metrics report:
+- `taxon_count`
+- `contrast_count`
+- `regression_row_count`
+- `regression_slope`
+- `regression_p_value`
+
+Without `--predictor-trait`, the command returns one contrast report for the
+requested trait. When `--predictor-trait` is supplied, the command also fits a
+through-origin regression on the matched node-level contrasts and preserves
+that under `data.regression`.
+
+When `--contrasts-out` is supplied, `comparative contrasts` writes one flat
+contrast ledger as CSV or TSV. Each row preserves:
+- `trait`
+- `node`
+- `left_taxa`
+- `right_taxa`
+- `contrast`
+- `expected_variance`
+- `ancestral_value`
+- `root_estimate`
+
+When `--regression-out` is supplied together with `--predictor-trait`,
+`comparative contrasts` also writes one regression-through-origin ledger as CSV
+or TSV. Each row preserves:
+- `response_trait`
+- `predictor_trait`
+- `node`
+- `predictor_contrast`
+- `response_contrast`
+- `fitted_response_contrast`
+- `residual`
+- `leverage_fraction`
+- `slope`
+- `standard_error`
+- `test_statistic`
+- `p_value`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+- `residual_sum_of_squares`
+- `r_squared_through_origin`
+
+The regression output is explicit rather than inferred. `--regression-out`
+without `--predictor-trait` is rejected instead of silently writing nothing.
+
 `comparative brownian-pgls` is the fixed-covariance companion surface when the
 scientific question specifically assumes Brownian shared-path covariance rather
 than an estimated Pagel lambda. Its JSON metrics report:
