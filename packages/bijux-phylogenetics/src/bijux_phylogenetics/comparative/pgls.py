@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -145,6 +146,30 @@ class PGLSCoefficient:
 
 
 @dataclass(slots=True)
+class PGLSLambdaProfileRow:
+    """One likelihood-profile row across candidate Pagel lambda values."""
+
+    lambda_value: float
+    log_likelihood: float
+    delta_log_likelihood: float
+    within_95_confidence_interval: bool
+
+
+@dataclass(slots=True)
+class PGLSLambdaFitReport:
+    """Pagel lambda fit surface for one PGLS model."""
+
+    mode: str
+    lambda_value: float
+    log_likelihood: float
+    null_log_likelihood: float
+    brownian_log_likelihood: float
+    lower_95_confidence_interval: float | None
+    upper_95_confidence_interval: float | None
+    profile_rows: list[PGLSLambdaProfileRow]
+
+
+@dataclass(slots=True)
 class PGLSFittedObservation:
     """Observed-versus-fitted summary for one analyzed taxon."""
 
@@ -195,6 +220,7 @@ class PGLSResult:
     encoded_columns: list[str]
     taxon_count: int
     lambda_value: float
+    lambda_fit: PGLSLambdaFitReport
     log_likelihood: float
     residual_variance: float
     r_squared: float
@@ -569,7 +595,13 @@ def run_pgls(
         ),
         readiness=dataset.readiness,
     )
-    resolved_lambda = _resolve_lambda(dataset, lambda_value)
+    lambda_fit = _resolve_lambda_fit(
+        dataset,
+        design_matrix,
+        response_values,
+        lambda_value,
+    )
+    resolved_lambda = lambda_fit.lambda_value
     covariance = lambda_transform_covariance(dataset.covariance_matrix, resolved_lambda)
     inverse_covariance = invert_matrix(covariance)
     coefficients, covariance_of_betas, fitted_values = _fit_gls(
@@ -633,6 +665,7 @@ def run_pgls(
         encoded_columns=encoded_columns,
         taxon_count=len(taxa),
         lambda_value=resolved_lambda,
+        lambda_fit=lambda_fit,
         log_likelihood=log_likelihood,
         residual_variance=residual_variance,
         r_squared=r_squared,
@@ -1148,21 +1181,59 @@ def _build_pgls_diagnostics(
     )
 
 
-def _resolve_lambda(
+def _resolve_lambda_fit(
     dataset: ComparativeDataset,
+    design_matrix: list[list[float]],
+    response_values: list[float],
     lambda_value: float | str,
-) -> float:
+) -> PGLSLambdaFitReport:
+    likelihood_cache: dict[float, float] = {}
+
+    def _cached_log_likelihood(candidate: float) -> float:
+        if candidate not in likelihood_cache:
+            likelihood_cache[candidate] = _lambda_log_likelihood(
+                dataset,
+                design_matrix,
+                response_values,
+                candidate,
+            )
+        return likelihood_cache[candidate]
+
+    null_log_likelihood = _cached_log_likelihood(0.0)
+    brownian_log_likelihood = _cached_log_likelihood(1.0)
     if isinstance(lambda_value, (float, int)):
         if not 0.0 <= lambda_value <= 1.0:
             raise ComparativeMethodError(
                 "PGLS lambda must be between 0 and 1 inclusive"
             )
-        return float(lambda_value)
+        resolved_lambda = float(lambda_value)
+        log_likelihood = _cached_log_likelihood(resolved_lambda)
+        return PGLSLambdaFitReport(
+            mode="fixed",
+            lambda_value=resolved_lambda,
+            log_likelihood=log_likelihood,
+            null_log_likelihood=null_log_likelihood,
+            brownian_log_likelihood=brownian_log_likelihood,
+            lower_95_confidence_interval=None,
+            upper_95_confidence_interval=None,
+            profile_rows=[
+                PGLSLambdaProfileRow(
+                    lambda_value=resolved_lambda,
+                    log_likelihood=log_likelihood,
+                    delta_log_likelihood=0.0,
+                    within_95_confidence_interval=True,
+                )
+            ],
+        )
     if lambda_value != "estimate":
         raise ComparativeMethodError(
             "PGLS lambda must be 'estimate' or a numeric value"
         )
-    return _estimate_lambda_for_dataset(dataset)
+    return _estimate_lambda_for_pgls(
+        log_likelihood_at_lambda=_cached_log_likelihood,
+        null_log_likelihood=null_log_likelihood,
+        brownian_log_likelihood=brownian_log_likelihood,
+    )
 
 
 def _subset_covariance(
@@ -1187,14 +1258,17 @@ def _quadratic_form(vector: list[float], matrix: list[list[float]]) -> float:
             value * vector[column_index] for column_index, value in enumerate(row)
         )
     return total
+
+
 def _gls_log_likelihood(
     response_values: list[float],
     residuals: list[float],
     inverse_covariance: list[list[float]],
     covariance: list[list[float]],
 ) -> float:
-    sigma_squared = _quadratic_form(residuals, inverse_covariance) / len(
-        response_values
+    sigma_squared = max(
+        _quadratic_form(residuals, inverse_covariance) / len(response_values),
+        1e-12,
     )
     return -0.5 * (
         len(response_values) * math.log(2.0 * math.pi * sigma_squared)
@@ -1203,41 +1277,77 @@ def _gls_log_likelihood(
     )
 
 
-def _estimate_lambda_for_dataset(
-    dataset: ComparativeDataset,
+def _estimate_lambda_for_pgls(
     *,
+    log_likelihood_at_lambda: Callable[[float], float],
+    null_log_likelihood: float,
+    brownian_log_likelihood: float,
+    profile_step: float = 0.01,
+    confidence_interval_drop: float = 1.920729410347062,
     coarse_step: float = 0.05,
     fine_step: float = 0.005,
-) -> float:
+) -> PGLSLambdaFitReport:
     coarse_values = _grid_values(0.0, 1.0, coarse_step)
     coarse_best_lambda = max(
-        coarse_values, key=lambda candidate: _lambda_log_likelihood(dataset, candidate)
+        coarse_values, key=log_likelihood_at_lambda
     )
     fine_values = _grid_values(
         max(0.0, coarse_best_lambda - coarse_step),
         min(1.0, coarse_best_lambda + coarse_step),
         fine_step,
     )
-    return max(
-        fine_values, key=lambda candidate: _lambda_log_likelihood(dataset, candidate)
+    resolved_lambda = max(fine_values, key=log_likelihood_at_lambda)
+    best_log_likelihood = log_likelihood_at_lambda(resolved_lambda)
+    threshold = best_log_likelihood - confidence_interval_drop
+    profile_rows = [
+        PGLSLambdaProfileRow(
+            lambda_value=candidate,
+            log_likelihood=log_likelihood_at_lambda(candidate),
+            delta_log_likelihood=best_log_likelihood
+            - log_likelihood_at_lambda(candidate),
+            within_95_confidence_interval=(
+                log_likelihood_at_lambda(candidate) >= threshold
+            ),
+        )
+        for candidate in _grid_values(0.0, 1.0, profile_step)
+    ]
+    supported_rows = [
+        row for row in profile_rows if row.within_95_confidence_interval
+    ]
+    lower_bound = supported_rows[0].lambda_value if supported_rows else None
+    upper_bound = supported_rows[-1].lambda_value if supported_rows else None
+    return PGLSLambdaFitReport(
+        mode="estimated",
+        lambda_value=resolved_lambda,
+        log_likelihood=best_log_likelihood,
+        null_log_likelihood=null_log_likelihood,
+        brownian_log_likelihood=brownian_log_likelihood,
+        lower_95_confidence_interval=lower_bound,
+        upper_95_confidence_interval=upper_bound,
+        profile_rows=profile_rows,
     )
 
 
-def _lambda_log_likelihood(dataset: ComparativeDataset, lambda_value: float) -> float:
+def _lambda_log_likelihood(
+    dataset: ComparativeDataset,
+    design_matrix: list[list[float]],
+    response_values: list[float],
+    lambda_value: float,
+) -> float:
     covariance = lambda_transform_covariance(dataset.covariance_matrix, lambda_value)
     inverse_covariance = invert_matrix(covariance)
     coefficients, _, fitted_values = _fit_gls(
-        [[1.0] for _ in dataset.taxa],
-        dataset.trait_values,
+        design_matrix,
+        response_values,
         inverse_covariance,
     )
     del coefficients
     residuals = [
         observed - fitted
-        for observed, fitted in zip(dataset.trait_values, fitted_values, strict=True)
+        for observed, fitted in zip(response_values, fitted_values, strict=True)
     ]
     return _gls_log_likelihood(
-        dataset.trait_values, residuals, inverse_covariance, covariance
+        response_values, residuals, inverse_covariance, covariance
     )
 
 
