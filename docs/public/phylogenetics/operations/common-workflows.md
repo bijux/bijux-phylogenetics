@@ -207,6 +207,38 @@ absent from the trait table, missing the target trait value, or pruned because
 the trait value was non-numeric. This keeps OU review grounded in both the fit
 statistics and the data-retention contract.
 
+When the goal is to test whether trait evolution decelerates through time in an
+early-burst or adaptive-radiation style pattern, use `comparative
+early-burst`. This workflow fits the bounded rate-change surface directly,
+compares the retained fit against Brownian and OU on the same pruned taxon set,
+and flags weak identifiability when the likelihood surface stays broad or
+slides onto the search boundary.
+
+```bash
+bijux-phylogenetics comparative early-burst \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait longevity \
+  --taxon-column species \
+  --summary-out artifacts/primates.early-burst-summary.tsv \
+  --excluded-taxa-out artifacts/primates.early-burst-excluded.tsv \
+  --comparison-out artifacts/primates.early-burst-comparison.tsv \
+  --profile-out artifacts/primates.early-burst-profile.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, excluded taxon
+count, fitted `rate_change`, root state, `sigma²`, log-likelihood, AIC, AICc,
+the selected best model among Brownian/OU/early-burst, and the count of
+identifiability warnings. The excluded-taxa ledger keeps one row per taxon that
+was absent from the tree, absent from the trait table, missing the target trait
+value, or pruned because the trait value was non-numeric. The comparison ledger
+keeps both model-fit rows and likelihood-ratio rows so reviewers can see
+whether early-burst is actually preferred over Brownian or OU. The profile
+ledger keeps one fixed `rate_change` row per bounded likelihood evaluation so
+weak identifiability can be reviewed directly rather than inferred from one
+point estimate.
+
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
