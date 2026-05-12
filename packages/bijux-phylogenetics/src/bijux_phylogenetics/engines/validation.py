@@ -1075,6 +1075,59 @@ def validate_inference_engine_outputs(
             issues.append(
                 "bootstrap-consensus manifest does not record parsed support values"
             )
+    elif workflow == "sh-alrt-support":
+        bootstrap_path = output_paths.get("bootstrap_trees")
+        if bootstrap_path is None:
+            issues.append(
+                "sh-alrt-support manifest is missing the bootstrap_trees output"
+            )
+        else:
+            bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
+            issues.extend(bootstrap_validation.issues)
+        if output_paths.get("support_tree") is None:
+            issues.append("sh-alrt-support manifest is missing the support_tree output")
+        if output_paths.get("support_table") is None:
+            issues.append("sh-alrt-support manifest is missing the support_table output")
+        if output_paths.get("conflicting_support_branches") is None:
+            issues.append(
+                "sh-alrt-support manifest is missing the conflicting_support_branches output"
+            )
+        if output_paths.get("iqtree_log") is None:
+            issues.append("sh-alrt-support manifest is missing the iqtree_log output")
+        if manifest.get("selected_model") is None:
+            issues.append("sh-alrt-support manifest is missing the selected model")
+        if manifest.get("log_likelihood") is None:
+            issues.append("sh-alrt-support manifest is missing the log_likelihood field")
+        iqtree_summary = manifest.get("iqtree_summary")
+        if not isinstance(iqtree_summary, dict):
+            issues.append("sh-alrt-support manifest is missing the iqtree_summary")
+        elif int(iqtree_summary.get("support_value_count", 0)) < 1:
+            issues.append(
+                "sh-alrt-support manifest does not record parsed ufboot support values"
+            )
+        bootstrap_support_summary = manifest.get("bootstrap_support_summary")
+        if not isinstance(bootstrap_support_summary, dict):
+            issues.append(
+                "sh-alrt-support manifest is missing the bootstrap_support_summary"
+            )
+        elif int(bootstrap_support_summary.get("supported_node_count", 0)) < 1:
+            issues.append(
+                "sh-alrt-support manifest does not record any parsed ufboot-supported nodes"
+            )
+        sh_alrt_support_summary = manifest.get("sh_alrt_support_summary")
+        if not isinstance(sh_alrt_support_summary, dict):
+            issues.append(
+                "sh-alrt-support manifest is missing the sh_alrt_support_summary"
+            )
+        else:
+            if int(sh_alrt_support_summary.get("annotated_node_count", 0)) < 1:
+                issues.append(
+                    "sh-alrt-support manifest does not record any parsed sh-alrt labels"
+                )
+            if int(sh_alrt_support_summary.get("fully_scored_node_count", 0)) < 1:
+                issues.append(
+                    "sh-alrt-support manifest does not record any jointly scored sh-alrt and ufboot branches"
+                )
     return InferenceOutputConsistencyReport(
         manifest_path=manifest_path,
         workflow=workflow,

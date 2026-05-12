@@ -90,6 +90,24 @@ if "--version" in args:
 
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
+if "-alrt" in args:
+    prefix.with_suffix(".treefile").write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSH-aLRT and ultrafast bootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture sh-alrt log\\nBEST SCORE FOUND : -222.222\\n",
+        encoding="utf-8",
+    )
+    raise SystemExit(0)
 if "-bb" in args:
     prefix.with_suffix(".treefile").write_text(
         "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
@@ -606,5 +624,43 @@ def test_validate_inference_engine_outputs_requires_bootstrap_review_artifacts(
     )
     assert (
         "bootstrap-support manifest is missing the weak_backbone_report"
+        in report.issues
+    )
+
+
+def test_validate_inference_engine_outputs_requires_sh_alrt_review_evidence(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_sh_alrt_support_estimation
+
+    executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
+    workflow = run_sh_alrt_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "sh-alrt",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        sh_alrt_replicates=1000,
+        bootstrap_replicates=1000,
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    del payload["output_paths"]["support_table"]
+    del payload["output_paths"]["conflicting_support_branches"]
+    payload["sh_alrt_support_summary"] = None
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert "sh-alrt-support manifest is missing the support_table output" in report.issues
+    assert (
+        "sh-alrt-support manifest is missing the conflicting_support_branches output"
+        in report.issues
+    )
+    assert (
+        "sh-alrt-support manifest is missing the sh_alrt_support_summary"
         in report.issues
     )
