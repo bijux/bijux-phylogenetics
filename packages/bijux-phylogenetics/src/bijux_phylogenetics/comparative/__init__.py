@@ -27,6 +27,13 @@ from .brownian_trait_evolution import (
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,
 )
+from .ou_trait_evolution import (
+    OUTraitEvolutionExclusion,
+    OUTraitEvolutionSummaryReport,
+    summarize_ou_trait_evolution,
+    write_ou_trait_evolution_exclusion_table,
+    write_ou_trait_evolution_summary_table,
+)
 from .evolutionary_modes import (
     ComparativeTreeRescalingReport,
     ContinuousEvolutionaryModeComparisonReport,
@@ -302,6 +309,8 @@ __all__ = [
     "PGLSResult",
     "PGLSTaxonExclusion",
     "OUIdentifiabilityWarning",
+    "OUTraitEvolutionExclusion",
+    "OUTraitEvolutionSummaryReport",
     "OUTraitModelReport",
     "compare_brownian_and_ou_models",
     "analyze_comparative_residual_clades",
@@ -341,6 +350,7 @@ __all__ = [
     "summarize_brownian_trait_evolution",
     "summarize_independent_contrast_regression",
     "summarize_ou_covariance_pgls",
+    "summarize_ou_trait_evolution",
     "summarize_phylogenetic_signal",
     "summarize_pgls_lambda_fit",
     "summarize_pgls_categorical_contrasts",
@@ -374,6 +384,8 @@ __all__ = [
     "write_independent_contrast_regression_table",
     "write_independent_contrast_table",
     "write_ou_alpha_profile_table",
+    "write_ou_trait_evolution_exclusion_table",
+    "write_ou_trait_evolution_summary_table",
     "write_ou_covariance_table",
     "write_phylogenetic_signal_permutation_table",
     "write_phylogenetic_signal_summary_table",

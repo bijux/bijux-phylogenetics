@@ -152,6 +152,7 @@ from bijux_phylogenetics.comparative import (
     summarize_brownian_trait_evolution,
     summarize_independent_contrast_regression,
     summarize_ou_covariance_pgls,
+    summarize_ou_trait_evolution,
     summarize_phylogenetic_signal,
     summarize_pgls_lambda_fit,
     summarize_pgls_categorical_contrasts,
@@ -180,6 +181,8 @@ from bijux_phylogenetics.comparative import (
     write_independent_contrast_regression_table,
     write_independent_contrast_table,
     write_ou_alpha_profile_table,
+    write_ou_trait_evolution_exclusion_table,
+    write_ou_trait_evolution_summary_table,
     write_ou_covariance_table,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
@@ -1105,6 +1108,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.summarize_ou_covariance_pgls
         is summarize_ou_covariance_pgls
     )
+    assert (
+        bijux_phylogenetics.summarize_ou_trait_evolution
+        is summarize_ou_trait_evolution
+    )
     assert bijux_phylogenetics.summarize_pgls_lambda_fit is summarize_pgls_lambda_fit
     assert (
         bijux_phylogenetics.summarize_pgls_categorical_contrasts
@@ -1309,6 +1316,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_ou_alpha_profile_table
         is write_ou_alpha_profile_table
+    )
+    assert (
+        bijux_phylogenetics.write_ou_trait_evolution_summary_table
+        is write_ou_trait_evolution_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ou_trait_evolution_exclusion_table
+        is write_ou_trait_evolution_exclusion_table
     )
     assert (
         bijux_phylogenetics.write_ou_covariance_table is write_ou_covariance_table
@@ -7727,6 +7742,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_ou_covariance_pgls
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_ou_trait_evolution"]
+        is summarize_ou_trait_evolution
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_pgls_categorical_contrasts"]
         is summarize_pgls_categorical_contrasts
     )
@@ -7902,6 +7921,18 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_ou_alpha_profile_table"]
         is write_ou_alpha_profile_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_ou_trait_evolution_summary_table"
+        ]
+        is write_ou_trait_evolution_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_ou_trait_evolution_exclusion_table"
+        ]
+        is write_ou_trait_evolution_exclusion_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_ou_covariance_table"]
