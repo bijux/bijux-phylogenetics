@@ -247,11 +247,14 @@ from .comparative import (
 )
 from .compare.topology import (
     BranchScoreComparisonReport,
+    CladeOverlapComparisonReport,
     RobinsonFouldsComparisonReport,
     TreeComparisonReport,
     compare_branch_score_distance,
+    compare_clade_overlap,
     compare_robinson_foulds,
     compare_tree_paths,
+    write_clade_overlap_table,
 )
 from .core.dataset import (
     DatasetAuditReport,
@@ -981,6 +984,7 @@ __all__ = [
     "TreeDistanceMatrixReport",
     "TreeDistancePair",
     "BranchScoreComparisonReport",
+    "CladeOverlapComparisonReport",
     "TreeComparisonReport",
     "RobinsonFouldsComparisonReport",
     "TreeInspectionReport",
@@ -1075,6 +1079,7 @@ __all__ = [
     "compare_bootstrap_and_posterior_uncertainty",
     "compare_posterior_topological_diversity",
     "compare_branch_score_distance",
+    "compare_clade_overlap",
     "compare_robinson_foulds",
     "compare_tree_paths",
     "compare_posterior_tree_sets",
@@ -1357,6 +1362,7 @@ __all__ = [
     "write_beast_burnin_sensitivity_slice_table",
     "write_beast_log_summary_table",
     "write_beast_posterior_tree_set",
+    "write_clade_overlap_table",
     "write_mrbayes_burnin_sensitivity_slice_table",
     "write_mrbayes_parameter_summary_table",
     "write_posterior_tree_subsample",

@@ -101,6 +101,7 @@ from bijux_phylogenetics.comparative.evidence_contract import (
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
+    CladeOverlapComparisonReport,
     compare_clade_overlap,
     RobinsonFouldsComparisonReport,
     compare_branch_score_distance,
@@ -478,13 +479,22 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is BranchScoreComparisonReport
     )
     assert (
+        bijux_phylogenetics.CladeOverlapComparisonReport
+        is CladeOverlapComparisonReport
+    )
+    assert (
         bijux_phylogenetics.compare_branch_score_distance
         is compare_branch_score_distance
     )
+    assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
+    assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
     assert (
         bijux_phylogenetics.RobinsonFouldsComparisonReport
         is RobinsonFouldsComparisonReport
     )
+    assert compare_api.CladeOverlapComparisonReport is CladeOverlapComparisonReport
+    assert compare_api.compare_clade_overlap is compare_clade_overlap
+    assert compare_api.write_clade_overlap_table is write_clade_overlap_table
     assert compare_api.BranchScoreComparisonReport is BranchScoreComparisonReport
     assert compare_api.compare_branch_score_distance is compare_branch_score_distance
     assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
