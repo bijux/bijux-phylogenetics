@@ -136,6 +136,17 @@ warnings directly. Its JSON metrics expose `warning_count`, `converged`,
 lists each warning by parameter and warning code so convergence review does not
 depend on re-reading the BEAST log manually.
 
+`adapter beast-trees` is the governed parser surface for one BEAST posterior
+tree file. It accepts native `.trees` NEXUS files, records the sampled
+`STATE_*` generations, applies `--burnin-fraction`, extracts clade-frequency
+rows from the retained trees, and can emit `--tree-set-out` as normalized
+Newick for generic tree-set tooling. Its JSON metrics expose
+`total_tree_count`, `kept_tree_count`, `rooted_tree_count`,
+`burnin_fraction`, `clade_count`, and `sampled_state_count`. The payload keeps
+the retained sampled states, normalized Newick trees, sorted tip set, and
+clade-frequency table so posterior-tree review can stay on structured data
+instead of manual NEXUS scraping.
+
 `adapter mrbayes-run` is the governed execution surface for one prepared
 MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
 posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC
