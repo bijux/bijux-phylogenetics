@@ -3,8 +3,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-
-from Bio import Phylo
+import re
 
 from bijux_phylogenetics.bayesian.diagnostics import (
     TraceConvergenceReport,
@@ -32,14 +31,22 @@ from bijux_phylogenetics.engines.workflows import (
     _resume_existing_workflow,
 )
 from bijux_phylogenetics.errors import EngineWorkflowError
-from bijux_phylogenetics.io.biopython import tree_from_biophylo
+from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
-from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.tree_set import (
     compute_clade_frequency_table,
     compute_consensus_tree,
     load_tree_set,
+)
+
+_MRBAYES_TREE_PATTERN = re.compile(
+    r"tree\s+([^\s=]+)\s*=\s*(.+?);", flags=re.IGNORECASE | re.DOTALL
+)
+_MRBAYES_TREE_GENERATION_PATTERN = re.compile(r"(\d+)$")
+_MRBAYES_PROBABILITY_PATTERN = re.compile(r"prob=([0-9.eE+-]+)")
+_MRBAYES_PROBABILITY_PERCENT_PATTERN = re.compile(
+    r'prob\(percent\)="([0-9.eE+-]+)"'
 )
 
 
@@ -114,6 +121,156 @@ class MrBayesPosteriorSummaryReport:
     shared_taxa: list[str]
     consensus_newick: str
     clade_frequency_count: int
+
+
+@dataclass(slots=True)
+class MrBayesPosteriorTreeSample:
+    tree_name: str
+    generation: int | None
+    rooted: bool | None
+    tip_names: list[str]
+    newick: str
+
+
+@dataclass(slots=True)
+class MrBayesPosteriorTreeSetReport:
+    path: Path
+    tree_count: int
+    rooted_tree_count: int
+    sampled_generations: list[int]
+    tip_names: list[str]
+    trees: list[MrBayesPosteriorTreeSample]
+
+
+@dataclass(slots=True)
+class MrBayesMcmcRow:
+    generation: int
+    values: dict[str, float | None]
+
+
+@dataclass(slots=True)
+class MrBayesMcmcReport:
+    path: Path
+    row_count: int
+    columns: list[str]
+    comment_lines: list[str]
+    rows: list[MrBayesMcmcRow]
+
+
+@dataclass(slots=True)
+class MrBayesConsensusTreeReport:
+    path: Path
+    tree_name: str
+    rooted: bool | None
+    tip_names: list[str]
+    consensus_newick: str
+    annotated_node_count: int
+    minimum_posterior_probability: float | None
+    maximum_posterior_probability: float | None
+    minimum_posterior_probability_percent: float | None
+    maximum_posterior_probability_percent: float | None
+
+
+def _extract_mrbayes_tree_entries(text: str) -> list[tuple[str, str]]:
+    entries = [
+        (match.group(1), match.group(2).strip())
+        for match in _MRBAYES_TREE_PATTERN.finditer(text)
+    ]
+    if not entries:
+        raise EngineWorkflowError("MrBayes tree file contains no tree entries")
+    return entries
+
+
+def _split_nexus_translate_entries(raw_block: str) -> list[str]:
+    entries: list[str] = []
+    current: list[str] = []
+    in_single_quote = False
+    for character in raw_block:
+        if character == "'":
+            in_single_quote = not in_single_quote
+        if character == "," and not in_single_quote:
+            candidate = "".join(current).strip()
+            if candidate:
+                entries.append(candidate)
+            current = []
+            continue
+        current.append(character)
+    tail = "".join(current).strip()
+    if tail:
+        entries.append(tail)
+    return entries
+
+
+def _parse_nexus_translate_map(text: str) -> dict[str, str]:
+    lowered = text.lower()
+    marker = "translate"
+    start = lowered.find(marker)
+    if start == -1:
+        return {}
+    remainder = text[start + len(marker) :]
+    end = remainder.find(";")
+    if end == -1:
+        raise EngineWorkflowError("MrBayes tree file has an unterminated translate block")
+    block = remainder[:end]
+    mapping: dict[str, str] = {}
+    for entry in _split_nexus_translate_entries(block):
+        parts = entry.split(None, 1)
+        if len(parts) != 2:
+            continue
+        key, value = parts
+        mapping[key.strip()] = value.strip().strip("'")
+    return mapping
+
+
+def _strip_square_bracket_comments(text: str) -> str:
+    stripped: list[str] = []
+    depth = 0
+    for character in text:
+        if character == "[":
+            depth += 1
+            continue
+        if character == "]" and depth:
+            depth -= 1
+            continue
+        if depth == 0:
+            stripped.append(character)
+    return "".join(stripped)
+
+
+def _translate_mrbayes_tip_labels(newick: str, mapping: dict[str, str]) -> str:
+    if not mapping:
+        return newick
+
+    def replace(match: re.Match[str]) -> str:
+        token = match.group(1)
+        translated = mapping.get(token, token)
+        return match.group(0).replace(token, translated)
+
+    return re.sub(r"(?<=[(,])\s*([A-Za-z0-9_.-]+)(?=\s*[:),])", replace, newick)
+
+
+def _detect_mrbayes_rooted_flag(tree_text: str) -> bool | None:
+    prefix = tree_text.lstrip()
+    if prefix.startswith("[&R]"):
+        return True
+    if prefix.startswith("[&U]"):
+        return False
+    return None
+
+
+def _parse_mrbayes_tree_generation(tree_name: str) -> int | None:
+    match = _MRBAYES_TREE_GENERATION_PATTERN.search(tree_name)
+    return None if match is None else int(match.group(1))
+
+
+def _parse_mrbayes_tree_text(
+    tree_text: str, *, translation: dict[str, str]
+) -> tuple[str, PhyloTree, bool | None]:
+    rooted = _detect_mrbayes_rooted_flag(tree_text)
+    stripped = _strip_square_bracket_comments(tree_text).strip()
+    translated = _translate_mrbayes_tip_labels(stripped, translation)
+    tree = loads_biophylo(f"{translated};", source_format="newick")
+    return dumps_newick(tree), tree, rooted
 
 
 def _mrbayes_datatype(alphabet: AlignmentAlphabet) -> str:
@@ -333,6 +490,8 @@ def run_mrbayes_posterior_inference(
     prefix_path = nexus_path.with_suffix("")
     trace_path = Path(f"{nexus_path}.run1.p")
     tree_path = Path(f"{nexus_path}.run1.t")
+    mcmc_path = Path(f"{nexus_path}.mcmc")
+    consensus_path = Path(f"{nexus_path}.con.tre")
     manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [resolved, nexus_path.name]
     if resume:
@@ -355,9 +514,13 @@ def run_mrbayes_posterior_inference(
         output_paths={
             "posterior_trees": tree_path,
             "parameter_traces": trace_path,
+            "mcmc_diagnostics": mcmc_path,
+            "consensus_tree": consensus_path,
         },
     )
     parse_mrbayes_parameter_traces(trace_path)
+    parse_mrbayes_mcmc_diagnostics(mcmc_path)
+    parse_mrbayes_consensus_tree(consensus_path)
     summarize_mrbayes_posterior_trees(tree_path, burnin_fraction=0.25)
     report = EngineWorkflowReport(
         workflow="posterior-tree-inference",
@@ -366,13 +529,15 @@ def run_mrbayes_posterior_inference(
         output_paths={
             "posterior_trees": tree_path,
             "parameter_traces": trace_path,
+            "mcmc_diagnostics": mcmc_path,
+            "consensus_tree": consensus_path,
         },
         run=run,
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([nexus_path]),
         output_checksums={},
         notes=[
-            "MrBayes posterior trees and parameter traces validated after engine execution"
+            "MrBayes posterior trees, parameter traces, consensus tree, and MCMC diagnostics validated after engine execution"
         ],
     )
     return _persist_workflow_report(report)
@@ -410,6 +575,143 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
     return MrBayesTraceReport(
         path=path, row_count=len(rows), columns=columns, rows=rows
     )
+
+
+def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
+    """Parse a MrBayes .mcmc diagnostics table into deterministic rows."""
+    comment_lines: list[str] = []
+    table_lines: list[str] = []
+    with path.open(encoding="utf-8", newline="") as handle:
+        for line in handle:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if stripped.startswith("["):
+                comment_lines.append(stripped)
+                continue
+            table_lines.append(line)
+    reader = csv.DictReader(table_lines, delimiter="\t")
+    if reader.fieldnames is None:
+        raise EngineWorkflowError(
+            f"MrBayes MCMC diagnostics file contains no header: {path}"
+        )
+    columns = [field for field in reader.fieldnames if field and field != "Gen"]
+    rows: list[MrBayesMcmcRow] = []
+    for raw_row in reader:
+        generation_text = raw_row.get("Gen") or raw_row.get("gen")
+        if generation_text is None:
+            raise EngineWorkflowError(
+                f"MrBayes MCMC diagnostics file lacks a Gen column: {path}"
+            )
+        values: dict[str, float | None] = {}
+        for column in columns:
+            raw_value = raw_row.get(column)
+            if raw_value in {None, ""}:
+                continue
+            normalized = raw_value.strip()
+            if normalized.lower() in {"na", "nan"}:
+                values[column] = None
+            else:
+                values[column] = float(normalized)
+        rows.append(
+            MrBayesMcmcRow(generation=int(float(generation_text)), values=values)
+        )
+    if not rows:
+        raise EngineWorkflowError(
+            f"MrBayes MCMC diagnostics file contains no sampled rows: {path}"
+        )
+    return MrBayesMcmcReport(
+        path=path,
+        row_count=len(rows),
+        columns=columns,
+        comment_lines=comment_lines,
+        rows=rows,
+    )
+
+
+def parse_mrbayes_posterior_tree_samples(path: Path) -> MrBayesPosteriorTreeSetReport:
+    """Parse a MrBayes posterior tree set into generation-tagged samples."""
+    text = path.read_text(encoding="utf-8")
+    translation = _parse_nexus_translate_map(text)
+    samples: list[MrBayesPosteriorTreeSample] = []
+    for tree_name, tree_text in _extract_mrbayes_tree_entries(text):
+        newick, tree, rooted = _parse_mrbayes_tree_text(
+            tree_text, translation=translation
+        )
+        samples.append(
+            MrBayesPosteriorTreeSample(
+                tree_name=tree_name,
+                generation=_parse_mrbayes_tree_generation(tree_name),
+                rooted=rooted if rooted is not None else tree.rooted,
+                tip_names=tree.tip_names,
+                newick=newick,
+            )
+        )
+    if not samples:
+        raise EngineWorkflowError(
+            f"MrBayes posterior tree file contains no trees: {path}"
+        )
+    rooted_tree_count = sum(1 for sample in samples if sample.rooted)
+    sampled_generations = [
+        generation
+        for generation in (sample.generation for sample in samples)
+        if generation is not None
+    ]
+    return MrBayesPosteriorTreeSetReport(
+        path=path,
+        tree_count=len(samples),
+        rooted_tree_count=rooted_tree_count,
+        sampled_generations=sampled_generations,
+        tip_names=samples[0].tip_names,
+        trees=samples,
+    )
+
+
+def parse_mrbayes_consensus_tree(path: Path) -> tuple[PhyloTree, MrBayesConsensusTreeReport]:
+    """Parse a MrBayes consensus tree with posterior-probability annotations."""
+    text = path.read_text(encoding="utf-8")
+    translation = _parse_nexus_translate_map(text)
+    entries = _extract_mrbayes_tree_entries(text)
+    if len(entries) != 1:
+        raise EngineWorkflowError(
+            f"MrBayes consensus tree file must contain exactly one tree: {path}"
+        )
+    tree_name, tree_text = entries[0]
+    consensus_newick, tree, rooted = _parse_mrbayes_tree_text(
+        tree_text, translation=translation
+    )
+    posterior_probabilities = [
+        float(match.group(1)) for match in _MRBAYES_PROBABILITY_PATTERN.finditer(tree_text)
+    ]
+    posterior_probability_percents = [
+        float(match.group(1))
+        for match in _MRBAYES_PROBABILITY_PERCENT_PATTERN.finditer(tree_text)
+    ]
+    report = MrBayesConsensusTreeReport(
+        path=path,
+        tree_name=tree_name,
+        rooted=rooted if rooted is not None else tree.rooted,
+        tip_names=tree.tip_names,
+        consensus_newick=consensus_newick,
+        annotated_node_count=len(posterior_probabilities),
+        minimum_posterior_probability=(
+            None if not posterior_probabilities else min(posterior_probabilities)
+        ),
+        maximum_posterior_probability=(
+            None if not posterior_probabilities else max(posterior_probabilities)
+        ),
+        minimum_posterior_probability_percent=(
+            None
+            if not posterior_probability_percents
+            else min(posterior_probability_percents)
+        ),
+        maximum_posterior_probability_percent=(
+            None
+            if not posterior_probability_percents
+            else max(posterior_probability_percents)
+        ),
+    )
+    return tree, report
 
 
 def compute_mrbayes_effective_sample_sizes(path: Path) -> MrBayesESSReport:
@@ -499,24 +801,16 @@ def summarize_mrbayes_posterior_trees(
         raise ValueError(
             f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
         )
-    tree_format = detect_tree_format(tree_set_path)
-    bio_trees = list(Phylo.parse(tree_set_path, tree_format))
-    if not bio_trees:
-        raise EngineWorkflowError(
-            f"MrBayes posterior tree file contains no trees: {tree_set_path}"
-        )
-    burnin_tree_count = int(len(bio_trees) * burnin_fraction)
-    kept_trees = bio_trees[burnin_tree_count:]
+    tree_set_report = parse_mrbayes_posterior_tree_samples(tree_set_path)
+    burnin_tree_count = int(tree_set_report.tree_count * burnin_fraction)
+    kept_trees = tree_set_report.trees[burnin_tree_count:]
     if not kept_trees:
         raise EngineWorkflowError(
             f"MrBayes posterior tree file is empty after burn-in filtering: {tree_set_path}"
         )
     filtered_tree_set_path = tree_set_path.with_suffix(".postburnin.nwk")
     filtered_tree_set_path.write_text(
-        "".join(
-            dumps_newick(tree_from_biophylo(tree, source_format="newick")) + "\n"
-            for tree in kept_trees
-        ),
+        "".join(f"{sample.newick}\n" for sample in kept_trees),
         encoding="utf-8",
     )
     summary = load_tree_set(filtered_tree_set_path)
@@ -525,7 +819,7 @@ def summarize_mrbayes_posterior_trees(
     return consensus_tree, MrBayesPosteriorSummaryReport(
         source_path=tree_set_path,
         filtered_tree_set_path=filtered_tree_set_path,
-        total_tree_count=len(bio_trees),
+        total_tree_count=tree_set_report.tree_count,
         burnin_tree_count=burnin_tree_count,
         kept_tree_count=len(kept_trees),
         rooted_topology_count=summary.rooted_topology_count,

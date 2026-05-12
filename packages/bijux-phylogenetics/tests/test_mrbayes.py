@@ -7,7 +7,10 @@ import shutil
 from bijux_phylogenetics.bayesian import (
     assess_mrbayes_convergence,
     compute_mrbayes_effective_sample_sizes,
+    parse_mrbayes_consensus_tree,
+    parse_mrbayes_mcmc_diagnostics,
     parse_mrbayes_parameter_traces,
+    parse_mrbayes_posterior_tree_samples,
     prepare_mrbayes_analysis,
     render_bayesian_posterior_report,
     run_mrbayes_posterior_inference,
@@ -42,6 +45,8 @@ if "--version" in sys.argv[1:]:
 nexus_path = Path(sys.argv[1])
 trace_path = Path(f"{nexus_path}.run1.p")
 tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+consensus_path = Path(f"{nexus_path}.con.tre")
 trace_path.write_text(
     "Gen\\tLnL\\tTL\\talpha\\n"
     "0\\t-110.0\\t0.40\\t0.90\\n"
@@ -57,6 +62,23 @@ tree_path.write_text(
     "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
     "tree gen3 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\\n"
     "tree gen4 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "[ID: 1]\\n"
+    "[   Gen -- Generation]\\n"
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n"
+    "200\\tNA\\t1.0\\t0.10\\n",
+    encoding="utf-8",
+)
+consensus_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree con_50_majrule = [&R] ((A[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,B[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.75,prob(percent)=\\\"75\\\"]:0.2,(C[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,D[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.5,prob(percent)=\\\"50\\\"]:0.2);\\n"
     "end;\\n",
     encoding="utf-8",
 )
@@ -166,6 +188,8 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
 
     assert run_report.run.warning_lines == ["warning: mrbayes fixture posterior run"]
     assert resumed.resumed is True
+    assert run_report.output_paths["mcmc_diagnostics"].exists()
+    assert run_report.output_paths["consensus_tree"].exists()
     assert summary.total_tree_count == 4
     assert summary.burnin_tree_count == 1
     assert summary.kept_tree_count == 3
@@ -233,6 +257,58 @@ def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(
     assert all(
         row.effective_sample_size > 0 for row in ess_report.effective_sample_sizes
     )
+
+
+def test_parse_mrbayes_posterior_tree_samples_and_consensus_tree(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mrbayes(tmp_path / "mb-fixture")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+    run_report = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=False
+    )
+
+    tree_report = parse_mrbayes_posterior_tree_samples(
+        run_report.output_paths["posterior_trees"]
+    )
+    consensus_tree, consensus_report = parse_mrbayes_consensus_tree(
+        run_report.output_paths["consensus_tree"]
+    )
+
+    assert tree_report.tree_count == 4
+    assert tree_report.rooted_tree_count == 4
+    assert tree_report.sampled_generations == [1, 2, 3, 4]
+    assert tree_report.tip_names == ["A", "B", "C", "D"]
+    assert tree_report.trees[0].newick == "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);"
+    assert consensus_tree.tip_count == 4
+    assert consensus_report.tree_name == "con_50_majrule"
+    assert consensus_report.rooted is True
+    assert consensus_report.annotated_node_count == 6
+    assert consensus_report.minimum_posterior_probability == 0.5
+    assert consensus_report.maximum_posterior_probability == 1.0
+    assert consensus_report.minimum_posterior_probability_percent == 50.0
+    assert consensus_report.maximum_posterior_probability_percent == 100.0
+
+
+def test_parse_mrbayes_mcmc_diagnostics(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mrbayes(tmp_path / "mb-fixture")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+    run_report = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=False
+    )
+
+    report = parse_mrbayes_mcmc_diagnostics(run_report.output_paths["mcmc_diagnostics"])
+
+    assert report.row_count == 2
+    assert report.columns == ["Move$acc_run1", "Swap(1<>2)$acc(1)", "AvgStdDev(s)"]
+    assert len(report.comment_lines) == 2
+    assert report.rows[0].generation == 100
+    assert report.rows[0].values["AvgStdDev(s)"] == 0.2
+    assert report.rows[1].values["Move$acc_run1"] is None
 
 
 def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(
