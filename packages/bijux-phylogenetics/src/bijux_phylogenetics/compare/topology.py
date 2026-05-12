@@ -1157,6 +1157,27 @@ def compare_support_values(
     """Compare clade support values and support-aware conflicts across two trees."""
     left = _load_biophylo_tree(left_path)
     right = _load_biophylo_tree(right_path)
+    return _build_support_comparison_report(
+        left_path,
+        right_path,
+        left,
+        right,
+        strong_support_threshold=strong_support_threshold,
+        weak_support_threshold=weak_support_threshold,
+        support_disagreement_threshold=support_disagreement_threshold,
+    )
+
+
+def _build_support_comparison_report(
+    left_path: Path,
+    right_path: Path,
+    left: Tree,
+    right: Tree,
+    *,
+    strong_support_threshold: float,
+    weak_support_threshold: float,
+    support_disagreement_threshold: float,
+) -> SupportComparisonReport:
     left_taxa = {clade.name for clade in left.get_terminals() if clade.name}
     right_taxa = {clade.name for clade in right.get_terminals() if clade.name}
     shared_taxa = left_taxa & right_taxa
