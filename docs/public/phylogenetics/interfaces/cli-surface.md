@@ -162,6 +162,22 @@ retained clades, including alternative groupings that do not survive as
 majority clades in the final consensus topology, so downstream review can
 distinguish a strongly resolved consensus from a superficially simple one.
 
+`adapter beast-diversity` is the governed topology-dispersion surface for one
+BEAST posterior tree file after burn-in handling. It can copy the retained
+posterior tree set through `--tree-set-out`, write the full pairwise RF ledger
+through `--distance-out`, write rooted topology clusters through
+`--topology-out`, and write non-unanimous clade instability evidence through
+`--unstable-clade-out`. Its JSON metrics expose `total_tree_count`,
+`kept_tree_count`, `rooted_topology_count`, `dominant_topology_frequency`,
+`pair_count`, `unstable_clade_count`, and `burnin_fraction`.
+
+The command is intentionally broader than a consensus summary. The topology
+cluster ledger records how many distinct rooted topologies remain after
+burn-in and how often the dominant one appears. The unstable-clade ledger
+preserves conflicting alternatives and support classifications for clades that
+fail unanimity, so posterior uncertainty review does not collapse immediately
+to one representative tree.
+
 `adapter mrbayes-run` is the governed execution surface for one prepared
 MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
 posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC
