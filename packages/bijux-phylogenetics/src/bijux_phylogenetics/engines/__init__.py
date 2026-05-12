@@ -5,6 +5,15 @@ from .common import (
     read_engine_version,
     resolve_engine_executable,
 )
+from .inference_comparison import (
+    InferenceComparisonConflictRow,
+    InferenceComparisonSharedCladeRow,
+    InferenceComparisonWorkflowReport,
+    build_inference_comparison_conflict_rows,
+    build_inference_comparison_shared_clade_rows,
+    run_tree_inference_comparison,
+    write_inference_comparison_clade_table,
+)
 from .evidence import InferenceEvidenceBundleResult, bundle_inference_workflow_evidence
 from .fasta_to_tree import (
     FastaToTreeModelRow,
@@ -77,6 +86,9 @@ __all__ = [
     "FastaToTreeModelRow",
     "FastaToTreeSupportRow",
     "FastaToTreeWorkflowReport",
+    "InferenceComparisonConflictRow",
+    "InferenceComparisonSharedCladeRow",
+    "InferenceComparisonWorkflowReport",
     "InferenceEvidenceBundleResult",
     "EngineWorkflowReport",
     "ExternalTreeComparisonReport",
@@ -95,6 +107,8 @@ __all__ = [
     "audit_alignment_inference_readiness",
     "BootstrapTreeSetValidationReport",
     "build_inference_sensitivity_report",
+    "build_inference_comparison_conflict_rows",
+    "build_inference_comparison_shared_clade_rows",
     "build_model_selection_limitations_report",
     "InferenceOutputConsistencyReport",
     "infer_unaligned_sequence_type",
@@ -124,7 +138,9 @@ __all__ = [
     "run_model_selection",
     "run_multiple_sequence_alignment",
     "run_sh_alrt_support_estimation",
+    "run_tree_inference_comparison",
     "write_fasta_to_tree_log",
     "write_fasta_to_tree_model_table",
     "write_fasta_to_tree_support_table",
+    "write_inference_comparison_clade_table",
 ]

@@ -27,6 +27,7 @@ from bijux_phylogenetics.engines import (
     run_model_selection,
     run_multiple_sequence_alignment,
     run_sh_alrt_support_estimation,
+    run_tree_inference_comparison,
 )
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
@@ -1270,6 +1271,77 @@ def test_compare_fast_and_ml_trees_builds_html_report(tmp_path: Path) -> None:
 
     assert comparison.comparison_report.output_path.exists()
     assert comparison.comparison_report.topology.shared_taxa == ["A", "B", "C", "D"]
+
+
+def test_run_tree_inference_comparison_exports_tables_and_conflicts(
+    tmp_path: Path,
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    fasttree = _fake_fasttree(tmp_path / "fasttree-fixture")
+
+    report = run_tree_inference_comparison(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "engine-comparison",
+        prefix="example",
+        sequence_type="dna",
+        iqtree_executable=iqtree,
+        fasttree_executable=fasttree,
+        iqtree_seed=1,
+        iqtree_threads=1,
+        bootstrap_replicates=1000,
+    )
+
+    assert report.selected_model == "GTR+G"
+    assert report.output_paths["fasttree_tree"].exists()
+    assert report.output_paths["iqtree_support_tree"].exists()
+    assert report.output_paths["comparison_report"].exists()
+    assert report.output_paths["comparison_table"].exists()
+    assert report.output_paths["shared_clades"].exists()
+    assert report.output_paths["conflicting_clades"].exists()
+    assert report.engine_comparison.topology.topology_equal is True
+    assert len(report.shared_clade_rows) == 2
+    assert any(
+        row.split_id == "C|D" and row.support_disagreement
+        for row in report.shared_clade_rows
+    )
+    assert any(
+        row.split_id == "C|D" and row.conflict_kind == "support_disagreement"
+        for row in report.conflicting_clade_rows
+    )
+    assert "support_disagreement" in report.output_paths["conflicting_clades"].read_text(
+        encoding="utf-8"
+    )
+    assert report.output_paths["comparison_table"].read_text(
+        encoding="utf-8"
+    ).startswith("split_id\tcomparison_status\tshared_clade\t")
+
+
+def test_run_tree_inference_comparison_with_real_executables_on_small_alignment(
+    tmp_path: Path,
+) -> None:
+    iqtree_executable = _real_iqtree_executable()
+    fasttree_executable = _real_fasttree_executable()
+    if iqtree_executable is None or fasttree_executable is None:
+        pytest.skip(
+            "real IQ-TREE and FastTree executables are required for comparison integration coverage"
+        )
+
+    report = run_tree_inference_comparison(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "real-engine-comparison",
+        prefix="real",
+        sequence_type="dna",
+        iqtree_executable=iqtree_executable,
+        fasttree_executable=fasttree_executable,
+        iqtree_seed=1,
+        iqtree_threads=1,
+        bootstrap_replicates=1000,
+    )
+
+    assert report.output_paths["comparison_report"].exists()
+    assert report.output_paths["comparison_table"].exists()
+    assert report.engine_comparison.topology.shared_taxa
+    assert report.engine_comparison.support.shared_taxa
 
 
 def test_model_selection_limitations_report_records_interpretation_boundaries(

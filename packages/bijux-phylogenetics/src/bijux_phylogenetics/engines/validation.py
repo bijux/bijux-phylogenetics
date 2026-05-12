@@ -1028,7 +1028,11 @@ def _manifest_tree_output_path(manifest: dict[str, object]) -> Path:
     output_paths = {
         key: Path(value) for key, value in dict(manifest["output_paths"]).items()
     }
-    tree_path = output_paths.get("tree")
+    tree_path = (
+        output_paths.get("tree")
+        or output_paths.get("support_tree")
+        or output_paths.get("consensus_tree")
+    )
     if tree_path is None:
         raise ValueError("manifest does not expose a tree output")
     return tree_path

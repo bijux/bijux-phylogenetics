@@ -522,6 +522,42 @@ def test_compare_inferred_trees_across_engines_reports_engine_labels(
     assert any("branch-length" in warning for warning in report.warnings)
 
 
+def test_compare_inferred_trees_across_engines_accepts_support_tree_manifests(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import (
+        run_bootstrap_support_estimation,
+        run_fast_tree_inference,
+    )
+
+    iqtree_executable = _fake_iqtree_tree(tmp_path / "iqtree-engine")
+    fasttree_executable = _fake_fasttree_tree(
+        tmp_path / "fasttree-engine",
+        tree_newick="((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);",
+    )
+    iqtree = run_bootstrap_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=iqtree_executable,
+        prefix="engine",
+        replicates=1000,
+    )
+    fast = run_fast_tree_inference(
+        fixture("example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=fasttree_executable,
+    )
+
+    report = compare_inferred_trees_across_engines(fast.manifest_path, iqtree.manifest_path)
+
+    assert report.comparison_kind == "engine"
+    assert report.left_label == "FastTree"
+    assert report.right_label == "IQ-TREE"
+    assert report.topology.topology_equal is True
+    assert report.support.shared_clades
+
+
 def test_validate_inference_engine_outputs_checks_manifest_consistency(
     tmp_path: Path,
 ) -> None:
