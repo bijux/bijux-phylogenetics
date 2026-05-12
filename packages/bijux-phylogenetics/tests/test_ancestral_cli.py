@@ -170,6 +170,87 @@ def test_ancestral_discrete_cli_can_export_parsimony_comparison(
     )
 
 
+def test_ancestral_confidence_cli_can_export_single_tree_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-confidence-summary.tsv"
+    confidence_path = tmp_path / "ancestral-confidence.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "confidence",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--kind",
+            "discrete",
+            "--model",
+            "equal-rates",
+            "--summary-out",
+            str(summary_path),
+            "--confidence-out",
+            str(confidence_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["kind"] == "discrete"
+    assert payload["metrics"]["source_kind"] == "tree"
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["confidence_row_count"] == 3
+    assert payload["metrics"]["high_entropy_count"] == 2
+    assert payload["metrics"]["top_uncertain_id"] == "C|D"
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tsource_kind\treconstruction_kind\ttarget_kind"
+    )
+    assert confidence_path.read_text(encoding="utf-8").startswith(
+        "node\tnode_name\tdescendant_taxa\tmost_likely_state\tstate_set"
+    )
+
+
+def test_ancestral_confidence_cli_can_export_tree_set_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-tree-set-confidence-summary.tsv"
+    confidence_path = tmp_path / "ancestral-tree-set-confidence.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "confidence",
+            str(fixture("example_posterior_tree_set_six_taxa.nwk")),
+            str(fixture("example_traits_clade_summary.tsv")),
+            "--trait",
+            "body_mass",
+            "--kind",
+            "continuous",
+            "--tree-set",
+            "--summary-out",
+            str(summary_path),
+            "--confidence-out",
+            str(confidence_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["kind"] == "continuous"
+    assert payload["metrics"]["source_kind"] == "tree_set"
+    assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["kept_tree_count"] == 5
+    assert payload["metrics"]["confidence_row_count"] == 14
+    assert payload["metrics"]["top_uncertain_id"] == "A|B|C|D|E|F"
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tsource_kind\treconstruction_kind\ttarget_kind"
+    )
+    assert confidence_path.read_text(encoding="utf-8").startswith(
+        "clade_id\tclade_taxa\ttree_presence_count\ttree_presence_fraction"
+    )
+
+
 def test_ancestral_tree_set_cli_can_export_continuous_review(
     tmp_path: Path, capsys
 ) -> None:
