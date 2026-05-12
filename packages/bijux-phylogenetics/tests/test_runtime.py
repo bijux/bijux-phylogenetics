@@ -543,6 +543,22 @@ from bijux_phylogenetics.ecological_niche import (
     write_niche_transition_rate_table,
     write_niche_transition_summary_table,
 )
+from bijux_phylogenetics.phylogeography import (
+    CoordinateEstimateRow,
+    CoordinateMovementBranchRow,
+    CoordinateMovementExclusionRow,
+    CoordinateMovementOutlierRow,
+    CoordinateMovementSummary,
+    CoordinateMovementVisualization,
+    PhylogeographicCoordinateReport,
+    render_coordinate_movement_visualization,
+    summarize_continuous_phylogeography,
+    write_coordinate_estimate_table,
+    write_coordinate_movement_branch_table,
+    write_coordinate_movement_exclusion_table,
+    write_coordinate_movement_outlier_table,
+    write_coordinate_movement_summary_table,
+)
 from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
     build_distance_method_report,
@@ -1196,6 +1212,59 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is write_niche_transition_exclusion_table
     )
     assert (
+        bijux_phylogenetics.summarize_continuous_phylogeography
+        is summarize_continuous_phylogeography
+    )
+    assert bijux_phylogenetics.CoordinateEstimateRow is CoordinateEstimateRow
+    assert (
+        bijux_phylogenetics.CoordinateMovementBranchRow
+        is CoordinateMovementBranchRow
+    )
+    assert (
+        bijux_phylogenetics.CoordinateMovementExclusionRow
+        is CoordinateMovementExclusionRow
+    )
+    assert (
+        bijux_phylogenetics.CoordinateMovementOutlierRow
+        is CoordinateMovementOutlierRow
+    )
+    assert (
+        bijux_phylogenetics.CoordinateMovementSummary
+        is CoordinateMovementSummary
+    )
+    assert (
+        bijux_phylogenetics.CoordinateMovementVisualization
+        is CoordinateMovementVisualization
+    )
+    assert (
+        bijux_phylogenetics.PhylogeographicCoordinateReport
+        is PhylogeographicCoordinateReport
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_summary_table
+        is write_coordinate_movement_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_estimate_table
+        is write_coordinate_estimate_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_branch_table
+        is write_coordinate_movement_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_outlier_table
+        is write_coordinate_movement_outlier_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_exclusion_table
+        is write_coordinate_movement_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.render_coordinate_movement_visualization
+        is render_coordinate_movement_visualization
+    )
+    assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
         is simulate_discrete_stochastic_maps
     )
@@ -1509,6 +1578,13 @@ def test_command_registry_exposes_ecological_niche_surface() -> None:
 
     assert spec.domain == "ecological-niche"
     assert spec.outputs == ("ecological-niche-report",)
+
+
+def test_command_registry_exposes_phylogeography_surface() -> None:
+    spec = get_command_spec("phylogeography")
+
+    assert spec.domain == "continuous-phylogeography"
+    assert spec.outputs == ("continuous-phylogeography-report",)
 
 
 def test_command_registry_exposes_diversification_surface() -> None:
