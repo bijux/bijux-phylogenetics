@@ -1601,17 +1601,27 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     assert tip_dates_payload["metrics"]["valid_tip_count"] == 4
 
     log_exit = main(
-        ["adapter", "beast-log", str(fixture("metadata/example_beast.log")), "--json"]
+        [
+            "adapter",
+            "beast-log",
+            str(fixture("metadata/example_beast.log")),
+            "--burnin-fraction",
+            "0.25",
+            "--json",
+        ]
     )
     log_payload = json.loads(capsys.readouterr().out)
     assert log_exit == 0
     assert log_payload["metrics"]["row_count"] == 4
+    assert log_payload["metrics"]["kept_row_count"] == 3
 
     convergence_exit = main(
         [
             "adapter",
             "beast-convergence",
             str(fixture("metadata/example_beast.log")),
+            "--burnin-fraction",
+            "0.25",
             "--ess-threshold",
             "5",
             "--mean-shift-threshold",
@@ -1622,6 +1632,7 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     convergence_payload = json.loads(capsys.readouterr().out)
     assert convergence_exit == 0
     assert convergence_payload["metrics"]["warning_count"] >= 1
+    assert convergence_payload["metrics"]["sample_count"] == 3
 
     report_exit = main(
         [
@@ -1817,3 +1828,42 @@ def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(
     assert methods_exit == 0
     assert methods_payload["metrics"]["warning_count"] >= 0
     assert "relaxed-lognormal" in methods_path.read_text(encoding="utf-8")
+
+
+def test_adapter_beast_log_cli_writes_summary_table_with_parameter_categories(
+    tmp_path: Path, capsys
+) -> None:
+    log_path = tmp_path / "classified-beast.log"
+    summary_path = tmp_path / "classified-beast-summary.tsv"
+    log_path.write_text(
+        "# BEAST fixture log\n"
+        "state\tposterior\tlikelihood\tprior\tclockRate\ttreeHeight\tbirthRate\talpha\n"
+        "0\t-510.0\t-490.0\t-20.0\t0.0010\t12.0\t0.30\t0.90\n"
+        "1000\t-505.0\t-486.0\t-19.0\t0.0011\t12.3\t0.35\t0.95\n"
+        "2000\t-500.0\t-482.0\t-18.0\t0.0012\t12.8\t0.40\t1.00\n"
+        "3000\t-497.0\t-479.0\t-18.0\t0.0013\t13.4\t0.45\t1.05\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-log",
+            str(log_path),
+            "--burnin-fraction",
+            "0.25",
+            "--summary-out",
+            str(summary_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    text = summary_path.read_text(encoding="utf-8")
+
+    assert exit_code == 0
+    assert payload["metrics"]["prior_parameter_count"] == 1
+    assert payload["metrics"]["clock_parameter_count"] == 1
+    assert payload["metrics"]["tree_parameter_count"] == 2
+    assert payload["data"]["summary"]["kept_row_count"] == 3
+    assert "prior\tprior\t3" in text
+    assert "tree\tbirthRate\t3" in text

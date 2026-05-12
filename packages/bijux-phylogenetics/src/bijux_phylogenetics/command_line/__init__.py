@@ -36,10 +36,12 @@ from bijux_phylogenetics.bayesian import (
     render_bayesian_posterior_report,
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
+    summarize_beast_log,
     summarize_mrbayes_posterior_trees,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
+    write_beast_log_summary_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -3875,6 +3877,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     adapter_beast_log.add_argument("input_path", type=Path)
     adapter_beast_log.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.0,
+        help="Discard this fraction of early samples before reporting summaries.",
+    )
+    adapter_beast_log.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write a TSV parameter-summary table for the parsed log.",
+    )
+    adapter_beast_log.add_argument(
         "--json", action="store_true", help="Emit the parsed log report as JSON."
     )
     _add_manifest_argument(adapter_beast_log)
@@ -3883,6 +3896,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Assess BEAST log convergence from ESS and trace drift.",
     )
     adapter_beast_convergence.add_argument("input_path", type=Path)
+    adapter_beast_convergence.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.0,
+        help="Discard this fraction of early samples before assessing convergence.",
+    )
     adapter_beast_convergence.add_argument("--ess-threshold", type=float, default=200.0)
     adapter_beast_convergence.add_argument(
         "--mean-shift-threshold", type=float, default=0.5
@@ -9887,8 +9906,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.adapter_command == "beast-log":
                 report = parse_beast_log(args.input_path)
+                summary = summarize_beast_log(
+                    args.input_path, burnin_fraction=args.burnin_fraction
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_beast_log_summary_table(args.summary_out, summary)
+                    )
                 outputs = _finalize_outputs(
-                    args, command="adapter", inputs=[args.input_path]
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
                 )
                 _print_result(
                     build_command_result(
@@ -9898,8 +9928,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "row_count": report.row_count,
                             "column_count": len(report.columns),
+                            "burnin_fraction": summary.burnin_fraction,
+                            "kept_row_count": summary.kept_row_count,
+                            "posterior_parameter_count": len(
+                                summary.posterior_parameters
+                            ),
+                            "likelihood_parameter_count": len(
+                                summary.likelihood_parameters
+                            ),
+                            "prior_parameter_count": len(summary.prior_parameters),
+                            "clock_parameter_count": len(summary.clock_parameters),
+                            "tree_parameter_count": len(summary.tree_parameters),
                         },
-                        data=report,
+                        data={"log": report, "summary": summary},
                     ),
                     json_output=args.json,
                 )
@@ -9907,6 +9948,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.adapter_command == "beast-convergence":
                 report = assess_beast_convergence(
                     args.input_path,
+                    burnin_fraction=args.burnin_fraction,
                     ess_threshold=args.ess_threshold,
                     mean_shift_threshold=args.mean_shift_threshold,
                 )
@@ -9922,6 +9964,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "warning_count": len(report.warnings),
                             "converged": report.converged,
+                            "burnin_fraction": report.burnin_fraction,
+                            "sample_count": report.sample_count,
                         },
                         data=report,
                     ),
