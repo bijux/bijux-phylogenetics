@@ -135,7 +135,7 @@ def test_summarize_phylogenetic_logistic_tracks_live_phyloglm_when_available() -
     rscript = shutil.which("Rscript")
     if rscript is None:
         pytest.skip("Rscript is not available")
-    repository_root = Path(__file__).resolve().parents[2]
+    repository_root = Path(__file__).resolve().parents[3]
     r_library = repository_root / "artifacts" / "r-lib"
     environment = dict(os.environ)
     if r_library.is_dir():
@@ -158,7 +158,8 @@ def test_summarize_phylogenetic_logistic_tracks_live_phyloglm_when_available() -
     )
     if package_check.returncode != 0:
         pytest.skip("R package availability could not be checked")
-    if package_check.stdout.strip().splitlines() != ["TRUE", "TRUE", "TRUE"]:
+    package_flags = [line.strip() for line in package_check.stdout.splitlines() if line.strip()]
+    if package_flags != ["TRUE", "TRUE", "TRUE"]:
         pytest.skip("ape, phylolm, and jsonlite are required for live phyloglm validation")
     live_fit = subprocess.run(
         [
@@ -172,7 +173,9 @@ def test_summarize_phylogenetic_logistic_tracks_live_phyloglm_when_available() -
                 "dat <- read.delim('packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_phylogenetic_logistic.tsv', stringsAsFactors=FALSE);"
                 "rownames(dat) <- dat$taxon;"
                 "fit <- phyloglm(presence ~ body_size, data=dat, phy=tree, method='logistic_MPLE', btol=50);"
-                "payload <- list(coefficients=coef(fit), fitted_probabilities=fit$fitted.values);"
+                "payload <- list(coefficients=as.list(unname(coef(fit))), fitted_probabilities=as.list(unname(fit$fitted.values)));"
+                "names(payload$coefficients) <- names(coef(fit));"
+                "names(payload$fitted_probabilities) <- names(fit$fitted.values);"
                 "cat(toJSON(payload, auto_unbox=TRUE))"
             ),
         ],
