@@ -110,6 +110,7 @@ from bijux_phylogenetics.compare.topology import (
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
+    write_support_comparison_table,
     write_tree_comparison_table,
 )
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
@@ -816,6 +817,13 @@ def _command_inputs(args: Any) -> list[Path | str]:
                 inputs.append(Path(args.third))
             for path in getattr(args, "extra_trees", []) or []:
                 inputs.append(path)
+            if getattr(args, "out", None) is not None:
+                inputs.append(args.out)
+            return inputs
+        if args.left == "support":
+            inputs = [Path(args.right)]
+            if getattr(args, "third", None) is not None:
+                inputs.append(Path(args.third))
             if getattr(args, "out", None) is not None:
                 inputs.append(args.out)
             return inputs
@@ -8386,15 +8394,49 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 left_path = Path(args.right)
                 right_path = Path(args.third)
                 report = compare_support_values(left_path, right_path)
+                output_paths: list[Path | str] = []
+                if args.out is not None:
+                    output_paths.append(
+                        write_support_comparison_table(args.out, left_path, right_path)
+                    )
                 outputs = _finalize_outputs(
-                    args, command="compare", inputs=[left_path, right_path]
+                    args,
+                    command="compare",
+                    inputs=[left_path, right_path],
+                    outputs=output_paths,
                 )
                 _print_result(
                     build_command_result(
                         command="compare",
                         inputs=[left_path, right_path],
                         outputs=outputs,
-                        metrics={"shared_clades": len(report.shared_clades)},
+                        metrics={
+                            "shared_clades": len(report.shared_clades),
+                            "support_disagreements": sum(
+                                1 for row in report.shared_clades if row.support_disagreement
+                            ),
+                            "high_support_conflicts": sum(
+                                1
+                                for row in report.conflicting_clades
+                                if row.conflict_classification == "high_support_conflict"
+                            ),
+                            "low_support_disagreements": sum(
+                                1
+                                for row in report.conflicting_clades
+                                if row.conflict_classification == "low_support_disagreement"
+                            ),
+                            "moderate_support_disagreements": sum(
+                                1
+                                for row in report.conflicting_clades
+                                if row.conflict_classification
+                                == "moderate_support_disagreement"
+                            ),
+                            "support_unavailable_conflicts": sum(
+                                1
+                                for row in report.conflicting_clades
+                                if row.conflict_classification == "support_unavailable"
+                            ),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
