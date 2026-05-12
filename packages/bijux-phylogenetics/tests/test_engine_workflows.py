@@ -1492,6 +1492,31 @@ def test_run_inference_reproducibility_check_rejects_single_repeat(
         )
 
 
+def test_run_inference_reproducibility_check_with_real_iqtree_on_small_alignment(
+    tmp_path: Path,
+) -> None:
+    executable = _real_iqtree_executable()
+    if executable is None:
+        pytest.skip(
+            "real IQ-TREE executable is required for reproducibility integration coverage"
+        )
+
+    report = run_inference_reproducibility_check(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "reproducibility",
+        executable=executable,
+        repeats=2,
+        bootstrap_replicates=1000,
+        seed=1,
+        threads=1,
+    )
+
+    assert report.output_paths["comparison_table"].exists()
+    assert report.output_paths["support_delta_table"].exists()
+    assert report.overall_status != "unstable"
+    assert all(row.classification != "unstable" for row in report.comparison_rows)
+
+
 def test_model_selection_limitations_report_records_interpretation_boundaries(
     tmp_path: Path,
 ) -> None:
