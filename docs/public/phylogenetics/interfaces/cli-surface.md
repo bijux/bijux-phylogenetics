@@ -243,6 +243,49 @@ This command requires MAFFT, trimAl, and IQ-TREE executables. Use
 `--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
 they are not available on the default `PATH`.
 
+`demo rabies-cross-host-panel` is the governed packaged pathogen
+host-switching surface. It materializes the shipped rabies nucleoprotein panel
+into one output directory and reruns the owned host-switching workflow over
+the packaged rooted tree and grouped host metadata. Its JSON metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `workflow_trait`
+- `observed_host_group_count`
+- `analysis_constraint_mode`
+- `root_host`
+- `root_confidence`
+- `host_switch_count`
+- `certain_host_switch_count`
+- `uncertain_host_switch_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/sequences.fasta`
+- `dataset/tree.nwk`
+- `dataset/hosts.csv`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/host-switch-summary.tsv`
+- `workflow/host-state-nodes.tsv`
+- `workflow/host-switch-branches.tsv`
+- `workflow/host-switch-counts.tsv`
+- `workflow/host-switch-fits.tsv`
+- `workflow/host-switch-unsupported.tsv`
+- `workflow/host-switch-exclusions.tsv`
+- `overview.md`
+
+The packaged dataset carries both exact `host_species` labels and one grouped
+workflow trait:
+
+- workflow trait `host_group`
+- discrete ancestral model `ard`
+
+This command does not require external inference executables because the
+rooted rabies tree is packaged directly with the dataset.
+
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
 the selected continuous model, reports 95% uncertainty intervals, and prunes
