@@ -459,6 +459,14 @@ from bijux_phylogenetics.discrete_evolution import (
     write_stochastic_map_summary_table,
     write_transition_summary_table,
 )
+from bijux_phylogenetics.biogeography import (
+    summarize_geographic_state_model,
+    write_geographic_exclusion_table,
+    write_geographic_region_probability_table,
+    write_geographic_state_summary_table,
+    write_geographic_transition_event_table,
+    write_geographic_transition_rate_table,
+)
 from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
     build_distance_method_report,
@@ -869,6 +877,30 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is write_transition_summary_table
     )
     assert (
+        bijux_phylogenetics.summarize_geographic_state_model
+        is summarize_geographic_state_model
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_state_summary_table
+        is write_geographic_state_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_region_probability_table
+        is write_geographic_region_probability_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_transition_rate_table
+        is write_geographic_transition_rate_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_transition_event_table
+        is write_geographic_transition_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_exclusion_table
+        is write_geographic_exclusion_table
+    )
+    assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
         is simulate_discrete_stochastic_maps
     )
@@ -1161,6 +1193,13 @@ def test_command_registry_exposes_discrete_evolution_surface() -> None:
 
     assert spec.domain == "discrete-state-evolution"
     assert spec.outputs == ("discrete-state-evolution-report",)
+
+
+def test_command_registry_exposes_biogeography_surface() -> None:
+    spec = get_command_spec("biogeography")
+
+    assert spec.domain == "biogeography"
+    assert spec.outputs == ("biogeography-report",)
 
 
 def test_command_registry_exposes_diversification_surface() -> None:
