@@ -798,6 +798,67 @@ def test_comparative_model_selection_cli_writes_review_ledgers(
     assert len(pairwise_rows) == 4
 
 
+def test_comparative_clade_residuals_cli_reports_heavy_clade_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "clade-residuals",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--formula",
+            "response_growth ~ predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["model_family"] == "pgls"
+    assert payload["metrics"]["taxon_count"] == 6
+    assert payload["metrics"]["clade_count"] == 4
+    assert payload["metrics"]["residual_heavy_clade_count"] == 1
+    assert payload["metrics"]["top_influential_clade"] == "E|F"
+    assert payload["metrics"]["standardized_residual_method"] == (
+        "leveraged-gls-residual"
+    )
+
+
+def test_comparative_clade_residuals_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    taxa_out = tmp_path / "comparative-residual-taxa.tsv"
+    clades_out = tmp_path / "comparative-residual-clades.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "clade-residuals",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--formula",
+            "response_growth ~ predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--taxa-out",
+            str(taxa_out),
+            "--clades-out",
+            str(clades_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["top_influential_clade"] == "E|F"
+    assert taxa_out.exists()
+    assert clades_out.exists()
+    taxa_rows = taxa_out.read_text(encoding="utf-8").splitlines()
+    clade_rows = clades_out.read_text(encoding="utf-8").splitlines()
+    assert taxa_rows[0].startswith("taxon\tobserved_value\tfitted_value\tresidual")
+    assert clade_rows[0].startswith("clade_id\tnode_label\ttaxon_count\ttaxa")
+    assert len(taxa_rows) == 7
+    assert len(clade_rows) == 5
+
+
 def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     capsys,
 ) -> None:
