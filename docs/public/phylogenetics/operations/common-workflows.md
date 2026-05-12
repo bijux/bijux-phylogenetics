@@ -159,6 +159,39 @@ contract explicitly: the method is approximately maximum-likelihood, the native
 support labels are SH-like local-support proportions, and the governed support
 scale is `0..1` rather than bootstrap percentages.
 
+Use `adapter compare-engines` when you need a governed side-by-side comparison
+between IQ-TREE and FastTree on the same aligned matrix.
+
+```bash
+bijux-phylogenetics adapter compare-engines \
+  aligned-matrix.fasta \
+  --out-dir artifacts/engine-comparison \
+  --prefix mammals \
+  --sequence-type dna \
+  --bootstrap-replicates 1000 \
+  --json
+```
+
+That workflow runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
+support inference, and FastTree approximate inference on the same alignment.
+It then writes these user-facing outputs:
+
+- `mammals.fasttree.nwk`
+- `mammals.iqtree-support.nwk`
+- `mammals.comparison.html`
+- `mammals.comparison.tsv`
+- `mammals.shared-clades.tsv`
+- `mammals.conflicting-clades.tsv`
+- `mammals.manifest.json`
+
+The shared-clade ledger preserves both engines' support values for clades that
+appear in both trees. The conflicting-clade ledger separates clades that appear
+in only one tree from shared clades whose normalized support fractions diverge
+enough to merit review. The normalization rule is explicit and limited:
+FastTree SH-like local support and IQ-TREE UFBoot support are shown together as
+fractions only for side-by-side review, not as proof that the two support
+methods are interchangeable.
+
 Use `adapter sh-alrt` when you need SH-aLRT support alongside ultrafast
 bootstrap support on the same supported tree.
 
