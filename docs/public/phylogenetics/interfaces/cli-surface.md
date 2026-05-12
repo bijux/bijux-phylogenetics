@@ -129,6 +129,59 @@ scalar. Reviewers can inspect the fitted K and lambda values, the permutation
 null distribution, and the explicit p-value contract without rerunning the
 analysis manually.
 
+`comparative multivariate` is the governed review surface for fitting the same
+comparative predictor set across multiple response traits on one shared
+complete-case taxon set. Its JSON metrics report:
+- `response_count`
+- `predictor_count`
+- `analysis_taxa`
+- `excluded_taxa`
+- `residual_covariance_row_count`
+- `residual_association_count`
+
+The command preserves:
+- `response_models` with one fitted PGLS result per requested response
+- `covariance_rows` with one residual covariance row per ordered response pair
+- `association_rows` with one residual association row per unique response pair
+- `excluded_taxa` with one explicit complete-case exclusion row per dropped taxon
+
+This surface is explicit about missing values. A taxon is analyzed only when
+every requested response and every requested predictor is present. Taxa that are
+missing from the trait table, missing from the tree, or missing one required
+value are preserved in the excluded-taxa report instead of disappearing into a
+generic row-count difference.
+
+When `--covariance-out` is supplied, `comparative multivariate` writes one
+residual covariance ledger as CSV or TSV. Each row preserves:
+- `left_response`
+- `right_response`
+- `pair_count`
+- `is_diagonal`
+- `covariance`
+- `correlation`
+
+When `--associations-out` is supplied, the command also writes one residual
+trait-association ledger as CSV or TSV. Each row preserves:
+- `left_response`
+- `right_response`
+- `pair_count`
+- `covariance`
+- `correlation`
+- `test_statistic`
+- `p_value`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+
+When `--excluded-taxa-out` is supplied, the command writes one explicit
+excluded-taxa ledger with:
+- `taxon`
+- `reason`
+- `missing_columns`
+
+This surface exists so correlated-evolution review can inspect which traits
+still move together after the fitted predictors are accounted for, while also
+making the shared complete-case taxon policy auditable.
+
 `comparative brownian-pgls` is the fixed-covariance companion surface when the
 scientific question specifically assumes Brownian shared-path covariance rather
 than an estimated Pagel lambda. Its JSON metrics report:
