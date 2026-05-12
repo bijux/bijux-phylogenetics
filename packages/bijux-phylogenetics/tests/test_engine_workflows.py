@@ -29,6 +29,9 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
 )
+from bijux_phylogenetics.engines.inference_reproducibility import (
+    run_inference_reproducibility_check,
+)
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
@@ -405,6 +408,79 @@ print("warning: iqtree fixture tree inference", file=sys.stderr)
     )
 
 
+def _fake_iqtree_bootstrap_variants(
+    path: Path,
+    *,
+    tree_variants: list[str],
+    log_likelihoods: list[float],
+) -> Path:
+    counter_path = path.with_suffix(".counter")
+    variant_count = min(len(tree_variants), len(log_likelihoods))
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+counter_path = Path({str(counter_path)!r})
+if "-m" in args and args[args.index("-m") + 1] == "MF":
+    prefix.with_suffix(".iqtree").write_text(
+        " No. Model         -LnL         df  AIC          AICc         BIC\\n"
+        "  1  GTR+G         123.456      12  270.912      330.912      272.912\\n"
+        "  2  HKY+G         124.000      10  268.000      320.000      269.000\\n"
+        "  3  JC            130.500      5   271.000      300.000      271.500\\n"
+        "Akaike Information Criterion:           HKY+G\\n"
+        "Corrected Akaike Information Criterion: JC\\n"
+        "Bayesian Information Criterion:         GTR+G\\n"
+        "Best-fit model according to BIC: GTR+G\\n"
+        "Log-likelihood of the tree: -123.456\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".model").write_text(
+        "Best-fit model: GTR+G\\n",
+        encoding="utf-8",
+    )
+    print("warning: iqtree fixture model selection", file=sys.stderr)
+    raise SystemExit(0)
+
+if "-bb" in args:
+    counter = int(counter_path.read_text(encoding="utf-8")) if counter_path.exists() else 0
+    variant_index = min(counter, {variant_count - 1})
+    counter_path.write_text(str(counter + 1), encoding="utf-8")
+    tree_variants = {tree_variants!r}
+    log_likelihoods = {log_likelihoods!r}
+    prefix.with_suffix(".treefile").write_text(tree_variants[variant_index] + "\\n", encoding="utf-8")
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        f"Best-fit model: GTR+G\\nLog-likelihood of the tree: {{log_likelihoods[variant_index]}}\\nBootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
+    print("warning: iqtree fixture bootstrap", file=sys.stderr)
+    raise SystemExit(0)
+
+raise SystemExit(2)
+""",
+    )
+
+
 def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(
     tmp_path: Path,
 ) -> None:
@@ -724,7 +800,9 @@ def test_run_fasttree_backend_with_real_executable_on_supported_alignments(
 ) -> None:
     executable = _real_fasttree_executable()
     if executable is None:
-        pytest.skip("real FastTree executable is not available for integration coverage")
+        pytest.skip(
+            "real FastTree executable is not available for integration coverage"
+        )
 
     output_path = tmp_path / f"real-fasttree-{sequence_type}.nwk"
     report = run_fast_tree_inference(
@@ -810,9 +888,7 @@ def test_run_sh_alrt_support_estimation_exports_combined_support_and_conflicts(
         "C|D\tC,D\t79\t0.79\t96\t0.96\ttrue\tfalse\ttrue\ttrue\tufboot_only\n"
     )
     assert (
-        report.output_paths["conflicting_support_branches"].read_text(
-            encoding="utf-8"
-        )
+        report.output_paths["conflicting_support_branches"].read_text(encoding="utf-8")
         == "node\tdescendant_taxa\tsh_alrt_support\tsh_alrt_support_fraction\t"
         "ufboot_support\tufboot_support_fraction\tis_backbone\tsh_alrt_strong\t"
         "ufboot_strong\tconflicting_support_signal\tsupport_agreement\n"
@@ -836,9 +912,7 @@ def test_trimal_trimming_modes_resolve_to_explicit_documented_arguments() -> Non
         "-gt",
         "0.200000",
     )
-    assert resolve_trimal_trimming_mode("gappyout", gap_threshold=0.2) == (
-        "-gappyout",
-    )
+    assert resolve_trimal_trimming_mode("gappyout", gap_threshold=0.2) == ("-gappyout",)
     assert resolve_trimal_trimming_mode("strict", gap_threshold=0.2) == ("-strict",)
     assert resolve_trimal_trimming_mode("strictplus", gap_threshold=0.2) == (
         "-strictplus",
@@ -861,17 +935,16 @@ def test_run_alignment_trimming_writes_trimmed_alignment_and_warning_manifest(
 
     records = load_fasta_alignment(output_path)
     input_alignment_length = len(load_fasta_alignment(input_path)[0].sequence)
-    assert (
-        len(records[0].sequence)
-        == input_alignment_length - 1
-    )
+    assert len(records[0].sequence) == input_alignment_length - 1
     assert report.run.warning_lines == [
         "warning: trimal fixture gap-threshold trimmed one trailing site"
     ]
     assert report.trimming_summary is not None
     assert report.trimming_summary.mode == "gap-threshold"
     assert report.trimming_summary.input_alignment_length == input_alignment_length
-    assert report.trimming_summary.trimmed_alignment_length == input_alignment_length - 1
+    assert (
+        report.trimming_summary.trimmed_alignment_length == input_alignment_length - 1
+    )
     assert report.trimming_summary.retained_site_count == input_alignment_length - 1
     assert report.trimming_summary.removed_site_count == 1
     assert report.notes[1] == (
@@ -956,9 +1029,10 @@ def test_run_model_selection_supports_partitioned_alignment_and_writes_summary(
     )
 
     assert "-p" in report.run.command
-    assert str(
-        fixture("alignments/example_multilocus_alignment.fasta").resolve()
-    ) in report.run.command
+    assert (
+        str(fixture("alignments/example_multilocus_alignment.fasta").resolve())
+        in report.run.command
+    )
     assert report.output_paths["iqtree_log"].exists()
     assert report.selected_model == "GTR+G"
     assert report.log_likelihood == pytest.approx(-123.456)
@@ -1034,16 +1108,12 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     bootstrap_thread_index = bootstrap_report.run.command.index("-nt")
     assert ml_report.run.command[ml_seed_index : ml_seed_index + 2] == ["-seed", "1"]
     assert ml_report.run.command[ml_thread_index : ml_thread_index + 2] == ["-nt", "1"]
-    assert (
-        bootstrap_report.run.command[bootstrap_seed_index : bootstrap_seed_index + 2]
-        == ["-seed", "1"]
-    )
-    assert (
-        bootstrap_report.run.command[
-            bootstrap_thread_index : bootstrap_thread_index + 2
-        ]
-        == ["-nt", "1"]
-    )
+    assert bootstrap_report.run.command[
+        bootstrap_seed_index : bootstrap_seed_index + 2
+    ] == ["-seed", "1"]
+    assert bootstrap_report.run.command[
+        bootstrap_thread_index : bootstrap_thread_index + 2
+    ] == ["-nt", "1"]
     assert ml_report.run.warning_lines == ["warning: iqtree fixture tree inference"]
     assert bootstrap_report.run.warning_lines == ["warning: iqtree fixture bootstrap"]
     assert consensus_report.run.warning_lines == ["warning: iqtree fixture consensus"]
@@ -1071,9 +1141,7 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert "0.62" in fast_report.output_paths["low_support_branches"].read_text(
         encoding="utf-8"
     )
-    assert any(
-        "approximately maximum-likelihood" in note for note in fast_report.notes
-    )
+    assert any("approximately maximum-likelihood" in note for note in fast_report.notes)
     assert ml_report.output_paths["iqtree_log"].exists()
     assert bootstrap_report.output_paths["iqtree_log"].exists()
     assert consensus_report.output_paths["iqtree_log"].exists()
@@ -1148,9 +1216,7 @@ def test_run_ml_and_bootstrap_support_mixed_partition_datatypes(tmp_path: Path) 
     assert "-s" not in ml_report.run.command
     assert ml_report.output_paths["partition_scheme"].suffix == ".nex"
     assert ml_report.output_paths["partition_summary"].exists()
-    assert any(
-        key.startswith("partition_alignment_") for key in ml_report.output_paths
-    )
+    assert any(key.startswith("partition_alignment_") for key in ml_report.output_paths)
     assert "-p" in bootstrap_report.run.command
     assert "-s" not in bootstrap_report.run.command
     assert ml_report.selected_model == "GTR+G"
@@ -1308,12 +1374,14 @@ def test_run_tree_inference_comparison_exports_tables_and_conflicts(
         row.split_id == "C|D" and row.conflict_kind == "support_disagreement"
         for row in report.conflicting_clade_rows
     )
-    assert "support_disagreement" in report.output_paths["conflicting_clades"].read_text(
-        encoding="utf-8"
+    assert "support_disagreement" in report.output_paths[
+        "conflicting_clades"
+    ].read_text(encoding="utf-8")
+    assert (
+        report.output_paths["comparison_table"]
+        .read_text(encoding="utf-8")
+        .startswith("split_id\tcomparison_status\tshared_clade\t")
     )
-    assert report.output_paths["comparison_table"].read_text(
-        encoding="utf-8"
-    ).startswith("split_id\tcomparison_status\tshared_clade\t")
 
 
 def test_run_tree_inference_comparison_with_real_executables_on_small_alignment(
@@ -1342,6 +1410,86 @@ def test_run_tree_inference_comparison_with_real_executables_on_small_alignment(
     assert report.output_paths["comparison_table"].exists()
     assert report.engine_comparison.topology.shared_taxa
     assert report.engine_comparison.support.shared_taxa
+
+
+def test_run_inference_reproducibility_check_reports_deterministic_reruns(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_inference_reproducibility_check(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "reproducibility",
+        executable=executable,
+        repeats=3,
+        bootstrap_replicates=1000,
+    )
+
+    assert report.selected_model == "GTR+G"
+    assert report.repeat_count == 3
+    assert report.overall_status == "deterministic"
+    assert [row.classification for row in report.comparison_rows] == [
+        "deterministic",
+        "deterministic",
+    ]
+    assert report.output_paths["runs_table"].exists()
+    assert report.output_paths["comparison_table"].exists()
+    assert report.output_paths["support_delta_table"].exists()
+    comparison_text = report.output_paths["comparison_table"].read_text(
+        encoding="utf-8"
+    )
+    assert "classification" in comparison_text
+    assert "\tdeterministic\t" in comparison_text
+    support_delta_text = report.output_paths["support_delta_table"].read_text(
+        encoding="utf-8"
+    )
+    assert "support_fraction_delta" in support_delta_text
+    assert "\tfalse\n" in support_delta_text
+
+
+def test_run_inference_reproducibility_check_reports_unstable_reruns(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_bootstrap_variants(
+        tmp_path / "iqtree-unstable-fixture",
+        tree_variants=[
+            "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);",
+            "((A:0.1,B:0.1)72:0.2,(C:0.1,D:0.1)64:0.2);",
+        ],
+        log_likelihoods=[-234.567, -230.001],
+    )
+
+    report = run_inference_reproducibility_check(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "reproducibility",
+        executable=executable,
+        repeats=2,
+        bootstrap_replicates=1000,
+    )
+
+    assert report.overall_status == "unstable"
+    assert [row.classification for row in report.comparison_rows] == ["unstable"]
+    assert report.comparison_rows[0].topology_equal is True
+    assert report.comparison_rows[0].support_difference_count >= 1
+    assert report.comparison_rows[0].log_likelihood_delta is not None
+    assert (
+        "one or more reruns changed topology, likelihood, or support beyond the governed tolerances"
+        in report.warnings
+    )
+
+
+def test_run_inference_reproducibility_check_rejects_single_repeat(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    with pytest.raises(ValueError, match="repeats must be at least 2"):
+        run_inference_reproducibility_check(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "reproducibility",
+            executable=executable,
+            repeats=1,
+        )
 
 
 def test_model_selection_limitations_report_records_interpretation_boundaries(
