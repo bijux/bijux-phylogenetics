@@ -587,6 +587,51 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     assert comparison_path.exists()
 
 
+def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    fasttree = _fake_fasttree(tmp_path / "FastTree-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+    out_dir = tmp_path / "engine-comparison"
+
+    exit_code = main(
+        [
+            "adapter",
+            "compare-engines",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--sequence-type",
+            "dna",
+            "--iqtree-executable",
+            str(iqtree),
+            "--fasttree-executable",
+            str(fasttree),
+            "--bootstrap-replicates",
+            "1000",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["selected_model"] == "GTR+G"
+    assert payload["metrics"]["shared_clade_count"] == 2
+    assert payload["metrics"]["conflicting_clade_count"] == 1
+    assert payload["metrics"]["support_disagreement_count"] == 1
+    assert Path(payload["data"]["output_paths"]["comparison_report"]).exists()
+    assert Path(payload["data"]["output_paths"]["comparison_table"]).exists()
+    assert Path(payload["data"]["output_paths"]["shared_clades"]).exists()
+    assert Path(payload["data"]["output_paths"]["conflicting_clades"]).exists()
+    assert any(
+        "normalized to fractions only for side-by-side review" in note
+        for note in payload["data"]["notes"]
+    )
+
+
 def test_alignment_partition_summary_cli_writes_summary_table(
     tmp_path: Path, capsys
 ) -> None:

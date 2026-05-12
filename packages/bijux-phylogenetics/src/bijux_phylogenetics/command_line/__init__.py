@@ -218,6 +218,7 @@ from bijux_phylogenetics.engines import (
     run_model_selection,
     run_multiple_sequence_alignment,
     run_sh_alrt_support_estimation,
+    run_tree_inference_comparison,
 )
 from bijux_phylogenetics.errors import (
     EngineUnavailableError,
@@ -3591,6 +3592,40 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the comparison report as JSON."
     )
     _add_manifest_argument(adapter_compare)
+    adapter_compare_engines = adapter_subparsers.add_parser(
+        "compare-engines",
+        help="Run IQ-TREE and FastTree on one alignment and compare the inferred trees.",
+    )
+    adapter_compare_engines.add_argument("input_path", type=Path)
+    adapter_compare_engines.add_argument("--out-dir", required=True, type=Path)
+    adapter_compare_engines.add_argument("--prefix", default="engine-comparison")
+    adapter_compare_engines.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
+    adapter_compare_engines.add_argument("--iqtree-executable", type=str)
+    adapter_compare_engines.add_argument("--fasttree-executable", type=str)
+    adapter_compare_engines.add_argument(
+        "--iqtree-seed",
+        type=int,
+        default=1,
+        help="Set the IQ-TREE random seed for deterministic comparison runs.",
+    )
+    adapter_compare_engines.add_argument(
+        "--iqtree-threads",
+        type=int,
+        default=1,
+        help="Set the IQ-TREE thread count used during the comparison run.",
+    )
+    adapter_compare_engines.add_argument(
+        "--bootstrap-replicates",
+        type=int,
+        default=1000,
+        help="Set the ultrafast bootstrap replicate count used for the IQ-TREE support workflow.",
+    )
+    adapter_compare_engines.add_argument(
+        "--json", action="store_true", help="Emit the comparison workflow report as JSON."
+    )
+    _add_manifest_argument(adapter_compare_engines)
     adapter_mrbayes_prepare = adapter_subparsers.add_parser(
         "mrbayes-prepare",
         help="Prepare a MrBayes NEXUS analysis from an aligned FASTA file.",
@@ -9831,6 +9866,47 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.comparison_report.topology.shared_taxa
                             ),
                             "robinson_foulds_distance": report.comparison_report.topology.robinson_foulds_distance,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "compare-engines":
+                report = run_tree_inference_comparison(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    prefix=args.prefix,
+                    sequence_type=args.sequence_type,
+                    iqtree_executable=args.iqtree_executable or "iqtree2",
+                    fasttree_executable=args.fasttree_executable or "FastTree",
+                    iqtree_seed=args.iqtree_seed,
+                    iqtree_threads=args.iqtree_threads,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values()],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "selected_model": report.selected_model,
+                            "shared_taxa": len(report.engine_comparison.topology.shared_taxa),
+                            "robinson_foulds_distance": report.engine_comparison.topology.robinson_foulds_distance,
+                            "shared_clade_count": len(report.shared_clade_rows),
+                            "conflicting_clade_count": len(report.conflicting_clade_rows),
+                            "support_disagreement_count": sum(
+                                1
+                                for row in report.conflicting_clade_rows
+                                if row.conflict_kind == "support_disagreement"
+                            ),
                         },
                         data=report,
                     ),
