@@ -106,6 +106,22 @@ The JSON output also preserves whether the tree is star-like, comb-like, or
 unusually imbalanced. That keeps obvious ladderization or star-topology risks
 visible without forcing users to infer them from raw node depths alone.
 
+When the goal is to inspect branch-length patterns directly, use
+`topology branch-lengths`. That command writes one row per non-root branch and
+summarizes minimum, maximum, mean, and median branch length alongside explicit
+zero-length, negative-length, and outlier flags.
+
+```bash
+bijux-phylogenetics topology branch-lengths \
+  artifacts/mammals.supported.nwk \
+  --out artifacts/mammals.branch-lengths.tsv \
+  --json
+```
+
+This surface matters when the question is not just whether branch lengths exist
+but whether they contain odd zeros, extreme long branches, or other scale
+distortions that can mislead downstream interpretation.
+
 When you already have two inferred trees and need an explicit topology
 distance, use `compare`. The command now supports rooted and unrooted
 Robinson-Foulds review directly, and it records which taxa were shared versus
@@ -267,6 +283,24 @@ bijux-phylogenetics tree-set shape \
 This surface is for tree-set review before or alongside consensus-building. It
 keeps the distribution of imbalance and ladderization explicit instead of
 reducing a posterior or bootstrap set to one representative tree immediately.
+
+When the question is how branch-length distributions vary across many sampled
+trees, use `tree-set branch-lengths`. That command writes one row per
+non-root branch per tree and preserves the source tree index so long branches,
+zero branches, and missing lengths can be traced back to the individual sample
+that produced them.
+
+```bash
+bijux-phylogenetics tree-set branch-lengths \
+  artifacts/mammals.posterior.nwk \
+  --out artifacts/mammals.posterior-branch-lengths.tsv \
+  --json
+```
+
+The JSON aggregate keeps the set-wide minimum, maximum, median, zero-length
+count, negative-length count, and long-outlier count explicit. That makes it
+possible to review whether one sampled tree is distorting the branch-length
+distribution instead of assuming the full set is numerically homogeneous.
 
 When the input is a bootstrap replicate tree file and the goal is one governed
 review bundle rather than a chain of separate tree-set commands, use
