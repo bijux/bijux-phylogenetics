@@ -48,6 +48,24 @@ The command does not estimate or optimize lambda. It fixes lambda at `1.0`,
 audits the raw Brownian covariance before stabilization, and fails explicitly if
 zero or negative branch lengths make that covariance invalid.
 
+`comparative ou-pgls` is the analogous regression surface for stationary-root
+OU covariance. It accepts either a fixed positive `--alpha` or `--alpha
+estimate`. Its JSON metrics report:
+- `alpha`
+- `alpha_estimation_mode`
+- `alpha_profile_point_count`
+- `alpha_lower_95_confidence_interval`
+- `alpha_upper_95_confidence_interval`
+- `covariance_model`
+- `covariance_row_count`
+- `log_likelihood`
+- `aic`
+
+This surface exists so OU-style residual covariance can be reviewed directly
+instead of being approximated through Brownian or Pagel-lambda summaries. The
+reported `aic` uses the fitted regression coefficient count plus one extra
+parameter only when alpha was estimated rather than fixed.
+
 The same command also owns the public formula-expansion contract. Use
 `--formula` when the scientific hypothesis is easier to express as one formula
 than as separate `--response` plus `--predictors` flags. The formula surface
@@ -148,6 +166,28 @@ The written ledger also repeats the tree-level covariance audit fields on every
 row so a single extracted table still preserves whether the fitted tree was
 ultrametric, the root-depth range, the branch-length range, and whether the raw
 covariance was positive definite before stabilization.
+
+When `--covariance-out` is supplied, `comparative ou-pgls` writes the analogous
+pairwise OU covariance ledger as CSV or TSV. Each row preserves:
+- `left_taxon`
+- `right_taxon`
+- `is_diagonal`
+- `covariance_value`
+- `shared_path_length`
+- `left_root_depth`
+- `right_root_depth`
+
+When `--alpha-profile-out` is supplied, `comparative ou-pgls` also writes the
+bounded alpha likelihood profile as CSV or TSV. Each row preserves:
+- `alpha_estimation_mode`
+- `alpha`
+- `log_likelihood`
+- `delta_log_likelihood`
+- `within_95_confidence_interval`
+
+The written ledgers therefore expose both the fitted covariance surface and the
+alpha-selection surface directly instead of requiring reviewers to infer them
+from one terminal regression summary.
 
 The `compare` family includes direct topology-distance review for two existing
 trees. `compare LEFT RIGHT` now exposes `--rf-mode rooted|unrooted` and
