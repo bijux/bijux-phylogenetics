@@ -286,6 +286,50 @@ workflow trait:
 This command does not require external inference executables because the
 rooted rabies tree is packaged directly with the dataset.
 
+`demo rabies-geographic-transition-panel` is the governed packaged pathogen
+geography surface. It materializes the shipped rabies nucleoprotein panel into
+one output directory and reruns the owned biogeography workflow over the
+packaged rooted tree and grouped region metadata. Its JSON metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `workflow_trait`
+- `observed_region_group_count`
+- `root_region`
+- `root_region_probability`
+- `changed_branch_count`
+- `strongly_supported_transition_count`
+- `migration_event_count`
+- `strongly_supported_migration_event_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/sequences.fasta`
+- `dataset/tree.nwk`
+- `dataset/regions.csv`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/geographic-state-summary.tsv`
+- `workflow/geographic-region-probabilities.tsv`
+- `workflow/geographic-transition-rates.tsv`
+- `workflow/geographic-transition-events.tsv`
+- `workflow/geographic-state-exclusions.tsv`
+- `workflow/geographic-migration-summary.tsv`
+- `workflow/geographic-migration-events.tsv`
+- `workflow/geographic-migration-exclusions.tsv`
+- `overview.md`
+
+The packaged dataset carries both raw `country` provenance and one grouped
+workflow trait:
+
+- workflow trait `region_group`
+- discrete ancestral model `ard`
+
+This command does not require external inference executables because the
+rooted rabies tree is packaged directly with the dataset.
+
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
 the selected continuous model, reports 95% uncertainty intervals, and prunes
