@@ -17,6 +17,7 @@ from bijux_phylogenetics.bayesian.beast import (
     parse_beast_log,
     parse_beast_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
+    summarize_beast_posterior_trees,
     summarize_beast_log,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
@@ -430,6 +431,63 @@ def test_parse_beast_posterior_tree_samples_reads_real_beast_fixture() -> None:
     assert report.clades
 
 
+def test_summarize_beast_posterior_trees_builds_majority_rule_consensus(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "posterior.trees"
+    tree_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_10 = ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_20 = ((A:0.1,B:0.1):0.4,(C:0.1,D:0.1):0.4):0.0;\n"
+        "tree STATE_30 = ((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    consensus_tree, report = summarize_beast_posterior_trees(
+        tree_path,
+        burnin_fraction=0.25,
+    )
+
+    assert report.total_tree_count == 4
+    assert report.burnin_tree_count == 1
+    assert report.kept_tree_count == 3
+    assert report.rooted_topology_count == 2
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.annotated_node_count == 2
+    assert report.minimum_posterior_probability == pytest.approx(2 / 3)
+    assert report.maximum_posterior_probability == pytest.approx(2 / 3)
+    assert report.clade_frequency_count == 4
+    assert report.consensus_newick == "((A:0.1,B:0.1)0.666666666666667:0.35,(C:0.1,D:0.1)0.666666666666667:0.35);"
+    assert report.retained_tree_set_path.read_text(encoding="utf-8").count("\n") == 3
+    assert consensus_tree.tip_names == ["A", "B", "C", "D"]
+
+
+def test_summarize_beast_posterior_trees_reads_real_beast_fixture(
+    tmp_path: Path,
+) -> None:
+    copied_path = tmp_path / "beast2_strict_yule_posterior.trees"
+    copied_path.write_text(
+        fixture("beast2_strict_yule_posterior.trees").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    _tree, report = summarize_beast_posterior_trees(
+        copied_path,
+        burnin_fraction=0.1,
+    )
+
+    assert report.kept_tree_count == 91
+    assert report.rooted_topology_count >= 1
+    assert report.annotated_node_count >= 1
+    assert report.minimum_posterior_probability is not None
+    assert report.maximum_posterior_probability is not None
+    assert 0.0 < report.minimum_posterior_probability <= 1.0
+    assert 0.0 < report.maximum_posterior_probability <= 1.0
+    assert "A" in report.consensus_newick
+
+
 def test_summarize_beast_log_with_real_executable_on_small_alignment(
     tmp_path: Path,
 ) -> None:
@@ -515,6 +573,51 @@ def test_parse_beast_posterior_tree_samples_with_real_executable_on_small_alignm
     assert report.sampled_states[0] == 100
     assert report.tip_names == ["A", "B", "C", "D"]
     assert report.clades
+
+
+def test_summarize_beast_posterior_trees_with_real_executable_on_small_alignment(
+    tmp_path: Path,
+) -> None:
+    executable = _real_beast_executable()
+    if executable is None:
+        pytest.skip("real BEAST executable is not available for integration coverage")
+
+    output_path = tmp_path / "live-strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        output_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+    subprocess.run(
+        [
+            str(executable),
+            "-overwrite",
+            "-threads",
+            "1",
+            "-seed",
+            "1",
+            output_path.name,
+        ],
+        cwd=tmp_path,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+
+    consensus_tree, report = summarize_beast_posterior_trees(
+        tmp_path / "live-strict-yule.1.trees",
+        burnin_fraction=0.1,
+    )
+
+    assert report.kept_tree_count >= 40
+    assert report.annotated_node_count >= 0
+    if report.maximum_posterior_probability is not None:
+        assert 0.0 < report.maximum_posterior_probability <= 1.0
+    assert consensus_tree.tip_names == ["A", "B", "C", "D"]
 
 
 def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(

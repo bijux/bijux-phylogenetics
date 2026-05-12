@@ -23,6 +23,11 @@ from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.tree_set import (
+    compute_clade_frequency_table,
+    compute_consensus_tree,
+    load_tree_set,
+)
 
 _BEAST_TREE_PATTERN = re.compile(
     r"tree\s+([^\s=]+)\s*=\s*(.+?);", flags=re.IGNORECASE | re.DOTALL
@@ -245,6 +250,23 @@ class BeastPosteriorTreeSetReport:
     tip_names: list[str]
     clades: list[BeastPosteriorClade]
     trees: list[BeastPosteriorTreeSample]
+
+
+@dataclass(slots=True)
+class BeastPosteriorConsensusReport:
+    source_path: Path
+    retained_tree_set_path: Path
+    burnin_fraction: float
+    total_tree_count: int
+    burnin_tree_count: int
+    kept_tree_count: int
+    rooted_topology_count: int
+    shared_taxa: list[str]
+    consensus_newick: str
+    clade_frequency_count: int
+    annotated_node_count: int
+    minimum_posterior_probability: float | None
+    maximum_posterior_probability: float | None
 
 
 @dataclass(slots=True)
@@ -1761,6 +1783,64 @@ def write_beast_posterior_tree_set(
         encoding="utf-8",
     )
     return path
+
+
+def _annotate_consensus_tree_with_posterior_probabilities(tree: PhyloTree) -> None:
+    for node in tree.iter_nodes():
+        if node is tree.root or node.is_leaf() or node.name is None:
+            continue
+        node.name = format(float(node.name) / 100.0, ".15g")
+
+
+def summarize_beast_posterior_trees(
+    tree_set_path: Path,
+    *,
+    burnin_fraction: float = 0.25,
+) -> tuple[PhyloTree, BeastPosteriorConsensusReport]:
+    """Summarize BEAST posterior trees into a majority-rule consensus tree."""
+    if not 0.0 <= burnin_fraction < 1.0:
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
+    tree_set_report = parse_beast_posterior_tree_samples(
+        tree_set_path,
+        burnin_fraction=burnin_fraction,
+    )
+    if not tree_set_report.trees:
+        raise EngineWorkflowError(
+            f"BEAST posterior tree file is empty after burn-in filtering: {tree_set_path}"
+        )
+    retained_tree_set_path = tree_set_path.with_suffix(".postburnin.nwk")
+    write_beast_posterior_tree_set(retained_tree_set_path, tree_set_report)
+    summary = load_tree_set(retained_tree_set_path)
+    consensus_tree, consensus = compute_consensus_tree(retained_tree_set_path)
+    _annotate_consensus_tree_with_posterior_probabilities(consensus_tree)
+    consensus_newick = dumps_newick(consensus_tree)
+    clade_frequencies = compute_clade_frequency_table(retained_tree_set_path)
+    posterior_probabilities = sorted(
+        float(node.name)
+        for node in consensus_tree.iter_nodes()
+        if node is not consensus_tree.root and not node.is_leaf() and node.name is not None
+    )
+    return consensus_tree, BeastPosteriorConsensusReport(
+        source_path=tree_set_path,
+        retained_tree_set_path=retained_tree_set_path,
+        burnin_fraction=tree_set_report.burnin_fraction,
+        total_tree_count=tree_set_report.total_tree_count,
+        burnin_tree_count=tree_set_report.burnin_tree_count,
+        kept_tree_count=tree_set_report.kept_tree_count,
+        rooted_topology_count=summary.rooted_topology_count,
+        shared_taxa=summary.shared_taxa,
+        consensus_newick=consensus_newick,
+        clade_frequency_count=len(clade_frequencies.clade_frequencies),
+        annotated_node_count=len(posterior_probabilities),
+        minimum_posterior_probability=(
+            None if not posterior_probabilities else posterior_probabilities[0]
+        ),
+        maximum_posterior_probability=(
+            None if not posterior_probabilities else posterior_probabilities[-1]
+        ),
+    )
 
 
 def write_beast_log_summary_table(path: Path, report: BeastLogSummaryReport) -> Path:
