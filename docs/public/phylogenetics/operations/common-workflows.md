@@ -135,6 +135,35 @@ the following deterministic inference controls:
 This gives users a real viral sequence-to-tree surface without requiring them
 to assemble accession panels or wire the external engine chain by hand.
 
+When the goal is to exercise the same owned sequence-to-tree runtime under
+short degraded inputs and explicit missing-data burden, use
+`demo pleistocene-bear-cytb-fragments`. This workflow materializes the
+packaged ancient-DNA-style bear cytochrome b panel and reruns the owned raw
+FASTA workflow with explicit missingness-review outputs.
+
+```bash
+bijux-phylogenetics demo pleistocene-bear-cytb-fragments \
+  --out artifacts/pleistocene-bear-cytb-fragments \
+  --json
+```
+
+This packaged ancient-DNA-style workflow also requires executable access to
+MAFFT, trimAl, and IQ-TREE. The dataset keeps its provenance and degradation
+rule explicit by pairing three modern bear cytochrome b references with two
+real cave-bear cytochrome b fragments shortened and interrupted by internal
+`N` blocks. The governed run makes missingness effects reviewable through:
+
+- one raw unaligned FASTA panel
+- one aligned output
+- one trimAl-trimmed alignment
+- one missingness-cleaned alignment with explicit cleanup thresholds
+- one missingness-effects ledger per sequence
+- one supported tree, selected-model table, and support table
+
+This gives users a real degraded-sequence stress surface without requiring
+them to assemble ancient and modern accession panels or invent their own
+missingness reporting convention.
+
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
