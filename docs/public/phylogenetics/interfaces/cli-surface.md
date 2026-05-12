@@ -431,6 +431,89 @@ clade leaves too few taxa or collapses a binary response to one class, the
 review surface records that failure instead of pretending the clade was
 uninfluential.
 
+`comparative posterior-pgls` is the governed review surface for propagating
+tree-set uncertainty into one continuous-trait PGLS conclusion. Its JSON
+metrics report:
+- `total_tree_count`
+- `burnin_tree_count`
+- `kept_tree_count`
+- `analysis_taxon_count`
+- `rooted_topology_count`
+- `unrooted_topology_count`
+- `tree_fit_row_count`
+- `coefficient_row_count`
+- `coefficient_summary_count`
+- `stable_supported_term_count`
+- `direction_conflict_term_count`
+- `lambda_mode`
+- `significance_threshold`
+
+The command reads one posterior or bootstrap tree set, optionally discards a
+leading burn-in fraction, reduces retained trees to their shared taxa, fits the
+same PGLS specification on every retained tree, and then summarizes the
+coefficient distribution across those fits. This is intentionally a
+continuous-trait PGLS surface, not a generic comparative bucket:
+- the response must satisfy the normal PGLS input contract
+- the same formula is reused on every retained tree
+- lambda is either estimated independently per retained tree or fixed at one
+  user-supplied value
+
+When `--trees-out` is supplied, `comparative posterior-pgls` writes one
+per-tree fit ledger as CSV or TSV. Each row preserves:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+- `lambda_value`
+- `log_likelihood`
+
+When `--coefficients-out` is supplied, the command also writes one per-tree
+coefficient ledger as CSV or TSV. Each row preserves:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `term`
+- `estimate`
+- `p_value`
+- `significant`
+- `direction`
+
+When `--summary-out` is supplied, the command also writes one
+coefficient-distribution summary ledger as CSV or TSV. Each row preserves:
+- `term`
+- `tree_fit_count`
+- `positive_tree_count`
+- `negative_tree_count`
+- `zero_tree_count`
+- `dominant_direction`
+- `direction_consistency`
+- `significant_tree_count`
+- `significance_fraction`
+- `conclusion_stability`
+- `mean_estimate`
+- `median_estimate`
+- `standard_deviation`
+- `minimum_estimate`
+- `maximum_estimate`
+- `lower_95_empirical_estimate`
+- `upper_95_empirical_estimate`
+- `mean_p_value`
+- `median_p_value`
+- `minimum_p_value`
+- `maximum_p_value`
+
+This surface exists so coefficient support can be reviewed against the full
+tree-set uncertainty instead of being inferred from one summary tree. The
+`conclusion_stability` field is deliberately reviewer-facing rather than
+opaque:
+- `stable_supported`: every retained tree supports the same directional effect
+- `stable_unsupported`: every retained tree keeps the same direction but none
+  cross the support threshold
+- `mixed_support`: one direction is retained, but support calls differ across
+  trees
+- `direction_conflict`: positive and negative estimates both occur across the
+  retained tree set
+
 `comparative brownian-pgls` is the fixed-covariance companion surface when the
 scientific question specifically assumes Brownian shared-path covariance rather
 than an estimated Pagel lambda. Its JSON metrics report:
