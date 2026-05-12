@@ -38,6 +38,20 @@ from bijux_phylogenetics.ancestral.tree_set import (
     write_discrete_ancestral_tree_set_node_table,
     write_discrete_ancestral_tree_set_summary_table,
 )
+from bijux_phylogenetics.ancestral.transitions import (
+    summarize_ancestral_transition_report,
+    summarize_ancestral_transition_tree_set,
+    summarize_ancestral_transition_tree_set_report,
+    summarize_ancestral_transitions,
+    write_ancestral_transition_branch_table,
+    write_ancestral_transition_count_table,
+    write_ancestral_transition_exclusion_table,
+    write_ancestral_transition_summary_table,
+    write_ancestral_transition_tree_set_branch_table,
+    write_ancestral_transition_tree_set_count_table,
+    write_ancestral_transition_tree_set_summary_table,
+    write_ancestral_transition_tree_set_tree_table,
+)
 from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
 from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
 from bijux_phylogenetics.ancestral.service import (
@@ -3040,6 +3054,36 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the tree-set summary as JSON."
     )
     _add_manifest_argument(ancestral_tree_set)
+    ancestral_transitions = ancestral_subparsers.add_parser(
+        "transitions",
+        help="Count inferred ancestral transitions on one tree or tree set.",
+    )
+    ancestral_transitions.add_argument("tree", type=Path)
+    ancestral_transitions.add_argument("table", type=Path)
+    ancestral_transitions.add_argument("--trait", required=True)
+    ancestral_transitions.add_argument("--taxon-column")
+    ancestral_transitions.add_argument(
+        "--model",
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+        default="fitch",
+    )
+    ancestral_transitions.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    ancestral_transitions.add_argument(
+        "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
+    )
+    ancestral_transitions.add_argument("--tree-set", action="store_true")
+    ancestral_transitions.add_argument("--burnin-fraction", type=float, default=0.0)
+    ancestral_transitions.add_argument("--summary-out", type=Path)
+    ancestral_transitions.add_argument("--trees-out", type=Path)
+    ancestral_transitions.add_argument("--branches-out", type=Path)
+    ancestral_transitions.add_argument("--counts-out", type=Path)
+    ancestral_transitions.add_argument("--exclusions-out", type=Path)
+    ancestral_transitions.add_argument(
+        "--json", action="store_true", help="Emit the transition report as JSON."
+    )
+    _add_manifest_argument(ancestral_transitions)
     ancestral_compare = ancestral_subparsers.add_parser(
         "compare",
         help="Compare two continuous ancestral-state models node by node.",
@@ -8796,6 +8840,164 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "clade_summary_count": len(report.clade_summaries),
                             "excluded_taxon_count": len(report.exclusions),
                             "unstable_clade_count": summary.unstable_clade_count,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "transitions":
+                if args.state_ordering == "ordered" and args.model == "fitch":
+                    parser.error(
+                        "ordered ancestral transition counting requires a likelihood model"
+                    )
+                if not args.tree_set and args.trees_out is not None:
+                    parser.error("--trees-out requires --tree-set")
+                if not args.tree_set and args.burnin_fraction != 0.0:
+                    parser.error("--burnin-fraction requires --tree-set")
+                if args.tree_set:
+                    report = summarize_ancestral_transition_tree_set(
+                        args.tree,
+                        args.table,
+                        trait=args.trait,
+                        taxon_column=args.taxon_column,
+                        model=args.model,
+                        state_ordering=args.state_ordering,
+                        ordered_states=_split_csv_values(args.ordered_states) or None,
+                        burnin_fraction=args.burnin_fraction,
+                    )
+                    summary = summarize_ancestral_transition_tree_set_report(report)
+                    outputs = []
+                    if args.summary_out is not None:
+                        outputs.append(
+                            write_ancestral_transition_tree_set_summary_table(
+                                args.summary_out,
+                                report,
+                            )
+                        )
+                    if args.trees_out is not None:
+                        outputs.append(
+                            write_ancestral_transition_tree_set_tree_table(
+                                args.trees_out,
+                                report,
+                            )
+                        )
+                    if args.branches_out is not None:
+                        outputs.append(
+                            write_ancestral_transition_tree_set_branch_table(
+                                args.branches_out,
+                                report,
+                            )
+                        )
+                    if args.counts_out is not None:
+                        outputs.append(
+                            write_ancestral_transition_tree_set_count_table(
+                                args.counts_out,
+                                report,
+                            )
+                        )
+                    if args.exclusions_out is not None:
+                        outputs.append(
+                            write_ancestral_transition_exclusion_table(
+                                args.exclusions_out,
+                                report,
+                            )
+                        )
+                    outputs = _finalize_outputs(
+                        args,
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="ancestral",
+                            inputs=[args.tree, args.table],
+                            outputs=outputs,
+                            warnings=report.warnings,
+                            metrics={
+                                "tree_set": True,
+                                "model": report.model,
+                                "total_tree_count": report.total_tree_count,
+                                "kept_tree_count": report.kept_tree_count,
+                                "rooted_topology_count": report.rooted_topology_count,
+                                "unrooted_topology_count": (
+                                    report.unrooted_topology_count
+                                ),
+                                "transition_pair_count": len(report.transition_rows),
+                                "topology_sensitive_transition_pair_count": (
+                                    summary.topology_sensitive_transition_pair_count
+                                ),
+                                "uncertainty_sensitive_transition_pair_count": (
+                                    summary.uncertainty_sensitive_transition_pair_count
+                                ),
+                                "excluded_taxon_count": len(report.exclusions),
+                            },
+                            data=report,
+                        ),
+                        json_output=args.json,
+                    )
+                    return 0
+                report = summarize_ancestral_transitions(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
+                )
+                summary = summarize_ancestral_transition_report(report)
+                outputs = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_ancestral_transition_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.branches_out is not None:
+                    outputs.append(
+                        write_ancestral_transition_branch_table(
+                            args.branches_out,
+                            report,
+                        )
+                    )
+                if args.counts_out is not None:
+                    outputs.append(
+                        write_ancestral_transition_count_table(
+                            args.counts_out,
+                            report,
+                        )
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_ancestral_transition_exclusion_table(
+                            args.exclusions_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tree_set": False,
+                            "model": report.model,
+                            "total_branch_count": summary.total_branch_count,
+                            "changed_branch_count": summary.changed_branch_count,
+                            "certain_change_count": summary.certain_change_count,
+                            "uncertain_change_count": summary.uncertain_change_count,
+                            "transition_pair_count": len(report.transition_rows),
+                            "excluded_taxon_count": len(report.exclusions),
                         },
                         data=report,
                     ),

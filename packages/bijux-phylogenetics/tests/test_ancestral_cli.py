@@ -257,6 +257,110 @@ def test_ancestral_tree_set_cli_reports_discrete_stability_warnings(capsys) -> N
     )
 
 
+def test_ancestral_transitions_cli_can_export_branch_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-transition-summary.tsv"
+    branch_path = tmp_path / "ancestral-transition-branches.tsv"
+    count_path = tmp_path / "ancestral-transition-counts.tsv"
+    exclusion_path = tmp_path / "ancestral-transition-excluded.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "transitions",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_ancestral_sparse.tsv")),
+            "--trait",
+            "habitat",
+            "--summary-out",
+            str(summary_path),
+            "--branches-out",
+            str(branch_path),
+            "--counts-out",
+            str(count_path),
+            "--exclusions-out",
+            str(exclusion_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["tree_set"] is False
+    assert payload["metrics"]["model"] == "fitch"
+    assert payload["metrics"]["total_branch_count"] == 6
+    assert payload["metrics"]["changed_branch_count"] == 2
+    assert payload["metrics"]["uncertain_change_count"] == 2
+    assert payload["metrics"]["transition_pair_count"] == 2
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tstate_ordering"
+    )
+    assert branch_path.read_text(encoding="utf-8").startswith(
+        "parent_node\tchild_node\tchild_descendant_taxa\tbranch_length"
+    )
+    assert count_path.read_text(encoding="utf-8").startswith(
+        "transition\tsource_state\ttarget_state\tcertain_change_count"
+    )
+    assert exclusion_path.read_text(encoding="utf-8") == "taxon\treason\n"
+
+
+def test_ancestral_transitions_cli_can_export_tree_set_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-transition-tree-set-summary.tsv"
+    tree_path = tmp_path / "ancestral-transition-tree-set-trees.tsv"
+    branch_path = tmp_path / "ancestral-transition-tree-set-branches.tsv"
+    count_path = tmp_path / "ancestral-transition-tree-set-counts.tsv"
+    exclusion_path = tmp_path / "ancestral-transition-tree-set-excluded.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "transitions",
+            str(fixture("example_posterior_tree_set_six_taxa.nwk")),
+            str(fixture("example_traits_clade_summary.tsv")),
+            "--trait",
+            "habitat",
+            "--model",
+            "equal-rates",
+            "--tree-set",
+            "--summary-out",
+            str(summary_path),
+            "--trees-out",
+            str(tree_path),
+            "--branches-out",
+            str(branch_path),
+            "--counts-out",
+            str(count_path),
+            "--exclusions-out",
+            str(exclusion_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["tree_set"] is True
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["kept_tree_count"] == 5
+    assert payload["metrics"]["transition_pair_count"] >= 2
+    assert payload["metrics"]["topology_sensitive_transition_pair_count"] >= 1
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tstate_ordering"
+    )
+    assert tree_path.read_text(encoding="utf-8").startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id"
+    )
+    assert branch_path.read_text(encoding="utf-8").startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id\tunrooted_topology_id\tparent_node"
+    )
+    assert count_path.read_text(encoding="utf-8").startswith(
+        "transition\tsource_state\ttarget_state\ttree_presence_count"
+    )
+    assert exclusion_path.read_text(encoding="utf-8") == "taxon\treason\n"
+
+
 def test_ancestral_render_cli_writes_svg_with_internal_annotations(
     tmp_path: Path, capsys
 ) -> None:
