@@ -35,6 +35,17 @@ warnings. Its JSON metrics also expose matched, absent, ingroup, rooted
 outgroup, rooted ingroup, MRCA spillover, and warning counts so pipelines can
 detect non-monophyletic or incomplete outgroup requests without scraping text.
 
+`topology reroot-midpoint` is the exploratory rooted-tree surface when no
+explicit outgroup is available. With `--report-out`, it writes a one-row TSV
+that records the anchor tip pair used for the selected midpoint path, the
+tip-to-tip path length, the midpoint distance from the anchor tip, whether the
+midpoint landed on an original node or within an original branch, the taxa on
+the anchor side of the new root, the taxa on the opposite side, and whether
+the input tree was suitable for straightforward midpoint interpretation. Its
+JSON metrics expose the same placement fields plus `midpoint_suitable` and
+warning counts so exploratory midpoint-rooted trees can be filtered or flagged
+without re-parsing the written TSV.
+
 The alignment family includes matrix-assembly and matrix-audit commands for
 concatenated multi-locus inputs. `alignment concatenate` assembles one
 supermatrix from aligned per-locus FASTA inputs, preserves taxon identities,
