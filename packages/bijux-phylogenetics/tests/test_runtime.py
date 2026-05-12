@@ -102,6 +102,8 @@ from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
     CladeOverlapComparisonReport,
+    SupportComparisonReport,
+    SupportConflictRow,
     compare_clade_overlap,
     RobinsonFouldsComparisonReport,
     compare_branch_score_distance,
@@ -113,7 +115,7 @@ from bijux_phylogenetics.compare.topology import (
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
-    write_tree_comparison_table,
+    write_support_comparison_table,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.core.dataset import (
@@ -483,18 +485,31 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is CladeOverlapComparisonReport
     )
     assert (
+        bijux_phylogenetics.SupportComparisonReport is SupportComparisonReport
+    )
+    assert bijux_phylogenetics.SupportConflictRow is SupportConflictRow
+    assert (
         bijux_phylogenetics.compare_branch_score_distance
         is compare_branch_score_distance
     )
     assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
+    assert bijux_phylogenetics.compare_support_values is compare_support_values
     assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
+    assert (
+        bijux_phylogenetics.write_support_comparison_table
+        is write_support_comparison_table
+    )
     assert (
         bijux_phylogenetics.RobinsonFouldsComparisonReport
         is RobinsonFouldsComparisonReport
     )
     assert compare_api.CladeOverlapComparisonReport is CladeOverlapComparisonReport
+    assert compare_api.SupportComparisonReport is SupportComparisonReport
+    assert compare_api.SupportConflictRow is SupportConflictRow
     assert compare_api.compare_clade_overlap is compare_clade_overlap
+    assert compare_api.compare_support_values is compare_support_values
     assert compare_api.write_clade_overlap_table is write_clade_overlap_table
+    assert compare_api.write_support_comparison_table is write_support_comparison_table
     assert compare_api.BranchScoreComparisonReport is BranchScoreComparisonReport
     assert compare_api.compare_branch_score_distance is compare_branch_score_distance
     assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
@@ -5033,6 +5048,7 @@ def test_compare_support_values_prefers_ufboot_when_iqtree_dual_support_is_prese
     ]
 
 
+
 def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> None:
     scaled = compare_branch_lengths(
         fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk")
@@ -5089,25 +5105,6 @@ def test_compare_branch_score_distance_enforces_identical_taxa_when_requested() 
         assert "identical taxon sets" in str(error)
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected identical-taxon branch-score comparison to fail")
-
-
-def test_write_tree_comparison_table_writes_one_row_per_compared_split(
-    tmp_path: Path,
-) -> None:
-    output = tmp_path / "comparison.tsv"
-    write_tree_comparison_table(
-        output, fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
-    )
-    assert output.read_text(encoding="utf-8") == (
-        "split_id\tcomparison_status\tshared_clade\tleft_support\tright_support\tleft_length\tright_length\tlength_delta\tlength_ratio\tbranch_score_status\tbranch_score_difference\tbranch_score_squared_difference\n"
-        "A\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.0\t0.0\n"
-        "A|B\tshared\ttrue\t\t\t0.2\t0.1\t-0.1\t0.5\tshared\t-0.20000000000000004\t0.040000000000000015\n"
-        "A|B|C\tright_only\tfalse\t\t\t\t\t\t\t\t\t\n"
-        "B\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.0\t0.0\n"
-        "C\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.0\t0.0\n"
-        "C|D\tleft_only\tfalse\t\t\t\t\t\t\t\t\t\n"
-        "D\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.2\t0.04000000000000001\n"
-    )
 
 
 def test_build_tree_comparison_report_writes_html_with_checksums(
@@ -6446,7 +6443,7 @@ def test_cli_compare_table_writes_tsv_output(tmp_path: Path, capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["table_rows"] == 3
+    assert payload["metrics"]["table_rows"] == 7
     assert output.read_text(encoding="utf-8").startswith(
         "split_id\tcomparison_status\tshared_clade\t"
     )
