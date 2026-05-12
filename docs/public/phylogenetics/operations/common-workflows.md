@@ -252,9 +252,26 @@ bijux-phylogenetics adapter beast-log \
 The JSON output keeps the raw parsed log plus a summary block that separates
 posterior, likelihood, prior, clock, and tree-related parameters into explicit
 lists. The optional `--summary-out` table writes one row per sampled parameter
-with the post-burn-in mean, min/max range, first-half and second-half means,
-standardized drift, and effective sample size so reviewers can audit BEAST log
-behaviour without re-parsing the engine file themselves.
+with the post-burn-in mean, median, sample standard deviation, 95% HPD
+interval, min/max range, first-half and second-half means, standardized drift,
+and effective sample size so reviewers can audit BEAST log behaviour without
+re-parsing the engine file themselves.
+
+Use `adapter beast-parameters` when the main goal is posterior parameter
+diagnostics rather than raw log parsing.
+
+```bash
+bijux-phylogenetics adapter beast-parameters \
+  artifacts/multilocus-beast.1.log \
+  --burnin-fraction 0.1 \
+  --summary-out artifacts/multilocus-beast.parameter-summary.tsv \
+  --json
+```
+
+That command emits one burn-in-aware JSON report and, when requested, one TSV
+table covering posterior mean, median, sample standard deviation, 95% HPD
+interval, effective sample size, and retained state window for every parameter
+that survived the requested burn-in cut.
 
 Use `adapter beast-convergence` when you want the same burn-in handling applied
 to convergence warnings directly.
@@ -353,6 +370,7 @@ the same output directory. Those files are then consumable through the parser
 surfaces instead of through manual text scraping:
 
 - `adapter mrbayes-traces` for tabular parameter traces from `.run1.p`
+- `adapter mrbayes-parameters` for burn-in-aware posterior mean, median, SD, 95% HPD, and ESS summaries from `.run1.p`
 - `adapter mrbayes-trees` for sampled posterior trees and generation tags from `.run1.t`
 - `adapter mrbayes-mcmc` for acceptance-rate and split-frequency diagnostics from `.mcmc`
 - `adapter mrbayes-consensus` for the annotated consensus topology and posterior-probability range from `.con.tre`
@@ -362,6 +380,21 @@ annotation syntax that common generic NEXUS readers may not accept directly.
 The governed parser strips the native inline annotations only after recording
 their posterior-probability values, so reviewers keep both a clean tree object
 and the support summary that MrBayes actually emitted.
+
+When you want posterior parameter summaries directly, use the dedicated
+diagnostics surface:
+
+```bash
+bijux-phylogenetics adapter mrbayes-parameters \
+  artifacts/multilocus-bayesian.nex.run1.p \
+  --burnin-fraction 0.25 \
+  --summary-out artifacts/multilocus-bayesian.parameter-summary.tsv \
+  --json
+```
+
+That workflow writes one row per retained parameter with posterior mean,
+median, sample standard deviation, 95% HPD interval, effective sample size,
+first-half versus second-half mean split, and the retained generation window.
 
 For ultrafast bootstrap review specifically, `adapter bootstrap` now writes
 three reviewer-facing TSV artifacts alongside the native IQ-TREE files:
