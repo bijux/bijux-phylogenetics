@@ -18,6 +18,7 @@ The CLI is the primary operational surface for most users.
 - `comparative ...`
 - `ancestral ...`
 - `biogeography ...`
+- `host-association ...`
 - `tree-set ...`
 - `topology ...`
 - `adapter ...`
@@ -674,6 +675,133 @@ reconstruction, not a full time-inhomogeneous stochastic biogeographic process
 fit. If the requested intervals do not cover the full tree depth, the command
 reports that omission as a warning instead of silently claiming full temporal
 coverage.
+
+`host-association switches` is the governed host-switch review surface for one
+host metadata table on one rooted parasite or pathogen tree. It reconstructs
+internal host states, classifies branchwise host switches as certain or
+uncertain, aggregates directed switch counts, and optionally compares a
+constrained host-transition policy against the unconstrained fit. Its JSON
+metrics report:
+- `model`
+- `analysis_constraint_mode`
+- `observed_host_count`
+- `host_switch_count`
+- `certain_host_switch_count`
+- `uncertain_host_switch_count`
+- `preferred_constraint`
+- `unsupported_switch_claim_count`
+- `excluded_taxon_count`
+
+The command supports `er`, `sym`, and `ard`. `--constraints` is optional and
+accepts one CSV or TSV ledger with `source_host` and `target_host` columns,
+plus an optional `transition_allowed` column. When present, the command fits
+the same host-state model twice on the shared analyzed taxa: once
+unconstrained and once under the explicit allowed-transition graph.
+
+When `--summary-out` is supplied, `host-association switches` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `analysis_constraint_mode`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observed_host_count`
+- `internal_node_count`
+- `ambiguous_internal_node_count`
+- `host_switch_count`
+- `certain_host_switch_count`
+- `uncertain_host_switch_count`
+- `allowed_transition_count`
+- `forbidden_transition_count`
+- `constrained_log_likelihood`
+- `unconstrained_log_likelihood`
+- `constrained_aic`
+- `unconstrained_aic`
+- `preferred_constraint`
+- `unsupported_switch_claim_count`
+- `root_host`
+- `root_confidence`
+- `warning_count`
+
+When `--nodes-out` is supplied, the command writes one internal-node host
+probability ledger. Each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `most_likely_host`
+- `host_probabilities`
+- `confidence`
+- `ambiguous`
+- `is_root`
+
+When `--branches-out` is supplied, the command writes one branchwise
+host-switch ledger. Each row preserves:
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `branch_length`
+- `parent_most_likely_host`
+- `child_most_likely_host`
+- `parent_host_set`
+- `child_host_set`
+- `overlapping_hosts`
+- `changed`
+- `transition`
+- `certainty_class`
+- `parent_confidence`
+- `child_confidence`
+- `transition_allowed`
+
+When `--counts-out` is supplied, the command writes one directed switch-count
+ledger. Each row preserves:
+- `transition`
+- `source_host`
+- `target_host`
+- `transition_allowed`
+- `certain_switch_count`
+- `uncertain_switch_count`
+- `total_switch_count`
+
+When `--fits-out` is supplied, the command writes one fit-comparison ledger.
+Each row preserves:
+- `constraint_mode`
+- `model`
+- `analyzed_taxon_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `root_host`
+- `root_confidence`
+
+When `--unsupported-out` is supplied, the command writes one forbidden-claim
+ledger. Each row preserves:
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `unconstrained_source_host`
+- `unconstrained_target_host`
+- `unconstrained_certainty_class`
+- `constrained_source_host`
+- `constrained_target_host`
+- `constrained_certainty_class`
+- `claim_resolved`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_host`
+- `normalized_host`
+- `reason`
+- `note`
+
+This host-association surface is intentionally explicit about scope. It is a
+one-tree host-state evolution review over the owned discrete ancestral
+runtime, not a full cophylogenetic reconciliation or host-parasite
+transmission-history inference model.
 
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
