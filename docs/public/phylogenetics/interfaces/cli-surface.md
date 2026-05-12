@@ -79,6 +79,56 @@ or TSV. Each row preserves:
 The regression output is explicit rather than inferred. `--regression-out`
 without `--predictor-trait` is rejected instead of silently writing nothing.
 
+`comparative signal` is the governed review surface for one-trait phylogenetic
+signal. Its JSON metrics report:
+- `taxon_count`
+- `blombergs_k`
+- `pagels_lambda`
+- `signal_p_value`
+- `lambda_likelihood_ratio_p_value`
+- `permutation_row_count`
+
+The command preserves three distinct surfaces under `data`:
+- `blombergs_k` for the fitted K summary
+- `pagels_lambda` for the fitted lambda summary
+- `signal_test` for the permutation-based K test
+
+When `--summary-out` is supplied, `comparative signal` writes one flat summary
+ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_count`
+- `blombergs_k`
+- `blombergs_generalized_mean`
+- `blombergs_observed_mean_square`
+- `blombergs_phylogenetic_mean_square`
+- `blombergs_expected_mean_square_ratio`
+- `signal_permutation_p_value`
+- `pagels_lambda`
+- `lambda_log_likelihood`
+- `lambda_null_log_likelihood`
+- `lambda_brownian_log_likelihood`
+- `lambda_likelihood_ratio_statistic`
+- `lambda_likelihood_ratio_p_value`
+- `lambda_p_value_method`
+- `permutations`
+- `permuted_k_at_or_above_observed`
+
+When `--permutations-out` is supplied, `comparative signal` also writes one
+permutation ledger as CSV or TSV. Each row preserves:
+- `trait`
+- `observed_k`
+- `estimated_lambda`
+- `permutations`
+- `signal_permutation_p_value`
+- `permutation_index`
+- `permuted_k`
+- `at_or_above_observed`
+
+This surface exists so phylogenetic signal review does not collapse into one
+scalar. Reviewers can inspect the fitted K and lambda values, the permutation
+null distribution, and the explicit p-value contract without rerunning the
+analysis manually.
+
 `comparative brownian-pgls` is the fixed-covariance companion surface when the
 scientific question specifically assumes Brownian shared-path covariance rather
 than an estimated Pagel lambda. Its JSON metrics report:
