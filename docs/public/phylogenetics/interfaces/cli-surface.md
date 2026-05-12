@@ -367,6 +367,70 @@ This surface exists so residual review does not stop at single outlier taxa.
 It makes subtree-level model misspecification explicit and ranks the clades
 that carry the largest residual burden.
 
+`comparative clade-stability` is the governed review surface for asking whether
+one comparative conclusion depends on one major subtree. Its JSON metrics
+report:
+- `model_family`
+- `baseline_taxon_count`
+- `baseline_term_count`
+- `candidate_clade_count`
+- `blocked_clade_count`
+- `coefficient_change_row_count`
+- `top_influential_clade`
+- `major_clade_fraction`
+- `minimum_major_clade_size`
+
+The command fits one baseline comparative model first, derives major internal
+non-root clades from the baseline analyzed tree, removes each candidate clade,
+and attempts the same refit on the retained taxa. The model family is inferred
+from the fitted response:
+- binary `0/1` response => phylogenetic logistic stability surface
+- otherwise => PGLS stability surface
+
+When `--clades-out` is supplied, `comparative clade-stability` writes one
+leave-one-clade-out summary ledger as CSV or TSV. Each row preserves:
+- `clade_id`
+- `node_label`
+- `dropped_taxon_count`
+- `dropped_taxa`
+- `retained_taxon_count`
+- `fit_status`
+- `blocker`
+- `baseline_term_count`
+- `coefficient_comparison_count`
+- `missing_baseline_term_count`
+- `missing_baseline_terms`
+- `sign_changed_term_count`
+- `significance_changed_term_count`
+- `max_abs_delta_estimate`
+- `max_abs_delta_p_value`
+- `delta_log_likelihood`
+- `influence_score`
+- `rank`
+
+When `--terms-out` is supplied, the command also writes one coefficient-delta
+ledger as CSV or TSV. Each row preserves:
+- `clade_id`
+- `node_label`
+- `term`
+- `baseline_estimate`
+- `dropped_estimate`
+- `delta_estimate`
+- `baseline_p_value`
+- `dropped_p_value`
+- `delta_p_value`
+- `baseline_significant`
+- `dropped_significant`
+- `sign_changed`
+- `significance_changed`
+
+This surface exists so subtree dependence is explicit at the model level
+rather than inferred indirectly from residuals or taxon-level exclusion
+screens. Blocked rows are preserved on purpose: if removing one candidate
+clade leaves too few taxa or collapses a binary response to one class, the
+review surface records that failure instead of pretending the clade was
+uninfluential.
+
 `comparative brownian-pgls` is the fixed-covariance companion surface when the
 scientific question specifically assumes Brownian shared-path covariance rather
 than an estimated Pagel lambda. Its JSON metrics report:
