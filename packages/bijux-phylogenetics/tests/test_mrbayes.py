@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import pytest
 import shutil
+from statistics import stdev
 
 from bijux_phylogenetics.bayesian import (
     assess_mrbayes_convergence,
@@ -14,7 +15,9 @@ from bijux_phylogenetics.bayesian import (
     prepare_mrbayes_analysis,
     render_bayesian_posterior_report,
     run_mrbayes_posterior_inference,
+    summarize_mrbayes_parameter_diagnostics,
     summarize_mrbayes_posterior_trees,
+    write_mrbayes_parameter_summary_table,
 )
 from bijux_phylogenetics.errors import EngineWorkflowError
 
@@ -391,6 +394,39 @@ def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(
         "TL",
         "alpha",
     ]
+
+
+def test_summarize_mrbayes_parameter_diagnostics_supports_burnin_and_hpd(
+    tmp_path: Path,
+) -> None:
+    trace_path = tmp_path / "diagnostics.run1.p"
+    summary_path = tmp_path / "diagnostics-summary.tsv"
+    posterior_values = [*range(24), 100.0]
+    rows = ["Gen\tLnL\tTL"]
+    for index, value in enumerate(posterior_values):
+        rows.append(f"{index * 10}\t{value}\t0.5")
+    trace_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    report = summarize_mrbayes_parameter_diagnostics(trace_path, burnin_fraction=0.2)
+    output_path = write_mrbayes_parameter_summary_table(summary_path, report)
+    lnl = next(
+        summary for summary in report.parameter_summaries if summary.parameter == "LnL"
+    )
+    kept_values = posterior_values[5:]
+
+    assert report.burnin_row_count == 5
+    assert report.kept_row_count == 20
+    assert report.first_kept_generation == 50
+    assert report.last_kept_generation == 240
+    assert lnl.mean == pytest.approx(18.3)
+    assert lnl.median == pytest.approx(14.5)
+    assert lnl.standard_deviation == pytest.approx(round(stdev(kept_values), 6))
+    assert lnl.hpd_95_lower == pytest.approx(5.0)
+    assert lnl.hpd_95_upper == pytest.approx(23.0)
+    assert output_path == summary_path
+    text = summary_path.read_text(encoding="utf-8")
+    assert "median\tstandard_deviation" in text
+    assert "first_kept_generation\tlast_kept_generation" in text
 
 
 def test_render_bayesian_posterior_report_writes_consensus_and_convergence_sections(

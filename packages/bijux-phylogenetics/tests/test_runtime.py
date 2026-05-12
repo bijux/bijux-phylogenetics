@@ -18,6 +18,8 @@ from bijux_phylogenetics.bayesian import (
     BeastCalibration,
     BeastPosteriorConsensusReport,
     BeastPosteriorTopologyDiversityReport,
+    MrBayesParameterDiagnosticsReport,
+    MrBayesParameterSummary,
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
     assess_beast_convergence,
@@ -47,6 +49,7 @@ from bijux_phylogenetics.bayesian import (
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
     summarize_maximum_clade_credibility_tree,
+    summarize_mrbayes_parameter_diagnostics,
     summarize_mrbayes_posterior_trees,
     summarize_posterior_node_ages,
     thin_posterior_tree_set,
@@ -56,6 +59,7 @@ from bijux_phylogenetics.bayesian import (
     write_bayesian_methods_summary_text,
     write_beast_log_summary_table,
     write_beast_posterior_tree_set,
+    write_mrbayes_parameter_summary_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -934,7 +938,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.compute_mrbayes_effective_sample_sizes
         is compute_mrbayes_effective_sample_sizes
     )
+    assert (
+        bijux_phylogenetics.summarize_mrbayes_parameter_diagnostics
+        is summarize_mrbayes_parameter_diagnostics
+    )
+    assert (
+        bijux_phylogenetics.write_mrbayes_parameter_summary_table
+        is write_mrbayes_parameter_summary_table
+    )
     assert bijux_phylogenetics.assess_mrbayes_convergence is assess_mrbayes_convergence
+    assert bijux_phylogenetics.MrBayesParameterSummary is MrBayesParameterSummary
+    assert (
+        bijux_phylogenetics.MrBayesParameterDiagnosticsReport
+        is MrBayesParameterDiagnosticsReport
+    )
     assert (
         bijux_phylogenetics.render_bayesian_posterior_report
         is render_bayesian_posterior_report
