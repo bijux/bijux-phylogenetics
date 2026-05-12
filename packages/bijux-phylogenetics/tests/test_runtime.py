@@ -28,7 +28,10 @@ from bijux_phylogenetics.bayesian import (
     compute_mrbayes_effective_sample_sizes,
     detect_impossible_calibration_constraints,
     parse_beast_log,
+    parse_mrbayes_consensus_tree,
+    parse_mrbayes_mcmc_diagnostics,
     parse_mrbayes_parameter_traces,
+    parse_mrbayes_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
     prepare_mrbayes_analysis,
     render_bayesian_diagnostics_report,
@@ -905,6 +908,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.parse_mrbayes_parameter_traces
         is parse_mrbayes_parameter_traces
+    )
+    assert (
+        bijux_phylogenetics.parse_mrbayes_posterior_tree_samples
+        is parse_mrbayes_posterior_tree_samples
+    )
+    assert (
+        bijux_phylogenetics.parse_mrbayes_mcmc_diagnostics
+        is parse_mrbayes_mcmc_diagnostics
+    )
+    assert (
+        bijux_phylogenetics.parse_mrbayes_consensus_tree
+        is parse_mrbayes_consensus_tree
     )
     assert (
         bijux_phylogenetics.compute_mrbayes_effective_sample_sizes
