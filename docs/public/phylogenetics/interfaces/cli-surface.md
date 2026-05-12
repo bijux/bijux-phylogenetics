@@ -85,6 +85,24 @@ The contrast ledger is explicit about interpretation:
 This surface exists so categorical coefficients are read as group contrasts with
 clear baselines, not as unlabeled free-floating numbers.
 
+When `--interaction-coefficients-out` is supplied, `comparative pgls` also
+writes one interaction-coefficient ledger. Its JSON metrics then report
+`interaction_term_count` and `interaction_coefficient_row_count`, while
+`data.interaction_coefficients.rows` preserves one row per fitted interaction
+coefficient.
+
+The interaction ledger is explicit about effect modification:
+- `interaction_kind` distinguishes continuous-by-continuous,
+  continuous-by-categorical, and categorical-by-categorical effects
+- `component_columns` preserves the exact encoded columns that generated each
+  fitted interaction coefficient
+- `component_levels` shows which categorical levels participate in a given row
+- `omitted_reference_levels` keeps treatment-coded baseline groups visible when
+  an interaction term omits them from the coefficient table
+
+This surface exists so interaction coefficients are interpreted as explicit
+effect-modification terms instead of opaque colon-delimited names.
+
 The `compare` family includes direct topology-distance review for two existing
 trees. `compare LEFT RIGHT` now exposes `--rf-mode rooted|unrooted` and
 `--taxon-overlap-policy prune-to-shared|require-identical`. The default RF mode
