@@ -159,6 +159,40 @@ contract explicitly: the method is approximately maximum-likelihood, the native
 support labels are SH-like local-support proportions, and the governed support
 scale is `0..1` rather than bootstrap percentages.
 
+Use `adapter infer-large` when the matrix is already aligned and you need a
+large-alignment inference path that avoids copying the matrix through multiple
+Python-side structures before FastTree runs.
+
+```bash
+bijux-phylogenetics adapter infer-large \
+  aligned-matrix.fasta \
+  --out-dir artifacts/large-alignment \
+  --prefix mammals \
+  --sequence-type protein \
+  --timeout-seconds 600 \
+  --resume \
+  --json
+```
+
+That workflow performs a streamed preflight scan of the aligned FASTA, runs
+FastTree in place on the original matrix, and writes these review outputs:
+
+- `mammals.tree`
+- `mammals.support.tsv`
+- `mammals.low-support.tsv`
+- `mammals.support-histogram.tsv`
+- `mammals.resources.tsv`
+- `mammals.log`
+- `mammals.manifest.json`
+
+The streamed preflight records sequence count, alignment width, total site
+cells, and inferred sequence type without materializing the full matrix as an
+in-memory Python alignment object. The resource ledger separates preflight
+allocation observations from sampled FastTree process RSS so large runs expose
+both wall time and memory pressure directly. When `--resume` is used, the
+workflow reuses a completed manifest only if the input checksum, command, and
+recorded outputs still agree; otherwise it reruns the inference step.
+
 Use `adapter compare-engines` when you need a governed side-by-side comparison
 between IQ-TREE and FastTree on the same aligned matrix.
 
