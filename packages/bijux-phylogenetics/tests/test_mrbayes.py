@@ -20,6 +20,11 @@ from bijux_phylogenetics.bayesian import (
     summarize_mrbayes_posterior_trees,
     write_mrbayes_parameter_summary_table,
 )
+from bijux_phylogenetics.bayesian.posterior import (
+    subsample_mrbayes_posterior_tree_set,
+    write_posterior_tree_subsample,
+    write_posterior_tree_subsample_table,
+)
 from bijux_phylogenetics.errors import EngineWorkflowError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -370,6 +375,43 @@ def test_parse_real_mrbayes_output_fixture() -> None:
     assert consensus_report.maximum_posterior_probability_percent == pytest.approx(
         100.0
     )
+
+
+def test_subsample_mrbayes_posterior_tree_set_preserves_generation_metadata(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "posterior.run1.t"
+    retained_path = tmp_path / "posterior-subsample.nwk"
+    table_path = tmp_path / "posterior-subsample.tsv"
+    tree_path.write_text(
+        "#NEXUS\n"
+        "begin trees;\n"
+        "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "tree gen2 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "tree gen3 = [&R] ((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);\n"
+        "tree gen4 = [&R] ((A:0.1,B:0.1):0.4,(C:0.1,D:0.1):0.4);\n"
+        "end;\n",
+        encoding="utf-8",
+    )
+
+    report = subsample_mrbayes_posterior_tree_set(
+        tree_path,
+        method="random",
+        sample_count=2,
+        burnin_fraction=0.25,
+        random_seed=11,
+    )
+    write_posterior_tree_subsample(retained_path, report)
+    write_posterior_tree_subsample_table(table_path, report)
+
+    assert report.burnin_tree_count == 1
+    assert report.pre_subsampling_tree_count == 3
+    assert report.retained_tree_count == 2
+    assert report.retained_source_indices == [3, 4]
+    assert [tree.generation for tree in report.trees] == [3, 4]
+    assert [tree.tree_name for tree in report.trees] == ["gen3", "gen4"]
+    assert retained_path.read_text(encoding="utf-8").count("\n") == 2
+    assert "gen3\t\t3\ttrue" in table_path.read_text(encoding="utf-8")
 
 
 def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(
