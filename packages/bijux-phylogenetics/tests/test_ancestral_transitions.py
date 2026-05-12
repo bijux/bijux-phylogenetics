@@ -4,11 +4,17 @@ from pathlib import Path
 
 from bijux_phylogenetics.ancestral.transitions import (
     summarize_ancestral_transition_report,
+    summarize_ancestral_transition_tree_set,
+    summarize_ancestral_transition_tree_set_report,
     summarize_ancestral_transitions,
     write_ancestral_transition_branch_table,
     write_ancestral_transition_count_table,
     write_ancestral_transition_exclusion_table,
     write_ancestral_transition_summary_table,
+    write_ancestral_transition_tree_set_branch_table,
+    write_ancestral_transition_tree_set_count_table,
+    write_ancestral_transition_tree_set_summary_table,
+    write_ancestral_transition_tree_set_tree_table,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -132,3 +138,73 @@ def test_write_ancestral_transition_tables_write_expected_rows(tmp_path: Path) -
     assert len(summary_rows) == 2
     assert len(branch_rows) == 7
     assert len(count_rows) == 3
+
+
+def test_summarize_ancestral_transition_tree_set_reports_pair_stability() -> None:
+    report = summarize_ancestral_transition_tree_set(
+        fixture("example_posterior_tree_set_six_taxa.nwk"),
+        fixture("example_traits_clade_summary.tsv"),
+        trait="habitat",
+        model="equal-rates",
+    )
+    summary = summarize_ancestral_transition_tree_set_report(report)
+
+    assert report.total_tree_count == 5
+    assert report.burnin_tree_count == 0
+    assert report.kept_tree_count == 5
+    assert report.shared_tree_taxa == ["A", "B", "C", "D", "E", "F"]
+    assert report.analysis_taxa == ["A", "B", "C", "D", "E", "F"]
+    assert report.rooted_topology_count == 5
+    assert report.unrooted_topology_count == 4
+    assert len(report.tree_rows) == 5
+    assert len(report.branch_rows) == 50
+    assert len(report.transition_rows) >= 2
+    assert summary.transition_pair_count == len(report.transition_rows)
+    assert summary.topology_sensitive_transition_pair_count >= 1
+    assert (
+        "one or more inferred transition pairs are absent from some retained trees"
+        in report.warnings
+    )
+
+
+def test_write_ancestral_transition_tree_set_tables_write_expected_rows(
+    tmp_path: Path,
+) -> None:
+    report = summarize_ancestral_transition_tree_set(
+        fixture("example_posterior_tree_set_six_taxa.nwk"),
+        fixture("example_traits_clade_summary.tsv"),
+        trait="habitat",
+        model="equal-rates",
+    )
+    summary_path = tmp_path / "ancestral-transition-tree-set-summary.tsv"
+    tree_path = tmp_path / "ancestral-transition-tree-set-trees.tsv"
+    branch_path = tmp_path / "ancestral-transition-tree-set-branches.tsv"
+    count_path = tmp_path / "ancestral-transition-tree-set-counts.tsv"
+    exclusion_path = tmp_path / "ancestral-transition-tree-set-excluded.tsv"
+
+    write_ancestral_transition_tree_set_summary_table(summary_path, report)
+    write_ancestral_transition_tree_set_tree_table(tree_path, report)
+    write_ancestral_transition_tree_set_branch_table(branch_path, report)
+    write_ancestral_transition_tree_set_count_table(count_path, report)
+    write_ancestral_transition_exclusion_table(exclusion_path, report)
+
+    summary_rows = summary_path.read_text(encoding="utf-8").splitlines()
+    tree_rows = tree_path.read_text(encoding="utf-8").splitlines()
+    branch_rows = branch_path.read_text(encoding="utf-8").splitlines()
+    count_rows = count_path.read_text(encoding="utf-8").splitlines()
+    exclusion_rows = exclusion_path.read_text(encoding="utf-8").splitlines()
+
+    assert summary_rows[0].startswith("trait\ttaxon_column\tmodel\tstate_ordering")
+    assert tree_rows[0].startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id"
+    )
+    assert branch_rows[0].startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id\tunrooted_topology_id\tparent_node"
+    )
+    assert count_rows[0].startswith(
+        "transition\tsource_state\ttarget_state\ttree_presence_count"
+    )
+    assert exclusion_rows == ["taxon\treason"]
+    assert len(summary_rows) == 2
+    assert len(tree_rows) == 6
+    assert len(branch_rows) == 51
