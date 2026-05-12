@@ -454,6 +454,49 @@ biogeographic process fit. When requested intervals do not cover the full tree
 depth, the workflow reports that boundary as a warning instead of silently
 pretending those uncovered branch segments were modeled.
 
+When the goal is to review one dated biogeographic tree directly instead of
+declaring explicit historical bins by hand, use `biogeography chronology`.
+This workflow accepts one rooted ultrametric time tree and one taxon-region
+table, verifies that the tree is time-scaled, extracts node ages, maps
+inferred geographic transitions to automatic equal-width age bins, and reports
+which bins are weakly supported. This keeps the dated-tree chronology surface
+separate from `biogeography time-stratified`, which remains the explicit
+interval-definition workflow.
+
+```bash
+bijux-phylogenetics biogeography chronology \
+  artifacts/primates.time-tree.nwk \
+  artifacts/primates.csv \
+  --trait region \
+  --taxon-column species \
+  --model ard \
+  --time-bin-count 4 \
+  --summary-out artifacts/primates.biogeography-chronology-summary.tsv \
+  --nodes-out artifacts/primates.biogeography-node-ages.tsv \
+  --events-out artifacts/primates.biogeography-dated-events.tsv \
+  --bins-out artifacts/primates.biogeography-time-bins.tsv \
+  --exclusions-out artifacts/primates.biogeography-chronology-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the model, analyzed taxon count,
+time-scaled-tree audit result, root age, node-age row count, dated event
+count, time-bin count, empty-bin count, high-uncertainty-bin count, and
+warning count. The node ledger keeps one row per reviewed node with branch
+depth, age before present, most likely region, confidence, and root flag. The
+event ledger keeps one row per inferred geographic transition with parent and
+child depths, parent and child ages before present, midpoint event age,
+automatic time-bin label, and support class.
+
+The time-bin ledger is the chronology review surface. Each row preserves the
+bin bounds, event totals, strongly supported versus low-support event counts,
+mean support, support uncertainty, earliest and latest dated event in the bin,
+dominant transition, transition diversity, and one reviewer-facing uncertainty
+class. This is intentionally a dated-tree review over one owned reconstruction,
+not a full time-varying stochastic biogeographic process fit. Equal-width age
+bins are explicit reviewer-facing chronology bins rather than hidden model
+parameters.
+
 When the goal is to reconstruct host association evolution and count inferred
 host shifts on one pathogen or parasite tree, use `host-association switches`.
 This workflow accepts one rooted tree, one host metadata table, and
