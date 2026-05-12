@@ -165,6 +165,12 @@ from bijux_phylogenetics.comparative.clade_traits import (
     write_clade_trait_exclusion_table,
     write_clade_trait_summary_table,
 )
+from bijux_phylogenetics.comparative.trait_outliers import (
+    summarize_trait_outliers,
+    write_trait_outlier_exclusion_table,
+    write_trait_outlier_summary_table,
+    write_trait_outlier_taxon_table,
+)
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     run_posterior_tree_pgls,
     write_posterior_tree_pgls_coefficient_table,
@@ -2364,6 +2370,35 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the clade-trait report as JSON."
     )
     _add_manifest_argument(comparative_clade_traits)
+    comparative_trait_outliers = comparative_subparsers.add_parser(
+        "trait-outliers",
+        help="Rank continuous-trait taxa by conditional phylogenetic residual size.",
+    )
+    comparative_trait_outliers.add_argument("tree", type=Path)
+    comparative_trait_outliers.add_argument("table", type=Path)
+    comparative_trait_outliers.add_argument("--trait", required=True)
+    comparative_trait_outliers.add_argument("--taxon-column")
+    comparative_trait_outliers.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one trait-outlier summary ledger as TSV or CSV.",
+    )
+    comparative_trait_outliers.add_argument(
+        "--outliers-out",
+        type=Path,
+        help="Write one ranked taxon outlier ledger as TSV or CSV.",
+    )
+    comparative_trait_outliers.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for trait outlier review as TSV or CSV.",
+    )
+    comparative_trait_outliers.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the trait outlier review as JSON.",
+    )
+    _add_manifest_argument(comparative_trait_outliers)
     comparative_compare_models = comparative_subparsers.add_parser(
         "compare-models",
         help="Compare standalone Brownian-motion and OU models for one continuous trait.",
@@ -7308,6 +7343,47 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "exceptional_clade_count": len(report.exceptional_clades),
                             "top_exceptional_clade": report.top_exceptional_clade,
                             "top_exceptionality_score": report.top_exceptionality_score,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "trait-outliers":
+                report = summarize_trait_outliers(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                )
+                if args.summary_out:
+                    write_trait_outlier_summary_table(args.summary_out, report)
+                if args.outliers_out:
+                    write_trait_outlier_taxon_table(args.outliers_out, report)
+                if args.excluded_taxa_out:
+                    write_trait_outlier_exclusion_table(
+                        args.excluded_taxa_out,
+                        report,
+                    )
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tree_taxon_count": report.tree_taxon_count,
+                            "analyzed_taxon_count": report.analyzed_taxon_count,
+                            "excluded_taxon_count": len(report.excluded_taxa),
+                            "selected_model": report.selected_model,
+                            "outlier_count": len(report.outlier_taxa),
+                            "top_outlier_taxon": report.top_outlier_taxon,
+                            "top_abs_standardized_residual": (
+                                report.top_abs_standardized_residual
+                            ),
                         },
                         data=report,
                     ),
