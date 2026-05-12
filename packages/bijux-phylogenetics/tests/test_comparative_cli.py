@@ -96,12 +96,40 @@ def test_comparative_pgls_cli_fits_multiple_predictors(capsys) -> None:
     assert math.isclose(coefficients["predictor_two"]["estimate"], 1.0)
     assert coefficients["predictor_one"]["inference_distribution"] == "student-t"
     assert coefficients["predictor_one"]["degrees_of_freedom"] == 1
+    assert payload["metrics"]["lambda_estimation_mode"] == "fixed"
+    assert payload["metrics"]["lambda_profile_point_count"] == 1
+    assert payload["metrics"]["lambda_lower_95_confidence_interval"] is None
+    assert payload["metrics"]["lambda_upper_95_confidence_interval"] is None
     assert (
         coefficients["predictor_one"]["lower_95_confidence_interval"]
         < coefficients["predictor_one"]["estimate"]
         < coefficients["predictor_one"]["upper_95_confidence_interval"]
     )
     assert "test_statistic" in coefficients["predictor_one"]
+
+
+def test_comparative_pgls_cli_reports_estimated_lambda_profile(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "pgls",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["lambda_estimation_mode"] == "estimated"
+    assert payload["metrics"]["lambda_profile_point_count"] == 101
+    assert payload["metrics"]["lambda_lower_95_confidence_interval"] == 0.0
+    assert payload["metrics"]["lambda_upper_95_confidence_interval"] == 1.0
+    assert payload["data"]["model"]["lambda_fit"]["mode"] == "estimated"
+    assert len(payload["data"]["model"]["lambda_fit"]["profile_rows"]) == 101
 
 
 def test_comparative_pgls_cli_encodes_categorical_predictor(capsys) -> None:
@@ -293,6 +321,35 @@ def test_comparative_pgls_cli_writes_interaction_coefficient_table(
         in row
         for row in written_rows[1:]
     )
+
+
+def test_comparative_pgls_cli_writes_lambda_profile_table(
+    tmp_path: Path, capsys
+) -> None:
+    profile_out = tmp_path / "lambda-profile.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "pgls",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-profile-out",
+            str(profile_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["lambda_estimation_mode"] == "estimated"
+    assert payload["metrics"]["lambda_profile_point_count"] == 101
+    assert profile_out.exists()
+    written_rows = profile_out.read_text(encoding="utf-8").splitlines()
+    assert written_rows[0].startswith("mode\tlambda_value\tlog_likelihood")
+    assert len(written_rows) == 102
 
 
 def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> None:

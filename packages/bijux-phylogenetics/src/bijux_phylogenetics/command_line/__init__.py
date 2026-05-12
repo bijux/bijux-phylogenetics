@@ -102,6 +102,9 @@ from bijux_phylogenetics.comparative.pgls_interaction_coefficients import (
     summarize_pgls_interaction_coefficients,
     write_pgls_interaction_coefficient_table,
 )
+from bijux_phylogenetics.comparative.pgls_lambda_fit import (
+    write_pgls_lambda_profile_table,
+)
 from bijux_phylogenetics.comparative.reporting import (
     build_comparative_method_report,
     build_trait_influence_report,
@@ -2034,6 +2037,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--interaction-coefficients-out",
         type=Path,
         help="Write interaction coefficient rows as TSV or CSV.",
+    )
+    comparative_pgls.add_argument(
+        "--lambda-profile-out",
+        type=Path,
+        help="Write the fitted Pagel lambda likelihood profile as TSV or CSV.",
     )
     comparative_pgls.add_argument(
         "--json", action="store_true", help="Emit the model result as JSON."
@@ -6556,6 +6564,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         interaction_coefficients,
                     )
                 )
+            if args.lambda_profile_out is not None:
+                outputs.append(
+                    write_pgls_lambda_profile_table(
+                        args.lambda_profile_out,
+                        report.lambda_fit,
+                    )
+                )
             outputs = _finalize_outputs(
                 args, command="comparative", inputs=[args.tree, args.table], outputs=outputs
             )
@@ -6608,6 +6623,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             input_report.formula_audit.transformed_terms
                         ),
                         "lambda_value": report.lambda_value,
+                        "lambda_estimation_mode": report.lambda_fit.mode,
+                        "lambda_profile_point_count": len(
+                            report.lambda_fit.profile_rows
+                        ),
+                        "lambda_lower_95_confidence_interval": (
+                            report.lambda_fit.lower_95_confidence_interval
+                        ),
+                        "lambda_upper_95_confidence_interval": (
+                            report.lambda_fit.upper_95_confidence_interval
+                        ),
                         "r_squared": report.r_squared,
                     },
                     data={
