@@ -94,6 +94,104 @@ reaches the iteration limit, drives fitted probabilities to the `0/1`
 boundary, or produces very large coefficients, the JSON output marks that as
 `separation_detected` and preserves the warning messages directly.
 
+`comparative correlated-traits` is the governed review surface for pairwise
+trait-evolution coupling on one tree. It supports two analysis families:
+- two numeric traits: `continuous-brownian-contrasts`
+- two binary traits: `binary-joint-state`
+
+Its JSON metrics report:
+- `analysis_kind`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observation_row_count`
+- `comparison_row_count`
+- `association_measure_name`
+- `association_measure_value`
+- `evolutionary_covariance`
+- `evolutionary_correlation`
+- `better_model`
+- `likelihood_ratio_p_value`
+- `joint_state_count`
+- `warning_count`
+
+The command takes `--left-trait` and `--right-trait` instead of a regression
+formula because this surface is not a predictor-response fit. `--analysis-kind`
+defaults to `auto`, but may be forced to `continuous` or `binary`. For binary
+review, `--binary-model` chooses the governed discrete transition surface from
+`equal-rates`, `symmetric`, or `all-rates-different`.
+
+The continuous path compares diagonal versus full Brownian contrast covariance.
+The binary path compares separate discrete pseudo-likelihood fits against one
+joint-state pseudo-likelihood fit over the observed `00`, `01`, `10`, and `11`
+state combinations. The binary path is reviewer-facing and explicit about that
+approximation boundary; it is not presented as a hidden full Pagel binary
+correlation likelihood.
+
+When `--summary-out` is supplied, `comparative correlated-traits` writes one
+flat summary ledger as CSV or TSV. The row preserves:
+- `analysis_kind`
+- `left_trait`
+- `right_trait`
+- `taxon_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observation_row_count`
+- `association_measure_name`
+- `association_measure_value`
+- `evolutionary_covariance`
+- `evolutionary_correlation`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+- `independent_parameter_count`
+- `independent_log_likelihood`
+- `independent_aic`
+- `correlated_parameter_count`
+- `correlated_log_likelihood`
+- `correlated_aic`
+- `better_model`
+- `likelihood_ratio_statistic`
+- `likelihood_ratio_degrees_of_freedom`
+- `likelihood_ratio_p_value`
+- `likelihood_ratio_p_value_method`
+- `left_root_estimate`
+- `right_root_estimate`
+- `left_state_order`
+- `right_state_order`
+- `joint_state_count`
+- `warning_count`
+
+When `--comparison-out` is supplied, the command also writes one flat
+model-comparison ledger with:
+- `model_kind`
+- `model_description`
+- `parameter_count`
+- `log_likelihood`
+- `aic`
+- `delta_aic`
+- `selected`
+
+When `--observations-out` is supplied, the command also writes one reviewer
+evidence ledger. Each row preserves:
+- `row_kind`
+- `label`
+- `taxon`
+- `left_taxa`
+- `right_taxa`
+- `left_numeric_value`
+- `right_numeric_value`
+- `expected_variance`
+- `left_state`
+- `right_state`
+- `joint_state`
+
+When `--excluded-taxa-out` is supplied, the command also writes one explicit
+excluded-taxa ledger with:
+- `taxon`
+- `reason`
+- `missing_traits`
+
 `comparative model-selection` is the governed review surface for comparing
 competing comparative regression formulas on one shared response and one shared
 complete-case taxon set. Its JSON metrics report:
