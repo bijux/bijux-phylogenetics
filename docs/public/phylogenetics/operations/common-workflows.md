@@ -93,6 +93,33 @@ context, both p-values, and the permutation exceedance count. The permutation
 ledger keeps one row per shuffled trait realization so reviewers can see the
 null K distribution directly instead of only one final exceedance count.
 
+When the goal is to fit the same comparative regression across several response
+traits and then inspect how those fitted traits still co-vary, use
+`comparative multivariate`. This workflow keeps one shared complete-case taxon
+set across every requested response and predictor, fits one comparative
+regression per response on that exact taxon set, and then reports residual
+covariance and residual trait-trait association explicitly.
+
+```bash
+bijux-phylogenetics comparative multivariate \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --responses longevity range_size \
+  --predictors brain_mass_g social_group_size \
+  --taxon-column species \
+  --covariance-out artifacts/primates.multivariate-covariance.tsv \
+  --associations-out artifacts/primates.multivariate-associations.tsv \
+  --excluded-taxa-out artifacts/primates.multivariate-excluded.tsv \
+  --json
+```
+
+The covariance ledger keeps one response-pair row with residual covariance,
+residual correlation, pair count, and diagonal status. The association ledger
+keeps one unique response-pair row with the same covariance and correlation
+plus a correlation test statistic, p-value, and Fisher-style interval. The
+excluded-taxa ledger makes the complete-case rule explicit by recording which
+taxa were dropped because a required response or predictor column was blank.
+
 When the covariance assumption itself must stay fixed to Brownian shared branch
 lengths, use `comparative brownian-pgls`. This keeps the regression surface
 separate from Pagel-lambda fitting and writes an explicit covariance ledger
