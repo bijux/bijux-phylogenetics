@@ -45,6 +45,25 @@ phylogenetic covariance, pass that exact numeric lambda instead. That keeps
 coefficient and p-value review tied to one covariance assumption rather than
 silently mixing model-selection differences with coefficient-level inference.
 
+When the main question is how strongly the regression residuals prefer
+phylogenetic covariance, write the governed lambda profile in the same run.
+
+```bash
+bijux-phylogenetics comparative pgls \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --response longevity \
+  --predictors social_group_size \
+  --taxon-column species \
+  --lambda-value estimate \
+  --lambda-profile-out artifacts/primates.lambda-profile.tsv \
+  --json
+```
+
+The profile ledger keeps one row per candidate lambda value across the bounded
+search surface, records the log-likelihood drop from the best fit, and marks
+which rows stay inside the likelihood-ratio-supported 95% confidence interval.
+
 When the main question is whether the requested biological formula expands into
 the encoded predictors you actually expect, use formula syntax directly and
 write the governed model matrix. Intercept-free formulas use the standard
