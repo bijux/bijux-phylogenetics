@@ -180,6 +180,33 @@ trait value, or pruned because the trait value was non-numeric. This makes the
 Brownian fit auditable as a tree-plus-trait workflow rather than a detached
 scalar estimate.
 
+When the goal is to test whether a continuous trait is better explained by
+constrained evolution toward an optimum, use `comparative ou`. This workflow
+fits the stationary-root Ornstein-Uhlenbeck surface directly and reports the
+fitted pull strength `alpha`, optimum `theta`, diffusion rate `sigma²`,
+log-likelihood, AIC, and AICc, while preserving explicit pruning and
+identifiability warnings.
+
+```bash
+bijux-phylogenetics comparative ou \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait longevity \
+  --taxon-column species \
+  --summary-out artifacts/primates.ou-summary.tsv \
+  --excluded-taxa-out artifacts/primates.ou-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, excluded taxon
+count, fitted `alpha`, `theta`, `sigma²`, log-likelihood, AIC, AICc, and
+residual diagnostic summary fields. The same row also preserves the
+convergence-status label and the count of OU identifiability warnings. The
+excluded-taxa ledger keeps one row per taxon that was absent from the tree,
+absent from the trait table, missing the target trait value, or pruned because
+the trait value was non-numeric. This keeps OU review grounded in both the fit
+statistics and the data-retention contract.
+
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
