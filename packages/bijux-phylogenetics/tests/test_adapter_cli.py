@@ -1626,6 +1626,56 @@ def test_adapter_mrbayes_burnin_sensitivity_cli_writes_shift_tables(
     assert "crosses_majority_threshold" in clade_path.read_text(encoding="utf-8")
 
 
+def test_adapter_mrbayes_subsample_cli_writes_retained_tree_set_and_metadata(
+    tmp_path: Path, capsys
+) -> None:
+    posterior_path = tmp_path / "posterior.run1.t"
+    retained_path = tmp_path / "posterior-retained.nwk"
+    table_path = tmp_path / "posterior-retained.tsv"
+    posterior_path.write_text(
+        "#NEXUS\n"
+        "begin trees;\n"
+        "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "tree gen2 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "tree gen3 = [&R] ((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);\n"
+        "tree gen4 = [&R] ((A:0.1,B:0.1):0.4,(C:0.1,D:0.1):0.4);\n"
+        "end;\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "mrbayes-subsample",
+            str(posterior_path),
+            "--method",
+            "random",
+            "--burnin-fraction",
+            "0.25",
+            "--sample-count",
+            "2",
+            "--seed",
+            "11",
+            "--tree-set-out",
+            str(retained_path),
+            "--sample-table-out",
+            str(table_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["total_tree_count"] == 4
+    assert payload["metrics"]["burnin_tree_count"] == 1
+    assert payload["metrics"]["pre_subsampling_tree_count"] == 3
+    assert payload["metrics"]["retained_tree_count"] == 2
+    assert payload["metrics"]["selection_method"] == "random"
+    assert payload["data"]["retained_source_indices"] == [3, 4]
+    assert retained_path.read_text(encoding="utf-8").count("\n") == 2
+    assert "gen3\t\t3\ttrue" in table_path.read_text(encoding="utf-8")
+
+
 def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     tmp_path: Path, capsys
 ) -> None:
@@ -2093,6 +2143,54 @@ def test_adapter_beast_trees_cli_writes_normalized_tree_set(
     assert payload["data"]["sampled_states"] == [10, 20, 30]
     assert "((A:0.1,B:0.1):0.2,(C:0.1,D:0.2)" not in text
     assert "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);" in text
+
+
+def test_adapter_beast_subsample_cli_writes_retained_tree_set_and_metadata(
+    tmp_path: Path, capsys
+) -> None:
+    posterior_path = tmp_path / "posterior.trees"
+    retained_path = tmp_path / "posterior-retained.nwk"
+    table_path = tmp_path / "posterior-retained.tsv"
+    posterior_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_10 = ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_20 = ((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3):0.0;\n"
+        "tree STATE_30 = ((A:0.1,B:0.1):0.4,(C:0.1,D:0.1):0.4):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-subsample",
+            str(posterior_path),
+            "--method",
+            "evenly-spaced",
+            "--burnin-fraction",
+            "0.25",
+            "--thinning-interval",
+            "2",
+            "--tree-set-out",
+            str(retained_path),
+            "--sample-table-out",
+            str(table_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["total_tree_count"] == 4
+    assert payload["metrics"]["burnin_tree_count"] == 1
+    assert payload["metrics"]["pre_subsampling_tree_count"] == 3
+    assert payload["metrics"]["retained_tree_count"] == 2
+    assert payload["metrics"]["selection_method"] == "evenly-spaced"
+    assert payload["data"]["retained_source_indices"] == [2, 4]
+    assert retained_path.read_text(encoding="utf-8").count("\n") == 2
+    assert "STATE_10\t10\t\ttrue" in table_path.read_text(encoding="utf-8")
 
 
 def test_adapter_beast_consensus_cli_writes_consensus_and_clade_ledger(

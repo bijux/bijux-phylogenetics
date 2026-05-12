@@ -39,6 +39,8 @@ from bijux_phylogenetics.bayesian import (
     render_bayesian_posterior_report,
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
+    subsample_beast_posterior_tree_set,
+    subsample_mrbayes_posterior_tree_set,
     summarize_beast_log,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
@@ -52,6 +54,8 @@ from bijux_phylogenetics.bayesian import (
     write_beast_posterior_tree_set,
     write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
+    write_posterior_tree_subsample,
+    write_posterior_tree_subsample_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.bayesian.burnin import (
@@ -3791,6 +3795,35 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the posterior tree set report as JSON."
     )
     _add_manifest_argument(adapter_mrbayes_trees)
+    adapter_mrbayes_subsample = adapter_subparsers.add_parser(
+        "mrbayes-subsample",
+        help="Subsample MrBayes posterior trees while preserving generation metadata.",
+    )
+    adapter_mrbayes_subsample.add_argument("input_path", type=Path)
+    adapter_mrbayes_subsample.add_argument(
+        "--method",
+        required=True,
+        choices=("evenly-spaced", "random"),
+        help="Select evenly spaced thinning or a seeded random retained subset.",
+    )
+    adapter_mrbayes_subsample.add_argument("--burnin-fraction", type=float, default=0.0)
+    adapter_mrbayes_subsample.add_argument("--thinning-interval", type=int)
+    adapter_mrbayes_subsample.add_argument("--sample-count", type=int)
+    adapter_mrbayes_subsample.add_argument("--seed", type=int)
+    adapter_mrbayes_subsample.add_argument(
+        "--tree-set-out",
+        type=Path,
+        help="Write the retained posterior tree set as normalized Newick.",
+    )
+    adapter_mrbayes_subsample.add_argument(
+        "--sample-table-out",
+        type=Path,
+        help="Write a TSV ledger of retained posterior-tree metadata.",
+    )
+    adapter_mrbayes_subsample.add_argument(
+        "--json", action="store_true", help="Emit the posterior subsampling report as JSON."
+    )
+    _add_manifest_argument(adapter_mrbayes_subsample)
     adapter_mrbayes_mcmc = adapter_subparsers.add_parser(
         "mrbayes-mcmc",
         help="Parse a MrBayes MCMC diagnostics table.",
@@ -4006,6 +4039,40 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the posterior tree set report as JSON."
     )
     _add_manifest_argument(adapter_beast_trees)
+    adapter_beast_subsample = adapter_subparsers.add_parser(
+        "beast-subsample",
+        help="Subsample BEAST posterior trees while preserving state metadata.",
+    )
+    adapter_beast_subsample.add_argument("input_path", type=Path)
+    adapter_beast_subsample.add_argument(
+        "--method",
+        required=True,
+        choices=("evenly-spaced", "random"),
+        help="Select evenly spaced thinning or a seeded random retained subset.",
+    )
+    adapter_beast_subsample.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.0,
+        help="Discard this fraction of early sampled trees before subsampling.",
+    )
+    adapter_beast_subsample.add_argument("--thinning-interval", type=int)
+    adapter_beast_subsample.add_argument("--sample-count", type=int)
+    adapter_beast_subsample.add_argument("--seed", type=int)
+    adapter_beast_subsample.add_argument(
+        "--tree-set-out",
+        type=Path,
+        help="Write the retained posterior tree set as normalized Newick.",
+    )
+    adapter_beast_subsample.add_argument(
+        "--sample-table-out",
+        type=Path,
+        help="Write a TSV ledger of retained posterior-tree metadata.",
+    )
+    adapter_beast_subsample.add_argument(
+        "--json", action="store_true", help="Emit the posterior subsampling report as JSON."
+    )
+    _add_manifest_argument(adapter_beast_subsample)
     adapter_beast_consensus = adapter_subparsers.add_parser(
         "beast-consensus",
         help="Build a majority-rule consensus tree from BEAST posterior tree samples.",
@@ -9888,6 +9955,59 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.adapter_command == "mrbayes-subsample":
+                report = subsample_mrbayes_posterior_tree_set(
+                    args.input_path,
+                    method=args.method,
+                    thinning_interval=args.thinning_interval,
+                    sample_count=args.sample_count,
+                    burnin_fraction=args.burnin_fraction,
+                    random_seed=args.seed,
+                )
+                outputs: list[Path | str] = []
+                if args.tree_set_out is not None:
+                    outputs.append(
+                        write_posterior_tree_subsample(args.tree_set_out, report)
+                    )
+                if args.sample_table_out is not None:
+                    outputs.append(
+                        write_posterior_tree_subsample_table(
+                            args.sample_table_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "total_tree_count": report.total_tree_count,
+                            "burnin_tree_count": report.burnin_tree_count,
+                            "pre_subsampling_tree_count": (
+                                report.pre_subsampling_tree_count
+                            ),
+                            "retained_tree_count": report.retained_tree_count,
+                            "selection_method": report.selection_method,
+                            "retained_generation_count": len(
+                                [
+                                    tree
+                                    for tree in report.trees
+                                    if tree.generation is not None
+                                ]
+                            ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.adapter_command == "mrbayes-mcmc":
                 report = parse_mrbayes_mcmc_diagnostics(args.input_path)
                 outputs = _finalize_outputs(
@@ -10334,6 +10454,55 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "burnin_fraction": report.burnin_fraction,
                             "clade_count": len(report.clades),
                             "sampled_state_count": len(report.sampled_states),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-subsample":
+                report = subsample_beast_posterior_tree_set(
+                    args.input_path,
+                    method=args.method,
+                    thinning_interval=args.thinning_interval,
+                    sample_count=args.sample_count,
+                    burnin_fraction=args.burnin_fraction,
+                    random_seed=args.seed,
+                )
+                outputs: list[Path | str] = []
+                if args.tree_set_out is not None:
+                    outputs.append(
+                        write_posterior_tree_subsample(args.tree_set_out, report)
+                    )
+                if args.sample_table_out is not None:
+                    outputs.append(
+                        write_posterior_tree_subsample_table(
+                            args.sample_table_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "total_tree_count": report.total_tree_count,
+                            "burnin_tree_count": report.burnin_tree_count,
+                            "pre_subsampling_tree_count": (
+                                report.pre_subsampling_tree_count
+                            ),
+                            "retained_tree_count": report.retained_tree_count,
+                            "selection_method": report.selection_method,
+                            "retained_state_count": len(
+                                [tree for tree in report.trees if tree.state is not None]
+                            ),
                         },
                         data=report,
                     ),
