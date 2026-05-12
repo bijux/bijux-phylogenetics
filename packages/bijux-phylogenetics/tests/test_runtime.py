@@ -4520,6 +4520,31 @@ def test_compare_support_values_pairs_shared_clades() -> None:
     ]
 
 
+def test_compare_support_values_prefers_ufboot_when_iqtree_dual_support_is_present(
+    tmp_path: Path,
+) -> None:
+    left_path = tmp_path / "left.nwk"
+    right_path = tmp_path / "right.nwk"
+    left_path.write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\n",
+        encoding="utf-8",
+    )
+    right_path.write_text(
+        "((A:0.1,B:0.1)81/93:0.2,(C:0.1,D:0.1)78/94:0.2);\n",
+        encoding="utf-8",
+    )
+
+    report = compare_support_values(left_path, right_path)
+
+    assert [
+        (row.split_id, row.left_support, row.right_support)
+        for row in report.shared_clades
+    ] == [
+        ("A|B", 97.0, 93.0),
+        ("C|D", 96.0, 94.0),
+    ]
+
+
 def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> None:
     scaled = compare_branch_lengths(
         fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk")

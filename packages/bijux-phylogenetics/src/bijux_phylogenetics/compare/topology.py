@@ -10,6 +10,7 @@ from Bio.Phylo.BaseTree import Clade, Tree
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.io.iqtree_support import parse_iqtree_branch_support_label
 from bijux_phylogenetics.io.trees import detect_tree_format
 
 
@@ -183,6 +184,14 @@ def _informative_clade_nodes(
 def _parse_support(value: object) -> float | None:
     if value is None:
         return None
+    if isinstance(value, str):
+        parsed = parse_iqtree_branch_support_label(value)
+        if parsed is not None:
+            return (
+                parsed.ufboot_support
+                if parsed.ufboot_support is not None
+                else parsed.sh_alrt_support
+            )
     try:
         return float(value)
     except ValueError:

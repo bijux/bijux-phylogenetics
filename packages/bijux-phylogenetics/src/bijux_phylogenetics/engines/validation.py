@@ -25,6 +25,11 @@ from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
     summarize_alignment_readiness,
 )
+from bijux_phylogenetics.io.iqtree_support import (
+    IqtreeBranchSupportLabel,
+    parse_iqtree_branch_support_label,
+    support_fraction,
+)
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.tree_set import load_tree_set
 
@@ -144,6 +149,38 @@ class WeakBackboneReport:
     evaluated_backbone_node_count: int
     weak_backbone_node_count: int
     weak_nodes: list[BootstrapSupportNode]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class ShAlrtSupportNode:
+    node: str
+    descendant_taxa: list[str]
+    sh_alrt_support: float | None
+    sh_alrt_support_fraction: float | None
+    ufboot_support: float | None
+    ufboot_support_fraction: float | None
+    is_backbone: bool
+    sh_alrt_strong: bool
+    ufboot_strong: bool
+    conflicting_support_signal: bool
+    support_agreement: str
+
+
+@dataclass(slots=True)
+class ShAlrtSupportSummaryReport:
+    tree_path: Path
+    internal_node_count: int
+    annotated_node_count: int
+    fully_scored_node_count: int
+    minimum_sh_alrt_support: float | None
+    maximum_sh_alrt_support: float | None
+    minimum_ufboot_support: float | None
+    maximum_ufboot_support: float | None
+    weak_sh_alrt_clade_count: int
+    weak_ufboot_clade_count: int
+    conflicting_support_signal_count: int
+    nodes: list[ShAlrtSupportNode]
     warnings: list[str]
 
 
@@ -587,10 +624,13 @@ def summarize_bootstrap_support_distribution(
         if node.is_leaf():
             continue
         descendant_taxa = node_descendant_taxa(node)
-        support = _parse_internal_support(node.name)
+        support_label = _parse_iqtree_support_label(node.name)
+        support = None if support_label is None else support_label.ufboot_support
         if support is None:
             continue
-        support_fraction = support / 100.0 if support > 1.0 else support
+        normalized_support_fraction = support_fraction(support)
+        if normalized_support_fraction is None:
+            continue
         nodes.append(
             BootstrapSupportNode(
                 node="|".join(descendant_taxa)
@@ -598,7 +638,7 @@ def summarize_bootstrap_support_distribution(
                 else (node.name or "<unnamed>"),
                 descendant_taxa=descendant_taxa,
                 support=support,
-                support_fraction=support_fraction,
+                support_fraction=normalized_support_fraction,
                 is_backbone=len(descendant_taxa) >= max(2, total_tip_count // 2),
             )
         )
@@ -660,16 +700,137 @@ def detect_weakly_supported_backbone(
     )
 
 
-def _parse_internal_support(value: str | None) -> float | None:
-    if value is None:
-        return None
-    text = value.strip()
-    if not text:
-        return None
-    try:
-        return float(text)
-    except ValueError:
-        return None
+def summarize_sh_alrt_support_distribution(
+    tree_path: Path,
+    *,
+    sh_alrt_strong_threshold: float = 80.0,
+    ufboot_strong_threshold: float = 95.0,
+) -> ShAlrtSupportSummaryReport:
+    """Summarize compound SH-aLRT/UFBoot branch labels across one tree."""
+    tree = load_tree(tree_path)
+    nodes: list[ShAlrtSupportNode] = []
+    warnings: list[str] = []
+    total_tip_count = tree.tip_count
+    for node in tree.iter_nodes():
+        if node.is_leaf():
+            continue
+        descendant_taxa = node_descendant_taxa(node)
+        support_label = _parse_iqtree_support_label(node.name)
+        if support_label is None:
+            continue
+        sh_alrt_value = support_label.sh_alrt_support
+        ufboot_value = support_label.ufboot_support
+        sh_alrt_strong = (
+            sh_alrt_value is not None and sh_alrt_value >= sh_alrt_strong_threshold
+        )
+        ufboot_strong = (
+            ufboot_value is not None and ufboot_value >= ufboot_strong_threshold
+        )
+        support_agreement = _support_agreement(
+            sh_alrt_value=sh_alrt_value,
+            ufboot_value=ufboot_value,
+            sh_alrt_strong=sh_alrt_strong,
+            ufboot_strong=ufboot_strong,
+        )
+        nodes.append(
+            ShAlrtSupportNode(
+                node="|".join(descendant_taxa)
+                if descendant_taxa
+                else (node.name or "<unnamed>"),
+                descendant_taxa=descendant_taxa,
+                sh_alrt_support=sh_alrt_value,
+                sh_alrt_support_fraction=support_fraction(sh_alrt_value),
+                ufboot_support=ufboot_value,
+                ufboot_support_fraction=support_fraction(ufboot_value),
+                is_backbone=len(descendant_taxa) >= max(2, total_tip_count // 2),
+                sh_alrt_strong=sh_alrt_strong,
+                ufboot_strong=ufboot_strong,
+                conflicting_support_signal=support_agreement
+                in {"sh_alrt_only", "ufboot_only"},
+                support_agreement=support_agreement,
+            )
+        )
+    if len(nodes) < sum(1 for node in tree.iter_nodes() if not node.is_leaf()):
+        warnings.append(
+            "one or more internal nodes did not expose parsable sh-alrt or ufboot labels"
+        )
+    if any(node.conflicting_support_signal for node in nodes):
+        warnings.append(
+            "one or more internal clades show conflicting sh-alrt and ufboot support signals"
+        )
+    if any(
+        not node.sh_alrt_strong
+        for node in nodes
+        if node.sh_alrt_support is not None
+    ):
+        warnings.append("one or more internal clades remain weakly supported by sh-alrt")
+    if any(
+        not node.ufboot_strong
+        for node in nodes
+        if node.ufboot_support is not None
+    ):
+        warnings.append("one or more internal clades remain weakly supported by ufboot")
+    sh_alrt_values = sorted(
+        node.sh_alrt_support
+        for node in nodes
+        if node.sh_alrt_support is not None
+    )
+    ufboot_values = sorted(
+        node.ufboot_support for node in nodes if node.ufboot_support is not None
+    )
+    return ShAlrtSupportSummaryReport(
+        tree_path=tree_path,
+        internal_node_count=sum(1 for node in tree.iter_nodes() if not node.is_leaf()),
+        annotated_node_count=len(nodes),
+        fully_scored_node_count=sum(
+            1
+            for node in nodes
+            if node.sh_alrt_support is not None and node.ufboot_support is not None
+        ),
+        minimum_sh_alrt_support=None if not sh_alrt_values else sh_alrt_values[0],
+        maximum_sh_alrt_support=None if not sh_alrt_values else sh_alrt_values[-1],
+        minimum_ufboot_support=None if not ufboot_values else ufboot_values[0],
+        maximum_ufboot_support=None if not ufboot_values else ufboot_values[-1],
+        weak_sh_alrt_clade_count=sum(
+            1
+            for node in nodes
+            if node.sh_alrt_support is not None and not node.sh_alrt_strong
+        ),
+        weak_ufboot_clade_count=sum(
+            1
+            for node in nodes
+            if node.ufboot_support is not None and not node.ufboot_strong
+        ),
+        conflicting_support_signal_count=sum(
+            1 for node in nodes if node.conflicting_support_signal
+        ),
+        nodes=nodes,
+        warnings=warnings,
+    )
+
+
+def _parse_iqtree_support_label(
+    value: str | None,
+) -> IqtreeBranchSupportLabel | None:
+    return parse_iqtree_branch_support_label(value)
+
+
+def _support_agreement(
+    *,
+    sh_alrt_value: float | None,
+    ufboot_value: float | None,
+    sh_alrt_strong: bool,
+    ufboot_strong: bool,
+) -> str:
+    if sh_alrt_value is None or ufboot_value is None:
+        return "incomplete"
+    if sh_alrt_strong and ufboot_strong:
+        return "both_strong"
+    if not sh_alrt_strong and not ufboot_strong:
+        return "both_weak"
+    if sh_alrt_strong:
+        return "sh_alrt_only"
+    return "ufboot_only"
 
 
 def _median_support(values: list[float]) -> float | None:

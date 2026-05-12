@@ -11,6 +11,7 @@ from bijux_phylogenetics.engines.validation import (
     compare_inferred_trees_across_engines,
     compare_ml_trees_across_models,
     detect_weakly_supported_backbone,
+    summarize_sh_alrt_support_distribution,
     summarize_bootstrap_support_distribution,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
@@ -392,6 +393,36 @@ def test_detect_weakly_supported_backbone_flags_major_internal_branches(
     assert report.weak_backbone_node_count == 2
     assert any(node.node == "A|B|C|D|E" for node in report.weak_nodes)
     assert any("backbone" in warning for warning in report.warnings)
+
+
+def test_summarize_sh_alrt_support_distribution_tracks_conflicting_support_signals(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "sh-alrt.treefile"
+    tree_path.write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\n",
+        encoding="utf-8",
+    )
+
+    report = summarize_sh_alrt_support_distribution(tree_path)
+
+    assert report.annotated_node_count == 2
+    assert report.fully_scored_node_count == 2
+    assert report.minimum_sh_alrt_support == 79.0
+    assert report.maximum_sh_alrt_support == 82.0
+    assert report.minimum_ufboot_support == 96.0
+    assert report.maximum_ufboot_support == 97.0
+    assert report.weak_sh_alrt_clade_count == 1
+    assert report.weak_ufboot_clade_count == 0
+    assert report.conflicting_support_signal_count == 1
+    assert [node.support_agreement for node in report.nodes] == [
+        "both_strong",
+        "ufboot_only",
+    ]
+    assert (
+        "one or more internal clades show conflicting sh-alrt and ufboot support signals"
+        in report.warnings
+    )
 
 
 def test_compare_ml_trees_across_models_reports_topology_and_branch_length_differences(
