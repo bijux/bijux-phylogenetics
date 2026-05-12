@@ -294,6 +294,27 @@ Newick tree set that can be handed directly to the existing tree-set
 consensus, topology-diversity, and MCC review surfaces without re-scraping the
 original BEAST NEXUS container.
 
+Use `adapter beast-consensus` when you want a governed majority-rule summary
+tree from BEAST posterior samples instead of chaining generic tree-set commands
+by hand.
+
+```bash
+bijux-phylogenetics adapter beast-consensus \
+  artifacts/multilocus-beast.1.trees \
+  --burnin-fraction 0.1 \
+  --out artifacts/multilocus-beast.consensus.nwk \
+  --tree-set-out artifacts/multilocus-beast.postburnin.nwk \
+  --clade-table-out artifacts/multilocus-beast.clades.tsv \
+  --json
+```
+
+That command applies burn-in filtering once, writes the retained posterior tree
+set, computes informative clade frequencies, and writes a consensus tree whose
+internal labels are posterior clade probabilities on the `0..1` scale. The
+clade-frequency ledger preserves every informative retained clade, not only the
+majority clades that appear in the consensus topology, so reviewers can see
+which alternative groupings remained credible after burn-in removal.
+
 Use `adapter mrbayes-run` after preparation when you want the governed runtime
 to execute MrBayes and preserve the native posterior artifacts for later
 inspection instead of leaving the engine outputs implicit.
