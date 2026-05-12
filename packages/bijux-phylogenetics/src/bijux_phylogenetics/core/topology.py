@@ -302,6 +302,10 @@ def _leaf_count(node: TreeNode) -> int:
     return sum(_leaf_count(child) for child in node.children)
 
 
+def _is_strictly_bifurcating(tree: PhyloTree) -> bool:
+    return all(node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes())
+
+
 def _combine_branch_lengths(base: float | None, extra: float | None) -> float | None:
     if base is None and extra is None:
         return None
@@ -825,6 +829,8 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
     )
     midpoint_anchor_side_taxa: list[str] = []
     midpoint_opposite_side_taxa: list[str] = []
+    warnings: list[str] = []
+    midpoint_suitable = True
     if midpoint_anchor_taxa and len(midpoint_root_partitions) >= 2:
         anchor_taxon = midpoint_anchor_taxa[0]
         for partition in midpoint_root_partitions:
@@ -833,6 +839,11 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
             else:
                 midpoint_opposite_side_taxa.extend(partition)
         midpoint_opposite_side_taxa = sorted(midpoint_opposite_side_taxa)
+    if not _is_strictly_bifurcating(tree):
+        warnings.append(
+            "midpoint rooting is exploratory because the input tree is not strictly bifurcating"
+        )
+        midpoint_suitable = False
     summary = _summarize_transformation(
         tree, rerooted_tree, transformation="reroot-midpoint"
     )
@@ -849,14 +860,14 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
         rooted_outgroup_taxa=[],
         rooted_ingroup_taxa=sorted(rerooted_tree.tip_names),
         tip_order=rerooted_tree.tip_names,
-        warnings=[],
+        warnings=warnings,
         midpoint_anchor_taxa=midpoint_anchor_taxa,
         midpoint_path_length=midpoint_path_length,
         midpoint_distance_from_anchor=midpoint_distance_from_anchor,
         midpoint_position_kind=midpoint_position_kind,
         midpoint_anchor_side_taxa=midpoint_anchor_side_taxa,
         midpoint_opposite_side_taxa=midpoint_opposite_side_taxa,
-        midpoint_suitable=True,
+        midpoint_suitable=midpoint_suitable,
         summary=summary,
     )
 

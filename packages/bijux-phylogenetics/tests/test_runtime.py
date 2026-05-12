@@ -2104,6 +2104,22 @@ def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
     assert report.summary.branch_lengths_affected != []
 
 
+def test_reroot_tree_by_midpoint_warns_when_tree_is_not_strictly_bifurcating() -> None:
+    tree, report = reroot_tree_by_midpoint(fixture("example_tree_polytomy.nwk"))
+
+    assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
+    assert report.midpoint_suitable is False
+    assert report.midpoint_anchor_taxa == ["C", "D"]
+    assert report.midpoint_path_length == 1.2
+    assert report.midpoint_distance_from_anchor == 0.6
+    assert report.midpoint_position_kind == "branch"
+    assert report.midpoint_anchor_side_taxa == ["A", "B", "C"]
+    assert report.midpoint_opposite_side_taxa == ["D"]
+    assert report.warnings == [
+        "midpoint rooting is exploratory because the input tree is not strictly bifurcating"
+    ]
+
+
 def test_unroot_tree_converts_rooted_binary_tree_into_trifurcation() -> None:
     tree, report = unroot_tree(fixture("example_tree_rootable.nwk"))
     assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
