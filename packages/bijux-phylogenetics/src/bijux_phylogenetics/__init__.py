@@ -288,6 +288,12 @@ from .compare.topology import (
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
 )
+from .compare.taxon_influence import (
+    TaxonInfluenceReport,
+    TaxonInfluenceRow,
+    analyze_taxon_influence,
+    write_taxon_influence_table,
+)
 from .core.dataset import (
     DatasetAuditReport,
     DatasetCompletenessMatrix,
@@ -1034,6 +1040,8 @@ __all__ = [
     "TreeShapeReport",
     "TreeShapeRow",
     "SharedTaxaPruningReport",
+    "TaxonInfluenceReport",
+    "TaxonInfluenceRow",
     "TreeComparisonReport",
     "RobinsonFouldsComparisonReport",
     "TreeInspectionReport",
@@ -1136,6 +1144,7 @@ __all__ = [
     "compare_clade_overlap",
     "compare_robinson_foulds",
     "compare_support_values",
+    "analyze_taxon_influence",
     "compare_tree_paths",
     "prune_trees_to_shared_taxa",
     "compare_posterior_tree_sets",
@@ -1435,6 +1444,7 @@ __all__ = [
     "write_shared_taxa_pruning_table",
     "write_shared_taxa_removed_taxa_table",
     "write_support_comparison_table",
+    "write_taxon_influence_table",
     "write_mrbayes_burnin_sensitivity_slice_table",
     "write_mrbayes_parameter_summary_table",
     "write_posterior_tree_subsample",

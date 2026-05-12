@@ -144,6 +144,12 @@ from bijux_phylogenetics.compare.topology import (
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
 )
+from bijux_phylogenetics.compare.taxon_influence import (
+    TaxonInfluenceReport,
+    TaxonInfluenceRow,
+    analyze_taxon_influence,
+    write_taxon_influence_table,
+)
 from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
@@ -539,11 +545,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.SupportComparisonReport is SupportComparisonReport
     )
     assert bijux_phylogenetics.SupportConflictRow is SupportConflictRow
+    assert bijux_phylogenetics.TaxonInfluenceReport is TaxonInfluenceReport
+    assert bijux_phylogenetics.TaxonInfluenceRow is TaxonInfluenceRow
     assert (
         bijux_phylogenetics.compare_branch_score_distance
         is compare_branch_score_distance
     )
     assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
+    assert bijux_phylogenetics.analyze_taxon_influence is analyze_taxon_influence
     assert (
         bijux_phylogenetics.analyze_branch_length_distribution
         is analyze_branch_length_distribution
@@ -574,6 +583,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_support_comparison_table
         is write_support_comparison_table
     )
+    assert bijux_phylogenetics.write_taxon_influence_table is write_taxon_influence_table
     assert (
         bijux_phylogenetics.RobinsonFouldsComparisonReport
         is RobinsonFouldsComparisonReport
@@ -582,9 +592,12 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert compare_api.SharedTaxaPruningReport is SharedTaxaPruningReport
     assert compare_api.SupportComparisonReport is SupportComparisonReport
     assert compare_api.SupportConflictRow is SupportConflictRow
+    assert compare_api.TaxonInfluenceReport is TaxonInfluenceReport
+    assert compare_api.TaxonInfluenceRow is TaxonInfluenceRow
     assert compare_api.compare_clade_overlap is compare_clade_overlap
     assert compare_api.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert compare_api.compare_support_values is compare_support_values
+    assert compare_api.analyze_taxon_influence is analyze_taxon_influence
     assert compare_api.write_clade_overlap_table is write_clade_overlap_table
     assert compare_api.write_shared_taxa_pruning_table is write_shared_taxa_pruning_table
     assert (
@@ -592,6 +605,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is write_shared_taxa_removed_taxa_table
     )
     assert compare_api.write_support_comparison_table is write_support_comparison_table
+    assert compare_api.write_taxon_influence_table is write_taxon_influence_table
     assert compare_api.BranchScoreComparisonReport is BranchScoreComparisonReport
     assert compare_api.compare_branch_score_distance is compare_branch_score_distance
     assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
