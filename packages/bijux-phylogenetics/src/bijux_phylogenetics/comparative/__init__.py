@@ -79,6 +79,14 @@ from .clade_residuals import (
     write_comparative_residual_clade_table,
     write_comparative_residual_taxon_table,
 )
+from .clade_stability import (
+    ComparativeCladeCoefficientChangeRow,
+    ComparativeCladeStabilityReport,
+    ComparativeCladeStabilityRow,
+    analyze_comparative_clade_stability,
+    write_comparative_clade_coefficient_change_table,
+    write_comparative_clade_stability_table,
+)
 from .regression_model_selection import (
     ComparativeRegressionModelExclusion,
     ComparativeRegressionModelRow,
@@ -194,6 +202,9 @@ __all__ = [
     "ComparativeHypothesisTestRow",
     "ComparativeInfluenceReport",
     "ComparativeCladeResidualReport",
+    "ComparativeCladeCoefficientChangeRow",
+    "ComparativeCladeStabilityReport",
+    "ComparativeCladeStabilityRow",
     "ComparativeMethodMaturityReport",
     "ComparativeMethodReport",
     "ComparativeModelComparisonReport",
@@ -271,6 +282,7 @@ __all__ = [
     "OUTraitModelReport",
     "compare_brownian_and_ou_models",
     "analyze_comparative_residual_clades",
+    "analyze_comparative_clade_stability",
     "compare_comparative_regression_models",
     "compare_comparative_results_across_pruning",
     "compare_comparative_results_across_trees",
@@ -318,6 +330,8 @@ __all__ = [
     "write_brownian_covariance_table",
     "write_comparative_residual_clade_table",
     "write_comparative_residual_taxon_table",
+    "write_comparative_clade_coefficient_change_table",
+    "write_comparative_clade_stability_table",
     "write_comparative_regression_excluded_taxa_table",
     "write_comparative_regression_model_ranking_table",
     "write_comparative_regression_pairwise_table",
