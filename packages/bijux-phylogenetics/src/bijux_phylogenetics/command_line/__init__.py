@@ -220,6 +220,9 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
 )
+from bijux_phylogenetics.engines.large_alignment_inference import (
+    run_large_alignment_inference,
+)
 from bijux_phylogenetics.engines.inference_reproducibility import (
     run_inference_reproducibility_check,
 )
@@ -3586,6 +3589,27 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
     _add_manifest_argument(adapter_fast)
+    adapter_large = adapter_subparsers.add_parser(
+        "infer-large",
+        help="Run large-alignment FastTree inference with streamed preflight and resource reporting.",
+    )
+    adapter_large.add_argument("input_path", type=Path)
+    adapter_large.add_argument("--out-dir", required=True, type=Path)
+    adapter_large.add_argument("--prefix", default="large-alignment-inference")
+    adapter_large.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
+    adapter_large.add_argument("--executable", type=str)
+    adapter_large.add_argument("--resume", action="store_true")
+    adapter_large.add_argument(
+        "--timeout-seconds",
+        type=float,
+        help="Stop the FastTree inference step if it exceeds this wall-clock budget.",
+    )
+    adapter_large.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
+    _add_manifest_argument(adapter_large)
     adapter_compare = adapter_subparsers.add_parser(
         "compare", help="Compare fast approximate and ML trees."
     )
@@ -9890,6 +9914,49 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=inputs,
                         outputs=outputs,
                         metrics={"warning_count": report.warning_count},
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "infer-large":
+                report = run_large_alignment_inference(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    prefix=args.prefix,
+                    sequence_type=args.sequence_type,
+                    executable=args.executable or "FastTree",
+                    timeout_seconds=args.timeout_seconds,
+                    resume=args.resume,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values()],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "sequence_count": report.input_summary.sequence_count,
+                            "alignment_length": report.input_summary.alignment_length,
+                            "total_site_cells": report.input_summary.total_site_cells,
+                            "sequence_type": report.sequence_type,
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.timeout_seconds,
+                            "peak_memory_bytes": max(
+                                (
+                                    row.peak_memory_bytes
+                                    for row in report.resource_rows
+                                    if row.peak_memory_bytes is not None
+                                ),
+                                default=None,
+                            ),
+                        },
                         data=report,
                     ),
                     json_output=args.json,

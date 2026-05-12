@@ -630,6 +630,48 @@ def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
     )
 
 
+def test_adapter_infer_large_cli_reports_streamed_size_and_resource_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    fasttree = _fake_fasttree(tmp_path / "FastTree-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+    out_dir = tmp_path / "large-inference"
+
+    exit_code = main(
+        [
+            "adapter",
+            "infer-large",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--sequence-type",
+            "dna",
+            "--executable",
+            str(fasttree),
+            "--timeout-seconds",
+            "30",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["sequence_count"] == 4
+    assert payload["metrics"]["alignment_length"] == 8
+    assert payload["metrics"]["total_site_cells"] == 32
+    assert payload["metrics"]["sequence_type"] == "dna"
+    assert payload["metrics"]["resumed"] is False
+    assert payload["metrics"]["timeout_seconds"] == 30.0
+    assert payload["metrics"]["peak_memory_bytes"] is not None
+    assert Path(payload["data"]["output_paths"]["tree"]).exists()
+    assert Path(payload["data"]["output_paths"]["resource_table"]).exists()
+    assert any(
+        "scanned linearly before inference" in note for note in payload["data"]["notes"]
+    )
+
+
 def test_adapter_reproducibility_cli_reports_deterministic_outputs(
     tmp_path: Path, capsys
 ) -> None:
