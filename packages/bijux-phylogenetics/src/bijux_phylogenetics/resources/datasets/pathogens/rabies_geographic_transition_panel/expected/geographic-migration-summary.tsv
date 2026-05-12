@@ -1,0 +1,2 @@
+trait	taxon_column	model	internal_model	likelihood_method	analyzed_taxon_count	excluded_taxon_count	tree_depth	event_count	strongly_supported_event_count	mean_event_support	earliest_midpoint_depth	latest_midpoint_depth	warning_count
+region_group	taxon	ard	all-rates-different	deterministic-node-probability	9	0	0.2956156837	4	0	0.560208039363848	0.0	0.27017854725	3
