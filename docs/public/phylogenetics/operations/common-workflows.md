@@ -454,6 +454,53 @@ biogeographic process fit. When requested intervals do not cover the full tree
 depth, the workflow reports that boundary as a warning instead of silently
 pretending those uncovered branch segments were modeled.
 
+When the goal is to reconstruct host association evolution and count inferred
+host shifts on one pathogen or parasite tree, use `host-association switches`.
+This workflow accepts one rooted tree, one host metadata table, and
+optionally one explicit host-transition constraint ledger. It reconstructs
+internal host states, classifies branchwise host shifts as certain or
+uncertain, aggregates directed host-switch counts, and compares constrained
+versus unconstrained host-transition fits when a constraint ledger is
+supplied.
+
+```bash
+bijux-phylogenetics host-association switches \
+  artifacts/pathogens.nwk \
+  artifacts/pathogens-hosts.tsv \
+  --trait host \
+  --taxon-column taxon \
+  --model er \
+  --constraints artifacts/host-transition-constraints.tsv \
+  --summary-out artifacts/pathogens.host-switch-summary.tsv \
+  --nodes-out artifacts/pathogens.host-switch-nodes.tsv \
+  --branches-out artifacts/pathogens.host-switch-branches.tsv \
+  --counts-out artifacts/pathogens.host-switch-counts.tsv \
+  --fits-out artifacts/pathogens.host-switch-fits.tsv \
+  --unsupported-out artifacts/pathogens.host-switch-unsupported.tsv \
+  --exclusions-out artifacts/pathogens.host-switch-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, observed host
+count, internal-node ambiguity burden, certain and uncertain switch counts,
+allowed and forbidden transition counts, constrained and unconstrained fit
+evidence, preferred constraint regime, unsupported unconstrained claim count,
+and root-host support. The node ledger keeps one row per internal node with
+the most likely host and the full host-probability vector. The branch ledger
+keeps one row per analyzed branch with the parent and child host sets,
+certainty class, and allowed-transition flag. The count ledger aggregates
+directed host-switch counts across branches. When `--constraints` is supplied,
+the fit ledger keeps one row for the unconstrained fit and one for the
+constrained fit, while the unsupported-claims ledger keeps one row for each
+unconstrained branchwise host-switch claim that violates the supplied
+transition policy. The excluded-taxa ledger keeps dropped raw host rows.
+
+The host-association surface is explicit about scope. It is a one-tree
+host-state evolution review over the owned discrete ancestral runtime, not a
+full cophylogenetic reconciliation or a transmission-history inference model.
+Its value is to make inferred host-switch evidence, uncertainty, and explicit
+transition constraints reviewable on the analyzed tree.
+
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
 ancestral reconstruction surfaces and turns their uncertainty into one ranked
