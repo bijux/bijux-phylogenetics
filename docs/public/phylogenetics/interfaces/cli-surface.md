@@ -68,14 +68,18 @@ that correspond to each run. `adapter model-select` keeps `.iqtree`, `.log`,
 the native model sidecar, and a generated `.model-candidates.tsv`; `adapter infer-ml`
 keeps `.treefile`, `.iqtree`, and `.log`; `adapter bootstrap` keeps `.treefile`,
 `.iqtree`, `.log`, `.ufboot`, `.contree`, `.support.tsv`, `.low-support.tsv`,
-and `.support-histogram.tsv` when those artifacts exist; and `adapter consensus`
-keeps the consensus `.contree` with the matching `.iqtree` and `.log`. Their
-JSON summaries expose parsed `selected_model`,
+and `.support-histogram.tsv` when those artifacts exist; `adapter sh-alrt`
+keeps `.treefile`, `.iqtree`, `.log`, `.ufboot`, `.support.tsv`, and
+`.conflicting-support.tsv`; and `adapter consensus` keeps the consensus
+`.contree` with the matching `.iqtree` and `.log`. Their JSON summaries expose
+parsed `selected_model`,
 `selected_criterion`, `candidate_model_count`, `best_model_aic`,
 `best_model_aicc`, `best_model_bic`, `log_likelihood`, support-value counts,
 support minima and maxima, weak-support counts, weak-backbone counts, and the
 governed support histogram so review surfaces can rely on structured engine
-outputs instead of re-parsing free text.
+outputs instead of re-parsing free text. The SH-aLRT command also exposes
+annotated-branch counts, SH-aLRT minima and maxima, and conflicting-signal
+counts for the combined SH-aLRT/UFBoot review surface.
 
 For raw input hygiene before alignment, the alignment family now includes
 `alignment sequence-type`, `alignment validate-input`, and
