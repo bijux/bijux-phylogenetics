@@ -17,6 +17,7 @@ Typical public workflows include:
 - assemble aligned loci into a concatenated supermatrix
 - audit a concatenated multi-locus matrix before inference
 - run a comparative model and capture JSON plus report artifacts
+- reconstruct ancestral regions and inspect transition evidence
 - generate a review-ready figure package for a tree
 
 The public workflow contract is that important outputs should be inspectable
@@ -280,6 +281,46 @@ unconstrained state, confidence delta, and ambiguity change flag. The
 transition ledger keeps one row per directed state change so reviewers can see
 which transitions the constraint forbids and what rate the unconstrained model
 would otherwise assign to them.
+
+When the goal is to reconstruct ancestral geographic regions rather than only a
+generic discrete trait, use `biogeography model`. This workflow accepts one
+taxon-region table, fits one ER, SYM, or ARD geographic transition model on
+the rooted tree, and writes reviewer-facing ledgers for internal-node region
+probabilities, pairwise transition rates, branchwise geographic events, and
+explicit excluded taxa.
+
+```bash
+bijux-phylogenetics biogeography model \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait region \
+  --taxon-column species \
+  --model ard \
+  --summary-out artifacts/primates.biogeography-summary.tsv \
+  --nodes-out artifacts/primates.biogeography-nodes.tsv \
+  --rates-out artifacts/primates.biogeography-rates.tsv \
+  --events-out artifacts/primates.biogeography-events.tsv \
+  --exclusions-out artifacts/primates.biogeography-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the ER/SYM/ARD choice, analyzed taxon
+count, observed region count, internal-node count, changed-branch count,
+strongly supported transition count, root region, and root-region support. The
+node ledger keeps one row per internal node with the most likely ancestral
+region and the full region-probability vector. The rate ledger keeps one row
+per directed source-target region pair with the fitted rate and uncertainty
+interval. The event ledger keeps one row per branch with the inferred source
+and target regions plus branch-level support. The excluded-taxa ledger keeps
+raw region rows that were dropped because the taxon was absent from the tree or
+the region coding was unusable.
+
+The current biogeography surface is explicit about method scope. It reuses the
+owned deterministic geographic-state engine already in the repository rather
+than claiming a fresh time-stratified or stochastic biogeographic process fit.
+That means the node and branch outputs are directly reviewable and stable, but
+they should still be interpreted as model-conditioned geographic state evidence
+rather than as direct proof of dispersal timing or mechanism.
 
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
