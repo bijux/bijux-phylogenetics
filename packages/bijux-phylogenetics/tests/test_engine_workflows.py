@@ -85,6 +85,25 @@ def _real_iqtree_executable() -> Path | None:
     return None
 
 
+def _real_fasttree_executable() -> Path | None:
+    configured = os.environ.get("BIJUX_PHYLOGENETICS_FASTTREE_EXECUTABLE")
+    if configured:
+        candidate = Path(configured)
+        if candidate.exists():
+            return candidate
+    for executable_name in ("FastTree", "fasttree", "FastTreeMP"):
+        resolved = shutil.which(executable_name)
+        if resolved is not None:
+            return Path(resolved)
+    for artifact_candidate in (
+        REPOSITORY_ROOT / "artifacts" / "fasttree" / "FastTree",
+        REPOSITORY_ROOT / "artifacts" / "fasttree" / "fasttree",
+    ):
+        if artifact_candidate.exists():
+            return artifact_candidate
+    return None
+
+
 def _write_executable(path: Path, body: str) -> Path:
     path.write_text(body, encoding="utf-8")
     path.chmod(0o755)
@@ -682,6 +701,49 @@ def test_run_iqtree_backend_with_real_executable_on_small_dataset(
     assert consensus_report.output_paths["iqtree_log"].exists()
     assert consensus_report.iqtree_summary is not None
     assert consensus_report.iqtree_summary.support_value_count >= 1
+
+
+@pytest.mark.parametrize(
+    ("input_path", "sequence_type", "expected_command_prefix"),
+    (
+        (fixture("alignments/example_alignment.fasta"), "dna", ["-gtr", "-nt"]),
+        (
+            REPOSITORY_ROOT
+            / "packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.trimmed.aln",
+            "protein",
+            ["-lg"],
+        ),
+    ),
+)
+def test_run_fasttree_backend_with_real_executable_on_supported_alignments(
+    tmp_path: Path,
+    input_path: Path,
+    sequence_type: str,
+    expected_command_prefix: list[str],
+) -> None:
+    executable = _real_fasttree_executable()
+    if executable is None:
+        pytest.skip("real FastTree executable is not available for integration coverage")
+
+    output_path = tmp_path / f"real-fasttree-{sequence_type}.nwk"
+    report = run_fast_tree_inference(
+        input_path,
+        output_path,
+        executable=executable,
+        sequence_type=sequence_type,
+    )
+
+    assert report.run.exit_code == 0
+    assert report.run.command[1 : 1 + len(expected_command_prefix)] == (
+        expected_command_prefix
+    )
+    assert "FastTree" in report.run.version.text
+    assert report.fasttree_support_summary is not None
+    assert report.fasttree_support_summary.annotated_node_count > 0
+    assert report.fasttree_support_summary.approximate_method is True
+    assert report.output_paths["support_table"].exists()
+    assert report.output_paths["low_support_branches"].exists()
+    assert report.output_paths["support_histogram"].exists()
 
 
 def test_run_bootstrap_support_estimation_exports_branch_ledgers_and_histogram(
