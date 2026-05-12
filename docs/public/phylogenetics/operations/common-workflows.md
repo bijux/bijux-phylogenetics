@@ -85,6 +85,25 @@ and one row for every estimated non-baseline group coefficient. It also records
 missing-category taxa explicitly, so a dropped or blank category value does not
 disappear into a generic exclusion count.
 
+When interaction terms are present and the question is how effect modification
+was encoded and estimated, write the governed interaction-coefficient ledger in
+the same run.
+
+```bash
+bijux-phylogenetics comparative pgls \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --formula 'longevity ~ social_group_size * habitat' \
+  --taxon-column species \
+  --interaction-coefficients-out artifacts/primates.interaction-coefficients.tsv \
+  --json
+```
+
+That ledger keeps one row per fitted interaction coefficient, records whether
+the interaction is continuous-by-continuous, continuous-by-categorical, or
+categorical-by-categorical, and preserves any omitted treatment-coded baseline
+levels so the effect-modification interpretation stays explicit.
+
 When a tree is already inferred and you need to root it on one known outgroup
 taxon or one expected outgroup clade, use `topology root-outgroup`. The
 command writes the rooted tree and can also emit a one-row TSV report that
