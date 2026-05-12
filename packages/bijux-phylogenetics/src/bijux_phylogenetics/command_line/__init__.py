@@ -9340,7 +9340,44 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.input_path],
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"warning_count": len(report.run.warning_lines)},
+                        metrics={
+                            "warning_count": len(report.run.warning_lines),
+                            "approximate_method": (
+                                None
+                                if report.fasttree_support_summary is None
+                                else report.fasttree_support_summary.approximate_method
+                            ),
+                            "support_label_kind": (
+                                None
+                                if report.fasttree_support_summary is None
+                                else report.fasttree_support_summary.support_label_kind
+                            ),
+                            "support_scale": (
+                                None
+                                if report.fasttree_support_summary is None
+                                else report.fasttree_support_summary.support_scale
+                            ),
+                            "annotated_node_count": (
+                                0
+                                if report.fasttree_support_summary is None
+                                else report.fasttree_support_summary.annotated_node_count
+                            ),
+                            "minimum_local_support": (
+                                None
+                                if report.fasttree_support_summary is None
+                                else report.fasttree_support_summary.minimum_local_support
+                            ),
+                            "maximum_local_support": (
+                                None
+                                if report.fasttree_support_summary is None
+                                else report.fasttree_support_summary.maximum_local_support
+                            ),
+                            "weakly_supported_clade_count": (
+                                0
+                                if report.fasttree_support_summary is None
+                                else report.fasttree_support_summary.weakly_supported_clade_count
+                            ),
+                        },
                         data=report,
                     ),
                     json_output=args.json,

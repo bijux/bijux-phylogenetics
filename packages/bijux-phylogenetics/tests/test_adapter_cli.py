@@ -222,7 +222,7 @@ if not args or "-help" in args:
     print("FastTree Version 2.2 fixture")
     raise SystemExit(0)
 
-print("((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);")
+print("((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);")
 print("warning: fasttree fixture approximate support only", file=sys.stderr)
 """,
     )
@@ -557,6 +557,16 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     assert fast_payload["warnings"] == [
         "warning: fasttree fixture approximate support only"
     ]
+    assert fast_payload["metrics"]["approximate_method"] is True
+    assert fast_payload["metrics"]["support_label_kind"] == "sh-like-local-support"
+    assert fast_payload["metrics"]["support_scale"] == "proportion-0-to-1"
+    assert fast_payload["metrics"]["annotated_node_count"] == 2
+    assert fast_payload["metrics"]["minimum_local_support"] == 0.62
+    assert fast_payload["metrics"]["maximum_local_support"] == 0.98
+    assert fast_payload["metrics"]["weakly_supported_clade_count"] == 1
+    assert Path(fast_payload["data"]["output_paths"]["support_table"]).exists()
+    assert Path(fast_payload["data"]["output_paths"]["low_support_branches"]).exists()
+    assert Path(fast_payload["data"]["output_paths"]["support_histogram"]).exists()
 
     compare_exit = main(
         [
