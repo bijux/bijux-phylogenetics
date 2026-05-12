@@ -1537,6 +1537,41 @@ def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(
     assert posterior_report_path.exists()
 
 
+def test_adapter_mrbayes_parameters_cli_writes_burnin_aware_summary_table(
+    tmp_path: Path, capsys
+) -> None:
+    trace_path = tmp_path / "diagnostics.run1.p"
+    summary_path = tmp_path / "diagnostics-summary.tsv"
+    rows = ["Gen\tLnL\tTL"]
+    posterior_values = [*range(24), 100.0]
+    for index, value in enumerate(posterior_values):
+        rows.append(f"{index * 10}\t{value}\t0.5")
+    trace_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    exit_code = main(
+        [
+            "adapter",
+            "mrbayes-parameters",
+            str(trace_path),
+            "--burnin-fraction",
+            "0.2",
+            "--summary-out",
+            str(summary_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    text = summary_path.read_text(encoding="utf-8")
+
+    assert exit_code == 0
+    assert payload["metrics"]["kept_row_count"] == 20
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["data"]["first_kept_generation"] == 50
+    assert payload["data"]["parameter_summaries"][0]["median"] >= 0
+    assert "median\tstandard_deviation" in text
+    assert "hpd_95_lower\thpd_95_upper" in text
+
+
 def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     tmp_path: Path, capsys
 ) -> None:
@@ -1867,8 +1902,43 @@ def test_adapter_beast_log_cli_writes_summary_table_with_parameter_categories(
     assert payload["metrics"]["clock_parameter_count"] == 1
     assert payload["metrics"]["tree_parameter_count"] == 2
     assert payload["data"]["summary"]["kept_row_count"] == 3
+    assert "median\tstandard_deviation" in text
     assert "prior\tprior\t3" in text
     assert "tree\tbirthRate\t3" in text
+
+
+def test_adapter_beast_parameters_cli_reports_posterior_diagnostics(
+    tmp_path: Path, capsys
+) -> None:
+    log_path = tmp_path / "posterior-diagnostics.log"
+    summary_path = tmp_path / "posterior-diagnostics.tsv"
+    lines = [
+        "# posterior diagnostics fixture",
+        "state\tposterior\tclockRate",
+    ]
+    for state, posterior in enumerate([*range(19), 100.0]):
+        lines.append(f"{state}\t{posterior}\t0.001")
+    log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-parameters",
+            str(log_path),
+            "--summary-out",
+            str(summary_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    text = summary_path.read_text(encoding="utf-8")
+
+    assert exit_code == 0
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["metrics"]["posterior_parameter_count"] == 1
+    assert payload["data"]["parameter_summaries"][0]["hpd_95_upper"] >= 0
+    assert "median\tstandard_deviation" in text
+    assert "hpd_95_lower\thpd_95_upper" in text
 
 
 def test_adapter_beast_trees_cli_writes_normalized_tree_set(

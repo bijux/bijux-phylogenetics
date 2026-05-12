@@ -40,12 +40,14 @@ from bijux_phylogenetics.bayesian import (
     summarize_beast_log,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
+    summarize_mrbayes_parameter_diagnostics,
     summarize_mrbayes_posterior_trees,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
     write_beast_log_summary_table,
     write_beast_posterior_tree_set,
+    write_mrbayes_parameter_summary_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -3807,6 +3809,26 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the ESS report as JSON."
     )
     _add_manifest_argument(adapter_mrbayes_ess)
+    adapter_mrbayes_parameters = adapter_subparsers.add_parser(
+        "mrbayes-parameters",
+        help="Summarize burn-in-aware posterior parameter diagnostics from a MrBayes trace table.",
+    )
+    adapter_mrbayes_parameters.add_argument("input_path", type=Path)
+    adapter_mrbayes_parameters.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.0,
+        help="Discard this fraction of early samples before reporting posterior summaries.",
+    )
+    adapter_mrbayes_parameters.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write a TSV parameter-summary table for the retained trace samples.",
+    )
+    adapter_mrbayes_parameters.add_argument(
+        "--json", action="store_true", help="Emit the parameter diagnostics as JSON."
+    )
+    _add_manifest_argument(adapter_mrbayes_parameters)
     adapter_mrbayes_convergence = adapter_subparsers.add_parser(
         "mrbayes-convergence",
         help="Assess MrBayes trace convergence from ESS and trace drift.",
@@ -3897,6 +3919,26 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the parsed log report as JSON."
     )
     _add_manifest_argument(adapter_beast_log)
+    adapter_beast_parameters = adapter_subparsers.add_parser(
+        "beast-parameters",
+        help="Summarize burn-in-aware posterior parameter diagnostics from a BEAST log.",
+    )
+    adapter_beast_parameters.add_argument("input_path", type=Path)
+    adapter_beast_parameters.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.0,
+        help="Discard this fraction of early samples before reporting posterior summaries.",
+    )
+    adapter_beast_parameters.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write a TSV parameter-summary table for the retained log samples.",
+    )
+    adapter_beast_parameters.add_argument(
+        "--json", action="store_true", help="Emit the parameter diagnostics as JSON."
+    )
+    _add_manifest_argument(adapter_beast_parameters)
     adapter_beast_trees = adapter_subparsers.add_parser(
         "beast-trees",
         help="Parse a BEAST posterior tree set into state-tagged normalized trees.",
@@ -9857,6 +9899,40 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.adapter_command == "mrbayes-parameters":
+                report = summarize_mrbayes_parameter_diagnostics(
+                    args.input_path,
+                    burnin_fraction=args.burnin_fraction,
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_mrbayes_parameter_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "burnin_fraction": report.burnin_fraction,
+                            "kept_row_count": report.kept_row_count,
+                            "parameter_count": len(report.parameter_summaries),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.adapter_command == "mrbayes-convergence":
                 report = assess_mrbayes_convergence(
                     args.input_path,
@@ -10033,6 +10109,40 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "tree_parameter_count": len(summary.tree_parameters),
                         },
                         data={"log": report, "summary": summary},
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-parameters":
+                report = summarize_beast_log(
+                    args.input_path,
+                    burnin_fraction=args.burnin_fraction,
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_beast_log_summary_table(args.summary_out, report)
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "burnin_fraction": report.burnin_fraction,
+                            "kept_row_count": report.kept_row_count,
+                            "parameter_count": len(report.parameter_summaries),
+                            "posterior_parameter_count": len(
+                                report.posterior_parameters
+                            ),
+                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )
