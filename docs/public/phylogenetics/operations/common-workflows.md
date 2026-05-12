@@ -316,11 +316,53 @@ raw region rows that were dropped because the taxon was absent from the tree or
 the region coding was unusable.
 
 The current biogeography surface is explicit about method scope. It reuses the
-owned deterministic geographic-state engine already in the repository rather
-than claiming a fresh time-stratified or stochastic biogeographic process fit.
-That means the node and branch outputs are directly reviewable and stable, but
-they should still be interpreted as model-conditioned geographic state evidence
-rather than as direct proof of dispersal timing or mechanism.
+owned deterministic geographic-state engine already in the repository. The
+one-tree `biogeography model` workflow should therefore be interpreted as
+model-conditioned geographic state evidence rather than as direct proof of
+dispersal timing or mechanism.
+
+When the goal is to compare inferred geographic transition pressure across
+explicit historical intervals, use `biogeography time-stratified`. This
+workflow accepts one rooted tree with positive branch lengths, one taxon-region
+table, and one or more explicit root-depth bins in `LABEL:START:END` form. It
+reuses the governed ancestral-region reconstruction, allocates branch exposure
+and inferred branch changes across the requested intervals, and writes
+reviewer-facing ledgers for interval-specific transition matrices, branch-bin
+overlaps, and excluded taxa.
+
+```bash
+bijux-phylogenetics biogeography time-stratified \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait region \
+  --taxon-column species \
+  --model ard \
+  --time-bin deep-history:0.0:12.0 \
+  --time-bin crown-radiation:12.0:24.0 \
+  --summary-out artifacts/primates.biogeography-time-summary.tsv \
+  --matrix-out artifacts/primates.biogeography-time-matrix.tsv \
+  --branches-out artifacts/primates.biogeography-time-branches.tsv \
+  --exclusions-out artifacts/primates.biogeography-time-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, tree depth,
+time-bin count, changed-branch count, total allocated transition weight, and
+warning count. The matrix ledger keeps one row per directed source-target
+region pair inside each requested interval, including source exposure length,
+allocated transition weight, interval-specific rate, and the corresponding
+global one-tree rate for comparison. The branch ledger keeps one row per
+branch-bin overlap so reviewers can see exactly which reconstructed changes and
+which source-region exposure lengths were assigned to each interval. The
+excluded-taxa ledger keeps the same dropped region rows as the one-tree model
+workflow.
+
+The time-stratified surface is also explicit about method scope. It is a
+deterministic interval-allocation review surface layered on the owned
+geographic-state reconstruction, not a full time-inhomogeneous stochastic
+biogeographic process fit. When requested intervals do not cover the full tree
+depth, the workflow reports that boundary as a warning instead of silently
+pretending those uncovered branch segments were modeled.
 
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
