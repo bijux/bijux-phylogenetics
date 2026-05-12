@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import pytest
 
 from bijux_phylogenetics.bayesian import (
     assess_mrbayes_convergence,
@@ -11,6 +12,7 @@ from bijux_phylogenetics.bayesian import (
     run_mrbayes_posterior_inference,
     summarize_mrbayes_posterior_trees,
 )
+from bijux_phylogenetics.errors import EngineWorkflowError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -82,9 +84,62 @@ def test_prepare_mrbayes_analysis_writes_nexus_with_run_settings(
     text = nexus_path.read_text(encoding="utf-8")
     assert report.taxon_count == 4
     assert report.character_count == 8
+    assert report.partition_count == 1
     assert "dimensions ntax=4 nchar=8;" in text
     assert "lset nst=6 rates=gamma;" in text
     assert "mcmcp ngen=2000 nchains=4 samplefreq=50 printfreq=50;" in text
+
+
+def test_prepare_mrbayes_analysis_writes_partition_definitions_for_multilocus_matrix(
+    tmp_path: Path,
+) -> None:
+    alignment_path = fixture("alignments/example_multilocus_alignment.fasta")
+    partition_path = fixture("alignments/example_multilocus_partitions.txt")
+    nexus_path = tmp_path / "partitioned-analysis.nex"
+
+    report = prepare_mrbayes_analysis(
+        alignment_path,
+        nexus_path,
+        partition_path=partition_path,
+        model="gtr",
+        rates="gamma",
+    )
+
+    text = nexus_path.read_text(encoding="utf-8")
+    assert report.partition_path == partition_path
+    assert report.partition_count == 3
+    assert report.partition_names == ["gene_alpha", "gene_beta", "gene_gamma"]
+    assert report.partition_data_types == ["DNA"]
+    assert report.partition_warnings == []
+    assert "begin sets;" in text
+    assert "charset gene_alpha = 1-4;" in text
+    assert "charset gene_beta = 5-9;" in text
+    assert "charset gene_gamma = 10-12;" in text
+    assert "partition loci = 3: gene_alpha, gene_beta, gene_gamma;" in text
+    assert "set partition=loci;" in text
+    assert "prset applyto=(all) ratepr=variable;" in text
+    assert "lset applyto=(all) nst=6 rates=gamma;" in text
+
+
+def test_prepare_mrbayes_analysis_rejects_partition_datatype_mismatch(
+    tmp_path: Path,
+) -> None:
+    alignment_path = fixture("alignments/example_multilocus_alignment.fasta")
+    partition_path = tmp_path / "bad-partitions.txt"
+    partition_path.write_text(
+        "PROTEIN,gene_alpha = 1-4\nPROTEIN,gene_beta = 5-9\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="MrBayes preparation requires partition datatypes that match the alignment alphabet DNA",
+    ):
+        prepare_mrbayes_analysis(
+            alignment_path,
+            tmp_path / "bad-analysis.nex",
+            partition_path=partition_path,
+        )
 
 
 def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:

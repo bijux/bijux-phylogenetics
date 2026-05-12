@@ -11,6 +11,13 @@ from bijux_phylogenetics.bayesian.diagnostics import (
     summarize_trace_convergence,
 )
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
+from bijux_phylogenetics.core.partitions import (
+    LocusPartition,
+    build_partition_summary_report,
+    normalize_partition_data_type,
+    parse_locus_partitions,
+    partition_coordinate_text,
+)
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.engines.common import (
     build_file_checksums,
@@ -40,9 +47,14 @@ from bijux_phylogenetics.tree_set import (
 class MrBayesPreparationReport:
     alignment_path: Path
     nexus_path: Path
+    partition_path: Path | None
     taxon_count: int
     character_count: int
     inferred_alphabet: AlignmentAlphabet
+    partition_count: int
+    partition_names: list[str]
+    partition_data_types: list[str]
+    partition_warnings: list[str]
     model: str
     rates: str
     ngen: int
@@ -115,23 +127,31 @@ def _mrbayes_datatype(alphabet: AlignmentAlphabet) -> str:
 
 
 def _mrbayes_model_commands(
-    *, alphabet: AlignmentAlphabet, model: str, rates: str
+    *,
+    alphabet: AlignmentAlphabet,
+    model: str,
+    rates: str,
+    partition_count: int,
 ) -> list[str]:
     normalized_model = model.lower()
     normalized_rates = rates.lower()
+    applyto_prefix = " applyto=(all)" if partition_count > 1 else ""
     if alphabet in {"dna", "rna"}:
         if normalized_model == "jc69":
-            base = ["lset nst=1 rates=equal;"]
+            base = [f"lset{applyto_prefix} nst=1 rates=equal;"]
         elif normalized_model == "hky":
-            base = ["lset nst=2 rates=equal;"]
+            base = [f"lset{applyto_prefix} nst=2 rates=equal;"]
         elif normalized_model == "gtr":
-            base = ["lset nst=6 rates=equal;"]
+            base = [f"lset{applyto_prefix} nst=6 rates=equal;"]
         else:
             raise EngineWorkflowError(f"unsupported nucleotide MrBayes model: {model}")
     else:
         if normalized_model not in {"wag", "jones", "dayhoff", "poisson"}:
             raise EngineWorkflowError(f"unsupported protein MrBayes model: {model}")
-        base = [f"prset aamodelpr=fixed({normalized_model});", "lset rates=equal;"]
+        base = [
+            f"prset{applyto_prefix} aamodelpr=fixed({normalized_model});",
+            f"lset{applyto_prefix} rates=equal;",
+        ]
 
     if normalized_rates == "equal":
         return base
@@ -146,10 +166,73 @@ def _mrbayes_model_commands(
     raise EngineWorkflowError(f"unsupported MrBayes rate model: {rates}")
 
 
+def _mrbayes_partition_datatype(alphabet: AlignmentAlphabet) -> str:
+    if alphabet in {"dna", "rna"}:
+        return "DNA"
+    if alphabet == "protein":
+        return "PROTEIN"
+    raise EngineWorkflowError(
+        f"MrBayes preparation requires a recognized alignment alphabet, got {alphabet}"
+    )
+
+
+def _validate_mrbayes_partitions(
+    partitions: tuple[LocusPartition, ...],
+    *,
+    alphabet: AlignmentAlphabet,
+    alignment_length: int,
+) -> tuple[list[str], list[str]]:
+    summary = build_partition_summary_report(
+        partitions, alignment_length=alignment_length
+    )
+    expected_data_type = _mrbayes_partition_datatype(alphabet)
+    declared_data_types = [
+        normalize_partition_data_type(partition.data_type)
+        for partition in partitions
+        if partition.data_type is not None
+    ]
+    mismatched = sorted(
+        {
+            data_type
+            for data_type in declared_data_types
+            if data_type is not None and data_type != expected_data_type
+        }
+    )
+    if mismatched:
+        raise EngineWorkflowError(
+            "MrBayes preparation requires partition datatypes that match the "
+            f"alignment alphabet {expected_data_type}, got {', '.join(mismatched)}"
+        )
+    return summary.declared_data_types, summary.warnings
+
+
+def _mrbayes_sets_block(partitions: tuple[LocusPartition, ...]) -> str:
+    lines = ["begin sets;"]
+    lines.extend(
+        f"  charset {partition.name} = {partition_coordinate_text(partition)};"
+        for partition in partitions
+    )
+    lines.append("end;")
+    return "\n".join(lines)
+
+
+def _mrbayes_partition_commands(partitions: tuple[LocusPartition, ...]) -> list[str]:
+    if len(partitions) <= 1:
+        return []
+    partition_name = "loci"
+    joined_names = ", ".join(partition.name for partition in partitions)
+    return [
+        f"partition {partition_name} = {len(partitions)}: {joined_names};",
+        f"set partition={partition_name};",
+        "prset applyto=(all) ratepr=variable;",
+    ]
+
+
 def prepare_mrbayes_analysis(
     alignment_path: Path,
     nexus_path: Path,
     *,
+    partition_path: Path | None = None,
     model: str = "gtr",
     rates: str = "gamma",
     ngen: int = 10000,
@@ -167,8 +250,21 @@ def prepare_mrbayes_analysis(
     records = load_fasta_alignment(alignment_path)
     alphabet = infer_alignment_alphabet(records)
     datatype = _mrbayes_datatype(alphabet)
+    partitions: tuple[LocusPartition, ...] = ()
+    partition_data_types: list[str] = []
+    partition_warnings: list[str] = []
+    if partition_path is not None:
+        partitions = parse_locus_partitions(partition_path)
+        partition_data_types, partition_warnings = _validate_mrbayes_partitions(
+            partitions,
+            alphabet=alphabet,
+            alignment_length=len(records[0].sequence),
+        )
     model_commands = _mrbayes_model_commands(
-        alphabet=alphabet, model=model, rates=rates
+        alphabet=alphabet,
+        model=model,
+        rates=rates,
+        partition_count=len(partitions),
     )
     matrix_lines = "\n".join(
         f"{record.identifier} {record.sequence}" for record in records
@@ -177,6 +273,7 @@ def prepare_mrbayes_analysis(
         [
             "begin mrbayes;",
             "  set autoclose=yes nowarn=yes;",
+            *[f"  {line}" for line in _mrbayes_partition_commands(partitions)],
             *[f"  {line}" for line in model_commands],
             f"  mcmcp ngen={ngen} nchains={nchains} samplefreq={samplefreq} printfreq={printfreq};",
             "  mcmc;",
@@ -197,6 +294,7 @@ def prepare_mrbayes_analysis(
             "  ;",
             "end;",
             "",
+            *([] if not partitions else [_mrbayes_sets_block(partitions), ""]),
             command_block,
             "",
         ]
@@ -206,9 +304,14 @@ def prepare_mrbayes_analysis(
     return MrBayesPreparationReport(
         alignment_path=alignment_path,
         nexus_path=nexus_path,
+        partition_path=partition_path,
         taxon_count=len(records),
         character_count=len(records[0].sequence),
         inferred_alphabet=alphabet,
+        partition_count=max(len(partitions), 1),
+        partition_names=[partition.name for partition in partitions],
+        partition_data_types=partition_data_types,
+        partition_warnings=partition_warnings,
         model=model,
         rates=rates,
         ngen=ngen,
