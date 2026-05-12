@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.tree_set import summarize_bootstrap_tree_set
+from bijux_phylogenetics.tree_set import (
+    summarize_bootstrap_tree_set,
+    write_bootstrap_tree_set_artifacts,
+)
 
 
 def fixture(name: str) -> Path:
@@ -48,3 +51,34 @@ def test_summarize_bootstrap_tree_set_respects_robust_support_threshold() -> Non
 
     assert report.unstable_branch_count == 2
     assert {row.clade for row in report.unstable_branches} == {"A|B", "C|D"}
+
+
+def test_write_bootstrap_tree_set_artifacts_writes_governed_tables_and_consensus(
+    tmp_path: Path,
+) -> None:
+    report = write_bootstrap_tree_set_artifacts(
+        fixture("example_tree_set_left.nwk"),
+        out_dir=tmp_path,
+        prefix="bootstrap-review",
+    )
+
+    assert sorted(report.output_paths) == [
+        "clade_frequencies",
+        "consensus_tree",
+        "distance_matrix",
+        "summary_table",
+        "topology_clusters",
+        "unstable_branches",
+        "unstable_clades",
+    ]
+    assert report.output_paths["summary_table"].read_text(encoding="utf-8").startswith(
+        "tree_count\tshared_taxon_count\trooted_topology_count\t"
+    )
+    assert report.output_paths["consensus_tree"].read_text(encoding="utf-8").strip() == (
+        "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);"
+    )
+    assert report.output_paths["unstable_branches"].read_text(
+        encoding="utf-8"
+    ).startswith(
+        "clade\tbootstrap_tree_count\tbootstrap_frequency\tbootstrap_support_percent\t"
+    )
