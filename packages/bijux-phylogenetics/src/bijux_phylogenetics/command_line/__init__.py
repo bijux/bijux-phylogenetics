@@ -88,6 +88,11 @@ from bijux_phylogenetics.comparative.brownian_trait_evolution import (
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,
 )
+from bijux_phylogenetics.comparative.ou_trait_evolution import (
+    summarize_ou_trait_evolution,
+    write_ou_trait_evolution_exclusion_table,
+    write_ou_trait_evolution_summary_table,
+)
 from bijux_phylogenetics.comparative.independent_contrasts import (
     summarize_independent_contrast_regression,
     write_independent_contrast_regression_table,
@@ -98,7 +103,6 @@ from bijux_phylogenetics.comparative.models import (
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
     compare_brownian_and_ou_models,
-    fit_ornstein_uhlenbeck_model,
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
@@ -2032,6 +2036,16 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_ou.add_argument("table", type=Path)
     comparative_ou.add_argument("--trait", required=True)
     comparative_ou.add_argument("--taxon-column")
+    comparative_ou.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one OU trait-evolution summary ledger as TSV or CSV.",
+    )
+    comparative_ou.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for the OU trait fit as TSV or CSV.",
+    )
     comparative_ou.add_argument(
         "--json", action="store_true", help="Emit the OU model fit as JSON."
     )
@@ -6594,12 +6608,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.comparative_command == "ou":
-                report = fit_ornstein_uhlenbeck_model(
+                report = summarize_ou_trait_evolution(
                     args.tree,
                     args.table,
                     trait=args.trait,
                     taxon_column=args.taxon_column,
                 )
+                if args.summary_out:
+                    write_ou_trait_evolution_summary_table(args.summary_out, report)
+                if args.excluded_taxa_out:
+                    write_ou_trait_evolution_exclusion_table(
+                        args.excluded_taxa_out,
+                        report,
+                    )
                 outputs = _finalize_outputs(
                     args, command="comparative", inputs=[args.tree, args.table]
                 )
@@ -6608,18 +6629,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="comparative",
                         inputs=[args.tree, args.table],
                         outputs=outputs,
-                        warnings=[
-                            *report.residual_diagnostics.warnings,
-                            *[
-                                warning.message
-                                for warning in report.identifiability_warnings
-                            ],
-                        ],
+                        warnings=report.warnings,
                         metrics={
-                            "taxon_count": report.taxon_count,
+                            "tree_taxon_count": report.tree_taxon_count,
+                            "analyzed_taxon_count": report.analyzed_taxon_count,
+                            "excluded_taxon_count": len(report.excluded_taxa),
                             "alpha": report.alpha,
                             "theta": report.theta,
+                            "sigma_squared": report.sigma_squared,
                             "log_likelihood": report.log_likelihood,
+                            "aic": report.aic,
+                            "aicc": report.aicc,
                         },
                         data=report,
                     ),
