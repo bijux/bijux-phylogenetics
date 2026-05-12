@@ -422,6 +422,7 @@ from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.datasets import (
     run_avian_reproductive_trait_demo,
+    run_central_european_seashore_flora_demo,
     run_primate_comparative_demo,
 )
 from bijux_phylogenetics.core.environment import inspect_environment
@@ -5186,6 +5187,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_birds)
+    demo_plants = demo_subparsers.add_parser(
+        "central-european-seashore-flora",
+        help="Materialize the packaged Central European plant dataset and workflow outputs.",
+    )
+    demo_plants.add_argument("--out", required=True, type=Path)
+    demo_plants.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_plants)
 
     adapter = subparsers.add_parser(
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
@@ -14129,6 +14139,52 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             if args.demo_command == "avian-reproductive-traits":
                 result = run_avian_reproductive_trait_demo(args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.tree_path,
+                        result.dataset_export.traits_path,
+                        result.workflow_bundle.summary_path,
+                        result.workflow_bundle.pgls_lambda_profile_path,
+                        result.workflow_bundle.brownian_summary_path,
+                        result.workflow_bundle.ou_summary_path,
+                        result.workflow_bundle.signal_summary_path,
+                        result.workflow_bundle.signal_permutations_path,
+                        result.workflow_bundle.continuous_ancestral_summary_path,
+                        result.workflow_bundle.continuous_ancestral_uncertainty_path,
+                        result.workflow_bundle.discrete_ancestral_summary_path,
+                        result.workflow_bundle.discrete_ancestral_probability_path,
+                        result.workflow_bundle.clade_summary_path,
+                        result.workflow_bundle.clade_rows_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "dataset_taxon_count": result.dataset.taxon_count,
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "central-european-seashore-flora":
+                result = run_central_european_seashore_flora_demo(args.out)
                 outputs = _finalize_outputs(
                     args,
                     command="demo",
