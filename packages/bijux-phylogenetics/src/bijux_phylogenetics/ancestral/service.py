@@ -18,12 +18,15 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.visualization import (
+    render_ancestral_state_visualization,
+)
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
 from bijux_phylogenetics.discrete_evolution import run_discrete_state_transition_model
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
+from bijux_phylogenetics.render.svg import TreeRenderResult
 
 
 @dataclass(slots=True)
@@ -706,65 +709,15 @@ def render_ancestral_state_tree(
     layout: str = "cladogram",
 ) -> TreeRenderResult:
     """Render one tree with internal ancestral-state annotations."""
-    internal_annotations: dict[str, str]
-    internal_annotation_colors: dict[str, str]
-    if isinstance(report, ContinuousAncestralReport):
-        internal_annotations = {
-            estimate.node: format(estimate.estimate, ".3g")
-            for estimate in report.estimates
-            if not estimate.is_tip
-        }
-        internal_annotation_colors = {
-            estimate.node: "#6d28d9"
-            for estimate in report.estimates
-            if not estimate.is_tip
-        }
-        continuous_traits = {
-            estimate.node_name: estimate.estimate
-            for estimate in report.estimates
-            if estimate.is_tip and estimate.node_name is not None
-        }
-        return render_tree_svg(
-            tree_path,
-            out_path=out_path,
-            layout=layout,
-            continuous_traits=continuous_traits,
-            internal_annotations=internal_annotations,
-            internal_annotation_colors=internal_annotation_colors,
-        )
-
-    internal_annotations = {
-        estimate.node: estimate.most_likely_state
-        if not estimate.ambiguous
-        else "/".join(estimate.state_set)
-        for estimate in report.estimates
-        if not estimate.is_tip
-    }
-    discrete_tip_states = {
-        estimate.node_name: estimate.most_likely_state
-        for estimate in report.estimates
-        if estimate.is_tip and estimate.node_name is not None
-    }
-    palette = dict(
-        zip(
-            sorted(report.observed_states),
-            ("#0f766e", "#1d4ed8", "#c2410c", "#7c3aed", "#b91c1c", "#047857"),
-            strict=False,
-        )
-    )
-    internal_annotation_colors = {
-        estimate.node: palette.get(estimate.most_likely_state, "#6d28d9")
-        for estimate in report.estimates
-        if not estimate.is_tip
-    }
-    return render_tree_svg(
+    visualization = render_ancestral_state_visualization(
         tree_path,
+        report,
         out_path=out_path,
         layout=layout,
-        categorical_traits=discrete_tip_states,
-        internal_annotations=internal_annotations,
-        internal_annotation_colors=internal_annotation_colors,
+        discrete_node_style="labels",
+        branch_coloring="none",
     )
+    return visualization.tree_render
 
 
 def render_ancestral_state_report(

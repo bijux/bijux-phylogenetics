@@ -31,6 +31,8 @@ def test_build_ancestral_figure_package_writes_publication_artifacts(
         model="brownian",
     )
     assert result.figure_path.exists()
+    assert result.figure_png_path.exists()
+    assert result.figure_html_path.exists()
     assert result.node_table_path.exists()
     assert result.uncertainty_table_path.exists()
     assert result.legend_path.exists()
@@ -39,6 +41,8 @@ def test_build_ancestral_figure_package_writes_publication_artifacts(
     assert result.manifest_path.exists()
     assert "uncertainty" in result.legend_path.read_text(encoding="utf-8").lower()
     assert "model" in result.model_description_path.read_text(encoding="utf-8").lower()
+    assert result.figure_png_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert "<figure><svg" in result.figure_html_path.read_text(encoding="utf-8")
 
 
 def test_build_ancestral_figure_package_uses_discrete_probability_ledger(
@@ -55,3 +59,4 @@ def test_build_ancestral_figure_package_uses_discrete_probability_ledger(
     uncertainty_rows = result.uncertainty_table_path.read_text(encoding="utf-8")
     assert "state_probabilities" in uncertainty_rows
     assert "most_likely_state" in uncertainty_rows
+    assert 'class="internal-pie-slice"' in result.figure_path.read_text(encoding="utf-8")
