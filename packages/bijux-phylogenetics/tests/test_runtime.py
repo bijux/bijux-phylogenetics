@@ -2074,11 +2074,32 @@ def test_write_tree_rooting_report_writes_monophyly_and_root_partition_fields(
     assert "\ttrue\tC,D\t\tC,D\tA,B\t" in text
 
 
+def test_write_tree_rooting_report_writes_midpoint_position_fields(
+    tmp_path: Path,
+) -> None:
+    _tree, report = reroot_tree_by_midpoint(fixture("example_tree_rootable.nwk"))
+    output_path = tmp_path / "midpoint.tsv"
+
+    write_tree_rooting_report(output_path, report)
+
+    text = output_path.read_text(encoding="utf-8")
+    assert "midpoint_anchor_taxa" in text
+    assert "midpoint_position_kind" in text
+    assert "\tA,C\t1.0\t0.5\tnode\tA,B\tC,D\ttrue\n" in text
+
+
 def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
     tree, report = reroot_tree_by_midpoint(fixture("example_tree_rootable.nwk"))
     assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
     assert report.strategy == "midpoint"
     assert report.tip_order == ["C", "D", "B", "A"]
+    assert report.midpoint_anchor_taxa == ["A", "C"]
+    assert report.midpoint_path_length == 1.0
+    assert report.midpoint_distance_from_anchor == 0.5
+    assert report.midpoint_position_kind == "node"
+    assert report.midpoint_anchor_side_taxa == ["A", "B"]
+    assert report.midpoint_opposite_side_taxa == ["C", "D"]
+    assert report.midpoint_suitable is True
     assert dumps_newick(tree) == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);"
     assert report.summary.branch_lengths_affected != []
 

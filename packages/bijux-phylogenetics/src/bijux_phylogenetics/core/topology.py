@@ -62,6 +62,13 @@ class TreeRootingReport:
     rooted_ingroup_taxa: list[str]
     tip_order: list[str]
     warnings: list[str]
+    midpoint_anchor_taxa: list[str]
+    midpoint_path_length: float | None
+    midpoint_distance_from_anchor: float | None
+    midpoint_position_kind: str | None
+    midpoint_anchor_side_taxa: list[str]
+    midpoint_opposite_side_taxa: list[str]
+    midpoint_suitable: bool | None
     summary: TreeTransformationSummary
 
 
@@ -123,8 +130,100 @@ def _node_signature(node: TreeNode) -> str:
     return node.name or "<unnamed>"
 
 
+def _root_to_tip_paths(tree: PhyloTree) -> dict[str, list[TreeNode]]:
+    paths: dict[str, list[TreeNode]] = {}
+
+    def visit(node: TreeNode, path: list[TreeNode]) -> None:
+        next_path = [*path, node]
+        if node.is_leaf():
+            if node.name is not None:
+                paths[node.name] = next_path
+            return
+        for child in node.children:
+            visit(child, next_path)
+
+    visit(tree.root, [])
+    return paths
+
+
+def _common_prefix_length(left: list[TreeNode], right: list[TreeNode]) -> int:
+    length = 0
+    for left_node, right_node in zip(left, right, strict=False):
+        if left_node is not right_node:
+            break
+        length += 1
+    return length
+
+
+def _analyze_midpoint_path(tree: PhyloTree) -> tuple[list[str], float, float, str]:
+    paths = _root_to_tip_paths(tree)
+    tip_names = sorted(paths)
+    if len(tip_names) < 2:
+        raise ValueError("midpoint rerooting requires at least two tips")
+
+    tolerance = 1e-12
+    best_anchor_taxa: list[str] = []
+    best_path_length = -1.0
+    best_distance_from_anchor = 0.0
+    best_position_kind = "branch"
+
+    for index, left_taxon in enumerate(tip_names[:-1]):
+        for right_taxon in tip_names[index + 1 :]:
+            left_path = paths[left_taxon]
+            right_path = paths[right_taxon]
+            prefix_length = _common_prefix_length(left_path, right_path)
+            left_suffix = left_path[prefix_length:]
+            right_suffix = right_path[prefix_length:]
+            path_nodes = [*reversed(left_suffix), *right_suffix]
+            path_length = sum((node.branch_length or 0.0) for node in path_nodes)
+            if path_length < best_path_length - tolerance:
+                continue
+
+            midpoint_distance = path_length / 2.0
+            traversed = 0.0
+            position_kind = "branch"
+            for node in path_nodes:
+                traversed += node.branch_length or 0.0
+                if abs(traversed - midpoint_distance) <= tolerance:
+                    position_kind = "node"
+                    break
+                if traversed > midpoint_distance + tolerance:
+                    position_kind = "branch"
+                    break
+
+            candidate_anchor_taxa = [left_taxon, right_taxon]
+            candidate = (
+                round(path_length, 15),
+                candidate_anchor_taxa,
+                position_kind,
+            )
+            best = (
+                round(best_path_length, 15),
+                best_anchor_taxa,
+                best_position_kind,
+            )
+            if path_length > best_path_length + tolerance or candidate < best:
+                best_anchor_taxa = candidate_anchor_taxa
+                best_path_length = path_length
+                best_distance_from_anchor = midpoint_distance
+                best_position_kind = position_kind
+
+    return (
+        best_anchor_taxa,
+        round(best_path_length, 15),
+        round(best_distance_from_anchor, 15),
+        best_position_kind,
+    )
+
+
 def _join_taxa(taxa: list[str]) -> str:
     return ",".join(taxa)
+
+
+def _format_optional_float(value: float | None) -> str:
+    if value is None:
+        return ""
+    return str(round(value, 15))
 
 
 def _biophylo_clade_taxa(clade: object) -> list[str]:
@@ -155,6 +254,13 @@ def write_tree_rooting_report(path: Path, report: TreeRootingReport) -> Path:
                 "rooted_ingroup_taxa",
                 "tip_order",
                 "warnings",
+                "midpoint_anchor_taxa",
+                "midpoint_path_length",
+                "midpoint_distance_from_anchor",
+                "midpoint_position_kind",
+                "midpoint_anchor_side_taxa",
+                "midpoint_opposite_side_taxa",
+                "midpoint_suitable",
             ]
         ),
         "\t".join(
@@ -174,6 +280,15 @@ def write_tree_rooting_report(path: Path, report: TreeRootingReport) -> Path:
                 _join_taxa(report.rooted_ingroup_taxa),
                 _join_taxa(report.tip_order),
                 " | ".join(report.warnings),
+                _join_taxa(report.midpoint_anchor_taxa),
+                _format_optional_float(report.midpoint_path_length),
+                _format_optional_float(report.midpoint_distance_from_anchor),
+                report.midpoint_position_kind or "",
+                _join_taxa(report.midpoint_anchor_side_taxa),
+                _join_taxa(report.midpoint_opposite_side_taxa),
+                ""
+                if report.midpoint_suitable is None
+                else ("true" if report.midpoint_suitable else "false"),
             ]
         ),
     ]
@@ -676,6 +791,13 @@ def root_tree_on_outgroup(
         rooted_ingroup_taxa=rooted_ingroup_taxa,
         tip_order=rooted_tree.tip_names,
         warnings=warnings,
+        midpoint_anchor_taxa=[],
+        midpoint_path_length=None,
+        midpoint_distance_from_anchor=None,
+        midpoint_position_kind=None,
+        midpoint_anchor_side_taxa=[],
+        midpoint_opposite_side_taxa=[],
+        midpoint_suitable=None,
         summary=summary,
     )
 
@@ -692,6 +814,25 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
     biophylo_tree = tree_to_biophylo(tree)
     biophylo_tree.root_at_midpoint()
     rerooted_tree = tree_from_biophylo(biophylo_tree, source_format=tree.source_format)
+    (
+        midpoint_anchor_taxa,
+        midpoint_path_length,
+        midpoint_distance_from_anchor,
+        midpoint_position_kind,
+    ) = _analyze_midpoint_path(tree)
+    midpoint_root_partitions = sorted(
+        (_descendant_taxa(child) for child in rerooted_tree.root.children)
+    )
+    midpoint_anchor_side_taxa: list[str] = []
+    midpoint_opposite_side_taxa: list[str] = []
+    if midpoint_anchor_taxa and len(midpoint_root_partitions) >= 2:
+        anchor_taxon = midpoint_anchor_taxa[0]
+        for partition in midpoint_root_partitions:
+            if anchor_taxon in partition:
+                midpoint_anchor_side_taxa = partition
+            else:
+                midpoint_opposite_side_taxa.extend(partition)
+        midpoint_opposite_side_taxa = sorted(midpoint_opposite_side_taxa)
     summary = _summarize_transformation(
         tree, rerooted_tree, transformation="reroot-midpoint"
     )
@@ -709,6 +850,13 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
         rooted_ingroup_taxa=sorted(rerooted_tree.tip_names),
         tip_order=rerooted_tree.tip_names,
         warnings=[],
+        midpoint_anchor_taxa=midpoint_anchor_taxa,
+        midpoint_path_length=midpoint_path_length,
+        midpoint_distance_from_anchor=midpoint_distance_from_anchor,
+        midpoint_position_kind=midpoint_position_kind,
+        midpoint_anchor_side_taxa=midpoint_anchor_side_taxa,
+        midpoint_opposite_side_taxa=midpoint_opposite_side_taxa,
+        midpoint_suitable=True,
         summary=summary,
     )
 
@@ -763,5 +911,12 @@ def unroot_tree(tree_path: Path) -> tuple[PhyloTree, TreeRootingReport]:
         rooted_ingroup_taxa=sorted(unrooted_tree.tip_names),
         tip_order=unrooted_tree.tip_names,
         warnings=[],
+        midpoint_anchor_taxa=[],
+        midpoint_path_length=None,
+        midpoint_distance_from_anchor=None,
+        midpoint_position_kind=None,
+        midpoint_anchor_side_taxa=[],
+        midpoint_opposite_side_taxa=[],
+        midpoint_suitable=None,
         summary=summary,
     )
