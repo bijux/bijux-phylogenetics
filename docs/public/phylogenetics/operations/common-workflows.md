@@ -193,6 +193,32 @@ parsed `selected_model`, `selected_criterion`, `candidate_model_count`,
 support-value counts so reviewers can verify the ML result against structured
 fields instead of manually scraping engine text files.
 
+Use `adapter mrbayes-run` after preparation when you want the governed runtime
+to execute MrBayes and preserve the native posterior artifacts for later
+inspection instead of leaving the engine outputs implicit.
+
+```bash
+bijux-phylogenetics adapter mrbayes-run \
+  artifacts/multilocus-bayesian.nex \
+  --json
+```
+
+The run keeps the sampled posterior trees (`.run1.t`), parameter traces
+(`.run1.p`), MCMC diagnostics (`.mcmc`), and consensus tree (`.con.tre`) in
+the same output directory. Those files are then consumable through the parser
+surfaces instead of through manual text scraping:
+
+- `adapter mrbayes-traces` for tabular parameter traces from `.run1.p`
+- `adapter mrbayes-trees` for sampled posterior trees and generation tags from `.run1.t`
+- `adapter mrbayes-mcmc` for acceptance-rate and split-frequency diagnostics from `.mcmc`
+- `adapter mrbayes-consensus` for the annotated consensus topology and posterior-probability range from `.con.tre`
+
+That separation matters because the consensus-tree file uses MrBayes-specific
+annotation syntax that common generic NEXUS readers may not accept directly.
+The governed parser strips the native inline annotations only after recording
+their posterior-probability values, so reviewers keep both a clean tree object
+and the support summary that MrBayes actually emitted.
+
 For ultrafast bootstrap review specifically, `adapter bootstrap` now writes
 three reviewer-facing TSV artifacts alongside the native IQ-TREE files:
 
