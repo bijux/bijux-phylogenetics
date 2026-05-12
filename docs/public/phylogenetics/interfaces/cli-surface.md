@@ -156,11 +156,26 @@ metadata into stable per-clade review fields such as matched taxa, missing
 taxa, per-taxon values, and distinct observed values for each requested
 column.
 
+`topology shape` is the governed tree-shape surface for one tree. It writes one
+summary row with Sackin imbalance, Colless imbalance where the tree is strictly
+binary, cherry count, topological tree height, branch-length tree height where
+all root-to-tip distances are available, and the stable shape summary
+`balanced`, `skewed`, or `ladderized`. Its JSON payload also preserves whether
+the tree is star-like, comb-like, or unusually imbalanced so review tooling can
+filter strongly ladderized or star-topology cases directly.
+
 `tree-set clades` applies the same clade-table contract to every tree in one
 tree-set file. It preserves the one-based source tree index for each row and
 requires every tree in the set to carry the same taxon set before clades are
 tabulated. That keeps the resulting table reviewable across posterior or
 bootstrap samples instead of silently merging incompatible tree contents.
+
+`tree-set shape` applies the same metrics to every tree in one tree-set file
+and writes one summary row per sampled tree. Its aggregate JSON metrics count
+how many trees are balanced, ladderized, star-like, or comb-like and summarize
+mean cherry count, mean Sackin imbalance, and mean tree height. That keeps
+shape variation reviewable across posterior or bootstrap samples instead of
+collapsing shape into one representative tree too early.
 
 The alignment family includes matrix-assembly and matrix-audit commands for
 concatenated multi-locus inputs. `alignment concatenate` assembles one
