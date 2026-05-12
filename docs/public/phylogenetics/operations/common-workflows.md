@@ -45,6 +45,31 @@ phylogenetic covariance, pass that exact numeric lambda instead. That keeps
 coefficient and p-value review tied to one covariance assumption rather than
 silently mixing model-selection differences with coefficient-level inference.
 
+When the covariance assumption itself must stay fixed to Brownian shared branch
+lengths, use `comparative brownian-pgls`. This keeps the regression surface
+separate from Pagel-lambda fitting and writes an explicit covariance ledger
+when requested.
+
+```bash
+bijux-phylogenetics comparative brownian-pgls \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --response longevity \
+  --predictors social_group_size \
+  --taxon-column species \
+  --covariance-out artifacts/primates.brownian-covariance.tsv \
+  --json
+```
+
+That workflow fits PGLS under the raw Brownian shared-path covariance implied
+by the rooted tree, checks that the unstabilized covariance is positive
+definite, and records one pairwise row per taxon pair with shared path length
+and root-to-tip depths. Rooted ultrametric and rooted non-ultrametric trees are
+both supported as long as the Brownian covariance stays valid. If zero or
+negative branch lengths make the covariance invalid, the workflow fails
+explicitly instead of silently regularizing the tree into a different
+scientific assumption.
+
 When the main question is how strongly the regression residuals prefer
 phylogenetic covariance, write the governed lambda profile in the same run.
 
