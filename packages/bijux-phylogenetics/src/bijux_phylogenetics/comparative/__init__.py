@@ -20,6 +20,13 @@ from .phylogenetic_signal import (
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
 )
+from .brownian_trait_evolution import (
+    BrownianTraitEvolutionExclusion,
+    BrownianTraitEvolutionSummaryReport,
+    summarize_brownian_trait_evolution,
+    write_brownian_trait_evolution_exclusion_table,
+    write_brownian_trait_evolution_summary_table,
+)
 from .evolutionary_modes import (
     ComparativeTreeRescalingReport,
     ContinuousEvolutionaryModeComparisonReport,
@@ -205,6 +212,8 @@ from .signal import (
 __all__ = [
     "BlombergKReport",
     "BrownianMotionFitReport",
+    "BrownianTraitEvolutionExclusion",
+    "BrownianTraitEvolutionSummaryReport",
     "ComparativeAuditRow",
     "ComparativeCoefficientDeltaRow",
     "ComparativeDataset",
@@ -329,6 +338,7 @@ __all__ = [
     "run_pgls",
     "run_multivariate_comparative_regression",
     "summarize_brownian_covariance_pgls",
+    "summarize_brownian_trait_evolution",
     "summarize_independent_contrast_regression",
     "summarize_ou_covariance_pgls",
     "summarize_phylogenetic_signal",
@@ -343,6 +353,8 @@ __all__ = [
     "write_pgls_lambda_profile_table",
     "write_pgls_model_matrix_table",
     "write_brownian_covariance_table",
+    "write_brownian_trait_evolution_exclusion_table",
+    "write_brownian_trait_evolution_summary_table",
     "write_comparative_residual_clade_table",
     "write_comparative_residual_taxon_table",
     "write_comparative_clade_coefficient_change_table",
