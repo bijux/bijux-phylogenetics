@@ -6160,6 +6160,48 @@ def test_cli_compare_branch_lengths_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["shared_splits"] == 2
+    assert payload["metrics"]["branch_score_distance"] == 0.33166247903554
+    assert payload["metrics"]["same_taxon_set"] is True
+    assert payload["data"]["branch_score"]["split_count"] == 5
+
+
+def test_cli_compare_branch_lengths_reports_pruned_taxon_set_status(capsys) -> None:
+    exit_code = main(
+        [
+            "compare",
+            "branch-lengths",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_overlap.nwk")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["same_taxon_set"] is False
+    assert payload["data"]["left_only_taxa"] == ["D"]
+    assert payload["data"]["right_only_taxa"] == ["E"]
+    assert payload["data"]["branch_score"]["branch_score_distance"] == 0.0
+
+
+def test_cli_compare_branch_lengths_requires_identical_taxa_when_requested() -> None:
+    try:
+        main(
+            [
+                "compare",
+                "branch-lengths",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_tree_overlap.nwk")),
+                "--taxon-overlap-policy",
+                "require-identical",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError(
+            "expected CLI branch-length comparison to reject mismatched taxa"
+        )
 
 
 def test_cli_compare_clades_json_output(capsys) -> None:

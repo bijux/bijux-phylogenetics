@@ -8477,7 +8477,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     )
                 left_path = Path(args.right)
                 right_path = Path(args.third)
-                report = compare_branch_lengths(left_path, right_path)
+                report = compare_branch_lengths(
+                    left_path,
+                    right_path,
+                    taxon_overlap_policy=args.taxon_overlap_policy,
+                )
                 outputs = _finalize_outputs(
                     args, command="compare", inputs=[left_path, right_path]
                 )
@@ -8486,7 +8490,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="compare",
                         inputs=[left_path, right_path],
                         outputs=outputs,
-                        metrics={"shared_splits": len(report.shared_splits)},
+                        metrics={
+                            "shared_taxa": len(report.shared_taxa),
+                            "same_taxon_set": report.same_taxon_set,
+                            "shared_splits": len(report.shared_splits),
+                            "branch_score_distance": report.branch_score.branch_score_distance,
+                            "missing_length_splits": report.branch_score.missing_length_split_count,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
