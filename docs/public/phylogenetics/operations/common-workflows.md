@@ -76,6 +76,37 @@ or the working information matrix becomes singular enough to require
 stabilization, the JSON result marks that as separation risk instead of
 pretending the approximation is as stable as an ordinary continuous-trait fit.
 
+When the goal is to compare competing comparative hypotheses rather than fit
+just one formula, use `comparative model-selection`. This workflow keeps one
+shared complete-case taxon set across every candidate formula, auto-detects
+whether the shared response should use continuous-trait PGLS or the binary
+working-correlation logistic surface, and then ranks the candidate formulas by
+information criteria on that one fixed analysis set.
+
+```bash
+bijux-phylogenetics comparative model-selection \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --formula "sociality_present ~ brain_mass_g" \
+  --formula "sociality_present ~ habitat" \
+  --formula "sociality_present ~ brain_mass_g + habitat" \
+  --taxon-column species \
+  --lambda-value 1.0 \
+  --ranking-out artifacts/primates.model-ranking.tsv \
+  --pairwise-out artifacts/primates.model-pairwise.tsv \
+  --excluded-taxa-out artifacts/primates.model-excluded.tsv \
+  --json
+```
+
+The ranking ledger keeps one row per candidate with log-likelihood, AIC, AICc,
+BIC, delta values, Akaike weight, selected-model status, and the encoded model
+columns actually used in the fit. The pairwise ledger makes the comparison
+contract explicit by marking whether each candidate pair is identical, nested,
+or non-nested, and by preserving a likelihood-ratio statistic only where a
+nested comparison is real. The excluded-taxa ledger records the shared
+complete-case rule directly so reviewers can see which taxa were dropped before
+any candidate formula was ranked.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
