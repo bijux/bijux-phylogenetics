@@ -272,6 +272,28 @@ That command emits structured warnings for low ESS and mean drift after the
 requested burn-in has been discarded, so convergence review stays aligned with
 the same retained posterior window described in the summary table.
 
+Use `adapter beast-trees` once a BEAST run has produced a posterior tree file
+and you need a governed tree-sample surface rather than ad hoc NEXUS handling.
+The command parses native `.trees` files, keeps the sampled `STATE_*`
+generations, applies an explicit burn-in fraction, extracts clade frequencies,
+and can write the retained trees back out as normalized Newick for downstream
+MCC and consensus workflows.
+
+```bash
+bijux-phylogenetics adapter beast-trees \
+  artifacts/multilocus-beast.1.trees \
+  --burnin-fraction 0.1 \
+  --tree-set-out artifacts/multilocus-beast.postburnin.nwk \
+  --json
+```
+
+The JSON summary reports the total sampled tree count, the discarded burn-in
+count, the retained tree count, rooted-tree count, sampled state count, and
+the extracted clade table. The optional `--tree-set-out` file is a normalized
+Newick tree set that can be handed directly to the existing tree-set
+consensus, topology-diversity, and MCC review surfaces without re-scraping the
+original BEAST NEXUS container.
+
 Use `adapter mrbayes-run` after preparation when you want the governed runtime
 to execute MrBayes and preserve the native posterior artifacts for later
 inspection instead of leaving the engine outputs implicit.
