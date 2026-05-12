@@ -356,6 +356,39 @@ ledger keeps one fixed `rate_change` row per bounded likelihood evaluation so
 weak identifiability can be reviewed directly rather than inferred from one
 point estimate.
 
+When the goal is to inspect whether observed trait change is concentrated
+deeper or shallower in the tree, use `comparative rate-through-time`. This
+workflow reconstructs continuous ancestral states on the analyzed tree, bins
+branch depth into explicit time intervals, and summarizes how much
+branch-length-normalized reconstructed change falls into each interval. The
+summary then classifies the pattern as `acceleration`, `slowdown`, `stable`, or
+`insufficient_data` instead of leaving reviewers to infer that direction from a
+raw table.
+
+```bash
+bijux-phylogenetics comparative rate-through-time \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait longevity \
+  --taxon-column species \
+  --interval-count 6 \
+  --summary-out artifacts/primates.rate-through-time-summary.tsv \
+  --intervals-out artifacts/primates.rate-through-time-intervals.tsv \
+  --excluded-taxa-out artifacts/primates.rate-through-time-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, excluded taxon
+count, retained interval count, total tree depth, earliest and latest interval
+rate estimates, the latest-to-earliest rate ratio, the weighted depth trend
+slope, the normalized slope, and the classified trend direction. The interval
+ledger keeps one row per depth bin with the bin bounds, contributing branch
+length, contributing reconstructed change, and estimated rate so acceleration
+or slowdown can be reviewed directly rather than inferred from only one final
+label. The excluded-taxa ledger keeps one row per taxon that was absent from
+the tree, absent from the trait table, missing the target trait value, or
+pruned because the trait value was non-numeric.
+
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
