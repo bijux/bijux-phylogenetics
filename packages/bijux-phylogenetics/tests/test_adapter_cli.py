@@ -242,6 +242,8 @@ if "--version" in sys.argv[1:]:
 nexus_path = Path(sys.argv[1])
 trace_path = Path(f"{nexus_path}.run1.p")
 tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+consensus_path = Path(f"{nexus_path}.con.tre")
 trace_path.write_text(
     "Gen\\tLnL\\tTL\\talpha\\n"
     "0\\t-110.0\\t0.40\\t0.90\\n"
@@ -257,6 +259,23 @@ tree_path.write_text(
     "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
     "tree gen3 = [&R] ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\\n"
     "tree gen4 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "[ID: 1]\\n"
+    "[   Gen -- Generation]\\n"
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n"
+    "200\\tNA\\t1.0\\t0.10\\n",
+    encoding="utf-8",
+)
+consensus_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree con_50_majrule = [&R] ((A[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,B[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.75,prob(percent)=\\\"75\\\"]:0.2,(C[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1,D[&prob=1.0,prob(percent)=\\\"100\\\"]:0.1)"
+    "[&prob=0.5,prob(percent)=\\\"50\\\"]:0.2);\\n"
     "end;\\n",
     encoding="utf-8",
 )
@@ -1342,6 +1361,8 @@ def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     manifest_path = Path(run_payload["data"]["manifest_path"])
     tree_path = Path(run_payload["data"]["output_paths"]["posterior_trees"])
     trace_path = Path(run_payload["data"]["output_paths"]["parameter_traces"])
+    mcmc_path = Path(run_payload["data"]["output_paths"]["mcmc_diagnostics"])
+    consensus_path = Path(run_payload["data"]["output_paths"]["consensus_tree"])
     assert run_payload["warnings"] == ["warning: mrbayes fixture posterior run"]
 
     summarize_exit = main(
@@ -1362,6 +1383,23 @@ def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     traces_payload = json.loads(capsys.readouterr().out)
     assert traces_exit == 0
     assert traces_payload["metrics"]["row_count"] == 4
+
+    trees_exit = main(["adapter", "mrbayes-trees", str(tree_path), "--json"])
+    trees_payload = json.loads(capsys.readouterr().out)
+    assert trees_exit == 0
+    assert trees_payload["metrics"]["tree_count"] == 4
+
+    mcmc_exit = main(["adapter", "mrbayes-mcmc", str(mcmc_path), "--json"])
+    mcmc_payload = json.loads(capsys.readouterr().out)
+    assert mcmc_exit == 0
+    assert mcmc_payload["metrics"]["comment_count"] == 2
+
+    consensus_exit = main(
+        ["adapter", "mrbayes-consensus", str(consensus_path), "--json"]
+    )
+    consensus_payload = json.loads(capsys.readouterr().out)
+    assert consensus_exit == 0
+    assert consensus_payload["metrics"]["annotated_node_count"] == 6
 
     ess_exit = main(["adapter", "mrbayes-ess", str(trace_path), "--json"])
     ess_payload = json.loads(capsys.readouterr().out)

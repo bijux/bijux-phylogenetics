@@ -27,7 +27,10 @@ from bijux_phylogenetics.bayesian import (
     build_posterior_uncertainty_figure_package,
     compute_mrbayes_effective_sample_sizes,
     parse_beast_log,
+    parse_mrbayes_consensus_tree,
+    parse_mrbayes_mcmc_diagnostics,
     parse_mrbayes_parameter_traces,
+    parse_mrbayes_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
     prepare_mrbayes_analysis,
     render_bayesian_posterior_report,
@@ -3760,6 +3763,33 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the trace report as JSON."
     )
     _add_manifest_argument(adapter_mrbayes_traces)
+    adapter_mrbayes_trees = adapter_subparsers.add_parser(
+        "mrbayes-trees",
+        help="Parse a MrBayes posterior tree set into sampled trees.",
+    )
+    adapter_mrbayes_trees.add_argument("input_path", type=Path)
+    adapter_mrbayes_trees.add_argument(
+        "--json", action="store_true", help="Emit the posterior tree set report as JSON."
+    )
+    _add_manifest_argument(adapter_mrbayes_trees)
+    adapter_mrbayes_mcmc = adapter_subparsers.add_parser(
+        "mrbayes-mcmc",
+        help="Parse a MrBayes MCMC diagnostics table.",
+    )
+    adapter_mrbayes_mcmc.add_argument("input_path", type=Path)
+    adapter_mrbayes_mcmc.add_argument(
+        "--json", action="store_true", help="Emit the MCMC diagnostics report as JSON."
+    )
+    _add_manifest_argument(adapter_mrbayes_mcmc)
+    adapter_mrbayes_consensus = adapter_subparsers.add_parser(
+        "mrbayes-consensus",
+        help="Parse a MrBayes consensus tree with posterior-probability annotations.",
+    )
+    adapter_mrbayes_consensus.add_argument("input_path", type=Path)
+    adapter_mrbayes_consensus.add_argument(
+        "--json", action="store_true", help="Emit the consensus tree report as JSON."
+    )
+    _add_manifest_argument(adapter_mrbayes_consensus)
     adapter_mrbayes_ess = adapter_subparsers.add_parser(
         "mrbayes-ess",
         help="Compute effective sample sizes from a MrBayes trace table.",
@@ -9632,6 +9662,68 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "row_count": report.row_count,
                             "column_count": len(report.columns),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-trees":
+                report = parse_mrbayes_posterior_tree_samples(args.input_path)
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "rooted_tree_count": report.rooted_tree_count,
+                            "sampled_generation_count": len(report.sampled_generations),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-mcmc":
+                report = parse_mrbayes_mcmc_diagnostics(args.input_path)
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "row_count": report.row_count,
+                            "column_count": len(report.columns),
+                            "comment_count": len(report.comment_lines),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "mrbayes-consensus":
+                tree, report = parse_mrbayes_consensus_tree(args.input_path)
+                outputs = _finalize_outputs(
+                    args, command="adapter", inputs=[args.input_path]
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "tip_count": tree.tip_count,
+                            "annotated_node_count": report.annotated_node_count,
+                            "maximum_posterior_probability": (
+                                report.maximum_posterior_probability
+                            ),
                         },
                         data=report,
                     ),
