@@ -193,6 +193,42 @@ parsed `selected_model`, `selected_criterion`, `candidate_model_count`,
 support-value counts so reviewers can verify the ML result against structured
 fields instead of manually scraping engine text files.
 
+Use `adapter beast-prepare` when you need a real BEAST2 XML template from one
+aligned matrix plus optional dating metadata. The command writes a BEAST2-style
+XML file with an explicit alignment block, a starting tree, a strict or
+uncorrelated lognormal clock, a Yule or birth-death tree prior, MCMC loggers,
+and one MRCA prior per validated calibration target.
+
+```bash
+bijux-phylogenetics adapter beast-prepare \
+  artifacts/mixed-locus-supermatrix.aln.fasta \
+  --tree artifacts/mixed-locus-guide.nwk \
+  --calibrations artifacts/fossil-calibrations.tsv \
+  --tip-dates artifacts/tip-dates.tsv \
+  --out artifacts/multilocus-beast.xml \
+  --clock-model relaxed-lognormal \
+  --tree-prior birth-death \
+  --chain-length 2000000 \
+  --log-every 1000 \
+  --json
+```
+
+When `--calibrations` or `--tip-dates` are supplied, `--tree` is required so
+the prepared XML can use the same taxa and named clades that were validated
+during preparation. If the alignment is nucleotide or RNA, the template uses
+an HKY site model; if the alignment is protein, it uses a JTT site model. The
+written XML also names the default BEAST run logs as `STEM.$(seed).log` and
+`STEM.$(seed).trees` so later execution produces a predictable artifact set
+beside the XML.
+
+Calibration handling is explicit rather than silent. If a calibration table
+already provides both lower and upper bounds, the template preserves those hard
+bounds as a BEAST uniform prior. If a calibration provides only a lower bound,
+the template emits an explicit offset density above that minimum bound and
+records a preparation warning in JSON so reviewers can see that the prior shape
+was translated for template generation instead of copied as a literal hard
+uniform interval.
+
 Use `adapter mrbayes-run` after preparation when you want the governed runtime
 to execute MrBayes and preserve the native posterior artifacts for later
 inspection instead of leaving the engine outputs implicit.
