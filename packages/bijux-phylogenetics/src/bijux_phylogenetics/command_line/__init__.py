@@ -98,6 +98,12 @@ from bijux_phylogenetics.comparative.models import (
     run_comparative_sensitivity_analysis,
     validate_comparative_reference_examples,
 )
+from bijux_phylogenetics.comparative.multivariate_regression import (
+    run_multivariate_comparative_regression,
+    write_multivariate_excluded_taxa_table,
+    write_multivariate_residual_association_table,
+    write_multivariate_residual_covariance_table,
+)
 from bijux_phylogenetics.comparative.pgls import (
     inspect_pgls_inputs,
     run_pgls,
@@ -2159,6 +2165,39 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the correction report as JSON."
     )
     _add_manifest_argument(comparative_multiple_testing)
+    comparative_multivariate = comparative_subparsers.add_parser(
+        "multivariate",
+        help="Fit shared-taxon comparative regressions across multiple response traits.",
+    )
+    comparative_multivariate.add_argument("tree", type=Path)
+    comparative_multivariate.add_argument("table", type=Path)
+    comparative_multivariate.add_argument("--responses", nargs="+", required=True)
+    comparative_multivariate.add_argument("--predictors", nargs="+", required=True)
+    comparative_multivariate.add_argument("--taxon-column")
+    comparative_multivariate.add_argument(
+        "--lambda-value",
+        default="estimate",
+        help="Use 'estimate' or a numeric Pagel lambda value between 0 and 1.",
+    )
+    comparative_multivariate.add_argument(
+        "--covariance-out",
+        type=Path,
+        help="Write the residual covariance ledger as TSV or CSV.",
+    )
+    comparative_multivariate.add_argument(
+        "--associations-out",
+        type=Path,
+        help="Write the residual trait-association ledger as TSV or CSV.",
+    )
+    comparative_multivariate.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write the explicit excluded-taxa ledger as TSV or CSV.",
+    )
+    comparative_multivariate.add_argument(
+        "--json", action="store_true", help="Emit the multivariate regression report as JSON."
+    )
+    _add_manifest_argument(comparative_multivariate)
     comparative_report = comparative_subparsers.add_parser(
         "report",
         help="Build an integrated comparative-method report.",
@@ -6494,6 +6533,50 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "significant_count": sum(
                                 1 for row in report.rows if row.significant
                             ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "multivariate":
+                report = run_multivariate_comparative_regression(
+                    args.tree,
+                    args.table,
+                    responses=list(args.responses),
+                    predictors=list(args.predictors),
+                    taxon_column=args.taxon_column,
+                    lambda_value=lambda_value,
+                )
+                if args.covariance_out is not None:
+                    write_multivariate_residual_covariance_table(
+                        args.covariance_out, report
+                    )
+                if args.associations_out is not None:
+                    write_multivariate_residual_association_table(
+                        args.associations_out, report
+                    )
+                if args.excluded_taxa_out is not None:
+                    write_multivariate_excluded_taxa_table(
+                        args.excluded_taxa_out, report
+                    )
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "response_count": len(report.responses),
+                            "predictor_count": len(report.predictors),
+                            "analysis_taxa": len(report.analysis_taxa),
+                            "excluded_taxa": len(report.excluded_taxa),
+                            "residual_covariance_row_count": len(
+                                report.covariance_rows
+                            ),
+                            "residual_association_count": len(report.association_rows),
                         },
                         data=report,
                     ),

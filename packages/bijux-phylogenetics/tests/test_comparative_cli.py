@@ -641,6 +641,85 @@ def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> Non
     )
 
 
+def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "multivariate",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--responses",
+            "response_growth",
+            "response_range",
+            "--predictors",
+            "predictor_one",
+            "predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["response_count"] == 2
+    assert payload["metrics"]["predictor_count"] == 2
+    assert payload["metrics"]["analysis_taxa"] == 6
+    assert payload["metrics"]["excluded_taxa"] == 0
+    assert payload["metrics"]["residual_covariance_row_count"] == 4
+    assert payload["metrics"]["residual_association_count"] == 1
+    assert len(payload["data"]["response_models"]) == 2
+
+
+def test_comparative_multivariate_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    covariance_out = tmp_path / "multivariate-residual-covariance.tsv"
+    associations_out = tmp_path / "multivariate-residual-associations.tsv"
+    excluded_out = tmp_path / "multivariate-excluded-taxa.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "multivariate",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multivariate_missing.tsv")),
+            "--responses",
+            "response_growth",
+            "response_range",
+            "--predictors",
+            "predictor_one",
+            "predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--covariance-out",
+            str(covariance_out),
+            "--associations-out",
+            str(associations_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analysis_taxa"] == 5
+    assert payload["metrics"]["excluded_taxa"] == 1
+    assert covariance_out.exists()
+    assert associations_out.exists()
+    assert excluded_out.exists()
+    covariance_rows = covariance_out.read_text(encoding="utf-8").splitlines()
+    association_rows = associations_out.read_text(encoding="utf-8").splitlines()
+    excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    assert covariance_rows[0].startswith(
+        "left_response\tright_response\tpair_count\tis_diagonal"
+    )
+    assert association_rows[0].startswith(
+        "left_response\tright_response\tpair_count\tcovariance\tcorrelation"
+    )
+    assert excluded_rows[0] == "taxon\treason\tmissing_columns"
+
+
 def test_comparative_report_cli_reports_audit_and_limitations(capsys) -> None:
     exit_code = main(
         [
