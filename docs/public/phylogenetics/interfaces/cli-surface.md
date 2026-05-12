@@ -24,6 +24,19 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+The `compare` family includes direct topology-distance review for two existing
+trees. `compare LEFT RIGHT` now exposes `--rf-mode rooted|unrooted` and
+`--taxon-overlap-policy prune-to-shared|require-identical`. The default RF mode
+is rooted, which means root placement contributes to the reported
+Robinson-Foulds distance. Switch to `--rf-mode unrooted` when you want the
+distance to ignore root placement and compare only the recovered splits.
+
+The overlap policy is explicit for partial taxon overlap. By default
+`prune-to-shared` computes RF distance only on the taxa present in both trees
+and reports the shared, left-only, and right-only taxa in JSON. Use
+`--taxon-overlap-policy require-identical` when any taxon-set mismatch should
+stop the comparison instead of being pruned away for review.
+
 The topology family provides direct tree-transformation commands for already
 inferred trees. `topology root-outgroup` accepts one outgroup taxon or one
 expected outgroup clade, writes the rooted tree, and can emit a one-row TSV
