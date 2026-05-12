@@ -79,6 +79,15 @@ from .early_burst_trait_evolution import (
     write_early_burst_trait_evolution_exclusion_table,
     write_early_burst_trait_evolution_summary_table,
 )
+from .trait_rate_through_time import (
+    TraitRateThroughTimeExclusion,
+    TraitRateThroughTimeIntervalRow,
+    TraitRateThroughTimeSummaryReport,
+    summarize_trait_rate_through_time,
+    write_trait_rate_through_time_exclusion_table,
+    write_trait_rate_through_time_interval_table,
+    write_trait_rate_through_time_summary_table,
+)
 from .ou_trait_evolution import (
     OUTraitEvolutionExclusion,
     OUTraitEvolutionSummaryReport,
@@ -288,6 +297,9 @@ __all__ = [
     "EarlyBurstRateChangeProfileRow",
     "EarlyBurstTraitEvolutionExclusion",
     "EarlyBurstTraitEvolutionSummaryReport",
+    "TraitRateThroughTimeExclusion",
+    "TraitRateThroughTimeIntervalRow",
+    "TraitRateThroughTimeSummaryReport",
     "ComparativeAuditRow",
     "ComparativeCoefficientDeltaRow",
     "ComparativeDataset",
@@ -425,6 +437,7 @@ __all__ = [
     "summarize_brownian_regime_rates",
     "summarize_brownian_trait_evolution",
     "summarize_early_burst_trait_evolution",
+    "summarize_trait_rate_through_time",
     "summarize_independent_contrast_regression",
     "summarize_ou_covariance_pgls",
     "summarize_ou_trait_evolution",
@@ -461,6 +474,9 @@ __all__ = [
     "write_early_burst_trait_evolution_comparison_table",
     "write_early_burst_trait_evolution_exclusion_table",
     "write_early_burst_trait_evolution_summary_table",
+    "write_trait_rate_through_time_exclusion_table",
+    "write_trait_rate_through_time_interval_table",
+    "write_trait_rate_through_time_summary_table",
     "write_comparative_residual_clade_table",
     "write_comparative_residual_taxon_table",
     "write_comparative_clade_coefficient_change_table",

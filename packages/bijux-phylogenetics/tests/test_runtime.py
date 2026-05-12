@@ -147,6 +147,9 @@ from bijux_phylogenetics.comparative import (
     PhylogeneticLogisticWarning,
     PhylogeneticSignalPermutation,
     PhylogeneticSignalSummaryReport,
+    TraitRateThroughTimeExclusion,
+    TraitRateThroughTimeIntervalRow,
+    TraitRateThroughTimeSummaryReport,
     TraitRegimeBranchRow,
     TraitRegimeExclusion,
     TraitRegimeMappingReport,
@@ -174,6 +177,7 @@ from bijux_phylogenetics.comparative import (
     summarize_trait_regime_mapping,
     summarize_brownian_trait_evolution,
     summarize_early_burst_trait_evolution,
+    summarize_trait_rate_through_time,
     summarize_independent_contrast_regression,
     summarize_ou_covariance_pgls,
     summarize_ou_trait_evolution,
@@ -228,6 +232,9 @@ from bijux_phylogenetics.comparative import (
     write_ou_covariance_table,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
+    write_trait_rate_through_time_exclusion_table,
+    write_trait_rate_through_time_interval_table,
+    write_trait_rate_through_time_summary_table,
     write_pgls_categorical_contrast_table,
     write_pgls_interaction_coefficient_table,
     write_pgls_lambda_profile_table,
@@ -1179,6 +1186,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_early_burst_trait_evolution
     )
     assert (
+        bijux_phylogenetics.summarize_trait_rate_through_time
+        is summarize_trait_rate_through_time
+    )
+    assert (
         bijux_phylogenetics.summarize_ou_covariance_pgls
         is summarize_ou_covariance_pgls
     )
@@ -1225,6 +1236,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.EarlyBurstIdentifiabilityWarning
         is EarlyBurstIdentifiabilityWarning
+    )
+    assert (
+        bijux_phylogenetics.TraitRateThroughTimeSummaryReport
+        is TraitRateThroughTimeSummaryReport
+    )
+    assert (
+        bijux_phylogenetics.TraitRateThroughTimeIntervalRow
+        is TraitRateThroughTimeIntervalRow
+    )
+    assert (
+        bijux_phylogenetics.TraitRateThroughTimeExclusion
+        is TraitRateThroughTimeExclusion
     )
     assert (
         bijux_phylogenetics.write_brownian_regime_summary_table
@@ -1281,6 +1304,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_early_burst_rate_change_profile_table
         is write_early_burst_rate_change_profile_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_rate_through_time_summary_table
+        is write_trait_rate_through_time_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_rate_through_time_interval_table
+        is write_trait_rate_through_time_interval_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_rate_through_time_exclusion_table
+        is write_trait_rate_through_time_exclusion_table
     )
     assert bijux_phylogenetics.summarize_pgls_lambda_fit is summarize_pgls_lambda_fit
     assert (
@@ -7920,6 +7955,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_early_burst_trait_evolution
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_trait_rate_through_time"]
+        is summarize_trait_rate_through_time
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_ou_covariance_pgls"]
         is summarize_ou_covariance_pgls
     )
@@ -7978,6 +8017,24 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
             "bijux_phylogenetics.comparative:write_early_burst_rate_change_profile_table"
         ]
         is write_early_burst_rate_change_profile_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_rate_through_time_summary_table"
+        ]
+        is write_trait_rate_through_time_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_rate_through_time_interval_table"
+        ]
+        is write_trait_rate_through_time_interval_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_rate_through_time_exclusion_table"
+        ]
+        is write_trait_rate_through_time_exclusion_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:summarize_pgls_categorical_contrasts"]
