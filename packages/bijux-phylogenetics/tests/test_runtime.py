@@ -108,6 +108,10 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
     IndependentContrastRegressionReport,
     IndependentContrastRegressionRow,
+    ComparativeRegressionModelExclusion,
+    ComparativeRegressionModelRow,
+    ComparativeRegressionModelSelectionReport,
+    ComparativeRegressionPairwiseComparisonRow,
     MultivariateComparativeRegressionReport,
     MultivariateResidualAssociationRow,
     MultivariateResidualCovarianceRow,
@@ -127,6 +131,7 @@ from bijux_phylogenetics.comparative import (
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
     inspect_pgls_inputs,
+    compare_comparative_regression_models,
     run_multivariate_comparative_regression,
     run_pgls,
     summarize_phylogenetic_logistic,
@@ -140,6 +145,9 @@ from bijux_phylogenetics.comparative import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
     write_brownian_covariance_table,
+    write_comparative_regression_excluded_taxa_table,
+    write_comparative_regression_model_ranking_table,
+    write_comparative_regression_pairwise_table,
     write_multivariate_excluded_taxa_table,
     write_multivariate_residual_association_table,
     write_multivariate_residual_covariance_table,
@@ -1021,6 +1029,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_multivariate_comparative_regression
     )
     assert (
+        bijux_phylogenetics.compare_comparative_regression_models
+        is compare_comparative_regression_models
+    )
+    assert (
         bijux_phylogenetics.summarize_phylogenetic_logistic
         is summarize_phylogenetic_logistic
     )
@@ -1058,6 +1070,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_pgls_categorical_contrasts
         is summarize_pgls_categorical_contrasts
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionModelSelectionReport
+        is ComparativeRegressionModelSelectionReport
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionModelRow
+        is ComparativeRegressionModelRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionPairwiseComparisonRow
+        is ComparativeRegressionPairwiseComparisonRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionModelExclusion
+        is ComparativeRegressionModelExclusion
     )
     assert (
         bijux_phylogenetics.IndependentContrastRegressionReport
@@ -1126,6 +1154,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_independent_contrast_table
         is write_independent_contrast_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_regression_model_ranking_table
+        is write_comparative_regression_model_ranking_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_regression_pairwise_table
+        is write_comparative_regression_pairwise_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_regression_excluded_taxa_table
+        is write_comparative_regression_excluded_taxa_table
     )
     assert (
         bijux_phylogenetics.write_independent_contrast_regression_table
@@ -7586,6 +7626,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_phylogenetic_logistic
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:compare_comparative_regression_models"]
+        is compare_comparative_regression_models
+    )
+    assert (
         resolved[
             "bijux_phylogenetics.comparative:run_multivariate_comparative_regression"
         ]
@@ -7599,6 +7643,24 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_covariance_table"]
         is write_brownian_covariance_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_regression_model_ranking_table"
+        ]
+        is write_comparative_regression_model_ranking_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_regression_pairwise_table"
+        ]
+        is write_comparative_regression_pairwise_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_regression_excluded_taxa_table"
+        ]
+        is write_comparative_regression_excluded_taxa_table
     )
     assert (
         resolved[
