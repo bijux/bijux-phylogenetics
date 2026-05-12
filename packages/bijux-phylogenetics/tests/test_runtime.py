@@ -116,11 +116,13 @@ from bijux_phylogenetics.comparative import (
     estimate_pagels_lambda,
     inspect_pgls_inputs,
     run_pgls,
+    summarize_brownian_covariance_pgls,
     summarize_pgls_lambda_fit,
     summarize_pgls_categorical_contrasts,
     summarize_pgls_interaction_coefficients,
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
+    write_brownian_covariance_table,
     write_pgls_categorical_contrast_table,
     write_pgls_interaction_coefficient_table,
     write_pgls_lambda_profile_table,
@@ -1002,10 +1004,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.build_pgls_model_matrix is build_pgls_model_matrix
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
+    assert (
+        bijux_phylogenetics.summarize_brownian_covariance_pgls
+        is summarize_brownian_covariance_pgls
+    )
     assert bijux_phylogenetics.summarize_pgls_lambda_fit is summarize_pgls_lambda_fit
     assert (
         bijux_phylogenetics.summarize_pgls_categorical_contrasts
         is summarize_pgls_categorical_contrasts
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_covariance_table
+        is write_brownian_covariance_table
     )
     assert (
         bijux_phylogenetics.write_pgls_categorical_contrast_table
@@ -7409,6 +7419,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_pgls_lambda_fit
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_brownian_covariance_pgls"]
+        is summarize_brownian_covariance_pgls
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_pgls_categorical_contrasts"]
         is summarize_pgls_categorical_contrasts
     )
@@ -7417,6 +7431,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_pgls_interaction_coefficients
     )
     assert resolved["bijux_phylogenetics.comparative:run_pgls"] is run_pgls
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_brownian_covariance_table"]
+        is write_brownian_covariance_table
+    )
     assert (
         resolved["bijux_phylogenetics.comparative:write_pgls_categorical_contrast_table"]
         is write_pgls_categorical_contrast_table

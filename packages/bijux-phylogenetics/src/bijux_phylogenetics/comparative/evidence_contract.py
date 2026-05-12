@@ -7,10 +7,12 @@ SUPPORTED_EVIDENCE_API_MODULES = ("bijux_phylogenetics.comparative",)
 SUPPORTED_EVIDENCE_API_LOCATORS = (
     "bijux_phylogenetics.comparative:inspect_pgls_inputs",
     "bijux_phylogenetics.comparative:build_pgls_model_matrix",
+    "bijux_phylogenetics.comparative:summarize_brownian_covariance_pgls",
     "bijux_phylogenetics.comparative:summarize_pgls_lambda_fit",
     "bijux_phylogenetics.comparative:summarize_pgls_categorical_contrasts",
     "bijux_phylogenetics.comparative:summarize_pgls_interaction_coefficients",
     "bijux_phylogenetics.comparative:run_pgls",
+    "bijux_phylogenetics.comparative:write_brownian_covariance_table",
     "bijux_phylogenetics.comparative:write_pgls_categorical_contrast_table",
     "bijux_phylogenetics.comparative:write_pgls_interaction_coefficient_table",
     "bijux_phylogenetics.comparative:write_pgls_lambda_profile_table",

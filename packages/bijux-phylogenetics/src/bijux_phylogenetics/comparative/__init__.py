@@ -77,6 +77,12 @@ from .pgls_lambda_fit import (
     summarize_pgls_lambda_fit,
     write_pgls_lambda_profile_table,
 )
+from .pgls_brownian_covariance import (
+    BrownianCovariancePGLSReport,
+    BrownianCovarianceRow,
+    summarize_brownian_covariance_pgls,
+    write_brownian_covariance_table,
+)
 from .pgls_categorical_contrasts import (
     PGLSCategoricalContrastReport,
     PGLSCategoricalContrastRow,
@@ -160,6 +166,8 @@ __all__ = [
     "NumericTraitSummary",
     "PGLSLambdaFitReport",
     "PGLSLambdaProfileRow",
+    "BrownianCovariancePGLSReport",
+    "BrownianCovarianceRow",
     "PGLSCategoricalContrastReport",
     "PGLSCategoricalContrastRow",
     "PGLSInteractionCoefficientReport",
@@ -205,6 +213,7 @@ __all__ = [
     "run_comparative_sensitivity_analysis",
     "run_pgls_multiple_testing",
     "run_pgls",
+    "summarize_brownian_covariance_pgls",
     "summarize_pgls_lambda_fit",
     "summarize_pgls_categorical_contrasts",
     "summarize_pgls_interaction_coefficients",
@@ -215,5 +224,6 @@ __all__ = [
     "write_pgls_interaction_coefficient_table",
     "write_pgls_lambda_profile_table",
     "write_pgls_model_matrix_table",
+    "write_brownian_covariance_table",
     "write_comparative_method_report",
 ]
