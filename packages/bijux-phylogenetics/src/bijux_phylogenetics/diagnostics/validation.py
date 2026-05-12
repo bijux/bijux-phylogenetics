@@ -20,6 +20,7 @@ from bijux_phylogenetics.errors import (
     UnrootedTreeError,
 )
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.tree_shape import summarize_tree_shape_from_tree
 
 
 @dataclass(slots=True)
@@ -1549,6 +1550,7 @@ def inspect_tree_path(
 ) -> TreeInspectionReport:
     """Inspect a tree file and return lightweight summary metrics."""
     tree = _load_tree(path, source_format=source_format)
+    shape = summarize_tree_shape_from_tree(tree, source_path=path)
     lengths = [length for length in tree.root_to_tip_lengths() if length is not None]
     branch_lengths = [
         node.branch_length for node in tree.iter_nodes() if node is not tree.root
@@ -1559,13 +1561,9 @@ def inspect_tree_path(
     singleton_internal_nodes = _singleton_internal_nodes(tree)
     missing_internal_branch_nodes = _missing_internal_branch_nodes(tree)
     missing_terminal_branch_taxa = _missing_terminal_branch_taxa(tree)
-    depths = _leaf_depths(tree)
     zero_length_branch_count = sum(1 for length in branch_lengths if length == 0)
     ultrametric = _ultrametric(tree)
     branch_length_summary = _branch_length_summary(tree)
-    colless_imbalance_index = _colless_imbalance_index(tree)
-    normalized_colless_imbalance = _normalized_colless_imbalance(tree)
-    unusually_imbalanced = _unusually_imbalanced(tree)
     long_branch_taxa = _long_branch_taxa(tree)
     long_branch_outliers, short_branch_outliers = _branch_outliers(tree)
     (
@@ -1584,8 +1582,6 @@ def inspect_tree_path(
     stable_node_identities = _stable_node_identities(tree)
     unsafe_external_labels = _unsafe_external_labels(tree)
     taxon_identity_audit = inspect_tree_taxon_identity(tree)
-    star_like = _star_like(tree)
-    comb_like = _comb_like(tree)
     _, _, negative_branch_count = _branch_length_health(tree)
     tree_quality_warnings = _tree_quality_warnings(
         tree,
@@ -1593,13 +1589,13 @@ def inspect_tree_path(
         zero_length_branch_count=zero_length_branch_count,
         negative_branch_count=negative_branch_count,
         polytomy_nodes=polytomy_nodes,
-        unusually_imbalanced=unusually_imbalanced,
+        unusually_imbalanced=shape.unusually_imbalanced,
         long_branch_taxa=long_branch_taxa,
         short_branch_outliers=short_branch_outliers,
         suspicious_support_value_ranges=suspicious_support_value_ranges,
         mixed_support_scales=mixed_support_scales,
-        star_like=star_like,
-        comb_like=comb_like,
+        star_like=shape.star_like,
+        comb_like=shape.comb_like,
     )
     warnings: list[str] = []
     if zero_length_branch_count:
@@ -1659,12 +1655,12 @@ def inspect_tree_path(
         zero_length_branch_count=zero_length_branch_count,
         min_root_to_tip=min(lengths) if lengths else None,
         max_root_to_tip=max(lengths) if lengths else None,
-        max_depth=_max_depth(tree),
-        mean_depth=sum(depths) / len(depths),
-        colless_imbalance_index=colless_imbalance_index,
-        normalized_colless_imbalance=normalized_colless_imbalance,
-        sackin_imbalance_index=sum(depths),
-        unusually_imbalanced=unusually_imbalanced,
+        max_depth=shape.tree_height_edges,
+        mean_depth=shape.mean_tip_depth_edges,
+        colless_imbalance_index=shape.colless_imbalance_index,
+        normalized_colless_imbalance=shape.normalized_colless_imbalance,
+        sackin_imbalance_index=shape.sackin_imbalance_index,
+        unusually_imbalanced=shape.unusually_imbalanced,
         long_branch_taxa=long_branch_taxa,
         long_branch_outliers=long_branch_outliers,
         short_branch_outliers=short_branch_outliers,
@@ -1676,12 +1672,12 @@ def inspect_tree_path(
         stable_node_identities=stable_node_identities,
         unsafe_external_labels=unsafe_external_labels,
         taxon_identity_audit=taxon_identity_audit,
-        star_like=star_like,
-        comb_like=comb_like,
+        star_like=shape.star_like,
+        comb_like=shape.comb_like,
         tree_quality_score=_tree_quality_score(tree_quality_warnings),
         tree_quality_warnings=tree_quality_warnings,
-        imbalance_summary=_imbalance_summary(tree),
-        cherry_count=_cherry_count(tree),
+        imbalance_summary=shape.imbalance_summary,
+        cherry_count=shape.cherry_count,
         taxa=sorted(tree.tip_names),
         warnings=warnings,
     )
