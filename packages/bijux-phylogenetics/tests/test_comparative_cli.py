@@ -83,13 +83,25 @@ def test_comparative_pgls_cli_fits_multiple_predictors(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     coefficients = {
-        coefficient["name"]: coefficient["estimate"]
+        coefficient["name"]: coefficient
         for coefficient in payload["data"]["model"]["coefficients"]
     }
     assert exit_code == 0
-    assert math.isclose(coefficients["intercept"], 1.0)
-    assert math.isclose(coefficients["predictor_one"], 0.5)
-    assert math.isclose(coefficients["predictor_two"], 1.0)
+    assert payload["metrics"]["coefficient_count"] == 3
+    assert payload["metrics"]["confidence_interval_count"] == 3
+    assert payload["metrics"]["residual_degrees_of_freedom"] == 1
+    assert payload["metrics"]["coefficient_inference_distribution"] == "student-t"
+    assert math.isclose(coefficients["intercept"]["estimate"], 1.0)
+    assert math.isclose(coefficients["predictor_one"]["estimate"], 0.5)
+    assert math.isclose(coefficients["predictor_two"]["estimate"], 1.0)
+    assert coefficients["predictor_one"]["inference_distribution"] == "student-t"
+    assert coefficients["predictor_one"]["degrees_of_freedom"] == 1
+    assert (
+        coefficients["predictor_one"]["lower_95_confidence_interval"]
+        < coefficients["predictor_one"]["estimate"]
+        < coefficients["predictor_one"]["upper_95_confidence_interval"]
+    )
+    assert "test_statistic" in coefficients["predictor_one"]
 
 
 def test_comparative_pgls_cli_encodes_categorical_predictor(capsys) -> None:

@@ -6504,6 +6504,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     metrics={
                         "taxon_count": report.taxon_count,
                         "predictor_count": len(report.predictors),
+                        "coefficient_count": len(report.coefficients),
+                        "confidence_interval_count": len(report.coefficients),
+                        "residual_degrees_of_freedom": (
+                            report.coefficients[0].degrees_of_freedom
+                            if report.coefficients
+                            else 0
+                        ),
+                        "coefficient_inference_distribution": (
+                            report.coefficients[0].inference_distribution
+                            if report.coefficients
+                            else None
+                        ),
                         "encoded_predictor_count": len(report.encoded_columns) - 1,
                         "categorical_predictor_count": len(
                             input_report.categorical_predictors
