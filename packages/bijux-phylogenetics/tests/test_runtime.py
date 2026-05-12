@@ -464,6 +464,11 @@ from bijux_phylogenetics.biogeography import (
     ConstrainedGeographicReport,
     ConstrainedGeographicSummary,
     ConstrainedGeographicTransitionRow,
+    DatedBiogeographyEventRow,
+    DatedBiogeographyNodeRow,
+    DatedBiogeographyReport,
+    DatedBiogeographySummary,
+    DatedBiogeographyTimeBinRow,
     GeographicMigrationEventReport,
     GeographicMigrationEventRow,
     GeographicMigrationEventSummary,
@@ -478,6 +483,7 @@ from bijux_phylogenetics.biogeography import (
     TimeStratifiedTransitionReport,
     TimeStratifiedTransitionSummary,
     UnsupportedGeographicTransitionClaimRow,
+    summarize_biogeographic_transition_chronology,
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
     summarize_geographic_migration_events,
@@ -488,6 +494,11 @@ from bijux_phylogenetics.biogeography import (
     write_constrained_geographic_fit_table,
     write_constrained_geographic_summary_table,
     write_constrained_geographic_transition_table,
+    write_dated_biogeography_event_table,
+    write_dated_biogeography_exclusion_table,
+    write_dated_biogeography_node_table,
+    write_dated_biogeography_summary_table,
+    write_dated_biogeography_time_bin_table,
     write_geographic_migration_event_summary_table,
     write_geographic_migration_event_table,
     write_geographic_migration_exclusion_table,
@@ -990,6 +1001,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is summarize_constrained_geographic_report
     )
     assert (
+        bijux_phylogenetics.summarize_biogeographic_transition_chronology
+        is summarize_biogeographic_transition_chronology
+    )
+    assert (
         bijux_phylogenetics.summarize_geographic_state_model
         is summarize_geographic_state_model
     )
@@ -1020,6 +1035,26 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_constrained_geographic_exclusion_table
         is write_constrained_geographic_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_summary_table
+        is write_dated_biogeography_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_node_table
+        is write_dated_biogeography_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_event_table
+        is write_dated_biogeography_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_time_bin_table
+        is write_dated_biogeography_time_bin_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_exclusion_table
+        is write_dated_biogeography_exclusion_table
     )
     assert (
         bijux_phylogenetics.write_unsupported_geographic_transition_claim_table
@@ -1100,6 +1135,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.GeographicMigrationTreeSetSummary
         is GeographicMigrationTreeSetSummary
+    )
+    assert bijux_phylogenetics.DatedBiogeographyEventRow is DatedBiogeographyEventRow
+    assert bijux_phylogenetics.DatedBiogeographyNodeRow is DatedBiogeographyNodeRow
+    assert bijux_phylogenetics.DatedBiogeographyReport is DatedBiogeographyReport
+    assert bijux_phylogenetics.DatedBiogeographySummary is DatedBiogeographySummary
+    assert (
+        bijux_phylogenetics.DatedBiogeographyTimeBinRow
+        is DatedBiogeographyTimeBinRow
     )
     assert bijux_phylogenetics.ConstrainedGeographicFitRow is ConstrainedGeographicFitRow
     assert bijux_phylogenetics.ConstrainedGeographicReport is ConstrainedGeographicReport
