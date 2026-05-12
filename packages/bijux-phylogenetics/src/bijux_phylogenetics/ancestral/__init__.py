@@ -93,6 +93,17 @@ from .transitions import (
     write_ancestral_transition_tree_set_tree_table,
 )
 from .package import AncestralFigurePackageResult, build_ancestral_figure_package
+from .root_sensitivity import (
+    RootSensitivityAssumptionRow,
+    RootSensitivityNodeRow,
+    RootSensitivityReport,
+    RootSensitivitySummary,
+    summarize_ancestral_root_sensitivity,
+    summarize_ancestral_root_sensitivity_report,
+    write_ancestral_root_assumption_table,
+    write_ancestral_root_sensitivity_node_table,
+    write_ancestral_root_sensitivity_summary_table,
+)
 from .sensitivity import (
     AncestralSensitivityReport,
     AncestralSensitivitySummary,
@@ -162,6 +173,10 @@ __all__ = [
     "DiscreteAncestralTreeSetNodeRow",
     "DiscreteAncestralTreeSetReport",
     "DiscreteAncestralTreeSetSummary",
+    "RootSensitivityAssumptionRow",
+    "RootSensitivityNodeRow",
+    "RootSensitivityReport",
+    "RootSensitivitySummary",
     "build_ancestral_figure_package",
     "build_ancestral_sensitivity_report",
     "build_continuous_ancestral_confidence_rows",
@@ -178,6 +193,8 @@ __all__ = [
     "render_ancestral_state_report",
     "render_ancestral_state_tree",
     "render_ancestral_state_visualization",
+    "summarize_ancestral_root_sensitivity",
+    "summarize_ancestral_root_sensitivity_report",
     "summarize_continuous_ancestral_confidence",
     "summarize_discrete_ancestral_report",
     "summarize_continuous_ancestral_report",
@@ -193,6 +210,9 @@ __all__ = [
     "summarize_ancestral_transition_tree_set_report",
     "summarize_ancestral_transitions",
     "write_ancestral_confidence_summary_table",
+    "write_ancestral_root_assumption_table",
+    "write_ancestral_root_sensitivity_node_table",
+    "write_ancestral_root_sensitivity_summary_table",
     "write_ancestral_state_table",
     "write_ancestral_transition_branch_table",
     "write_ancestral_transition_count_table",
