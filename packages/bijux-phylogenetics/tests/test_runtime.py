@@ -5126,6 +5126,8 @@ def test_build_tree_comparison_report_writes_html_with_checksums(
     assert "clade-comparison" in html
     assert "clade-changes" in html
     assert "support-comparison" in html
+    assert "conflicting_clades" in html
+    assert "unique_clades" in html
 
 
 def test_render_tree_svg_writes_static_tree_image(tmp_path: Path) -> None:
