@@ -70,6 +70,49 @@ This command is intentionally a public data-and-workflow entrypoint rather than
 another evidence-book wrapper. It gives users a real mammal comparative dataset
 without requiring them to know the repository’s internal study layout.
 
+`demo avian-reproductive-traits` is the governed packaged bird dataset surface.
+It materializes the shipped avian reproductive dataset into one output
+directory and reruns the owned comparative workflow bundle over those packaged
+inputs. Its JSON metrics report:
+
+- `artifact_count`
+- `dataset_taxon_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/tree.nwk`
+- `dataset/traits.csv`
+- `dataset/expected/*.tsv`
+- `workflow/workflow-summary.tsv`
+- `workflow/pgls-lambda-profile.tsv`
+- `workflow/brownian-summary.tsv`
+- `workflow/ou-summary.tsv`
+- `workflow/signal-summary.tsv`
+- `workflow/signal-permutations.tsv`
+- `workflow/continuous-ancestral-summary.tsv`
+- `workflow/continuous-ancestral-uncertainty.tsv`
+- `workflow/discrete-ancestral-summary.tsv`
+- `workflow/discrete-ancestral-probabilities.tsv`
+- `workflow/clade-trait-summary.tsv`
+- `workflow/clade-trait-clades.tsv`
+- `overview.md`
+
+The packaged dataset is keyed by `species`, carries both continuous and
+categorical reproductive traits, and uses the following governed comparative
+workflow choices:
+
+- PGLS response `testes_mass`
+- PGLS predictor `body_mass`
+- continuous ancestral trait `testes_mass`
+- discrete ancestral trait `mating_system`
+- clade summary trait `mating_system`
+
+This command is intentionally a public bird comparative entrypoint rather than
+an internal teaching-data wrapper. It gives users a real bird dataset that can
+exercise trait-evolution and clade-pattern workflows immediately.
+
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
 the selected continuous model, reports 95% uncertainty intervals, and prunes
