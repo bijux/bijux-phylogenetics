@@ -281,6 +281,26 @@ def test_assess_beast_convergence_respects_burnin_fraction() -> None:
     assert convergence.sample_count == 3
 
 
+def test_parse_beast_log_accepts_native_sample_header(tmp_path: Path) -> None:
+    log_path = tmp_path / "native-beast.log"
+    log_path.write_text(
+        "# BEAST runtime log\n"
+        "Sample\tposterior\tprior\tlikelihood\tclockRate\ttree.height\tbirthRate\n"
+        "0\t-48.5\t-6.8\t-41.7\t0.0010\t0.11\t1.0\n"
+        "20\t-47.1\t-7.1\t-40.0\t0.0012\t0.45\t1.2\n",
+        encoding="utf-8",
+    )
+
+    report = parse_beast_log(log_path)
+    summary = summarize_beast_log(log_path, burnin_fraction=0.5)
+
+    assert report.row_count == 2
+    assert report.rows[1].state == 20
+    assert summary.kept_row_count == 1
+    assert summary.prior_parameters == ["prior"]
+    assert set(summary.tree_parameters) == {"tree.height", "birthRate"}
+
+
 def test_validate_beast_posterior_log_reports_missing_columns_and_nonmonotonic_states(
     tmp_path: Path,
 ) -> None:

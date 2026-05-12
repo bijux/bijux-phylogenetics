@@ -1586,8 +1586,8 @@ def parse_beast_log(path: Path) -> BeastLogReport:
     reader = csv.DictReader(filtered_lines, delimiter="\t")
     if reader.fieldnames is None:
         raise ValueError(f"BEAST log contains no header: {path}")
-    state_field = "state" if "state" in reader.fieldnames else "State"
-    if state_field not in reader.fieldnames:
+    state_field = _beast_state_field(reader.fieldnames)
+    if state_field is None:
         raise ValueError(f"BEAST log lacks a state column: {path}")
     columns = [field for field in reader.fieldnames if field and field != state_field]
     rows: list[BeastLogRow] = []
@@ -1741,13 +1741,7 @@ def validate_beast_posterior_log(
             issues=issues,
             valid=False,
         )
-    state_field = (
-        "state"
-        if "state" in reader.fieldnames
-        else "State"
-        if "State" in reader.fieldnames
-        else None
-    )
+    state_field = _beast_state_field(reader.fieldnames)
     observed_columns = [field for field in reader.fieldnames if field]
     if state_field is None:
         issues.append(
@@ -2141,3 +2135,10 @@ def _summary_parameters_by_category(
         for summary in parameter_summaries
         if summary.parameter_category == category
     ]
+
+
+def _beast_state_field(fieldnames: list[str]) -> str | None:
+    for candidate in ("state", "State", "Sample", "sample"):
+        if candidate in fieldnames:
+            return candidate
+    return None
