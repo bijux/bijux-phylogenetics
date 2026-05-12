@@ -61,6 +61,28 @@ def test_summarize_discrete_ancestral_report_tracks_root_and_exclusions(
     ]
 
 
+def test_fitch_parsimony_reports_minimal_changes_and_ambiguous_nodes(
+    tmp_path: Path,
+) -> None:
+    table_path = tmp_path / "traits.tsv"
+    table_path.write_text(
+        "taxon\thabitat\nA\tforest\nB\tdesert\nC\tforest\nD\tdesert\n",
+        encoding="utf-8",
+    )
+    report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree.nwk"),
+        table_path,
+        trait="habitat",
+        model="fitch",
+    )
+    summary = summarize_discrete_ancestral_report(report)
+    assert report.minimal_change_count == 2
+    assert report.parsimonious_root_state_count == 2
+    assert summary.ambiguous_internal_node_count == 3
+    assert summary.minimal_change_count == 2
+    assert summary.parsimonious_root_state_count == 2
+
+
 def test_write_discrete_ancestral_review_tables(tmp_path: Path) -> None:
     report = reconstruct_discrete_ancestral_states(
         fixture("example_tree.nwk"),
@@ -84,6 +106,24 @@ def test_write_discrete_ancestral_review_tables(tmp_path: Path) -> None:
     )
     assert len(probability_rows) == 4
     assert exclusion_rows == ["taxon\treason"]
+
+
+def test_fitch_summary_table_includes_parsimony_counts(tmp_path: Path) -> None:
+    report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_ancestral_sparse.tsv"),
+        trait="habitat",
+        model="fitch",
+    )
+    summary_path = tmp_path / "discrete-ancestral-summary.tsv"
+    write_discrete_ancestral_summary_table(summary_path, report)
+    rows = summary_path.read_text(encoding="utf-8").splitlines()
+    assert rows[0].startswith(
+        "trait\ttaxon_column\tmodel\tstate_ordering\tanalyzed_taxon_count"
+    )
+    assert "ambiguous_internal_node_count" in rows[0]
+    assert "minimal_change_count" in rows[0]
+    assert "\t1\tA|B|C|D\tforest\t1.0\t" in rows[1]
 
 
 def test_reconstruct_discrete_ancestral_states_matches_checked_ace_reference() -> None:

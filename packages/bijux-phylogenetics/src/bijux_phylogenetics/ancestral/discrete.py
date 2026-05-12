@@ -50,6 +50,8 @@ class DiscreteAncestralReport:
     sparse_states: list[str]
     analysis_tree_newick: str
     dropped_missing_taxa: list[str]
+    minimal_change_count: int | None
+    parsimonious_root_state_count: int | None
     warnings: list[str]
     unstable_nodes: list[str]
     weak_support_nodes: list[str]
@@ -67,10 +69,13 @@ class DiscreteAncestralSummary:
     analyzed_taxon_count: int
     excluded_taxon_count: int
     internal_node_count: int
+    ambiguous_internal_node_count: int
     unstable_node_count: int
     weak_support_node_count: int
     observed_state_count: int
     sparse_state_count: int
+    minimal_change_count: int | None
+    parsimonious_root_state_count: int | None
     root_node: str
     root_most_likely_state: str
     root_confidence: float
@@ -147,6 +152,8 @@ def reconstruct_discrete_ancestral_states(
             sparse_states=dataset.sparse_states,
             analysis_tree_newick=dump_pruned_tree(dataset.tree),
             dropped_missing_taxa=dataset.dropped_missing_taxa,
+            minimal_change_count=None,
+            parsimonious_root_state_count=None,
             warnings=warnings,
             unstable_nodes=unstable_nodes,
             weak_support_nodes=weak_support_nodes,
@@ -154,23 +161,29 @@ def reconstruct_discrete_ancestral_states(
         )
     estimates: list[DiscreteAncestralEstimate] = []
 
-    def downpass(node) -> set[str]:
+    candidate_sets: dict[str, set[str]] = {}
+    minimal_change_count = 0
+
+    def record_candidate_sets(node) -> tuple[set[str], int]:
         if node.is_leaf():
             state = dataset.states_by_taxon[node.name]
-            return {state}
-        child_sets = [downpass(child) for child in node.children]
-        candidate = set(child_sets[0])
-        for child_set in child_sets[1:]:
+            candidate_set = {state}
+            candidate_sets[node_signature(node)] = candidate_set
+            return candidate_set, 0
+        child_results = [record_candidate_sets(child) for child in node.children]
+        candidate = set(child_results[0][0])
+        minimal_changes = sum(result[1] for result in child_results)
+        for child_set, _ in child_results[1:]:
             intersection = candidate & child_set
             if intersection:
                 candidate = intersection
             else:
                 candidate |= child_set
-        return candidate
+                minimal_changes += 1
+        candidate_sets[node_signature(node)] = candidate
+        return candidate, minimal_changes
 
-    candidate_sets = {
-        node_signature(node): downpass(node) for node in dataset.tree.iter_nodes()
-    }
+    _, minimal_change_count = record_candidate_sets(dataset.tree.root)
 
     for node in dataset.tree.iter_nodes():
         signature = node_signature(node)
@@ -227,6 +240,10 @@ def reconstruct_discrete_ancestral_states(
         sparse_states=dataset.sparse_states,
         analysis_tree_newick=dump_pruned_tree(dataset.tree),
         dropped_missing_taxa=dataset.dropped_missing_taxa,
+        minimal_change_count=minimal_change_count,
+        parsimonious_root_state_count=len(
+            candidate_sets[node_signature(dataset.tree.root)]
+        ),
         warnings=warnings,
         unstable_nodes=unstable_nodes,
         weak_support_nodes=weak_support_nodes,
@@ -243,6 +260,9 @@ def summarize_discrete_ancestral_report(
         raise ValueError(
             "discrete ancestral summary requires at least one internal-node estimate"
         )
+    ambiguous_internal_node_count = sum(
+        1 for estimate in internal_estimates if estimate.ambiguous
+    )
     root_estimate = max(
         internal_estimates,
         key=lambda estimate: (
@@ -258,10 +278,13 @@ def summarize_discrete_ancestral_report(
         analyzed_taxon_count=report.taxon_count,
         excluded_taxon_count=len(report.dropped_missing_taxa),
         internal_node_count=len(internal_estimates),
+        ambiguous_internal_node_count=ambiguous_internal_node_count,
         unstable_node_count=len(report.unstable_nodes),
         weak_support_node_count=len(report.weak_support_nodes),
         observed_state_count=len(report.observed_states),
         sparse_state_count=len(report.sparse_states),
+        minimal_change_count=report.minimal_change_count,
+        parsimonious_root_state_count=report.parsimonious_root_state_count,
         root_node=root_estimate.node,
         root_most_likely_state=root_estimate.most_likely_state,
         root_confidence=root_estimate.confidence,
@@ -298,10 +321,13 @@ def write_discrete_ancestral_summary_table(
             "analyzed_taxon_count",
             "excluded_taxon_count",
             "internal_node_count",
+            "ambiguous_internal_node_count",
             "unstable_node_count",
             "weak_support_node_count",
             "observed_state_count",
             "sparse_state_count",
+            "minimal_change_count",
+            "parsimonious_root_state_count",
             "root_node",
             "root_most_likely_state",
             "root_confidence",
@@ -316,10 +342,19 @@ def write_discrete_ancestral_summary_table(
                 "analyzed_taxon_count": str(summary.analyzed_taxon_count),
                 "excluded_taxon_count": str(summary.excluded_taxon_count),
                 "internal_node_count": str(summary.internal_node_count),
+                "ambiguous_internal_node_count": str(
+                    summary.ambiguous_internal_node_count
+                ),
                 "unstable_node_count": str(summary.unstable_node_count),
                 "weak_support_node_count": str(summary.weak_support_node_count),
                 "observed_state_count": str(summary.observed_state_count),
                 "sparse_state_count": str(summary.sparse_state_count),
+                "minimal_change_count": _format_optional_int(
+                    summary.minimal_change_count
+                ),
+                "parsimonious_root_state_count": _format_optional_int(
+                    summary.parsimonious_root_state_count
+                ),
                 "root_node": summary.root_node,
                 "root_most_likely_state": summary.root_most_likely_state,
                 "root_confidence": str(summary.root_confidence),
@@ -969,3 +1004,9 @@ def _discrete_downstream_risks(unstable: bool) -> list[str]:
         "transition counts and inferred ancestral geography may change under alternative state models",
         "biological narratives about ancestral states should be treated as provisional for this node",
     ]
+
+
+def _format_optional_int(value: int | None) -> str:
+    if value is None:
+        return ""
+    return str(value)
