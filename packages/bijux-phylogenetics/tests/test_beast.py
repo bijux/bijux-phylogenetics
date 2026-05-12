@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+from statistics import stdev
 import subprocess
 import xml.etree.ElementTree as ET
 
@@ -350,6 +351,41 @@ def test_summarize_beast_log_reads_real_beast_fixture() -> None:
     assert {"prior", "treePrior"} <= set(summary.prior_parameters)
     assert {"tree.height", "birthRate"} <= set(summary.tree_parameters)
     assert summary.clock_parameters == ["clockRate"]
+
+
+def test_summarize_beast_log_reports_median_sd_and_hpd_interval(
+    tmp_path: Path,
+) -> None:
+    log_path = tmp_path / "posterior-diagnostics.log"
+    summary_path = tmp_path / "posterior-diagnostics.tsv"
+    posterior_values = [*range(19), 100.0]
+    log_lines = [
+        "# posterior diagnostics fixture",
+        "state\tposterior\tclockRate",
+    ]
+    for state, posterior in enumerate(posterior_values):
+        log_lines.append(f"{state}\t{posterior}\t0.001")
+    log_path.write_text("\n".join(log_lines) + "\n", encoding="utf-8")
+
+    report = summarize_beast_log(log_path, burnin_fraction=0.0)
+    output_path = write_beast_log_summary_table(summary_path, report)
+    posterior = next(
+        summary
+        for summary in report.parameter_summaries
+        if summary.parameter == "posterior"
+    )
+
+    assert posterior.mean == pytest.approx(13.55)
+    assert posterior.median == pytest.approx(9.5)
+    assert posterior.standard_deviation == pytest.approx(
+        round(stdev(posterior_values), 6)
+    )
+    assert posterior.hpd_95_lower == pytest.approx(0.0)
+    assert posterior.hpd_95_upper == pytest.approx(18.0)
+    assert output_path == summary_path
+    text = summary_path.read_text(encoding="utf-8")
+    assert "median\tstandard_deviation" in text
+    assert "hpd_95_lower\thpd_95_upper" in text
 
 
 def test_parse_beast_posterior_tree_samples_handles_translate_and_burnin(

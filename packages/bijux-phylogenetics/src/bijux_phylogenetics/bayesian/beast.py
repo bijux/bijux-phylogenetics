@@ -199,8 +199,12 @@ class BeastLogParameterSummary:
     sample_count: int
     effective_sample_size: float
     mean: float
+    median: float
+    standard_deviation: float
     minimum: float
     maximum: float
+    hpd_95_lower: float
+    hpd_95_upper: float
     first_half_mean: float
     second_half_mean: float
     standardized_mean_shift: float
@@ -1707,8 +1711,12 @@ def summarize_beast_log(
             sample_count=summary.sample_count,
             effective_sample_size=summary.effective_sample_size,
             mean=summary.mean,
+            median=summary.median,
+            standard_deviation=summary.standard_deviation,
             minimum=summary.minimum,
             maximum=summary.maximum,
+            hpd_95_lower=summary.hpd_95_lower,
+            hpd_95_upper=summary.hpd_95_upper,
             first_half_mean=summary.first_half_mean,
             second_half_mean=summary.second_half_mean,
             standardized_mean_shift=summary.standardized_mean_shift,
@@ -1916,8 +1924,12 @@ def write_beast_log_summary_table(path: Path, report: BeastLogSummaryReport) -> 
             "sample_count": str(summary.sample_count),
             "effective_sample_size": format(summary.effective_sample_size, ".15g"),
             "mean": format(summary.mean, ".15g"),
+            "median": format(summary.median, ".15g"),
+            "standard_deviation": format(summary.standard_deviation, ".15g"),
             "minimum": format(summary.minimum, ".15g"),
             "maximum": format(summary.maximum, ".15g"),
+            "hpd_95_lower": format(summary.hpd_95_lower, ".15g"),
+            "hpd_95_upper": format(summary.hpd_95_upper, ".15g"),
             "first_half_mean": format(summary.first_half_mean, ".15g"),
             "second_half_mean": format(summary.second_half_mean, ".15g"),
             "standardized_mean_shift": format(
@@ -1939,8 +1951,12 @@ def write_beast_log_summary_table(path: Path, report: BeastLogSummaryReport) -> 
             "sample_count",
             "effective_sample_size",
             "mean",
+            "median",
+            "standard_deviation",
             "minimum",
             "maximum",
+            "hpd_95_lower",
+            "hpd_95_upper",
             "first_half_mean",
             "second_half_mean",
             "standardized_mean_shift",
@@ -2297,8 +2313,12 @@ def _build_beast_convergence_report(
                 "sample_count": summary.sample_count,
                 "effective_sample_size": summary.effective_sample_size,
                 "mean": summary.mean,
+                "median": summary.median,
+                "standard_deviation": summary.standard_deviation,
                 "minimum": summary.minimum,
                 "maximum": summary.maximum,
+                "hpd_95_lower": summary.hpd_95_lower,
+                "hpd_95_upper": summary.hpd_95_upper,
                 "first_half_mean": summary.first_half_mean,
                 "second_half_mean": summary.second_half_mean,
                 "standardized_mean_shift": summary.standardized_mean_shift,
