@@ -204,6 +204,54 @@ def test_biogeography_time_stratified_cli_rejects_invalid_time_bins(capsys) -> N
     assert "LABEL:START:END" in error_text
 
 
+def test_biogeography_chronology_cli_can_export_review(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    summary_path = tmp_path / "summary.tsv"
+    nodes_path = tmp_path / "nodes.tsv"
+    events_path = tmp_path / "events.tsv"
+    bins_path = tmp_path / "bins.tsv"
+    exclusions_path = tmp_path / "exclusions.tsv"
+
+    exit_code = main(
+        [
+            "biogeography",
+            "chronology",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "ard",
+            "--time-bin-count",
+            "3",
+            "--summary-out",
+            str(summary_path),
+            "--nodes-out",
+            str(nodes_path),
+            "--events-out",
+            str(events_path),
+            "--bins-out",
+            str(bins_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["tree_is_time_scaled"] is True
+    assert payload["metrics"]["root_age"] == 0.3
+    assert payload["metrics"]["time_bin_count"] == 3
+    assert "tree_is_time_scaled" in summary_path.read_text(encoding="utf-8")
+    assert "age_before_present" in nodes_path.read_text(encoding="utf-8")
+    assert "midpoint_age_before_present" in events_path.read_text(encoding="utf-8")
+    assert "uncertainty_class" in bins_path.read_text(encoding="utf-8")
+    assert "reason" in exclusions_path.read_text(encoding="utf-8")
+
+
 def test_biogeography_events_cli_can_export_single_tree_review(
     tmp_path: Path,
     capsys,
