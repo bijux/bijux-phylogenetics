@@ -32,6 +32,15 @@ association under phylogenetic covariance. Its JSON metrics now report
 review tooling can distinguish a minimally identified model from one with
 meaningful residual support.
 
+The same command also owns the public formula-expansion contract. Use
+`--formula` when the scientific hypothesis is easier to express as one formula
+than as separate `--response` plus `--predictors` flags. The formula surface
+supports:
+- continuous predictors
+- categorical predictors
+- interaction expansion through `*` and `:`
+- intercept-free formulas through `0 + ...` or `... - 1`
+
 Each coefficient row under `data.model.coefficients` preserves the durable
 uncertainty contract directly:
 - `estimate`
@@ -49,6 +58,14 @@ not a silent large-sample normal approximation. That matters most on smaller
 comparative datasets, where a visually large coefficient can still carry wide
 intervals and modest nominal support once phylogenetic covariance and limited
 taxon counts are taken seriously.
+
+When `--model-matrix-out` is supplied, `comparative pgls` writes the encoded
+design matrix as CSV or TSV. Its JSON metrics then also report
+`intercept_included`, `model_matrix_row_count`, and
+`model_matrix_column_count`, while `data.inputs.model_matrix` preserves the
+encoded column names and one taxon-level row per analyzed observation. This
+surface exists so reviewers can inspect the actual fitted predictors instead of
+inferring the design matrix indirectly from coefficient names.
 
 The `compare` family includes direct topology-distance review for two existing
 trees. `compare LEFT RIGHT` now exposes `--rf-mode rooted|unrooted` and
