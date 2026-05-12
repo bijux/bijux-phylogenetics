@@ -55,6 +55,7 @@ class DiscreteLikelihoodFitResult:
     parameter_count: int
     aic: float
     transition_rate_rows: list[DiscreteTransitionRateRow]
+    allowed_transition_pairs: list[tuple[str, str]]
 
 
 @dataclass(slots=True)
@@ -84,6 +85,7 @@ class DiscreteAncestralReport:
     parameter_count: int | None
     aic: float | None
     transition_rate_rows: list[DiscreteTransitionRateRow]
+    allowed_transition_pairs: list[tuple[str, str]]
 
 
 @dataclass(slots=True)
@@ -129,6 +131,7 @@ def reconstruct_discrete_ancestral_states(
     ordered_states: list[str] | None = None,
     root_prior_mode: str = "equal",
     fixed_root_state: str | None = None,
+    allowed_transition_pairs: list[tuple[str, str]] | None = None,
 ) -> DiscreteAncestralReport:
     """Reconstruct discrete ancestral states under Fitch or Mk likelihood models."""
     resolved_model = _resolve_discrete_model_name(model)
@@ -141,6 +144,10 @@ def reconstruct_discrete_ancestral_states(
     ):
         raise ValueError(
             "fitch discrete ancestral reconstruction does not support root-prior assumptions"
+        )
+    if resolved_model == "fitch" and allowed_transition_pairs is not None:
+        raise ValueError(
+            "fitch discrete ancestral reconstruction does not support allowed-transition constraints"
         )
     dataset = load_discrete_dataset(
         tree_path,
@@ -156,6 +163,7 @@ def reconstruct_discrete_ancestral_states(
             ordered_states=ordered_states,
             root_prior_mode=root_prior_mode,
             fixed_root_state=fixed_root_state,
+            allowed_transition_pairs=allowed_transition_pairs,
         )
         unstable_nodes = [
             estimate.node
@@ -200,6 +208,7 @@ def reconstruct_discrete_ancestral_states(
             parameter_count=fit_result.parameter_count,
             aic=fit_result.aic,
             transition_rate_rows=fit_result.transition_rate_rows,
+            allowed_transition_pairs=fit_result.allowed_transition_pairs,
         )
     estimates: list[DiscreteAncestralEstimate] = []
 
@@ -294,6 +303,7 @@ def reconstruct_discrete_ancestral_states(
         parameter_count=None,
         aic=None,
         transition_rate_rows=[],
+        allowed_transition_pairs=[],
     )
 
 
@@ -494,11 +504,18 @@ def _reconstruct_likelihood_estimates(
     ordered_states: list[str] | None,
     root_prior_mode: str = "equal",
     fixed_root_state: str | None = None,
+    allowed_transition_pairs: list[tuple[str, str]] | None = None,
 ) -> DiscreteLikelihoodFitResult:
     state_order = _resolve_state_order(
         dataset.observed_states,
         state_ordering=state_ordering,
         ordered_states=ordered_states,
+    )
+    resolved_allowed_transition_pairs = _resolve_allowed_transition_pairs(
+        state_order,
+        model=model,
+        state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
     )
     rate_matrix, default_root_prior = _fit_discrete_mk_model(
         dataset.tree,
@@ -506,6 +523,7 @@ def _reconstruct_likelihood_estimates(
         state_order=state_order,
         model=model,
         state_ordering=state_ordering,
+        allowed_transition_pairs=resolved_allowed_transition_pairs,
     )
     root_prior = _resolve_root_prior(
         state_order,
@@ -551,6 +569,7 @@ def _reconstruct_likelihood_estimates(
         len(state_order),
         model=model,
         state_ordering=state_ordering,
+        allowed_transition_pairs=resolved_allowed_transition_pairs,
     )
     return DiscreteLikelihoodFitResult(
         estimates=estimates,
@@ -563,7 +582,12 @@ def _reconstruct_likelihood_estimates(
             state_order=state_order,
             state_ordering=state_ordering,
             rate_matrix=rate_matrix,
+            allowed_transition_pairs=resolved_allowed_transition_pairs,
         ),
+        allowed_transition_pairs=[
+            (state_order[left_index], state_order[right_index])
+            for left_index, right_index in sorted(resolved_allowed_transition_pairs)
+        ],
     )
 
 
@@ -593,12 +617,18 @@ def _fit_discrete_mk_model(
     state_order: list[str],
     model: str,
     state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
 ) -> tuple[numpy.ndarray, numpy.ndarray]:
     parameter_count = _parameter_count(
         len(state_order),
         model=model,
         state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
     )
+    if parameter_count < 1:
+        raise ValueError(
+            "discrete ancestral reconstruction requires at least one allowed transition"
+        )
     initial_candidates = [
         numpy.full(parameter_count, math.log(scale), dtype=float)
         for scale in (0.1, 1.0, 3.0)
@@ -612,6 +642,7 @@ def _fit_discrete_mk_model(
             state_order=state_order,
             model=model,
             state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
             initial_log_parameters=initial,
         )
         if candidate_score > best_log_likelihood:
@@ -623,6 +654,7 @@ def _fit_discrete_mk_model(
         state_order=state_order,
         model=model,
         state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
     )
     root_prior = _uniform_root_prior(len(state_order))
     return rate_matrix, root_prior
@@ -635,6 +667,7 @@ def _optimize_log_parameters(
     state_order: list[str],
     model: str,
     state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
     initial_log_parameters: numpy.ndarray,
 ) -> tuple[numpy.ndarray, float]:
     simplex = [numpy.clip(initial_log_parameters.copy(), -10.0, 5.0)]
@@ -649,6 +682,7 @@ def _optimize_log_parameters(
             state_order=state_order,
             model=model,
             state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
             log_parameters=vertex,
         )
         for vertex in simplex
@@ -678,6 +712,7 @@ def _optimize_log_parameters(
             state_order=state_order,
             model=model,
             state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
             log_parameters=reflected,
         )
         if scores[0] >= reflected_score > scores[-2]:
@@ -696,6 +731,7 @@ def _optimize_log_parameters(
                 state_order=state_order,
                 model=model,
                 state_ordering=state_ordering,
+                allowed_transition_pairs=allowed_transition_pairs,
                 log_parameters=expanded,
             )
             if expanded_score > reflected_score:
@@ -723,6 +759,7 @@ def _optimize_log_parameters(
             state_order=state_order,
             model=model,
             state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
             log_parameters=contracted,
         )
         if contracted_score > scores[-1]:
@@ -746,6 +783,7 @@ def _optimize_log_parameters(
                     state_order=state_order,
                     model=model,
                     state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
                     log_parameters=shrunk,
                 )
             )
@@ -762,6 +800,7 @@ def _evaluate_log_likelihood(
     state_order: list[str],
     model: str,
     state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
     log_parameters: numpy.ndarray,
 ) -> float:
     rate_matrix = _rate_matrix_from_log_parameters(
@@ -769,6 +808,7 @@ def _evaluate_log_likelihood(
         state_order=state_order,
         model=model,
         state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
     )
     return _tree_log_likelihood(
         tree,
@@ -784,17 +824,61 @@ def _parameter_count(
     *,
     model: str,
     state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
 ) -> int:
+    allowed_pair_count = len(allowed_transition_pairs)
     if model == "equal-rates":
-        return 1
+        return 1 if allowed_pair_count > 0 else 0
     if state_ordering == "ordered":
-        edge_count = max(state_count - 1, 0)
+        edge_count = max(
+            sum(
+                1
+                for left_index in range(state_count)
+                for right_index in range(left_index + 1, state_count)
+                if _transition_allowed(
+                    left_index,
+                    right_index,
+                    state_count=state_count,
+                    state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
+                )
+                and _transition_allowed(
+                    right_index,
+                    left_index,
+                    state_count=state_count,
+                    state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
+                )
+            ),
+            0,
+        )
         if model == "symmetric":
             return edge_count
-        return edge_count * 2
+        return allowed_pair_count
     if model == "symmetric":
-        return state_count * max(state_count - 1, 0) // 2
-    return state_count * max(state_count - 1, 0)
+        return max(
+            sum(
+                1
+                for left_index in range(state_count)
+                for right_index in range(left_index + 1, state_count)
+                if _transition_allowed(
+                    left_index,
+                    right_index,
+                    state_count=state_count,
+                    state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
+                )
+                and _transition_allowed(
+                    right_index,
+                    left_index,
+                    state_count=state_count,
+                    state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
+                )
+            ),
+            0,
+        )
+    return allowed_pair_count
 
 
 def _rate_matrix_from_log_parameters(
@@ -803,6 +887,7 @@ def _rate_matrix_from_log_parameters(
     state_order: list[str],
     model: str,
     state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
 ) -> numpy.ndarray:
     state_count = len(state_order)
     rate_matrix = numpy.zeros((state_count, state_count), dtype=float)
@@ -816,6 +901,7 @@ def _rate_matrix_from_log_parameters(
                     right_index,
                     state_count=state_count,
                     state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
                 ):
                     rate_matrix[left_index, right_index] = rate
     elif model == "symmetric":
@@ -826,6 +912,15 @@ def _rate_matrix_from_log_parameters(
                     right_index,
                     state_count=state_count,
                     state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
+                ):
+                    continue
+                if not _transition_allowed(
+                    right_index,
+                    left_index,
+                    state_count=state_count,
+                    state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
                 ):
                     continue
                 rate = math.exp(float(log_parameters[parameter_index]))
@@ -840,6 +935,7 @@ def _rate_matrix_from_log_parameters(
                     right_index,
                     state_count=state_count,
                     state_ordering=state_ordering,
+                    allowed_transition_pairs=allowed_transition_pairs,
                 ):
                     continue
                 rate_matrix[left_index, right_index] = math.exp(
@@ -859,15 +955,75 @@ def _transition_allowed(
     *,
     state_count: int,
     state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
 ) -> bool:
     if left_index == right_index:
         return False
-    if state_ordering == "unordered":
-        return True
-    return (
+    allowed_by_order = state_ordering == "unordered" or (
         abs(left_index - right_index) == 1
         and max(left_index, right_index) < state_count
     )
+    if not allowed_by_order:
+        return False
+    return (left_index, right_index) in allowed_transition_pairs
+
+
+def _resolve_allowed_transition_pairs(
+    state_order: list[str],
+    *,
+    model: str,
+    state_ordering: str,
+    allowed_transition_pairs: list[tuple[str, str]] | None,
+) -> set[tuple[int, int]]:
+    state_to_index = {state: index for index, state in enumerate(state_order)}
+    if allowed_transition_pairs is None:
+        pairs = {
+            (left_index, right_index)
+            for left_index in range(len(state_order))
+            for right_index in range(len(state_order))
+            if left_index != right_index
+        }
+    else:
+        pairs: set[tuple[int, int]] = set()
+        for source_state, target_state in allowed_transition_pairs:
+            if source_state not in state_to_index:
+                raise ValueError(
+                    "allowed transition source state is not present in the analyzed state vocabulary: "
+                    f"{source_state}"
+                )
+            if target_state not in state_to_index:
+                raise ValueError(
+                    "allowed transition target state is not present in the analyzed state vocabulary: "
+                    f"{target_state}"
+                )
+            if source_state == target_state:
+                raise ValueError(
+                    "allowed transition pairs must connect distinct states"
+                )
+            pairs.add((state_to_index[source_state], state_to_index[target_state]))
+    if model == "symmetric":
+        asymmetric_pairs = [
+            (left_index, right_index)
+            for left_index, right_index in sorted(pairs)
+            if (right_index, left_index) not in pairs
+        ]
+        if asymmetric_pairs:
+            raise ValueError(
+                "symmetric discrete ancestral reconstruction requires bidirectional allowed transitions"
+            )
+    filtered_pairs = {
+        (left_index, right_index)
+        for left_index, right_index in pairs
+        if left_index != right_index
+        and (
+            state_ordering == "unordered" or abs(left_index - right_index) == 1
+        )
+    }
+    if not filtered_pairs:
+        raise ValueError(
+            "discrete ancestral reconstruction requires at least one allowed transition after applying constraints"
+        )
+    return filtered_pairs
 
 
 def _build_transition_rate_rows(
@@ -875,6 +1031,7 @@ def _build_transition_rate_rows(
     state_order: list[str],
     state_ordering: str,
     rate_matrix: numpy.ndarray,
+    allowed_transition_pairs: set[tuple[int, int]],
 ) -> list[DiscreteTransitionRateRow]:
     rows: list[DiscreteTransitionRateRow] = []
     state_count = len(state_order)
@@ -891,6 +1048,7 @@ def _build_transition_rate_rows(
                         right_index,
                         state_count=state_count,
                         state_ordering=state_ordering,
+                        allowed_transition_pairs=allowed_transition_pairs,
                     ),
                     step_distance=abs(left_index - right_index),
                     rate=float(rate_matrix[left_index, right_index]),
