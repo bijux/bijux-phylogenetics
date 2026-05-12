@@ -59,6 +59,22 @@ comparative datasets, where a visually large coefficient can still carry wide
 intervals and modest nominal support once phylogenetic covariance and limited
 taxon counts are taken seriously.
 
+The same `comparative pgls` result now also preserves the fitted Pagel lambda
+surface directly under `data.model.lambda_fit`. That report makes the covariance
+choice auditable instead of treating lambda as one opaque scalar:
+- `mode` distinguishes fixed-lambda review from estimated-lambda review
+- `lambda_value` and `log_likelihood` identify the chosen optimum or fixed
+  covariance strength
+- `lower_95_confidence_interval` and `upper_95_confidence_interval` report the
+  likelihood-ratio-supported interval when lambda was estimated
+- `profile_rows` preserves the full bounded likelihood profile used for review
+
+When `--lambda-profile-out` is supplied, `comparative pgls` also writes that
+profile as CSV or TSV. Its JSON metrics then report
+`lambda_estimation_mode`, `lambda_profile_point_count`,
+`lambda_lower_95_confidence_interval`, and
+`lambda_upper_95_confidence_interval`.
+
 When `--model-matrix-out` is supplied, `comparative pgls` writes the encoded
 design matrix as CSV or TSV. Its JSON metrics then also report
 `intercept_included`, `model_matrix_row_count`, and
