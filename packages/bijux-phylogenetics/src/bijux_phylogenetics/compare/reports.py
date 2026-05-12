@@ -65,6 +65,15 @@ def build_tree_comparison_report(
             json.dumps(asdict(support), default=str, indent=2, sort_keys=True),
         ),
         (
+            "support-conflicts",
+            json.dumps(
+                [asdict(row) for row in support.conflicting_clades],
+                default=str,
+                indent=2,
+                sort_keys=True,
+            ),
+        ),
+        (
             "branch-length-comparison",
             json.dumps(asdict(branch_lengths), default=str, indent=2, sort_keys=True),
         ),
