@@ -222,6 +222,44 @@ directly. The branch ledger keeps the normalized branch-to-regime assignment
 that was actually used, including filtered descendant taxa, so the rate fit is
 auditable end to end.
 
+When the goal is to build or validate the branch regime map itself, use
+`comparative regime-map`. This workflow either reconstructs branch regimes from
+a discrete tip-state table or normalizes a user-provided branch regime map to
+the repository's deterministic branch identity contract. It exists so
+regime-aware downstream fits can start from one explicit review surface instead
+of hiding the regime assignment step inside another model.
+
+```bash
+bijux-phylogenetics comparative regime-map \
+  artifacts/primates.nwk \
+  --table artifacts/primates.geography.tsv \
+  --trait region \
+  --taxon-column species \
+  --summary-out artifacts/primates.regime-map-summary.tsv \
+  --branches-out artifacts/primates.regime-map-branches.tsv \
+  --nodes-out artifacts/primates.regime-map-nodes.tsv \
+  --excluded-taxa-out artifacts/primates.regime-map-excluded.tsv \
+  --svg-out artifacts/primates.regime-map.svg \
+  --json
+```
+
+When `--table` is used, the workflow reconstructs one regime assignment per
+node and then projects those assignments onto every non-root branch. The node
+ledger preserves ambiguous internal states directly instead of flattening them
+into one claimed historical narrative, while the branch ledger keeps the
+normalized branch ids, chosen regime labels, candidate regimes, and filtered
+descendant taxa that downstream comparative workflows would actually consume.
+The SVG output renders the same regime assignment on the tree so reviewers can
+inspect geography or ecology mapping visually instead of reading only a TSV.
+
+When a branch regime map already exists, replace `--table ... --trait ...` with
+`--regime-map artifacts/primates.branch-regimes.tsv`. In that mode the
+workflow validates that every non-root branch is present exactly once, keeps
+the normalized branch-to-regime ledger, and can still render the review SVG.
+The governing branch identity is the descendant-tip signature for each
+non-root branch, such as `A|B` or `A|B|C|D`, so user-provided maps and
+downstream regime-aware models share one stable branch naming surface.
+
 When the goal is to test whether a continuous trait is better explained by
 constrained evolution toward an optimum, use `comparative ou`. This workflow
 fits the stationary-root Ornstein-Uhlenbeck surface directly and reports the
