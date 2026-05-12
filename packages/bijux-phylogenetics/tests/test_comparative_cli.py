@@ -4,6 +4,8 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.cli import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -61,6 +63,91 @@ def test_comparative_signal_cli_reports_lambda_and_p_value(capsys) -> None:
     assert exit_code == 0
     assert 0.0 <= payload["metrics"]["pagels_lambda"] <= 1.0
     assert 0.0 < payload["metrics"]["signal_p_value"] <= 1.0
+
+
+def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "contrasts",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--predictor-trait",
+            "predictor_one",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["metrics"]["contrast_count"] == 3
+    assert payload["metrics"]["regression_row_count"] == 3
+    assert math.isclose(
+        payload["metrics"]["regression_slope"],
+        0.9576271186440678,
+        abs_tol=1e-12,
+    )
+    assert 0.0 < payload["metrics"]["regression_p_value"] < 0.5
+    assert payload["data"]["contrast_report"]["trait"] == "response"
+    assert payload["data"]["regression"]["predictor_trait"] == "predictor_one"
+    assert len(payload["data"]["regression"]["rows"]) == 3
+
+
+def test_comparative_contrasts_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    contrasts_out = tmp_path / "independent-contrasts.tsv"
+    regression_out = tmp_path / "independent-contrast-regression.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "contrasts",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--predictor-trait",
+            "predictor_one",
+            "--contrasts-out",
+            str(contrasts_out),
+            "--regression-out",
+            str(regression_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["contrast_count"] == 3
+    assert payload["metrics"]["regression_row_count"] == 3
+    assert contrasts_out.exists()
+    assert regression_out.exists()
+    contrast_rows = contrasts_out.read_text(encoding="utf-8").splitlines()
+    regression_rows = regression_out.read_text(encoding="utf-8").splitlines()
+    assert contrast_rows[0].startswith("trait\tnode\tleft_taxa\tright_taxa")
+    assert regression_rows[0].startswith(
+        "response_trait\tpredictor_trait\tnode\tpredictor_contrast"
+    )
+    assert len(contrast_rows) == 4
+    assert len(regression_rows) == 4
+
+
+def test_comparative_contrasts_cli_requires_predictor_for_regression_output() -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        main(
+            [
+                "comparative",
+                "contrasts",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_comparative.tsv")),
+                "--trait",
+                "response",
+                "--regression-out",
+                "artifacts/independent-contrast-regression.tsv",
+            ]
+        )
+    assert excinfo.value.code == 2
 
 
 def test_comparative_pgls_cli_fits_multiple_predictors(capsys) -> None:
