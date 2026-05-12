@@ -45,6 +45,31 @@ phylogenetic covariance, pass that exact numeric lambda instead. That keeps
 coefficient and p-value review tied to one covariance assumption rather than
 silently mixing model-selection differences with coefficient-level inference.
 
+When the goal is to review phylogenetic independent contrasts directly, use
+`comparative contrasts`. The base workflow computes one standardized contrast
+row per internal node for one numeric trait and can optionally fit one
+regression-through-origin over matched predictor and response contrasts.
+
+```bash
+bijux-phylogenetics comparative contrasts \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait longevity \
+  --predictor-trait brain_mass_g \
+  --taxon-column species \
+  --contrasts-out artifacts/primates.independent-contrasts.tsv \
+  --regression-out artifacts/primates.independent-contrast-regression.tsv \
+  --json
+```
+
+The contrast ledger keeps one row per internal node with the left and right
+descendant taxa, the standardized contrast, the expected variance, the local
+ancestral value, and the shared root estimate for the analyzed trait. When
+`--predictor-trait` is supplied, the regression ledger keeps one row per
+matched node with the predictor contrast, response contrast, fitted
+through-origin response contrast, residual, and leverage fraction, while the
+JSON metrics report the fitted slope and p-value explicitly.
+
 When the covariance assumption itself must stay fixed to Brownian shared branch
 lengths, use `comparative brownian-pgls`. This keeps the regression surface
 separate from Pagel-lambda fitting and writes an explicit covariance ledger
