@@ -167,6 +167,79 @@ tip ledger. Each row preserves:
 - `taxon`
 - `reason`
 
+`ancestral ordered-discrete` is the governed ordered-state comparison surface
+for one discrete likelihood ancestral reconstruction. It fits the requested
+likelihood model twice on the same tree: once with the supplied ordered state
+vocabulary and once with the unrestricted unordered baseline. Its JSON metrics
+report:
+- `model`
+- `ordered_state_count`
+- `fit_count`
+- `differing_node_count`
+- `ambiguity_change_count`
+- `restricted_transition_count`
+- `preferred_ordering`
+
+The command supports `equal-rates`, `symmetric`, and
+`all-rates-different`. It requires `--ordered-states`, which defines the
+durable ordered state vocabulary used to restrict transitions to adjacent
+states only.
+
+When `--summary-out` is supplied, `ancestral ordered-discrete` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `analyzed_taxon_count`
+- `state_count`
+- `ordered_log_likelihood`
+- `unordered_log_likelihood`
+- `ordered_parameter_count`
+- `unordered_parameter_count`
+- `ordered_aic`
+- `unordered_aic`
+- `delta_aic`
+- `preferred_ordering`
+- `differing_node_count`
+- `ambiguity_change_count`
+- `restricted_transition_count`
+- `warning_count`
+
+When `--fits-out` is supplied, the command writes one two-row fit ledger. Each
+row preserves:
+- `ordering_mode`
+- `model`
+- `state_ordering`
+- `ordered_states`
+- `analyzed_taxon_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `root_most_likely_state`
+- `root_confidence`
+
+When `--nodes-out` is supplied, the command writes one node-wise comparison
+ledger. Each row preserves:
+- `node`
+- `descendant_taxa`
+- `ordered_state`
+- `unordered_state`
+- `ordered_confidence`
+- `unordered_confidence`
+- `confidence_delta`
+- `differs`
+- `ambiguity_changed`
+
+When `--transitions-out` is supplied, the command writes one directed
+transition ledger. Each row preserves:
+- `source_state`
+- `target_state`
+- `step_distance`
+- `ordered_transition_allowed`
+- `unordered_transition_allowed`
+- `ordered_rate`
+- `unordered_rate`
+
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
 ancestral model. Instead, it reuses the owned reconstruction surfaces and
