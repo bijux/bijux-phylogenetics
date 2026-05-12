@@ -164,6 +164,34 @@ This gives users a real degraded-sequence stress surface without requiring
 them to assemble ancient and modern accession panels or invent their own
 missingness reporting convention.
 
+When the goal is to review host-state evolution on a real pathogen panel, use
+`demo rabies-cross-host-panel`. This workflow materializes the packaged rabies
+dataset, which ships with a rooted nucleoprotein tree, raw sequences, and host
+metadata, and then reruns the owned host-switching review surface over the
+grouped host trait.
+
+```bash
+bijux-phylogenetics demo rabies-cross-host-panel \
+  --out artifacts/rabies-cross-host-panel \
+  --json
+```
+
+The packaged pathogen workflow writes the same dataset/workflow split as the
+other demos, but focuses on ancestral host reconstruction and branchwise
+transition evidence:
+
+- host-switch summary ledger
+- internal-node host-state probability ledger
+- branchwise host-switch ledger
+- directed host-switch count ledger
+- host-transition fit ledger
+- unsupported-claim and exclusion ledgers
+
+The packaged metadata carries both exact `host_species` labels and the grouped
+`host_group` trait used by the governed workflow. That grouping is explicit and
+intentional: it keeps the compact rabies panel interpretable for host-switch
+review instead of overstating species-level certainty from a tiny demo panel.
+
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
