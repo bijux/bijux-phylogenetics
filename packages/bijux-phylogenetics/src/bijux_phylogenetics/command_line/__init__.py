@@ -133,6 +133,7 @@ from bijux_phylogenetics.core.topology import (
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
     unroot_tree,
+    write_tree_rooting_report,
 )
 from bijux_phylogenetics.core.traits import (
     detect_missing_trait_values,
@@ -3101,6 +3102,11 @@ def build_parser() -> argparse.ArgumentParser:
     topology_outgroup.add_argument("tree", type=Path)
     topology_outgroup.add_argument("--taxa", nargs="+", required=True)
     topology_outgroup.add_argument("--out", required=True, type=Path)
+    topology_outgroup.add_argument(
+        "--report-out",
+        type=Path,
+        help="Write one-row TSV evidence for the rooting decision.",
+    )
     topology_outgroup.add_argument(
         "--json", action="store_true", help="Emit the rooting report as JSON."
     )
@@ -7857,11 +7863,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             else:
                 tree, report = unroot_tree(args.tree)
             output_path = write_newick(args.out, tree)
+            output_paths: list[Path | str] = [output_path]
+            if (
+                args.topology_command == "root-outgroup"
+                and getattr(args, "report_out", None) is not None
+            ):
+                output_paths.append(write_tree_rooting_report(args.report_out, report))
             outputs = _finalize_outputs(
                 args,
                 command="topology",
                 inputs=[args.tree],
-                outputs=[output_path],
+                outputs=output_paths,
             )
             _print_result(
                 build_command_result(
@@ -7872,6 +7884,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "tip_count": tree.tip_count,
                         "matched_taxa": len(report.matched_taxa),
                         "absent_taxa": len(report.absent_taxa),
+                        "ingroup_taxa": len(report.ingroup_taxa),
+                        "outgroup_monophyletic": report.outgroup_monophyletic,
+                        "outgroup_mrca_extra_taxa": len(
+                            report.outgroup_mrca_extra_taxa
+                        ),
+                        "rooted_outgroup_taxa": len(report.rooted_outgroup_taxa),
+                        "rooted_ingroup_taxa": len(report.rooted_ingroup_taxa),
+                        "warning_count": len(report.warnings),
                     },
                     data=report,
                 ),

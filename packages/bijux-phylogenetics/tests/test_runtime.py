@@ -3724,8 +3724,11 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
     assert payload["metrics"]["stop_codon_count"] == 2
 
 
-def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -> None:
+def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "rooted.nwk"
+    report_path = tmp_path / "rooting.tsv"
     exit_code = main(
         [
             "topology",
@@ -3736,6 +3739,8 @@ def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -
             "Z",
             "--out",
             str(output_path),
+            "--report-out",
+            str(report_path),
             "--json",
         ]
     )
@@ -3746,8 +3751,20 @@ def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -
         output_path.read_text(encoding="utf-8")
         == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);\n"
     )
+    report_text = report_path.read_text(encoding="utf-8")
+    assert "outgroup_monophyletic" in report_text
+    assert "\ttrue\tD\t\tD\tA,B,C\t" in report_text
     assert payload["metrics"]["matched_taxa"] == 1
     assert payload["metrics"]["absent_taxa"] == 1
+    assert payload["metrics"]["ingroup_taxa"] == 3
+    assert payload["metrics"]["outgroup_monophyletic"] is True
+    assert payload["metrics"]["outgroup_mrca_extra_taxa"] == 0
+    assert payload["metrics"]["rooted_outgroup_taxa"] == 1
+    assert payload["metrics"]["rooted_ingroup_taxa"] == 3
+    assert payload["metrics"]["warning_count"] == 1
+    assert payload["data"]["warnings"] == [
+        "one or more requested outgroup taxa were absent from the input tree"
+    ]
 
 
 def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> None:
