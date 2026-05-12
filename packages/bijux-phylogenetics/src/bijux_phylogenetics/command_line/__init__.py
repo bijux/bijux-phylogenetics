@@ -361,6 +361,7 @@ from bijux_phylogenetics.tree_set import (
     load_tree_set,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
+    write_bootstrap_tree_set_artifacts,
     write_clade_frequency_table,
     write_consensus_tree,
     write_topology_cluster_table,
@@ -785,6 +786,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
     if args.command == "tree-set":
         if args.tree_set_command == "compare":
             return [args.left, args.right]
+        if args.tree_set_command == "bootstrap-summary":
+            return [args.tree_set, args.out_dir]
         inputs = [args.tree_set]
         if getattr(args, "out", None) is not None:
             inputs.append(args.out)
@@ -2762,6 +2765,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the instability report as JSON."
     )
     _add_manifest_argument(tree_set_unstable_clades)
+    tree_set_bootstrap_summary = tree_set_subparsers.add_parser(
+        "bootstrap-summary",
+        help="Summarize bootstrap replicate trees into consensus and instability artifacts.",
+    )
+    tree_set_bootstrap_summary.add_argument("tree_set", type=Path)
+    tree_set_bootstrap_summary.add_argument("--out-dir", required=True, type=Path)
+    tree_set_bootstrap_summary.add_argument(
+        "--prefix", default="bootstrap-tree-set", help="Prefix for written artifacts."
+    )
+    tree_set_bootstrap_summary.add_argument(
+        "--consensus-threshold", type=float, default=0.5
+    )
+    tree_set_bootstrap_summary.add_argument(
+        "--robust-support-threshold", type=float, default=0.9
+    )
+    tree_set_bootstrap_summary.add_argument(
+        "--json", action="store_true", help="Emit the bootstrap summary report as JSON."
+    )
+    _add_manifest_argument(tree_set_bootstrap_summary)
     tree_set_compare = tree_set_subparsers.add_parser(
         "compare",
         help="Compare two posterior tree sets over clade support and topology distance.",
@@ -7498,6 +7520,41 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "tree_count": report.tree_count,
                             "unstable_clade_count": len(report.clades),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "bootstrap-summary":
+                report = write_bootstrap_tree_set_artifacts(
+                    args.tree_set,
+                    out_dir=args.out_dir,
+                    prefix=args.prefix,
+                    consensus_threshold=args.consensus_threshold,
+                    robust_support_threshold=args.robust_support_threshold,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=list(report.output_paths.values()),
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        warnings=report.summary_report.warnings,
+                        metrics={
+                            "tree_count": report.summary_report.tree_count,
+                            "rooted_topology_count": (
+                                report.summary_report.diversity.rooted_topology_count
+                            ),
+                            "unstable_branch_count": (
+                                report.summary_report.unstable_branch_count
+                            ),
+                            "warning_count": len(report.summary_report.warnings),
                         },
                         data=report,
                     ),
