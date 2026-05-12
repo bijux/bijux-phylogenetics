@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -100,6 +101,7 @@ from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_clade_sets,
+    compare_robinson_foulds,
     compare_support_values,
     compare_tree_paths,
     detect_clade_changes,
@@ -400,6 +402,13 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def _load_robinson_foulds_reference_rows() -> list[dict[str, str]]:
+    with fixture("robinson_foulds_reference.tsv").open(
+        encoding="utf-8", newline=""
+    ) as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
 
 
 def test_package_identity_matches_canonical_names() -> None:
@@ -4771,6 +4780,22 @@ def test_compare_tree_paths_reports_nonzero_distance() -> None:
     assert report.robinson_foulds_distance > 0
 
 
+def test_compare_robinson_foulds_matches_reference_fixture_cases() -> None:
+    for row in _load_robinson_foulds_reference_rows():
+        report = compare_robinson_foulds(
+            fixture(row["left_tree"]),
+            fixture(row["right_tree"]),
+            rf_mode=row["rf_mode"],
+            taxon_overlap_policy=row["taxon_overlap_policy"],
+        )
+        assert report.left_split_count == int(row["left_split_count"])
+        assert report.right_split_count == int(row["right_split_count"])
+        assert report.robinson_foulds_distance == int(row["robinson_foulds_distance"])
+        assert report.normalized_robinson_foulds == float(
+            row["normalized_robinson_foulds"]
+        )
+
+
 def test_prune_trees_to_shared_taxa_keeps_identical_tip_sets() -> None:
     left, right, report = prune_trees_to_shared_taxa(
         fixture("example_tree.nwk"),
@@ -4794,6 +4819,20 @@ def test_compare_tree_paths_reports_identical_topology_boolean() -> None:
     assert report.robinson_foulds_distance == 0
 
 
+def test_compare_tree_paths_supports_explicit_unrooted_rf_mode() -> None:
+    report = compare_tree_paths(
+        fixture("example_tree.nwk"),
+        fixture("example_tree_rooting_diff.nwk"),
+        rf_mode="unrooted",
+    )
+    assert report.rf_mode == "unrooted"
+    assert report.robinson_foulds_distance == 0
+    assert report.unrooted_robinson_foulds_distance == 0
+    assert report.rooted_robinson_foulds_distance == 2
+    assert report.same_unrooted_topology is True
+    assert report.same_taxa_different_rooting is True
+
+
 def test_compare_tree_paths_reports_different_topology_boolean() -> None:
     report = compare_tree_paths(
         fixture("example_tree.nwk"), fixture("example_tree_topology_diff.nwk")
@@ -4801,6 +4840,19 @@ def test_compare_tree_paths_reports_different_topology_boolean() -> None:
     assert report.topology_equal is False
     assert report.same_unrooted_topology is False
     assert report.same_taxa_different_rooting is False
+
+
+def test_compare_tree_paths_enforces_identical_taxa_when_requested() -> None:
+    try:
+        compare_tree_paths(
+            fixture("example_tree.nwk"),
+            fixture("example_tree_overlap.nwk"),
+            taxon_overlap_policy="require-identical",
+        )
+    except ValueError as error:
+        assert "requires identical taxon sets" in str(error)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected identical-taxon RF comparison to fail")
 
 
 def test_compare_clade_sets_reports_shared_and_unique_clades() -> None:
