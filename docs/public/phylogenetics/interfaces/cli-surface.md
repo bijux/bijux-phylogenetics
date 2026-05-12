@@ -198,6 +198,51 @@ This command requires MAFFT, trimAl, and IQ-TREE executables. Use
 `--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
 they are not available on the default `PATH`.
 
+`demo pleistocene-bear-cytb-fragments` is the governed packaged ancient-DNA
+sequence-to-tree surface. It materializes the shipped degraded bear
+cytochrome b panel into one output directory and reruns the owned MAFFT,
+trimAl, and IQ-TREE workflow with explicit missingness review over those
+packaged inputs. Its JSON metrics report:
+
+- `artifact_count`
+- `sequence_count`
+- `degraded_sequence_count`
+- `selected_model`
+- `minimum_support`
+- `maximum_support`
+- `removed_column_count`
+- `cleaned_missing_data_fraction`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/sequences.fasta`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/missingness-effects.tsv`
+- `workflow/pleistocene-bear-cytb-fragments.aln`
+- `workflow/pleistocene-bear-cytb-fragments.trimmed.aln`
+- `workflow/pleistocene-bear-cytb-fragments.cleaned.aln`
+- `workflow/pleistocene-bear-cytb-fragments.tree`
+- `workflow/pleistocene-bear-cytb-fragments.model.tsv`
+- `workflow/pleistocene-bear-cytb-fragments.support.tsv`
+- `overview.md`
+
+The packaged dataset carries raw unaligned bear cytochrome b sequences and
+uses the following governed review controls:
+
+- sequence type `dna`
+- site missingness threshold `0.15`
+- sequence missingness threshold `0.15`
+- IQ-TREE seed `1`
+- IQ-TREE threads `1`
+- bootstrap replicates `1000`
+
+This command requires MAFFT, trimAl, and IQ-TREE executables. Use
+`--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
+they are not available on the default `PATH`.
+
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
 the selected continuous model, reports 95% uncertainty intervals, and prunes
