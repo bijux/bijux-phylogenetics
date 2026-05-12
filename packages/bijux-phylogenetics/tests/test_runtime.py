@@ -216,6 +216,7 @@ from bijux_phylogenetics.engines import (
     run_codon_aware_multiple_sequence_alignment,
     run_fast_tree_inference,
     run_fasta_to_tree_workflow,
+    run_inference_reproducibility_check,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
@@ -852,6 +853,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
     )
     assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
+    assert (
+        bijux_phylogenetics.run_inference_reproducibility_check
+        is run_inference_reproducibility_check
+    )
     assert (
         bijux_phylogenetics.run_tree_inference_comparison
         is run_tree_inference_comparison
@@ -2406,8 +2411,12 @@ def test_alignment_quality_report_includes_transparent_score_components() -> Non
     assert 0.0 <= report.quality_score <= 100.0
 
 
-def test_alignment_quality_report_exposes_per_sequence_and_per_column_gap_profiles() -> None:
-    report = build_alignment_quality_report(fixture("example_alignment_ambiguity.fasta"))
+def test_alignment_quality_report_exposes_per_sequence_and_per_column_gap_profiles() -> (
+    None
+):
+    report = build_alignment_quality_report(
+        fixture("example_alignment_ambiguity.fasta")
+    )
 
     assert report.invariant_site_count == 4
     assert [
@@ -2431,7 +2440,9 @@ def test_alignment_quality_report_exposes_per_sequence_and_per_column_gap_profil
     ]
 
 
-def test_alignment_quality_report_flags_missingness_concentration_and_suspicious_windows() -> None:
+def test_alignment_quality_report_flags_missingness_concentration_and_suspicious_windows() -> (
+    None
+):
     missingness_report = build_alignment_quality_report(
         fixture("example_alignment_missingness.fasta")
     )
@@ -2441,8 +2452,13 @@ def test_alignment_quality_report_flags_missingness_concentration_and_suspicious
 
     assert missingness_report.missing_data_concentration.concentrated_column_count == 2
     assert missingness_report.missing_data_concentration.longest_concentrated_run == 2
-    assert missingness_report.missing_data_concentration.longest_concentrated_run_start == 5
-    assert missingness_report.missing_data_concentration.longest_concentrated_run_end == 6
+    assert (
+        missingness_report.missing_data_concentration.longest_concentrated_run_start
+        == 5
+    )
+    assert (
+        missingness_report.missing_data_concentration.longest_concentrated_run_end == 6
+    )
     assert missingness_report.suspicious_alignment is True
     assert (
         "alignment concentrates missing data into adjacent columns"
@@ -2933,12 +2949,21 @@ def test_prepare_coding_sequences_for_alignment_excludes_frame_and_stop_failures
     assert report.accepted_sequence_count == 2
     assert report.accepted_identifiers == ["good", "terminal_stop"]
     assert report.terminal_stop_sequence_count == 1
-    assert [(row.identifier, row.reason, row.trailing_bases) for row in report.excluded_sequences] == [
+    assert [
+        (row.identifier, row.reason, row.trailing_bases)
+        for row in report.excluded_sequences
+    ] == [
         ("frameshift", "frame-error", 2),
         ("internal_stop", "internal-stop-codon", 0),
     ]
-    assert "one or more coding sequences were excluded before codon-aware alignment" in report.warnings
-    assert "terminal stop codons were retained in accepted coding sequences" in report.warnings
+    assert (
+        "one or more coding sequences were excluded before codon-aware alignment"
+        in report.warnings
+    )
+    assert (
+        "terminal stop codons were retained in accepted coding sequences"
+        in report.warnings
+    )
 
 
 def test_prepare_coding_sequences_for_alignment_preserves_rna_residues(
@@ -5195,8 +5220,7 @@ def test_cli_alignment_repair_input_writes_repaired_fasta(
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert output.read_text(encoding="utf-8") == (
-        ">Alpha_sample\nACTGACTG\n"
-        ">rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
+        ">Alpha_sample\nACTGACTG\n>rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
     )
     assert payload["metrics"]["normalized_identifier_count"] == 2
     assert payload["metrics"]["removed_record_count"] == 2
@@ -5439,7 +5463,9 @@ def test_cli_alignment_quality_json_output(capsys) -> None:
     assert payload["metrics"]["suspicious_alignment"] is True
     assert payload["metrics"]["suspicious_reason_count"] >= 2
     assert payload["metrics"]["concentrated_column_count"] == 2
-    assert payload["data"]["missing_data_concentration"]["longest_concentrated_run"] == 2
+    assert (
+        payload["data"]["missing_data_concentration"]["longest_concentrated_run"] == 2
+    )
 
 
 def test_cli_alignment_low_information_json_output(capsys) -> None:
@@ -6260,14 +6286,17 @@ def test_reference_validation_suites_cover_goals_91_through_96() -> None:
     assert sum(suite.fixture_count for suite in suites) >= 18
 
 
-def test_alignment_quality_reference_fixtures_lock_suspicion_and_concentration() -> None:
+def test_alignment_quality_reference_fixtures_lock_suspicion_and_concentration() -> (
+    None
+):
     suite = validate_alignment_quality_reference_fixtures()
     fixtures = {fixture.name: fixture for fixture in suite.fixtures}
 
     assert fixtures["clean_alignment_quality"].observed["suspicious_alignment"] is False
-    assert fixtures["missingness_heavy_alignment"].observed[
-        "concentrated_missing_run"
-    ] == 2
+    assert (
+        fixtures["missingness_heavy_alignment"].observed["concentrated_missing_run"]
+        == 2
+    )
     assert fixtures["ambiguity_heavy_alignment"].observed["warning_count"] == 5
     assert suite.passed is True
 

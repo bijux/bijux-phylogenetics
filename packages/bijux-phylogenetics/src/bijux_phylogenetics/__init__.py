@@ -495,6 +495,7 @@ from .engines import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    run_inference_reproducibility_check,
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
     validate_bootstrap_tree_set,
@@ -505,6 +506,7 @@ from .engines import (
     write_fasta_to_tree_model_table,
     write_fasta_to_tree_support_table,
     write_inference_comparison_clade_table,
+    write_inference_reproducibility_table,
 )
 from .identity import (
     CLI_NAME,
@@ -1107,6 +1109,7 @@ __all__ = [
     "run_codon_aware_multiple_sequence_alignment",
     "run_fasta_to_tree_workflow",
     "run_fast_tree_inference",
+    "run_inference_reproducibility_check",
     "run_maximum_likelihood_tree_inference",
     "run_tree_inference_comparison",
     "run_discrete_state_transition_model",
@@ -1247,6 +1250,7 @@ __all__ = [
     "write_fasta_to_tree_model_table",
     "write_fasta_to_tree_support_table",
     "write_inference_comparison_clade_table",
+    "write_inference_reproducibility_table",
     "write_synonym_resolution_mapping",
     "write_taxon_mapping",
     "write_locus_partitions",

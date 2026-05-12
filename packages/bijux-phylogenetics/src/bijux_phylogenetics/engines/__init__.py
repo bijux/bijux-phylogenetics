@@ -14,6 +14,14 @@ from .inference_comparison import (
     run_tree_inference_comparison,
     write_inference_comparison_clade_table,
 )
+from .inference_reproducibility import (
+    InferenceReproducibilityComparisonRow,
+    InferenceReproducibilityRunRow,
+    InferenceReproducibilitySupportDeltaRow,
+    InferenceReproducibilityWorkflowReport,
+    run_inference_reproducibility_check,
+    write_inference_reproducibility_table,
+)
 from .evidence import InferenceEvidenceBundleResult, bundle_inference_workflow_evidence
 from .fasta_to_tree import (
     FastaToTreeModelRow,
@@ -89,6 +97,10 @@ __all__ = [
     "InferenceComparisonConflictRow",
     "InferenceComparisonSharedCladeRow",
     "InferenceComparisonWorkflowReport",
+    "InferenceReproducibilityComparisonRow",
+    "InferenceReproducibilityRunRow",
+    "InferenceReproducibilitySupportDeltaRow",
+    "InferenceReproducibilityWorkflowReport",
     "InferenceEvidenceBundleResult",
     "EngineWorkflowReport",
     "ExternalTreeComparisonReport",
@@ -138,9 +150,11 @@ __all__ = [
     "run_model_selection",
     "run_multiple_sequence_alignment",
     "run_sh_alrt_support_estimation",
+    "run_inference_reproducibility_check",
     "run_tree_inference_comparison",
     "write_fasta_to_tree_log",
     "write_fasta_to_tree_model_table",
     "write_fasta_to_tree_support_table",
     "write_inference_comparison_clade_table",
+    "write_inference_reproducibility_table",
 ]
