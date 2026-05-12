@@ -19,14 +19,26 @@ from bijux_phylogenetics.ancestral import (
     render_ancestral_state_tree,
     summarize_discrete_ancestral_report,
     summarize_continuous_ancestral_report,
+    summarize_continuous_ancestral_tree_set,
+    summarize_continuous_ancestral_tree_set_report,
+    summarize_discrete_ancestral_tree_set,
+    summarize_discrete_ancestral_tree_set_report,
     write_ancestral_state_table,
+    write_ancestral_tree_set_exclusion_table,
+    write_ancestral_tree_set_tree_table,
     write_continuous_ancestral_exclusion_table,
     write_continuous_ancestral_summary_table,
+    write_continuous_ancestral_tree_set_clade_table,
+    write_continuous_ancestral_tree_set_node_table,
+    write_continuous_ancestral_tree_set_summary_table,
     write_continuous_ancestral_uncertainty_table,
     write_discrete_ancestral_comparison_table,
     write_discrete_ancestral_exclusion_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
+    write_discrete_ancestral_tree_set_clade_table,
+    write_discrete_ancestral_tree_set_node_table,
+    write_discrete_ancestral_tree_set_summary_table,
 )
 from bijux_phylogenetics.bayesian import (
     BeastCalibration,
@@ -1729,6 +1741,54 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert (
         bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_tree_set
+        is summarize_continuous_ancestral_tree_set
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_tree_set_report
+        is summarize_continuous_ancestral_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_tree_set
+        is summarize_discrete_ancestral_tree_set
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_tree_set_report
+        is summarize_discrete_ancestral_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_tree_set_tree_table
+        is write_ancestral_tree_set_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_tree_set_exclusion_table
+        is write_ancestral_tree_set_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_summary_table
+        is write_continuous_ancestral_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_node_table
+        is write_continuous_ancestral_tree_set_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_clade_table
+        is write_continuous_ancestral_tree_set_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_summary_table
+        is write_discrete_ancestral_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_node_table
+        is write_discrete_ancestral_tree_set_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_clade_table
+        is write_discrete_ancestral_tree_set_clade_table
     )
     assert (
         bijux_phylogenetics.run_multiple_sequence_alignment
