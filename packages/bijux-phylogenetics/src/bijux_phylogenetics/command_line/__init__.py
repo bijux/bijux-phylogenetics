@@ -39,6 +39,13 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
+from bijux_phylogenetics.ancestral.root_sensitivity import (
+    summarize_ancestral_root_sensitivity,
+    summarize_ancestral_root_sensitivity_report,
+    write_ancestral_root_assumption_table,
+    write_ancestral_root_sensitivity_node_table,
+    write_ancestral_root_sensitivity_summary_table,
+)
 from bijux_phylogenetics.ancestral.tree_set import (
     summarize_continuous_ancestral_tree_set,
     summarize_continuous_ancestral_tree_set_report,
@@ -3108,6 +3115,34 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the confidence review as JSON."
     )
     _add_manifest_argument(ancestral_confidence)
+    ancestral_root_sensitivity = ancestral_subparsers.add_parser(
+        "root-sensitivity",
+        help="Summarize how discrete likelihood ancestral reconstructions change under explicit root assumptions.",
+    )
+    ancestral_root_sensitivity.add_argument("tree", type=Path)
+    ancestral_root_sensitivity.add_argument("table", type=Path)
+    ancestral_root_sensitivity.add_argument("--trait", required=True)
+    ancestral_root_sensitivity.add_argument("--taxon-column")
+    ancestral_root_sensitivity.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+    )
+    ancestral_root_sensitivity.add_argument(
+        "--state-ordering", choices=("unordered", "ordered"), default="unordered"
+    )
+    ancestral_root_sensitivity.add_argument(
+        "--ordered-states",
+        help="Comma-delimited explicit ordered state vocabulary.",
+    )
+    ancestral_root_sensitivity.add_argument("--fixed-root-state")
+    ancestral_root_sensitivity.add_argument("--summary-out", type=Path)
+    ancestral_root_sensitivity.add_argument("--assumptions-out", type=Path)
+    ancestral_root_sensitivity.add_argument("--nodes-out", type=Path)
+    ancestral_root_sensitivity.add_argument(
+        "--json", action="store_true", help="Emit the root-sensitivity review as JSON."
+    )
+    _add_manifest_argument(ancestral_root_sensitivity)
     ancestral_transitions = ancestral_subparsers.add_parser(
         "transitions",
         help="Count inferred ancestral transitions on one tree or tree set.",
@@ -9182,6 +9217,75 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         data={
                             "report": report,
                             "confidence_summary": confidence_summary,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "root-sensitivity":
+                report = summarize_ancestral_root_sensitivity(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
+                    fixed_root_state=args.fixed_root_state,
+                )
+                summary = summarize_ancestral_root_sensitivity_report(report)
+                outputs = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_ancestral_root_sensitivity_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.assumptions_out is not None:
+                    outputs.append(
+                        write_ancestral_root_assumption_table(
+                            args.assumptions_out,
+                            report,
+                        )
+                    )
+                if args.nodes_out is not None:
+                    outputs.append(
+                        write_ancestral_root_sensitivity_node_table(
+                            args.nodes_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "state_ordering": report.state_ordering,
+                            "analyzed_taxon_count": report.analyzed_taxon_count,
+                            "assumption_count": summary.assumption_count,
+                            "compared_node_count": summary.compared_node_count,
+                            "state_changed_node_count": (
+                                summary.state_changed_node_count
+                            ),
+                            "support_changed_node_count": (
+                                summary.support_changed_node_count
+                            ),
+                            "top_sensitive_node": summary.top_sensitive_node,
+                            "fixed_root_state": report.fixed_root_state,
+                        },
+                        data={
+                            "report": report,
+                            "summary": summary,
                         },
                     ),
                     json_output=args.json,

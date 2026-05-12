@@ -211,6 +211,54 @@ def test_ancestral_confidence_cli_can_export_single_tree_review(
     )
 
 
+def test_ancestral_root_sensitivity_cli_can_export_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-root-sensitivity-summary.tsv"
+    assumptions_path = tmp_path / "ancestral-root-sensitivity-assumptions.tsv"
+    nodes_path = tmp_path / "ancestral-root-sensitivity-nodes.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "root-sensitivity",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "equal-rates",
+            "--fixed-root-state",
+            "island",
+            "--summary-out",
+            str(summary_path),
+            "--assumptions-out",
+            str(assumptions_path),
+            "--nodes-out",
+            str(nodes_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["assumption_count"] == 3
+    assert payload["metrics"]["compared_node_count"] == 3
+    assert payload["metrics"]["state_changed_node_count"] == 1
+    assert payload["metrics"]["support_changed_node_count"] == 2
+    assert payload["metrics"]["top_sensitive_node"] == "A|B|C|D"
+    assert payload["metrics"]["fixed_root_state"] == "island"
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tstate_ordering\tanalyzed_taxon_count"
+    )
+    assert assumptions_path.read_text(encoding="utf-8").startswith(
+        "assumption_id\troot_prior_mode\tfixed_root_state\troot_prior_distribution"
+    )
+    assert nodes_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tassumption_states\tassumption_confidences"
+    )
+
+
 def test_ancestral_confidence_cli_can_export_tree_set_review(
     tmp_path: Path, capsys
 ) -> None:
