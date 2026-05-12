@@ -80,6 +80,34 @@ This makes the packaged bird dataset usable for both trait-evolution examples
 and clade-pattern review without requiring users to assemble a bird tree and
 trait matrix by hand.
 
+When the goal is to start from a real packaged plant dataset rather than an
+animal comparative example, use `demo central-european-seashore-flora`. This
+workflow materializes the packaged Central European plant dataset, which ships
+with a rooted saltwater-and-seashore flora subset from a published phylogeny
+and trait matrix, and then recomputes the governed workflow bundle for
+regression, trait evolution, ancestral reconstruction, and clade summaries.
+
+```bash
+bijux-phylogenetics demo central-european-seashore-flora \
+  --out artifacts/central-european-seashore-flora \
+  --json
+```
+
+The packaged plant workflow keeps the source subset rule explicit and writes
+the same dataset/workflow split as the other packaged comparative surfaces,
+using the following governed review choices:
+
+- PGLS with `seed_mass ~ plant_height`
+- Brownian trait evolution for `seed_mass`
+- OU trait evolution for `seed_mass`
+- phylogenetic signal for `seed_mass`
+- continuous ancestral reconstruction for `seed_mass`
+- discrete ancestral reconstruction for `lifeform`
+- clade-specific trait summaries for `lifeform`
+
+This gives users a real non-animal comparative surface without requiring them
+to assemble or subset the published flora tree and trait matrix by hand.
+
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
