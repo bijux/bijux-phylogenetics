@@ -3168,6 +3168,18 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("right")
     compare.add_argument("third", nargs="?")
     compare.add_argument("--out", type=Path)
+    compare.add_argument(
+        "--rf-mode",
+        choices=("rooted", "unrooted"),
+        default="rooted",
+        help="Compute Robinson-Foulds distance on rooted clades or unrooted bipartitions.",
+    )
+    compare.add_argument(
+        "--taxon-overlap-policy",
+        choices=("prune-to-shared", "require-identical"),
+        default="prune-to-shared",
+        help="Either prune both trees to shared taxa or require identical taxon sets.",
+    )
     compare.add_argument("--json", action="store_true", help="Emit the report as JSON.")
     _add_manifest_argument(compare)
 
@@ -8518,7 +8530,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 return 0
             left_path = Path(args.left)
             right_path = Path(args.right)
-            report = compare_tree_paths(left_path, right_path)
+            report = compare_tree_paths(
+                left_path,
+                right_path,
+                rf_mode=args.rf_mode,
+                taxon_overlap_policy=args.taxon_overlap_policy,
+            )
             outputs = _finalize_outputs(
                 args, command="compare", inputs=[left_path, right_path]
             )
@@ -8530,6 +8547,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     metrics={
                         "shared_taxa": len(report.shared_taxa),
                         "robinson_foulds_distance": report.robinson_foulds_distance,
+                        "rf_mode": report.rf_mode,
+                        "taxon_overlap_policy": report.taxon_overlap_policy,
                     },
                     data=report,
                 ),

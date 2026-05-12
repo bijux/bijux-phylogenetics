@@ -6127,6 +6127,43 @@ def test_cli_compare_clades_json_output(capsys) -> None:
     assert payload["data"]["right_only_clades"] == ["A|B|C"]
 
 
+def test_cli_compare_json_output_supports_unrooted_rf_mode(capsys) -> None:
+    exit_code = main(
+        [
+            "compare",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_rooting_diff.nwk")),
+            "--rf-mode",
+            "unrooted",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["robinson_foulds_distance"] == 0
+    assert payload["metrics"]["rf_mode"] == "unrooted"
+    assert payload["data"]["rooted_robinson_foulds_distance"] == 2
+    assert payload["data"]["same_unrooted_topology"] is True
+
+
+def test_cli_compare_requires_identical_taxa_when_policy_requests_it() -> None:
+    try:
+        main(
+            [
+                "compare",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_tree_overlap.nwk")),
+                "--taxon-overlap-policy",
+                "require-identical",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected CLI compare to reject mismatched taxa")
+
+
 def test_cli_compare_changes_json_output(capsys) -> None:
     exit_code = main(
         [
