@@ -125,6 +125,7 @@ from bijux_phylogenetics.core.taxonomy import (
     write_taxon_mapping,
 )
 from bijux_phylogenetics.core.topology import (
+    TreeRootingReport,
     collapse_branches_below_length,
     extract_named_clade,
     ladderize_tree,
@@ -1215,11 +1216,13 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     )
     assert bijux_phylogenetics.trim_alignment is trim_alignment
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
+    assert bijux_phylogenetics.TreeRootingReport is TreeRootingReport
     assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
     assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
     assert bijux_phylogenetics.rotate_named_node is rotate_named_node
     assert bijux_phylogenetics.rotate_all_internal_nodes is rotate_all_internal_nodes
     assert bijux_phylogenetics.unroot_tree is unroot_tree
+    assert bijux_phylogenetics.write_tree_rooting_report is write_tree_rooting_report
     assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
 
 

@@ -300,6 +300,7 @@ from .core.taxonomy import (
     write_taxon_mapping,
 )
 from .core.topology import (
+    TreeRootingReport,
     TreeTransformationSummary,
     collapse_branches_below_length,
     extract_named_clade,
@@ -310,6 +311,7 @@ from .core.topology import (
     rotate_named_node,
     sort_tree_tips_alphabetically,
     unroot_tree,
+    write_tree_rooting_report,
 )
 from .diagnostics.assumptions import (
     BranchLengthUnitReport,
@@ -1145,6 +1147,7 @@ __all__ = [
     "rotate_all_internal_nodes",
     "rotate_named_node",
     "root_tree_on_outgroup",
+    "TreeRootingReport",
     "build_distance_method_report",
     "fit_brownian_motion_model",
     "fit_continuous_evolutionary_mode",
@@ -1259,6 +1262,7 @@ __all__ = [
     "write_large_alignment_resource_table",
     "write_synonym_resolution_mapping",
     "write_taxon_mapping",
+    "write_tree_rooting_report",
     "write_locus_partitions",
     "write_clade_diversification_table",
     "write_clade_frequency_table",
