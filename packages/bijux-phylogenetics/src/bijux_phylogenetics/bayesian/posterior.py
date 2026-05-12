@@ -3,12 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 from pathlib import Path
+import random
 import tempfile
 
 from Bio import Phylo
 
 from bijux_phylogenetics.compare.topology import _informative_clades, compare_tree_paths
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
@@ -66,6 +68,35 @@ class PosteriorTreeSetThinningReport:
     retained_indices: list[int]
 
 
+@dataclass(slots=True)
+class PosteriorTreeSubsampleEntry:
+    retained_order: int
+    source_tree_index: int
+    post_burnin_index: int
+    tree_name: str | None
+    state: int | None
+    generation: int | None
+    rooted: bool | None
+    tip_names: list[str]
+    newick: str
+
+
+@dataclass(slots=True)
+class PosteriorTreeSubsamplingReport:
+    source_path: Path
+    burnin_fraction: float
+    total_tree_count: int
+    burnin_tree_count: int
+    pre_subsampling_tree_count: int
+    selection_method: str
+    thinning_interval: int | None
+    requested_tree_count: int | None
+    random_seed: int | None
+    retained_tree_count: int
+    retained_source_indices: list[int]
+    trees: list[PosteriorTreeSubsampleEntry]
+
+
 def summarize_maximum_clade_credibility_tree(
     tree_set_path: Path,
     *,
@@ -102,36 +133,23 @@ def thin_posterior_tree_set(
     burnin_fraction: float = 0.0,
 ) -> PosteriorTreeSetThinningReport:
     """Thin a posterior tree set after optional burn-in removal."""
-    if thinning_interval < 1:
-        raise ValueError(
-            f"thinning_interval must be at least 1, got {thinning_interval}"
-        )
-    filtered = _filter_tree_set(tree_set_path, burnin_fraction=burnin_fraction)
-    retained = filtered.trees[::thinning_interval]
-    if not retained:
-        raise EngineWorkflowError("posterior thinning removed every tree")
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        "".join(dumps_newick(tree) + "\n" for tree in retained),
-        encoding="utf-8",
+    report = subsample_posterior_tree_set(
+        tree_set_path,
+        method="evenly-spaced",
+        thinning_interval=thinning_interval,
+        burnin_fraction=burnin_fraction,
     )
-    retained_indices = list(
-        range(
-            filtered.burnin_tree_count + 1,
-            filtered.total_tree_count + 1,
-            thinning_interval,
-        )
-    )
+    write_posterior_tree_subsample(output_path, report)
     return PosteriorTreeSetThinningReport(
         source_path=tree_set_path,
         output_path=output_path,
-        total_tree_count=filtered.total_tree_count,
+        total_tree_count=report.total_tree_count,
         burnin_fraction=burnin_fraction,
-        burnin_tree_count=filtered.burnin_tree_count,
-        pre_thinning_tree_count=len(filtered.trees),
+        burnin_tree_count=report.burnin_tree_count,
+        pre_thinning_tree_count=report.pre_subsampling_tree_count,
         thinning_interval=thinning_interval,
-        retained_tree_count=len(retained),
-        retained_indices=retained_indices,
+        retained_tree_count=report.retained_tree_count,
+        retained_indices=report.retained_source_indices,
     )
 
 
@@ -201,13 +219,328 @@ class _FilteredPosteriorTreeSet:
     trees: list[PhyloTree]
 
 
+@dataclass(slots=True)
+class _PosteriorTreeSelectionInput:
+    source_tree_index: int
+    post_burnin_index: int
+    tree_name: str | None
+    state: int | None
+    generation: int | None
+    rooted: bool | None
+    tip_names: list[str]
+    newick: str
+
+
+@dataclass(slots=True)
+class _PosteriorTreeSelectionSource:
+    source_path: Path
+    burnin_fraction: float
+    total_tree_count: int
+    burnin_tree_count: int
+    trees: list[_PosteriorTreeSelectionInput]
+
+
+def subsample_posterior_tree_set(
+    tree_set_path: Path,
+    *,
+    method: str,
+    thinning_interval: int | None = None,
+    sample_count: int | None = None,
+    burnin_fraction: float = 0.0,
+    random_seed: int | None = None,
+) -> PosteriorTreeSubsamplingReport:
+    """Subsample a generic posterior tree set after optional burn-in removal."""
+    filtered = _filter_tree_set(tree_set_path, burnin_fraction=burnin_fraction)
+    source = _PosteriorTreeSelectionSource(
+        source_path=tree_set_path,
+        burnin_fraction=burnin_fraction,
+        total_tree_count=filtered.total_tree_count,
+        burnin_tree_count=filtered.burnin_tree_count,
+        trees=[
+            _PosteriorTreeSelectionInput(
+                source_tree_index=filtered.burnin_tree_count + index,
+                post_burnin_index=index,
+                tree_name=None,
+                state=None,
+                generation=None,
+                rooted=tree.rooted,
+                tip_names=tree.tip_names,
+                newick=dumps_newick(tree),
+            )
+            for index, tree in enumerate(filtered.trees, start=1)
+        ],
+    )
+    return _subsample_posterior_tree_source(
+        source,
+        method=method,
+        thinning_interval=thinning_interval,
+        sample_count=sample_count,
+        random_seed=random_seed,
+    )
+
+
+def subsample_beast_posterior_tree_set(
+    tree_set_path: Path,
+    *,
+    method: str,
+    thinning_interval: int | None = None,
+    sample_count: int | None = None,
+    burnin_fraction: float = 0.0,
+    random_seed: int | None = None,
+) -> PosteriorTreeSubsamplingReport:
+    """Subsample native BEAST posterior trees while preserving state metadata."""
+    from bijux_phylogenetics.bayesian.beast import parse_beast_posterior_tree_samples
+
+    report = parse_beast_posterior_tree_samples(
+        tree_set_path,
+        burnin_fraction=burnin_fraction,
+    )
+    source = _PosteriorTreeSelectionSource(
+        source_path=tree_set_path,
+        burnin_fraction=report.burnin_fraction,
+        total_tree_count=report.total_tree_count,
+        burnin_tree_count=report.burnin_tree_count,
+        trees=[
+            _PosteriorTreeSelectionInput(
+                source_tree_index=report.burnin_tree_count + index,
+                post_burnin_index=index,
+                tree_name=sample.tree_name,
+                state=sample.state,
+                generation=None,
+                rooted=sample.rooted,
+                tip_names=sample.tip_names,
+                newick=sample.newick,
+            )
+            for index, sample in enumerate(report.trees, start=1)
+        ],
+    )
+    return _subsample_posterior_tree_source(
+        source,
+        method=method,
+        thinning_interval=thinning_interval,
+        sample_count=sample_count,
+        random_seed=random_seed,
+    )
+
+
+def subsample_mrbayes_posterior_tree_set(
+    tree_set_path: Path,
+    *,
+    method: str,
+    thinning_interval: int | None = None,
+    sample_count: int | None = None,
+    burnin_fraction: float = 0.0,
+    random_seed: int | None = None,
+) -> PosteriorTreeSubsamplingReport:
+    """Subsample native MrBayes posterior trees while preserving generation metadata."""
+    from bijux_phylogenetics.bayesian.mrbayes import parse_mrbayes_posterior_tree_samples
+
+    _validate_burnin_fraction(burnin_fraction)
+    parsed = parse_mrbayes_posterior_tree_samples(tree_set_path)
+    burnin_tree_count = int(parsed.tree_count * burnin_fraction)
+    kept_trees = parsed.trees[burnin_tree_count:]
+    if not kept_trees:
+        raise EngineWorkflowError(
+            f"MrBayes posterior tree file is empty after burn-in filtering: {tree_set_path}"
+        )
+    source = _PosteriorTreeSelectionSource(
+        source_path=tree_set_path,
+        burnin_fraction=burnin_fraction,
+        total_tree_count=parsed.tree_count,
+        burnin_tree_count=burnin_tree_count,
+        trees=[
+            _PosteriorTreeSelectionInput(
+                source_tree_index=burnin_tree_count + index,
+                post_burnin_index=index,
+                tree_name=sample.tree_name,
+                state=None,
+                generation=sample.generation,
+                rooted=sample.rooted,
+                tip_names=sample.tip_names,
+                newick=sample.newick,
+            )
+            for index, sample in enumerate(kept_trees, start=1)
+        ],
+    )
+    return _subsample_posterior_tree_source(
+        source,
+        method=method,
+        thinning_interval=thinning_interval,
+        sample_count=sample_count,
+        random_seed=random_seed,
+    )
+
+
+def write_posterior_tree_subsample(
+    path: Path, report: PosteriorTreeSubsamplingReport
+) -> Path:
+    """Write retained posterior trees as a normalized Newick tree set."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "".join(f"{sample.newick}\n" for sample in report.trees),
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_posterior_tree_subsample_table(
+    path: Path, report: PosteriorTreeSubsamplingReport
+) -> Path:
+    """Write a reviewer-facing ledger for retained posterior-tree samples."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "retained_order",
+            "source_tree_index",
+            "post_burnin_index",
+            "tree_name",
+            "state",
+            "generation",
+            "rooted",
+            "tip_count",
+            "selection_method",
+            "thinning_interval",
+            "requested_tree_count",
+            "random_seed",
+            "burnin_fraction",
+            "burnin_tree_count",
+            "pre_subsampling_tree_count",
+            "retained_tree_count",
+        ],
+        rows=[
+            {
+                "retained_order": str(sample.retained_order),
+                "source_tree_index": str(sample.source_tree_index),
+                "post_burnin_index": str(sample.post_burnin_index),
+                "tree_name": "" if sample.tree_name is None else sample.tree_name,
+                "state": "" if sample.state is None else str(sample.state),
+                "generation": (
+                    "" if sample.generation is None else str(sample.generation)
+                ),
+                "rooted": "" if sample.rooted is None else str(sample.rooted).lower(),
+                "tip_count": str(len(sample.tip_names)),
+                "selection_method": report.selection_method,
+                "thinning_interval": (
+                    ""
+                    if report.thinning_interval is None
+                    else str(report.thinning_interval)
+                ),
+                "requested_tree_count": (
+                    ""
+                    if report.requested_tree_count is None
+                    else str(report.requested_tree_count)
+                ),
+                "random_seed": (
+                    "" if report.random_seed is None else str(report.random_seed)
+                ),
+                "burnin_fraction": format(report.burnin_fraction, ".15g"),
+                "burnin_tree_count": str(report.burnin_tree_count),
+                "pre_subsampling_tree_count": str(report.pre_subsampling_tree_count),
+                "retained_tree_count": str(report.retained_tree_count),
+            }
+            for sample in report.trees
+        ],
+    )
+
+
+def _subsample_posterior_tree_source(
+    source: _PosteriorTreeSelectionSource,
+    *,
+    method: str,
+    thinning_interval: int | None,
+    sample_count: int | None,
+    random_seed: int | None,
+) -> PosteriorTreeSubsamplingReport:
+    retained_inputs, normalized_method = _select_posterior_tree_inputs(
+        source.trees,
+        method=method,
+        thinning_interval=thinning_interval,
+        sample_count=sample_count,
+        random_seed=random_seed,
+    )
+    retained_trees = [
+        PosteriorTreeSubsampleEntry(
+            retained_order=index,
+            source_tree_index=tree.source_tree_index,
+            post_burnin_index=tree.post_burnin_index,
+            tree_name=tree.tree_name,
+            state=tree.state,
+            generation=tree.generation,
+            rooted=tree.rooted,
+            tip_names=tree.tip_names,
+            newick=tree.newick,
+        )
+        for index, tree in enumerate(retained_inputs, start=1)
+    ]
+    return PosteriorTreeSubsamplingReport(
+        source_path=source.source_path,
+        burnin_fraction=source.burnin_fraction,
+        total_tree_count=source.total_tree_count,
+        burnin_tree_count=source.burnin_tree_count,
+        pre_subsampling_tree_count=len(source.trees),
+        selection_method=normalized_method,
+        thinning_interval=thinning_interval if normalized_method == "evenly-spaced" else None,
+        requested_tree_count=sample_count if normalized_method == "random" else None,
+        random_seed=random_seed if normalized_method == "random" else None,
+        retained_tree_count=len(retained_trees),
+        retained_source_indices=[tree.source_tree_index for tree in retained_trees],
+        trees=retained_trees,
+    )
+
+
+def _select_posterior_tree_inputs(
+    trees: list[_PosteriorTreeSelectionInput],
+    *,
+    method: str,
+    thinning_interval: int | None,
+    sample_count: int | None,
+    random_seed: int | None,
+) -> tuple[list[_PosteriorTreeSelectionInput], str]:
+    if method not in {"evenly-spaced", "random"}:
+        raise ValueError(
+            "method must be one of {'evenly-spaced', 'random'}, "
+            f"got {method!r}"
+        )
+    if method == "evenly-spaced":
+        if thinning_interval is None:
+            raise ValueError(
+                "thinning_interval is required for evenly-spaced posterior subsampling"
+            )
+        if thinning_interval < 1:
+            raise ValueError(
+                f"thinning_interval must be at least 1, got {thinning_interval}"
+            )
+        if sample_count is not None:
+            raise ValueError(
+                "sample_count is not supported for evenly-spaced posterior subsampling"
+            )
+        if random_seed is not None:
+            raise ValueError(
+                "random_seed is only valid for random posterior subsampling"
+            )
+        retained = trees[::thinning_interval]
+        if not retained:
+            raise EngineWorkflowError("posterior thinning removed every tree")
+        return retained, method
+    if thinning_interval is not None:
+        raise ValueError("thinning_interval is only valid for evenly-spaced subsampling")
+    if sample_count is None:
+        raise ValueError("sample_count is required for random posterior subsampling")
+    if sample_count < 1:
+        raise ValueError(f"sample_count must be at least 1, got {sample_count}")
+    if sample_count > len(trees):
+        raise ValueError(
+            "sample_count cannot exceed the number of post-burn-in trees: "
+            f"{sample_count} > {len(trees)}"
+        )
+    retained_positions = sorted(random.Random(random_seed).sample(range(len(trees)), sample_count))
+    return [trees[position] for position in retained_positions], method
+
+
 def _filter_tree_set(
     tree_set_path: Path, *, burnin_fraction: float
 ) -> _FilteredPosteriorTreeSet:
-    if not 0.0 <= burnin_fraction < 1.0:
-        raise ValueError(
-            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
-        )
+    _validate_burnin_fraction(burnin_fraction)
     tree_format = detect_tree_format(tree_set_path)
     bio_trees = list(Phylo.parse(tree_set_path, tree_format))
     if not bio_trees:
@@ -239,6 +572,13 @@ def _filter_tree_set(
         burnin_tree_count=burnin_tree_count,
         trees=trees,
     )
+
+
+def _validate_burnin_fraction(burnin_fraction: float) -> None:
+    if not 0.0 <= burnin_fraction < 1.0:
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
 
 
 def _clade_frequency_map(trees: list[PhyloTree]) -> dict[frozenset[str], float]:

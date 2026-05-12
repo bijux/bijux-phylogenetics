@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.bayesian.beast import (
     assess_calibration_dominance,
     assess_time_tree_readiness,
@@ -14,9 +16,11 @@ from bijux_phylogenetics.bayesian.comparison import (
 )
 from bijux_phylogenetics.bayesian.posterior import (
     compare_bayesian_tree_sets,
+    subsample_posterior_tree_set,
     summarize_maximum_clade_credibility_tree,
     summarize_posterior_node_ages,
     thin_posterior_tree_set,
+    write_posterior_tree_subsample_table,
 )
 from bijux_phylogenetics.bayesian.reports import (
     render_bayesian_run_comparison_report,
@@ -85,6 +89,41 @@ def test_thin_posterior_tree_set_retains_every_nth_tree_after_burnin(
     assert report.retained_tree_count == 2
     assert report.retained_indices == [1, 3]
     assert len(lines) == 2
+
+
+def test_subsample_posterior_tree_set_reports_seeded_random_selection(
+    tmp_path: Path,
+) -> None:
+    report = subsample_posterior_tree_set(
+        fixture("trees/example_tree_set_left.nwk"),
+        method="random",
+        sample_count=2,
+        burnin_fraction=0.0,
+        random_seed=11,
+    )
+    table_path = tmp_path / "posterior-subsample.tsv"
+    write_posterior_tree_subsample_table(table_path, report)
+
+    rows = table_path.read_text(encoding="utf-8").splitlines()
+    assert report.selection_method == "random"
+    assert report.requested_tree_count == 2
+    assert report.random_seed == 11
+    assert report.retained_tree_count == 2
+    assert report.retained_source_indices == [2, 3]
+    assert report.trees[0].retained_order == 1
+    assert report.trees[0].source_tree_index == 2
+    assert rows[0].startswith("retained_order\tsource_tree_index")
+    assert "\trandom\t" in rows[1]
+
+
+def test_subsample_posterior_tree_set_rejects_ambiguous_method_arguments() -> None:
+    with pytest.raises(ValueError, match="sample_count is not supported"):
+        subsample_posterior_tree_set(
+            fixture("trees/example_tree_set_left.nwk"),
+            method="evenly-spaced",
+            thinning_interval=2,
+            sample_count=2,
+        )
 
 
 def test_compare_bayesian_tree_sets_reports_mcc_and_posterior_differences() -> None:
