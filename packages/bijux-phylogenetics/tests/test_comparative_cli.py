@@ -859,6 +859,67 @@ def test_comparative_clade_residuals_cli_writes_review_ledgers(
     assert len(clade_rows) == 5
 
 
+def test_comparative_clade_stability_cli_reports_influential_clades(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "clade-stability",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--formula",
+            "response_growth ~ predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["model_family"] == "pgls"
+    assert payload["metrics"]["baseline_taxon_count"] == 6
+    assert payload["metrics"]["baseline_term_count"] == 2
+    assert payload["metrics"]["candidate_clade_count"] == 4
+    assert payload["metrics"]["blocked_clade_count"] == 1
+    assert payload["metrics"]["coefficient_change_row_count"] == 6
+    assert payload["metrics"]["top_influential_clade"] == "A|B"
+    assert payload["metrics"]["minimum_major_clade_size"] == 2
+
+
+def test_comparative_clade_stability_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    clades_out = tmp_path / "comparative-clade-stability.tsv"
+    terms_out = tmp_path / "comparative-clade-coefficients.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "clade-stability",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--formula",
+            "response_growth ~ predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--clades-out",
+            str(clades_out),
+            "--terms-out",
+            str(terms_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["top_influential_clade"] == "A|B"
+    assert clades_out.exists()
+    assert terms_out.exists()
+    clade_rows = clades_out.read_text(encoding="utf-8").splitlines()
+    term_rows = terms_out.read_text(encoding="utf-8").splitlines()
+    assert clade_rows[0].startswith("clade_id\tnode_label\tdropped_taxon_count")
+    assert term_rows[0].startswith("clade_id\tnode_label\tterm\tbaseline_estimate")
+    assert len(clade_rows) == 5
+    assert len(term_rows) == 7
+
+
 def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     capsys,
 ) -> None:
