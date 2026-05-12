@@ -460,12 +460,22 @@ from bijux_phylogenetics.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.biogeography import (
+    TimeBinDefinition,
+    TimeStratifiedBranchRow,
+    TimeStratifiedTransitionMatrixRow,
+    TimeStratifiedTransitionReport,
+    TimeStratifiedTransitionSummary,
     summarize_geographic_state_model,
+    summarize_time_stratified_geographic_transitions,
     write_geographic_exclusion_table,
     write_geographic_region_probability_table,
     write_geographic_state_summary_table,
     write_geographic_transition_event_table,
     write_geographic_transition_rate_table,
+    write_time_stratified_branch_table,
+    write_time_stratified_exclusion_table,
+    write_time_stratified_transition_matrix_table,
+    write_time_stratified_transition_summary_table,
 )
 from bijux_phylogenetics.distance import (
     assess_distance_method_maturity,
@@ -881,6 +891,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is summarize_geographic_state_model
     )
     assert (
+        bijux_phylogenetics.summarize_time_stratified_geographic_transitions
+        is summarize_time_stratified_geographic_transitions
+    )
+    assert (
         bijux_phylogenetics.write_geographic_state_summary_table
         is write_geographic_state_summary_table
     )
@@ -899,6 +913,36 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_geographic_exclusion_table
         is write_geographic_exclusion_table
+    )
+    assert bijux_phylogenetics.TimeBinDefinition is TimeBinDefinition
+    assert bijux_phylogenetics.TimeStratifiedBranchRow is TimeStratifiedBranchRow
+    assert (
+        bijux_phylogenetics.TimeStratifiedTransitionMatrixRow
+        is TimeStratifiedTransitionMatrixRow
+    )
+    assert (
+        bijux_phylogenetics.TimeStratifiedTransitionReport
+        is TimeStratifiedTransitionReport
+    )
+    assert (
+        bijux_phylogenetics.TimeStratifiedTransitionSummary
+        is TimeStratifiedTransitionSummary
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_transition_summary_table
+        is write_time_stratified_transition_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_transition_matrix_table
+        is write_time_stratified_transition_matrix_table
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_branch_table
+        is write_time_stratified_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_exclusion_table
+        is write_time_stratified_exclusion_table
     )
     assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
