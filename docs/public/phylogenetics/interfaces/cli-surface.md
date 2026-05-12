@@ -167,6 +167,118 @@ tip ledger. Each row preserves:
 - `taxon`
 - `reason`
 
+`ancestral confidence` is the governed ancestral-confidence review surface for
+either one tree or one posterior/bootstrap tree set. It does not fit a new
+ancestral model. Instead, it reuses the owned reconstruction surfaces and
+turns their uncertainty into one ranked evidence ledger. Its JSON metrics
+report:
+- `kind`
+- `source_kind`
+- `model`
+- `kept_tree_count`
+- `confidence_row_count`
+- `low_confidence_count`
+- `unstable_count`
+- `high_entropy_count`
+- `top_uncertain_id`
+
+The command requires `--kind continuous` or `--kind discrete`. On one tree it
+reads `ancestral continuous` or `ancestral discrete`. With `--tree-set` it
+reads `ancestral tree-set`, and `--burnin-fraction` applies only in that
+tree-set mode.
+
+When `--summary-out` is supplied, `ancestral confidence` writes one overall
+summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `source_kind`
+- `reconstruction_kind`
+- `target_kind`
+- `model`
+- `state_ordering`
+- `alpha`
+- `analyzed_taxon_count`
+- `kept_tree_count`
+- `confidence_row_count`
+- `low_confidence_count`
+- `unstable_count`
+- `high_entropy_count`
+- `top_uncertain_id`
+- `top_uncertain_label`
+- `top_uncertain_score`
+- `warning_count`
+
+When `--confidence-out` is supplied, the command writes one ranked confidence
+ledger. For one continuous tree, each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `estimate`
+- `standard_error`
+- `lower_95_interval`
+- `upper_95_interval`
+- `uncertainty_width`
+- `relative_uncertainty`
+- `confidence`
+- `uncertainty_score`
+- `uncertainty_rank`
+- `confidence_class`
+- `unstable`
+
+For one discrete tree, each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `most_likely_state`
+- `state_set`
+- `state_probabilities`
+- `max_posterior_probability`
+- `runner_up_probability`
+- `probability_margin`
+- `entropy`
+- `normalized_entropy`
+- `uncertainty_score`
+- `uncertainty_rank`
+- `confidence_class`
+- `ambiguous`
+- `unstable`
+
+For a continuous tree set, each row preserves:
+- `clade_id`
+- `clade_taxa`
+- `tree_presence_count`
+- `tree_presence_fraction`
+- `mean_confidence`
+- `mean_standard_error`
+- `empirical_interval_width`
+- `normalized_empirical_interval_width`
+- `unstable_tree_count`
+- `unstable_tree_fraction`
+- `instability_score`
+- `uncertainty_score`
+- `uncertainty_rank`
+- `confidence_class`
+- `stability_class`
+
+For a discrete tree set, each row preserves:
+- `clade_id`
+- `clade_taxa`
+- `tree_presence_count`
+- `tree_presence_fraction`
+- `dominant_state`
+- `dominant_state_fraction`
+- `unique_state_count`
+- `ambiguous_tree_fraction`
+- `unstable_tree_fraction`
+- `state_distribution`
+- `entropy`
+- `normalized_entropy`
+- `instability_score`
+- `uncertainty_score`
+- `uncertainty_rank`
+- `confidence_class`
+- `stability_class`
+
 `ancestral tree-set` is the governed reconstruction-stability surface for one
 trait across a posterior or bootstrap tree set. It reruns ancestral
 reconstruction on every retained tree, maps comparable internal clades by
