@@ -8,6 +8,7 @@ from bijux_phylogenetics.ancestral.common import write_ancestral_rows
 from bijux_phylogenetics.ancestral.continuous import (
     ContinuousAncestralReport,
     reconstruct_continuous_ancestral_states,
+    write_continuous_ancestral_uncertainty_table,
 )
 from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
@@ -79,7 +80,10 @@ def build_ancestral_figure_package(
 
     render_ancestral_state_tree(tree_path, report, out_path=figure_path, layout=layout)
     write_ancestral_state_table(node_table_path, report)
-    _write_uncertainty_table(uncertainty_table_path, report)
+    if isinstance(report, ContinuousAncestralReport):
+        write_continuous_ancestral_uncertainty_table(uncertainty_table_path, report)
+    else:
+        _write_uncertainty_table(uncertainty_table_path, report)
     legend_path.write_text(_legend_markdown(report), encoding="utf-8")
     model_description_path.write_text(_model_description(report), encoding="utf-8")
     caption_path.write_text(_caption_markdown(report, layout=layout), encoding="utf-8")
