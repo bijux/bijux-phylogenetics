@@ -45,6 +45,26 @@ phylogenetic covariance, pass that exact numeric lambda instead. That keeps
 coefficient and p-value review tied to one covariance assumption rather than
 silently mixing model-selection differences with coefficient-level inference.
 
+When the main question is whether the requested biological formula expands into
+the encoded predictors you actually expect, use formula syntax directly and
+write the governed model matrix. Intercept-free formulas use the standard
+comparative spellings `0 + ...` or `... - 1`.
+
+```bash
+bijux-phylogenetics comparative pgls \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --formula 'longevity ~ 0 + social_group_size * habitat' \
+  --taxon-column species \
+  --model-matrix-out artifacts/primates.model-matrix.tsv \
+  --json
+```
+
+The written matrix keeps one row per analyzed taxon, the response value, and
+one encoded column per fitted predictor term. That makes it possible to review
+continuous predictors, categorical indicator columns, interaction columns, and
+intercept inclusion before interpreting the fitted coefficients.
+
 When a tree is already inferred and you need to root it on one known outgroup
 taxon or one expected outgroup clade, use `topology root-outgroup`. The
 command writes the rooted tree and can also emit a one-row TSV report that
