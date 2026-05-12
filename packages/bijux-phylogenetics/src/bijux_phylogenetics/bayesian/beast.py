@@ -18,8 +18,16 @@ from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.engines.workflows import _ensure_inference_ready_alignment
+from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
+from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+
+_BEAST_TREE_PATTERN = re.compile(
+    r"tree\s+([^\s=]+)\s*=\s*(.+?);", flags=re.IGNORECASE | re.DOTALL
+)
+_BEAST_TREE_STATE_PATTERN = re.compile(r"STATE_(\d+)$", flags=re.IGNORECASE)
 
 
 @dataclass(slots=True)
@@ -207,6 +215,36 @@ class BeastLogSummaryReport:
     tree_parameters: list[str]
     other_parameters: list[str]
     parameter_summaries: list[BeastLogParameterSummary]
+
+
+@dataclass(slots=True)
+class BeastPosteriorTreeSample:
+    tree_name: str
+    state: int | None
+    rooted: bool
+    tip_names: list[str]
+    newick: str
+
+
+@dataclass(slots=True)
+class BeastPosteriorClade:
+    clade: str
+    tree_count: int
+    frequency: float
+
+
+@dataclass(slots=True)
+class BeastPosteriorTreeSetReport:
+    path: Path
+    burnin_fraction: float
+    total_tree_count: int
+    burnin_tree_count: int
+    kept_tree_count: int
+    rooted_tree_count: int
+    sampled_states: list[int]
+    tip_names: list[str]
+    clades: list[BeastPosteriorClade]
+    trees: list[BeastPosteriorTreeSample]
 
 
 @dataclass(slots=True)
@@ -1664,6 +1702,67 @@ def summarize_beast_log(
     )
 
 
+def parse_beast_posterior_tree_samples(
+    path: Path,
+    *,
+    burnin_fraction: float = 0.0,
+) -> BeastPosteriorTreeSetReport:
+    """Parse a BEAST posterior tree set into state-tagged normalized trees."""
+    text = path.read_text(encoding="utf-8")
+    entries = _extract_beast_tree_entries(text)
+    if not entries:
+        raise EngineWorkflowError(f"BEAST posterior tree file contains no trees: {path}")
+    burnin_tree_count, kept_entries = _split_beast_tree_entries(
+        entries, burnin_fraction=burnin_fraction, path=path
+    )
+    translation = _parse_nexus_translate_map(text)
+    samples: list[BeastPosteriorTreeSample] = []
+    trees: list[PhyloTree] = []
+    for tree_name, tree_text in kept_entries:
+        newick, tree, rooted = _parse_beast_tree_text(
+            tree_text, translation=translation
+        )
+        samples.append(
+            BeastPosteriorTreeSample(
+                tree_name=tree_name,
+                state=_parse_beast_tree_state(tree_name),
+                rooted=rooted if rooted is not None else True,
+                tip_names=tree.tip_names,
+                newick=newick,
+            )
+        )
+        trees.append(tree)
+    clades = _summarize_beast_clades(trees)
+    sampled_states = [
+        state for state in (sample.state for sample in samples) if state is not None
+    ]
+    rooted_tree_count = sum(1 for sample in samples if sample.rooted)
+    return BeastPosteriorTreeSetReport(
+        path=path,
+        burnin_fraction=burnin_fraction,
+        total_tree_count=len(entries),
+        burnin_tree_count=burnin_tree_count,
+        kept_tree_count=len(samples),
+        rooted_tree_count=rooted_tree_count,
+        sampled_states=sampled_states,
+        tip_names=sorted(samples[0].tip_names),
+        clades=clades,
+        trees=samples,
+    )
+
+
+def write_beast_posterior_tree_set(
+    path: Path, report: BeastPosteriorTreeSetReport
+) -> Path:
+    """Write a normalized Newick tree set from parsed BEAST posterior samples."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "".join(f"{sample.newick}\n" for sample in report.trees),
+        encoding="utf-8",
+    )
+    return path
+
+
 def write_beast_log_summary_table(path: Path, report: BeastLogSummaryReport) -> Path:
     """Write a reviewer-facing TSV summary of one BEAST posterior log."""
     rows = [
@@ -2135,6 +2234,139 @@ def _summary_parameters_by_category(
         for summary in parameter_summaries
         if summary.parameter_category == category
     ]
+
+
+def _extract_beast_tree_entries(text: str) -> list[tuple[str, str]]:
+    return [
+        (match.group(1), match.group(2).strip())
+        for match in _BEAST_TREE_PATTERN.finditer(text)
+    ]
+
+
+def _split_beast_tree_entries(
+    entries: list[tuple[str, str]],
+    *,
+    burnin_fraction: float,
+    path: Path,
+) -> tuple[int, list[tuple[str, str]]]:
+    if not 0.0 <= burnin_fraction < 1.0:
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
+    burnin_tree_count = int(len(entries) * burnin_fraction)
+    kept_entries = entries[burnin_tree_count:]
+    if not kept_entries:
+        raise EngineWorkflowError(
+            f"BEAST posterior tree file is empty after burn-in filtering: {path}"
+        )
+    return burnin_tree_count, kept_entries
+
+
+def _parse_beast_tree_text(
+    tree_text: str, *, translation: dict[str, str]
+) -> tuple[str, PhyloTree, bool | None]:
+    rooted = _detect_nexus_rooted_flag(tree_text)
+    stripped = _strip_square_bracket_comments(tree_text).strip()
+    translated = _translate_nexus_tip_labels(stripped, translation)
+    tree = loads_biophylo(f"{translated};", source_format="newick")
+    return dumps_newick(tree), tree, rooted
+
+
+def _detect_nexus_rooted_flag(tree_text: str) -> bool | None:
+    prefix = tree_text.lstrip()
+    if prefix.startswith("[&R]"):
+        return True
+    if prefix.startswith("[&U]"):
+        return False
+    return None
+
+
+def _parse_beast_tree_state(tree_name: str) -> int | None:
+    match = _BEAST_TREE_STATE_PATTERN.search(tree_name)
+    return None if match is None else int(match.group(1))
+
+
+def _summarize_beast_clades(trees: list[PhyloTree]) -> list[BeastPosteriorClade]:
+    if not trees:
+        return []
+    taxa_sets = {frozenset(tree.tip_names) for tree in trees}
+    if len(taxa_sets) != 1:
+        raise InvalidAlignmentError(
+            "BEAST posterior tree summaries require all trees to share the exact same taxon set"
+        )
+    shared_taxa = set(next(iter(taxa_sets)))
+    counts: dict[frozenset[str], int] = {}
+    for tree in trees:
+        for clade in _informative_tree_clades(tree, shared_taxa):
+            counts[clade] = counts.get(clade, 0) + 1
+    return [
+        BeastPosteriorClade(
+            clade="|".join(sorted(clade)),
+            tree_count=tree_count,
+            frequency=round(tree_count / len(trees), 15),
+        )
+        for clade, tree_count in sorted(
+            counts.items(),
+            key=lambda item: (-item[1], sorted(item[0])),
+        )
+    ]
+
+
+def _informative_tree_clades(
+    tree: PhyloTree, shared_taxa: set[str]
+) -> list[frozenset[str]]:
+    clades: list[frozenset[str]] = []
+    for node in tree.iter_nodes():
+        taxa = frozenset(descendant_taxa(node))
+        if 1 < len(taxa) < len(shared_taxa):
+            clades.append(taxa)
+    return clades
+
+
+def _parse_nexus_translate_map(text: str) -> dict[str, str]:
+    translate_match = re.search(
+        r"translate\s+(.+?);", text, flags=re.IGNORECASE | re.DOTALL
+    )
+    if translate_match is None:
+        return {}
+    mapping: dict[str, str] = {}
+    for raw_line in translate_match.group(1).splitlines():
+        line = raw_line.strip().rstrip(",")
+        if not line:
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2:
+            continue
+        source, label = parts
+        mapping[source] = label.rstrip(",")
+    return mapping
+
+
+def _translate_nexus_tip_labels(newick: str, mapping: dict[str, str]) -> str:
+    if not mapping:
+        return newick
+
+    def replace(match: re.Match[str]) -> str:
+        token = match.group(1)
+        translated = mapping.get(token, token)
+        return match.group(0).replace(token, translated)
+
+    return re.sub(r"(?<=[(,])\s*([A-Za-z0-9_.-]+)(?=\s*[:),])", replace, newick)
+
+
+def _strip_square_bracket_comments(text: str) -> str:
+    result: list[str] = []
+    depth = 0
+    for char in text:
+        if char == "[":
+            depth += 1
+            continue
+        if char == "]" and depth:
+            depth -= 1
+            continue
+        if depth == 0:
+            result.append(char)
+    return "".join(result)
 
 
 def _beast_state_field(fieldnames: list[str]) -> str | None:
