@@ -51,6 +51,27 @@ silently become zero: the split is counted in `missing_length_split_count` and
 the final branch-score distance is reported as unavailable until the missing
 length is resolved.
 
+`compare support` is the governed support-aware tree-comparison surface for two
+trees over their shared taxon set. It keeps one shared-clade row for clades
+present in both trees, normalizes support values onto `0..1` fractions for
+comparison, and flags support disagreements when the normalized support delta is
+at least `0.15`. It also emits one conflicting-clade row for clades present in
+only one tree, then classifies that topology conflict by the strongest observed
+support on the present side.
+
+The conflict classification is explicit. A conflicting clade with normalized
+support at or above `0.9` is reported as `high_support_conflict`. Conflicting
+clades below `0.7` are reported as `low_support_disagreement`. Conflicting
+clades between `0.7` and `0.9` are preserved separately as
+`moderate_support_disagreement` instead of being overstated as either strong or
+weak. If no support label was available on the present side, the row is marked
+`support_unavailable`.
+
+When `--out` is supplied, `compare support` writes a flat TSV ledger that keeps
+both shared-clade support rows and conflicting-clade severity rows in one file.
+That ledger is intended for reviewer-facing conflict triage, not just raw
+support extraction.
+
 `compare clades` is the governed overlap surface for two or more trees. It
 takes two required tree paths plus additional trees through repeated `--tree`
 flags, computes rooted clade overlap on the shared taxon set, and reports
