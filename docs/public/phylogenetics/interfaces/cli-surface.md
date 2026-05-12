@@ -164,6 +164,13 @@ all root-to-tip distances are available, and the stable shape summary
 the tree is star-like, comb-like, or unusually imbalanced so review tooling can
 filter strongly ladderized or star-topology cases directly.
 
+`topology branch-lengths` is the governed branch-distribution surface for one
+tree. It writes one row per non-root branch with the branch length, root depth,
+descendant tip count, and explicit flags for missing, zero, negative, long, or
+short branches. Its aggregate JSON metrics report branch-count totals plus
+minimum, maximum, mean, and median branch length so odd scale shifts are visible
+without scraping the full ledger by hand.
+
 `tree-set clades` applies the same clade-table contract to every tree in one
 tree-set file. It preserves the one-based source tree index for each row and
 requires every tree in the set to carry the same taxon set before clades are
@@ -176,6 +183,13 @@ how many trees are balanced, ladderized, star-like, or comb-like and summarize
 mean cherry count, mean Sackin imbalance, and mean tree height. That keeps
 shape variation reviewable across posterior or bootstrap samples instead of
 collapsing shape into one representative tree too early.
+
+`tree-set branch-lengths` applies the same branch ledger to every tree in one
+tree-set file and preserves the one-based source tree index for each branch row.
+Its aggregate JSON metrics then summarize set-wide branch-count totals,
+zero-length and negative-length counts, long-outlier counts, and overall branch
+length minima, maxima, means, and medians. That keeps one pathological sampled
+tree from disappearing into a tree-set average or consensus summary.
 
 The alignment family includes matrix-assembly and matrix-audit commands for
 concatenated multi-locus inputs. `alignment concatenate` assembles one
