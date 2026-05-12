@@ -1,0 +1,200 @@
+{
+  "generated_on": "2026-05-12",
+  "source_package": "R stats::model.matrix and stats::lm with treatment contrasts",
+  "observations": [
+    {
+      "case": "continuous-by-continuous",
+      "formula": "response ~ predictor_one * predictor_two",
+      "encoded_columns": [
+        "intercept",
+        "predictor_one",
+        "predictor_two",
+        "predictor_one:predictor_two"
+      ],
+      "rows": [
+        {
+          "taxon": "A",
+          "intercept": 1,
+          "predictor_one": 1,
+          "predictor_two": 4,
+          "predictor_one:predictor_two": 4
+        },
+        {
+          "taxon": "B",
+          "intercept": 1,
+          "predictor_one": 2,
+          "predictor_two": 1,
+          "predictor_one:predictor_two": 2
+        },
+        {
+          "taxon": "C",
+          "intercept": 1,
+          "predictor_one": 3,
+          "predictor_two": 3,
+          "predictor_one:predictor_two": 9
+        },
+        {
+          "taxon": "D",
+          "intercept": 1,
+          "predictor_one": 4,
+          "predictor_two": 2,
+          "predictor_one:predictor_two": 8
+        },
+        {
+          "taxon": "E",
+          "intercept": 1,
+          "predictor_one": 5,
+          "predictor_two": 5,
+          "predictor_one:predictor_two": 25
+        },
+        {
+          "taxon": "F",
+          "intercept": 1,
+          "predictor_one": 6,
+          "predictor_two": 4,
+          "predictor_one:predictor_two": 24
+        }
+      ],
+      "coefficients": {
+        "intercept": 0.678753110312411,
+        "predictor_one": 0.708805640033177,
+        "predictor_two": 0.755225324854853,
+        "predictor_one:predictor_two": 0.387406690627592
+      }
+    },
+    {
+      "case": "continuous-by-categorical",
+      "formula": "response ~ predictor_one * habitat",
+      "encoded_columns": [
+        "intercept",
+        "predictor_one",
+        "habitat[tundra]",
+        "predictor_one:habitat[tundra]"
+      ],
+      "rows": [
+        {
+          "taxon": "A",
+          "intercept": 1,
+          "predictor_one": 1,
+          "habitat[tundra]": 0,
+          "predictor_one:habitat[tundra]": 0
+        },
+        {
+          "taxon": "B",
+          "intercept": 1,
+          "predictor_one": 2,
+          "habitat[tundra]": 0,
+          "predictor_one:habitat[tundra]": 0
+        },
+        {
+          "taxon": "C",
+          "intercept": 1,
+          "predictor_one": 3,
+          "habitat[tundra]": 1,
+          "predictor_one:habitat[tundra]": 3
+        },
+        {
+          "taxon": "D",
+          "intercept": 1,
+          "predictor_one": 4,
+          "habitat[tundra]": 1,
+          "predictor_one:habitat[tundra]": 4
+        },
+        {
+          "taxon": "E",
+          "intercept": 1,
+          "predictor_one": 3,
+          "habitat[tundra]": 0,
+          "predictor_one:habitat[tundra]": 0
+        },
+        {
+          "taxon": "F",
+          "intercept": 1,
+          "predictor_one": 5,
+          "habitat[tundra]": 1,
+          "predictor_one:habitat[tundra]": 5
+        }
+      ],
+      "coefficients": {
+        "intercept": 1,
+        "predictor_one": 0.999999999999999,
+        "habitat[tundra]": 2,
+        "predictor_one:habitat[tundra]": 0.500000000000001
+      }
+    },
+    {
+      "case": "categorical-by-categorical",
+      "formula": "response ~ habitat * diet",
+      "encoded_columns": [
+        "intercept",
+        "habitat[tundra]",
+        "diet[herbivore]",
+        "habitat[tundra]:diet[herbivore]"
+      ],
+      "rows": [
+        {
+          "taxon": "A",
+          "intercept": 1,
+          "habitat[tundra]": 0,
+          "diet[herbivore]": 0,
+          "habitat[tundra]:diet[herbivore]": 0
+        },
+        {
+          "taxon": "B",
+          "intercept": 1,
+          "habitat[tundra]": 0,
+          "diet[herbivore]": 0,
+          "habitat[tundra]:diet[herbivore]": 0
+        },
+        {
+          "taxon": "C",
+          "intercept": 1,
+          "habitat[tundra]": 1,
+          "diet[herbivore]": 0,
+          "habitat[tundra]:diet[herbivore]": 0
+        },
+        {
+          "taxon": "D",
+          "intercept": 1,
+          "habitat[tundra]": 1,
+          "diet[herbivore]": 0,
+          "habitat[tundra]:diet[herbivore]": 0
+        },
+        {
+          "taxon": "E",
+          "intercept": 1,
+          "habitat[tundra]": 0,
+          "diet[herbivore]": 1,
+          "habitat[tundra]:diet[herbivore]": 0
+        },
+        {
+          "taxon": "F",
+          "intercept": 1,
+          "habitat[tundra]": 0,
+          "diet[herbivore]": 1,
+          "habitat[tundra]:diet[herbivore]": 0
+        },
+        {
+          "taxon": "G",
+          "intercept": 1,
+          "habitat[tundra]": 1,
+          "diet[herbivore]": 1,
+          "habitat[tundra]:diet[herbivore]": 1
+        },
+        {
+          "taxon": "H",
+          "intercept": 1,
+          "habitat[tundra]": 1,
+          "diet[herbivore]": 1,
+          "habitat[tundra]:diet[herbivore]": 1
+        }
+      ],
+      "coefficients": {
+        "intercept": 1.15,
+        "habitat[tundra]": 2.05,
+        "diet[herbivore]": 3,
+        "habitat[tundra]:diet[herbivore]": 3.7
+      }
+    }
+  ]
+}
