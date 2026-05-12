@@ -386,6 +386,80 @@ ledger. Each row preserves:
 - `reason`
 - `note`
 
+`biogeography time-stratified` is the governed interval-specific geographic
+transition review surface for one taxon-region table on one rooted tree with
+positive branch lengths. It accepts ER, SYM, and ARD model aliases plus one or
+more explicit `--time-bin LABEL:START:END` definitions. The workflow reuses the
+owned ancestral-region reconstruction, allocates branch exposure and inferred
+branch changes across the requested root-depth intervals, and reports:
+- `model`
+- `time_bin_count`
+- `matrix_row_count`
+- `changed_branch_count`
+- `allocated_transition_weight_total`
+- `excluded_taxon_count`
+- `warning_count`
+
+When `--summary-out` is supplied, `biogeography time-stratified` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `likelihood_method`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `tree_depth`
+- `time_bin_count`
+- `matrix_row_count`
+- `changed_branch_count`
+- `allocated_transition_weight_total`
+- `warning_count`
+
+When `--matrix-out` is supplied, the command writes one interval-specific
+transition matrix ledger. Each row preserves:
+- `time_bin_label`
+- `start_depth`
+- `end_depth`
+- `source_region`
+- `target_region`
+- `source_exposure_length`
+- `allocated_transition_weight`
+- `time_stratified_rate`
+- `global_rate`
+
+When `--branches-out` is supplied, the command writes one branch-interval
+allocation ledger. Each row preserves:
+- `time_bin_label`
+- `start_depth`
+- `end_depth`
+- `parent_node`
+- `child_node`
+- `parent_depth`
+- `child_depth`
+- `source_region`
+- `target_region`
+- `changed`
+- `overlap_length`
+- `allocated_transition_weight`
+- `support`
+- `strongly_supported`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_region`
+- `normalized_region`
+- `reason`
+- `note`
+
+This interval-specific surface is intentionally explicit about scope. It is a
+deterministic branch-allocation review over the owned geographic-state
+reconstruction, not a full time-inhomogeneous stochastic biogeographic process
+fit. If the requested intervals do not cover the full tree depth, the command
+reports that omission as a warning instead of silently claiming full temporal
+coverage.
+
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
 ancestral model. Instead, it reuses the owned reconstruction surfaces and
