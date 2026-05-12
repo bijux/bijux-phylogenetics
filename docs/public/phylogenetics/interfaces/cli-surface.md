@@ -147,6 +147,21 @@ the retained sampled states, normalized Newick trees, sorted tip set, and
 clade-frequency table so posterior-tree review can stay on structured data
 instead of manual NEXUS scraping.
 
+`adapter beast-consensus` is the governed summary surface for one BEAST
+posterior tree file after burn-in handling. It builds a majority-rule consensus
+tree from the retained posterior trees, writes that consensus as canonical
+Newick through `--out`, can copy the retained normalized posterior tree set
+through `--tree-set-out`, and can write a retained clade-frequency ledger
+through `--clade-table-out`. Its JSON metrics expose `total_tree_count`,
+`kept_tree_count`, `annotated_node_count`, `clade_frequency_count`, and
+`burnin_fraction`.
+
+The consensus tree labels use posterior clade probabilities on the `0..1`
+scale. The clade-frequency ledger intentionally contains all informative
+retained clades, including alternative groupings that do not survive as
+majority clades in the final consensus topology, so downstream review can
+distinguish a strongly resolved consensus from a superficially simple one.
+
 `adapter mrbayes-run` is the governed execution surface for one prepared
 MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
 posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC
