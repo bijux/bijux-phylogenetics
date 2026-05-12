@@ -217,6 +217,7 @@ from bijux_phylogenetics.engines import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    run_sh_alrt_support_estimation,
 )
 from bijux_phylogenetics.errors import (
     EngineUnavailableError,
@@ -3481,6 +3482,28 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
     _add_manifest_argument(adapter_bootstrap)
+    adapter_sh_alrt = adapter_subparsers.add_parser(
+        "sh-alrt", help="Run combined sh-alrt and ultrafast bootstrap support estimation."
+    )
+    adapter_sh_alrt.add_argument("input_path", type=Path)
+    adapter_sh_alrt.add_argument("--out-dir", required=True, type=Path)
+    adapter_sh_alrt.add_argument("--model", required=True)
+    adapter_sh_alrt.add_argument("--alrt-replicates", type=int, default=1000)
+    adapter_sh_alrt.add_argument("--bootstrap-replicates", type=int, default=1000)
+    adapter_sh_alrt.add_argument("--prefix", default="sh-alrt-support")
+    adapter_sh_alrt.add_argument(
+        "--partitions",
+        type=Path,
+        help="Validate and apply a partition scheme for combined sh-alrt and ultrafast bootstrap support estimation.",
+    )
+    adapter_sh_alrt.add_argument(
+        "--sequence-type", choices=("dna", "rna", "protein", "unknown")
+    )
+    adapter_sh_alrt.add_argument("--executable", type=str)
+    adapter_sh_alrt.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
+    _add_manifest_argument(adapter_sh_alrt)
     adapter_fasta_to_tree = adapter_subparsers.add_parser(
         "fasta-to-tree", help="Run alignment-to-tree inference from raw FASTA."
     )
@@ -9123,6 +9146,82 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 {}
                                 if report.bootstrap_support_summary is None
                                 else report.bootstrap_support_summary.support_histogram
+                            ),
+                            "partitioned": args.partitions is not None,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "sh-alrt":
+                report = run_sh_alrt_support_estimation(
+                    args.input_path,
+                    out_dir=args.out_dir,
+                    model=args.model,
+                    sh_alrt_replicates=args.alrt_replicates,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                    prefix=args.prefix,
+                    executable=args.executable or "iqtree2",
+                    sequence_type=args.sequence_type,
+                    partition_path=args.partitions,
+                )
+                adapter_inputs = (
+                    [args.input_path]
+                    if args.partitions is None
+                    else [args.input_path, args.partitions]
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=adapter_inputs,
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=adapter_inputs,
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={
+                            "sh_alrt_replicates": args.alrt_replicates,
+                            "bootstrap_replicates": args.bootstrap_replicates,
+                            "selected_model": report.selected_model,
+                            "log_likelihood": report.log_likelihood,
+                            "support_value_count": (
+                                0
+                                if report.iqtree_summary is None
+                                else report.iqtree_summary.support_value_count
+                            ),
+                            "sh_alrt_supported_node_count": (
+                                0
+                                if report.sh_alrt_support_summary is None
+                                else report.sh_alrt_support_summary.annotated_node_count
+                            ),
+                            "conflicting_support_signal_count": (
+                                0
+                                if report.sh_alrt_support_summary is None
+                                else report.sh_alrt_support_summary.conflicting_support_signal_count
+                            ),
+                            "minimum_sh_alrt_support": (
+                                None
+                                if report.sh_alrt_support_summary is None
+                                else report.sh_alrt_support_summary.minimum_sh_alrt_support
+                            ),
+                            "maximum_sh_alrt_support": (
+                                None
+                                if report.sh_alrt_support_summary is None
+                                else report.sh_alrt_support_summary.maximum_sh_alrt_support
+                            ),
+                            "minimum_ufboot_support": (
+                                None
+                                if report.sh_alrt_support_summary is None
+                                else report.sh_alrt_support_summary.minimum_ufboot_support
+                            ),
+                            "maximum_ufboot_support": (
+                                None
+                                if report.sh_alrt_support_summary is None
+                                else report.sh_alrt_support_summary.maximum_ufboot_support
                             ),
                             "partitioned": args.partitions is not None,
                         },

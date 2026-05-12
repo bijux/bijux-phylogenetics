@@ -163,6 +163,23 @@ if "-m" in args and args[args.index("-m") + 1] == "MF":
     print("warning: iqtree fixture model selection", file=sys.stderr)
     raise SystemExit(0)
 
+if "-alrt" in args:
+    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\\n", encoding="utf-8")
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSH-aLRT and ultrafast bootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture sh-alrt log\\nBEST SCORE FOUND : -222.222\\n",
+        encoding="utf-8",
+    )
+    print("warning: iqtree fixture sh-alrt", file=sys.stderr)
+    raise SystemExit(0)
+
 if "-bb" in args:
     prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
@@ -743,6 +760,50 @@ def test_adapter_bootstrap_cli_reports_support_metrics(
     assert Path(payload["data"]["output_paths"]["support_table"]).exists()
     assert Path(payload["data"]["output_paths"]["low_support_branches"]).exists()
     assert Path(payload["data"]["output_paths"]["support_histogram"]).exists()
+
+
+def test_adapter_sh_alrt_cli_reports_combined_support_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+
+    exit_code = main(
+        [
+            "adapter",
+            "sh-alrt",
+            str(input_path),
+            "--out-dir",
+            str(tmp_path / "sh-alrt"),
+            "--model",
+            "GTR+G",
+            "--prefix",
+            "example",
+            "--alrt-replicates",
+            "1000",
+            "--bootstrap-replicates",
+            "1000",
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["sh_alrt_replicates"] == 1000
+    assert payload["metrics"]["bootstrap_replicates"] == 1000
+    assert payload["metrics"]["selected_model"] == "GTR+G"
+    assert payload["metrics"]["log_likelihood"] == -222.222
+    assert payload["metrics"]["support_value_count"] == 2
+    assert payload["metrics"]["sh_alrt_supported_node_count"] == 2
+    assert payload["metrics"]["conflicting_support_signal_count"] == 1
+    assert payload["metrics"]["minimum_sh_alrt_support"] == 79.0
+    assert payload["metrics"]["maximum_sh_alrt_support"] == 82.0
+    assert payload["metrics"]["minimum_ufboot_support"] == 96.0
+    assert payload["metrics"]["maximum_ufboot_support"] == 97.0
+    assert Path(payload["data"]["output_paths"]["support_table"]).exists()
+    assert Path(payload["data"]["output_paths"]["conflicting_support_branches"]).exists()
 
 
 def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
