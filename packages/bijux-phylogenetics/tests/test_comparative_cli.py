@@ -641,6 +641,81 @@ def test_comparative_multiple_testing_cli_reports_adjusted_counts(capsys) -> Non
     )
 
 
+def test_comparative_logistic_cli_reports_binary_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "logistic",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_logistic.tsv")),
+            "--response",
+            "presence",
+            "--predictors",
+            "body_size",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    coefficients = {
+        coefficient["name"]: coefficient["estimate"]
+        for coefficient in payload["data"]["coefficients"]
+    }
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 6
+    assert payload["metrics"]["success_count"] == 3
+    assert payload["metrics"]["failure_count"] == 3
+    assert payload["metrics"]["coefficient_count"] == 2
+    assert payload["metrics"]["fitted_row_count"] == 6
+    assert payload["metrics"]["lambda_value"] == 1.0
+    assert payload["metrics"]["approximation_method"] == (
+        "phylogenetic-working-correlation-gee"
+    )
+    assert payload["metrics"]["converged"] is True
+    assert payload["metrics"]["warning_count"] == 0
+    assert payload["metrics"]["coefficient_inference_distribution"] == "wald-normal"
+    assert coefficients["body_size"] > 0.0
+
+
+def test_comparative_logistic_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    coefficients_out = tmp_path / "phylogenetic-logistic-coefficients.tsv"
+    fitted_out = tmp_path / "phylogenetic-logistic-fitted.tsv"
+    excluded_out = tmp_path / "phylogenetic-logistic-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "logistic",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_logistic_separated.tsv")),
+            "--formula",
+            "presence ~ habitat",
+            "--coefficients-out",
+            str(coefficients_out),
+            "--fitted-out",
+            str(fitted_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["separation_detected"] is True
+    assert payload["metrics"]["warning_count"] >= 1
+    assert coefficients_out.exists()
+    assert fitted_out.exists()
+    assert excluded_out.exists()
+    coefficient_rows = coefficients_out.read_text(encoding="utf-8").splitlines()
+    fitted_rows = fitted_out.read_text(encoding="utf-8").splitlines()
+    excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    assert coefficient_rows[0].startswith("response\tterm\testimate")
+    assert fitted_rows[0].startswith(
+        "taxon\tobserved_response\tfitted_probability\tlinear_predictor"
+    )
+    assert excluded_rows == ["taxon\treason\tdetails"]
+
+
 def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     capsys,
 ) -> None:

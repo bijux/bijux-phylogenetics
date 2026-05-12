@@ -112,6 +112,10 @@ from bijux_phylogenetics.comparative import (
     MultivariateResidualAssociationRow,
     MultivariateResidualCovarianceRow,
     MultivariateTaxonExclusion,
+    PhylogeneticLogisticCoefficient,
+    PhylogeneticLogisticFittedRow,
+    PhylogeneticLogisticReport,
+    PhylogeneticLogisticWarning,
     PhylogeneticSignalPermutation,
     PhylogeneticSignalSummaryReport,
     assess_comparative_method_maturity,
@@ -125,6 +129,7 @@ from bijux_phylogenetics.comparative import (
     inspect_pgls_inputs,
     run_multivariate_comparative_regression,
     run_pgls,
+    summarize_phylogenetic_logistic,
     summarize_brownian_covariance_pgls,
     summarize_independent_contrast_regression,
     summarize_ou_covariance_pgls,
@@ -138,6 +143,9 @@ from bijux_phylogenetics.comparative import (
     write_multivariate_excluded_taxa_table,
     write_multivariate_residual_association_table,
     write_multivariate_residual_covariance_table,
+    write_phylogenetic_logistic_coefficient_table,
+    write_phylogenetic_logistic_excluded_taxa_table,
+    write_phylogenetic_logistic_fitted_table,
     write_independent_contrast_regression_table,
     write_independent_contrast_table,
     write_ou_alpha_profile_table,
@@ -1012,6 +1020,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.run_multivariate_comparative_regression
         is run_multivariate_comparative_regression
     )
+    assert (
+        bijux_phylogenetics.summarize_phylogenetic_logistic
+        is summarize_phylogenetic_logistic
+    )
     assert bijux_phylogenetics.summarize_phylogenetic_signal is summarize_phylogenetic_signal
     assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
     assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
@@ -1072,6 +1084,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is MultivariateTaxonExclusion
     )
     assert (
+        bijux_phylogenetics.PhylogeneticLogisticCoefficient
+        is PhylogeneticLogisticCoefficient
+    )
+    assert (
+        bijux_phylogenetics.PhylogeneticLogisticFittedRow
+        is PhylogeneticLogisticFittedRow
+    )
+    assert (
+        bijux_phylogenetics.PhylogeneticLogisticReport
+        is PhylogeneticLogisticReport
+    )
+    assert (
+        bijux_phylogenetics.PhylogeneticLogisticWarning
+        is PhylogeneticLogisticWarning
+    )
+    assert (
         bijux_phylogenetics.PhylogeneticSignalPermutation
         is PhylogeneticSignalPermutation
     )
@@ -1082,6 +1110,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_brownian_covariance_table
         is write_brownian_covariance_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_logistic_coefficient_table
+        is write_phylogenetic_logistic_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_logistic_excluded_taxa_table
+        is write_phylogenetic_logistic_excluded_taxa_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_logistic_fitted_table
+        is write_phylogenetic_logistic_fitted_table
     )
     assert (
         bijux_phylogenetics.write_independent_contrast_table
@@ -7542,6 +7582,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_phylogenetic_signal
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_phylogenetic_logistic"]
+        is summarize_phylogenetic_logistic
+    )
+    assert (
         resolved[
             "bijux_phylogenetics.comparative:run_multivariate_comparative_regression"
         ]
@@ -7555,6 +7599,24 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_covariance_table"]
         is write_brownian_covariance_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_logistic_coefficient_table"
+        ]
+        is write_phylogenetic_logistic_coefficient_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_logistic_excluded_taxa_table"
+        ]
+        is write_phylogenetic_logistic_excluded_taxa_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_logistic_fitted_table"
+        ]
+        is write_phylogenetic_logistic_fitted_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_independent_contrast_table"]
