@@ -28,7 +28,12 @@ from bijux_phylogenetics.bayesian.beast import (
     write_beast_posterior_tree_set,
 )
 from bijux_phylogenetics.bayesian.evidence import build_bayesian_evidence_package
-from bijux_phylogenetics.bayesian.posterior import summarize_maximum_clade_credibility_tree
+from bijux_phylogenetics.bayesian.posterior import (
+    subsample_beast_posterior_tree_set,
+    summarize_maximum_clade_credibility_tree,
+    write_posterior_tree_subsample,
+    write_posterior_tree_subsample_table,
+)
 from bijux_phylogenetics.bayesian.reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
@@ -450,6 +455,42 @@ def test_parse_beast_posterior_tree_samples_applies_burnin_fraction(
     assert report.sampled_states == [10, 20, 30]
     assert report.clades[0].clade == "A|B"
     assert report.clades[0].tree_count == 2
+
+
+def test_subsample_beast_posterior_tree_set_preserves_state_metadata(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "posterior.trees"
+    retained_path = tmp_path / "posterior-subsample.nwk"
+    table_path = tmp_path / "posterior-subsample.tsv"
+    tree_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_10 = ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_20 = ((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3):0.0;\n"
+        "tree STATE_30 = ((A:0.1,B:0.1):0.4,(C:0.1,D:0.1):0.4):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    report = subsample_beast_posterior_tree_set(
+        tree_path,
+        method="evenly-spaced",
+        thinning_interval=2,
+        burnin_fraction=0.25,
+    )
+    write_posterior_tree_subsample(retained_path, report)
+    write_posterior_tree_subsample_table(table_path, report)
+
+    assert report.burnin_tree_count == 1
+    assert report.pre_subsampling_tree_count == 3
+    assert report.retained_tree_count == 2
+    assert report.retained_source_indices == [2, 4]
+    assert [tree.state for tree in report.trees] == [10, 30]
+    assert [tree.tree_name for tree in report.trees] == ["STATE_10", "STATE_30"]
+    assert retained_path.read_text(encoding="utf-8").count("\n") == 2
+    assert "STATE_10\t10" in table_path.read_text(encoding="utf-8")
 
 
 def test_parse_beast_posterior_tree_samples_reads_real_beast_fixture() -> None:
