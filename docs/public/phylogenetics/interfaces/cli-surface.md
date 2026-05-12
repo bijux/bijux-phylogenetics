@@ -51,6 +51,19 @@ silently become zero: the split is counted in `missing_length_split_count` and
 the final branch-score distance is reported as unavailable until the missing
 length is resolved.
 
+`compare clades` is the governed overlap surface for two or more trees. It
+takes two required tree paths plus additional trees through repeated `--tree`
+flags, computes rooted clade overlap on the shared taxon set, and reports
+which clades are present in every tree versus conflicting across trees. Its
+JSON payload includes one tree summary per input plus one clade row per
+observed clade, and each clade row keeps the per-tree presence flag and parsed
+support value when one was available from the tree labels.
+
+When `--out` is supplied, `compare clades` writes a flat TSV ledger with one
+row per clade-per-tree observation instead of a wide dynamic matrix. That
+format keeps the table stable as tree count changes while still preserving
+which tree carried which clade and support value.
+
 The topology family provides direct tree-transformation commands for already
 inferred trees. `topology root-outgroup` accepts one outgroup taxon or one
 expected outgroup clade, writes the rooted tree, and can emit a one-row TSV
