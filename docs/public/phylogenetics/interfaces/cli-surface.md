@@ -678,6 +678,103 @@ fit. If the requested intervals do not cover the full tree depth, the command
 reports that omission as a warning instead of silently claiming full temporal
 coverage.
 
+`biogeography chronology` is the governed dated-tree geographic chronology
+review surface for one taxon-region table on one rooted ultrametric time tree.
+It accepts ER, SYM, and ARD model aliases, verifies that the tree is
+time-scaled, extracts node ages, maps inferred geographic transitions to
+automatic equal-width age bins, and reports:
+- `model`
+- `tree_is_time_scaled`
+- `root_age`
+- `event_count`
+- `time_bin_count`
+- `high_uncertainty_bin_count`
+- `excluded_taxon_count`
+
+When `--summary-out` is supplied, `biogeography chronology` writes one overall
+summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `likelihood_method`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `rooted`
+- `branch_length_status`
+- `tree_is_time_scaled`
+- `tip_count`
+- `node_age_row_count`
+- `root_age`
+- `event_count`
+- `time_bin_count`
+- `empty_time_bin_count`
+- `high_uncertainty_bin_count`
+- `warning_count`
+
+When `--nodes-out` is supplied, the command writes one dated node ledger. Each
+row preserves:
+- `node`
+- `node_name`
+- `is_tip`
+- `descendant_taxa`
+- `branch_length`
+- `depth_from_root`
+- `age_before_present`
+- `most_likely_region`
+- `region_confidence`
+- `ambiguous`
+- `is_root`
+
+When `--events-out` is supplied, the command writes one dated event ledger.
+Each row preserves:
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `source_region`
+- `target_region`
+- `branch_length`
+- `parent_depth`
+- `child_depth`
+- `parent_age_before_present`
+- `child_age_before_present`
+- `midpoint_age_before_present`
+- `time_bin_label`
+- `support`
+- `strongly_supported`
+- `confidence_class`
+
+When `--bins-out` is supplied, the command writes one time-bin chronology
+ledger. Each row preserves:
+- `time_bin_label`
+- `start_age_before_present`
+- `end_age_before_present`
+- `event_count`
+- `strongly_supported_event_count`
+- `low_support_event_count`
+- `support_weight_total`
+- `mean_support`
+- `support_uncertainty`
+- `earliest_event_age_before_present`
+- `latest_event_age_before_present`
+- `dominant_transition`
+- `transition_diversity`
+- `uncertainty_class`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_region`
+- `normalized_region`
+- `reason`
+- `note`
+
+This dated-tree surface is intentionally explicit about scope. Its equal-width
+age bins are reviewer-facing chronology bins over one owned reconstruction, not
+a claim that the command fitted a fully time-varying stochastic biogeographic
+process.
+
 `host-association switches` is the governed host-switch review surface for one
 host metadata table on one rooted parasite or pathogen tree. It reconstructs
 internal host states, classifies branchwise host switches as certain or
