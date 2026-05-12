@@ -19,6 +19,7 @@ The CLI is the primary operational surface for most users.
 - `ancestral ...`
 - `biogeography ...`
 - `host-association ...`
+- `ecological-niche ...`
 - `tree-set ...`
 - `topology ...`
 - `adapter ...`
@@ -802,6 +803,129 @@ This host-association surface is intentionally explicit about scope. It is a
 one-tree host-state evolution review over the owned discrete ancestral
 runtime, not a full cophylogenetic reconciliation or host-parasite
 transmission-history inference model.
+
+`ecological-niche transitions` is the governed ecological niche transition
+review surface for one ecological-state table on one rooted tree. It fits one
+likelihood discrete transition model, reconstructs internal niche states,
+counts branchwise niche changes, and ranks internal clades by concentrated
+shift burden. Its JSON metrics report:
+- `model`
+- `observed_niche_count`
+- `transition_rate_row_count`
+- `changed_branch_count`
+- `certain_transition_count`
+- `uncertain_transition_count`
+- `repeated_shift_clade_count`
+- `excluded_taxon_count`
+
+The command supports `er`, `sym`, and `ard`. It is intentionally likelihood
+only so the transition-rate surface, likelihood, and AIC remain explicit
+review artifacts rather than hidden assumptions.
+
+When `--summary-out` is supplied, `ecological-niche transitions` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observed_niche_count`
+- `internal_node_count`
+- `ambiguous_internal_node_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `transition_rate_row_count`
+- `changed_branch_count`
+- `certain_transition_count`
+- `uncertain_transition_count`
+- `strongly_supported_transition_count`
+- `clade_shift_row_count`
+- `repeated_shift_clade_count`
+- `root_niche`
+- `root_confidence`
+- `warning_count`
+
+When `--nodes-out` is supplied, the command writes one internal-node niche
+probability ledger. Each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `most_likely_niche`
+- `niche_probabilities`
+- `confidence`
+- `ambiguous`
+- `is_root`
+
+When `--rates-out` is supplied, the command writes one fitted niche
+transition-rate ledger. Each row preserves:
+- `source_niche`
+- `target_niche`
+- `transition_allowed`
+- `step_distance`
+- `rate`
+
+When `--branches-out` is supplied, the command writes one branchwise niche
+transition ledger. Each row preserves:
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `branch_length`
+- `parent_most_likely_niche`
+- `child_most_likely_niche`
+- `parent_niche_set`
+- `child_niche_set`
+- `overlapping_niches`
+- `changed`
+- `transition`
+- `certainty_class`
+- `support`
+- `strongly_supported`
+- `parent_confidence`
+- `child_confidence`
+
+When `--counts-out` is supplied, the command writes one directed niche
+transition-count ledger. Each row preserves:
+- `transition`
+- `source_niche`
+- `target_niche`
+- `certain_transition_count`
+- `uncertain_transition_count`
+- `total_transition_count`
+- `strongly_supported_transition_count`
+
+When `--clades-out` is supplied, the command writes one ranked internal-clade
+shift ledger. Each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `descendant_taxon_count`
+- `descendant_internal_node_count`
+- `changed_branch_count`
+- `certain_transition_count`
+- `uncertain_transition_count`
+- `strongly_supported_transition_count`
+- `transition_diversity`
+- `dominant_transition`
+- `dominant_transition_count`
+- `shift_burden_score`
+- `contains_repeated_shifts`
+- `rank`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_niche`
+- `normalized_niche`
+- `reason`
+- `note`
+
+This ecological-niche surface is intentionally explicit about scope. It is a
+one-tree discrete niche-evolution review over the owned ancestral runtime, not
+a full macroecological process model or a direct habitat-dependent
+diversification inference surface.
 
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
