@@ -63,7 +63,7 @@ class ComparativePredictorInfluenceRow:
 
     term: str
     estimate: float
-    z_score: float
+    test_statistic: float
     p_value: float
     significant: bool
 
@@ -264,14 +264,14 @@ def build_trait_influence_report(
             ComparativePredictorInfluenceRow(
                 term=coefficient.name,
                 estimate=coefficient.estimate,
-                z_score=coefficient.z_score,
+                test_statistic=coefficient.test_statistic,
                 p_value=coefficient.p_value,
                 significant=coefficient.p_value <= 0.05,
             )
             for coefficient in snapshot.pgls_model.coefficients
             if coefficient.name != "intercept"
         ],
-        key=lambda row: (abs(row.z_score), abs(row.estimate), row.term),
+        key=lambda row: (abs(row.test_statistic), abs(row.estimate), row.term),
         reverse=True,
     )
     leverage_by_taxon = {

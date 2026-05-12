@@ -8,6 +8,8 @@ from bijux_phylogenetics.comparative._math import (
     invert_matrix,
     log_determinant,
     matrix_multiply,
+    student_t_quantile,
+    student_t_two_sided_p_value,
     transpose,
 )
 from bijux_phylogenetics.comparative.common import (
@@ -111,8 +113,12 @@ class PGLSCoefficient:
     name: str
     estimate: float
     standard_error: float
-    z_score: float
+    test_statistic: float
     p_value: float
+    lower_95_confidence_interval: float
+    upper_95_confidence_interval: float
+    degrees_of_freedom: int
+    inference_distribution: str
 
 
 @dataclass(slots=True)
@@ -552,19 +558,27 @@ def run_pgls(
         _quadratic_form(residuals, inverse_covariance) / degrees_of_freedom
     )
     coefficient_reports: list[PGLSCoefficient] = []
+    critical_value = student_t_quantile(0.975, degrees_of_freedom)
     for index, name in enumerate(encoded_columns):
         standard_error = math.sqrt(
             max(covariance_of_betas[index][index] * residual_variance, 0.0)
         )
-        z_score = coefficients[index] / standard_error if standard_error else 0.0
-        p_value = 2.0 * (1.0 - _normal_cdf(abs(z_score)))
+        test_statistic = (
+            coefficients[index] / standard_error if standard_error else 0.0
+        )
+        p_value = student_t_two_sided_p_value(test_statistic, degrees_of_freedom)
+        interval_radius = critical_value * standard_error
         coefficient_reports.append(
             PGLSCoefficient(
                 name=name,
                 estimate=coefficients[index],
                 standard_error=standard_error,
-                z_score=z_score,
+                test_statistic=test_statistic,
                 p_value=p_value,
+                lower_95_confidence_interval=coefficients[index] - interval_radius,
+                upper_95_confidence_interval=coefficients[index] + interval_radius,
+                degrees_of_freedom=degrees_of_freedom,
+                inference_distribution="student-t",
             )
         )
     mean_response = sum(response_values) / len(response_values)
@@ -1013,12 +1027,6 @@ def _quadratic_form(vector: list[float], matrix: list[list[float]]) -> float:
             value * vector[column_index] for column_index, value in enumerate(row)
         )
     return total
-
-
-def _normal_cdf(value: float) -> float:
-    return 0.5 * (1.0 + math.erf(value / math.sqrt(2.0)))
-
-
 def _gls_log_likelihood(
     response_values: list[float],
     residuals: list[float],
