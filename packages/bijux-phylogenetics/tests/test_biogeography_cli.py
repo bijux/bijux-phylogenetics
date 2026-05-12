@@ -204,6 +204,54 @@ def test_biogeography_time_stratified_cli_rejects_invalid_time_bins(capsys) -> N
     assert "LABEL:START:END" in error_text
 
 
+def test_biogeography_sampling_bias_cli_can_export_review(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    summary_path = tmp_path / "summary.tsv"
+    regions_path = tmp_path / "regions.tsv"
+    nodes_path = tmp_path / "nodes.tsv"
+    transitions_path = tmp_path / "transitions.tsv"
+    exclusions_path = tmp_path / "exclusions.tsv"
+
+    exit_code = main(
+        [
+            "biogeography",
+            "sampling-bias",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_geography_biased.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "ard",
+            "--weights",
+            str(fixture("example_geographic_region_weights.tsv")),
+            "--summary-out",
+            str(summary_path),
+            "--regions-out",
+            str(regions_path),
+            "--nodes-out",
+            str(nodes_path),
+            "--transitions-out",
+            str(transitions_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "ard"
+    assert payload["metrics"]["weighting_mode"] == "explicit"
+    assert payload["metrics"]["root_region_changed"] is True
+    assert "weighting_mode" in summary_path.read_text(encoding="utf-8")
+    assert "weighted_sample_fraction" in regions_path.read_text(encoding="utf-8")
+    assert "weighted_region_probabilities" in nodes_path.read_text(encoding="utf-8")
+    assert "changed_by_weighting" in transitions_path.read_text(encoding="utf-8")
+    assert "reason" in exclusions_path.read_text(encoding="utf-8")
+
+
 def test_biogeography_chronology_cli_can_export_review(
     tmp_path: Path,
     capsys,
