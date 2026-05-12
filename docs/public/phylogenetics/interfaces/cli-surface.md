@@ -240,6 +240,77 @@ transition ledger. Each row preserves:
 - `ordered_rate`
 - `unordered_rate`
 
+`ancestral irreversible-discrete` is the governed irreversible-state review
+surface for one discrete likelihood ancestral reconstruction. It fits the
+requested likelihood model twice on the same tree: once under an explicit
+directed allowed-transition graph and once under the unrestricted baseline.
+Its JSON metrics report:
+- `model`
+- `allowed_transition_count`
+- `fit_count`
+- `differing_node_count`
+- `ambiguity_change_count`
+- `forbidden_transition_count`
+- `preferred_constraint`
+
+The command supports `equal-rates`, `symmetric`, and
+`all-rates-different`. It requires `--allowed-transitions`, which accepts a
+comma-delimited directed graph such as `present->absent` or
+`north->south,south->island`. Under `symmetric`, every allowed edge must be
+bidirectional because the fitted rates are shared across both directions.
+
+When `--summary-out` is supplied, `ancestral irreversible-discrete` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `analyzed_taxon_count`
+- `constrained_log_likelihood`
+- `unconstrained_log_likelihood`
+- `likelihood_difference`
+- `constrained_parameter_count`
+- `unconstrained_parameter_count`
+- `constrained_aic`
+- `unconstrained_aic`
+- `delta_aic`
+- `preferred_constraint`
+- `differing_node_count`
+- `ambiguity_change_count`
+- `forbidden_transition_count`
+- `warning_count`
+
+When `--fits-out` is supplied, the command writes one two-row fit ledger. Each
+row preserves:
+- `constraint_mode`
+- `model`
+- `analyzed_taxon_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `root_most_likely_state`
+- `root_confidence`
+
+When `--nodes-out` is supplied, the command writes one node-wise comparison
+ledger. Each row preserves:
+- `node`
+- `descendant_taxa`
+- `constrained_state`
+- `unconstrained_state`
+- `constrained_confidence`
+- `unconstrained_confidence`
+- `confidence_delta`
+- `differs`
+- `ambiguity_changed`
+
+When `--transitions-out` is supplied, the command writes one directed
+transition ledger. Each row preserves:
+- `source_state`
+- `target_state`
+- `constrained_transition_allowed`
+- `unconstrained_transition_allowed`
+- `constrained_rate`
+- `unconstrained_rate`
+
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
 ancestral model. Instead, it reuses the owned reconstruction surfaces and
