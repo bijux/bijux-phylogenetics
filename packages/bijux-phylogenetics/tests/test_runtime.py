@@ -108,6 +108,8 @@ from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
     IndependentContrastRegressionReport,
     IndependentContrastRegressionRow,
+    PhylogeneticSignalPermutation,
+    PhylogeneticSignalSummaryReport,
     assess_comparative_method_maturity,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
@@ -121,6 +123,7 @@ from bijux_phylogenetics.comparative import (
     summarize_brownian_covariance_pgls,
     summarize_independent_contrast_regression,
     summarize_ou_covariance_pgls,
+    summarize_phylogenetic_signal,
     summarize_pgls_lambda_fit,
     summarize_pgls_categorical_contrasts,
     summarize_pgls_interaction_coefficients,
@@ -131,6 +134,8 @@ from bijux_phylogenetics.comparative import (
     write_independent_contrast_table,
     write_ou_alpha_profile_table,
     write_ou_covariance_table,
+    write_phylogenetic_signal_permutation_table,
+    write_phylogenetic_signal_summary_table,
     write_pgls_categorical_contrast_table,
     write_pgls_interaction_coefficient_table,
     write_pgls_lambda_profile_table,
@@ -995,6 +1000,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.summarize_independent_contrast_regression
         is summarize_independent_contrast_regression
     )
+    assert bijux_phylogenetics.summarize_phylogenetic_signal is summarize_phylogenetic_signal
     assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
     assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
     assert (
@@ -1038,6 +1044,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is IndependentContrastRegressionRow
     )
     assert (
+        bijux_phylogenetics.PhylogeneticSignalPermutation
+        is PhylogeneticSignalPermutation
+    )
+    assert (
+        bijux_phylogenetics.PhylogeneticSignalSummaryReport
+        is PhylogeneticSignalSummaryReport
+    )
+    assert (
         bijux_phylogenetics.write_brownian_covariance_table
         is write_brownian_covariance_table
     )
@@ -1048,6 +1062,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_independent_contrast_regression_table
         is write_independent_contrast_regression_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_signal_summary_table
+        is write_phylogenetic_signal_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_signal_permutation_table
+        is write_phylogenetic_signal_permutation_table
     )
     assert (
         bijux_phylogenetics.write_ou_alpha_profile_table
@@ -7476,6 +7498,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_independent_contrast_regression
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_phylogenetic_signal"]
+        is summarize_phylogenetic_signal
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_pgls_interaction_coefficients"]
         is summarize_pgls_interaction_coefficients
     )
@@ -7493,6 +7519,18 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
             "bijux_phylogenetics.comparative:write_independent_contrast_regression_table"
         ]
         is write_independent_contrast_regression_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_signal_summary_table"
+        ]
+        is write_phylogenetic_signal_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_signal_permutation_table"
+        ]
+        is write_phylogenetic_signal_permutation_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_ou_alpha_profile_table"]

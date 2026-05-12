@@ -14,6 +14,12 @@ from .independent_contrasts import (
     write_independent_contrast_regression_table,
     write_independent_contrast_table,
 )
+from .phylogenetic_signal import (
+    PhylogeneticSignalSummaryReport,
+    summarize_phylogenetic_signal,
+    write_phylogenetic_signal_permutation_table,
+    write_phylogenetic_signal_summary_table,
+)
 from .evolutionary_modes import (
     ComparativeTreeRescalingReport,
     ContinuousEvolutionaryModeComparisonReport,
@@ -132,6 +138,7 @@ from .signal import (
     IndependentContrast,
     IndependentContrastReport,
     PagelLambdaReport,
+    PhylogeneticSignalPermutation,
     PhylogeneticSignalTestReport,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
@@ -213,6 +220,8 @@ __all__ = [
     "compare_comparative_results_across_pruning",
     "compare_comparative_results_across_trees",
     "PagelLambdaReport",
+    "PhylogeneticSignalPermutation",
+    "PhylogeneticSignalSummaryReport",
     "PhylogeneticSignalTestReport",
     "assess_comparative_method_maturity",
     "audit_comparative_parameter_uncertainty",
@@ -238,6 +247,7 @@ __all__ = [
     "summarize_brownian_covariance_pgls",
     "summarize_independent_contrast_regression",
     "summarize_ou_covariance_pgls",
+    "summarize_phylogenetic_signal",
     "summarize_pgls_lambda_fit",
     "summarize_pgls_categorical_contrasts",
     "summarize_pgls_interaction_coefficients",
@@ -253,5 +263,7 @@ __all__ = [
     "write_independent_contrast_table",
     "write_ou_alpha_profile_table",
     "write_ou_covariance_table",
+    "write_phylogenetic_signal_permutation_table",
+    "write_phylogenetic_signal_summary_table",
     "write_comparative_method_report",
 ]
