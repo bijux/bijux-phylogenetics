@@ -469,6 +469,138 @@ to test whether unconstrained geographic transition claims are compatible with
 an explicit region-connectivity contract and how much fit is lost when those
 forbidden transitions are removed.
 
+`biogeography events` is the governed geographic movement-event review surface.
+On one rooted tree it extracts only changed source-target branches from the
+owned ancestral geography reconstruction and reports:
+- `report_mode`
+- `model`
+- `event_count`
+- `strongly_supported_event_count`
+- `mean_event_support`
+- `excluded_taxon_count`
+
+When `--tree-set` is supplied, the same command switches into retained-tree
+review mode over a posterior or bootstrap tree set and reports:
+- `report_mode`
+- `model`
+- `kept_tree_count`
+- `event_row_count`
+- `event_summary_count`
+- `topology_sensitive_event_count`
+- `excluded_taxon_count`
+- `warning_count`
+
+When `--summary-out` is supplied on one tree, `biogeography events` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `likelihood_method`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `tree_depth`
+- `event_count`
+- `strongly_supported_event_count`
+- `mean_event_support`
+- `earliest_midpoint_depth`
+- `latest_midpoint_depth`
+- `warning_count`
+
+When `--events-out` is supplied on one tree, the command writes one
+branchwise event ledger. Each row preserves:
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `branch_length`
+- `parent_depth`
+- `child_depth`
+- `midpoint_depth`
+- `source_region`
+- `target_region`
+- `support`
+- `strongly_supported`
+- `confidence_class`
+
+When `--summary-out` is supplied with `--tree-set`, the command writes one
+tree-set summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `total_tree_count`
+- `burnin_tree_count`
+- `kept_tree_count`
+- `shared_tree_taxon_count`
+- `analysis_taxon_count`
+- `rooted_topology_count`
+- `unrooted_topology_count`
+- `event_row_count`
+- `event_summary_count`
+- `topology_sensitive_event_count`
+- `low_support_event_count`
+- `excluded_taxon_count`
+- `warning_count`
+
+When `--trees-out` is supplied with `--tree-set`, the command writes one
+retained-tree ledger. Each row preserves:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+- `event_count`
+- `strongly_supported_event_count`
+
+When `--events-out` is supplied with `--tree-set`, the command writes one
+per-tree event ledger. Each row preserves:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+- `branch_id`
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `branch_length`
+- `parent_depth`
+- `child_depth`
+- `midpoint_depth`
+- `source_region`
+- `target_region`
+- `support`
+- `strongly_supported`
+- `confidence_class`
+
+When `--event-summaries-out` is supplied with `--tree-set`, the command writes
+one comparable-event summary ledger across retained trees. Each row preserves:
+- `branch_id`
+- `child_descendant_taxa`
+- `source_region`
+- `target_region`
+- `tree_presence_count`
+- `tree_presence_fraction`
+- `strongly_supported_tree_count`
+- `strongly_supported_tree_fraction`
+- `mean_support`
+- `lower_95_midpoint_depth`
+- `upper_95_midpoint_depth`
+- `minimum_parent_depth`
+- `maximum_child_depth`
+- `stability_class`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_region`
+- `normalized_region`
+- `reason`
+- `note`
+
+This movement-event surface is intentionally explicit about temporal precision.
+Its `midpoint_depth` value is a deterministic branch-midpoint estimate for
+review, not a claim of exact stochastic event time inference.
+
 `biogeography time-stratified` is the governed interval-specific geographic
 transition review surface for one taxon-region table on one rooted tree with
 positive branch lengths. It accepts ER, SYM, and ARD model aliases plus one or
