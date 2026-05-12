@@ -67,6 +67,24 @@ encoded column names and one taxon-level row per analyzed observation. This
 surface exists so reviewers can inspect the actual fitted predictors instead of
 inferring the design matrix indirectly from coefficient names.
 
+When `--categorical-contrasts-out` is supplied, `comparative pgls` also writes
+one categorical-contrast ledger. Its JSON metrics then report
+`categorical_contrast_predictor_count` and
+`categorical_contrast_row_count`, while `data.categorical_contrasts.rows`
+preserves one row per reported group level.
+
+The contrast ledger is explicit about interpretation:
+- `encoding_scheme` distinguishes treatment-coded `reference-level` rows from
+  `full-indicator` rows used by intercept-free formulas
+- `is_reference_level` marks the baseline group directly instead of forcing
+  reviewers to infer it from a missing coefficient
+- `coefficient_name` is blank only for a true baseline row
+- `missing_category_taxa` keeps blank or absent category assignments visible for
+  that predictor
+
+This surface exists so categorical coefficients are read as group contrasts with
+clear baselines, not as unlabeled free-floating numbers.
+
 The `compare` family includes direct topology-distance review for two existing
 trees. `compare LEFT RIGHT` now exposes `--rf-mode rooted|unrooted` and
 `--taxon-overlap-policy prune-to-shared|require-identical`. The default RF mode
