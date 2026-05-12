@@ -28,9 +28,11 @@ from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
 from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
+    compare_discrete_ancestral_reconstructions,
     render_ancestral_state_report,
     render_ancestral_state_tree,
     write_ancestral_state_table,
+    write_discrete_ancestral_comparison_table,
 )
 from bijux_phylogenetics.bayesian import (
     assess_beast_burnin_sensitivity,
@@ -2971,9 +2973,15 @@ def build_parser() -> argparse.ArgumentParser:
     ancestral_discrete.add_argument(
         "--ordered-states", help="Comma-delimited explicit ordered state vocabulary."
     )
+    ancestral_discrete.add_argument(
+        "--compare-model",
+        choices=("fitch", "equal-rates", "symmetric", "all-rates-different"),
+        help="Optionally compare this reconstruction directly against another discrete model.",
+    )
     ancestral_discrete.add_argument("--table-out", type=Path)
     ancestral_discrete.add_argument("--summary-out", type=Path)
     ancestral_discrete.add_argument("--probabilities-out", type=Path)
+    ancestral_discrete.add_argument("--comparison-out", type=Path)
     ancestral_discrete.add_argument("--exclusions-out", type=Path)
     ancestral_discrete.add_argument(
         "--json", action="store_true", help="Emit the reconstruction as JSON."
@@ -8469,6 +8477,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     parser.error(
                         "ordered ancestral discrete reconstruction requires a likelihood model"
                     )
+                if args.compare_model == args.model:
+                    parser.error(
+                        "discrete ancestral compare-model must differ from the primary model"
+                    )
                 report = reconstruct_discrete_ancestral_states(
                     args.tree,
                     args.table,
@@ -8480,6 +8492,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 summary = summarize_discrete_ancestral_report(report)
                 exclusions = discrete_ancestral_exclusions(report)
+                comparison = (
+                    compare_discrete_ancestral_reconstructions(
+                        args.tree,
+                        args.table,
+                        trait=args.trait,
+                        taxon_column=args.taxon_column,
+                        left_model=args.model,
+                        right_model=args.compare_model,
+                        state_ordering=args.state_ordering,
+                        ordered_states=_split_csv_values(args.ordered_states) or None,
+                    )
+                    if args.compare_model is not None
+                    else None
+                )
                 outputs: list[Path | str] = []
                 if args.table_out is not None:
                     outputs.append(write_ancestral_state_table(args.table_out, report))
@@ -8495,6 +8521,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         write_discrete_ancestral_probability_table(
                             args.probabilities_out,
                             report,
+                        )
+                    )
+                if args.comparison_out is not None and comparison is not None:
+                    outputs.append(
+                        write_discrete_ancestral_comparison_table(
+                            args.comparison_out,
+                            comparison,
                         )
                     )
                 if args.exclusions_out is not None:
@@ -8520,12 +8553,32 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "taxon_count": report.taxon_count,
                             "estimate_count": len(report.estimates),
                             "internal_node_count": summary.internal_node_count,
+                            "ambiguous_internal_node_count": (
+                                summary.ambiguous_internal_node_count
+                            ),
                             "excluded_taxon_count": len(exclusions),
                             "state_count": len(report.observed_states),
+                            "minimal_change_count": report.minimal_change_count,
+                            "parsimonious_root_state_count": (
+                                report.parsimonious_root_state_count
+                            ),
                             "unstable_node_count": summary.unstable_node_count,
+                            "comparison_node_count": (
+                                len(comparison.rows)
+                                if comparison is not None
+                                else 0
+                            ),
+                            "comparison_differing_node_count": (
+                                comparison.differing_node_count
+                                if comparison is not None
+                                else 0
+                            ),
                             "model": report.model,
                         },
-                        data=report,
+                        data={
+                            "report": report,
+                            "comparison": comparison,
+                        },
                     ),
                     json_output=args.json,
                 )

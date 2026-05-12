@@ -131,6 +131,44 @@ def test_ancestral_discrete_cli_can_export_probability_review(
     assert "most_likely_state\tstate_set" in table_path.read_text(encoding="utf-8")
 
 
+def test_ancestral_discrete_cli_can_export_parsimony_comparison(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    comparison_path = tmp_path / "ancestral-discrete-comparison.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_ancestral_sparse.tsv")),
+            "--trait",
+            "habitat",
+            "--model",
+            "fitch",
+            "--compare-model",
+            "equal-rates",
+            "--summary-out",
+            str(summary_path),
+            "--comparison-out",
+            str(comparison_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "fitch"
+    assert payload["metrics"]["minimal_change_count"] == 1
+    assert payload["metrics"]["ambiguous_internal_node_count"] == 1
+    assert payload["metrics"]["comparison_node_count"] == 3
+    assert payload["metrics"]["comparison_differing_node_count"] >= 0
+    assert "minimal_change_count" in summary_path.read_text(encoding="utf-8")
+    assert comparison_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tleft_model\tright_model"
+    )
+
+
 def test_ancestral_render_cli_writes_svg_with_internal_annotations(
     tmp_path: Path, capsys
 ) -> None:
