@@ -98,6 +98,15 @@ from .clade_traits import (
     write_clade_trait_exclusion_table,
     write_clade_trait_summary_table,
 )
+from .trait_outliers import (
+    TraitOutlierExclusion,
+    TraitOutlierSummaryReport,
+    TraitOutlierTaxonRow,
+    summarize_trait_outliers,
+    write_trait_outlier_exclusion_table,
+    write_trait_outlier_summary_table,
+    write_trait_outlier_taxon_table,
+)
 from .ou_trait_evolution import (
     OUTraitEvolutionExclusion,
     OUTraitEvolutionSummaryReport,
@@ -311,6 +320,9 @@ __all__ = [
     "CladeTraitRow",
     "CladeTraitStateCount",
     "CladeTraitSummaryReport",
+    "TraitOutlierExclusion",
+    "TraitOutlierSummaryReport",
+    "TraitOutlierTaxonRow",
     "TraitRateThroughTimeExclusion",
     "TraitRateThroughTimeIntervalRow",
     "TraitRateThroughTimeSummaryReport",
@@ -452,6 +464,7 @@ __all__ = [
     "summarize_brownian_trait_evolution",
     "summarize_early_burst_trait_evolution",
     "summarize_clade_traits",
+    "summarize_trait_outliers",
     "summarize_trait_rate_through_time",
     "summarize_independent_contrast_regression",
     "summarize_ou_covariance_pgls",
@@ -492,6 +505,9 @@ __all__ = [
     "write_clade_trait_clade_table",
     "write_clade_trait_exclusion_table",
     "write_clade_trait_summary_table",
+    "write_trait_outlier_exclusion_table",
+    "write_trait_outlier_summary_table",
+    "write_trait_outlier_taxon_table",
     "write_trait_rate_through_time_exclusion_table",
     "write_trait_rate_through_time_interval_table",
     "write_trait_rate_through_time_summary_table",
