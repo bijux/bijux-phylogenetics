@@ -17,6 +17,7 @@ The CLI is the primary operational surface for most users.
 - `alignment ...`
 - `comparative ...`
 - `ancestral ...`
+- `tree-set ...`
 - `topology ...`
 - `adapter ...`
 - `bundle` and `report`
@@ -84,6 +85,27 @@ When `--out` is supplied, `compare clades` writes a flat TSV ledger with one
 row per clade-per-tree observation instead of a wide dynamic matrix. That
 format keeps the table stable as tree count changes while still preserving
 which tree carried which clade and support value.
+
+`tree-set bootstrap-summary` is the governed summary surface for bootstrap
+replicate tree files. It reads one tree-set file, computes clade frequencies,
+builds a consensus tree at the chosen threshold, summarizes topology diversity,
+and writes a dedicated unstable-branch ledger for consensus branches that fall
+below the robust bootstrap threshold or conflict with alternative clades across
+the replicates.
+
+The command writes a stable artifact bundle under `--out-dir`:
+- `.summary.tsv` with one row of tree-count, topology-diversity, threshold, and consensus summary fields
+- `.consensus.nwk` with the consensus topology labeled by bootstrap support percentages
+- `.clade-frequencies.tsv` with one row per informative clade frequency
+- `.unstable-branches.tsv` with one row per non-robust consensus branch
+- `.unstable-clades.tsv` with the broader conflicting-clade ledger across the full replicate set
+- `.distance-matrix.tsv` and `.topology-clusters.tsv` for direct topology-variation review
+
+The unstable-branch contract is explicit. A consensus branch is omitted from the
+unstable-branch ledger only when its replicate frequency reaches the robust
+threshold and no conflicting alternative clade is present. That keeps a
+bootstrap summary from overstating a majority-rule consensus as if every branch
+were equally stable.
 
 The topology family provides direct tree-transformation commands for already
 inferred trees. `topology root-outgroup` accepts one outgroup taxon or one
