@@ -25,6 +25,31 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+`comparative pgls` is the governed regression surface for continuous trait
+association under phylogenetic covariance. Its JSON metrics now report
+`coefficient_count`, `confidence_interval_count`,
+`residual_degrees_of_freedom`, and `coefficient_inference_distribution` so
+review tooling can distinguish a minimally identified model from one with
+meaningful residual support.
+
+Each coefficient row under `data.model.coefficients` preserves the durable
+uncertainty contract directly:
+- `estimate`
+- `standard_error`
+- `test_statistic`
+- `p_value`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+- `degrees_of_freedom`
+- `inference_distribution`
+
+The coefficient-level inference is explicit. Bijux uses Student-t coefficient
+tests and 95% confidence intervals with the fitted residual degrees of freedom,
+not a silent large-sample normal approximation. That matters most on smaller
+comparative datasets, where a visually large coefficient can still carry wide
+intervals and modest nominal support once phylogenetic covariance and limited
+taxon counts are taken seriously.
+
 The `compare` family includes direct topology-distance review for two existing
 trees. `compare LEFT RIGHT` now exposes `--rf-mode rooted|unrooted` and
 `--taxon-overlap-policy prune-to-shared|require-identical`. The default RF mode
