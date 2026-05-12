@@ -5012,10 +5012,14 @@ def test_write_tree_comparison_table_writes_one_row_per_compared_split(
         output, fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
     )
     assert output.read_text(encoding="utf-8") == (
-        "split_id\tcomparison_status\tshared_clade\tleft_support\tright_support\tleft_length\tright_length\tlength_delta\tlength_ratio\n"
-        "A|B\tshared\ttrue\t\t\t0.2\t0.1\t-0.1\t0.5\n"
-        "A|B|C\tright_only\tfalse\t\t\t\t\t\t\n"
-        "C|D\tleft_only\tfalse\t\t\t\t\t\t\n"
+        "split_id\tcomparison_status\tshared_clade\tleft_support\tright_support\tleft_length\tright_length\tlength_delta\tlength_ratio\tbranch_score_status\tbranch_score_difference\tbranch_score_squared_difference\n"
+        "A\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.0\t0.0\n"
+        "A|B\tshared\ttrue\t\t\t0.2\t0.1\t-0.1\t0.5\tshared\t-0.20000000000000004\t0.040000000000000015\n"
+        "A|B|C\tright_only\tfalse\t\t\t\t\t\t\t\t\t\n"
+        "B\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.0\t0.0\n"
+        "C\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.0\t0.0\n"
+        "C|D\tleft_only\tfalse\t\t\t\t\t\t\t\t\t\n"
+        "D\tright_only\tfalse\t\t\t\t\t\t\tshared\t0.2\t0.04000000000000001\n"
     )
 
 

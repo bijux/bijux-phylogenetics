@@ -894,12 +894,16 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
     branch_lengths = compare_branch_lengths(left_path, right_path)
     support_by_id = {row.split_id: row for row in support.shared_clades}
     branch_by_id = {row.split_id: row for row in branch_lengths.shared_splits}
+    branch_score_by_id = {
+        row.split_id: row for row in branch_lengths.branch_score.splits
+    }
     all_split_ids = sorted(
         set(clades.shared_clades)
         | set(clades.left_only_clades)
         | set(clades.right_only_clades)
         | set(support_by_id)
         | set(branch_by_id)
+        | set(branch_score_by_id)
     )
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -916,6 +920,9 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
                 "right_length",
                 "length_delta",
                 "length_ratio",
+                "branch_score_status",
+                "branch_score_difference",
+                "branch_score_squared_difference",
             ],
             delimiter="\t",
         )
@@ -923,6 +930,7 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
         for split_id in all_split_ids:
             support_row = support_by_id.get(split_id)
             branch_row = branch_by_id.get(split_id)
+            branch_score_row = branch_score_by_id.get(split_id)
             if split_id in clades.shared_clades:
                 status = "shared"
             elif split_id in clades.left_only_clades:
@@ -952,6 +960,17 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
                     "length_ratio": ""
                     if branch_row is None or branch_row.ratio is None
                     else branch_row.ratio,
+                    "branch_score_status": ""
+                    if branch_score_row is None
+                    else branch_score_row.comparison_status,
+                    "branch_score_difference": ""
+                    if branch_score_row is None
+                    or branch_score_row.branch_score_difference is None
+                    else branch_score_row.branch_score_difference,
+                    "branch_score_squared_difference": ""
+                    if branch_score_row is None
+                    or branch_score_row.squared_difference is None
+                    else branch_score_row.squared_difference,
                 }
             )
     return path
