@@ -22,6 +22,29 @@ Typical public workflows include:
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
 
+When the goal is to fit a phylogenetic regression rather than only measure
+signal, use `comparative pgls`. The command inspects the requested response and
+predictors, fits generalized least squares on the phylogenetic covariance, and
+reports coefficient estimates with standard errors, Student-t test statistics,
+p-values, and explicit 95% confidence intervals.
+
+```bash
+bijux-phylogenetics comparative pgls \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --response longevity \
+  --predictors social_group_size brain_mass_g \
+  --taxon-column species \
+  --json
+```
+
+When `--lambda-value estimate` is used, Bijux first chooses the covariance
+strength that best fits the data and then reports coefficient uncertainty for
+that fitted covariance. When an external workflow already fixed one
+phylogenetic covariance, pass that exact numeric lambda instead. That keeps
+coefficient and p-value review tied to one covariance assumption rather than
+silently mixing model-selection differences with coefficient-level inference.
+
 When a tree is already inferred and you need to root it on one known outgroup
 taxon or one expected outgroup clade, use `topology root-outgroup`. The
 command writes the rooted tree and can also emit a one-row TSV report that
