@@ -289,6 +289,26 @@ That command emits structured warnings for low ESS and mean drift after the
 requested burn-in has been discarded, so convergence review stays aligned with
 the same retained posterior window described in the summary table.
 
+Use `adapter beast-burnin-sensitivity` when you want to compare posterior
+parameter estimates and clade probabilities across the governed burn-in review
+fractions `5%`, `10%`, `25%`, and `50%`, or across an explicit custom set.
+
+```bash
+bijux-phylogenetics adapter beast-burnin-sensitivity \
+  artifacts/multilocus-beast.1.trees \
+  --log artifacts/multilocus-beast.1.log \
+  --slice-out artifacts/multilocus-beast.burnin-slices.tsv \
+  --parameter-out artifacts/multilocus-beast.burnin-parameters.tsv \
+  --clade-out artifacts/multilocus-beast.burnin-clades.tsv \
+  --json
+```
+
+That workflow writes one per-fraction slice ledger plus separate parameter and
+clade comparison ledgers. Parameter instability is reported when the tested
+95% HPD intervals fail to share a common overlap. Clade instability is
+reported when a clade posterior probability crosses the majority-rule
+threshold across the tested burn-in fractions.
+
 Use `adapter beast-trees` once a BEAST run has produced a posterior tree file
 and you need a governed tree-sample surface rather than ad hoc NEXUS handling.
 The command parses native `.trees` files, keeps the sampled `STATE_*`
@@ -395,6 +415,24 @@ bijux-phylogenetics adapter mrbayes-parameters \
 That workflow writes one row per retained parameter with posterior mean,
 median, sample standard deviation, 95% HPD interval, effective sample size,
 first-half versus second-half mean split, and the retained generation window.
+
+Use `adapter mrbayes-burnin-sensitivity` when you want the same cross-fraction
+review for MrBayes posterior trees and traces.
+
+```bash
+bijux-phylogenetics adapter mrbayes-burnin-sensitivity \
+  artifacts/multilocus-bayesian.nex.run1.t \
+  --traces artifacts/multilocus-bayesian.nex.run1.p \
+  --slice-out artifacts/multilocus-bayesian.burnin-slices.tsv \
+  --parameter-out artifacts/multilocus-bayesian.burnin-parameters.tsv \
+  --clade-out artifacts/multilocus-bayesian.burnin-clades.tsv \
+  --json
+```
+
+This workflow tests the same governed default fractions `5%`, `10%`, `25%`,
+and `50%` unless you pass an explicit custom set. It reports parameter
+instability from non-overlapping 95% HPD intervals and clade instability from
+posterior probabilities that move across the majority-rule threshold.
 
 For ultrafast bootstrap review specifically, `adapter bootstrap` now writes
 three reviewer-facing TSV artifacts alongside the native IQ-TREE files:
