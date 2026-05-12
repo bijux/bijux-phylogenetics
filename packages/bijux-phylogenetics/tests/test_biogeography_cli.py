@@ -202,3 +202,88 @@ def test_biogeography_time_stratified_cli_rejects_invalid_time_bins(capsys) -> N
 
     assert error.value.code == 2
     assert "LABEL:START:END" in error_text
+
+
+def test_biogeography_events_cli_can_export_single_tree_review(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    summary_path = tmp_path / "summary.tsv"
+    events_path = tmp_path / "events.tsv"
+    exclusions_path = tmp_path / "exclusions.tsv"
+
+    exit_code = main(
+        [
+            "biogeography",
+            "events",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "ard",
+            "--summary-out",
+            str(summary_path),
+            "--events-out",
+            str(events_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["report_mode"] == "single_tree"
+    assert payload["metrics"]["event_count"] == 2
+    assert "mean_event_support" in summary_path.read_text(encoding="utf-8")
+    assert "midpoint_depth" in events_path.read_text(encoding="utf-8")
+    assert "reason" in exclusions_path.read_text(encoding="utf-8")
+
+
+def test_biogeography_events_cli_can_export_tree_set_review(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    summary_path = tmp_path / "summary.tsv"
+    trees_path = tmp_path / "trees.tsv"
+    events_path = tmp_path / "events.tsv"
+    event_summaries_path = tmp_path / "event-summaries.tsv"
+    exclusions_path = tmp_path / "exclusions.tsv"
+
+    exit_code = main(
+        [
+            "biogeography",
+            "events",
+            str(fixture("example_tree_set_left.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "ard",
+            "--tree-set",
+            "--summary-out",
+            str(summary_path),
+            "--trees-out",
+            str(trees_path),
+            "--events-out",
+            str(events_path),
+            "--event-summaries-out",
+            str(event_summaries_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["report_mode"] == "tree_set"
+    assert payload["metrics"]["kept_tree_count"] == 3
+    assert "event_summary_count" in summary_path.read_text(encoding="utf-8")
+    assert "rooted_topology_id" in trees_path.read_text(encoding="utf-8")
+    assert "midpoint_depth" in events_path.read_text(encoding="utf-8")
+    assert "tree_presence_fraction" in event_summaries_path.read_text(
+        encoding="utf-8"
+    )
+    assert "reason" in exclusions_path.read_text(encoding="utf-8")

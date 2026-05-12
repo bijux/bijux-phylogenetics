@@ -464,6 +464,14 @@ from bijux_phylogenetics.biogeography import (
     ConstrainedGeographicReport,
     ConstrainedGeographicSummary,
     ConstrainedGeographicTransitionRow,
+    GeographicMigrationEventReport,
+    GeographicMigrationEventRow,
+    GeographicMigrationEventSummary,
+    GeographicMigrationTreeRow,
+    GeographicMigrationTreeSetEventRow,
+    GeographicMigrationTreeSetEventSummaryRow,
+    GeographicMigrationTreeSetReport,
+    GeographicMigrationTreeSetSummary,
     TimeBinDefinition,
     TimeStratifiedBranchRow,
     TimeStratifiedTransitionMatrixRow,
@@ -472,12 +480,22 @@ from bijux_phylogenetics.biogeography import (
     UnsupportedGeographicTransitionClaimRow,
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
+    summarize_geographic_migration_events,
+    summarize_geographic_migration_event_tree_set,
     summarize_geographic_state_model,
     summarize_time_stratified_geographic_transitions,
     write_constrained_geographic_exclusion_table,
     write_constrained_geographic_fit_table,
     write_constrained_geographic_summary_table,
     write_constrained_geographic_transition_table,
+    write_geographic_migration_event_summary_table,
+    write_geographic_migration_event_table,
+    write_geographic_migration_exclusion_table,
+    write_geographic_migration_tree_set_summary_table,
+    write_geographic_migration_tree_set_tree_table,
+    write_geographic_migration_tree_set_event_table,
+    write_geographic_migration_tree_set_event_summary_table,
+    write_geographic_migration_tree_set_exclusion_table,
     write_geographic_exclusion_table,
     write_geographic_region_probability_table,
     write_geographic_state_summary_table,
@@ -911,6 +929,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is summarize_geographic_state_model
     )
     assert (
+        bijux_phylogenetics.summarize_geographic_migration_events
+        is summarize_geographic_migration_events
+    )
+    assert (
+        bijux_phylogenetics.summarize_geographic_migration_event_tree_set
+        is summarize_geographic_migration_event_tree_set
+    )
+    assert (
         bijux_phylogenetics.summarize_time_stratified_geographic_transitions
         is summarize_time_stratified_geographic_transitions
     )
@@ -954,7 +980,62 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_geographic_exclusion_table
         is write_geographic_exclusion_table
     )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_event_summary_table
+        is write_geographic_migration_event_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_event_table
+        is write_geographic_migration_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_exclusion_table
+        is write_geographic_migration_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_summary_table
+        is write_geographic_migration_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_tree_table
+        is write_geographic_migration_tree_set_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_event_table
+        is write_geographic_migration_tree_set_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_event_summary_table
+        is write_geographic_migration_tree_set_event_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_exclusion_table
+        is write_geographic_migration_tree_set_exclusion_table
+    )
     assert bijux_phylogenetics.TimeBinDefinition is TimeBinDefinition
+    assert bijux_phylogenetics.GeographicMigrationEventReport is GeographicMigrationEventReport
+    assert bijux_phylogenetics.GeographicMigrationEventRow is GeographicMigrationEventRow
+    assert (
+        bijux_phylogenetics.GeographicMigrationEventSummary
+        is GeographicMigrationEventSummary
+    )
+    assert bijux_phylogenetics.GeographicMigrationTreeRow is GeographicMigrationTreeRow
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetEventRow
+        is GeographicMigrationTreeSetEventRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetEventSummaryRow
+        is GeographicMigrationTreeSetEventSummaryRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetReport
+        is GeographicMigrationTreeSetReport
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetSummary
+        is GeographicMigrationTreeSetSummary
+    )
     assert bijux_phylogenetics.ConstrainedGeographicFitRow is ConstrainedGeographicFitRow
     assert bijux_phylogenetics.ConstrainedGeographicReport is ConstrainedGeographicReport
     assert (
