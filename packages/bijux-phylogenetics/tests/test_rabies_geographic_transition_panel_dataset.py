@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.rabies_geography import (
     export_rabies_geographic_transition_panel_dataset,
@@ -99,6 +100,29 @@ def test_export_rabies_geographic_transition_panel_dataset_copies_expected_outpu
     assert result.regions_path.is_file()
     assert len(expected_files) == 9
     assert "geographic-migration-events.tsv" in expected_files
+
+
+def test_public_runtime_exports_include_rabies_geographic_transition_panel_surface(
+) -> None:
+    assert (
+        bijux_phylogenetics.load_rabies_geographic_transition_panel_dataset
+        is load_rabies_geographic_transition_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.export_rabies_geographic_transition_panel_dataset
+        is export_rabies_geographic_transition_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.run_rabies_geographic_transition_panel_workflow
+        is run_rabies_geographic_transition_panel_workflow
+    )
+    assert (
+        bijux_phylogenetics.write_rabies_geographic_transition_panel_workflow_bundle
+        is write_rabies_geographic_transition_panel_workflow_bundle
+    )
+    assert bijux_phylogenetics.run_rabies_geographic_transition_panel_demo is (
+        run_rabies_geographic_transition_panel_demo
+    )
 
 
 def test_cli_demo_rabies_geographic_transition_panel_json_output_reports_geography_review(
