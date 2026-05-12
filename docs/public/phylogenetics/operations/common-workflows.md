@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-11
+last_reviewed: 2026-05-12
 ---
 
 # Common Workflows
@@ -134,6 +134,30 @@ Those artifacts map support values back onto explicit descendant-taxon clades,
 flag low-support branches directly, and preserve the same `lt50`, `50to69`,
 `70to89`, and `ge90` buckets that appear in the manifest and HTML workflow
 report.
+
+Use `adapter infer-fast` when you need a rapid approximate tree for one aligned
+DNA or protein matrix and you want reviewer-facing local-support evidence
+instead of a bare Newick file.
+
+```bash
+bijux-phylogenetics adapter infer-fast \
+  aligned-matrix.fasta \
+  --out artifacts/mammals.fasttree.nwk \
+  --sequence-type protein \
+  --json
+```
+
+That workflow runs FastTree directly, writes the inferred tree to the requested
+output path, and emits three sidecar TSV artifacts next to it:
+
+- `mammals.fasttree.support.tsv` for every internal branch with a parsable local-support label
+- `mammals.fasttree.low-support.tsv` for the subset of branches below the governed weak-support threshold
+- `mammals.fasttree.support-histogram.tsv` for the local-support distribution buckets used in reports
+
+The structured manifest and JSON also expose the FastTree approximation
+contract explicitly: the method is approximately maximum-likelihood, the native
+support labels are SH-like local-support proportions, and the governed support
+scale is `0..1` rather than bootstrap percentages.
 
 Use `adapter sh-alrt` when you need SH-aLRT support alongside ultrafast
 bootstrap support on the same supported tree.
