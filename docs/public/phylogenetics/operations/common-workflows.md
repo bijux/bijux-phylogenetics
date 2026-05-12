@@ -315,6 +315,28 @@ clade-frequency ledger preserves every informative retained clade, not only the
 majority clades that appear in the consensus topology, so reviewers can see
 which alternative groupings remained credible after burn-in removal.
 
+Use `adapter beast-diversity` when you want a governed uncertainty view over
+posterior topology dispersion rather than only a single consensus summary.
+
+```bash
+bijux-phylogenetics adapter beast-diversity \
+  artifacts/multilocus-beast.1.trees \
+  --burnin-fraction 0.1 \
+  --tree-set-out artifacts/multilocus-beast.postburnin.nwk \
+  --distance-out artifacts/multilocus-beast.distances.tsv \
+  --topology-out artifacts/multilocus-beast.topologies.tsv \
+  --unstable-clade-out artifacts/multilocus-beast.unstable-clades.tsv \
+  --json
+```
+
+That workflow keeps the retained posterior tree set, writes the full pairwise
+RF distance ledger, clusters retained trees by rooted topology, and exports an
+unstable-clade ledger for non-unanimous groupings. The JSON summary then adds
+the retained tree count, number of unique rooted topologies, dominant topology
+frequency, effective topology count, RF pair count, and unstable-clade count
+so reviewers can judge whether the posterior is tightly concentrated or broadly
+dispersed before treating one consensus tree as sufficient.
+
 Use `adapter mrbayes-run` after preparation when you want the governed runtime
 to execute MrBayes and preserve the native posterior artifacts for later
 inspection instead of leaving the engine outputs implicit.
