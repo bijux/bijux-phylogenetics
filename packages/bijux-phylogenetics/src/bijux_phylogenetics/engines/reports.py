@@ -8,12 +8,14 @@ from bijux_phylogenetics.render.html import write_html_report
 
 from .bootstrap_artifacts import build_low_support_bootstrap_rows
 from .common import load_engine_manifest
+from .fasttree_artifacts import build_fasttree_low_support_rows
 from .sh_alrt_artifacts import build_conflicting_sh_alrt_support_rows
 from .validation import (
     classify_inference_workflow_failure,
     compare_inferred_trees_across_engines,
     compare_ml_trees_across_models,
     detect_weakly_supported_backbone,
+    summarize_fasttree_support_distribution,
     summarize_sh_alrt_support_distribution,
     summarize_bootstrap_support_distribution,
     validate_bootstrap_tree_set,
@@ -270,6 +272,75 @@ def render_inference_workflow_report(
                     "bootstrap-support-histogram",
                     "low-support-branches",
                     "weak-backbone",
+                ]
+            )
+    if manifest["workflow"] == "fast-approximate-tree":
+        tree_path = output_paths.get("tree") or output_paths.get("support_tree")
+        if tree_path is not None:
+            fasttree_support_summary = summarize_fasttree_support_distribution(
+                tree_path
+            )
+            sections.append(
+                (
+                    "fasttree-approximation-limits",
+                    json.dumps(
+                        {
+                            "approximate_method": fasttree_support_summary.approximate_method,
+                            "support_label_kind": fasttree_support_summary.support_label_kind,
+                            "support_scale": fasttree_support_summary.support_scale,
+                            "limitations": [
+                                "FastTree uses an approximately maximum-likelihood search and should be reviewed as exploratory or large-alignment evidence rather than as a direct substitute for a fully optimized ML workflow",
+                                "FastTree local support values are SH-like proportions on a 0-to-1 scale and are not bootstrap percentages",
+                            ],
+                        },
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "fasttree-support-summary",
+                    json.dumps(
+                        asdict(fasttree_support_summary),
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "fasttree-support-histogram",
+                    json.dumps(
+                        fasttree_support_summary.support_histogram,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "fasttree-low-support-branches",
+                    json.dumps(
+                        [
+                            asdict(row)
+                            for row in build_fasttree_low_support_rows(
+                                fasttree_support_summary
+                            )
+                        ],
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            supplement_sections.extend(
+                [
+                    "fasttree-approximation-limits",
+                    "fasttree-support-summary",
+                    "fasttree-support-histogram",
+                    "fasttree-low-support-branches",
                 ]
             )
     if manifest["workflow"] == "sh-alrt-support":

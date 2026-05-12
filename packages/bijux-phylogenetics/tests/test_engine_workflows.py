@@ -1339,6 +1339,27 @@ def test_bootstrap_workflow_report_includes_support_and_backbone_sections(
     assert "weak-backbone" in rendered.supplement_sections
 
 
+def test_fasttree_workflow_report_includes_support_and_approximation_sections(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_fasttree(tmp_path / "fasttree-fixture")
+    workflow = run_fast_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=executable,
+    )
+
+    rendered = render_inference_workflow_report(
+        manifest_path=workflow.manifest_path,
+        out_path=tmp_path / "fasttree-report.html",
+    )
+
+    assert "fasttree-approximation-limits" in rendered.supplement_sections
+    assert "fasttree-support-summary" in rendered.supplement_sections
+    assert "fasttree-support-histogram" in rendered.supplement_sections
+    assert "fasttree-low-support-branches" in rendered.supplement_sections
+
+
 def test_sh_alrt_workflow_report_includes_combined_support_sections(
     tmp_path: Path,
 ) -> None:
