@@ -260,6 +260,45 @@ clade counts. The excluded-taxa ledger keeps one row per dropped tip with an
 explicit reason, so tree-set uncertainty is never mixed with silent trait-table
 loss.
 
+When the goal is to count inferred categorical state changes instead of only
+report one ancestral state per node, use `ancestral transitions`. This
+workflow reruns the owned discrete ancestral reconstruction surface, converts
+each non-root branch into one explicit parent-versus-child state comparison,
+and separates certain from uncertain changes instead of collapsing every
+ambiguous branch into the same transition count. The same surface also supports
+posterior or bootstrap tree sets through `--tree-set`, where it repeats the
+counting path across every retained tree and summarizes which transition pairs
+are stable versus topology-sensitive.
+
+```bash
+bijux-phylogenetics ancestral transitions \
+  artifacts/primates.posterior.nwk \
+  artifacts/primates.csv \
+  --trait habitat \
+  --taxon-column species \
+  --model equal-rates \
+  --tree-set \
+  --burnin-fraction 0.25 \
+  --summary-out artifacts/primates.transition-summary.tsv \
+  --trees-out artifacts/primates.transition-trees.tsv \
+  --branches-out artifacts/primates.transition-branches.tsv \
+  --counts-out artifacts/primates.transition-counts.tsv \
+  --exclusions-out artifacts/primates.transition-excluded.tsv \
+  --json
+```
+
+On one tree, the branch ledger keeps one row per non-root branch with the
+parent state set, child state set, overlap, changed flag, and certainty class.
+That makes it possible to distinguish a branch that certainly changed from one
+that still overlaps across candidate states. The count ledger then collapses
+those branch rows into one transition pair row per `source->target` direction
+with separate certain and uncertain change totals. On a tree set, the tree
+ledger keeps one retained-tree row with source and post-burnin indices plus
+topology identifiers, the branch ledger keeps one branch row per retained
+tree, and the count ledger adds tree-presence and stability summaries so
+reviewers can see whether one reported transition depends on one sampled
+topology or persists across the retained tree distribution.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
