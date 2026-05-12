@@ -107,6 +107,43 @@ nested comparison is real. The excluded-taxa ledger records the shared
 complete-case rule directly so reviewers can see which taxa were dropped before
 any candidate formula was ranked.
 
+When the goal is to ask whether two traits changed in coupled ways across one
+tree, use `comparative correlated-traits`. This workflow is pairwise
+trait-evolution review rather than another regression wrapper. For two numeric
+traits it evaluates correlated versus independent Brownian contrast covariance.
+For two binary traits it evaluates independent versus joint-state discrete
+evolution on the shared analyzed taxon set.
+
+```bash
+bijux-phylogenetics comparative correlated-traits \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --left-trait body_mass_g \
+  --right-trait home_range_km2 \
+  --taxon-column species \
+  --summary-out artifacts/primates.correlated-traits-summary.tsv \
+  --comparison-out artifacts/primates.correlated-traits-comparison.tsv \
+  --observations-out artifacts/primates.correlated-traits-observations.tsv \
+  --excluded-taxa-out artifacts/primates.correlated-traits-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps the selected analysis kind, the association measure,
+the fitted covariance or correlation surface, and the independent-versus-
+correlated likelihood comparison. The comparison ledger keeps the two model
+rows directly so reviewers can inspect parameter counts, log-likelihoods, AIC,
+delta AIC, and selection outcome without recomputing them from JSON. The
+observation ledger keeps the evidence rows that drove the fit: one
+contrast-per-node ledger for continuous traits or one tip-state ledger for
+binary traits. The excluded-taxa ledger preserves the shared filtering reasons
+explicitly, including missing trait values and taxa present in only one input.
+
+For binary traits, the surface is intentionally explicit about scope. Bijux
+fits a joint-state discrete pseudo-likelihood review surface rather than
+claiming a full native reimplementation of an external Pagel binary-correlation
+fit. That approximation boundary is preserved in the warnings and JSON output
+instead of being hidden behind the same wording as the continuous-trait path.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
