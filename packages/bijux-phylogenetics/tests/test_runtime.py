@@ -7,6 +7,10 @@ from pathlib import Path
 import bijux_phylogenetics
 import bijux_phylogenetics.compare as compare_api
 from bijux_phylogenetics.ancestral import (
+    build_continuous_ancestral_confidence_rows,
+    build_continuous_ancestral_tree_set_confidence_rows,
+    build_discrete_ancestral_confidence_rows,
+    build_discrete_ancestral_tree_set_confidence_rows,
     build_ancestral_figure_package,
     build_ancestral_sensitivity_report,
     compare_continuous_ancestral_models,
@@ -18,17 +22,23 @@ from bijux_phylogenetics.ancestral import (
     render_ancestral_state_report,
     render_ancestral_state_tree,
     render_ancestral_state_visualization,
+    summarize_continuous_ancestral_confidence,
+    summarize_continuous_ancestral_tree_set_confidence,
     summarize_ancestral_transition_report,
     summarize_ancestral_transition_tree_set,
     summarize_ancestral_transition_tree_set_report,
     summarize_ancestral_transitions,
+    summarize_discrete_ancestral_confidence,
+    summarize_discrete_ancestral_tree_set_confidence,
     summarize_discrete_ancestral_report,
     summarize_continuous_ancestral_report,
     summarize_continuous_ancestral_tree_set,
     summarize_continuous_ancestral_tree_set_report,
     summarize_discrete_ancestral_tree_set,
     summarize_discrete_ancestral_tree_set_report,
+    write_ancestral_confidence_summary_table,
     write_ancestral_state_table,
+    write_continuous_ancestral_confidence_table,
     write_ancestral_transition_branch_table,
     write_ancestral_transition_count_table,
     write_ancestral_transition_exclusion_table,
@@ -41,14 +51,17 @@ from bijux_phylogenetics.ancestral import (
     write_ancestral_tree_set_tree_table,
     write_continuous_ancestral_exclusion_table,
     write_continuous_ancestral_summary_table,
+    write_continuous_ancestral_tree_set_confidence_table,
     write_continuous_ancestral_tree_set_clade_table,
     write_continuous_ancestral_tree_set_node_table,
     write_continuous_ancestral_tree_set_summary_table,
     write_continuous_ancestral_uncertainty_table,
     write_discrete_ancestral_comparison_table,
+    write_discrete_ancestral_confidence_table,
     write_discrete_ancestral_exclusion_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
+    write_discrete_ancestral_tree_set_confidence_table,
     write_discrete_ancestral_tree_set_clade_table,
     write_discrete_ancestral_tree_set_node_table,
     write_discrete_ancestral_tree_set_summary_table,
@@ -1686,6 +1699,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_continuous_ancestral_report
     )
     assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_confidence
+        is summarize_continuous_ancestral_confidence
+    )
+    assert (
         bijux_phylogenetics.continuous_ancestral_exclusions
         is continuous_ancestral_exclusions
     )
@@ -1700,6 +1717,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_discrete_ancestral_report
         is summarize_discrete_ancestral_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_confidence
+        is summarize_discrete_ancestral_confidence
     )
     assert (
         bijux_phylogenetics.build_ancestral_figure_package
@@ -1721,8 +1742,16 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
     )
     assert (
+        bijux_phylogenetics.build_continuous_ancestral_confidence_rows
+        is build_continuous_ancestral_confidence_rows
+    )
+    assert (
         bijux_phylogenetics.write_continuous_ancestral_summary_table
         is write_continuous_ancestral_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_confidence_table
+        is write_continuous_ancestral_confidence_table
     )
     assert (
         bijux_phylogenetics.write_continuous_ancestral_uncertainty_table
@@ -1733,8 +1762,16 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is write_continuous_ancestral_exclusion_table
     )
     assert (
+        bijux_phylogenetics.build_discrete_ancestral_confidence_rows
+        is build_discrete_ancestral_confidence_rows
+    )
+    assert (
         bijux_phylogenetics.write_discrete_ancestral_summary_table
         is write_discrete_ancestral_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_confidence_table
+        is write_discrete_ancestral_confidence_table
     )
     assert (
         bijux_phylogenetics.write_discrete_ancestral_probability_table
@@ -1747,6 +1784,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_discrete_ancestral_exclusion_table
         is write_discrete_ancestral_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_confidence_summary_table
+        is write_ancestral_confidence_summary_table
     )
     assert (
         bijux_phylogenetics.render_ancestral_state_report
@@ -1764,16 +1805,32 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_continuous_ancestral_tree_set
     )
     assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_tree_set_confidence
+        is summarize_continuous_ancestral_tree_set_confidence
+    )
+    assert (
         bijux_phylogenetics.summarize_continuous_ancestral_tree_set_report
         is summarize_continuous_ancestral_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.build_continuous_ancestral_tree_set_confidence_rows
+        is build_continuous_ancestral_tree_set_confidence_rows
     )
     assert (
         bijux_phylogenetics.summarize_discrete_ancestral_tree_set
         is summarize_discrete_ancestral_tree_set
     )
     assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_tree_set_confidence
+        is summarize_discrete_ancestral_tree_set_confidence
+    )
+    assert (
         bijux_phylogenetics.summarize_discrete_ancestral_tree_set_report
         is summarize_discrete_ancestral_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.build_discrete_ancestral_tree_set_confidence_rows
+        is build_discrete_ancestral_tree_set_confidence_rows
     )
     assert (
         bijux_phylogenetics.summarize_ancestral_transitions
@@ -1836,6 +1893,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is write_continuous_ancestral_tree_set_summary_table
     )
     assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_confidence_table
+        is write_continuous_ancestral_tree_set_confidence_table
+    )
+    assert (
         bijux_phylogenetics.write_continuous_ancestral_tree_set_node_table
         is write_continuous_ancestral_tree_set_node_table
     )
@@ -1846,6 +1907,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_discrete_ancestral_tree_set_summary_table
         is write_discrete_ancestral_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_confidence_table
+        is write_discrete_ancestral_tree_set_confidence_table
     )
     assert (
         bijux_phylogenetics.write_discrete_ancestral_tree_set_node_table
