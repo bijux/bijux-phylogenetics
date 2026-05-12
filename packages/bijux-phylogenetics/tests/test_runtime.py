@@ -101,6 +101,7 @@ from bijux_phylogenetics.comparative.evidence_contract import (
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
+    compare_clade_overlap,
     RobinsonFouldsComparisonReport,
     compare_branch_score_distance,
     compare_branch_lengths,
@@ -110,6 +111,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
+    write_clade_overlap_table,
     write_tree_comparison_table,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
@@ -4888,6 +4890,70 @@ def test_compare_clade_sets_reports_shared_and_unique_clades() -> None:
     assert report.shared_clades == ["A|B"]
     assert report.left_only_clades == ["C|D"]
     assert report.right_only_clades == ["A|B|C"]
+
+
+def test_compare_clade_overlap_reports_multi_tree_presence_and_support() -> None:
+    report = compare_clade_overlap(
+        [
+            fixture("example_tree.nwk"),
+            fixture("example_tree_support_left.nwk"),
+            fixture("example_tree_alt.nwk"),
+        ]
+    )
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.shared_clades == ["A|B"]
+    assert report.conflicting_clades == ["C|D", "A|B|C"]
+    assert [
+        (summary.tree_path.name, summary.clade_count, summary.support_clade_count, summary.unique_clades)
+        for summary in report.tree_summaries
+    ] == [
+        ("example_tree.nwk", 2, 0, []),
+        ("example_tree_support_left.nwk", 2, 2, []),
+        ("example_tree_alt.nwk", 2, 0, ["A|B|C"]),
+    ]
+    by_clade = {row.clade_id: row for row in report.clade_rows}
+    assert [
+        (item.tree_path.name, item.present, item.support)
+        for item in by_clade["A|B"].observations
+    ] == [
+        ("example_tree.nwk", True, None),
+        ("example_tree_support_left.nwk", True, 95.0),
+        ("example_tree_alt.nwk", True, None),
+    ]
+    assert [
+        (item.tree_path.name, item.present, item.support)
+        for item in by_clade["C|D"].observations
+    ] == [
+        ("example_tree.nwk", True, None),
+        ("example_tree_support_left.nwk", True, 88.0),
+        ("example_tree_alt.nwk", False, None),
+    ]
+
+
+def test_write_clade_overlap_table_writes_one_row_per_clade_per_tree(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "clade-overlap.tsv"
+    write_clade_overlap_table(
+        output,
+        [
+            fixture("example_tree.nwk"),
+            fixture("example_tree_support_left.nwk"),
+            fixture("example_tree_alt.nwk"),
+        ],
+    )
+    assert output.read_text(encoding="utf-8") == (
+        "clade_id\ttree_path\tpresent\tsupport\tpresent_in_all_trees\tpresent_tree_count\tabsent_tree_count\n"
+        f"A|B\t{fixture('example_tree.nwk')}\ttrue\t\ttrue\t3\t0\n"
+        f"A|B\t{fixture('example_tree_support_left.nwk')}\ttrue\t95.0\ttrue\t3\t0\n"
+        f"A|B\t{fixture('example_tree_alt.nwk')}\ttrue\t\ttrue\t3\t0\n"
+        f"C|D\t{fixture('example_tree.nwk')}\ttrue\t\tfalse\t2\t1\n"
+        f"C|D\t{fixture('example_tree_support_left.nwk')}\ttrue\t88.0\tfalse\t2\t1\n"
+        f"C|D\t{fixture('example_tree_alt.nwk')}\tfalse\t\tfalse\t2\t1\n"
+        f"A|B|C\t{fixture('example_tree.nwk')}\tfalse\t\tfalse\t1\t2\n"
+        f"A|B|C\t{fixture('example_tree_support_left.nwk')}\tfalse\t\tfalse\t1\t2\n"
+        f"A|B|C\t{fixture('example_tree_alt.nwk')}\ttrue\t\tfalse\t1\t2\n"
+    )
 
 
 def test_compare_tree_paths_detects_same_topology_with_different_branch_lengths() -> (

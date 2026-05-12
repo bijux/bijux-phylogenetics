@@ -148,6 +148,41 @@ class CladeSetComparisonReport:
 
 
 @dataclass(slots=True)
+class CladeOverlapObservation:
+    tree_path: Path
+    present: bool
+    support: float | None
+
+
+@dataclass(slots=True)
+class CladeOverlapRow:
+    clade_id: str
+    present_in_all_trees: bool
+    present_tree_count: int
+    absent_tree_count: int
+    observations: list[CladeOverlapObservation]
+
+
+@dataclass(slots=True)
+class TreeCladeOverlapSummary:
+    tree_path: Path
+    clade_count: int
+    support_clade_count: int
+    unique_clades: list[str]
+    excluded_taxa: list[str]
+
+
+@dataclass(slots=True)
+class CladeOverlapComparisonReport:
+    tree_paths: list[Path]
+    shared_taxa: list[str]
+    shared_clades: list[str]
+    conflicting_clades: list[str]
+    tree_summaries: list[TreeCladeOverlapSummary]
+    clade_rows: list[CladeOverlapRow]
+
+
+@dataclass(slots=True)
 class CladeChangeReport:
     left_path: Path
     right_path: Path
@@ -635,6 +670,20 @@ def _informative_biophylo_clades(
     return clades
 
 
+def _resolve_shared_taxa_for_many_trees(
+    tree_paths: list[Path],
+) -> tuple[list[PhyloTree], set[str], list[list[str]]]:
+    if len(tree_paths) < 2:
+        raise ValueError("clade-overlap comparison requires at least two trees")
+    trees = [_load_tree(path) for path in tree_paths]
+    taxon_sets = [set(tree.tip_names) for tree in trees]
+    shared_taxa = set.intersection(*taxon_sets)
+    if len(shared_taxa) < 2:
+        raise ValueError("clade-overlap comparison requires at least two shared taxa")
+    excluded_taxa = [sorted(taxa - shared_taxa) for taxa in taxon_sets]
+    return trees, shared_taxa, excluded_taxa
+
+
 def prune_trees_to_shared_taxa(
     left_path: Path,
     right_path: Path,
@@ -665,23 +714,117 @@ def prune_trees_to_shared_taxa(
 
 def compare_clade_sets(left_path: Path, right_path: Path) -> CladeSetComparisonReport:
     """Compare rooted informative clade sets across two trees."""
-    left = _load_tree(left_path)
-    right = _load_tree(right_path)
-    left_taxa = set(left.tip_names)
-    right_taxa = set(right.tip_names)
-    shared_taxa = left_taxa & right_taxa
-    if len(shared_taxa) < 2:
-        raise ValueError("clade comparison requires at least two shared taxa")
-
-    left_clades = _informative_clades(left, shared_taxa)
-    right_clades = _informative_clades(right, shared_taxa)
+    overlap = compare_clade_overlap([left_path, right_path])
+    left_summary, right_summary = overlap.tree_summaries
     return CladeSetComparisonReport(
         left_path=left_path,
         right_path=right_path,
+        shared_taxa=overlap.shared_taxa,
+        shared_clades=overlap.shared_clades,
+        left_only_clades=left_summary.unique_clades,
+        right_only_clades=right_summary.unique_clades,
+    )
+
+
+def compare_clade_overlap(tree_paths: list[Path]) -> CladeOverlapComparisonReport:
+    """Compare rooted clade overlap across two or more trees."""
+    trees, shared_taxa, excluded_taxa = _resolve_shared_taxa_for_many_trees(tree_paths)
+    clade_maps = [
+        _informative_clades(tree, shared_taxa)
+        for tree in trees
+    ]
+    biophylo_clade_maps = [
+        _informative_biophylo_clades(_load_biophylo_tree(path), shared_taxa)
+        for path in tree_paths
+    ]
+    all_clades = sorted(
+        set().union(*clade_maps),
+        key=lambda signature: (len(signature), tuple(sorted(signature))),
+    )
+    shared_clades = [
+        _split_id(clade)
+        for clade in all_clades
+        if all(clade in clade_map for clade_map in clade_maps)
+    ]
+    conflicting_clades = [
+        _split_id(clade)
+        for clade in all_clades
+        if not all(clade in clade_map for clade_map in clade_maps)
+    ]
+    tree_summaries: list[TreeCladeOverlapSummary] = []
+    for path, clade_map, biophylo_map, tree_excluded_taxa in zip(
+        tree_paths,
+        clade_maps,
+        biophylo_clade_maps,
+        excluded_taxa,
+        strict=True,
+    ):
+        unique_clades = [
+            _split_id(clade)
+            for clade in sorted(
+                (
+                    clade
+                    for clade in clade_map
+                    if sum(clade in other_map for other_map in clade_maps) == 1
+                ),
+                key=lambda signature: (len(signature), tuple(sorted(signature))),
+            )
+        ]
+        support_clade_count = sum(
+            1
+            for clade in clade_map
+            if _parse_support(
+                biophylo_map[clade].confidence or biophylo_map[clade].name
+            )
+            is not None
+        )
+        tree_summaries.append(
+            TreeCladeOverlapSummary(
+                tree_path=path,
+                clade_count=len(clade_map),
+                support_clade_count=support_clade_count,
+                unique_clades=unique_clades,
+                excluded_taxa=tree_excluded_taxa,
+            )
+        )
+    clade_rows: list[CladeOverlapRow] = []
+    for clade in all_clades:
+        observations: list[CladeOverlapObservation] = []
+        present_tree_count = 0
+        for path, clade_map, biophylo_map in zip(
+            tree_paths, clade_maps, biophylo_clade_maps, strict=True
+        ):
+            present = clade in clade_map
+            if present:
+                present_tree_count += 1
+            support = None
+            if present:
+                support = _parse_support(
+                    biophylo_map[clade].confidence or biophylo_map[clade].name
+                )
+            observations.append(
+                CladeOverlapObservation(
+                    tree_path=path,
+                    present=present,
+                    support=support,
+                )
+            )
+        clade_rows.append(
+            CladeOverlapRow(
+                clade_id=_split_id(clade),
+                present_in_all_trees=present_tree_count == len(tree_paths),
+                present_tree_count=present_tree_count,
+                absent_tree_count=len(tree_paths) - present_tree_count,
+                observations=observations,
+            )
+        )
+    return CladeOverlapComparisonReport(
+        tree_paths=tree_paths,
         shared_taxa=sorted(shared_taxa),
-        shared_clades=_format_clade_set(left_clades & right_clades),
-        left_only_clades=_format_clade_set(left_clades - right_clades),
-        right_only_clades=_format_clade_set(right_clades - left_clades),
+        shared_clades=shared_clades,
+        conflicting_clades=conflicting_clades,
+        tree_summaries=tree_summaries,
+        clade_rows=clade_rows,
     )
 
 
@@ -885,6 +1028,43 @@ def compare_branch_score_distance(
         right,
         taxon_overlap_policy=taxon_overlap_policy,
     )
+
+
+def write_clade_overlap_table(path: Path, tree_paths: list[Path]) -> Path:
+    """Write one row per clade-per-tree overlap observation."""
+    report = compare_clade_overlap(tree_paths)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "clade_id",
+                "tree_path",
+                "present",
+                "support",
+                "present_in_all_trees",
+                "present_tree_count",
+                "absent_tree_count",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.clade_rows:
+            for observation in row.observations:
+                writer.writerow(
+                    {
+                        "clade_id": row.clade_id,
+                        "tree_path": str(observation.tree_path),
+                        "present": str(observation.present).lower(),
+                        "support": ""
+                        if observation.support is None
+                        else observation.support,
+                        "present_in_all_trees": str(row.present_in_all_trees).lower(),
+                        "present_tree_count": row.present_tree_count,
+                        "absent_tree_count": row.absent_tree_count,
+                    }
+                )
+    return path
 
 
 def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -> Path:
