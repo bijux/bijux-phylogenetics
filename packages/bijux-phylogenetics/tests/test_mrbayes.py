@@ -223,10 +223,27 @@ def test_prepare_mrbayes_analysis_is_accepted_by_real_mrbayes_on_partitioned_inp
 
     assert report.output_paths["posterior_trees"].exists()
     assert report.output_paths["parameter_traces"].exists()
+    assert report.output_paths["mcmc_diagnostics"].exists()
+    assert report.output_paths["consensus_tree"].exists()
     assert (
         parse_mrbayes_parameter_traces(
             report.output_paths["parameter_traces"]
         ).row_count
+        > 0
+    )
+    assert (
+        parse_mrbayes_posterior_tree_samples(
+            report.output_paths["posterior_trees"]
+        ).tree_count
+        > 0
+    )
+    assert (
+        parse_mrbayes_mcmc_diagnostics(report.output_paths["mcmc_diagnostics"]).row_count
+        > 0
+    )
+    assert (
+        parse_mrbayes_consensus_tree(report.output_paths["consensus_tree"])[1]
+        .annotated_node_count
         > 0
     )
 
