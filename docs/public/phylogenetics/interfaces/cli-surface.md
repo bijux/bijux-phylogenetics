@@ -438,6 +438,105 @@ branch-to-regime contract, the per-regime uncertainty surface, and the explicit
 comparison against single-rate Brownian instead of collapsing into one claimed
 rate shift.
 
+`comparative regime-map` is the governed review surface for constructing or
+validating branch regime assignments before a downstream regime-aware
+comparative fit. It accepts exactly one source:
+- `--table` plus `--trait` for discrete tip-state reconstruction
+- `--regime-map` for a user-provided branch regime table
+
+Its JSON metrics report:
+- `source_kind`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `regime_count`
+- `branch_count`
+- `node_count`
+- `ambiguous_branch_count`
+- `rendered_internal_annotation_count`
+- `rendered_categorical_trait_count`
+
+The command preserves the full regime assignment under `data`, including:
+- `observed_regimes`
+- `branch_rows`
+- `node_rows`
+- `excluded_taxa`
+- `warnings`
+
+The normalized branch identity rule is explicit and shared with the
+regime-aware Brownian workflow. Every non-root branch is identified by the
+descendant-tip signature of the child node, such as `A|B` or `A|B|C|D`. When a
+user-provided map is used, every non-root branch must appear exactly once.
+
+When `--summary-out` is supplied, `comparative regime-map` writes one flat
+summary ledger as CSV or TSV. The row preserves:
+- `source_kind`
+- `trait`
+- `taxon_column`
+- `reconstruction_model`
+- `state_ordering`
+- `ordered_states`
+- `branch_id_column`
+- `regime_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `branch_count`
+- `regime_count`
+- `ambiguous_branch_count`
+- `node_count`
+
+When `--branches-out` is supplied, `comparative regime-map` also writes one
+normalized branch-regime ledger as CSV or TSV. Each row preserves:
+- `branch_id`
+- `child_node_name`
+- `is_tip_branch`
+- `branch_length`
+- `regime`
+- `candidate_regimes`
+- `assignment_confidence`
+- `ambiguous_assignment`
+- `assignment_origin`
+- `descendant_taxa`
+- `analyzed_descendant_taxa`
+- `contributes_to_analysis`
+
+When `--nodes-out` is supplied, `comparative regime-map` also writes one
+node-reconstruction ledger as CSV or TSV. Each row preserves:
+- `node_id`
+- `node_name`
+- `is_tip`
+- `descendant_taxa`
+- `regime`
+- `candidate_regimes`
+- `assignment_confidence`
+- `ambiguous_assignment`
+- `state_probabilities`
+
+This ledger is only populated when the source is `--table`. A user-provided
+branch map does not infer hidden ancestral nodes and therefore keeps `node_rows`
+empty.
+
+When `--excluded-taxa-out` is supplied, `comparative regime-map` writes one
+explicit excluded-taxa ledger for tip-state reconstruction. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states:
+- `missing_from_state_table`
+- `missing_state_value`
+- `absent_from_tree`
+
+When `--svg-out` is supplied, `comparative regime-map` renders one SVG tree
+with the regime assignment overlaid on the analyzed tree. `--layout` accepts:
+- `cladogram`
+- `phylogram`
+- `circular`
+
+This surface exists so branch regimes can be reviewed as a first-class input
+artifact before they are used to claim rate differences, clade shifts, or
+ecological context in downstream comparative workflows.
+
 `comparative ou` is the governed standalone OU trait-evolution surface for one
 numeric trait on a rooted tree with branch lengths. Its JSON metrics report:
 - `tree_taxon_count`
