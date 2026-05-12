@@ -321,6 +321,123 @@ This surface exists so Brownian trait-evolution review preserves both the fit
 statistics and the taxon-pruning contract instead of reducing the workflow to a
 single reported rate.
 
+`comparative brownian-regimes` is the governed standalone multi-rate Brownian
+surface for one numeric trait on a rooted tree with branch lengths plus a
+user-supplied branch regime map. Its JSON metrics report:
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `regime_count`
+- `root_state`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `better_model`
+- `likelihood_ratio_statistic`
+- `likelihood_ratio_p_value`
+- `identifiability_warning_count`
+- `profile_row_count`
+
+The command preserves the full summary under `data`, including:
+- `analyzed_taxa`
+- `excluded_taxa`
+- `branch_rows`
+- `regime_rows`
+- `comparison_rows`
+- `profile_rows`
+- `identifiability_warnings`
+- `residual_diagnostics`
+- `readiness`
+
+The branch regime map must assign every non-root branch exactly one regime. By
+default the table uses:
+- `branch_id`
+- `regime`
+
+Each `branch_id` is the normalized descendant-tip signature for the branch,
+such as `A|B` or `A|B|C|D`. The optional `--branch-id-column` and
+`--regime-column` flags let the same contract be read from differently named
+columns without changing the underlying branch identity rule.
+
+When `--summary-out` is supplied, `comparative brownian-regimes` writes one
+flat summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `branch_id_column`
+- `regime_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `regime_count`
+- `root_state`
+- `root_state_lower_95`
+- `root_state_upper_95`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `better_model`
+- `likelihood_ratio_statistic`
+- `likelihood_ratio_degrees_of_freedom`
+- `likelihood_ratio_p_value`
+- `identifiability_warning_count`
+- `residual_variance`
+- `max_abs_standardized_residual`
+- `phylogenetic_residual_lambda`
+
+When `--rates-out` is supplied, `comparative brownian-regimes` also writes one
+per-regime rate ledger as CSV or TSV. Each row preserves:
+- `regime`
+- `branch_count`
+- `contributing_branch_count`
+- `total_branch_length`
+- `contributing_branch_length`
+- `sigma_squared`
+- `sigma_squared_lower_95`
+- `sigma_squared_upper_95`
+- `interval_method`
+
+When `--comparison-out` is supplied, `comparative brownian-regimes` also writes
+one single-rate versus multi-rate comparison ledger as CSV or TSV. The ledger
+preserves:
+- model-fit rows with `model`, `parameter_count`, `log_likelihood`, `aic`,
+  `aicc`, `delta_aicc`, and `selected`
+- one likelihood-ratio row with `comparison_id`, `left_model`, `right_model`,
+  `statistic`, `degrees_of_freedom`, `p_value`, and `p_value_method`
+
+When `--profile-out` is supplied, `comparative brownian-regimes` also writes
+one conditional regime-rate profile as CSV or TSV. Each row preserves:
+- `regime`
+- `sigma_squared`
+- `log_likelihood`
+- `delta_log_likelihood`
+- `in_support_interval`
+- `selected`
+
+When `--branches-out` is supplied, `comparative brownian-regimes` also writes
+one normalized branch-assignment ledger as CSV or TSV. Each row preserves:
+- `branch_id`
+- `regime`
+- `branch_length`
+- `descendant_taxa`
+- `analyzed_descendant_taxa`
+- `contributes_to_analysis`
+
+When `--excluded-taxa-out` is supplied, `comparative brownian-regimes` also
+writes one excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `missing_from_trait_table`
+- `missing_trait_value`
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+This surface exists so regime-aware Brownian review preserves the exact
+branch-to-regime contract, the per-regime uncertainty surface, and the explicit
+comparison against single-rate Brownian instead of collapsing into one claimed
+rate shift.
+
 `comparative ou` is the governed standalone OU trait-evolution surface for one
 numeric trait on a rooted tree with branch lengths. Its JSON metrics report:
 - `tree_taxon_count`
