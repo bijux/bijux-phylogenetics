@@ -66,6 +66,29 @@ straightforward midpoint interpretation. Trees that are not strictly
 bifurcating are still rerooted, but the report marks them as exploratory and
 adds an explicit warning so downstream review does not overclaim the result.
 
+When the goal is to inspect every clade directly instead of transforming the
+tree, use `topology clades`. That command writes one row per node-derived
+clade, including tips, internal clades, and the root. Each row keeps the
+member taxa, any parsed support label, the incoming branch length, root depth,
+descendant tip depths, and `node_age` when the tree is branch-length complete
+and ultrametric.
+
+```bash
+bijux-phylogenetics topology clades \
+  artifacts/mammals.supported.nwk \
+  --metadata artifacts/mammals.metadata.tsv \
+  --metadata-column species \
+  --metadata-column location \
+  --out artifacts/mammals.clades.tsv \
+  --json
+```
+
+When `--metadata` is supplied, Bijux treats the table as a taxon-keyed
+metadata or trait table and flattens the requested columns into per-clade
+review fields such as `species_values`, `species_distinct_values`, and
+`species_missing_taxa`. That keeps trait inspection tied directly to clade
+membership instead of forcing a separate join step.
+
 When you already have two inferred trees and need an explicit topology
 distance, use `compare`. The command now supports rooted and unrooted
 Robinson-Foulds review directly, and it records which taxa were shared versus
@@ -190,6 +213,26 @@ conflicting or tree-specific. The written table then gives one row per
 clade-per-tree observation, including whether that clade is present in the
 given tree and which support value was observed when the tree format exposed
 one.
+
+When the goal is not overlap comparison but a direct ledger of every clade from
+every sampled tree, use `tree-set clades`. That command writes one row per
+clade observation per tree, preserving the tree index alongside the same clade
+membership, support, branch-length, depth, and optional metadata summaries
+used by the single-tree surface.
+
+```bash
+bijux-phylogenetics tree-set clades \
+  artifacts/mammals.posterior.nwk \
+  --metadata artifacts/mammals.metadata.tsv \
+  --metadata-column species \
+  --out artifacts/mammals.posterior-clades.tsv \
+  --json
+```
+
+This surface is for reviewer-readable extraction, not just summary counts. It
+is especially useful before consensus-building because it keeps minority and
+tree-specific clades visible instead of collapsing them into one consensus or
+frequency table immediately.
 
 When the input is a bootstrap replicate tree file and the goal is one governed
 review bundle rather than a chain of separate tree-set commands, use
