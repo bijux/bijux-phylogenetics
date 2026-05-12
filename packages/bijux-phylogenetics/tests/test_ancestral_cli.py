@@ -169,6 +169,94 @@ def test_ancestral_discrete_cli_can_export_parsimony_comparison(
     )
 
 
+def test_ancestral_tree_set_cli_can_export_continuous_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-tree-set-summary.tsv"
+    trees_path = tmp_path / "ancestral-tree-set-trees.tsv"
+    nodes_path = tmp_path / "ancestral-tree-set-nodes.tsv"
+    clades_path = tmp_path / "ancestral-tree-set-clades.tsv"
+    exclusions_path = tmp_path / "ancestral-tree-set-excluded.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "tree-set",
+            str(fixture("example_posterior_tree_set_six_taxa.nwk")),
+            str(fixture("example_traits_clade_summary.tsv")),
+            "--trait",
+            "body_mass",
+            "--kind",
+            "continuous",
+            "--summary-out",
+            str(summary_path),
+            "--trees-out",
+            str(trees_path),
+            "--nodes-out",
+            str(nodes_path),
+            "--clades-out",
+            str(clades_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["kind"] == "continuous"
+    assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["kept_tree_count"] == 5
+    assert payload["metrics"]["clade_summary_count"] == 14
+    assert payload["metrics"]["unstable_clade_count"] == 14
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\talpha"
+    )
+    assert trees_path.read_text(encoding="utf-8").startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id"
+    )
+    assert nodes_path.read_text(encoding="utf-8").startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id\tunrooted_topology_id\tclade_id"
+    )
+    assert clades_path.read_text(encoding="utf-8").startswith(
+        "clade_id\tclade_taxa\ttree_presence_count\ttree_presence_fraction"
+    )
+    assert exclusions_path.read_text(encoding="utf-8") == "taxon\treason\n"
+
+
+def test_ancestral_tree_set_cli_reports_discrete_stability_warnings(capsys) -> None:
+    exit_code = main(
+        [
+            "ancestral",
+            "tree-set",
+            str(fixture("example_posterior_tree_set_six_taxa.nwk")),
+            str(fixture("example_traits_clade_summary.tsv")),
+            "--trait",
+            "habitat",
+            "--kind",
+            "discrete",
+            "--model",
+            "equal-rates",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["kind"] == "discrete"
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["kept_tree_count"] == 5
+    assert payload["metrics"]["clade_summary_count"] == 14
+    assert payload["metrics"]["unstable_clade_count"] == 14
+    assert (
+        "one or more comparable ancestral clades are absent from some retained trees"
+        in payload["warnings"]
+    )
+    assert (
+        "one or more discrete ancestral clades change state or support profile across retained trees"
+        in payload["warnings"]
+    )
+
+
 def test_ancestral_render_cli_writes_svg_with_internal_annotations(
     tmp_path: Path, capsys
 ) -> None:
