@@ -1271,6 +1271,31 @@ def test_bootstrap_workflow_report_includes_support_and_backbone_sections(
     assert "weak-backbone" in rendered.supplement_sections
 
 
+def test_sh_alrt_workflow_report_includes_combined_support_sections(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "sh-alrt-iqtree")
+    workflow = run_sh_alrt_support_estimation(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "sh-alrt",
+        model="GTR+G",
+        executable=executable,
+        prefix="sh-alrt",
+        sh_alrt_replicates=1000,
+        bootstrap_replicates=1000,
+    )
+
+    rendered = render_inference_workflow_report(
+        manifest_path=workflow.manifest_path,
+        out_path=tmp_path / "sh-alrt-report.html",
+    )
+
+    assert "bootstrap-tree-set-validation" in rendered.supplement_sections
+    assert "sh-alrt-support-summary" in rendered.supplement_sections
+    assert "conflicting-support-branches" in rendered.supplement_sections
+    assert "weak-backbone" in rendered.supplement_sections
+
+
 def test_bootstrap_support_rejects_replicate_counts_below_iqtree_minimum(
     tmp_path: Path,
 ) -> None:
