@@ -311,6 +311,46 @@ def test_parse_mrbayes_mcmc_diagnostics(
     assert report.rows[1].values["Move$acc_run1"] is None
 
 
+def test_parse_real_mrbayes_output_fixture() -> None:
+    trace_report = parse_mrbayes_parameter_traces(
+        fixture("mrbayes/partitioned-analysis.run1.p")
+    )
+    tree_report = parse_mrbayes_posterior_tree_samples(
+        fixture("mrbayes/partitioned-analysis.run1.t")
+    )
+    mcmc_report = parse_mrbayes_mcmc_diagnostics(
+        fixture("mrbayes/partitioned-analysis.mcmc")
+    )
+    consensus_tree, consensus_report = parse_mrbayes_consensus_tree(
+        fixture("mrbayes/partitioned-analysis.con.tre")
+    )
+
+    assert trace_report.row_count == 3
+    assert trace_report.columns[:3] == ["LnL", "LnPr", "TL{all}"]
+    assert trace_report.rows[-1].generation == 20
+    assert tree_report.tree_count == 3
+    assert tree_report.rooted_tree_count == 0
+    assert tree_report.sampled_generations == [0, 10, 20]
+    assert sorted(tree_report.tip_names) == [
+        "TaxonA",
+        "TaxonB",
+        "TaxonC",
+        "TaxonD",
+        "TaxonE",
+    ]
+    assert mcmc_report.row_count == 1
+    assert mcmc_report.rows[0].generation == 20
+    assert mcmc_report.rows[0].values["AvgStdDev(s)"] == pytest.approx(0.235702)
+    assert consensus_tree.tip_count == 5
+    assert consensus_report.tree_name == "con_50_majrule"
+    assert consensus_report.rooted is False
+    assert consensus_report.annotated_node_count == 6
+    assert consensus_report.minimum_posterior_probability == pytest.approx(0.5)
+    assert consensus_report.maximum_posterior_probability_percent == pytest.approx(
+        100.0
+    )
+
+
 def test_assess_mrbayes_convergence_flags_low_ess_and_mean_drift(
     tmp_path: Path,
 ) -> None:
