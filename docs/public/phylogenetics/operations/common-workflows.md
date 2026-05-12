@@ -214,6 +214,52 @@ baseline model and the requested comparison model. The excluded-taxa ledger
 keeps one row per dropped tip with an explicit reason such as
 `missing_discrete_trait_state`.
 
+When the goal is to rank which ancestral nodes or comparable clades remain
+weakly resolved, use `ancestral confidence`. This workflow reads the owned
+ancestral reconstruction surfaces and turns their uncertainty into one ranked
+confidence ledger instead of forcing reviewers to merge multiple ancestral
+tables manually. On one tree, the continuous path ranks internal nodes by
+relative interval width and confidence score, while the discrete path ranks
+internal nodes by maximum marginal probability, probability margin, and node
+entropy. Across a tree set, the same surface ranks comparable clades by
+topology presence, within-tree uncertainty, and cross-tree state or value
+dispersion.
+
+```bash
+bijux-phylogenetics ancestral confidence \
+  artifacts/primates.posterior.nwk \
+  artifacts/primates.csv \
+  --trait habitat \
+  --kind discrete \
+  --model equal-rates \
+  --taxon-column species \
+  --tree-set \
+  --burnin-fraction 0.25 \
+  --summary-out artifacts/primates.ancestral-confidence-summary.tsv \
+  --confidence-out artifacts/primates.ancestral-confidence.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the source kind, reconstruction kind,
+analyzed taxon count, retained tree count when relevant, the ranked-row count,
+the low-confidence count, the unstable count, the high-entropy count, and the
+top uncertain node or clade. The confidence ledger is the main review surface.
+On one continuous tree it keeps one ranked internal-node row with the
+reconstructed estimate, 95% interval, relative uncertainty, uncertainty score,
+and confidence class. On one discrete tree it keeps one ranked internal-node
+row with the most likely state, full marginal probability vector, maximum
+posterior probability, runner-up probability, entropy, normalized entropy,
+uncertainty score, and confidence class.
+
+On a tree set, the confidence ledger shifts from internal nodes to comparable
+clades. Continuous rows preserve clade presence, mean within-tree confidence,
+empirical interval width across retained trees, unstable-tree fraction, and
+final uncertainty rank. Discrete rows preserve clade presence, dominant-state
+fraction, state-distribution entropy, ambiguous-tree fraction,
+unstable-tree fraction, and final uncertainty rank. This keeps topology
+uncertainty and within-tree state uncertainty visible in the same governed
+surface.
+
 When the goal is to see whether ancestral conclusions survive topology
 uncertainty instead of relying on one summary tree, use `ancestral tree-set`.
 This workflow reruns ancestral reconstruction across every retained
