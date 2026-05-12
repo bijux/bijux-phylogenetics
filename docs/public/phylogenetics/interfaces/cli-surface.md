@@ -38,6 +38,23 @@ and reports the shared, left-only, and right-only taxa in JSON. Use
 `--taxon-overlap-policy require-identical` when any taxon-set mismatch should
 stop the comparison instead of being pruned away for review.
 
+`compare prune` is the governed shared-taxon pruning surface for two trees. It
+reduces both trees to their exact shared taxon set, keeps the richer per-tree
+pruning audits from the core pruning layer, and includes one
+`post_pruning_comparison` report so the retained trees are compared
+immediately instead of leaving that as a manual follow-up step.
+
+When `--out` is supplied, `compare prune` expects an output directory rather
+than a single file. The command then writes a stable bundle:
+- `left-shared.nwk` and `right-shared.nwk` for the retained trees
+- `shared-taxa-pruning.tsv` with one summary row per input tree
+- `shared-taxa-removed.tsv` with one row per removed taxon and reason
+- `shared-taxa-comparison.tsv` with the retained-tree comparison ledger
+
+The JSON metrics make the main review boundaries explicit: shared taxon count,
+removed taxon counts per side, whether the retained trees still match in
+topology, and the retained-tree Robinson-Foulds distance.
+
 The same overlap policy also governs `compare branch-lengths`. That command now
 keeps the existing shared-clade branch-length table and adds a governed
 branch-score summary under `data.branch_score`. The summary reports whether the
