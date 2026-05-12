@@ -642,6 +642,77 @@ def test_comparative_rate_through_time_cli_writes_review_ledgers(
     ]
 
 
+def test_comparative_clade_traits_cli_reports_summary_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "clade-traits",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_clade_summary.tsv")),
+            "--trait",
+            "body_mass",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 6
+    assert payload["metrics"]["analyzed_taxon_count"] == 6
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["trait_kind"] == "continuous"
+    assert payload["metrics"]["clade_count"] == 4
+    assert payload["metrics"]["exceptional_clade_count"] == 1
+    assert payload["metrics"]["top_exceptional_clade"] == "E|F"
+    assert payload["metrics"]["top_exceptionality_score"] > 0.0
+
+
+def test_comparative_clade_traits_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "clade-traits-summary.tsv"
+    clades_out = tmp_path / "clade-traits.tsv"
+    excluded_out = tmp_path / "clade-traits-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "clade-traits",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_continuous_evolution_missing.tsv")),
+            "--trait",
+            "response_growth",
+            "--trait-kind",
+            "continuous",
+            "--summary-out",
+            str(summary_out),
+            "--clades-out",
+            str(clades_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 3
+    assert payload["metrics"]["trait_kind"] == "continuous"
+    assert summary_out.exists()
+    assert clades_out.exists()
+    assert excluded_out.exists()
+    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "trait\ttaxon_column\ttrait_kind"
+    )
+    assert clades_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "clade_id\tnode_label\ttrait_kind"
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason",
+        "B\tmissing_trait_value",
+        "C\tnon_numeric_trait_value",
+        "G\tabsent_from_tree",
+    ]
+
+
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
     exit_code = main(
         [

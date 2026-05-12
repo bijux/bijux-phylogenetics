@@ -159,6 +159,12 @@ from bijux_phylogenetics.comparative.clade_stability import (
     write_comparative_clade_coefficient_change_table,
     write_comparative_clade_stability_table,
 )
+from bijux_phylogenetics.comparative.clade_traits import (
+    summarize_clade_traits,
+    write_clade_trait_clade_table,
+    write_clade_trait_exclusion_table,
+    write_clade_trait_summary_table,
+)
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     run_posterior_tree_pgls,
     write_posterior_tree_pgls_coefficient_table,
@@ -2319,6 +2325,45 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the rate-through-time report as JSON.",
     )
     _add_manifest_argument(comparative_rate_through_time)
+    comparative_clade_traits = comparative_subparsers.add_parser(
+        "clade-traits",
+        help="Summarize one continuous or categorical trait across internal clades.",
+    )
+    comparative_clade_traits.add_argument("tree", type=Path)
+    comparative_clade_traits.add_argument("table", type=Path)
+    comparative_clade_traits.add_argument("--trait", required=True)
+    comparative_clade_traits.add_argument("--taxon-column")
+    comparative_clade_traits.add_argument(
+        "--trait-kind",
+        choices=("auto", "continuous", "categorical"),
+        default="auto",
+        help="Infer trait kind automatically or force continuous/categorical handling.",
+    )
+    comparative_clade_traits.add_argument(
+        "--min-clade-size",
+        type=int,
+        default=2,
+        help="Only summarize internal clades with at least this many analyzed taxa.",
+    )
+    comparative_clade_traits.add_argument(
+        "--summary-out",
+        type=Path,
+        help="Write one clade-trait summary ledger as TSV or CSV.",
+    )
+    comparative_clade_traits.add_argument(
+        "--clades-out",
+        type=Path,
+        help="Write one internal clade-trait ledger as TSV or CSV.",
+    )
+    comparative_clade_traits.add_argument(
+        "--excluded-taxa-out",
+        type=Path,
+        help="Write one excluded-taxa ledger for clade trait summarization as TSV or CSV.",
+    )
+    comparative_clade_traits.add_argument(
+        "--json", action="store_true", help="Emit the clade-trait report as JSON."
+    )
+    _add_manifest_argument(comparative_clade_traits)
     comparative_compare_models = comparative_subparsers.add_parser(
         "compare-models",
         help="Compare standalone Brownian-motion and OU models for one continuous trait.",
@@ -7221,6 +7266,48 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "weighted_rate_slope": report.weighted_rate_slope,
                             "normalized_rate_slope": report.normalized_rate_slope,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.comparative_command == "clade-traits":
+                report = summarize_clade_traits(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    minimum_clade_size=args.min_clade_size,
+                    trait_kind=args.trait_kind,
+                )
+                if args.summary_out:
+                    write_clade_trait_summary_table(args.summary_out, report)
+                if args.clades_out:
+                    write_clade_trait_clade_table(args.clades_out, report)
+                if args.excluded_taxa_out:
+                    write_clade_trait_exclusion_table(
+                        args.excluded_taxa_out,
+                        report,
+                    )
+                outputs = _finalize_outputs(
+                    args, command="comparative", inputs=[args.tree, args.table]
+                )
+                _print_result(
+                    build_command_result(
+                        command="comparative",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "tree_taxon_count": report.tree_taxon_count,
+                            "analyzed_taxon_count": report.analyzed_taxon_count,
+                            "excluded_taxon_count": len(report.excluded_taxa),
+                            "trait_kind": report.trait_kind,
+                            "clade_count": len(report.clade_rows),
+                            "exceptional_clade_count": len(report.exceptional_clades),
+                            "top_exceptional_clade": report.top_exceptional_clade,
+                            "top_exceptionality_score": report.top_exceptionality_score,
                         },
                         data=report,
                     ),
