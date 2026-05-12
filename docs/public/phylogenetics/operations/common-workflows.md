@@ -116,6 +116,33 @@ lacks a branch length on one side, the per-split ledger records that missing
 length explicitly and the branch-score summary becomes unavailable instead of
 silently treating the missing value as zero.
 
+When the main question is whether topology conflicts are serious or only weakly
+supported, use `compare support`. That surface combines clade presence with the
+support values parsed from each tree and writes one support-aware conflict
+ledger with `--out`.
+
+```bash
+bijux-phylogenetics compare support \
+  artifacts/mammals.reference.nwk \
+  artifacts/mammals.candidate.nwk \
+  --out artifacts/mammals.support-conflicts.tsv \
+  --json
+```
+
+The JSON and TSV outputs separate three situations explicitly:
+- shared clades, where both trees carry the same clade and Bijux reports the
+  normalized support delta
+- high-support conflicts, where a clade present in only one tree still carries
+  normalized support of at least `0.9`
+- low-support disagreements, where a conflicting clade is present with support
+  below `0.7`
+
+Conflicting clades between `0.7` and `0.9` are preserved as
+`moderate_support_disagreement` so the report does not flatten moderate support
+into either strong conflict or weak noise. If the present-side tree did not
+carry a parseable support label, the conflict row is marked
+`support_unavailable`.
+
 When the main question is which clades agree or conflict across several trees,
 use `compare clades`. The command accepts two required tree paths plus
 additional trees through repeated `--tree` flags, computes clade overlap on the
