@@ -206,14 +206,11 @@ def _validate_mrbayes_partitions(
     return summary.declared_data_types, summary.warnings
 
 
-def _mrbayes_sets_block(partitions: tuple[LocusPartition, ...]) -> str:
-    lines = ["begin sets;"]
-    lines.extend(
-        f"  charset {partition.name} = {partition_coordinate_text(partition)};"
+def _mrbayes_charset_commands(partitions: tuple[LocusPartition, ...]) -> list[str]:
+    return [
+        f"charset {partition.name} = {partition_coordinate_text(partition)};"
         for partition in partitions
-    )
-    lines.append("end;")
-    return "\n".join(lines)
+    ]
 
 
 def _mrbayes_partition_commands(partitions: tuple[LocusPartition, ...]) -> list[str]:
@@ -273,6 +270,7 @@ def prepare_mrbayes_analysis(
         [
             "begin mrbayes;",
             "  set autoclose=yes nowarn=yes;",
+            *[f"  {line}" for line in _mrbayes_charset_commands(partitions)],
             *[f"  {line}" for line in _mrbayes_partition_commands(partitions)],
             *[f"  {line}" for line in model_commands],
             f"  mcmcp ngen={ngen} nchains={nchains} samplefreq={samplefreq} printfreq={printfreq};",
@@ -294,7 +292,6 @@ def prepare_mrbayes_analysis(
             "  ;",
             "end;",
             "",
-            *([] if not partitions else [_mrbayes_sets_block(partitions), ""]),
             command_block,
             "",
         ]
@@ -334,10 +331,10 @@ def run_mrbayes_posterior_inference(
     version = read_engine_version("MrBayes", executable, version_args=("--version",))
     resolved = resolve_engine_executable(executable)
     prefix_path = nexus_path.with_suffix("")
-    trace_path = prefix_path.with_suffix(".run1.p")
-    tree_path = prefix_path.with_suffix(".run1.t")
+    trace_path = Path(f"{nexus_path}.run1.p")
+    tree_path = Path(f"{nexus_path}.run1.t")
     manifest_path = prefix_path.with_suffix(".manifest.json")
-    command = [resolved, str(nexus_path.resolve())]
+    command = [resolved, nexus_path.name]
     if resume:
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,

@@ -240,8 +240,9 @@ if "--version" in sys.argv[1:]:
     raise SystemExit(0)
 
 nexus_path = Path(sys.argv[1])
-prefix = nexus_path.with_suffix("")
-prefix.with_suffix(".run1.p").write_text(
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+trace_path.write_text(
     "Gen\\tLnL\\tTL\\talpha\\n"
     "0\\t-110.0\\t0.40\\t0.90\\n"
     "100\\t-108.0\\t0.41\\t0.95\\n"
@@ -249,7 +250,7 @@ prefix.with_suffix(".run1.p").write_text(
     "300\\t-106.5\\t0.43\\t1.05\\n",
     encoding="utf-8",
 )
-prefix.with_suffix(".run1.t").write_text(
+tree_path.write_text(
     "#NEXUS\\n"
     "begin trees;\\n"
     "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"

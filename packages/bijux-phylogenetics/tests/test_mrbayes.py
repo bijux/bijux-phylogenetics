@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import pytest
+import shutil
 
 from bijux_phylogenetics.bayesian import (
     assess_mrbayes_convergence,
@@ -39,8 +40,9 @@ if "--version" in sys.argv[1:]:
     raise SystemExit(0)
 
 nexus_path = Path(sys.argv[1])
-prefix = nexus_path.with_suffix("")
-prefix.with_suffix(".run1.p").write_text(
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+trace_path.write_text(
     "Gen\\tLnL\\tTL\\talpha\\n"
     "0\\t-110.0\\t0.40\\t0.90\\n"
     "100\\t-108.0\\t0.41\\t0.95\\n"
@@ -48,7 +50,7 @@ prefix.with_suffix(".run1.p").write_text(
     "300\\t-106.5\\t0.43\\t1.05\\n",
     encoding="utf-8",
 )
-prefix.with_suffix(".run1.t").write_text(
+tree_path.write_text(
     "#NEXUS\\n"
     "begin trees;\\n"
     "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
@@ -61,6 +63,10 @@ prefix.with_suffix(".run1.t").write_text(
 print("warning: mrbayes fixture posterior run", file=sys.stderr)
 """,
     )
+
+
+def _real_mrbayes_executable() -> str | None:
+    return shutil.which("mb")
 
 
 def test_prepare_mrbayes_analysis_writes_nexus_with_run_settings(
@@ -111,7 +117,6 @@ def test_prepare_mrbayes_analysis_writes_partition_definitions_for_multilocus_ma
     assert report.partition_names == ["gene_alpha", "gene_beta", "gene_gamma"]
     assert report.partition_data_types == ["DNA"]
     assert report.partition_warnings == []
-    assert "begin sets;" in text
     assert "charset gene_alpha = 1-4;" in text
     assert "charset gene_beta = 5-9;" in text
     assert "charset gene_gamma = 10-12;" in text
@@ -167,6 +172,39 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     assert summary.rooted_topology_count == 2
     assert summary.filtered_tree_set_path.exists()
     assert consensus_tree.tip_count == 4
+
+
+def test_prepare_mrbayes_analysis_is_accepted_by_real_mrbayes_on_partitioned_input(
+    tmp_path: Path,
+) -> None:
+    executable = _real_mrbayes_executable()
+    if executable is None:
+        pytest.skip("real MrBayes executable is not available")
+    nexus_path = tmp_path / "partitioned-analysis.nex"
+    prepare_mrbayes_analysis(
+        fixture("alignments/example_multilocus_alignment.fasta"),
+        nexus_path,
+        partition_path=fixture("alignments/example_multilocus_partitions.txt"),
+        model="gtr",
+        rates="gamma",
+        ngen=20,
+        samplefreq=10,
+        printfreq=10,
+        burnin_fraction=0.25,
+    )
+
+    report = run_mrbayes_posterior_inference(
+        nexus_path, executable=executable, resume=False
+    )
+
+    assert report.output_paths["posterior_trees"].exists()
+    assert report.output_paths["parameter_traces"].exists()
+    assert (
+        parse_mrbayes_parameter_traces(
+            report.output_paths["parameter_traces"]
+        ).row_count
+        > 0
+    )
 
 
 def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(
