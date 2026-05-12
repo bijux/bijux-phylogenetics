@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.cli import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -87,3 +89,69 @@ def test_biogeography_model_cli_accepts_region_vocabulary(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["model"] == "sym"
     assert payload["metrics"]["observed_region_count"] == 3
+
+
+def test_biogeography_time_stratified_cli_can_export_review(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    summary_path = tmp_path / "summary.tsv"
+    matrix_path = tmp_path / "matrix.tsv"
+    branches_path = tmp_path / "branches.tsv"
+    exclusions_path = tmp_path / "exclusions.tsv"
+
+    exit_code = main(
+        [
+            "biogeography",
+            "time-stratified",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "ard",
+            "--time-bin",
+            "early:0.0:0.1",
+            "--time-bin",
+            "late:0.1:0.3",
+            "--summary-out",
+            str(summary_path),
+            "--matrix-out",
+            str(matrix_path),
+            "--branches-out",
+            str(branches_path),
+            "--exclusions-out",
+            str(exclusions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "ard"
+    assert payload["metrics"]["time_bin_count"] == 2
+    assert payload["metrics"]["matrix_row_count"] > 0
+    assert "tree_depth" in summary_path.read_text(encoding="utf-8")
+    assert "time_stratified_rate" in matrix_path.read_text(encoding="utf-8")
+    assert "allocated_transition_weight" in branches_path.read_text(encoding="utf-8")
+    assert "reason" in exclusions_path.read_text(encoding="utf-8")
+
+
+def test_biogeography_time_stratified_cli_rejects_invalid_time_bins(capsys) -> None:
+    with pytest.raises(SystemExit) as error:
+        main(
+            [
+                "biogeography",
+                "time-stratified",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_geography.tsv")),
+                "--trait",
+                "region",
+                "--time-bin",
+                "broken",
+            ]
+        )
+    error_text = capsys.readouterr().err
+
+    assert error.value.code == 2
+    assert "LABEL:START:END" in error_text

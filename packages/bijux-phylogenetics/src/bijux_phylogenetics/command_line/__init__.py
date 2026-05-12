@@ -156,12 +156,18 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_validation,
 )
 from bijux_phylogenetics.biogeography import (
+    TimeBinDefinition,
     summarize_geographic_state_model,
+    summarize_time_stratified_geographic_transitions,
     write_geographic_exclusion_table,
     write_geographic_region_probability_table,
     write_geographic_state_summary_table,
     write_geographic_transition_event_table,
     write_geographic_transition_rate_table,
+    write_time_stratified_branch_table,
+    write_time_stratified_exclusion_table,
+    write_time_stratified_transition_matrix_table,
+    write_time_stratified_transition_summary_table,
 )
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
 from bijux_phylogenetics.comparative.common import (
@@ -818,6 +824,29 @@ def _parse_labelled_run(raw: str) -> tuple[str, Path]:
     if not label.strip() or not raw_path.strip():
         raise ValueError(f"run source must include both LABEL and PATH, got '{raw}'")
     return label.strip(), Path(raw_path.strip())
+
+
+def _parse_time_bin_definition(raw: str) -> TimeBinDefinition:
+    parts = [part.strip() for part in raw.split(":", 2)]
+    if len(parts) != 3:
+        raise ValueError(
+            f"time bin must be in LABEL:START:END form, got '{raw}'"
+        )
+    label, raw_start, raw_end = parts
+    if not label:
+        raise ValueError(f"time bin label must be non-empty, got '{raw}'")
+    try:
+        start_depth = float(raw_start)
+        end_depth = float(raw_end)
+    except ValueError as error:
+        raise ValueError(
+            f"time bin depths must be numeric in LABEL:START:END form, got '{raw}'"
+        ) from error
+    return TimeBinDefinition(
+        label=label,
+        start_depth=start_depth,
+        end_depth=end_depth,
+    )
 
 
 def _validate_ancestral_discrete_model_arguments(
@@ -3443,6 +3472,38 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the biogeography review as JSON."
     )
     _add_manifest_argument(biogeography_model)
+    biogeography_time_stratified = biogeography_subparsers.add_parser(
+        "time-stratified",
+        help="Estimate interval-specific geographic transitions across explicit root-depth bins.",
+    )
+    biogeography_time_stratified.add_argument("tree", type=Path)
+    biogeography_time_stratified.add_argument("table", type=Path)
+    biogeography_time_stratified.add_argument("--trait", required=True)
+    biogeography_time_stratified.add_argument("--taxon-column")
+    biogeography_time_stratified.add_argument(
+        "--model",
+        choices=("er", "sym", "ard"),
+        default="er",
+    )
+    biogeography_time_stratified.add_argument(
+        "--allowed-regions",
+        help="Comma-delimited explicit region vocabulary.",
+    )
+    biogeography_time_stratified.add_argument(
+        "--time-bin",
+        action="append",
+        required=True,
+        metavar="LABEL:START:END",
+        help="Explicit root-depth interval in LABEL:START:END form. Repeat for multiple intervals.",
+    )
+    biogeography_time_stratified.add_argument("--summary-out", type=Path)
+    biogeography_time_stratified.add_argument("--matrix-out", type=Path)
+    biogeography_time_stratified.add_argument("--branches-out", type=Path)
+    biogeography_time_stratified.add_argument("--exclusions-out", type=Path)
+    biogeography_time_stratified.add_argument(
+        "--json", action="store_true", help="Emit the biogeography review as JSON."
+    )
+    _add_manifest_argument(biogeography_time_stratified)
 
     discrete_evolution = subparsers.add_parser(
         get_command_spec("discrete-evolution").name,
@@ -10021,6 +10082,80 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "excluded_taxon_count": (
                                 report.summary.excluded_taxon_count
                             ),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.biogeography_command == "time-stratified":
+                report = summarize_time_stratified_geographic_transitions(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    allowed_regions=_split_csv_values(args.allowed_regions) or None,
+                    time_bins=[
+                        _parse_time_bin_definition(raw_time_bin)
+                        for raw_time_bin in args.time_bin
+                    ],
+                )
+                outputs: list[Path | str] = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_time_stratified_transition_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.matrix_out is not None:
+                    outputs.append(
+                        write_time_stratified_transition_matrix_table(
+                            args.matrix_out,
+                            report,
+                        )
+                    )
+                if args.branches_out is not None:
+                    outputs.append(
+                        write_time_stratified_branch_table(
+                            args.branches_out,
+                            report,
+                        )
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_time_stratified_exclusion_table(
+                            args.exclusions_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="biogeography",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="biogeography",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "time_bin_count": report.summary.time_bin_count,
+                            "matrix_row_count": report.summary.matrix_row_count,
+                            "changed_branch_count": (
+                                report.summary.changed_branch_count
+                            ),
+                            "allocated_transition_weight_total": (
+                                report.summary.allocated_transition_weight_total
+                            ),
+                            "excluded_taxon_count": (
+                                report.summary.excluded_taxon_count
+                            ),
+                            "warning_count": report.summary.warning_count,
                         },
                         data=report,
                     ),
