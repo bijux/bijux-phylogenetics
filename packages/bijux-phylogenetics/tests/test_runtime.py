@@ -469,6 +469,11 @@ from bijux_phylogenetics.biogeography import (
     DatedBiogeographyReport,
     DatedBiogeographySummary,
     DatedBiogeographyTimeBinRow,
+    GeographicSamplingBiasNodeRow,
+    GeographicSamplingBiasReport,
+    GeographicSamplingBiasSummary,
+    GeographicSamplingBiasTransitionRow,
+    GeographicSamplingCountRow,
     GeographicMigrationEventReport,
     GeographicMigrationEventRow,
     GeographicMigrationEventSummary,
@@ -486,6 +491,7 @@ from bijux_phylogenetics.biogeography import (
     summarize_biogeographic_transition_chronology,
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
+    summarize_geographic_sampling_bias,
     summarize_geographic_migration_events,
     summarize_geographic_migration_event_tree_set,
     summarize_geographic_state_model,
@@ -499,6 +505,11 @@ from bijux_phylogenetics.biogeography import (
     write_dated_biogeography_node_table,
     write_dated_biogeography_summary_table,
     write_dated_biogeography_time_bin_table,
+    write_geographic_sampling_bias_exclusion_table,
+    write_geographic_sampling_bias_node_table,
+    write_geographic_sampling_bias_summary_table,
+    write_geographic_sampling_bias_transition_table,
+    write_geographic_sampling_count_table,
     write_geographic_migration_event_summary_table,
     write_geographic_migration_event_table,
     write_geographic_migration_exclusion_table,
@@ -1005,6 +1016,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is summarize_biogeographic_transition_chronology
     )
     assert (
+        bijux_phylogenetics.summarize_geographic_sampling_bias
+        is summarize_geographic_sampling_bias
+    )
+    assert (
         bijux_phylogenetics.summarize_geographic_state_model
         is summarize_geographic_state_model
     )
@@ -1055,6 +1070,26 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_dated_biogeography_exclusion_table
         is write_dated_biogeography_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_summary_table
+        is write_geographic_sampling_bias_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_count_table
+        is write_geographic_sampling_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_node_table
+        is write_geographic_sampling_bias_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_transition_table
+        is write_geographic_sampling_bias_transition_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_exclusion_table
+        is write_geographic_sampling_bias_exclusion_table
     )
     assert (
         bijux_phylogenetics.write_unsupported_geographic_transition_claim_table
@@ -1144,6 +1179,23 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.DatedBiogeographyTimeBinRow
         is DatedBiogeographyTimeBinRow
     )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasNodeRow
+        is GeographicSamplingBiasNodeRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasReport
+        is GeographicSamplingBiasReport
+    )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasSummary
+        is GeographicSamplingBiasSummary
+    )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasTransitionRow
+        is GeographicSamplingBiasTransitionRow
+    )
+    assert bijux_phylogenetics.GeographicSamplingCountRow is GeographicSamplingCountRow
     assert bijux_phylogenetics.ConstrainedGeographicFitRow is ConstrainedGeographicFitRow
     assert bijux_phylogenetics.ConstrainedGeographicReport is ConstrainedGeographicReport
     assert (
