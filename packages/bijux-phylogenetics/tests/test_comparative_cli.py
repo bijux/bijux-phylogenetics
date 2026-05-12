@@ -107,6 +107,89 @@ def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
     assert len(permutation_rows) == 8
 
 
+def test_comparative_correlated_traits_cli_reports_coupling_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "correlated-traits",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--left-trait",
+            "response",
+            "--right-trait",
+            "predictor_one",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analysis_kind"] == "continuous-brownian-contrasts"
+    assert payload["metrics"]["tree_taxon_count"] == 4
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["observation_row_count"] == 3
+    assert payload["metrics"]["comparison_row_count"] == 2
+    assert payload["metrics"]["association_measure_name"] == "evolutionary_correlation"
+    assert math.isclose(payload["metrics"]["association_measure_value"], 0.8871275993361114)
+    assert payload["metrics"]["better_model"] == "correlated"
+
+
+def test_comparative_correlated_traits_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "correlated-traits-summary.tsv"
+    comparison_out = tmp_path / "correlated-traits-comparison.tsv"
+    observations_out = tmp_path / "correlated-traits-observations.tsv"
+    excluded_out = tmp_path / "correlated-traits-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "correlated-traits",
+            str(fixture("example_tree_eight_taxa.nwk")),
+            str(fixture("example_traits_correlated_binary_missing.tsv")),
+            "--left-trait",
+            "trait_left",
+            "--right-trait",
+            "trait_right",
+            "--summary-out",
+            str(summary_out),
+            "--comparison-out",
+            str(comparison_out),
+            "--observations-out",
+            str(observations_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analysis_kind"] == "binary-joint-state"
+    assert payload["metrics"]["analyzed_taxon_count"] == 5
+    assert payload["metrics"]["excluded_taxon_count"] == 4
+    assert payload["metrics"]["joint_state_count"] == 3
+    assert summary_out.exists()
+    assert comparison_out.exists()
+    assert observations_out.exists()
+    assert excluded_out.exists()
+    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "analysis_kind\tleft_trait\tright_trait"
+    )
+    assert comparison_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "model_kind\tmodel_description\tparameter_count"
+    )
+    assert observations_out.read_text(encoding="utf-8").splitlines()[0].startswith(
+        "row_kind\tlabel\ttaxon\tleft_taxa"
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason\tmissing_traits",
+        "B\tmissing_trait_value\ttrait_right",
+        "G\tmissing_from_trait_table\ttrait_left,trait_right",
+        "H\tmissing_from_trait_table\ttrait_left,trait_right",
+        "I\tmissing_from_tree\t",
+    ]
+
+
 def test_comparative_brownian_cli_reports_model_fit_metrics(capsys) -> None:
     exit_code = main(
         [
