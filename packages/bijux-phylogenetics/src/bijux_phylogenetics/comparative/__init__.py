@@ -77,6 +77,12 @@ from .pgls_categorical_contrasts import (
     summarize_pgls_categorical_contrasts,
     write_pgls_categorical_contrast_table,
 )
+from .pgls_interaction_coefficients import (
+    PGLSInteractionCoefficientReport,
+    PGLSInteractionCoefficientRow,
+    summarize_pgls_interaction_coefficients,
+    write_pgls_interaction_coefficient_table,
+)
 from .reporting import (
     ComparativeAuditRow,
     ComparativeCoefficientDeltaRow,
@@ -148,6 +154,8 @@ __all__ = [
     "NumericTraitSummary",
     "PGLSCategoricalContrastReport",
     "PGLSCategoricalContrastRow",
+    "PGLSInteractionCoefficientReport",
+    "PGLSInteractionCoefficientRow",
     "PGLSCoefficient",
     "PGLSDiagnosticsReport",
     "PGLSFormulaAudit",
@@ -190,10 +198,12 @@ __all__ = [
     "run_pgls_multiple_testing",
     "run_pgls",
     "summarize_pgls_categorical_contrasts",
+    "summarize_pgls_interaction_coefficients",
     "summarize_numeric_trait",
     "summarize_numeric_trait_readiness",
     "validate_comparative_reference_examples",
     "write_pgls_categorical_contrast_table",
+    "write_pgls_interaction_coefficient_table",
     "write_pgls_model_matrix_table",
     "write_comparative_method_report",
 ]
