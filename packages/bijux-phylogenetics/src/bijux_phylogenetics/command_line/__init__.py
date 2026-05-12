@@ -9,7 +9,12 @@ from typing import Any
 
 from bijux_phylogenetics import __version__
 from bijux_phylogenetics.ancestral.continuous import (
+    summarize_continuous_ancestral_report,
+    continuous_ancestral_exclusions,
     reconstruct_continuous_ancestral_states,
+    write_continuous_ancestral_exclusion_table,
+    write_continuous_ancestral_summary_table,
+    write_continuous_ancestral_uncertainty_table,
 )
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
@@ -2933,6 +2938,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ancestral_continuous.add_argument("--alpha", type=float, default=1.0)
     ancestral_continuous.add_argument("--table-out", type=Path)
+    ancestral_continuous.add_argument("--summary-out", type=Path)
+    ancestral_continuous.add_argument("--uncertainty-out", type=Path)
+    ancestral_continuous.add_argument("--exclusions-out", type=Path)
     ancestral_continuous.add_argument(
         "--json", action="store_true", help="Emit the reconstruction as JSON."
     )
@@ -8395,9 +8403,32 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     model=args.model,
                     alpha=args.alpha,
                 )
+                summary = summarize_continuous_ancestral_report(report)
+                exclusions = continuous_ancestral_exclusions(report)
                 outputs: list[Path | str] = []
                 if args.table_out is not None:
                     outputs.append(write_ancestral_state_table(args.table_out, report))
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_continuous_ancestral_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.uncertainty_out is not None:
+                    outputs.append(
+                        write_continuous_ancestral_uncertainty_table(
+                            args.uncertainty_out,
+                            report,
+                        )
+                    )
+                if args.exclusions_out is not None:
+                    outputs.append(
+                        write_continuous_ancestral_exclusion_table(
+                            args.exclusions_out,
+                            report,
+                        )
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="ancestral",
@@ -8413,6 +8444,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "taxon_count": report.taxon_count,
                             "estimate_count": len(report.estimates),
+                            "internal_node_count": summary.internal_node_count,
+                            "excluded_taxon_count": len(exclusions),
+                            "unstable_node_count": summary.unstable_node_count,
                             "model": report.model,
                         },
                         data=report,

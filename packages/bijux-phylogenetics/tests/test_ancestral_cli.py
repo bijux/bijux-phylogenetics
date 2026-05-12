@@ -22,6 +22,9 @@ def fixture(name: str) -> Path:
 
 def test_ancestral_continuous_cli_can_export_table(tmp_path: Path, capsys) -> None:
     table_path = tmp_path / "ancestral.tsv"
+    summary_path = tmp_path / "ancestral-summary.tsv"
+    uncertainty_path = tmp_path / "ancestral-uncertainty.tsv"
+    exclusions_path = tmp_path / "ancestral-excluded.tsv"
     exit_code = main(
         [
             "ancestral",
@@ -32,6 +35,12 @@ def test_ancestral_continuous_cli_can_export_table(tmp_path: Path, capsys) -> No
             "response",
             "--table-out",
             str(table_path),
+            "--summary-out",
+            str(summary_path),
+            "--uncertainty-out",
+            str(uncertainty_path),
+            "--exclusions-out",
+            str(exclusions_path),
             "--json",
         ]
     )
@@ -39,7 +48,17 @@ def test_ancestral_continuous_cli_can_export_table(tmp_path: Path, capsys) -> No
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["internal_node_count"] == 3
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["unstable_node_count"] >= 0
     assert "estimate\tstandard_error" in table_path.read_text(encoding="utf-8")
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\talpha"
+    )
+    assert uncertainty_path.read_text(encoding="utf-8").startswith(
+        "node\tnode_name\tdescendant_taxa\testimate\tstandard_error"
+    )
+    assert exclusions_path.read_text(encoding="utf-8") == "taxon\treason\n"
 
 
 def test_ancestral_discrete_cli_reports_sparse_state_warning(capsys) -> None:
