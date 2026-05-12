@@ -178,7 +178,10 @@ When the goal is to reconstruct one categorical ancestral trait directly, use
 `ancestral discrete`. This workflow supports a fast Fitch path for parsimony
 review and supports likelihood reconstructions under `equal-rates`,
 `symmetric`, or `all-rates-different` Mk models when reviewers need marginal
-node probabilities instead of only one state label.
+node probabilities instead of only one state label. When the baseline model is
+Fitch, the workflow also reports the minimum parsimony change count, the number
+of ambiguous internal nodes, and an optional direct node-by-node comparison
+against one likelihood model.
 
 ```bash
 bijux-phylogenetics ancestral discrete \
@@ -186,22 +189,29 @@ bijux-phylogenetics ancestral discrete \
   artifacts/primates.csv \
   --trait habitat \
   --taxon-column species \
-  --model equal-rates \
+  --model fitch \
+  --compare-model equal-rates \
   --table-out artifacts/primates.ancestral-discrete-nodes.tsv \
   --summary-out artifacts/primates.ancestral-discrete-summary.tsv \
   --probabilities-out artifacts/primates.ancestral-discrete-probabilities.tsv \
+  --comparison-out artifacts/primates.ancestral-discrete-comparison.tsv \
   --exclusions-out artifacts/primates.ancestral-discrete-excluded.tsv \
   --json
 ```
 
 The node ledger keeps one row per analyzed tip or internal node with the
 reported state label and state set. The summary ledger keeps one row with the
-analyzed taxon count, excluded taxon count, internal node count, unstable node
-count, observed state count, sparse state count, and the root state with its
-confidence. The probabilities ledger keeps one row per internal node with the
+analyzed taxon count, excluded taxon count, internal node count, ambiguous
+internal node count, unstable node count, observed state count, sparse state
+count, and the root state with its confidence. Under Fitch, the same summary
+ledger also preserves the minimum parsimony change count and the number of
+parsimonious root states so the fast path still exposes its evidence burden
+explicitly. The probabilities ledger keeps one row per internal node with the
 full marginal probability vector so reviewers can distinguish a narrow state
-assignment from a weakly resolved one. The excluded-taxa ledger keeps one row
-per dropped tip with an explicit reason such as
+assignment from a weakly resolved one. When `--comparison-out` is supplied,
+the command also writes one direct node-wise comparison ledger between the
+baseline model and the requested comparison model. The excluded-taxa ledger
+keeps one row per dropped tip with an explicit reason such as
 `missing_discrete_trait_state`.
 
 When the goal is to review phylogenetic independent contrasts directly, use
