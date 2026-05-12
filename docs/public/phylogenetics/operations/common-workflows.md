@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-13
 ---
 
 # Common Workflows
@@ -22,6 +22,35 @@ Typical public workflows include:
 
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
+
+When the goal is to start from a real packaged mammal dataset rather than
+assemble a tree and trait table by hand, use `demo primate-comparative`. This
+workflow materializes the packaged primate dataset, which is the first
+repository-owned mammal comparative dataset shipped with the runtime, and then
+recomputes the governed reference outputs for PGLS, Brownian motion, OU,
+phylogenetic signal, and ancestral reconstruction.
+
+```bash
+bijux-phylogenetics demo primate-comparative \
+  --out artifacts/primate-comparative \
+  --json
+```
+
+The `dataset/` directory contains the tree, trait table, and checked reference
+outputs that ship with the package. The `workflow/` directory contains a fresh
+rerun of the same comparative surfaces over those packaged inputs:
+
+- PGLS with `longevity ~ social_group_size`
+- Brownian trait evolution for `longevity`
+- OU trait evolution for `longevity`
+- phylogenetic signal for `longevity`
+- continuous ancestral reconstruction for `longevity`
+- discrete ancestral reconstruction for `mating_system`
+
+This keeps the real mammal dataset usable in two directions. Users can run the
+full packaged workflow immediately, or they can point individual comparative
+commands at `dataset/tree.nwk` and `dataset/traits.csv` with
+`--taxon-column species`.
 
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
