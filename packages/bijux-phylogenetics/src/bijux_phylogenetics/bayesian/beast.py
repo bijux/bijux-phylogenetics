@@ -27,6 +27,7 @@ from bijux_phylogenetics.tree_set import (
     compute_clade_frequency_table,
     compute_consensus_tree,
     load_tree_set,
+    summarize_posterior_topology_diversity,
 )
 
 _BEAST_TREE_PATTERN = re.compile(
@@ -267,6 +268,25 @@ class BeastPosteriorConsensusReport:
     annotated_node_count: int
     minimum_posterior_probability: float | None
     maximum_posterior_probability: float | None
+
+
+@dataclass(slots=True)
+class BeastPosteriorTopologyDiversityReport:
+    source_path: Path
+    retained_tree_set_path: Path
+    burnin_fraction: float
+    total_tree_count: int
+    burnin_tree_count: int
+    kept_tree_count: int
+    rooted_topology_count: int
+    dominant_topology_frequency: float
+    effective_topology_count: float
+    pair_count: int
+    mean_robinson_foulds_distance: float
+    mean_normalized_robinson_foulds_distance: float
+    maximum_robinson_foulds_distance: int
+    maximum_normalized_robinson_foulds_distance: float
+    unstable_clade_count: int
 
 
 @dataclass(slots=True)
@@ -1840,6 +1860,50 @@ def summarize_beast_posterior_trees(
         maximum_posterior_probability=(
             None if not posterior_probabilities else posterior_probabilities[-1]
         ),
+    )
+
+
+def summarize_beast_posterior_topology_diversity(
+    tree_set_path: Path,
+    *,
+    burnin_fraction: float = 0.25,
+) -> BeastPosteriorTopologyDiversityReport:
+    """Summarize BEAST posterior topology diversity after burn-in filtering."""
+    if not 0.0 <= burnin_fraction < 1.0:
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
+    tree_set_report = parse_beast_posterior_tree_samples(
+        tree_set_path,
+        burnin_fraction=burnin_fraction,
+    )
+    if not tree_set_report.trees:
+        raise EngineWorkflowError(
+            f"BEAST posterior tree file is empty after burn-in filtering: {tree_set_path}"
+        )
+    retained_tree_set_path = tree_set_path.with_suffix(".postburnin.nwk")
+    write_beast_posterior_tree_set(retained_tree_set_path, tree_set_report)
+    diversity = summarize_posterior_topology_diversity(retained_tree_set_path)
+    return BeastPosteriorTopologyDiversityReport(
+        source_path=tree_set_path,
+        retained_tree_set_path=retained_tree_set_path,
+        burnin_fraction=tree_set_report.burnin_fraction,
+        total_tree_count=tree_set_report.total_tree_count,
+        burnin_tree_count=tree_set_report.burnin_tree_count,
+        kept_tree_count=tree_set_report.kept_tree_count,
+        rooted_topology_count=diversity.rooted_topology_count,
+        dominant_topology_frequency=diversity.dominant_topology_frequency,
+        effective_topology_count=diversity.effective_topology_count,
+        pair_count=diversity.pair_count,
+        mean_robinson_foulds_distance=diversity.mean_robinson_foulds_distance,
+        mean_normalized_robinson_foulds_distance=(
+            diversity.mean_normalized_robinson_foulds_distance
+        ),
+        maximum_robinson_foulds_distance=diversity.maximum_robinson_foulds_distance,
+        maximum_normalized_robinson_foulds_distance=(
+            diversity.maximum_normalized_robinson_foulds_distance
+        ),
+        unstable_clade_count=diversity.unstable_clade_count,
     )
 
 
