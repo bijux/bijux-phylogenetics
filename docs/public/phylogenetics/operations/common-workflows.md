@@ -70,6 +70,35 @@ negative branch lengths make the covariance invalid, the workflow fails
 explicitly instead of silently regularizing the tree into a different
 scientific assumption.
 
+When the residual structure is expected to reflect pull toward an optimum rather
+than unconstrained Brownian diffusion, use `comparative ou-pgls`. The workflow
+supports either a fixed positive `--alpha` or a governed `estimate` mode that
+profiles alpha across the bounded search grid already used by the OU trait-model
+surface.
+
+```bash
+bijux-phylogenetics comparative ou-pgls \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --response longevity \
+  --predictors social_group_size \
+  --taxon-column species \
+  --alpha estimate \
+  --covariance-out artifacts/primates.ou-covariance.tsv \
+  --alpha-profile-out artifacts/primates.ou-alpha-profile.tsv \
+  --json
+```
+
+That workflow fits the comparative regression under stationary-root OU
+covariance, records the fitted log-likelihood and AIC, and writes two optional
+review ledgers. The covariance ledger keeps one pairwise row per taxon pair
+with the implied OU covariance, shared path length, and root-depth context. The
+alpha profile ledger keeps one row per candidate alpha value, the
+log-likelihood drop from the best-supported fit, and whether the row stays
+inside the likelihood-ratio-supported 95% interval. Fixed-alpha review and
+estimated-alpha review therefore stay explicit instead of being folded into one
+opaque regression number.
+
 When the main question is how strongly the regression residuals prefer
 phylogenetic covariance, write the governed lambda profile in the same run.
 
