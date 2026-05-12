@@ -3117,6 +3117,11 @@ def build_parser() -> argparse.ArgumentParser:
     topology_midpoint.add_argument("tree", type=Path)
     topology_midpoint.add_argument("--out", required=True, type=Path)
     topology_midpoint.add_argument(
+        "--report-out",
+        type=Path,
+        help="Write one-row TSV evidence for the midpoint root placement.",
+    )
+    topology_midpoint.add_argument(
         "--json", action="store_true", help="Emit the rerooting report as JSON."
     )
     _add_manifest_argument(topology_midpoint)
@@ -7865,7 +7870,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             output_path = write_newick(args.out, tree)
             output_paths: list[Path | str] = [output_path]
             if (
-                args.topology_command == "root-outgroup"
+                args.topology_command in {"root-outgroup", "reroot-midpoint"}
                 and getattr(args, "report_out", None) is not None
             ):
                 output_paths.append(write_tree_rooting_report(args.report_out, report))
@@ -7891,6 +7896,16 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         ),
                         "rooted_outgroup_taxa": len(report.rooted_outgroup_taxa),
                         "rooted_ingroup_taxa": len(report.rooted_ingroup_taxa),
+                        "midpoint_anchor_taxa": len(report.midpoint_anchor_taxa),
+                        "midpoint_path_length": report.midpoint_path_length,
+                        "midpoint_position_kind": report.midpoint_position_kind,
+                        "midpoint_anchor_side_taxa": len(
+                            report.midpoint_anchor_side_taxa
+                        ),
+                        "midpoint_opposite_side_taxa": len(
+                            report.midpoint_opposite_side_taxa
+                        ),
+                        "midpoint_suitable": report.midpoint_suitable,
                         "warning_count": len(report.warnings),
                     },
                     data=report,

@@ -3807,8 +3807,11 @@ def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
     ]
 
 
-def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> None:
+def test_cli_topology_reroot_midpoint_writes_tree_and_report(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "midpoint.nwk"
+    report_path = tmp_path / "midpoint.tsv"
     exit_code = main(
         [
             "topology",
@@ -3816,6 +3819,8 @@ def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> Non
             str(fixture("example_tree_rootable.nwk")),
             "--out",
             str(output_path),
+            "--report-out",
+            str(report_path),
             "--json",
         ]
     )
@@ -3826,8 +3831,46 @@ def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> Non
         output_path.read_text(encoding="utf-8")
         == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);\n"
     )
+    report_text = report_path.read_text(encoding="utf-8")
+    assert "midpoint_anchor_taxa" in report_text
+    assert "\tA,C\t1.0\t0.5\tnode\tA,B\tC,D\ttrue\n" in report_text
     assert payload["data"]["strategy"] == "midpoint"
     assert payload["metrics"]["tip_count"] == 4
+    assert payload["metrics"]["midpoint_anchor_taxa"] == 2
+    assert payload["metrics"]["midpoint_path_length"] == 1.0
+    assert payload["metrics"]["midpoint_position_kind"] == "node"
+    assert payload["metrics"]["midpoint_anchor_side_taxa"] == 2
+    assert payload["metrics"]["midpoint_opposite_side_taxa"] == 2
+    assert payload["metrics"]["midpoint_suitable"] is True
+
+
+def test_cli_topology_reroot_midpoint_reports_exploratory_warning(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "midpoint-polytomy.nwk"
+    report_path = tmp_path / "midpoint-polytomy.tsv"
+    exit_code = main(
+        [
+            "topology",
+            "reroot-midpoint",
+            str(fixture("example_tree_polytomy.nwk")),
+            "--out",
+            str(output_path),
+            "--report-out",
+            str(report_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.exists()
+    assert "midpoint_suitable" in report_path.read_text(encoding="utf-8")
+    assert payload["metrics"]["midpoint_suitable"] is False
+    assert payload["metrics"]["warning_count"] == 1
+    assert payload["data"]["warnings"] == [
+        "midpoint rooting is exploratory because the input tree is not strictly bifurcating"
+    ]
 
 
 def test_cli_topology_unroot_writes_trifurcating_tree(tmp_path: Path, capsys) -> None:
