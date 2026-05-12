@@ -778,6 +778,77 @@ This surface exists so early-burst review preserves the bounded rate-change
 profile, the explicit BM/OU comparison contract, and weak-identifiability
 warnings instead of reducing the workflow to one optimistic point estimate.
 
+`comparative rate-through-time` is the governed review surface for inspecting
+whether reconstructed continuous-trait change is concentrated deeper or
+shallower in one rooted tree. Its JSON metrics report:
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `interval_count`
+- `nonempty_interval_count`
+- `tree_depth`
+- `trend_direction`
+- `earliest_interval_rate`
+- `latest_interval_rate`
+- `latest_to_earliest_rate_ratio`
+- `weighted_rate_slope`
+- `normalized_rate_slope`
+
+The command requires a rooted tree with strictly positive branch lengths and at
+least three analyzed taxa with numeric values for the requested trait. It uses
+the Brownian continuous ancestral-state surface to reconstruct internal values,
+then bins branches by root depth and allocates reconstructed squared change
+across those depth intervals.
+
+When `--summary-out` is supplied, `comparative rate-through-time` writes one
+flat summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `interval_count`
+- `nonempty_interval_count`
+- `tree_depth`
+- `ancestral_model`
+- `earliest_interval_rate`
+- `latest_interval_rate`
+- `latest_to_earliest_rate_ratio`
+- `weighted_rate_slope`
+- `normalized_rate_slope`
+- `trend_direction`
+- `peak_interval_index`
+- `trough_interval_index`
+- `assumptions`
+- `warnings`
+
+When `--intervals-out` is supplied, the command also writes one depth-binned
+interval ledger as CSV or TSV. Each row preserves:
+- `interval_index`
+- `start_depth`
+- `end_depth`
+- `midpoint_depth`
+- `branch_length_in_interval`
+- `change_sum`
+- `estimated_rate`
+- `branch_count`
+- `is_empty`
+
+When `--excluded-taxa-out` is supplied, the command also writes one explicit
+excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `missing_from_trait_table`
+- `missing_trait_value`
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+This surface exists so rate-through-time review preserves the interval ledger,
+trend metrics, and pruning contract instead of reducing the workflow to one
+visual impression from a plot or one unqualified scalar trend claim.
+
 `comparative multivariate` is the governed review surface for fitting the same
 comparative predictor set across multiple response traits on one shared
 complete-case taxon set. Its JSON metrics report:
