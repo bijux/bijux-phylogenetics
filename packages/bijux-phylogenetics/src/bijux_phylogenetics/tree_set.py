@@ -13,6 +13,7 @@ from Bio.Phylo.BaseTree import Tree as BioTree
 from bijux_phylogenetics.compare.topology import (
     _informative_clade_nodes,
     _informative_clades,
+    _robinson_foulds_metrics,
     _unrooted_splits,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -601,12 +602,13 @@ def _build_consensus_node(
 def _tree_distance(
     left: PhyloTree, right: PhyloTree, shared_taxa: set[str]
 ) -> tuple[int, float]:
-    left_clades = _informative_clades(left, shared_taxa)
-    right_clades = _informative_clades(right, shared_taxa)
-    symmetric_difference = left_clades.symmetric_difference(right_clades)
-    denominator = len(left_clades) + len(right_clades)
-    normalized = 0.0 if denominator == 0 else len(symmetric_difference) / denominator
-    return len(symmetric_difference), normalized
+    _left_count, _right_count, distance, normalized = _robinson_foulds_metrics(
+        left,
+        right,
+        shared_taxa,
+        rf_mode="rooted",
+    )
+    return distance, normalized
 
 
 def load_tree_set(path: Path) -> TreeSetReport:
