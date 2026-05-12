@@ -64,6 +64,7 @@ from .workflows import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    run_sh_alrt_support_estimation,
 )
 
 __all__ = [
@@ -122,6 +123,7 @@ __all__ = [
     "run_maximum_likelihood_tree_inference",
     "run_model_selection",
     "run_multiple_sequence_alignment",
+    "run_sh_alrt_support_estimation",
     "write_fasta_to_tree_log",
     "write_fasta_to_tree_model_table",
     "write_fasta_to_tree_support_table",

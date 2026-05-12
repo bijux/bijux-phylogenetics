@@ -26,6 +26,7 @@ from bijux_phylogenetics.engines import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    run_sh_alrt_support_estimation,
 )
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
@@ -272,6 +273,23 @@ if "-con" in args:
         encoding="utf-8",
     )
     print("warning: iqtree fixture consensus", file=sys.stderr)
+    raise SystemExit(0)
+
+if "-alrt" in args:
+    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\\n", encoding="utf-8")
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSH-aLRT and ultrafast bootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture sh-alrt log\\nBEST SCORE FOUND : -222.222\\n",
+        encoding="utf-8",
+    )
+    print("warning: iqtree fixture sh-alrt", file=sys.stderr)
     raise SystemExit(0)
 
 if "-bb" in args:
@@ -684,6 +702,45 @@ def test_run_bootstrap_support_estimation_exports_branch_ledgers_and_histogram(
     assert report.bootstrap_support_summary.weakly_supported_clade_count == 0
     assert report.weak_backbone_report is not None
     assert report.weak_backbone_report.weak_backbone_node_count == 0
+
+
+def test_run_sh_alrt_support_estimation_exports_combined_support_and_conflicts(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_sh_alrt_support_estimation(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "sh-alrt",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        sh_alrt_replicates=1000,
+        bootstrap_replicates=1000,
+    )
+
+    assert report.output_paths["support_tree"].exists()
+    assert report.output_paths["bootstrap_trees"].exists()
+    assert report.output_paths["support_table"].read_text(encoding="utf-8") == (
+        "node\tdescendant_taxa\tsh_alrt_support\tsh_alrt_support_fraction\t"
+        "ufboot_support\tufboot_support_fraction\tis_backbone\tsh_alrt_strong\t"
+        "ufboot_strong\tconflicting_support_signal\tsupport_agreement\n"
+        "A|B\tA,B\t82\t0.82\t97\t0.97\ttrue\ttrue\ttrue\tfalse\tboth_strong\n"
+        "C|D\tC,D\t79\t0.79\t96\t0.96\ttrue\tfalse\ttrue\ttrue\tufboot_only\n"
+    )
+    assert (
+        report.output_paths["conflicting_support_branches"].read_text(
+            encoding="utf-8"
+        )
+        == "node\tdescendant_taxa\tsh_alrt_support\tsh_alrt_support_fraction\t"
+        "ufboot_support\tufboot_support_fraction\tis_backbone\tsh_alrt_strong\t"
+        "ufboot_strong\tconflicting_support_signal\tsupport_agreement\n"
+        "C|D\tC,D\t79\t0.79\t96\t0.96\ttrue\tfalse\ttrue\ttrue\tufboot_only\n"
+    )
+    assert report.iqtree_summary is not None
+    assert report.iqtree_summary.support_value_count == 2
+    assert report.sh_alrt_support_summary is not None
+    assert report.sh_alrt_support_summary.conflicting_support_signal_count == 1
 
 
 def test_trimal_trimming_modes_resolve_to_explicit_documented_arguments() -> None:

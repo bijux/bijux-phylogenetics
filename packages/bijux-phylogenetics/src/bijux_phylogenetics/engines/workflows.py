@@ -65,11 +65,19 @@ from .iqtree_artifacts import (
     resolve_iqtree_model_sidecar,
     write_iqtree_model_candidates_table,
 )
+from .sh_alrt_artifacts import (
+    build_conflicting_sh_alrt_support_rows,
+    build_sh_alrt_support_rows,
+    write_sh_alrt_support_table,
+)
 from .validation import (
     BootstrapSupportNode,
     BootstrapSupportSummaryReport,
+    ShAlrtSupportNode,
+    ShAlrtSupportSummaryReport,
     WeakBackboneReport,
     detect_weakly_supported_backbone,
+    summarize_sh_alrt_support_distribution,
     summarize_bootstrap_support_distribution,
 )
 _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
@@ -104,6 +112,7 @@ class EngineWorkflowReport:
     iqtree_summary: IqtreeWorkflowSummary | None = None
     model_selection_summary: IqtreeModelSelectionSummary | None = None
     bootstrap_support_summary: BootstrapSupportSummaryReport | None = None
+    sh_alrt_support_summary: ShAlrtSupportSummaryReport | None = None
     weak_backbone_report: WeakBackboneReport | None = None
     trimming_summary: AlignmentTrimmingSummary | None = None
     resumed: bool = False
@@ -716,6 +725,126 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ],
             )
         ),
+        sh_alrt_support_summary=(
+            None
+            if payload.get("sh_alrt_support_summary") is None
+            else ShAlrtSupportSummaryReport(
+                tree_path=Path(dict(payload["sh_alrt_support_summary"])["tree_path"]),
+                internal_node_count=int(
+                    dict(payload["sh_alrt_support_summary"])["internal_node_count"]
+                ),
+                annotated_node_count=int(
+                    dict(payload["sh_alrt_support_summary"])["annotated_node_count"]
+                ),
+                fully_scored_node_count=int(
+                    dict(payload["sh_alrt_support_summary"])["fully_scored_node_count"]
+                ),
+                minimum_sh_alrt_support=(
+                    None
+                    if dict(payload["sh_alrt_support_summary"]).get(
+                        "minimum_sh_alrt_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["sh_alrt_support_summary"])[
+                            "minimum_sh_alrt_support"
+                        ]
+                    )
+                ),
+                maximum_sh_alrt_support=(
+                    None
+                    if dict(payload["sh_alrt_support_summary"]).get(
+                        "maximum_sh_alrt_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["sh_alrt_support_summary"])[
+                            "maximum_sh_alrt_support"
+                        ]
+                    )
+                ),
+                minimum_ufboot_support=(
+                    None
+                    if dict(payload["sh_alrt_support_summary"]).get(
+                        "minimum_ufboot_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["sh_alrt_support_summary"])[
+                            "minimum_ufboot_support"
+                        ]
+                    )
+                ),
+                maximum_ufboot_support=(
+                    None
+                    if dict(payload["sh_alrt_support_summary"]).get(
+                        "maximum_ufboot_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["sh_alrt_support_summary"])[
+                            "maximum_ufboot_support"
+                        ]
+                    )
+                ),
+                weak_sh_alrt_clade_count=int(
+                    dict(payload["sh_alrt_support_summary"])[
+                        "weak_sh_alrt_clade_count"
+                    ]
+                ),
+                weak_ufboot_clade_count=int(
+                    dict(payload["sh_alrt_support_summary"])[
+                        "weak_ufboot_clade_count"
+                    ]
+                ),
+                conflicting_support_signal_count=int(
+                    dict(payload["sh_alrt_support_summary"])[
+                        "conflicting_support_signal_count"
+                    ]
+                ),
+                nodes=[
+                    ShAlrtSupportNode(
+                        node=str(dict(item)["node"]),
+                        descendant_taxa=[
+                            str(taxon)
+                            for taxon in list(dict(item)["descendant_taxa"])
+                        ],
+                        sh_alrt_support=(
+                            None
+                            if dict(item).get("sh_alrt_support") is None
+                            else float(dict(item)["sh_alrt_support"])
+                        ),
+                        sh_alrt_support_fraction=(
+                            None
+                            if dict(item).get("sh_alrt_support_fraction") is None
+                            else float(dict(item)["sh_alrt_support_fraction"])
+                        ),
+                        ufboot_support=(
+                            None
+                            if dict(item).get("ufboot_support") is None
+                            else float(dict(item)["ufboot_support"])
+                        ),
+                        ufboot_support_fraction=(
+                            None
+                            if dict(item).get("ufboot_support_fraction") is None
+                            else float(dict(item)["ufboot_support_fraction"])
+                        ),
+                        is_backbone=bool(dict(item)["is_backbone"]),
+                        sh_alrt_strong=bool(dict(item)["sh_alrt_strong"]),
+                        ufboot_strong=bool(dict(item)["ufboot_strong"]),
+                        conflicting_support_signal=bool(
+                            dict(item)["conflicting_support_signal"]
+                        ),
+                        support_agreement=str(dict(item)["support_agreement"]),
+                    )
+                    for item in list(dict(payload["sh_alrt_support_summary"])["nodes"])
+                ],
+                warnings=[
+                    str(item)
+                    for item in list(dict(payload["sh_alrt_support_summary"])["warnings"])
+                ],
+            )
+        ),
         weak_backbone_report=(
             None
             if payload.get("weak_backbone_report") is None
@@ -834,6 +963,14 @@ def _resume_has_bootstrap_review_outputs(report: EngineWorkflowReport) -> bool:
     )
 
 
+def _resume_has_sh_alrt_review_outputs(report: EngineWorkflowReport) -> bool:
+    return (
+        report.sh_alrt_support_summary is not None
+        and report.output_paths.get("support_table") is not None
+        and report.output_paths.get("conflicting_support_branches") is not None
+    )
+
+
 def _iqtree_sequence_type_flag(
     path: Path, sequence_type: AlignmentAlphabet | None
 ) -> list[str]:
@@ -872,6 +1009,11 @@ def _validate_ufboot_replicates(replicates: int) -> None:
             "iqtree ultrafast bootstrap requires at least "
             f"{_MINIMUM_UFBOOT_REPLICATES} replicates, got {replicates}"
         )
+
+
+def _validate_sh_alrt_replicates(replicates: int) -> None:
+    if replicates < 1:
+        raise ValueError(f"sh-alrt replicates must be positive, got {replicates}")
 
 
 def _parse_best_model_artifact(prefix_path: Path) -> str | None:
@@ -1620,6 +1762,187 @@ def run_bootstrap_support_estimation(
             "branch-level support table exported for bootstrap review",
             "low-support branch ledger exported for weak-clade review",
             "support histogram exported for reviewer-facing support distribution checks",
+        ],
+    )
+    return _persist_workflow_report(report)
+
+
+def run_sh_alrt_support_estimation(
+    input_path: Path,
+    *,
+    out_dir: Path,
+    model: str,
+    sh_alrt_replicates: int = 1000,
+    bootstrap_replicates: int = 1000,
+    prefix: str = "sh-alrt-support",
+    executable: str | Path = "iqtree2",
+    sequence_type: AlignmentAlphabet | None = None,
+    partition_path: Path | None = None,
+    resume: bool = False,
+    seed: int = 1,
+    threads: int = 1,
+) -> EngineWorkflowReport:
+    """Run combined SH-aLRT and UFBoot branch-support estimation."""
+    _validate_sh_alrt_replicates(sh_alrt_replicates)
+    _validate_ufboot_replicates(bootstrap_replicates)
+    _ensure_inference_ready_alignment(input_path)
+    prefix_path = _prefix_path(out_dir, prefix)
+    version = read_engine_version("iqtree", executable, version_args=("--version",))
+    resolved = resolve_engine_executable(executable)
+    prepared_partitions = (
+        None
+        if partition_path is None
+        else _prepare_iqtree_partitions(
+            input_path,
+            partition_path,
+            prefix_path=prefix_path,
+        )
+    )
+    if (
+        prepared_partitions is not None
+        and not _iqtree_partition_supports_fixed_model(
+            model=model,
+            mixed_data_types=prepared_partitions.mixed_data_types,
+        )
+    ):
+        raise EngineWorkflowError(
+            "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
+        )
+    support_tree_path = prefix_path.with_suffix(".treefile")
+    bootstrap_tree_path = prefix_path.with_suffix(".ufboot")
+    support_table_path = prefix_path.with_suffix(".support.tsv")
+    conflicting_support_branches_path = prefix_path.with_suffix(
+        ".conflicting-support.tsv"
+    )
+    report_path = prefix_path.with_suffix(".iqtree")
+    log_path = prefix_path.with_suffix(".log")
+    manifest_path = prefix_path.with_suffix(".manifest.json")
+    command = [
+        resolved,
+        *(
+            prepared_partitions.command_args
+            if prepared_partitions is not None
+            else ["-s", str(input_path.resolve())]
+        ),
+        *(
+            []
+            if prepared_partitions is not None and prepared_partitions.mixed_data_types
+            else _iqtree_sequence_type_flag(input_path, sequence_type)
+        ),
+        *_iqtree_execution_controls(seed=seed, threads=threads),
+        "-m",
+        model,
+        "-alrt",
+        str(sh_alrt_replicates),
+        "-bb",
+        str(bootstrap_replicates),
+        "-wbt",
+        "-pre",
+        str(prefix_path.resolve()),
+    ]
+    if resume:
+        resumed = _resume_existing_workflow(
+            manifest_path=manifest_path,
+            input_paths=(
+                [input_path]
+                if partition_path is None
+                else [input_path, partition_path]
+            ),
+            expected_command=command,
+        )
+        if resumed is not None and _resume_has_sh_alrt_review_outputs(resumed):
+            return resumed
+    run = execute_engine_command(
+        engine_name="iqtree",
+        workflow="sh-alrt-support",
+        executable=resolved,
+        version=version,
+        command_args=command[1:],
+        work_dir=out_dir,
+        stdout_path=prefix_path.with_suffix(".stdout.log"),
+        stderr_path=prefix_path.with_suffix(".stderr.log"),
+        output_paths={
+            "support_tree": support_tree_path,
+            "bootstrap_trees": bootstrap_tree_path,
+            "iqtree_report": report_path,
+            "iqtree_log": log_path,
+        },
+    )
+    _validate_tree_output(support_tree_path)
+    if not bootstrap_tree_path.read_text(encoding="utf-8").strip():
+        raise EngineWorkflowError(f"bootstrap tree set is empty: {bootstrap_tree_path}")
+    iqtree_summary = _build_iqtree_summary(
+        prefix_path,
+        default_selected_model=model,
+        support_tree_path=support_tree_path,
+    )
+    bootstrap_support_summary = summarize_bootstrap_support_distribution(
+        support_tree_path
+    )
+    sh_alrt_support_summary = summarize_sh_alrt_support_distribution(
+        support_tree_path
+    )
+    write_sh_alrt_support_table(
+        support_table_path,
+        build_sh_alrt_support_rows(sh_alrt_support_summary),
+    )
+    write_sh_alrt_support_table(
+        conflicting_support_branches_path,
+        build_conflicting_sh_alrt_support_rows(sh_alrt_support_summary),
+    )
+    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
+    report = EngineWorkflowReport(
+        workflow="sh-alrt-support",
+        engine_name="iqtree",
+        input_paths=(
+            [input_path]
+            if partition_path is None
+            else [input_path, partition_path]
+        ),
+        output_paths={
+            **({} if prepared_partitions is None else prepared_partitions.output_paths),
+            **_existing_iqtree_outputs(
+                prefix_path,
+                include_tree=False,
+                include_bootstrap=True,
+                include_consensus=True,
+            ),
+            "support_tree": support_tree_path,
+            "support_table": support_table_path,
+            "conflicting_support_branches": conflicting_support_branches_path,
+        },
+        run=run,
+        manifest_path=manifest_path,
+        input_checksums=build_file_checksums(
+            [input_path] if partition_path is None else [input_path, partition_path]
+        ),
+        output_checksums={},
+        selected_model=iqtree_summary.selected_model,
+        log_likelihood=iqtree_summary.log_likelihood,
+        iqtree_summary=iqtree_summary,
+        model_selection_summary=model_selection_summary,
+        bootstrap_support_summary=bootstrap_support_summary,
+        sh_alrt_support_summary=sh_alrt_support_summary,
+        notes=[
+            *([] if prepared_partitions is None else prepared_partitions.notes),
+            f"iqtree random seed: {seed}",
+            f"iqtree threads: {threads}",
+            f"sh-alrt replicates: {sh_alrt_replicates}",
+            f"ultrafast bootstrap replicates: {bootstrap_replicates}",
+            "combined sh-alrt and ufboot branch-support table exported for review",
+            "conflicting sh-alrt versus ufboot support signals exported for review",
+            *(
+                []
+                if iqtree_summary.log_likelihood is None
+                else ["log-likelihood parsed from iqtree support inference artifacts"]
+            ),
+            *(
+                []
+                if sh_alrt_support_summary.annotated_node_count == 0
+                else [
+                    "combined sh-alrt and ufboot support values parsed from the supported tree artifact"
+                ]
+            ),
         ],
     )
     return _persist_workflow_report(report)
