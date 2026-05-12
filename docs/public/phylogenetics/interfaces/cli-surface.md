@@ -91,6 +91,15 @@ FastTree support labels are SH-like local-support proportions on a `0..1`
 scale, and the workflow should be treated as approximate evidence rather than
 as a silent substitute for the IQ-TREE ML workflows.
 
+`adapter infer-large` is the governed aligned-matrix FastTree surface for
+larger inputs when you need streamed preflight validation, direct resource
+reporting, and resumable output checks. It keeps the inferred tree plus
+`.support.tsv`, `.low-support.tsv`, `.support-histogram.tsv`, `.resources.tsv`,
+`.log`, and `.manifest.json` sidecars. Its JSON summary exposes sequence
+count, alignment length, total site cells, resolved sequence type, resumed
+status, timeout budget, and the maximum observed peak-memory measurement across
+the recorded workflow stages.
+
 `adapter compare-engines` is the governed side-by-side inference mode for one
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
 support inference, and FastTree approximate inference on the same input, then
