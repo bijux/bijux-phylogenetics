@@ -321,6 +321,49 @@ one-tree `biogeography model` workflow should therefore be interpreted as
 model-conditioned geographic state evidence rather than as direct proof of
 dispersal timing or mechanism.
 
+When the goal is to forbid impossible region changes and compare that
+constraint against the unconstrained fit, use `biogeography constrained`. This
+workflow accepts one rooted tree, one taxon-region table, and one explicit
+region adjacency matrix. It reuses the owned likelihood discrete ancestral
+runtime to fit one constrained and one unconstrained geographic model on the
+same analyzed taxa, then writes reviewer-facing ledgers for fit comparison,
+pairwise transition-rate comparison, forbidden unconstrained branch claims, and
+excluded taxa.
+
+```bash
+bijux-phylogenetics biogeography constrained \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  artifacts/region-adjacency.tsv \
+  --trait region \
+  --taxon-column species \
+  --model ard \
+  --summary-out artifacts/primates.biogeography-constrained-summary.tsv \
+  --fits-out artifacts/primates.biogeography-constrained-fits.tsv \
+  --transitions-out artifacts/primates.biogeography-constrained-transitions.tsv \
+  --unsupported-out artifacts/primates.biogeography-constrained-unsupported.tsv \
+  --exclusions-out artifacts/primates.biogeography-constrained-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, observed region
+count, allowed and forbidden transition counts, constrained and unconstrained
+likelihoods, AIC difference, preferred constraint regime, unsupported
+transition-claim count, and warning count. The fit ledger keeps one row per
+constraint regime with root region and fit evidence. The transition ledger
+keeps one row per directed region pair with the allowed flag plus constrained
+and unconstrained rates. The unsupported-claims ledger keeps one row per
+unconstrained branchwise transition claim that violates the supplied adjacency
+matrix, including the constrained replacement claim on the same branch. The
+excluded-taxa ledger keeps dropped or unsupported raw region rows.
+
+The constrained geography surface is explicit about scope. It is an
+adjacency-constrained likelihood review over the owned discrete ancestral
+runtime, not a richer time-stratified dispersal-extinction-cladogenesis model.
+Its value is to show where unconstrained geographic transition claims are not
+compatible with the supplied region-connectivity contract and whether the
+constrained fit remains competitive.
+
 When the goal is to compare inferred geographic transition pressure across
 explicit historical intervals, use `biogeography time-stratified`. This
 workflow accepts one rooted tree with positive branch lengths, one taxon-region
