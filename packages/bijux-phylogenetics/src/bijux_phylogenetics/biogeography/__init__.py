@@ -14,6 +14,18 @@ from bijux_phylogenetics.biogeography.geographic_states import (
     write_geographic_transition_event_table,
     write_geographic_transition_rate_table,
 )
+from bijux_phylogenetics.biogeography.time_stratified import (
+    TimeBinDefinition,
+    TimeStratifiedBranchRow,
+    TimeStratifiedTransitionMatrixRow,
+    TimeStratifiedTransitionReport,
+    TimeStratifiedTransitionSummary,
+    summarize_time_stratified_geographic_transitions,
+    write_time_stratified_branch_table,
+    write_time_stratified_exclusion_table,
+    write_time_stratified_transition_matrix_table,
+    write_time_stratified_transition_summary_table,
+)
 
 __all__ = [
     "GeographicExcludedTaxonRow",
@@ -22,10 +34,20 @@ __all__ = [
     "GeographicStateSummary",
     "GeographicTransitionEventRow",
     "GeographicTransitionRateRow",
+    "TimeBinDefinition",
+    "TimeStratifiedBranchRow",
+    "TimeStratifiedTransitionMatrixRow",
+    "TimeStratifiedTransitionReport",
+    "TimeStratifiedTransitionSummary",
     "summarize_geographic_state_model",
+    "summarize_time_stratified_geographic_transitions",
     "write_geographic_exclusion_table",
     "write_geographic_region_probability_table",
     "write_geographic_state_summary_table",
     "write_geographic_transition_event_table",
     "write_geographic_transition_rate_table",
+    "write_time_stratified_branch_table",
+    "write_time_stratified_exclusion_table",
+    "write_time_stratified_transition_matrix_table",
+    "write_time_stratified_transition_summary_table",
 ]
