@@ -25,6 +25,10 @@ from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
     summarize_alignment_readiness,
 )
+from bijux_phylogenetics.io.fasttree_support import (
+    FastTreeBranchSupportLabel,
+    parse_fasttree_branch_support_label,
+)
 from bijux_phylogenetics.io.iqtree_support import (
     IqtreeBranchSupportLabel,
     parse_iqtree_branch_support_label,
@@ -139,6 +143,32 @@ class BootstrapSupportSummaryReport:
     weakly_supported_clade_count: int
     support_histogram: dict[str, int]
     nodes: list[BootstrapSupportNode]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class FastTreeSupportNode:
+    node: str
+    descendant_taxa: list[str]
+    local_support: float
+    support_fraction: float
+    is_backbone: bool
+
+
+@dataclass(slots=True)
+class FastTreeSupportSummaryReport:
+    tree_path: Path
+    internal_node_count: int
+    annotated_node_count: int
+    minimum_local_support: float | None
+    maximum_local_support: float | None
+    median_local_support: float | None
+    weakly_supported_clade_count: int
+    support_histogram: dict[str, int]
+    approximate_method: bool
+    support_label_kind: str
+    support_scale: str
+    nodes: list[FastTreeSupportNode]
     warnings: list[str]
 
 
@@ -671,6 +701,73 @@ def summarize_bootstrap_support_distribution(
     )
 
 
+def summarize_fasttree_support_distribution(
+    tree_path: Path,
+    *,
+    weak_support_threshold: float = 0.7,
+) -> FastTreeSupportSummaryReport:
+    """Summarize FastTree SH-like local support labels across one tree."""
+    tree = load_tree(tree_path)
+    nodes: list[FastTreeSupportNode] = []
+    warnings: list[str] = []
+    total_tip_count = tree.tip_count
+    internal_node_count = sum(1 for node in tree.iter_nodes() if not node.is_leaf())
+    for node in tree.iter_nodes():
+        if node.is_leaf():
+            continue
+        descendant_taxa = node_descendant_taxa(node)
+        support_label = _parse_fasttree_support_label(node.name)
+        if support_label is None:
+            continue
+        local_support = support_label.local_support
+        nodes.append(
+            FastTreeSupportNode(
+                node="|".join(descendant_taxa)
+                if descendant_taxa
+                else (node.name or "<unnamed>"),
+                descendant_taxa=descendant_taxa,
+                local_support=local_support,
+                support_fraction=local_support,
+                is_backbone=len(descendant_taxa) >= max(2, total_tip_count // 2),
+            )
+        )
+    histogram = {
+        "lt0p5": sum(1 for node in nodes if node.local_support < 0.5),
+        "0p5to0p69": sum(1 for node in nodes if 0.5 <= node.local_support < 0.7),
+        "0p7to0p89": sum(1 for node in nodes if 0.7 <= node.local_support < 0.9),
+        "ge0p9": sum(1 for node in nodes if node.local_support >= 0.9),
+    }
+    supports = sorted(node.local_support for node in nodes)
+    if len(nodes) < internal_node_count:
+        warnings.append(
+            "one or more internal nodes did not expose parsable FastTree local support labels"
+        )
+    if any(node.local_support < weak_support_threshold for node in nodes):
+        warnings.append(
+            "one or more internal clades remain weakly supported by FastTree local support"
+        )
+    warnings.append(
+        "FastTree is an approximately maximum-likelihood workflow and its SH-like local support values should be reviewed as approximate evidence"
+    )
+    return FastTreeSupportSummaryReport(
+        tree_path=tree_path,
+        internal_node_count=internal_node_count,
+        annotated_node_count=len(nodes),
+        minimum_local_support=None if not supports else supports[0],
+        maximum_local_support=None if not supports else supports[-1],
+        median_local_support=_median_support(supports),
+        weakly_supported_clade_count=sum(
+            1 for node in nodes if node.local_support < weak_support_threshold
+        ),
+        support_histogram=histogram,
+        approximate_method=True,
+        support_label_kind="sh-like-local-support",
+        support_scale="proportion-0-to-1",
+        nodes=nodes,
+        warnings=warnings,
+    )
+
+
 def detect_weakly_supported_backbone(
     tree_path: Path,
     *,
@@ -813,6 +910,12 @@ def _parse_iqtree_support_label(
     value: str | None,
 ) -> IqtreeBranchSupportLabel | None:
     return parse_iqtree_branch_support_label(value)
+
+
+def _parse_fasttree_support_label(
+    value: str | None,
+) -> FastTreeBranchSupportLabel | None:
+    return parse_fasttree_branch_support_label(value)
 
 
 def _support_agreement(
@@ -1001,6 +1104,56 @@ def validate_inference_engine_outputs(
             issues.append(
                 "maximum-likelihood manifest is missing the log_likelihood field"
             )
+    elif workflow == "fast-approximate-tree":
+        if output_paths.get("support_table") is None:
+            issues.append(
+                "fast-approximate-tree manifest is missing the support_table output"
+            )
+        if output_paths.get("low_support_branches") is None:
+            issues.append(
+                "fast-approximate-tree manifest is missing the low_support_branches output"
+            )
+        if output_paths.get("support_histogram") is None:
+            issues.append(
+                "fast-approximate-tree manifest is missing the support_histogram output"
+            )
+        fasttree_support_summary = manifest.get("fasttree_support_summary")
+        if not isinstance(fasttree_support_summary, dict):
+            issues.append(
+                "fast-approximate-tree manifest is missing the fasttree_support_summary"
+            )
+        else:
+            if int(fasttree_support_summary.get("annotated_node_count", 0)) < 1:
+                issues.append(
+                    "fast-approximate-tree manifest does not record any parsed FastTree local support labels"
+                )
+            histogram = fasttree_support_summary.get("support_histogram")
+            if not isinstance(histogram, dict):
+                issues.append(
+                    "fast-approximate-tree manifest does not record the FastTree support histogram"
+                )
+            elif sorted(histogram) != ["0p5to0p69", "0p7to0p89", "ge0p9", "lt0p5"]:
+                issues.append(
+                    "fast-approximate-tree manifest records an incomplete FastTree support histogram"
+                )
+            if fasttree_support_summary.get("approximate_method") is not True:
+                issues.append(
+                    "fast-approximate-tree manifest does not record the FastTree approximation contract"
+                )
+            if (
+                fasttree_support_summary.get("support_label_kind")
+                != "sh-like-local-support"
+            ):
+                issues.append(
+                    "fast-approximate-tree manifest does not record the FastTree support label kind"
+                )
+            if (
+                fasttree_support_summary.get("support_scale")
+                != "proportion-0-to-1"
+            ):
+                issues.append(
+                    "fast-approximate-tree manifest does not record the FastTree support scale"
+                )
     elif workflow == "bootstrap-support":
         bootstrap_path = output_paths.get("bootstrap_trees")
         if bootstrap_path is None:

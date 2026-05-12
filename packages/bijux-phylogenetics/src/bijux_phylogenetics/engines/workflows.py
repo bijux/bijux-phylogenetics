@@ -56,6 +56,13 @@ from .bootstrap_artifacts import (
     write_bootstrap_support_histogram,
     write_bootstrap_support_table,
 )
+from .fasttree_artifacts import (
+    build_fasttree_low_support_rows,
+    build_fasttree_support_histogram_rows,
+    build_fasttree_support_rows,
+    write_fasttree_support_histogram,
+    write_fasttree_support_table,
+)
 from .iqtree_artifacts import (
     IqtreeModelCandidate,
     IqtreeModelSelectionSummary,
@@ -73,10 +80,13 @@ from .sh_alrt_artifacts import (
 from .validation import (
     BootstrapSupportNode,
     BootstrapSupportSummaryReport,
+    FastTreeSupportNode,
+    FastTreeSupportSummaryReport,
     ShAlrtSupportNode,
     ShAlrtSupportSummaryReport,
     WeakBackboneReport,
     detect_weakly_supported_backbone,
+    summarize_fasttree_support_distribution,
     summarize_sh_alrt_support_distribution,
     summarize_bootstrap_support_distribution,
 )
@@ -112,6 +122,7 @@ class EngineWorkflowReport:
     iqtree_summary: IqtreeWorkflowSummary | None = None
     model_selection_summary: IqtreeModelSelectionSummary | None = None
     bootstrap_support_summary: BootstrapSupportSummaryReport | None = None
+    fasttree_support_summary: FastTreeSupportSummaryReport | None = None
     sh_alrt_support_summary: ShAlrtSupportSummaryReport | None = None
     weak_backbone_report: WeakBackboneReport | None = None
     trimming_summary: AlignmentTrimmingSummary | None = None
@@ -725,6 +736,92 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ],
             )
         ),
+        fasttree_support_summary=(
+            None
+            if payload.get("fasttree_support_summary") is None
+            else FastTreeSupportSummaryReport(
+                tree_path=Path(dict(payload["fasttree_support_summary"])["tree_path"]),
+                internal_node_count=int(
+                    dict(payload["fasttree_support_summary"])["internal_node_count"]
+                ),
+                annotated_node_count=int(
+                    dict(payload["fasttree_support_summary"])["annotated_node_count"]
+                ),
+                minimum_local_support=(
+                    None
+                    if dict(payload["fasttree_support_summary"]).get(
+                        "minimum_local_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["fasttree_support_summary"])[
+                            "minimum_local_support"
+                        ]
+                    )
+                ),
+                maximum_local_support=(
+                    None
+                    if dict(payload["fasttree_support_summary"]).get(
+                        "maximum_local_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["fasttree_support_summary"])[
+                            "maximum_local_support"
+                        ]
+                    )
+                ),
+                median_local_support=(
+                    None
+                    if dict(payload["fasttree_support_summary"]).get(
+                        "median_local_support"
+                    )
+                    is None
+                    else float(
+                        dict(payload["fasttree_support_summary"])[
+                            "median_local_support"
+                        ]
+                    )
+                ),
+                weakly_supported_clade_count=int(
+                    dict(payload["fasttree_support_summary"])[
+                        "weakly_supported_clade_count"
+                    ]
+                ),
+                support_histogram={
+                    str(key): int(value)
+                    for key, value in dict(
+                        dict(payload["fasttree_support_summary"])["support_histogram"]
+                    ).items()
+                },
+                approximate_method=bool(
+                    dict(payload["fasttree_support_summary"])["approximate_method"]
+                ),
+                support_label_kind=str(
+                    dict(payload["fasttree_support_summary"])["support_label_kind"]
+                ),
+                support_scale=str(
+                    dict(payload["fasttree_support_summary"])["support_scale"]
+                ),
+                nodes=[
+                    FastTreeSupportNode(
+                        node=str(dict(item)["node"]),
+                        descendant_taxa=[
+                            str(taxon)
+                            for taxon in list(dict(item)["descendant_taxa"])
+                        ],
+                        local_support=float(dict(item)["local_support"]),
+                        support_fraction=float(dict(item)["support_fraction"]),
+                        is_backbone=bool(dict(item)["is_backbone"]),
+                    )
+                    for item in list(dict(payload["fasttree_support_summary"])["nodes"])
+                ],
+                warnings=[
+                    str(item)
+                    for item in list(dict(payload["fasttree_support_summary"])["warnings"])
+                ],
+            )
+        ),
         sh_alrt_support_summary=(
             None
             if payload.get("sh_alrt_support_summary") is None
@@ -957,6 +1054,15 @@ def _resume_has_bootstrap_review_outputs(report: EngineWorkflowReport) -> bool:
     return (
         report.bootstrap_support_summary is not None
         and report.weak_backbone_report is not None
+        and report.output_paths.get("support_table") is not None
+        and report.output_paths.get("low_support_branches") is not None
+        and report.output_paths.get("support_histogram") is not None
+    )
+
+
+def _resume_has_fasttree_review_outputs(report: EngineWorkflowReport) -> bool:
+    return (
+        report.fasttree_support_summary is not None
         and report.output_paths.get("support_table") is not None
         and report.output_paths.get("low_support_branches") is not None
         and report.output_paths.get("support_histogram") is not None
@@ -2035,6 +2141,9 @@ def run_fast_tree_inference(
     """Run a fast approximate tree inference engine against an aligned FASTA file."""
     _ensure_inference_ready_alignment(input_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    support_table_path = _sidecar(out_path, "support.tsv")
+    low_support_branches_path = _sidecar(out_path, "low-support.tsv")
+    support_histogram_path = _sidecar(out_path, "support-histogram.tsv")
     version = read_engine_version("FastTree", executable, version_args=("-help",))
     resolved = resolve_engine_executable(executable)
     manifest_path = _manifest_path_from_output(out_path)
@@ -2045,7 +2154,7 @@ def run_fast_tree_inference(
             input_paths=[input_path],
             expected_command=command,
         )
-        if resumed is not None:
+        if resumed is not None and _resume_has_fasttree_review_outputs(resumed):
             return resumed
     run = execute_engine_command(
         engine_name="FastTree",
@@ -2059,16 +2168,42 @@ def run_fast_tree_inference(
         output_paths={"tree": out_path},
     )
     _validate_tree_output(out_path)
+    fasttree_support_summary = summarize_fasttree_support_distribution(out_path)
+    write_fasttree_support_table(
+        support_table_path,
+        build_fasttree_support_rows(fasttree_support_summary),
+    )
+    write_fasttree_support_table(
+        low_support_branches_path,
+        build_fasttree_low_support_rows(fasttree_support_summary),
+    )
+    write_fasttree_support_histogram(
+        support_histogram_path,
+        build_fasttree_support_histogram_rows(fasttree_support_summary),
+    )
     report = EngineWorkflowReport(
         workflow="fast-approximate-tree",
         engine_name="FastTree",
         input_paths=[input_path],
-        output_paths={"tree": out_path},
+        output_paths={
+            "tree": out_path,
+            "support_table": support_table_path,
+            "low_support_branches": low_support_branches_path,
+            "support_histogram": support_histogram_path,
+        },
         run=run,
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
-        notes=["fast approximate tree validated as parseable Newick output"],
+        fasttree_support_summary=fasttree_support_summary,
+        notes=[
+            "fast approximate tree validated as parseable Newick output",
+            "FastTree is an approximately maximum-likelihood engine and should be reviewed as an exploratory or large-alignment inference method",
+            "FastTree local support values are SH-like support proportions on the documented 0-1 scale",
+            "branch-level FastTree local support table exported for review",
+            "low-support FastTree branch ledger exported for weak-clade review",
+            "FastTree local support histogram exported for reviewer-facing distribution checks",
+        ],
     )
     return _persist_workflow_report(report)
 

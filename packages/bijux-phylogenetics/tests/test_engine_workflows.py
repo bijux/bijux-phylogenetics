@@ -351,7 +351,7 @@ if not args or "-help" in args:
     print("FastTree Version 2.2 fixture")
     raise SystemExit(0)
 
-print("((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);")
+print("((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);")
 print("warning: fasttree fixture approximate support only", file=sys.stderr)
 """,
     )
@@ -987,6 +987,30 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert fast_report.run.warning_lines == [
         "warning: fasttree fixture approximate support only"
     ]
+    assert fast_report.fasttree_support_summary is not None
+    assert fast_report.fasttree_support_summary.annotated_node_count == 2
+    assert fast_report.fasttree_support_summary.minimum_local_support == pytest.approx(
+        0.62
+    )
+    assert fast_report.fasttree_support_summary.maximum_local_support == pytest.approx(
+        0.98
+    )
+    assert fast_report.fasttree_support_summary.support_label_kind == (
+        "sh-like-local-support"
+    )
+    assert fast_report.fasttree_support_summary.support_scale == "proportion-0-to-1"
+    assert fast_report.output_paths["support_table"].exists()
+    assert fast_report.output_paths["low_support_branches"].exists()
+    assert fast_report.output_paths["support_histogram"].exists()
+    assert "0.98" in fast_report.output_paths["support_table"].read_text(
+        encoding="utf-8"
+    )
+    assert "0.62" in fast_report.output_paths["low_support_branches"].read_text(
+        encoding="utf-8"
+    )
+    assert any(
+        "approximately maximum-likelihood" in note for note in fast_report.notes
+    )
     assert ml_report.output_paths["iqtree_log"].exists()
     assert bootstrap_report.output_paths["iqtree_log"].exists()
     assert consensus_report.output_paths["iqtree_log"].exists()
@@ -999,6 +1023,32 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert bootstrap_report.iqtree_summary.support_value_count == 2
     assert consensus_report.iqtree_summary is not None
     assert consensus_report.iqtree_summary.support_value_count == 2
+
+
+def test_run_fast_tree_inference_supports_nucleotide_and_protein_modes(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_fasttree(tmp_path / "fasttree-fixture")
+
+    dna_report = run_fast_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        tmp_path / "dna-fasttree.nwk",
+        executable=executable,
+        sequence_type="dna",
+    )
+    protein_report = run_fast_tree_inference(
+        fixture("alignments/example_alignment_protein.fasta"),
+        tmp_path / "protein-fasttree.nwk",
+        executable=executable,
+        sequence_type="protein",
+    )
+
+    assert dna_report.run.command[1:3] == ["-gtr", "-nt"]
+    assert dna_report.fasttree_support_summary is not None
+    assert dna_report.fasttree_support_summary.annotated_node_count == 2
+    assert protein_report.run.command[1] == "-lg"
+    assert protein_report.fasttree_support_summary is not None
+    assert protein_report.fasttree_support_summary.annotated_node_count == 2
 
 
 def test_run_ml_and_bootstrap_support_mixed_partition_datatypes(tmp_path: Path) -> None:

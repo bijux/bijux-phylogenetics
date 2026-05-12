@@ -539,6 +539,27 @@ def test_validate_inference_engine_outputs_checks_manifest_consistency(
     assert report.valid is True
     assert report.current_output_checksum_match is True
 
+
+def test_validate_inference_engine_outputs_requires_fasttree_support_evidence(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_fast_tree_inference
+
+    executable = _fake_fasttree_tree(
+        tmp_path / "fasttree-engine",
+        tree_newick="((A:0.1,B:0.1)0.96:0.3,(C:0.1,D:0.1)0.64:0.3);",
+    )
+    workflow = run_fast_tree_inference(
+        fixture("example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=executable,
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is True
+    assert report.current_output_checksum_match is True
+
     workflow.output_paths["tree"].write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,X:0.1):0.2);\n", encoding="utf-8"
     )
