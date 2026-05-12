@@ -110,6 +110,8 @@ from bijux_phylogenetics.compare.topology import (
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
+    write_shared_taxa_pruning_table,
+    write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
     write_tree_comparison_table,
 )
@@ -8550,18 +8552,49 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 args.out.mkdir(parents=True, exist_ok=True)
                 left_out = write_newick(args.out / "left-shared.nwk", pruned_left)
                 right_out = write_newick(args.out / "right-shared.nwk", pruned_right)
+                pruning_out = write_shared_taxa_pruning_table(
+                    args.out / "shared-taxa-pruning.tsv",
+                    left_path,
+                    right_path,
+                )
+                removed_out = write_shared_taxa_removed_taxa_table(
+                    args.out / "shared-taxa-removed.tsv",
+                    left_path,
+                    right_path,
+                )
+                comparison_out = write_tree_comparison_table(
+                    args.out / "shared-taxa-comparison.tsv",
+                    left_out,
+                    right_out,
+                )
                 outputs = _finalize_outputs(
                     args,
                     command="compare",
                     inputs=[left_path, right_path],
-                    outputs=[left_out, right_out],
+                    outputs=[
+                        left_out,
+                        right_out,
+                        pruning_out,
+                        removed_out,
+                        comparison_out,
+                    ],
                 )
                 _print_result(
                     build_command_result(
                         command="compare",
                         inputs=[left_path, right_path],
                         outputs=outputs,
-                        metrics={"shared_taxa": len(report.shared_taxa)},
+                        metrics={
+                            "shared_taxa": len(report.shared_taxa),
+                            "left_removed_taxa": len(report.left_pruning.removed_taxa),
+                            "right_removed_taxa": len(report.right_pruning.removed_taxa),
+                            "topology_equal_after_pruning": (
+                                report.post_pruning_comparison.topology_equal
+                            ),
+                            "post_pruning_robinson_foulds_distance": (
+                                report.post_pruning_comparison.robinson_foulds_distance
+                            ),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
