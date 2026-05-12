@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.traits import validate_traits_table
 from bijux_phylogenetics.errors import ComparativeMethodError
 from bijux_phylogenetics.io.trees import load_tree
@@ -47,6 +47,7 @@ class ComparativeFormulaSpecification:
     formula: str
     predictors: list[str]
     interaction_terms: list[str]
+    include_intercept: bool
 
 
 @dataclass(slots=True)
@@ -77,6 +78,7 @@ class PGLSFormulaAudit:
     interaction_terms: list[PGLSInteractionAudit]
     transformed_terms: list[str]
     excluded_taxa: list[PGLSTaxonExclusion]
+    includes_intercept: bool
     encoded_columns: list[str]
     analysis_taxa: list[str]
     parameter_count: int
@@ -84,6 +86,26 @@ class PGLSFormulaAudit:
     residual_degrees_of_freedom: int
     overfit_guard_triggered: bool
     warnings: list[str]
+
+
+@dataclass(slots=True)
+class PGLSModelMatrixRow:
+    """One taxon-level encoded row from a comparative formula design matrix."""
+
+    taxon: str
+    response_value: float
+    encoded_values: dict[str, float]
+
+
+@dataclass(slots=True)
+class PGLSModelMatrixReport:
+    """Reviewer-facing design matrix generated from one comparative formula."""
+
+    formula: ComparativeFormulaSpecification
+    response_column: str
+    encoded_columns: list[str]
+    row_count: int
+    rows: list[PGLSModelMatrixRow]
 
 
 @dataclass(slots=True)
@@ -101,6 +123,7 @@ class PGLSInputReport:
     encoded_columns: list[str]
     analysis_taxa: list[str]
     residual_degrees_of_freedom: int
+    model_matrix: PGLSModelMatrixReport
     ready: bool
     blockers: list[str]
     warnings: list[str]
@@ -264,7 +287,7 @@ def inspect_pgls_inputs(
 
     predictor_reports: list[PGLSPredictorClassification] = []
     categorical_predictors: list[str] = []
-    encoded_columns = ["intercept"]
+    encoded_columns = ["intercept"] if specification.include_intercept else []
     for predictor in specification.predictors:
         term_descriptor = _parse_term_descriptor(predictor)
         kind = column_kinds.get(term_descriptor.source_column)
@@ -330,12 +353,18 @@ def inspect_pgls_inputs(
                 )
             )
             continue
-        reference_level = levels[0]
-        dummy_columns = [f"{predictor}[{level}]" for level in levels[1:]]
+        reference_level = levels[0] if specification.include_intercept else None
+        dummy_levels = levels[1:] if specification.include_intercept else levels
+        dummy_columns = [f"{predictor}[{level}]" for level in dummy_levels]
         encoded_columns.extend(dummy_columns)
-        warnings.append(
-            f"categorical predictor '{predictor}' will be dummy-encoded with reference level '{reference_level}'"
-        )
+        if specification.include_intercept:
+            warnings.append(
+                f"categorical predictor '{predictor}' will be dummy-encoded with reference level '{reference_level}'"
+            )
+        else:
+            warnings.append(
+                f"categorical predictor '{predictor}' will be fully indicator-encoded because the formula excludes an intercept"
+            )
         predictor_reports.append(
             PGLSPredictorClassification(
                 name=predictor,
@@ -452,6 +481,7 @@ def inspect_pgls_inputs(
         interaction_terms=interaction_audits,
         transformed_terms=transformed_terms,
         excluded_taxa=excluded_taxa,
+        includes_intercept=specification.include_intercept,
         encoded_columns=encoded_columns,
         analysis_taxa=analysis_taxa,
         parameter_count=len(encoded_columns),
@@ -459,6 +489,14 @@ def inspect_pgls_inputs(
         residual_degrees_of_freedom=residual_degrees_of_freedom,
         overfit_guard_triggered=residual_degrees_of_freedom <= 0,
         warnings=warnings,
+    )
+    model_matrix = _build_model_matrix_report(
+        rows_by_taxon=rows_by_taxon,
+        taxa=analysis_taxa,
+        specification=specification,
+        predictor_reports=predictor_reports,
+        response_descriptor=response_descriptor,
+        response_column=response_descriptor.source_column,
     )
 
     return PGLSInputReport(
@@ -473,6 +511,7 @@ def inspect_pgls_inputs(
         encoded_columns=encoded_columns,
         analysis_taxa=analysis_taxa,
         residual_degrees_of_freedom=residual_degrees_of_freedom,
+        model_matrix=model_matrix,
         ready=not blockers,
         blockers=blockers,
         warnings=warnings,
@@ -510,26 +549,13 @@ def run_pgls(
         require_rooted=True,
         require_binary=False,
     )
-    table = load_taxon_table(traits_path, taxon_column=taxon_column)
-    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
     taxa = list(input_report.analysis_taxa)
-    response_descriptor = _parse_term_descriptor(
-        input_report.formula_audit.response_term
-    )
-    response_values = [
-        _coerce_numeric_value(
-            rows_by_taxon[taxon][input_report.formula_audit.response_column],
-            descriptor=response_descriptor,
-        )
-        for taxon in taxa
+    response_values = [row.response_value for row in input_report.model_matrix.rows]
+    encoded_columns = list(input_report.model_matrix.encoded_columns)
+    design_matrix = [
+        [row.encoded_values[column] for column in encoded_columns]
+        for row in input_report.model_matrix.rows
     ]
-    design_matrix, encoded_columns = _build_design_matrix(
-        rows_by_taxon,
-        taxa,
-        input_report.formula.predictors,
-        input_report.predictors,
-        input_report.formula.interaction_terms,
-    )
     dataset = ComparativeDataset(
         tree_path=dataset.tree_path,
         traits_path=dataset.traits_path,
@@ -687,14 +713,55 @@ def run_pgls_multiple_testing(
     )
 
 
+def build_pgls_model_matrix(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    response: str | None = None,
+    predictors: list[str] | None = None,
+    formula: str | None = None,
+    taxon_column: str | None = None,
+) -> PGLSModelMatrixReport:
+    """Build the encoded design matrix implied by one PGLS request."""
+    return inspect_pgls_inputs(
+        tree_path,
+        traits_path,
+        response=response,
+        predictors=predictors,
+        formula=formula,
+        taxon_column=taxon_column,
+    ).model_matrix
+
+
+def write_pgls_model_matrix_table(path: Path, report: PGLSModelMatrixReport) -> Path:
+    """Write a comparative model matrix as CSV or TSV."""
+    return write_taxon_rows(
+        path,
+        columns=["taxon", "response_value", *report.encoded_columns],
+        rows=[
+            {
+                "taxon": row.taxon,
+                "response_value": format(row.response_value, ".15g"),
+                **{
+                    column: format(row.encoded_values[column], ".15g")
+                    for column in report.encoded_columns
+                },
+            }
+            for row in report.rows
+        ],
+    )
+
+
 def _build_design_matrix(
     rows_by_taxon: dict[str, dict[str, str]],
     taxa: list[str],
     predictors: list[str],
     predictor_reports: list[PGLSPredictorClassification],
     interaction_terms: list[str],
+    *,
+    include_intercept: bool,
 ) -> tuple[list[list[float]], list[str]]:
-    encoded_columns = ["intercept"]
+    encoded_columns = ["intercept"] if include_intercept else []
     report_by_name = {report.name: report for report in predictor_reports}
     for predictor in predictors:
         report = report_by_name[predictor]
@@ -711,7 +778,7 @@ def _build_design_matrix(
     matrix: list[list[float]] = []
     for taxon in taxa:
         row = rows_by_taxon[taxon]
-        encoded_row = [1.0]
+        encoded_row = [1.0] if include_intercept else []
         encoded_main_effects: dict[str, list[tuple[str, float]]] = {}
         for predictor in predictors:
             report = report_by_name[predictor]
@@ -742,6 +809,46 @@ def _build_design_matrix(
     return matrix, encoded_columns
 
 
+def _build_model_matrix_report(
+    *,
+    rows_by_taxon: dict[str, dict[str, str]],
+    taxa: list[str],
+    specification: ComparativeFormulaSpecification,
+    predictor_reports: list[PGLSPredictorClassification],
+    response_descriptor: _FormulaTermDescriptor,
+    response_column: str,
+) -> PGLSModelMatrixReport:
+    design_matrix, encoded_columns = _build_design_matrix(
+        rows_by_taxon,
+        taxa,
+        specification.predictors,
+        predictor_reports,
+        specification.interaction_terms,
+        include_intercept=specification.include_intercept,
+    )
+    rows = [
+        PGLSModelMatrixRow(
+            taxon=taxon,
+            response_value=_coerce_numeric_value(
+                rows_by_taxon[taxon][response_column],
+                descriptor=response_descriptor,
+            ),
+            encoded_values={
+                column: design_matrix[row_index][column_index]
+                for column_index, column in enumerate(encoded_columns)
+            },
+        )
+        for row_index, taxon in enumerate(taxa)
+    ]
+    return PGLSModelMatrixReport(
+        formula=specification,
+        response_column=response_column,
+        encoded_columns=encoded_columns,
+        row_count=len(rows),
+        rows=rows,
+    )
+
+
 def _parse_term_descriptor(raw_term: str) -> _FormulaTermDescriptor:
     raw_term = raw_term.strip()
     if "(" not in raw_term:
@@ -770,6 +877,42 @@ def _parse_term_descriptor(raw_term: str) -> _FormulaTermDescriptor:
         source_column=source_column,
         transformation=transformation,
     )
+
+
+def _parse_right_hand_side_terms(right_hand_side: str) -> list[tuple[str, str]]:
+    terms: list[tuple[str, str]] = []
+    current: list[str] = []
+    current_sign = "+"
+    parenthesis_depth = 0
+    for character in right_hand_side:
+        if character == "(":
+            parenthesis_depth += 1
+            current.append(character)
+            continue
+        if character == ")":
+            parenthesis_depth -= 1
+            if parenthesis_depth < 0:
+                raise ComparativeMethodError(
+                    "comparative formula has unmatched closing parenthesis"
+                )
+            current.append(character)
+            continue
+        if parenthesis_depth == 0 and character in {"+", "-"}:
+            term = "".join(current).strip()
+            if term:
+                terms.append((current_sign, term))
+            current = []
+            current_sign = character
+            continue
+        current.append(character)
+    if parenthesis_depth != 0:
+        raise ComparativeMethodError(
+            "comparative formula has unmatched opening parenthesis"
+        )
+    trailing_term = "".join(current).strip()
+    if trailing_term:
+        terms.append((current_sign, trailing_term))
+    return terms
 
 
 def _coerce_numeric_value(
@@ -819,6 +962,7 @@ def _resolve_formula_specification(
         formula=f"{response} ~ {' + '.join(requested_predictors)}",
         predictors=requested_predictors,
         interaction_terms=[],
+        include_intercept=True,
     )
 
 
@@ -830,14 +974,25 @@ def _parse_formula(formula: str) -> ComparativeFormulaSpecification:
         raise ComparativeMethodError(
             "comparative formula requires a response on the left-hand side"
         )
-    raw_terms = [term.strip() for term in right_hand_side.split("+") if term.strip()]
+    raw_terms = _parse_right_hand_side_terms(right_hand_side)
     if not raw_terms:
         raise ComparativeMethodError(
             "comparative formula requires at least one predictor term"
         )
     predictors: list[str] = []
     interaction_terms: list[str] = []
-    for raw_term in raw_terms:
+    include_intercept = True
+    for sign, raw_term in raw_terms:
+        if raw_term in {"0", "1"}:
+            if raw_term == "0" or sign == "-":
+                include_intercept = False
+            elif raw_term == "1":
+                include_intercept = True
+            continue
+        if sign == "-":
+            raise ComparativeMethodError(
+                f"unsupported comparative formula subtraction for term '{raw_term}'"
+            )
         if "*" in raw_term:
             factors = [
                 factor.strip() for factor in raw_term.split("*") if factor.strip()
@@ -865,11 +1020,16 @@ def _parse_formula(formula: str) -> ComparativeFormulaSpecification:
             continue
         if raw_term not in predictors:
             predictors.append(raw_term)
+    if not predictors and not interaction_terms:
+        raise ComparativeMethodError(
+            "comparative formula requires at least one predictor term"
+        )
     return ComparativeFormulaSpecification(
         response=response,
         formula=formula.strip(),
         predictors=predictors,
         interaction_terms=interaction_terms,
+        include_intercept=include_intercept,
     )
 
 
