@@ -159,6 +159,35 @@ class UnstableCladeReport:
 
 
 @dataclass(frozen=True, slots=True)
+class BootstrapUnstableBranch:
+    clade: str
+    bootstrap_tree_count: int
+    bootstrap_frequency: float
+    bootstrap_support_percent: float
+    conflict_count: int
+    instability_score: float
+    support_classification: str
+    conflicting_clades: list[str]
+
+
+@dataclass(slots=True)
+class BootstrapTreeSetSummaryReport:
+    path: Path
+    consensus_threshold: float
+    robust_support_threshold: float
+    tree_count: int
+    shared_taxa: list[str]
+    summary: TreeSetReport
+    clade_frequencies: CladeFrequencyReport
+    consensus: ConsensusTreeReport
+    diversity: PosteriorTopologyDiversityReport
+    unstable_clades: UnstableCladeReport
+    unstable_branch_count: int
+    unstable_branches: list[BootstrapUnstableBranch]
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeFrequencyDelta:
     clade: str
     left_frequency: float
@@ -990,6 +1019,98 @@ def detect_unstable_clades(path: Path) -> UnstableCladeReport:
         key=lambda row: (-row.instability_score, -row.conflict_count, row.clade)
     )
     return UnstableCladeReport(path=path, tree_count=len(trees), clades=unstable_clades)
+
+
+def summarize_bootstrap_tree_set(
+    path: Path,
+    *,
+    consensus_threshold: float = 0.5,
+    robust_support_threshold: float = 0.9,
+) -> BootstrapTreeSetSummaryReport:
+    """Summarize bootstrap replicate trees through one review-oriented report."""
+    if not 0.0 < consensus_threshold < 1.0:
+        raise ValueError(
+            f"consensus_threshold must be between 0 and 1, got {consensus_threshold}"
+        )
+    if not 0.0 < robust_support_threshold <= 1.0:
+        raise ValueError(
+            "robust_support_threshold must be between 0 and 1, "
+            f"got {robust_support_threshold}"
+        )
+    summary = load_tree_set(path)
+    clade_frequencies = compute_clade_frequency_table(path)
+    consensus_tree, consensus = compute_consensus_tree_with_threshold(
+        path, threshold=consensus_threshold
+    )
+    diversity = summarize_posterior_topology_diversity(path)
+    unstable_clades = detect_unstable_clades(path)
+    shared_taxa = set(summary.shared_taxa)
+    consensus_clades = _informative_clade_nodes(consensus_tree, shared_taxa)
+    frequencies_by_clade = {
+        row.clade: row for row in clade_frequencies.clade_frequencies
+    }
+    unstable_by_clade = {row.clade: row for row in unstable_clades.clades}
+    unstable_branches: list[BootstrapUnstableBranch] = []
+    for clade in sorted(consensus_clades, key=_format_clade):
+        clade_id = _format_clade(clade)
+        frequency = frequencies_by_clade[clade_id]
+        unstable_row = unstable_by_clade.get(clade_id)
+        conflict_count = 0 if unstable_row is None else unstable_row.conflict_count
+        instability_score = 0.0 if unstable_row is None else unstable_row.instability_score
+        support_classification = _support_classification(
+            frequency.frequency, conflict_count
+        )
+        if (
+            frequency.frequency >= robust_support_threshold
+            and conflict_count == 0
+        ):
+            continue
+        unstable_branches.append(
+            BootstrapUnstableBranch(
+                clade=clade_id,
+                bootstrap_tree_count=frequency.tree_count,
+                bootstrap_frequency=frequency.frequency,
+                bootstrap_support_percent=round(frequency.frequency * 100.0, 15),
+                conflict_count=conflict_count,
+                instability_score=instability_score,
+                support_classification=support_classification,
+                conflicting_clades=(
+                    [] if unstable_row is None else unstable_row.conflicting_clades
+                ),
+            )
+        )
+    unstable_branches.sort(
+        key=lambda row: (
+            -row.instability_score,
+            row.bootstrap_frequency,
+            -row.conflict_count,
+            row.clade,
+        )
+    )
+    warnings: list[str] = []
+    if diversity.rooted_topology_count > 1:
+        warnings.append(
+            "bootstrap replicate trees contain multiple rooted topologies"
+        )
+    if unstable_branches:
+        warnings.append(
+            "consensus tree contains branches below the robust bootstrap threshold or with conflicting alternatives"
+        )
+    return BootstrapTreeSetSummaryReport(
+        path=path,
+        consensus_threshold=consensus_threshold,
+        robust_support_threshold=robust_support_threshold,
+        tree_count=summary.tree_count,
+        shared_taxa=summary.shared_taxa,
+        summary=summary,
+        clade_frequencies=clade_frequencies,
+        consensus=consensus,
+        diversity=diversity,
+        unstable_clades=unstable_clades,
+        unstable_branch_count=len(unstable_branches),
+        unstable_branches=unstable_branches,
+        warnings=warnings,
+    )
 
 
 def write_unstable_clade_table(path: Path, report: UnstableCladeReport) -> Path:
