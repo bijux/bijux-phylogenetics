@@ -1,0 +1,5 @@
+source_host	target_host	transition_allowed
+human	bat	allowed
+bat	human	allowed
+bat	rodent	allowed
+rodent	bat	allowed
