@@ -426,6 +426,7 @@ from bijux_phylogenetics.datasets import (
     run_central_european_seashore_flora_demo,
     run_influenza_a_ha_reference_demo,
     run_primate_comparative_demo,
+    run_rabies_cross_host_panel_demo,
 )
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.locus_occupancy import (
@@ -5228,6 +5229,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_ancient_dna)
+    demo_rabies = demo_subparsers.add_parser(
+        "rabies-cross-host-panel",
+        help="Materialize the packaged rabies host-switching dataset and rerun the governed host-transition review outputs.",
+    )
+    demo_rabies.add_argument("--out", required=True, type=Path)
+    demo_rabies.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_rabies)
 
     adapter = subparsers.add_parser(
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
@@ -14363,6 +14373,69 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "maximum_support": result.workflow_bundle.maximum_support,
                                 "removed_column_count": result.workflow_bundle.removed_column_count,
                                 "cleaned_missing_data_fraction": result.workflow_bundle.cleaned_missing_data_fraction,
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "rabies-cross-host-panel":
+                result = run_rabies_cross_host_panel_demo(args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.sequences_path,
+                        result.dataset_export.tree_path,
+                        result.dataset_export.hosts_path,
+                        result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.host_switch_summary_path,
+                        result.workflow_bundle.host_state_nodes_path,
+                        result.workflow_bundle.host_switch_branches_path,
+                        result.workflow_bundle.host_switch_counts_path,
+                        result.workflow_bundle.host_switch_fits_path,
+                        result.workflow_bundle.host_switch_unsupported_path,
+                        result.workflow_bundle.host_switch_exclusions_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "taxon_count": result.dataset.taxon_count,
+                                "workflow_trait": result.dataset.workflow_trait,
+                                "observed_host_group_count": (
+                                    result.dataset.observed_host_group_count
+                                ),
+                                "analysis_constraint_mode": (
+                                    result.workflow_bundle.analysis_constraint_mode
+                                ),
+                                "root_host": result.workflow_bundle.root_host,
+                                "root_confidence": (
+                                    result.workflow_bundle.root_confidence
+                                ),
+                                "host_switch_count": (
+                                    result.workflow_bundle.host_switch_count
+                                ),
+                                "certain_host_switch_count": (
+                                    result.workflow_bundle.certain_host_switch_count
+                                ),
+                                "uncertain_host_switch_count": (
+                                    result.workflow_bundle.uncertain_host_switch_count
+                                ),
                                 "reference_output_count": expected_output_count,
                             },
                             data=result,
