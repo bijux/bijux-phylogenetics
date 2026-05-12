@@ -6,6 +6,14 @@ from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
 
+from bijux_phylogenetics.bayesian.burnin import (
+    DEFAULT_BURNIN_FRACTIONS,
+    BurninSensitivityCladeShift,
+    BurninSensitivityParameterShift,
+    normalize_burnin_fractions,
+    summarize_burnin_clade_shifts,
+    summarize_burnin_parameter_shifts,
+)
 from bijux_phylogenetics.bayesian.diagnostics import (
     TraceConvergenceReport,
     summarize_trace_convergence,
@@ -321,6 +329,11 @@ class BeastBurninSensitivitySlice:
     rooted_topology_count: int
     selected_tree_index: int
     clade_credibility_score: float
+    consensus_newick: str
+    clade_frequency_count: int
+    kept_row_count: int | None
+    first_kept_state: int | None
+    last_kept_state: int | None
     posterior_mean: float | None
     likelihood_mean: float | None
     tree_height_mean: float | None
@@ -332,6 +345,11 @@ class BeastBurninSensitivityReport:
     log_path: Path | None
     slices: list[BeastBurninSensitivitySlice]
     changed_mcc_count: int
+    changed_consensus_count: int
+    parameter_shifts: list[BurninSensitivityParameterShift]
+    clade_shifts: list[BurninSensitivityCladeShift]
+    unstable_parameter_count: int
+    unstable_clade_count: int
     warnings: list[str]
 
 
@@ -1970,6 +1988,65 @@ def write_beast_log_summary_table(path: Path, report: BeastLogSummaryReport) -> 
     )
 
 
+def write_beast_burnin_sensitivity_slice_table(
+    path: Path,
+    report: BeastBurninSensitivityReport,
+) -> Path:
+    """Write one row per tested BEAST burn-in fraction."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "burnin_fraction",
+            "burnin_tree_count",
+            "kept_tree_count",
+            "rooted_topology_count",
+            "selected_tree_index",
+            "clade_credibility_score",
+            "clade_frequency_count",
+            "kept_row_count",
+            "first_kept_state",
+            "last_kept_state",
+            "posterior_mean",
+            "likelihood_mean",
+            "tree_height_mean",
+            "consensus_newick",
+        ],
+        rows=[
+            {
+                "burnin_fraction": format(row.burnin_fraction, ".15g"),
+                "burnin_tree_count": str(row.burnin_tree_count),
+                "kept_tree_count": str(row.kept_tree_count),
+                "rooted_topology_count": str(row.rooted_topology_count),
+                "selected_tree_index": str(row.selected_tree_index),
+                "clade_credibility_score": format(
+                    row.clade_credibility_score, ".15g"
+                ),
+                "clade_frequency_count": str(row.clade_frequency_count),
+                "kept_row_count": ""
+                if row.kept_row_count is None
+                else str(row.kept_row_count),
+                "first_kept_state": ""
+                if row.first_kept_state is None
+                else str(row.first_kept_state),
+                "last_kept_state": ""
+                if row.last_kept_state is None
+                else str(row.last_kept_state),
+                "posterior_mean": ""
+                if row.posterior_mean is None
+                else format(row.posterior_mean, ".15g"),
+                "likelihood_mean": ""
+                if row.likelihood_mean is None
+                else format(row.likelihood_mean, ".15g"),
+                "tree_height_mean": ""
+                if row.tree_height_mean is None
+                else format(row.tree_height_mean, ".15g"),
+                "consensus_newick": row.consensus_newick,
+            }
+            for row in report.slices
+        ],
+    )
+
+
 def validate_beast_posterior_log(
     path: Path,
     *,
@@ -2105,46 +2182,51 @@ def assess_beast_burnin_sensitivity(
     posterior_tree_path: Path,
     *,
     log_path: Path | None = None,
-    burnin_fractions: tuple[float, ...] = (0.1, 0.25, 0.5),
+    burnin_fractions: tuple[float, ...] = DEFAULT_BURNIN_FRACTIONS,
 ) -> BeastBurninSensitivityReport:
     """Compare posterior summaries across multiple BEAST burn-in fractions."""
-    if not burnin_fractions:
-        raise ValueError("burnin_fractions must contain at least one value")
-    log_report = parse_beast_log(log_path) if log_path is not None else None
-    ordered_fractions = tuple(sorted(dict.fromkeys(burnin_fractions)))
+    ordered_fractions = normalize_burnin_fractions(burnin_fractions)
     slices: list[BeastBurninSensitivitySlice] = []
     previous_newick: str | None = None
+    previous_consensus: str | None = None
     changed_mcc_count = 0
+    changed_consensus_count = 0
+    parameter_summaries_by_fraction: dict[float, list[BeastLogParameterSummary]] = {}
+    clade_frequencies_by_fraction: dict[float, list[BeastPosteriorClade]] = {}
     for fraction in ordered_fractions:
         _, mcc_report = summarize_maximum_clade_credibility_tree(
             posterior_tree_path,
             burnin_fraction=fraction,
         )
+        _consensus_tree, consensus_report = compute_consensus_tree(
+            mcc_report.filtered_tree_set_path
+        )
+        clade_report = compute_clade_frequency_table(mcc_report.filtered_tree_set_path)
         posterior_mean = None
         likelihood_mean = None
         tree_height_mean = None
-        if log_report is not None:
-            burnin_row_count = int(log_report.row_count * fraction)
-            kept_rows = log_report.rows[burnin_row_count:]
-            if kept_rows:
-                posterior_values = [
-                    row.values["posterior"]
-                    for row in kept_rows
-                    if "posterior" in row.values
-                ]
-                likelihood_values = [
-                    row.values["likelihood"]
-                    for row in kept_rows
-                    if "likelihood" in row.values
-                ]
-                tree_height_values = [
-                    row.values["treeHeight"]
-                    for row in kept_rows
-                    if "treeHeight" in row.values
-                ]
-                posterior_mean = _mean_or_none(posterior_values)
-                likelihood_mean = _mean_or_none(likelihood_values)
-                tree_height_mean = _mean_or_none(tree_height_values)
+        kept_row_count = None
+        first_kept_state = None
+        last_kept_state = None
+        if log_path is not None:
+            log_summary = summarize_beast_log(log_path, burnin_fraction=fraction)
+            parameter_summaries_by_fraction[fraction] = log_summary.parameter_summaries
+            kept_row_count = log_summary.kept_row_count
+            first_kept_state = log_summary.first_kept_state
+            last_kept_state = log_summary.last_kept_state
+            posterior_mean = _mean_beast_parameter(log_summary, "posterior")
+            likelihood_mean = _mean_beast_parameter(log_summary, "likelihood")
+            tree_height_mean = _mean_beast_parameter(log_summary, "treeHeight")
+            if tree_height_mean is None:
+                tree_height_mean = _mean_beast_parameter(log_summary, "tree.height")
+        clade_frequencies_by_fraction[fraction] = [
+            BeastPosteriorClade(
+                clade=row.clade,
+                tree_count=row.tree_count,
+                frequency=row.frequency,
+            )
+            for row in clade_report.clade_frequencies
+        ]
         slices.append(
             BeastBurninSensitivitySlice(
                 burnin_fraction=fraction,
@@ -2153,6 +2235,11 @@ def assess_beast_burnin_sensitivity(
                 rooted_topology_count=mcc_report.rooted_topology_count,
                 selected_tree_index=mcc_report.selected_tree_index,
                 clade_credibility_score=mcc_report.clade_credibility_score,
+                consensus_newick=consensus_report.consensus_newick,
+                clade_frequency_count=len(clade_report.clade_frequencies),
+                kept_row_count=kept_row_count,
+                first_kept_state=first_kept_state,
+                last_kept_state=last_kept_state,
                 posterior_mean=posterior_mean,
                 likelihood_mean=likelihood_mean,
                 tree_height_mean=tree_height_mean,
@@ -2161,20 +2248,45 @@ def assess_beast_burnin_sensitivity(
         if previous_newick is not None and previous_newick != mcc_report.mcc_newick:
             changed_mcc_count += 1
         previous_newick = mcc_report.mcc_newick
+        if (
+            previous_consensus is not None
+            and previous_consensus != consensus_report.consensus_newick
+        ):
+            changed_consensus_count += 1
+        previous_consensus = consensus_report.consensus_newick
+    parameter_shifts = summarize_burnin_parameter_shifts(parameter_summaries_by_fraction)
+    clade_shifts = summarize_burnin_clade_shifts(clade_frequencies_by_fraction)
     warnings: list[str] = []
     if changed_mcc_count:
         warnings.append(
             "maximum clade credibility topology changes across tested burn-in fractions"
         )
+    if changed_consensus_count:
+        warnings.append(
+            "majority-rule consensus topology changes across tested burn-in fractions"
+        )
     if len({row.rooted_topology_count for row in slices}) > 1:
         warnings.append(
             "rooted topology diversity changes across tested burn-in fractions"
+        )
+    if any(shift.unstable for shift in parameter_shifts):
+        warnings.append(
+            "one or more posterior parameter 95% HPD intervals do not overlap across tested burn-in fractions"
+        )
+    if any(shift.unstable for shift in clade_shifts):
+        warnings.append(
+            "one or more posterior clade probabilities cross the majority-rule threshold across tested burn-in fractions"
         )
     return BeastBurninSensitivityReport(
         posterior_tree_path=posterior_tree_path,
         log_path=log_path,
         slices=slices,
         changed_mcc_count=changed_mcc_count,
+        changed_consensus_count=changed_consensus_count,
+        parameter_shifts=parameter_shifts,
+        clade_shifts=clade_shifts,
+        unstable_parameter_count=sum(1 for shift in parameter_shifts if shift.unstable),
+        unstable_clade_count=sum(1 for shift in clade_shifts if shift.unstable),
         warnings=warnings,
     )
 
@@ -2332,6 +2444,16 @@ def _mean_or_none(values: list[float]) -> float | None:
     if not values:
         return None
     return round(sum(values) / len(values), 6)
+
+
+def _mean_beast_parameter(
+    report: BeastLogSummaryReport,
+    parameter: str,
+) -> float | None:
+    for summary in report.parameter_summaries:
+        if summary.parameter == parameter:
+            return summary.mean
+    return None
 
 
 def _split_beast_log_rows(

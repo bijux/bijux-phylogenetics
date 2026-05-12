@@ -791,6 +791,50 @@ def test_assess_beast_burnin_sensitivity_reports_tree_and_log_shifts() -> None:
     assert report.slices[2].tree_height_mean == 13.1
 
 
+def test_assess_beast_burnin_sensitivity_reports_parameter_and_clade_instability(
+    tmp_path: Path,
+) -> None:
+    posterior_path = tmp_path / "burnin-sensitive.trees"
+    log_path = tmp_path / "burnin-sensitive.log"
+    posterior_path.write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\n"
+        "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n"
+        "((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2);\n",
+        encoding="utf-8",
+    )
+    lines = [
+        "# burnin sensitivity fixture",
+        "state\tposterior\tlikelihood\ttreeHeight",
+    ]
+    for index in range(19):
+        lines.append(f"{index * 10}\t0.0\t{-100.0 + index}\t10.0")
+    lines.append("190\t100.0\t-81.0\t10.0")
+    log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    report = assess_beast_burnin_sensitivity(
+        posterior_path,
+        log_path=log_path,
+        burnin_fractions=(0.0, 0.95),
+    )
+
+    ab_shift = next(shift for shift in report.clade_shifts if shift.clade == "A|B")
+    posterior_shift = next(
+        shift for shift in report.parameter_shifts if shift.parameter == "posterior"
+    )
+
+    assert report.changed_consensus_count == 1
+    assert report.unstable_parameter_count >= 1
+    assert report.unstable_clade_count >= 1
+    assert report.slices[0].clade_frequency_count == 4
+    assert report.slices[1].first_kept_state == 190
+    assert report.slices[1].posterior_mean == 100.0
+    assert ab_shift.crosses_majority_threshold is True
+    assert ab_shift.maximum_posterior_probability == pytest.approx(0.5)
+    assert posterior_shift.unstable is True
+    assert posterior_shift.common_hpd_95_lower is None
+
+
 def test_assess_beast_chain_mixing_flags_stuck_and_inconsistent_chains(
     tmp_path: Path,
 ) -> None:
