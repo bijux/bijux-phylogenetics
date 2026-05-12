@@ -920,6 +920,82 @@ def test_comparative_clade_stability_cli_writes_review_ledgers(
     assert len(term_rows) == 7
 
 
+def test_comparative_posterior_pgls_cli_reports_stability_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "posterior-pgls",
+            str(fixture("example_posterior_tree_set_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--formula",
+            "response_growth ~ predictor_two",
+            "--lambda-value",
+            "estimate",
+            "--significance-threshold",
+            "0.1",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["total_tree_count"] == 5
+    assert payload["metrics"]["burnin_tree_count"] == 0
+    assert payload["metrics"]["kept_tree_count"] == 5
+    assert payload["metrics"]["analysis_taxon_count"] == 6
+    assert payload["metrics"]["rooted_topology_count"] == 5
+    assert payload["metrics"]["unrooted_topology_count"] == 4
+    assert payload["metrics"]["tree_fit_row_count"] == 5
+    assert payload["metrics"]["coefficient_row_count"] == 10
+    assert payload["metrics"]["coefficient_summary_count"] == 2
+    assert payload["metrics"]["stable_supported_term_count"] == 1
+    assert payload["metrics"]["direction_conflict_term_count"] == 0
+    assert payload["metrics"]["lambda_mode"] == "estimate"
+
+
+def test_comparative_posterior_pgls_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    trees_out = tmp_path / "posterior-tree-pgls-trees.tsv"
+    coefficients_out = tmp_path / "posterior-tree-pgls-coefficients.tsv"
+    summary_out = tmp_path / "posterior-tree-pgls-summary.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "posterior-pgls",
+            str(fixture("example_posterior_tree_set_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multiple.tsv")),
+            "--formula",
+            "response_growth ~ predictor_two",
+            "--lambda-value",
+            "estimate",
+            "--significance-threshold",
+            "0.1",
+            "--trees-out",
+            str(trees_out),
+            "--coefficients-out",
+            str(coefficients_out),
+            "--summary-out",
+            str(summary_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["coefficient_summary_count"] == 2
+    assert trees_out.exists()
+    assert coefficients_out.exists()
+    assert summary_out.exists()
+    tree_rows = trees_out.read_text(encoding="utf-8").splitlines()
+    coefficient_rows = coefficients_out.read_text(encoding="utf-8").splitlines()
+    summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
+    assert tree_rows[0].startswith("source_tree_index\tpost_burnin_index\trooted_topology_id")
+    assert coefficient_rows[0].startswith("source_tree_index\tpost_burnin_index\trooted_topology_id\tterm")
+    assert summary_rows[0].startswith("term\ttree_fit_count\tpositive_tree_count")
+    assert len(tree_rows) == 6
+    assert len(coefficient_rows) == 11
+    assert len(summary_rows) == 3
+
+
 def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     capsys,
 ) -> None:
