@@ -229,6 +229,12 @@ records a preparation warning in JSON so reviewers can see that the prior shape
 was translated for template generation instead of copied as a literal hard
 uniform interval.
 
+Tip-dated workflows also surface one tree-prior boundary explicitly. If you
+ask for the standard `birth-death` prior together with tip dates, the template
+still writes valid XML, but the JSON warnings mark that combination as
+exploratory because BEAST's own validator reports that the standard birth-death
+prior is not serial-sampling aware.
+
 Use `adapter mrbayes-run` after preparation when you want the governed runtime
 to execute MrBayes and preserve the native posterior artifacts for later
 inspection instead of leaving the engine outputs implicit.

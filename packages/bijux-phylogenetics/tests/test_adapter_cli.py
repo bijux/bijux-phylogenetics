@@ -1567,7 +1567,7 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     assert prepare_exit == 0
     assert prepare_payload["metrics"]["calibration_count"] == 2
     assert prepare_payload["metrics"]["tip_date_count"] == 4
-    assert prepare_payload["metrics"]["warning_count"] == 2
+    assert prepare_payload["metrics"]["warning_count"] == 3
     assert prepare_payload["metrics"]["starting_tree_source"] == "provided-tree"
     assert prepare_payload["metrics"]["beast_data_type"] == "nucleotide"
     assert analysis_path.exists()

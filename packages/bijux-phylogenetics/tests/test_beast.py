@@ -116,25 +116,48 @@ def test_prepare_beast_time_tree_analysis_writes_clock_prior_calibrations_and_ti
     assert report.beast_data_type == "nucleotide"
     assert report.substitution_model == "HKY"
     assert report.starting_tree_source == "provided-tree"
-    assert report.warning_count == 2
+    assert report.warning_count == 3
     assert report.log_path.name == "analysis.$(seed).log"
     assert report.tree_log_path.name == "analysis.$(seed).trees"
     assert root.tag == "beast"
     assert root.find("./data[@id='alignment']") is not None
-    assert root.find("./input[@id='branchRates'][@spec='UCRelaxedClockModel']") is not None
-    assert root.find("./input[@id='treePrior'][@spec='BirthDeathGernhard08Model']") is not None
+    assert (
+        root.find(
+            "./input[@id='branchRates'][@spec='beast.base.evolution.branchratemodel.UCRelaxedClockModel']"
+        )
+        is not None
+    )
+    assert (
+        root.find(
+            "./input[@id='treePrior'][@spec='beast.base.evolution.speciation.BirthDeathGernhard08Model']"
+        )
+        is not None
+    )
     assert root.find("./tree[@id='tree']") is not None
     assert (
         root.find("./tree[@id='tree']/trait[@traitname='date-forward']")
         is not None
     )
     assert root.find(".//distribution[@id='cal-mammals']") is not None
-    assert root.find(".//distribution[@id='cal-mammals']/distr[@spec='beast.math.distributions.Uniform']") is not None
-    assert root.find(".//distribution[@id='cal-birds']/distr[@spec='beast.math.distributions.Exponential']") is not None
+    assert (
+        root.find(
+            ".//distribution[@id='cal-mammals']/distr[@spec='beast.base.inference.distribution.Uniform']"
+        )
+        is not None
+    )
+    assert (
+        root.find(
+            ".//distribution[@id='cal-birds']/distr[@spec='beast.base.inference.distribution.Exponential']"
+        )
+        is not None
+    )
     assert "template generator does not infer parametric lognormal shape parameters automatically" in " ".join(
         report.warnings
     )
     assert "translated a lower-bound-only uniform calibration into an offset exponential prior" in " ".join(
+        report.warnings
+    )
+    assert "standard birth-death tree prior are exploratory" in " ".join(
         report.warnings
     )
     assert "analysis.$(seed).trees" in text
@@ -159,8 +182,18 @@ def test_prepare_beast_time_tree_analysis_supports_protein_alignments_without_st
     assert report.warning_count == 0
     assert root.find("./data[@id='alignment'][@dataType='aminoacid']") is not None
     assert root.find("./input[@id='siteModel']/substModel[@spec='JTT']") is not None
-    assert root.find("./input[@id='tree'][@spec='beast.util.ClusterTree']") is not None
-    assert root.find("./input[@id='branchRates'][@spec='StrictClockModel']") is not None
+    assert (
+        root.find(
+            "./input[@id='tree'][@spec='beast.base.evolution.tree.ClusterTree']"
+        )
+        is not None
+    )
+    assert (
+        root.find(
+            "./input[@id='branchRates'][@spec='beast.base.evolution.branchratemodel.StrictClockModel']"
+        )
+        is not None
+    )
 
 
 def test_prepare_beast_time_tree_analysis_requires_tree_for_calibrations(

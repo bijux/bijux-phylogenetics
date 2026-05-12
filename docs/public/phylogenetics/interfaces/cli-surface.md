@@ -113,6 +113,12 @@ uniform bounds, while lower-bound-only calibrations are translated into offset
 parametric priors with reviewable warnings instead of being copied as if BEAST2
 accepted a one-sided hard uniform interval directly.
 
+The warning surface also carries one dated-tree limitation explicitly: if
+`--tip-dates` is combined with the standard `birth-death` prior, the XML still
+validates, but the JSON warnings mark that combination as exploratory because
+BEAST reports that the standard birth-death prior is not serial-sampling
+aware.
+
 `adapter mrbayes-run` is the governed execution surface for one prepared
 MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
 posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC

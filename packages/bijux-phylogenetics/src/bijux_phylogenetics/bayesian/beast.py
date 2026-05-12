@@ -436,15 +436,15 @@ def _append_substitution_and_site_model(
         prior_elements.extend(
             [
                 ET.fromstring(
-                    "<distribution id='hky.kappa.prior' spec='beast.math.distributions.Prior' x='@hky.kappa'>"
+                    "<distribution id='hky.kappa.prior' spec='beast.base.inference.distribution.Prior' x='@hky.kappa'>"
                     "<distr id='hky.kappa.lognormal' M='1.0' S='1.25' meanInRealSpace='false' "
-                    "spec='beast.math.distributions.LogNormalDistributionModel' />"
+                    "spec='beast.base.inference.distribution.LogNormalDistributionModel' />"
                     "</distribution>"
                 ),
                 ET.fromstring(
-                    "<distribution id='hky.frequencies.prior' spec='beast.math.distributions.Prior' x='@hky.frequencies'>"
+                    "<distribution id='hky.frequencies.prior' spec='beast.base.inference.distribution.Prior' x='@hky.frequencies'>"
                     "<distr id='hky.frequencies.uniform' lower='0.0' upper='1.0' "
-                    "spec='beast.math.distributions.Uniform' />"
+                    "spec='beast.base.inference.distribution.Uniform' />"
                     "</distribution>"
                 ),
             ]
@@ -483,7 +483,7 @@ def _append_starting_tree(
             root,
             "tree",
             {
-                "spec": "beast.util.TreeParser",
+                "spec": "beast.base.evolution.tree.TreeParser",
                 "id": "tree",
                 "IsLabelledNewick": "true",
                 "newick": _read_newick_text(tree_path),
@@ -495,7 +495,7 @@ def _append_starting_tree(
                 tree,
                 "trait",
                 {
-                    "spec": "beast.evolution.tree.TraitSet",
+                    "spec": "beast.base.evolution.tree.TraitSet",
                     "traitname": "date-forward",
                     "units": "year",
                     "value": _tip_date_trait_value(tip_date_report),
@@ -504,21 +504,25 @@ def _append_starting_tree(
             ET.SubElement(
                 trait,
                 "taxa",
-                {"spec": "beast.evolution.alignment.TaxonSet", "alignment": "@alignment"},
+                {"spec": "TaxonSet", "alignment": "@alignment"},
             )
         return "provided-tree"
 
     cluster_tree = ET.SubElement(
         root,
         "input",
-        {"spec": "beast.util.ClusterTree", "id": "tree", "clusterType": "upgma"},
+        {
+            "spec": "beast.base.evolution.tree.ClusterTree",
+            "id": "tree",
+            "clusterType": "upgma",
+        },
     )
     if tip_date_report is not None:
         trait = ET.SubElement(
             cluster_tree,
             "trait",
             {
-                "spec": "beast.evolution.tree.TraitSet",
+                "spec": "beast.base.evolution.tree.TraitSet",
                 "traitname": "date-forward",
                 "units": "year",
                 "value": _tip_date_trait_value(tip_date_report),
@@ -527,7 +531,7 @@ def _append_starting_tree(
         ET.SubElement(
             trait,
             "taxa",
-            {"spec": "beast.evolution.alignment.TaxonSet", "alignment": "@alignment"},
+            {"spec": "TaxonSet", "alignment": "@alignment"},
         )
     ET.SubElement(cluster_tree, "taxa", {"idref": "alignment"})
     return "upgma"
@@ -545,7 +549,14 @@ def _append_clock_model(
     operator_elements: list[ET.Element] = []
     logger_elements: list[ET.Element] = []
     if normalized == "strict":
-        strict = ET.SubElement(root, "input", {"spec": "StrictClockModel", "id": "branchRates"})
+        strict = ET.SubElement(
+            root,
+            "input",
+            {
+                "spec": "beast.base.evolution.branchratemodel.StrictClockModel",
+                "id": "branchRates",
+            },
+        )
         ET.SubElement(strict, "clock.rate", {"idref": "clockRate"})
         ET.SubElement(
             root,
@@ -555,8 +566,8 @@ def _append_clock_model(
         state_node_ids.append("clockRate")
         prior_elements.append(
             ET.fromstring(
-                "<distribution id='clockRate.prior' spec='beast.math.distributions.Prior' x='@clockRate'>"
-                "<distr id='clockRate.uniform' lower='0.0' upper='100.0' spec='beast.math.distributions.Uniform' />"
+                "<distribution id='clockRate.prior' spec='beast.base.inference.distribution.Prior' x='@clockRate'>"
+                "<distr id='clockRate.uniform' lower='0.0' upper='100.0' spec='beast.base.inference.distribution.Uniform' />"
                 "</distribution>"
             )
         )
@@ -571,13 +582,20 @@ def _append_clock_model(
         raise ValueError(
             "BEAST preparation supports clock_model values 'strict' and 'relaxed-lognormal'"
         )
-    relaxed = ET.SubElement(root, "input", {"spec": "UCRelaxedClockModel", "id": "branchRates"})
+    relaxed = ET.SubElement(
+        root,
+        "input",
+        {
+            "spec": "beast.base.evolution.branchratemodel.UCRelaxedClockModel",
+            "id": "branchRates",
+        },
+    )
     distr = ET.SubElement(
         relaxed,
         "distr",
         {
             "id": "ucld.lognormal",
-            "spec": "beast.math.distributions.LogNormalDistributionModel",
+            "spec": "beast.base.inference.distribution.LogNormalDistributionModel",
             "meanInRealSpace": "true",
         },
     )
@@ -606,13 +624,16 @@ def _append_clock_model(
     state_node_ids.extend(["ucld.mean", "ucld.stdev", "rateCategories"])
     prior_elements.append(
         ET.fromstring(
-            "<distribution id='ucld.stdev.prior' spec='beast.math.distributions.Prior' x='@ucld.stdev'>"
-            "<distr id='ucld.stdev.exponential' mean='0.3333333333333333' spec='beast.math.distributions.Exponential' />"
+            "<distribution id='ucld.stdev.prior' spec='beast.base.inference.distribution.Prior' x='@ucld.stdev'>"
+            "<distr id='ucld.stdev.exponential' mean='0.3333333333333333' spec='beast.base.inference.distribution.Exponential' />"
             "</distribution>"
         )
     )
     operator_elements.extend(
         [
+            ET.fromstring(
+                "<operator id='ucldMeanScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@ucld.mean' />"
+            ),
             ET.fromstring(
                 "<operator id='ucldStdevScaler' spec='ScaleOperator' scaleFactor='0.75' weight='3' parameter='@ucld.stdev' />"
             ),
@@ -632,7 +653,7 @@ def _append_clock_model(
             ET.fromstring("<log idref='ucld.mean' />"),
             ET.fromstring("<log idref='ucld.stdev' />"),
             ET.fromstring(
-                "<log id='rateStatistic' spec='RateStatistic' tree='@tree' branchratemodel='@branchRates' />"
+                "<log id='rateStatistic' spec='beast.base.evolution.RateStatistic' tree='@tree' branchratemodel='@branchRates' />"
             ),
             ET.fromstring("<log idref='rateCategories' />"),
         ]
@@ -655,7 +676,11 @@ def _append_tree_prior(
     ]
     logger_elements: list[ET.Element] = [ET.fromstring("<log idref='birthRate' />")]
     if normalized == "yule":
-        yule = ET.SubElement(root, "input", {"spec": "YuleModel", "id": "treePrior"})
+        yule = ET.SubElement(
+            root,
+            "input",
+            {"spec": "beast.base.evolution.speciation.YuleModel", "id": "treePrior"},
+        )
         ET.SubElement(yule, "birthDiffRate", {"idref": "birthRate"})
         ET.SubElement(yule, "tree", {"idref": "tree"})
         ET.SubElement(
@@ -667,8 +692,8 @@ def _append_tree_prior(
             [
                 ET.fromstring("<distribution id='treePrior.distribution' idref='treePrior' />"),
                 ET.fromstring(
-                    "<distribution id='birthRate.prior' spec='beast.math.distributions.Prior' x='@birthRate'>"
-                    "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.math.distributions.OneOnX' />"
+                    "<distribution id='birthRate.prior' spec='beast.base.inference.distribution.Prior' x='@birthRate'>"
+                    "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.base.inference.distribution.OneOnX' />"
                     "</distribution>"
                 ),
             ]
@@ -680,7 +705,12 @@ def _append_tree_prior(
             "BEAST preparation supports tree_prior values 'yule' and 'birth-death'"
         )
     birth_death = ET.SubElement(
-        root, "input", {"spec": "BirthDeathGernhard08Model", "id": "treePrior"}
+        root,
+        "input",
+        {
+            "spec": "beast.base.evolution.speciation.BirthDeathGernhard08Model",
+            "id": "treePrior",
+        },
     )
     ET.SubElement(birth_death, "birthDiffRate", {"idref": "birthRate"})
     ET.SubElement(birth_death, "relativeDeathRate", {"idref": "relativeDeathRate"})
@@ -702,8 +732,8 @@ def _append_tree_prior(
         [
             ET.fromstring("<distribution id='treePrior.distribution' idref='treePrior' />"),
             ET.fromstring(
-                "<distribution id='birthRate.prior' spec='beast.math.distributions.Prior' x='@birthRate'>"
-                "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.math.distributions.OneOnX' />"
+                "<distribution id='birthRate.prior' spec='beast.base.inference.distribution.Prior' x='@birthRate'>"
+                "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.base.inference.distribution.OneOnX' />"
                 "</distribution>"
             ),
         ]
@@ -714,6 +744,11 @@ def _append_tree_prior(
             ET.fromstring("<log idref='relativeDeathRate' />"),
             ET.fromstring("<log idref='sampleProbability' />"),
         ]
+    )
+    operator_elements.append(
+        ET.fromstring(
+            "<operator id='relativeDeathRateScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@relativeDeathRate' />"
+        )
     )
     return state_node_ids, prior_elements, operator_elements, logger_elements
 
@@ -740,7 +775,7 @@ def _translate_calibration_distribution(
     mrca = ET.Element(
         "distribution",
         {
-            "spec": "beast.math.distributions.MRCAPrior",
+            "spec": "beast.base.evolution.tree.MRCAPrior",
             "tree": "@tree",
             "id": calibration_id,
             "monophyletic": "true",
@@ -769,11 +804,11 @@ def _translate_calibration_distribution(
             mrca,
             "distr",
             {
-                "id": f"{calibration_id}.bounds",
-                "spec": "beast.math.distributions.Uniform",
-                "lower": _format_decimal(lower),
-                "upper": _format_decimal(upper),
-            },
+                    "id": f"{calibration_id}.bounds",
+                    "spec": "beast.base.inference.distribution.Uniform",
+                    "lower": _format_decimal(lower),
+                    "upper": _format_decimal(upper),
+                },
         )
         if requested != "uniform":
             translated = True
@@ -790,7 +825,7 @@ def _translate_calibration_distribution(
                 "distr",
                 {
                     "id": f"{calibration_id}.lognormal",
-                    "spec": "beast.math.distributions.LogNormalDistributionModel",
+                    "spec": "beast.base.inference.distribution.LogNormalDistributionModel",
                     "offset": _format_decimal(lower),
                     "M": "1.0",
                     "S": "1.25",
@@ -809,7 +844,7 @@ def _translate_calibration_distribution(
                 "distr",
                 {
                     "id": f"{calibration_id}.exponential",
-                    "spec": "beast.math.distributions.Exponential",
+                    "spec": "beast.base.inference.distribution.Exponential",
                     "offset": _format_decimal(lower),
                     "mean": _format_decimal(max(1.0, lower * 0.25)),
                 },
@@ -1324,12 +1359,15 @@ def prepare_beast_time_tree_analysis(
         {
             "version": "2.7",
             "namespace": (
-                "beast.evolution.alignment:beast.evolution.speciation:beast.core:"
-                "beast.evolution.tree.coalescent:beast.core.util:beast.util:"
-                "beast.evolution.nuc:beast.evolution.operators:"
-                "beast.evolution.sitemodel:beast.evolution.substitutionmodel:"
-                "beast.evolution.branchratemodel:beast.evolution.likelihood:"
-                "beast.core.parameter"
+                "beast.pkgmgmt:beast.base.core:beast.base.inference:"
+                "beast.base.evolution.alignment:beast.base.evolution.tree:"
+                "beast.base.evolution.tree.coalescent:beast.base.evolution.speciation:"
+                "beast.base.evolution.branchratemodel:beast.base.evolution.operator:"
+                "beast.base.inference.operator:beast.base.evolution.sitemodel:"
+                "beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood:"
+                "beast.base.inference.parameter:beast.base.inference.distribution:"
+                "beast.base.math:beast.base.math.distributions:beast.base.util:"
+                "beast.evolution:beast.evolution.nuc"
             ),
         },
     )
@@ -1381,6 +1419,11 @@ def prepare_beast_time_tree_analysis(
         prior.append(element)
 
     warnings: list[str] = []
+    if tip_date_report is not None and tree_prior.strip().lower() == "birth-death":
+        warnings.append(
+            "tip-dated analyses with the standard birth-death tree prior are exploratory in this template; "
+            "BEAST warns that this prior is not serial-sampling aware"
+        )
     beast_calibrations: list[BeastCalibration] = []
     if calibration_report is not None:
         for calibration in calibration_report.calibrations:
@@ -1392,7 +1435,7 @@ def prepare_beast_time_tree_analysis(
             if warning is not None:
                 warnings.append(warning)
 
-    ET.SubElement(posterior, "distribution", {"id": "likelihood", "idref": "likelihood"})
+    ET.SubElement(posterior, "distribution", {"idref": "likelihood"})
 
     generic_tree_operators = [
         ET.fromstring(
@@ -1431,7 +1474,7 @@ def prepare_beast_time_tree_analysis(
     ET.SubElement(
         file_logger,
         "log",
-        {"spec": "beast.evolution.tree.TreeHeightLogger", "tree": "@tree"},
+        {"spec": "beast.base.evolution.tree.TreeHeightLogger", "tree": "@tree"},
     )
     for element in [*tree_logger_elements, *site_logger_elements, *clock_logger_elements]:
         file_logger.append(element)
@@ -1456,10 +1499,13 @@ def prepare_beast_time_tree_analysis(
     ET.SubElement(
         screen_logger,
         "log",
-        {"spec": "beast.evolution.tree.TreeHeightLogger", "tree": "@tree"},
+        {"spec": "beast.base.evolution.tree.TreeHeightLogger", "tree": "@tree"},
     )
     for element in [*tree_logger_elements, *site_logger_elements, *clock_logger_elements]:
-        screen_logger.append(ET.fromstring(ET.tostring(element, encoding="unicode")))
+        cloned = ET.fromstring(ET.tostring(element, encoding="unicode"))
+        if cloned.get("id") == "rateStatistic":
+            cloned.set("id", "rateStatistic.screen")
+        screen_logger.append(cloned)
 
     xml_tree = ET.ElementTree(root)
     ET.indent(xml_tree, space="    ")
