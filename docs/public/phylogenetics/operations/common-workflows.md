@@ -501,6 +501,49 @@ full cophylogenetic reconciliation or a transmission-history inference model.
 Its value is to make inferred host-switch evidence, uncertainty, and explicit
 transition constraints reviewable on the analyzed tree.
 
+When the goal is to reconstruct ecological niche evolution and identify which
+clades carry concentrated niche-shift burden, use
+`ecological-niche transitions`. This workflow accepts one rooted tree and one
+ecological-state table, fits one ER, SYM, or ARD discrete transition model,
+reconstructs ancestral niche states, counts branchwise niche changes, and
+ranks internal clades by repeated or concentrated transition burden.
+
+```bash
+bijux-phylogenetics ecological-niche transitions \
+  artifacts/lineages.nwk \
+  artifacts/lineages-niche.tsv \
+  --trait niche \
+  --taxon-column taxon \
+  --model er \
+  --summary-out artifacts/lineages.niche-summary.tsv \
+  --nodes-out artifacts/lineages.niche-nodes.tsv \
+  --rates-out artifacts/lineages.niche-rates.tsv \
+  --branches-out artifacts/lineages.niche-branches.tsv \
+  --counts-out artifacts/lineages.niche-counts.tsv \
+  --clades-out artifacts/lineages.niche-clades.tsv \
+  --exclusions-out artifacts/lineages.niche-excluded.tsv \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, observed niche
+count, internal-node ambiguity burden, fitted log-likelihood and AIC,
+transition-rate row count, certain and uncertain niche-transition counts, and
+the number of internal clades carrying repeated shifts. The node ledger keeps
+one row per internal node with the most likely niche and full niche
+probability vector. The rate ledger keeps one row per directed niche pair with
+the fitted transition rate. The branch ledger keeps one row per analyzed
+branch with the inferred parent and child niches, certainty class, and support
+score. The count ledger aggregates directed niche-transition counts across
+branches. The clade ledger ranks internal clades by concentrated shift burden,
+including repeated-shift flags and dominant transition labels. The
+excluded-taxa ledger keeps dropped raw niche rows.
+
+The ecological-niche surface is explicit about scope. It is a one-tree
+discrete niche-evolution review over the owned ancestral runtime, not a full
+macroecological process model. Its value is to make niche-transition evidence,
+uncertainty, and clade-localized shift concentration directly reviewable on
+the analyzed tree.
+
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
 ancestral reconstruction surfaces and turns their uncertainty into one ranked
