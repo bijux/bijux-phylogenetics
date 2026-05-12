@@ -107,6 +107,66 @@ def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
     assert len(permutation_rows) == 8
 
 
+def test_comparative_brownian_cli_reports_model_fit_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "brownian",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 4
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert math.isclose(payload["metrics"]["sigma_squared"], 4.774305191647407)
+    assert math.isclose(payload["metrics"]["log_likelihood"], -6.0415206788726)
+    assert "aic" in payload["metrics"]
+    assert "aicc" in payload["metrics"]
+
+
+def test_comparative_brownian_cli_writes_summary_and_exclusion_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "brownian-trait-summary.tsv"
+    excluded_out = tmp_path / "brownian-trait-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "brownian",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_brownian_missing.tsv")),
+            "--trait",
+            "response_growth",
+            "--summary-out",
+            str(summary_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 4
+    assert payload["metrics"]["excluded_taxon_count"] == 3
+    assert summary_out.exists()
+    assert excluded_out.exists()
+    summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
+    excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    assert summary_rows[0].startswith("trait\ttaxon_column\ttree_taxon_count")
+    assert excluded_rows == [
+        "taxon\treason",
+        "B\tmissing_trait_value",
+        "C\tnon_numeric_trait_value",
+        "G\tabsent_from_tree",
+    ]
+
+
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
     exit_code = main(
         [
