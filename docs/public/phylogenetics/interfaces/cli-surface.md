@@ -279,6 +279,70 @@ For a discrete tree set, each row preserves:
 - `confidence_class`
 - `stability_class`
 
+`ancestral root-sensitivity` is the governed root-assumption review surface
+for one discrete likelihood ancestral reconstruction. It reruns the owned
+likelihood path under an equal root prior, an empirical root prior derived
+from the analyzed tip-state counts, and an optional user-supplied fixed-root
+scenario. Its JSON metrics report:
+- `model`
+- `state_ordering`
+- `analyzed_taxon_count`
+- `assumption_count`
+- `compared_node_count`
+- `state_changed_node_count`
+- `support_changed_node_count`
+- `top_sensitive_node`
+- `fixed_root_state`
+
+The command supports `equal-rates`, `symmetric`, and
+`all-rates-different`. It does not accept `fitch`, because root priors are a
+likelihood-model concern rather than a Fitch set-propagation concern.
+`--fixed-root-state` is optional. When it is absent, the surface compares only
+equal and empirical root priors. When it is present, the command treats the
+named state as a scenario assumption and adds that scenario to the comparison.
+
+When `--summary-out` is supplied, `ancestral root-sensitivity` writes one
+overall summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `state_ordering`
+- `analyzed_taxon_count`
+- `assumption_count`
+- `compared_node_count`
+- `state_changed_node_count`
+- `support_changed_node_count`
+- `top_sensitive_node`
+- `top_sensitive_score`
+- `warning_count`
+
+When `--assumptions-out` is supplied, the command writes one root-assumption
+ledger. Each row preserves:
+- `assumption_id`
+- `root_prior_mode`
+- `fixed_root_state`
+- `root_prior_distribution`
+- `root_most_likely_state`
+- `root_confidence`
+- `root_entropy`
+- `unstable_node_count`
+- `weak_support_node_count`
+
+When `--nodes-out` is supplied, the command writes one node-wise comparison
+ledger. Each row preserves:
+- `node`
+- `descendant_taxa`
+- `assumption_states`
+- `assumption_confidences`
+- `assumption_entropies`
+- `unique_state_count`
+- `state_changed`
+- `max_confidence_delta`
+- `max_entropy_delta`
+- `sensitivity_score`
+- `sensitivity_rank`
+- `stability_class`
+
 `ancestral tree-set` is the governed reconstruction-stability surface for one
 trait across a posterior or bootstrap tree set. It reruns ancestral
 reconstruction on every retained tree, maps comparable internal clades by
