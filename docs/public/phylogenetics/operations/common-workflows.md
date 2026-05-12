@@ -544,6 +544,49 @@ macroecological process model. Its value is to make niche-transition evidence,
 uncertainty, and clade-localized shift concentration directly reviewable on
 the analyzed tree.
 
+When the goal is to reconstruct continuous spatial movement directly from
+latitude and longitude traits on one tree, use `phylogeography coordinates`.
+This workflow accepts one rooted tree plus one taxon-keyed coordinate table,
+reconstructs ancestral coordinates under Brownian or OU continuous evolution,
+reviews branchwise great-circle displacement, flags jump outliers, and renders
+one coordinate-space movement visualization as SVG or HTML.
+
+```bash
+bijux-phylogenetics phylogeography coordinates \
+  artifacts/lineages.nwk \
+  artifacts/lineages-coordinates.tsv \
+  --latitude-column latitude \
+  --longitude-column longitude \
+  --taxon-column taxon \
+  --model brownian \
+  --summary-out artifacts/lineages.phylogeography-summary.tsv \
+  --estimates-out artifacts/lineages.phylogeography-estimates.tsv \
+  --branches-out artifacts/lineages.phylogeography-branches.tsv \
+  --outliers-out artifacts/lineages.phylogeography-outliers.tsv \
+  --exclusions-out artifacts/lineages.phylogeography-excluded.tsv \
+  --visualization-out artifacts/lineages.phylogeography-movement.svg \
+  --json
+```
+
+The summary ledger keeps one row with the analyzed taxon count, internal-node
+count, weak-support-node count, outlier and impossible jump counts, maximum
+branch displacement, and root-coordinate uncertainty. The estimate ledger
+keeps one row per tip or internal node with latitude, longitude, paired
+uncertainty, and radial coordinate uncertainty in kilometers. The branch
+ledger keeps one row per branch with parent and child coordinates,
+great-circle displacement, branchwise displacement rate, and explicit jump
+flags. The outlier ledger keeps only flagged branches with the robust distance
+and rate thresholds used for review. The excluded-taxa ledger keeps dropped
+rows for missing, non-numeric, out-of-range, or out-of-tree coordinates. The
+visualization output is intentionally a coordinate-space movement review, not a
+projected base map.
+
+The phylogeography surface is explicit about scope. It is a one-tree
+continuous-coordinate review over the owned continuous ancestral runtime, not
+a map product or a direct historical route inference model. Its value is to
+make ancestral coordinates, uncertainty, extreme branch displacements, and a
+reviewable movement trace visible before the later map-specific workflow.
+
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
 ancestral reconstruction surfaces and turns their uncertainty into one ranked
