@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-12
+last_reviewed: 2026-05-13
 ---
 
 # CLI Surface
@@ -14,6 +14,7 @@ The CLI is the primary operational surface for most users.
 ## Major Command Families
 
 - `validate`, `inspect`, `compare`, `annotate`, `render`
+- `demo ...`
 - `alignment ...`
 - `comparative ...`
 - `ancestral ...`
@@ -28,6 +29,46 @@ The CLI is the primary operational surface for most users.
 
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
+
+`demo primate-comparative` is the governed packaged mammal dataset surface. It
+materializes the shipped primate comparative dataset into one output directory
+and reruns the owned comparative workflow bundle over those packaged inputs.
+Its JSON metrics report:
+
+- `artifact_count`
+- `dataset_taxon_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/tree.nwk`
+- `dataset/traits.csv`
+- `dataset/expected/*.tsv`
+- `workflow/workflow-summary.tsv`
+- `workflow/pgls-lambda-profile.tsv`
+- `workflow/brownian-summary.tsv`
+- `workflow/ou-summary.tsv`
+- `workflow/signal-summary.tsv`
+- `workflow/signal-permutations.tsv`
+- `workflow/continuous-ancestral-summary.tsv`
+- `workflow/continuous-ancestral-uncertainty.tsv`
+- `workflow/discrete-ancestral-summary.tsv`
+- `workflow/discrete-ancestral-probabilities.tsv`
+- `overview.md`
+
+The packaged dataset is keyed by `species`, carries both continuous and
+categorical traits, and uses the following governed comparative workflow
+choices:
+
+- PGLS response `longevity`
+- PGLS predictor `social_group_size`
+- continuous ancestral trait `longevity`
+- discrete ancestral trait `mating_system`
+
+This command is intentionally a public data-and-workflow entrypoint rather than
+another evidence-book wrapper. It gives users a real mammal comparative dataset
+without requiring them to know the repository’s internal study layout.
 
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
