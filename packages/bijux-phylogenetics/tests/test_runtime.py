@@ -112,6 +112,10 @@ from bijux_phylogenetics.comparative import (
     BrownianRegimeIdentifiabilityWarning,
     BrownianRegimeProfileRow,
     BrownianRegimeRateRow,
+    CorrelatedTraitComparisonRow,
+    CorrelatedTraitEvolutionReport,
+    CorrelatedTraitExclusion,
+    CorrelatedTraitObservationRow,
     ComparativeCladeCoefficientChangeRow,
     ComparativeCladeResidualReport,
     ComparativeCladeStabilityReport,
@@ -163,6 +167,7 @@ from bijux_phylogenetics.comparative import (
     compare_comparative_regression_models,
     run_multivariate_comparative_regression,
     run_pgls,
+    summarize_correlated_trait_evolution,
     summarize_phylogenetic_logistic,
     summarize_brownian_covariance_pgls,
     summarize_brownian_regime_rates,
@@ -211,6 +216,10 @@ from bijux_phylogenetics.comparative import (
     write_phylogenetic_logistic_coefficient_table,
     write_phylogenetic_logistic_excluded_taxa_table,
     write_phylogenetic_logistic_fitted_table,
+    write_correlated_trait_comparison_table,
+    write_correlated_trait_exclusion_table,
+    write_correlated_trait_observation_table,
+    write_correlated_trait_summary_table,
     write_independent_contrast_regression_table,
     write_independent_contrast_table,
     write_ou_alpha_profile_table,
@@ -1065,6 +1074,16 @@ def test_command_registry_exposes_diversification_surface() -> None:
 
 def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.BranchIdentityMetadata is BranchIdentityMetadata
+    assert (
+        bijux_phylogenetics.CorrelatedTraitComparisonRow
+        is CorrelatedTraitComparisonRow
+    )
+    assert bijux_phylogenetics.CorrelatedTraitEvolutionReport is CorrelatedTraitEvolutionReport
+    assert bijux_phylogenetics.CorrelatedTraitExclusion is CorrelatedTraitExclusion
+    assert (
+        bijux_phylogenetics.CorrelatedTraitObservationRow
+        is CorrelatedTraitObservationRow
+    )
     assert bijux_phylogenetics.TraitRegimeBranchRow is TraitRegimeBranchRow
     assert bijux_phylogenetics.TraitRegimeExclusion is TraitRegimeExclusion
     assert bijux_phylogenetics.TraitRegimeMappingReport is TraitRegimeMappingReport
@@ -1092,6 +1111,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.run_multivariate_comparative_regression
         is run_multivariate_comparative_regression
+    )
+    assert (
+        bijux_phylogenetics.summarize_correlated_trait_evolution
+        is summarize_correlated_trait_evolution
     )
     assert (
         bijux_phylogenetics.run_posterior_tree_pgls
@@ -7905,10 +7928,38 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_ou_trait_evolution
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_correlated_trait_evolution"]
+        is summarize_correlated_trait_evolution
+    )
+    assert (
         resolved[
             "bijux_phylogenetics.comparative:write_early_burst_trait_evolution_summary_table"
         ]
         is write_early_burst_trait_evolution_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_correlated_trait_summary_table"
+        ]
+        is write_correlated_trait_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_correlated_trait_comparison_table"
+        ]
+        is write_correlated_trait_comparison_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_correlated_trait_observation_table"
+        ]
+        is write_correlated_trait_observation_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_correlated_trait_exclusion_table"
+        ]
+        is write_correlated_trait_exclusion_table
     )
     assert (
         resolved[
