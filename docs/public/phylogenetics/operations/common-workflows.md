@@ -95,6 +95,27 @@ bijux-phylogenetics compare \
   --json
 ```
 
+When branch lengths matter as well as topology, use
+`compare branch-lengths`. That surface preserves the per-split length table
+for shared rooted clades and also computes Felsenstein branch-score distance on
+the union of unrooted splits. Missing splits count as zero-length branches for
+the score calculation, which makes topology disagreement contribute directly to
+the final distance instead of disappearing from the branch-length review.
+
+```bash
+bijux-phylogenetics compare branch-lengths \
+  artifacts/mammals.reference.nwk \
+  artifacts/mammals.candidate.nwk \
+  --json
+```
+
+By default the command prunes both trees to their shared taxa before computing
+branch-score distance. If taxon-set mismatch itself should fail the review, add
+`--taxon-overlap-policy require-identical`. When a matched split is present but
+lacks a branch length on one side, the per-split ledger records that missing
+length explicitly and the branch-score summary becomes unavailable instead of
+silently treating the missing value as zero.
+
 When your starting point is one aligned FASTA per locus, run
 `alignment concatenate` first. That workflow writes the concatenated alignment,
 the remapped partition file, and the taxon-by-locus occupancy matrix in one
