@@ -110,6 +110,10 @@ from bijux_phylogenetics.comparative import (
     ComparativeCladeResidualReport,
     ComparativeCladeStabilityReport,
     ComparativeCladeStabilityRow,
+    EarlyBurstIdentifiabilityWarning,
+    EarlyBurstRateChangeProfileRow,
+    EarlyBurstTraitEvolutionExclusion,
+    EarlyBurstTraitEvolutionSummaryReport,
     PosteriorTreePGLSCoefficientRow,
     PosteriorTreePGLSCoefficientSummaryRow,
     PosteriorTreePGLSReport,
@@ -150,6 +154,7 @@ from bijux_phylogenetics.comparative import (
     summarize_phylogenetic_logistic,
     summarize_brownian_covariance_pgls,
     summarize_brownian_trait_evolution,
+    summarize_early_burst_trait_evolution,
     summarize_independent_contrast_regression,
     summarize_ou_covariance_pgls,
     summarize_ou_trait_evolution,
@@ -162,6 +167,10 @@ from bijux_phylogenetics.comparative import (
     write_brownian_covariance_table,
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,
+    write_early_burst_rate_change_profile_table,
+    write_early_burst_trait_evolution_comparison_table,
+    write_early_burst_trait_evolution_exclusion_table,
+    write_early_burst_trait_evolution_summary_table,
     write_comparative_clade_coefficient_change_table,
     write_comparative_clade_stability_table,
     write_comparative_residual_clade_table,
@@ -1105,12 +1114,48 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_brownian_trait_evolution
     )
     assert (
+        bijux_phylogenetics.summarize_early_burst_trait_evolution
+        is summarize_early_burst_trait_evolution
+    )
+    assert (
         bijux_phylogenetics.summarize_ou_covariance_pgls
         is summarize_ou_covariance_pgls
     )
     assert (
         bijux_phylogenetics.summarize_ou_trait_evolution
         is summarize_ou_trait_evolution
+    )
+    assert (
+        bijux_phylogenetics.EarlyBurstTraitEvolutionSummaryReport
+        is EarlyBurstTraitEvolutionSummaryReport
+    )
+    assert (
+        bijux_phylogenetics.EarlyBurstTraitEvolutionExclusion
+        is EarlyBurstTraitEvolutionExclusion
+    )
+    assert (
+        bijux_phylogenetics.EarlyBurstRateChangeProfileRow
+        is EarlyBurstRateChangeProfileRow
+    )
+    assert (
+        bijux_phylogenetics.EarlyBurstIdentifiabilityWarning
+        is EarlyBurstIdentifiabilityWarning
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_trait_evolution_summary_table
+        is write_early_burst_trait_evolution_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_trait_evolution_exclusion_table
+        is write_early_burst_trait_evolution_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_trait_evolution_comparison_table
+        is write_early_burst_trait_evolution_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_rate_change_profile_table
+        is write_early_burst_rate_change_profile_table
     )
     assert bijux_phylogenetics.summarize_pgls_lambda_fit is summarize_pgls_lambda_fit
     assert (
@@ -7738,12 +7783,40 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_brownian_trait_evolution
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_early_burst_trait_evolution"]
+        is summarize_early_burst_trait_evolution
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_ou_covariance_pgls"]
         is summarize_ou_covariance_pgls
     )
     assert (
         resolved["bijux_phylogenetics.comparative:summarize_ou_trait_evolution"]
         is summarize_ou_trait_evolution
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_trait_evolution_summary_table"
+        ]
+        is write_early_burst_trait_evolution_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_trait_evolution_exclusion_table"
+        ]
+        is write_early_burst_trait_evolution_exclusion_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_trait_evolution_comparison_table"
+        ]
+        is write_early_burst_trait_evolution_comparison_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_rate_change_profile_table"
+        ]
+        is write_early_burst_rate_change_profile_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:summarize_pgls_categorical_contrasts"]
