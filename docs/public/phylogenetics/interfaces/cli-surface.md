@@ -113,6 +113,49 @@ This command is intentionally a public bird comparative entrypoint rather than
 an internal teaching-data wrapper. It gives users a real bird dataset that can
 exercise trait-evolution and clade-pattern workflows immediately.
 
+`demo central-european-seashore-flora` is the governed packaged plant dataset
+surface. It materializes the shipped Central European flora subset into one
+output directory and reruns the owned comparative workflow bundle over those
+packaged inputs. Its JSON metrics report:
+
+- `artifact_count`
+- `dataset_taxon_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/tree.nwk`
+- `dataset/traits.csv`
+- `dataset/expected/*.tsv`
+- `workflow/workflow-summary.tsv`
+- `workflow/pgls-lambda-profile.tsv`
+- `workflow/brownian-summary.tsv`
+- `workflow/ou-summary.tsv`
+- `workflow/signal-summary.tsv`
+- `workflow/signal-permutations.tsv`
+- `workflow/continuous-ancestral-summary.tsv`
+- `workflow/continuous-ancestral-uncertainty.tsv`
+- `workflow/discrete-ancestral-summary.tsv`
+- `workflow/discrete-ancestral-probabilities.tsv`
+- `workflow/clade-trait-summary.tsv`
+- `workflow/clade-trait-clades.tsv`
+- `overview.md`
+
+The packaged dataset is keyed by `species`, carries both continuous and
+categorical plant traits, and uses the following governed comparative workflow
+choices:
+
+- PGLS response `seed_mass`
+- PGLS predictor `plant_height`
+- continuous ancestral trait `seed_mass`
+- discrete ancestral trait `lifeform`
+- clade summary trait `lifeform`
+
+This command is intentionally a public non-animal comparative entrypoint rather
+than a generic flora dump. It exposes one documented published subset with a
+fully rerunnable workflow contract.
+
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
 the selected continuous model, reports 95% uncertainty intervals, and prunes
