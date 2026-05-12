@@ -1963,3 +1963,54 @@ def test_adapter_beast_consensus_cli_writes_consensus_and_clade_ledger(
     )
     assert retained_path.read_text(encoding="utf-8").count("\n") == 3
     assert "A|B\t2\t0.666666666666667" in clade_table_path.read_text(encoding="utf-8")
+
+
+def test_adapter_beast_diversity_cli_writes_distance_and_instability_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    posterior_path = tmp_path / "posterior.trees"
+    retained_path = tmp_path / "posterior-retained.nwk"
+    distance_path = tmp_path / "posterior-distances.tsv"
+    topology_path = tmp_path / "posterior-topologies.tsv"
+    unstable_path = tmp_path / "posterior-unstable-clades.tsv"
+    posterior_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_10 = ((A:0.1,C:0.1):0.2,(B:0.1,D:0.1):0.2):0.0;\n"
+        "tree STATE_20 = ((A:0.1,B:0.1):0.4,(C:0.1,D:0.1):0.4):0.0;\n"
+        "tree STATE_30 = ((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3):0.0;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-diversity",
+            str(posterior_path),
+            "--burnin-fraction",
+            "0.25",
+            "--tree-set-out",
+            str(retained_path),
+            "--distance-out",
+            str(distance_path),
+            "--topology-out",
+            str(topology_path),
+            "--unstable-clade-out",
+            str(unstable_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["kept_tree_count"] == 3
+    assert payload["metrics"]["rooted_topology_count"] == 2
+    assert payload["metrics"]["pair_count"] == 3
+    assert payload["metrics"]["unstable_clade_count"] >= 1
+    assert payload["data"]["dominant_topology_frequency"] == pytest.approx(2 / 3)
+    assert retained_path.read_text(encoding="utf-8").count("\n") == 3
+    assert "normalized_robinson_foulds" in distance_path.read_text(encoding="utf-8")
+    assert "representative_newick" in topology_path.read_text(encoding="utf-8")
+    assert "support_classification" in unstable_path.read_text(encoding="utf-8")

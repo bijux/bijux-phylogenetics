@@ -38,6 +38,7 @@ from bijux_phylogenetics.bayesian import (
     render_calibration_audit_report,
     run_mrbayes_posterior_inference,
     summarize_beast_log,
+    summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
     summarize_mrbayes_posterior_trees,
     validate_fossil_calibration_table,
@@ -345,7 +346,9 @@ from bijux_phylogenetics.tree_set import (
     summarize_uncertainty_aware_conclusions,
     write_clade_frequency_table,
     write_consensus_tree,
+    write_topology_cluster_table,
     write_tree_distance_matrix,
+    write_unstable_clade_table,
 )
 
 
@@ -3945,6 +3948,41 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the posterior consensus report as JSON."
     )
     _add_manifest_argument(adapter_beast_consensus)
+    adapter_beast_diversity = adapter_subparsers.add_parser(
+        "beast-diversity",
+        help="Summarize topology diversity across BEAST posterior tree samples.",
+    )
+    adapter_beast_diversity.add_argument("input_path", type=Path)
+    adapter_beast_diversity.add_argument(
+        "--burnin-fraction",
+        type=float,
+        default=0.25,
+        help="Discard this fraction of early sampled trees before topology review.",
+    )
+    adapter_beast_diversity.add_argument(
+        "--tree-set-out",
+        type=Path,
+        help="Write the retained posterior tree set as normalized Newick.",
+    )
+    adapter_beast_diversity.add_argument(
+        "--distance-out",
+        type=Path,
+        help="Write the pairwise RF distance ledger as TSV.",
+    )
+    adapter_beast_diversity.add_argument(
+        "--topology-out",
+        type=Path,
+        help="Write the rooted topology cluster ledger as TSV.",
+    )
+    adapter_beast_diversity.add_argument(
+        "--unstable-clade-out",
+        type=Path,
+        help="Write the unstable-clade ledger as TSV.",
+    )
+    adapter_beast_diversity.add_argument(
+        "--json", action="store_true", help="Emit the topology diversity report as JSON."
+    )
+    _add_manifest_argument(adapter_beast_diversity)
     adapter_beast_convergence = adapter_subparsers.add_parser(
         "beast-convergence",
         help="Assess BEAST log convergence from ESS and trace drift.",
@@ -10069,6 +10107,67 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "kept_tree_count": report.kept_tree_count,
                             "annotated_node_count": report.annotated_node_count,
                             "clade_frequency_count": report.clade_frequency_count,
+                            "burnin_fraction": report.burnin_fraction,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-diversity":
+                report = summarize_beast_posterior_topology_diversity(
+                    args.input_path,
+                    burnin_fraction=args.burnin_fraction,
+                )
+                outputs: list[Path | str] = []
+                if args.tree_set_out is not None:
+                    args.tree_set_out.parent.mkdir(parents=True, exist_ok=True)
+                    args.tree_set_out.write_text(
+                        Path(report.retained_tree_set_path).read_text(encoding="utf-8"),
+                        encoding="utf-8",
+                    )
+                    outputs.append(args.tree_set_out)
+                if args.distance_out is not None:
+                    outputs.append(
+                        write_tree_distance_matrix(
+                            args.distance_out,
+                            compute_tree_distance_matrix(report.retained_tree_set_path),
+                        )
+                    )
+                if args.topology_out is not None:
+                    outputs.append(
+                        write_topology_cluster_table(
+                            args.topology_out,
+                            cluster_trees_by_topology(report.retained_tree_set_path),
+                        )
+                    )
+                if args.unstable_clade_out is not None:
+                    outputs.append(
+                        write_unstable_clade_table(
+                            args.unstable_clade_out,
+                            detect_unstable_clades(report.retained_tree_set_path),
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "total_tree_count": report.total_tree_count,
+                            "kept_tree_count": report.kept_tree_count,
+                            "rooted_topology_count": report.rooted_topology_count,
+                            "dominant_topology_frequency": (
+                                report.dominant_topology_frequency
+                            ),
+                            "pair_count": report.pair_count,
+                            "unstable_clade_count": report.unstable_clade_count,
                             "burnin_fraction": report.burnin_fraction,
                         },
                         data=report,
