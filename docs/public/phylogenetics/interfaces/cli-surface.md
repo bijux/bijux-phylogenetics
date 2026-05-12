@@ -170,6 +170,19 @@ the retained sampled states, normalized Newick trees, sorted tip set, and
 clade-frequency table so posterior-tree review can stay on structured data
 instead of manual NEXUS scraping.
 
+`adapter beast-subsample` is the governed retained-subset surface for one BEAST
+posterior tree file after optional burn-in handling. It requires
+`--method evenly-spaced` plus `--thinning-interval`, or `--method random` plus
+`--sample-count`. Random retained subsets become reproducible when `--seed` is
+set explicitly. Optional `--tree-set-out` writes the retained normalized Newick
+set, and optional `--sample-table-out` writes the retained metadata ledger.
+
+Its JSON metrics expose `total_tree_count`, `burnin_tree_count`,
+`pre_subsampling_tree_count`, `retained_tree_count`, `selection_method`, and
+`retained_state_count`. The TSV ledger preserves the retained source index,
+post-burn-in index, tree name, sampled state, rooted flag, and the governing
+selection parameters used to retain that tree.
+
 `adapter beast-consensus` is the governed summary surface for one BEAST
 posterior tree file after burn-in handling. It builds a majority-rule consensus
 tree from the retained posterior trees, writes that consensus as canonical
@@ -214,6 +227,7 @@ The matching parser commands expose those artifacts directly:
 - `adapter mrbayes-parameters` reports `burnin_fraction`, `kept_row_count`, and `parameter_count` from `.run1.p` after applying the requested burn-in cut
 - `adapter mrbayes-burnin-sensitivity` reports `slice_count`, `parameter_shift_count`, `unstable_parameter_count`, `clade_shift_count`, and `unstable_clade_count` from `.run1.t` plus optional `.run1.p`
 - `adapter mrbayes-trees` reports `tree_count`, `rooted_tree_count`, and `sampled_generation_count` from `.run1.t`
+- `adapter mrbayes-subsample` reports `total_tree_count`, `burnin_tree_count`, `pre_subsampling_tree_count`, `retained_tree_count`, `selection_method`, and `retained_generation_count` from `.run1.t`
 - `adapter mrbayes-mcmc` reports `row_count`, `column_count`, and `comment_count` from `.mcmc`
 - `adapter mrbayes-consensus` reports `tip_count`, `annotated_node_count`, and `maximum_posterior_probability` from `.con.tre`
 
@@ -230,6 +244,19 @@ and one clade-probability-shift ledger. Parameter instability is defined by
 non-overlapping 95% HPD intervals, while clade instability is defined by
 posterior probabilities that cross the majority-rule threshold across the
 tested burn-in fractions.
+
+`adapter mrbayes-subsample` is the governed retained-subset surface for one
+MrBayes posterior tree file after optional burn-in handling. Like the BEAST
+variant, it supports either evenly spaced thinning or seeded random
+subsampling, can write the retained normalized tree set through
+`--tree-set-out`, and can write the retained metadata ledger through
+`--sample-table-out`.
+
+Its JSON payload keeps the retained source indices and the retained tree
+records directly. The TSV ledger preserves the retained source index,
+post-burn-in index, tree name, sampled generation, rooted flag, and the
+selection parameters so reviewers can reproduce or audit the retained subset
+without reopening the full posterior tree file.
 
 The consensus parser exists because MrBayes writes posterior-probability and
 branch-length summaries as inline bracket annotations inside the NEXUS tree
