@@ -37,6 +37,20 @@ and reports the shared, left-only, and right-only taxa in JSON. Use
 `--taxon-overlap-policy require-identical` when any taxon-set mismatch should
 stop the comparison instead of being pruned away for review.
 
+The same overlap policy also governs `compare branch-lengths`. That command now
+keeps the existing shared-clade branch-length table and adds a governed
+branch-score summary under `data.branch_score`. The summary reports whether the
+trees shared the same taxon set, how many branch-score splits were shared or
+unique to one side, and the final Felsenstein branch-score distance when every
+matched split has a numeric branch length.
+
+The branch-score contract is explicit. Missing splits contribute as
+zero-length branches on the opposite side, so topology disagreement increases
+the distance directly. Missing branch lengths on a split that is present do not
+silently become zero: the split is counted in `missing_length_split_count` and
+the final branch-score distance is reported as unavailable until the missing
+length is resolved.
+
 The topology family provides direct tree-transformation commands for already
 inferred trees. `topology root-outgroup` accepts one outgroup taxon or one
 expected outgroup clade, writes the rooted tree, and can emit a one-row TSV
