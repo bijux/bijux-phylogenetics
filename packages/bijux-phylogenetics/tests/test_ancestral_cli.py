@@ -259,6 +259,58 @@ def test_ancestral_root_sensitivity_cli_can_export_review(
     )
 
 
+def test_ancestral_ordered_discrete_cli_can_export_review(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ordered-discrete-summary.tsv"
+    fits_path = tmp_path / "ordered-discrete-fits.tsv"
+    nodes_path = tmp_path / "ordered-discrete-nodes.tsv"
+    transitions_path = tmp_path / "ordered-discrete-transitions.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "ordered-discrete",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "equal-rates",
+            "--ordered-states",
+            "north,south,island",
+            "--summary-out",
+            str(summary_path),
+            "--fits-out",
+            str(fits_path),
+            "--nodes-out",
+            str(nodes_path),
+            "--transitions-out",
+            str(transitions_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["ordered_state_count"] == 3
+    assert payload["metrics"]["fit_count"] == 2
+    assert payload["metrics"]["restricted_transition_count"] == 2
+    assert payload["metrics"]["preferred_ordering"] == "ordered"
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tanalyzed_taxon_count\tstate_count"
+    )
+    assert fits_path.read_text(encoding="utf-8").startswith(
+        "ordering_mode\tmodel\tstate_ordering\tordered_states"
+    )
+    assert nodes_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tordered_state\tunordered_state"
+    )
+    assert transitions_path.read_text(encoding="utf-8").startswith(
+        "source_state\ttarget_state\tstep_distance\tordered_transition_allowed"
+    )
+
+
 def test_ancestral_confidence_cli_can_export_tree_set_review(
     tmp_path: Path, capsys
 ) -> None:

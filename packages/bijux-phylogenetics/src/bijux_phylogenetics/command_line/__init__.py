@@ -46,6 +46,14 @@ from bijux_phylogenetics.ancestral.root_sensitivity import (
     write_ancestral_root_sensitivity_node_table,
     write_ancestral_root_sensitivity_summary_table,
 )
+from bijux_phylogenetics.ancestral.ordered_discrete import (
+    summarize_ordered_discrete_reconstruction,
+    summarize_ordered_discrete_report,
+    write_ordered_discrete_fit_table,
+    write_ordered_discrete_node_table,
+    write_ordered_discrete_summary_table,
+    write_ordered_discrete_transition_table,
+)
 from bijux_phylogenetics.ancestral.tree_set import (
     summarize_continuous_ancestral_tree_set,
     summarize_continuous_ancestral_tree_set_report,
@@ -3143,6 +3151,32 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the root-sensitivity review as JSON."
     )
     _add_manifest_argument(ancestral_root_sensitivity)
+    ancestral_ordered_discrete = ancestral_subparsers.add_parser(
+        "ordered-discrete",
+        help="Compare ordered and unordered discrete likelihood ancestral reconstructions.",
+    )
+    ancestral_ordered_discrete.add_argument("tree", type=Path)
+    ancestral_ordered_discrete.add_argument("table", type=Path)
+    ancestral_ordered_discrete.add_argument("--trait", required=True)
+    ancestral_ordered_discrete.add_argument("--taxon-column")
+    ancestral_ordered_discrete.add_argument(
+        "--model",
+        choices=("equal-rates", "symmetric", "all-rates-different"),
+        default="equal-rates",
+    )
+    ancestral_ordered_discrete.add_argument(
+        "--ordered-states",
+        required=True,
+        help="Comma-delimited explicit ordered state vocabulary.",
+    )
+    ancestral_ordered_discrete.add_argument("--summary-out", type=Path)
+    ancestral_ordered_discrete.add_argument("--fits-out", type=Path)
+    ancestral_ordered_discrete.add_argument("--nodes-out", type=Path)
+    ancestral_ordered_discrete.add_argument("--transitions-out", type=Path)
+    ancestral_ordered_discrete.add_argument(
+        "--json", action="store_true", help="Emit the ordered discrete review as JSON."
+    )
+    _add_manifest_argument(ancestral_ordered_discrete)
     ancestral_transitions = ancestral_subparsers.add_parser(
         "transitions",
         help="Count inferred ancestral transitions on one tree or tree set.",
@@ -9282,6 +9316,78 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "top_sensitive_node": summary.top_sensitive_node,
                             "fixed_root_state": report.fixed_root_state,
+                        },
+                        data={
+                            "report": report,
+                            "summary": summary,
+                        },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "ordered-discrete":
+                report = summarize_ordered_discrete_reconstruction(
+                    args.tree,
+                    args.table,
+                    trait=args.trait,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    ordered_states=_split_csv_values(args.ordered_states) or [],
+                )
+                summary = summarize_ordered_discrete_report(report)
+                outputs = []
+                if args.summary_out is not None:
+                    outputs.append(
+                        write_ordered_discrete_summary_table(
+                            args.summary_out,
+                            report,
+                        )
+                    )
+                if args.fits_out is not None:
+                    outputs.append(
+                        write_ordered_discrete_fit_table(
+                            args.fits_out,
+                            report,
+                        )
+                    )
+                if args.nodes_out is not None:
+                    outputs.append(
+                        write_ordered_discrete_node_table(
+                            args.nodes_out,
+                            report,
+                        )
+                    )
+                if args.transitions_out is not None:
+                    outputs.append(
+                        write_ordered_discrete_transition_table(
+                            args.transitions_out,
+                            report,
+                        )
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        warnings=report.warnings,
+                        metrics={
+                            "model": report.model,
+                            "ordered_state_count": len(report.ordered_states),
+                            "fit_count": len(report.fit_rows),
+                            "differing_node_count": summary.differing_node_count,
+                            "ambiguity_change_count": (
+                                summary.ambiguity_change_count
+                            ),
+                            "restricted_transition_count": (
+                                summary.restricted_transition_count
+                            ),
+                            "preferred_ordering": summary.preferred_ordering,
                         },
                         data={
                             "report": report,
