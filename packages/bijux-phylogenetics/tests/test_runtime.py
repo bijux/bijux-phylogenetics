@@ -120,6 +120,7 @@ from bijux_phylogenetics.comparative import (
     EarlyBurstRateChangeProfileRow,
     EarlyBurstTraitEvolutionExclusion,
     EarlyBurstTraitEvolutionSummaryReport,
+    BranchIdentityMetadata,
     PosteriorTreePGLSCoefficientRow,
     PosteriorTreePGLSCoefficientSummaryRow,
     PosteriorTreePGLSReport,
@@ -142,12 +143,17 @@ from bijux_phylogenetics.comparative import (
     PhylogeneticLogisticWarning,
     PhylogeneticSignalPermutation,
     PhylogeneticSignalSummaryReport,
+    TraitRegimeBranchRow,
+    TraitRegimeExclusion,
+    TraitRegimeMappingReport,
+    TraitRegimeNodeRow,
     assess_comparative_method_maturity,
     analyze_comparative_clade_stability,
     analyze_comparative_residual_clades,
     run_posterior_tree_pgls,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
+    build_branch_identity_lookup,
     build_pgls_model_matrix,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
@@ -160,6 +166,7 @@ from bijux_phylogenetics.comparative import (
     summarize_phylogenetic_logistic,
     summarize_brownian_covariance_pgls,
     summarize_brownian_regime_rates,
+    summarize_trait_regime_mapping,
     summarize_brownian_trait_evolution,
     summarize_early_burst_trait_evolution,
     summarize_independent_contrast_regression,
@@ -178,6 +185,10 @@ from bijux_phylogenetics.comparative import (
     write_brownian_regime_profile_table,
     write_brownian_regime_rate_table,
     write_brownian_regime_summary_table,
+    write_trait_regime_branch_table,
+    write_trait_regime_exclusion_table,
+    write_trait_regime_node_table,
+    write_trait_regime_summary_table,
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,
     write_early_burst_rate_change_profile_table,
@@ -1053,6 +1064,12 @@ def test_command_registry_exposes_diversification_surface() -> None:
 
 
 def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
+    assert bijux_phylogenetics.BranchIdentityMetadata is BranchIdentityMetadata
+    assert bijux_phylogenetics.TraitRegimeBranchRow is TraitRegimeBranchRow
+    assert bijux_phylogenetics.TraitRegimeExclusion is TraitRegimeExclusion
+    assert bijux_phylogenetics.TraitRegimeMappingReport is TraitRegimeMappingReport
+    assert bijux_phylogenetics.TraitRegimeNodeRow is TraitRegimeNodeRow
+    assert bijux_phylogenetics.build_branch_identity_lookup is build_branch_identity_lookup
     assert bijux_phylogenetics.benchmark_tree_validation is benchmark_tree_validation
     assert bijux_phylogenetics.benchmark_tree_comparison is benchmark_tree_comparison
     assert (
@@ -1127,6 +1144,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_brownian_regime_rates
     )
     assert (
+        bijux_phylogenetics.summarize_trait_regime_mapping
+        is summarize_trait_regime_mapping
+    )
+    assert (
         bijux_phylogenetics.summarize_brownian_trait_evolution
         is summarize_brownian_trait_evolution
     )
@@ -1185,6 +1206,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_brownian_regime_summary_table
         is write_brownian_regime_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_branch_table
+        is write_trait_regime_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_exclusion_table
+        is write_trait_regime_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_node_table
+        is write_trait_regime_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_summary_table
+        is write_trait_regime_summary_table
     )
     assert (
         bijux_phylogenetics.write_brownian_regime_rate_table
@@ -7848,6 +7885,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
         is summarize_brownian_regime_rates
     )
     assert (
+        resolved["bijux_phylogenetics.comparative:summarize_trait_regime_mapping"]
+        is summarize_trait_regime_mapping
+    )
+    assert (
         resolved["bijux_phylogenetics.comparative:summarize_brownian_trait_evolution"]
         is summarize_brownian_trait_evolution
     )
@@ -7939,6 +7980,22 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_regime_summary_table"]
         is write_brownian_regime_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_branch_table"]
+        is write_trait_regime_branch_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_exclusion_table"]
+        is write_trait_regime_exclusion_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_node_table"]
+        is write_trait_regime_node_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_summary_table"]
+        is write_trait_regime_summary_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_regime_rate_table"]
