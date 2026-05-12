@@ -379,6 +379,9 @@ from bijux_phylogenetics.simulation import (
     write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
+    BootstrapTreeSetArtifactReport,
+    BootstrapTreeSetSummaryReport,
+    BootstrapUnstableBranch,
     cluster_trees_by_topology,
     compare_bootstrap_and_posterior_uncertainty,
     compare_posterior_topological_diversity,
@@ -390,8 +393,12 @@ from bijux_phylogenetics.tree_set import (
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
+    summarize_bootstrap_tree_set,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
+    write_bootstrap_tree_set_artifacts,
+    write_bootstrap_tree_set_summary_table,
+    write_bootstrap_unstable_branch_table,
     write_clade_credibility_conflict_table,
     write_topology_cluster_table,
     write_uncertainty_conclusion_table,
@@ -730,6 +737,15 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_accepted_name_mapping is write_accepted_name_mapping
     )
     assert bijux_phylogenetics.load_tree_set is load_tree_set
+    assert (
+        bijux_phylogenetics.BootstrapTreeSetSummaryReport
+        is BootstrapTreeSetSummaryReport
+    )
+    assert (
+        bijux_phylogenetics.BootstrapTreeSetArtifactReport
+        is BootstrapTreeSetArtifactReport
+    )
+    assert bijux_phylogenetics.BootstrapUnstableBranch is BootstrapUnstableBranch
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
     assert (
         bijux_phylogenetics.compute_clade_frequency_table
@@ -741,6 +757,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.cluster_trees_by_topology is cluster_trees_by_topology
     assert bijux_phylogenetics.detect_unstable_taxa is detect_unstable_taxa
     assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
+    assert (
+        bijux_phylogenetics.summarize_bootstrap_tree_set
+        is summarize_bootstrap_tree_set
+    )
     assert (
         bijux_phylogenetics.compare_posterior_topological_diversity
         is compare_posterior_topological_diversity
@@ -756,6 +776,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_uncertainty_aware_conclusions
         is summarize_uncertainty_aware_conclusions
+    )
+    assert (
+        bijux_phylogenetics.write_bootstrap_tree_set_summary_table
+        is write_bootstrap_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_bootstrap_unstable_branch_table
+        is write_bootstrap_unstable_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_bootstrap_tree_set_artifacts
+        is write_bootstrap_tree_set_artifacts
     )
     assert (
         bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
