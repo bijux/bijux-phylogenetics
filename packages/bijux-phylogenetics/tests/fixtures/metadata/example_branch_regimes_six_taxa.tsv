@@ -1,0 +1,11 @@
+branch_id	regime
+A|B|C|D	background
+A|B	fast
+A	fast
+B	fast
+C|D	background
+C	background
+D	background
+E|F	slow
+E	slow
+F	slow
