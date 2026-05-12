@@ -115,6 +115,11 @@ from bijux_phylogenetics.compare.topology import (
     write_support_comparison_table,
     write_tree_comparison_table,
 )
+from bijux_phylogenetics.clades import (
+    extract_tree_clades,
+    extract_tree_set_clades,
+    write_clade_table,
+)
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
@@ -2728,6 +2733,27 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the clade-frequency report as JSON."
     )
     _add_manifest_argument(tree_set_clades)
+    tree_set_clade_rows = tree_set_subparsers.add_parser(
+        "clades",
+        help="Extract one row per clade from each tree in a tree set.",
+    )
+    tree_set_clade_rows.add_argument("tree_set", type=Path)
+    tree_set_clade_rows.add_argument("--metadata", type=Path)
+    tree_set_clade_rows.add_argument("--taxon-column", type=str)
+    tree_set_clade_rows.add_argument(
+        "--metadata-column",
+        dest="metadata_columns",
+        action="append",
+        default=[],
+        help="Summarize this taxon-keyed metadata column for each clade.",
+    )
+    tree_set_clade_rows.add_argument(
+        "--out", type=Path, help="Write the clade table as TSV."
+    )
+    tree_set_clade_rows.add_argument(
+        "--json", action="store_true", help="Emit the clade table report as JSON."
+    )
+    _add_manifest_argument(tree_set_clade_rows)
     tree_set_distances = tree_set_subparsers.add_parser(
         "distance-matrix",
         help="Compute pairwise RF distances across a tree set.",
@@ -3164,6 +3190,25 @@ def build_parser() -> argparse.ArgumentParser:
     topology_subparsers = topology.add_subparsers(
         dest="topology_command", required=True
     )
+    topology_clades = topology_subparsers.add_parser(
+        "clades",
+        help="Extract one row per clade from a tree.",
+    )
+    topology_clades.add_argument("tree", type=Path)
+    topology_clades.add_argument("--metadata", type=Path)
+    topology_clades.add_argument("--taxon-column", type=str)
+    topology_clades.add_argument(
+        "--metadata-column",
+        dest="metadata_columns",
+        action="append",
+        default=[],
+        help="Summarize this taxon-keyed metadata column for each clade.",
+    )
+    topology_clades.add_argument("--out", type=Path)
+    topology_clades.add_argument(
+        "--json", action="store_true", help="Emit the clade table report as JSON."
+    )
+    _add_manifest_argument(topology_clades)
     topology_outgroup = topology_subparsers.add_parser(
         "root-outgroup", help="Root a tree on explicit outgroup taxa."
     )
@@ -7446,6 +7491,37 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.tree_set_command == "clades":
+                report = extract_tree_set_clades(
+                    args.tree_set,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    metadata_columns=args.metadata_columns or None,
+                )
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_clade_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "clade_count": len(report.rows),
+                            "metadata_column_count": len(report.metadata_columns),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.tree_set_command == "distance-matrix":
                 report = compute_tree_distance_matrix(args.tree_set)
                 outputs = []
@@ -8253,6 +8329,37 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             )
             return 0
         if args.command == "topology":
+            if args.topology_command == "clades":
+                report = extract_tree_clades(
+                    args.tree,
+                    metadata_path=args.metadata,
+                    taxon_column=args.taxon_column,
+                    metadata_columns=args.metadata_columns or None,
+                )
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_clade_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="topology",
+                    inputs=[args.tree],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="topology",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "clade_count": len(report.rows),
+                            "metadata_column_count": len(report.metadata_columns),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.topology_command == "root-outgroup":
                 tree, report = root_tree_on_outgroup(
                     args.tree, outgroup_taxa=list(args.taxa)
