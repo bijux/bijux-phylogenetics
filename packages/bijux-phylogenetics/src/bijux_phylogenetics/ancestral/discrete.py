@@ -99,12 +99,20 @@ def reconstruct_discrete_ancestral_states(
     model: str = "fitch",
     state_ordering: str = "unordered",
     ordered_states: list[str] | None = None,
+    root_prior_mode: str = "equal",
+    fixed_root_state: str | None = None,
 ) -> DiscreteAncestralReport:
     """Reconstruct discrete ancestral states under Fitch or Mk likelihood models."""
     resolved_model = _resolve_discrete_model_name(model)
     if resolved_model == "fitch" and state_ordering != "unordered":
         raise ValueError(
             "ordered discrete ancestral reconstruction requires a likelihood model"
+        )
+    if resolved_model == "fitch" and (
+        root_prior_mode != "equal" or fixed_root_state is not None
+    ):
+        raise ValueError(
+            "fitch discrete ancestral reconstruction does not support root-prior assumptions"
         )
     dataset = load_discrete_dataset(
         tree_path,
@@ -118,6 +126,8 @@ def reconstruct_discrete_ancestral_states(
             model=resolved_model,
             state_ordering=state_ordering,
             ordered_states=ordered_states,
+            root_prior_mode=root_prior_mode,
+            fixed_root_state=fixed_root_state,
         )
         unstable_nodes = [
             estimate.node
@@ -446,18 +456,27 @@ def _reconstruct_likelihood_estimates(
     model: str,
     state_ordering: str,
     ordered_states: list[str] | None,
+    root_prior_mode: str = "equal",
+    fixed_root_state: str | None = None,
 ) -> tuple[list[DiscreteAncestralEstimate], list[str]]:
     state_order = _resolve_state_order(
         dataset.observed_states,
         state_ordering=state_ordering,
         ordered_states=ordered_states,
     )
-    rate_matrix, root_prior = _fit_discrete_mk_model(
+    rate_matrix, default_root_prior = _fit_discrete_mk_model(
         dataset.tree,
         dataset.states_by_taxon,
         state_order=state_order,
         model=model,
         state_ordering=state_ordering,
+    )
+    root_prior = _resolve_root_prior(
+        state_order,
+        state_counts=dataset.state_counts,
+        mode=root_prior_mode,
+        fixed_root_state=fixed_root_state,
+        default_root_prior=default_root_prior,
     )
     posterior_by_node = _estimate_marginal_state_probabilities(
         dataset.tree,
@@ -940,6 +959,59 @@ def _normalize_array(values: numpy.ndarray) -> numpy.ndarray:
 
 def _uniform_root_prior(state_count: int) -> numpy.ndarray:
     return numpy.full(state_count, 1.0 / state_count, dtype=float)
+
+
+def _empirical_root_prior(
+    state_order: list[str], state_counts: dict[str, int]
+) -> numpy.ndarray:
+    return _normalize_array(
+        numpy.array(
+            [float(state_counts.get(state, 0)) for state in state_order],
+            dtype=float,
+        )
+    )
+
+
+def _fixed_root_prior(state_order: list[str], fixed_root_state: str) -> numpy.ndarray:
+    if fixed_root_state not in state_order:
+        raise ValueError(
+            "fixed root state is not available in the analyzed state vocabulary: "
+            f"{fixed_root_state}"
+        )
+    prior = numpy.zeros(len(state_order), dtype=float)
+    prior[state_order.index(fixed_root_state)] = 1.0
+    return prior
+
+
+def _resolve_root_prior(
+    state_order: list[str],
+    *,
+    state_counts: dict[str, int],
+    mode: str,
+    fixed_root_state: str | None,
+    default_root_prior: numpy.ndarray | None = None,
+) -> numpy.ndarray:
+    if mode == "equal":
+        if fixed_root_state is not None:
+            raise ValueError(
+                "fixed_root_state requires root_prior_mode 'fixed'"
+            )
+        if default_root_prior is not None:
+            return default_root_prior
+        return _uniform_root_prior(len(state_order))
+    if mode == "empirical":
+        if fixed_root_state is not None:
+            raise ValueError(
+                "fixed_root_state requires root_prior_mode 'fixed'"
+            )
+        return _empirical_root_prior(state_order, state_counts)
+    if mode == "fixed":
+        if fixed_root_state is None:
+            raise ValueError(
+                "root_prior_mode 'fixed' requires a fixed_root_state"
+            )
+        return _fixed_root_prior(state_order, fixed_root_state)
+    raise ValueError(f"unsupported discrete ancestral root prior mode: {mode}")
 
 
 def _branch_length(node) -> float:
