@@ -39,3 +39,19 @@ def test_build_ancestral_figure_package_writes_publication_artifacts(
     assert result.manifest_path.exists()
     assert "uncertainty" in result.legend_path.read_text(encoding="utf-8").lower()
     assert "model" in result.model_description_path.read_text(encoding="utf-8").lower()
+
+
+def test_build_ancestral_figure_package_uses_discrete_probability_ledger(
+    tmp_path: Path,
+) -> None:
+    result = build_ancestral_figure_package(
+        tree_path=fixture("example_tree.nwk"),
+        traits_path=fixture("example_traits_geography.tsv"),
+        trait="region",
+        reconstruction_kind="discrete",
+        out_dir=tmp_path / "discrete-package",
+        model="equal-rates",
+    )
+    uncertainty_rows = result.uncertainty_table_path.read_text(encoding="utf-8")
+    assert "state_probabilities" in uncertainty_rows
+    assert "most_likely_state" in uncertainty_rows
