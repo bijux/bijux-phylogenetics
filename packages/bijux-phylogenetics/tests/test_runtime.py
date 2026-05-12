@@ -17,6 +17,10 @@ from bijux_phylogenetics.ancestral import (
     reconstruct_discrete_ancestral_states,
     render_ancestral_state_report,
     render_ancestral_state_tree,
+    summarize_ancestral_transition_report,
+    summarize_ancestral_transition_tree_set,
+    summarize_ancestral_transition_tree_set_report,
+    summarize_ancestral_transitions,
     summarize_discrete_ancestral_report,
     summarize_continuous_ancestral_report,
     summarize_continuous_ancestral_tree_set,
@@ -24,6 +28,14 @@ from bijux_phylogenetics.ancestral import (
     summarize_discrete_ancestral_tree_set,
     summarize_discrete_ancestral_tree_set_report,
     write_ancestral_state_table,
+    write_ancestral_transition_branch_table,
+    write_ancestral_transition_count_table,
+    write_ancestral_transition_exclusion_table,
+    write_ancestral_transition_summary_table,
+    write_ancestral_transition_tree_set_branch_table,
+    write_ancestral_transition_tree_set_count_table,
+    write_ancestral_transition_tree_set_summary_table,
+    write_ancestral_transition_tree_set_tree_table,
     write_ancestral_tree_set_exclusion_table,
     write_ancestral_tree_set_tree_table,
     write_continuous_ancestral_exclusion_table,
@@ -1759,8 +1771,56 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_discrete_ancestral_tree_set_report
     )
     assert (
+        bijux_phylogenetics.summarize_ancestral_transitions
+        is summarize_ancestral_transitions
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_transition_report
+        is summarize_ancestral_transition_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_transition_tree_set
+        is summarize_ancestral_transition_tree_set
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_transition_tree_set_report
+        is summarize_ancestral_transition_tree_set_report
+    )
+    assert (
         bijux_phylogenetics.write_ancestral_tree_set_tree_table
         is write_ancestral_tree_set_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_summary_table
+        is write_ancestral_transition_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_branch_table
+        is write_ancestral_transition_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_count_table
+        is write_ancestral_transition_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_exclusion_table
+        is write_ancestral_transition_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_summary_table
+        is write_ancestral_transition_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_tree_table
+        is write_ancestral_transition_tree_set_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_branch_table
+        is write_ancestral_transition_tree_set_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_count_table
+        is write_ancestral_transition_tree_set_count_table
     )
     assert (
         bijux_phylogenetics.write_ancestral_tree_set_exclusion_table
