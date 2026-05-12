@@ -286,6 +286,135 @@ Discrete rows preserve:
 When `--exclusions-out` is supplied, the command writes one explicit excluded
 tip ledger with `taxon` and `reason`.
 
+`ancestral transitions` is the governed categorical transition-counting surface
+for one rooted tree or a retained tree set. It reruns the owned discrete
+ancestral reconstruction path, converts each non-root branch into one explicit
+parent-versus-child state comparison, and preserves whether each inferred
+change is certain or uncertain. Its JSON metrics report:
+- `tree_set`
+- `model`
+- `excluded_taxon_count`
+
+For one-tree runs, the JSON metrics also report:
+- `total_branch_count`
+- `changed_branch_count`
+- `certain_change_count`
+- `uncertain_change_count`
+- `transition_pair_count`
+
+For tree-set runs, the JSON metrics also report:
+- `total_tree_count`
+- `kept_tree_count`
+- `rooted_topology_count`
+- `unrooted_topology_count`
+- `transition_pair_count`
+- `topology_sensitive_transition_pair_count`
+- `uncertainty_sensitive_transition_pair_count`
+
+The command supports `fitch`, `equal-rates`, `symmetric`, and
+`all-rates-different`. Ordered-state transition counting requires a likelihood
+model, because ordered-state support comes from the Mk likelihood path rather
+than the Fitch set path. `--tree-set` switches the surface from one analyzed
+tree to one retained posterior or bootstrap tree set, and `--burnin-fraction`
+is only valid with `--tree-set`.
+
+When `--summary-out` is supplied, `ancestral transitions` writes one overall
+summary ledger. For one-tree runs the row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `state_ordering`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `total_branch_count`
+- `changed_branch_count`
+- `certain_change_count`
+- `uncertain_change_count`
+- `transition_pair_count`
+- `top_transition`
+- `warning_count`
+
+For tree-set runs the same summary ledger preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `state_ordering`
+- `total_tree_count`
+- `burnin_tree_count`
+- `kept_tree_count`
+- `shared_tree_taxon_count`
+- `analysis_taxon_count`
+- `rooted_topology_count`
+- `unrooted_topology_count`
+- `transition_pair_count`
+- `topology_sensitive_transition_pair_count`
+- `uncertainty_sensitive_transition_pair_count`
+- `stable_transition_pair_count`
+- `top_transition`
+- `warning_count`
+
+When `--branches-out` is supplied, the command writes one branch ledger. For
+one-tree runs each row preserves:
+- `parent_node`
+- `child_node`
+- `child_descendant_taxa`
+- `branch_length`
+- `parent_most_likely_state`
+- `child_most_likely_state`
+- `parent_state_set`
+- `child_state_set`
+- `overlapping_states`
+- `changed`
+- `certainty_class`
+- `transition`
+
+For tree-set runs the same branch ledger preserves those columns plus:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+
+When `--counts-out` is supplied, the command writes one transition-pair count
+ledger. For one-tree runs each row preserves:
+- `transition`
+- `source_state`
+- `target_state`
+- `certain_change_count`
+- `uncertain_change_count`
+- `total_change_count`
+
+For tree-set runs each row preserves:
+- `transition`
+- `source_state`
+- `target_state`
+- `tree_presence_count`
+- `tree_presence_fraction`
+- `mean_certain_change_count`
+- `mean_uncertain_change_count`
+- `mean_total_change_count`
+- `minimum_total_change_count`
+- `maximum_total_change_count`
+- `lower_95_empirical_total_change_count`
+- `upper_95_empirical_total_change_count`
+- `stability_class`
+
+When `--trees-out` is supplied with `--tree-set`, the command writes one
+retained-tree ledger. Each row preserves:
+- `source_tree_index`
+- `post_burnin_index`
+- `rooted_topology_id`
+- `unrooted_topology_id`
+- `branch_count`
+- `changed_branch_count`
+- `certain_change_count`
+- `uncertain_change_count`
+- `transition_pair_count`
+
+When `--exclusions-out` is supplied, the command writes one explicit excluded
+tip ledger. Each row preserves:
+- `taxon`
+- `reason`
+
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
