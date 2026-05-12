@@ -24,6 +24,18 @@ from .mammals import (
     run_primate_comparative_workflow,
     write_primate_comparative_workflow_bundle,
 )
+from .plants import (
+    CentralEuropeanSeashoreFloraDataset,
+    CentralEuropeanSeashoreFloraDatasetExportResult,
+    CentralEuropeanSeashoreFloraDemoResult,
+    CentralEuropeanSeashoreFloraWorkflowBundle,
+    CentralEuropeanSeashoreFloraWorkflowReport,
+    export_central_european_seashore_flora_dataset,
+    load_central_european_seashore_flora_dataset,
+    run_central_european_seashore_flora_demo,
+    run_central_european_seashore_flora_workflow,
+    write_central_european_seashore_flora_workflow_bundle,
+)
 
 __all__ = [
     "AvianReproductiveTraitDataset",
@@ -36,6 +48,16 @@ __all__ = [
     "run_avian_reproductive_trait_demo",
     "run_avian_reproductive_trait_workflow",
     "write_avian_reproductive_trait_workflow_bundle",
+    "CentralEuropeanSeashoreFloraDataset",
+    "CentralEuropeanSeashoreFloraDatasetExportResult",
+    "CentralEuropeanSeashoreFloraDemoResult",
+    "CentralEuropeanSeashoreFloraWorkflowBundle",
+    "CentralEuropeanSeashoreFloraWorkflowReport",
+    "export_central_european_seashore_flora_dataset",
+    "load_central_european_seashore_flora_dataset",
+    "run_central_european_seashore_flora_demo",
+    "run_central_european_seashore_flora_workflow",
+    "write_central_european_seashore_flora_workflow_bundle",
     "PrimateComparativeDataset",
     "PrimateComparativeDatasetExportResult",
     "PrimateComparativeDemoResult",
