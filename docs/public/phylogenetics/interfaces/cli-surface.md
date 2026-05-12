@@ -17,6 +17,7 @@ The CLI is the primary operational surface for most users.
 - `alignment ...`
 - `comparative ...`
 - `ancestral ...`
+- `biogeography ...`
 - `tree-set ...`
 - `topology ...`
 - `adapter ...`
@@ -310,6 +311,80 @@ transition ledger. Each row preserves:
 - `unconstrained_transition_allowed`
 - `constrained_rate`
 - `unconstrained_rate`
+
+`biogeography model` is the governed ancestral-region review surface for one
+taxon-region table on one rooted tree. It accepts ER, SYM, and ARD model
+aliases and reuses the owned geographic-state engine to produce explicit
+internal-node region probabilities, pairwise transition-rate rows, branchwise
+event rows, and excluded-taxon rows. Its JSON metrics report:
+- `model`
+- `observed_region_count`
+- `internal_node_count`
+- `transition_rate_row_count`
+- `changed_branch_count`
+- `strongly_supported_transition_count`
+- `excluded_taxon_count`
+
+The command supports `er`, `sym`, and `ard`. `--allowed-regions` is optional
+and defines an explicit region vocabulary when the metadata should be
+restricted to named states only.
+
+When `--summary-out` is supplied, `biogeography model` writes one overall
+summary ledger. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `internal_model`
+- `likelihood_method`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observed_region_count`
+- `internal_node_count`
+- `ambiguous_internal_node_count`
+- `changed_branch_count`
+- `strongly_supported_transition_count`
+- `transition_rate_row_count`
+- `root_region`
+- `root_region_probability`
+- `warning_count`
+
+When `--nodes-out` is supplied, the command writes one internal-node region
+probability ledger. Each row preserves:
+- `node`
+- `node_name`
+- `descendant_taxa`
+- `most_likely_region`
+- `region_probabilities`
+- `confidence`
+- `ambiguous`
+- `is_root`
+
+When `--rates-out` is supplied, the command writes one pairwise transition-rate
+ledger. Each row preserves:
+- `source_region`
+- `target_region`
+- `rate`
+- `lower_95_interval`
+- `upper_95_interval`
+- `effective_transition_count`
+
+When `--events-out` is supplied, the command writes one branchwise geographic
+event ledger. Each row preserves:
+- `parent_node`
+- `child_node`
+- `source_region`
+- `target_region`
+- `changed`
+- `support`
+- `strongly_supported`
+
+When `--exclusions-out` is supplied, the command writes one excluded-taxa
+ledger. Each row preserves:
+- `taxon`
+- `raw_region`
+- `normalized_region`
+- `reason`
+- `note`
 
 `ancestral confidence` is the governed ancestral-confidence review surface for
 either one tree or one posterior/bootstrap tree set. It does not fit a new
