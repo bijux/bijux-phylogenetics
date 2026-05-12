@@ -13,13 +13,20 @@ from bijux_phylogenetics.core.pruning import (
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import _load_tree
-from bijux_phylogenetics.io.iqtree_support import parse_iqtree_branch_support_label
+from bijux_phylogenetics.io.iqtree_support import (
+    parse_iqtree_branch_support_label,
+    support_fraction,
+)
 from bijux_phylogenetics.io.trees import detect_tree_format
 
 
 RobinsonFouldsMode = str
 TaxonOverlapPolicy = str
 BranchScoreStatus = str
+
+_STRONG_SUPPORT_THRESHOLD = 0.9
+_WEAK_SUPPORT_THRESHOLD = 0.7
+_SUPPORT_DISAGREEMENT_THRESHOLD = 0.15
 
 
 @dataclass(slots=True)
@@ -77,6 +84,26 @@ class CladeSupportPair:
     split_id: str
     left_support: float | None
     right_support: float | None
+    left_support_fraction: float | None
+    right_support_fraction: float | None
+    support_fraction_delta: float | None
+    support_disagreement: bool
+
+
+@dataclass(slots=True)
+class SupportConflictRow:
+    split_id: str
+    comparison_status: str
+    left_present: bool
+    right_present: bool
+    left_support: float | None
+    right_support: float | None
+    left_support_fraction: float | None
+    right_support_fraction: float | None
+    strongest_support_fraction: float | None
+    support_strength: str
+    conflict_classification: str
+    detail: str
 
 
 @dataclass(slots=True)
@@ -84,7 +111,11 @@ class SupportComparisonReport:
     left_path: Path
     right_path: Path
     shared_taxa: list[str]
+    strong_support_threshold: float
+    weak_support_threshold: float
+    support_disagreement_threshold: float
     shared_clades: list[CladeSupportPair]
+    conflicting_clades: list[SupportConflictRow]
 
 
 @dataclass(slots=True)
@@ -318,6 +349,22 @@ def _load_biophylo_tree(path: Path) -> Tree:
 
 def _split_id(signature: frozenset[str]) -> str:
     return "|".join(sorted(signature))
+
+
+def _support_strength(
+    value: float | None,
+    *,
+    strong_support_threshold: float,
+    weak_support_threshold: float,
+) -> str:
+    fraction = support_fraction(value)
+    if fraction is None:
+        return "unavailable"
+    if fraction >= strong_support_threshold:
+        return "strong"
+    if fraction >= weak_support_threshold:
+        return "moderate"
+    return "low"
 
 
 def _validate_rf_mode(rf_mode: RobinsonFouldsMode) -> None:
@@ -941,9 +988,14 @@ def compare_tree_paths(
 
 
 def compare_support_values(
-    left_path: Path, right_path: Path
+    left_path: Path,
+    right_path: Path,
+    *,
+    strong_support_threshold: float = _STRONG_SUPPORT_THRESHOLD,
+    weak_support_threshold: float = _WEAK_SUPPORT_THRESHOLD,
+    support_disagreement_threshold: float = _SUPPORT_DISAGREEMENT_THRESHOLD,
 ) -> SupportComparisonReport:
-    """Compare internal clade support values across two trees with shared taxa."""
+    """Compare clade support values and support-aware conflicts across two trees."""
     left = _load_biophylo_tree(left_path)
     right = _load_biophylo_tree(right_path)
     left_taxa = {clade.name for clade in left.get_terminals() if clade.name}
@@ -957,22 +1009,113 @@ def compare_support_values(
     shared_clade_ids = sorted(
         left_clades.keys() & right_clades.keys(), key=lambda item: sorted(item)
     )
+    all_clade_ids = sorted(
+        left_clades.keys() | right_clades.keys(),
+        key=lambda item: (len(item), tuple(sorted(item))),
+    )
+    shared_clades: list[CladeSupportPair] = []
+    conflicting_clades: list[SupportConflictRow] = []
+    for clade_id in shared_clade_ids:
+        left_support = _parse_support(
+            left_clades[clade_id].confidence or left_clades[clade_id].name
+        )
+        right_support = _parse_support(
+            right_clades[clade_id].confidence or right_clades[clade_id].name
+        )
+        left_fraction = support_fraction(left_support)
+        right_fraction = support_fraction(right_support)
+        shared_clades.append(
+            CladeSupportPair(
+                split_id=_split_id(clade_id),
+                left_support=left_support,
+                right_support=right_support,
+                left_support_fraction=left_fraction,
+                right_support_fraction=right_fraction,
+                support_fraction_delta=(
+                    None
+                    if left_fraction is None or right_fraction is None
+                    else abs(left_fraction - right_fraction)
+                ),
+                support_disagreement=(
+                    left_fraction is not None
+                    and right_fraction is not None
+                    and abs(left_fraction - right_fraction)
+                    >= support_disagreement_threshold
+                ),
+            )
+        )
+    for clade_id in all_clade_ids:
+        left_present = clade_id in left_clades
+        right_present = clade_id in right_clades
+        if left_present and right_present:
+            continue
+        left_support = (
+            _parse_support(left_clades[clade_id].confidence or left_clades[clade_id].name)
+            if left_present
+            else None
+        )
+        right_support = (
+            _parse_support(
+                right_clades[clade_id].confidence or right_clades[clade_id].name
+            )
+            if right_present
+            else None
+        )
+        left_fraction = support_fraction(left_support)
+        right_fraction = support_fraction(right_support)
+        strongest_support_fraction = max(
+            value
+            for value in (left_fraction, right_fraction)
+            if value is not None
+        ) if left_fraction is not None or right_fraction is not None else None
+        support_strength = _support_strength(
+            left_support if left_present else right_support,
+            strong_support_threshold=strong_support_threshold,
+            weak_support_threshold=weak_support_threshold,
+        )
+        if strongest_support_fraction is None:
+            conflict_classification = "support_unavailable"
+            detail = "clade conflict could not be ranked because no branch support was available"
+        elif strongest_support_fraction >= strong_support_threshold:
+            conflict_classification = "high_support_conflict"
+            detail = (
+                "conflicting clade carried strong branch support in the tree where it was present"
+            )
+        elif strongest_support_fraction >= weak_support_threshold:
+            conflict_classification = "moderate_support_disagreement"
+            detail = (
+                "conflicting clade carried moderate branch support in the tree where it was present"
+            )
+        else:
+            conflict_classification = "low_support_disagreement"
+            detail = (
+                "conflicting clade was only weakly supported in the tree where it was present"
+            )
+        conflicting_clades.append(
+            SupportConflictRow(
+                split_id=_split_id(clade_id),
+                comparison_status="left_only" if left_present else "right_only",
+                left_present=left_present,
+                right_present=right_present,
+                left_support=left_support,
+                right_support=right_support,
+                left_support_fraction=left_fraction,
+                right_support_fraction=right_fraction,
+                strongest_support_fraction=strongest_support_fraction,
+                support_strength=support_strength,
+                conflict_classification=conflict_classification,
+                detail=detail,
+            )
+        )
     return SupportComparisonReport(
         left_path=left_path,
         right_path=right_path,
         shared_taxa=sorted(shared_taxa),
-        shared_clades=[
-            CladeSupportPair(
-                split_id="|".join(sorted(clade_id)),
-                left_support=_parse_support(
-                    left_clades[clade_id].confidence or left_clades[clade_id].name
-                ),
-                right_support=_parse_support(
-                    right_clades[clade_id].confidence or right_clades[clade_id].name
-                ),
-            )
-            for clade_id in shared_clade_ids
-        ],
+        strong_support_threshold=strong_support_threshold,
+        weak_support_threshold=weak_support_threshold,
+        support_disagreement_threshold=support_disagreement_threshold,
+        shared_clades=shared_clades,
+        conflicting_clades=conflicting_clades,
     )
 
 
@@ -1067,12 +1210,103 @@ def write_clade_overlap_table(path: Path, tree_paths: list[Path]) -> Path:
     return path
 
 
+def write_support_comparison_table(path: Path, left_path: Path, right_path: Path) -> Path:
+    """Write a flat TSV ledger for support-aware clade comparison."""
+    report = compare_support_values(left_path, right_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "split_id",
+                "row_kind",
+                "comparison_status",
+                "left_present",
+                "right_present",
+                "left_support",
+                "right_support",
+                "left_support_fraction",
+                "right_support_fraction",
+                "support_fraction_delta",
+                "support_disagreement",
+                "strongest_support_fraction",
+                "support_strength",
+                "conflict_classification",
+                "detail",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.shared_clades:
+            writer.writerow(
+                {
+                    "split_id": row.split_id,
+                    "row_kind": "shared_clade",
+                    "comparison_status": "shared",
+                    "left_present": "true",
+                    "right_present": "true",
+                    "left_support": "" if row.left_support is None else row.left_support,
+                    "right_support": "" if row.right_support is None else row.right_support,
+                    "left_support_fraction": (
+                        "" if row.left_support_fraction is None else row.left_support_fraction
+                    ),
+                    "right_support_fraction": (
+                        "" if row.right_support_fraction is None else row.right_support_fraction
+                    ),
+                    "support_fraction_delta": (
+                        "" if row.support_fraction_delta is None else row.support_fraction_delta
+                    ),
+                    "support_disagreement": str(row.support_disagreement).lower(),
+                    "strongest_support_fraction": "",
+                    "support_strength": "",
+                    "conflict_classification": "",
+                    "detail": (
+                        "shared clade support differs across trees"
+                        if row.support_disagreement
+                        else "shared clade support is aligned across trees"
+                    ),
+                }
+            )
+        for row in report.conflicting_clades:
+            writer.writerow(
+                {
+                    "split_id": row.split_id,
+                    "row_kind": "conflicting_clade",
+                    "comparison_status": row.comparison_status,
+                    "left_present": str(row.left_present).lower(),
+                    "right_present": str(row.right_present).lower(),
+                    "left_support": "" if row.left_support is None else row.left_support,
+                    "right_support": "" if row.right_support is None else row.right_support,
+                    "left_support_fraction": (
+                        "" if row.left_support_fraction is None else row.left_support_fraction
+                    ),
+                    "right_support_fraction": (
+                        "" if row.right_support_fraction is None else row.right_support_fraction
+                    ),
+                    "support_fraction_delta": "",
+                    "support_disagreement": "false",
+                    "strongest_support_fraction": (
+                        ""
+                        if row.strongest_support_fraction is None
+                        else row.strongest_support_fraction
+                    ),
+                    "support_strength": row.support_strength,
+                    "conflict_classification": row.conflict_classification,
+                    "detail": row.detail,
+                }
+            )
+    return path
+
+
 def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -> Path:
     """Write a flat TSV table covering the compared clade and split surfaces."""
     clades = compare_clade_sets(left_path, right_path)
     support = compare_support_values(left_path, right_path)
     branch_lengths = compare_branch_lengths(left_path, right_path)
     support_by_id = {row.split_id: row for row in support.shared_clades}
+    support_conflict_by_id = {
+        row.split_id: row for row in support.conflicting_clades
+    }
     branch_by_id = {row.split_id: row for row in branch_lengths.shared_splits}
     branch_score_by_id = {
         row.split_id: row for row in branch_lengths.branch_score.splits
@@ -1082,6 +1316,7 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
         | set(clades.left_only_clades)
         | set(clades.right_only_clades)
         | set(support_by_id)
+        | set(support_conflict_by_id)
         | set(branch_by_id)
         | set(branch_score_by_id)
     )
@@ -1096,6 +1331,12 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
                 "shared_clade",
                 "left_support",
                 "right_support",
+                "left_support_fraction",
+                "right_support_fraction",
+                "support_fraction_delta",
+                "support_disagreement",
+                "support_conflict_classification",
+                "support_conflict_strength",
                 "left_length",
                 "right_length",
                 "length_delta",
@@ -1109,6 +1350,7 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
         writer.writeheader()
         for split_id in all_split_ids:
             support_row = support_by_id.get(split_id)
+            support_conflict_row = support_conflict_by_id.get(split_id)
             branch_row = branch_by_id.get(split_id)
             branch_score_row = branch_score_by_id.get(split_id)
             if split_id in clades.shared_clades:
@@ -1123,11 +1365,75 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
                     "comparison_status": status,
                     "shared_clade": str(split_id in clades.shared_clades).lower(),
                     "left_support": ""
-                    if support_row is None or support_row.left_support is None
-                    else support_row.left_support,
+                    if (
+                        (support_row is None or support_row.left_support is None)
+                        and (
+                            support_conflict_row is None
+                            or support_conflict_row.left_support is None
+                        )
+                    )
+                    else (
+                        support_row.left_support
+                        if support_row is not None
+                        else support_conflict_row.left_support
+                    ),
                     "right_support": ""
-                    if support_row is None or support_row.right_support is None
-                    else support_row.right_support,
+                    if (
+                        (support_row is None or support_row.right_support is None)
+                        and (
+                            support_conflict_row is None
+                            or support_conflict_row.right_support is None
+                        )
+                    )
+                    else (
+                        support_row.right_support
+                        if support_row is not None
+                        else support_conflict_row.right_support
+                    ),
+                    "left_support_fraction": ""
+                    if (
+                        (support_row is None or support_row.left_support_fraction is None)
+                        and (
+                            support_conflict_row is None
+                            or support_conflict_row.left_support_fraction is None
+                        )
+                    )
+                    else (
+                        support_row.left_support_fraction
+                        if support_row is not None
+                        else support_conflict_row.left_support_fraction
+                    ),
+                    "right_support_fraction": ""
+                    if (
+                        (support_row is None or support_row.right_support_fraction is None)
+                        and (
+                            support_conflict_row is None
+                            or support_conflict_row.right_support_fraction is None
+                        )
+                    )
+                    else (
+                        support_row.right_support_fraction
+                        if support_row is not None
+                        else support_conflict_row.right_support_fraction
+                    ),
+                    "support_fraction_delta": ""
+                    if support_row is None or support_row.support_fraction_delta is None
+                    else support_row.support_fraction_delta,
+                    "support_disagreement": (
+                        "false"
+                        if support_row is None
+                        else str(support_row.support_disagreement).lower()
+                    ),
+                    "support_conflict_classification": (
+                        ""
+                        if support_conflict_row is None
+                        else support_conflict_row.conflict_classification
+                    ),
+                    "support_conflict_strength": (
+                        ""
+                        if support_conflict_row is None
+                        else support_conflict_row.support_strength
+                    ),
                     "left_length": ""
                     if branch_row is None or branch_row.left_length is None
                     else branch_row.left_length,
