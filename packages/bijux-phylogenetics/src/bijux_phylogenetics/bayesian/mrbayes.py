@@ -7,9 +7,11 @@ import re
 
 from bijux_phylogenetics.bayesian.diagnostics import (
     TraceConvergenceReport,
+    summarize_trace_parameters,
     summarize_trace_convergence,
 )
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
+from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.partitions import (
     LocusPartition,
     build_partition_summary_report,
@@ -97,6 +99,34 @@ class MrBayesESSReport:
     path: Path
     sample_count: int
     effective_sample_sizes: list[EffectiveSampleSize]
+
+
+@dataclass(slots=True)
+class MrBayesParameterSummary:
+    parameter: str
+    sample_count: int
+    effective_sample_size: float
+    mean: float
+    median: float
+    standard_deviation: float
+    minimum: float
+    maximum: float
+    hpd_95_lower: float
+    hpd_95_upper: float
+    first_half_mean: float
+    second_half_mean: float
+    standardized_mean_shift: float
+
+
+@dataclass(slots=True)
+class MrBayesParameterDiagnosticsReport:
+    path: Path
+    burnin_fraction: float
+    burnin_row_count: int
+    kept_row_count: int
+    first_kept_generation: int
+    last_kept_generation: int
+    parameter_summaries: list[MrBayesParameterSummary]
 
 
 @dataclass(slots=True)
@@ -737,6 +767,106 @@ def compute_mrbayes_effective_sample_sizes(path: Path) -> MrBayesESSReport:
     )
 
 
+def summarize_mrbayes_parameter_diagnostics(
+    path: Path,
+    *,
+    burnin_fraction: float = 0.0,
+) -> MrBayesParameterDiagnosticsReport:
+    """Summarize burn-in-aware posterior parameter diagnostics from MrBayes traces."""
+    report = parse_mrbayes_parameter_traces(path)
+    burnin_row_count, kept_rows = _split_mrbayes_trace_rows(
+        report, burnin_fraction=burnin_fraction
+    )
+    diagnostics = summarize_trace_parameters(
+        path=path,
+        rows=[row.values for row in kept_rows],
+        columns=report.columns,
+    )
+    return MrBayesParameterDiagnosticsReport(
+        path=path,
+        burnin_fraction=burnin_fraction,
+        burnin_row_count=burnin_row_count,
+        kept_row_count=len(kept_rows),
+        first_kept_generation=kept_rows[0].generation,
+        last_kept_generation=kept_rows[-1].generation,
+        parameter_summaries=[
+            MrBayesParameterSummary(
+                parameter=summary.parameter,
+                sample_count=summary.sample_count,
+                effective_sample_size=summary.effective_sample_size,
+                mean=summary.mean,
+                median=summary.median,
+                standard_deviation=summary.standard_deviation,
+                minimum=summary.minimum,
+                maximum=summary.maximum,
+                hpd_95_lower=summary.hpd_95_lower,
+                hpd_95_upper=summary.hpd_95_upper,
+                first_half_mean=summary.first_half_mean,
+                second_half_mean=summary.second_half_mean,
+                standardized_mean_shift=summary.standardized_mean_shift,
+            )
+            for summary in diagnostics.series
+        ],
+    )
+
+
+def write_mrbayes_parameter_summary_table(
+    path: Path,
+    report: MrBayesParameterDiagnosticsReport,
+) -> Path:
+    """Write a reviewer-facing TSV summary of MrBayes posterior parameter diagnostics."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "parameter",
+            "sample_count",
+            "effective_sample_size",
+            "mean",
+            "median",
+            "standard_deviation",
+            "minimum",
+            "maximum",
+            "hpd_95_lower",
+            "hpd_95_upper",
+            "first_half_mean",
+            "second_half_mean",
+            "standardized_mean_shift",
+            "burnin_fraction",
+            "burnin_row_count",
+            "kept_row_count",
+            "first_kept_generation",
+            "last_kept_generation",
+        ],
+        rows=[
+            {
+                "parameter": summary.parameter,
+                "sample_count": str(summary.sample_count),
+                "effective_sample_size": format(
+                    summary.effective_sample_size, ".15g"
+                ),
+                "mean": format(summary.mean, ".15g"),
+                "median": format(summary.median, ".15g"),
+                "standard_deviation": format(summary.standard_deviation, ".15g"),
+                "minimum": format(summary.minimum, ".15g"),
+                "maximum": format(summary.maximum, ".15g"),
+                "hpd_95_lower": format(summary.hpd_95_lower, ".15g"),
+                "hpd_95_upper": format(summary.hpd_95_upper, ".15g"),
+                "first_half_mean": format(summary.first_half_mean, ".15g"),
+                "second_half_mean": format(summary.second_half_mean, ".15g"),
+                "standardized_mean_shift": format(
+                    summary.standardized_mean_shift, ".15g"
+                ),
+                "burnin_fraction": format(report.burnin_fraction, ".15g"),
+                "burnin_row_count": str(report.burnin_row_count),
+                "kept_row_count": str(report.kept_row_count),
+                "first_kept_generation": str(report.first_kept_generation),
+                "last_kept_generation": str(report.last_kept_generation),
+            }
+            for summary in report.parameter_summaries
+        ],
+    )
+
+
 def assess_mrbayes_convergence(
     path: Path,
     *,
@@ -780,8 +910,12 @@ def _build_mrbayes_convergence_report(
                 "sample_count": summary.sample_count,
                 "effective_sample_size": summary.effective_sample_size,
                 "mean": summary.mean,
+                "median": summary.median,
+                "standard_deviation": summary.standard_deviation,
                 "minimum": summary.minimum,
                 "maximum": summary.maximum,
+                "hpd_95_lower": summary.hpd_95_lower,
+                "hpd_95_upper": summary.hpd_95_upper,
                 "first_half_mean": summary.first_half_mean,
                 "second_half_mean": summary.second_half_mean,
                 "standardized_mean_shift": summary.standardized_mean_shift,
@@ -789,6 +923,24 @@ def _build_mrbayes_convergence_report(
             for summary in convergence.series
         ],
     )
+
+
+def _split_mrbayes_trace_rows(
+    report: MrBayesTraceReport,
+    *,
+    burnin_fraction: float,
+) -> tuple[int, list[MrBayesTraceRow]]:
+    if not 0.0 <= burnin_fraction < 1.0:
+        raise ValueError(
+            f"burnin_fraction must be between 0 and 1, got {burnin_fraction}"
+        )
+    burnin_row_count = int(report.row_count * burnin_fraction)
+    kept_rows = report.rows[burnin_row_count:]
+    if not kept_rows:
+        raise ValueError(
+            "burnin_fraction discards every MrBayes trace row; reduce the burn-in"
+        )
+    return burnin_row_count, kept_rows
 
 
 def summarize_mrbayes_posterior_trees(
