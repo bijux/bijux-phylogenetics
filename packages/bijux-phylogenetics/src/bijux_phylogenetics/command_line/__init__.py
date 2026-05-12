@@ -421,6 +421,7 @@ from bijux_phylogenetics.clades import (
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.datasets import (
+    run_pleistocene_bear_cytb_fragment_demo,
     run_avian_reproductive_trait_demo,
     run_central_european_seashore_flora_demo,
     run_influenza_a_ha_reference_demo,
@@ -5212,6 +5213,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_viruses)
+    demo_ancient_dna = demo_subparsers.add_parser(
+        "pleistocene-bear-cytb-fragments",
+        help="Materialize the packaged ancient-DNA-style bear dataset and rerun the sequence-to-tree workflow outputs.",
+    )
+    demo_ancient_dna.add_argument("--out", required=True, type=Path)
+    demo_ancient_dna.add_argument("--mafft-executable", type=str)
+    demo_ancient_dna.add_argument("--trimal-executable", type=str)
+    demo_ancient_dna.add_argument("--iqtree-executable", type=str)
+    demo_ancient_dna.add_argument("--iqtree-seed", type=int, default=1)
+    demo_ancient_dna.add_argument("--iqtree-threads", type=int, default=1)
+    demo_ancient_dna.add_argument("--bootstrap-replicates", type=int, default=1000)
+    demo_ancient_dna.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_ancient_dna)
 
     adapter = subparsers.add_parser(
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
@@ -14290,6 +14306,63 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "minimum_support": result.workflow_bundle.minimum_support,
                                 "maximum_support": result.workflow_bundle.maximum_support,
                                 "weakly_supported_clade_count": result.workflow_bundle.weakly_supported_clade_count,
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "pleistocene-bear-cytb-fragments":
+                result = run_pleistocene_bear_cytb_fragment_demo(
+                    args.out,
+                    mafft_executable=args.mafft_executable or "mafft",
+                    trimal_executable=args.trimal_executable or "trimal",
+                    iqtree_executable=args.iqtree_executable or "iqtree2",
+                    iqtree_seed=args.iqtree_seed,
+                    iqtree_threads=args.iqtree_threads,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.sequences_path,
+                        result.workflow_bundle.summary_path,
+                        result.workflow_bundle.missingness_effects_path,
+                        result.workflow_bundle.alignment_path,
+                        result.workflow_bundle.trimmed_alignment_path,
+                        result.workflow_bundle.cleaned_alignment_path,
+                        result.workflow_bundle.tree_path,
+                        result.workflow_bundle.model_table_path,
+                        result.workflow_bundle.support_table_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "sequence_count": result.dataset.sequence_count,
+                                "degraded_sequence_count": len(
+                                    result.dataset.degraded_sequence_ids
+                                ),
+                                "selected_model": result.workflow_bundle.selected_model,
+                                "minimum_support": result.workflow_bundle.minimum_support,
+                                "maximum_support": result.workflow_bundle.maximum_support,
+                                "removed_column_count": result.workflow_bundle.removed_column_count,
+                                "cleaned_missing_data_fraction": result.workflow_bundle.cleaned_missing_data_fraction,
                                 "reference_output_count": expected_output_count,
                             },
                             data=result,
