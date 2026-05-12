@@ -158,6 +158,32 @@ For that mixed-datatype path, do not force one fixed single model across every
 partition. Use a model-selection keyword such as `MF`, `MFP`, `TEST`, or
 `TESTMERGE` so the engine can choose partition-appropriate models honestly.
 
+Use `adapter mrbayes-prepare` when you need a Bayesian NEXUS input file for
+one aligned matrix and, optionally, one same-datatype partition file. The
+command writes a ready-to-run MrBayes file with the data block, charset
+definitions, partition declaration, model commands, and MCMC settings in one
+step.
+
+```bash
+bijux-phylogenetics adapter mrbayes-prepare \
+  artifacts/mixed-locus-supermatrix.aln.fasta \
+  --partitions artifacts/mixed-locus-supermatrix.partitions.txt \
+  --out artifacts/multilocus-bayesian.nex \
+  --model gtr \
+  --rates gamma \
+  --ngen 200000 \
+  --samplefreq 100 \
+  --printfreq 100 \
+  --json
+```
+
+When partitions are supplied, the preparation surface validates that the
+coordinates fit the alignment and that any declared partition datatypes still
+match the inferred alignment alphabet. The generated MrBayes block uses named
+charsets plus one active partition declaration so the resulting file is
+accepted by MrBayes as a partitioned Bayesian analysis input instead of as a
+flat unpartitioned matrix.
+
 Those direct adapter runs now preserve IQ-TREE's own `.iqtree` and `.log`
 artifacts, plus the model-selection sidecar, a generated
 `.model-candidates.tsv`, and `.treefile`, `.ufboot`, or `.contree` where the
