@@ -94,6 +94,82 @@ reaches the iteration limit, drives fitted probabilities to the `0/1`
 boundary, or produces very large coefficients, the JSON output marks that as
 `separation_detected` and preserves the warning messages directly.
 
+`comparative model-selection` is the governed review surface for comparing
+competing comparative regression formulas on one shared response and one shared
+complete-case taxon set. Its JSON metrics report:
+- `response`
+- `model_family`
+- `model_count`
+- `analysis_taxon_count`
+- `excluded_taxon_count`
+- `pairwise_comparison_count`
+- `best_formula`
+- `selected_criterion`
+- `selected_log_likelihood`
+
+The command requires at least two `--formula` values. Every candidate formula
+must use the same response column. The model family is inferred from the shared
+response after complete-case pruning:
+- binary `0/1` response on the shared taxon set: phylogenetic logistic ranking
+- otherwise: PGLS ranking
+
+This surface is explicit about fairness. Model ranking only happens after one
+common analysis set is fixed across all formulas, so a candidate does not gain
+an artificial AIC advantage by silently dropping a different subset of taxa.
+
+When `--ranking-out` is supplied, `comparative model-selection` writes one flat
+ranking ledger as CSV or TSV. Each row preserves:
+- `formula`
+- `model_family`
+- `parameter_count`
+- `taxon_count`
+- `phylogenetic_parameter_name`
+- `phylogenetic_parameter_value`
+- `phylogenetic_parameter_estimated`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `bic`
+- `delta_aicc`
+- `delta_bic`
+- `akaike_weight`
+- `rank`
+- `selected`
+- `encoded_columns`
+- `warning_count`
+- `separation_detected`
+
+When `--pairwise-out` is supplied, the command also writes one pairwise
+comparison ledger as CSV or TSV. Each row preserves:
+- `left_formula`
+- `right_formula`
+- `comparison_kind`
+- `preferred_formula`
+- `left_rank`
+- `right_rank`
+- `left_parameter_count`
+- `right_parameter_count`
+- `delta_parameter_count`
+- `left_log_likelihood`
+- `right_log_likelihood`
+- `left_aicc`
+- `right_aicc`
+- `left_bic`
+- `right_bic`
+- `likelihood_ratio_statistic`
+
+`comparison_kind` is one of:
+- `identical`
+- `left_nested_in_right`
+- `right_nested_in_left`
+- `non_nested`
+
+When `--excluded-taxa-out` is supplied, the command writes one explicit
+shared-complete-case exclusion ledger with:
+- `taxon`
+- `reason`
+- `missing_columns`
+
 `comparative contrasts` is the governed review surface for phylogenetic
 independent contrasts. Its JSON metrics report:
 - `taxon_count`
