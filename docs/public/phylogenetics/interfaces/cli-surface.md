@@ -267,6 +267,60 @@ scalar. Reviewers can inspect the fitted K and lambda values, the permutation
 null distribution, and the explicit p-value contract without rerunning the
 analysis manually.
 
+`comparative brownian` is the governed standalone Brownian trait-evolution
+surface for one numeric trait on a rooted tree with branch lengths. Its JSON
+metrics report:
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `root_state`
+- `sigma_squared`
+- `log_likelihood`
+- `aic`
+- `aicc`
+
+The command preserves the full summary under `data`, including:
+- `analyzed_taxa`
+- `excluded_taxa`
+- `confidence_intervals`
+- `residual_diagnostics`
+- `readiness`
+
+When `--summary-out` is supplied, `comparative brownian` writes one flat
+summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `root_state`
+- `root_state_lower_95`
+- `root_state_upper_95`
+- `sigma_squared`
+- `sigma_squared_lower_95`
+- `sigma_squared_upper_95`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `residual_variance`
+- `max_abs_standardized_residual`
+- `phylogenetic_residual_lambda`
+
+When `--excluded-taxa-out` is supplied, `comparative brownian` also writes one
+excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `missing_from_trait_table`
+- `missing_trait_value`
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+This surface exists so Brownian trait-evolution review preserves both the fit
+statistics and the taxon-pruning contract instead of reducing the workflow to a
+single reported rate.
+
 `comparative multivariate` is the governed review surface for fitting the same
 comparative predictor set across multiple response traits on one shared
 complete-case taxon set. Its JSON metrics report:
