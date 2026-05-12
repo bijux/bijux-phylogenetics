@@ -218,6 +218,7 @@ from bijux_phylogenetics.engines import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    run_sh_alrt_support_estimation,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
@@ -831,6 +832,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.run_bootstrap_support_estimation
         is run_bootstrap_support_estimation
+    )
+    assert (
+        bijux_phylogenetics.run_sh_alrt_support_estimation
+        is run_sh_alrt_support_estimation
     )
     assert bijux_phylogenetics.run_fasta_to_tree_workflow is run_fasta_to_tree_workflow
     assert (
