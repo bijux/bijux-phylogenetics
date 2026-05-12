@@ -587,6 +587,61 @@ a map product or a direct historical route inference model. Its value is to
 make ancestral coordinates, uncertainty, extreme branch displacements, and a
 reviewable movement trace visible before the later map-specific workflow.
 
+When the goal is to render a real HTML map from geographic reconstruction
+outputs, use `phylogeography coordinates-map` for continuous latitude and
+longitude reconstructions or `phylogeography regions-map` for discrete region
+transitions with an explicit region-centroid table. These workflows keep the
+owned reconstruction surfaces intact, then project tips, ancestral states, and
+movement or transition lines onto one fixed world latitude/longitude extent.
+
+```bash
+bijux-phylogenetics phylogeography coordinates-map \
+  artifacts/lineages.nwk \
+  artifacts/lineages-coordinates.tsv \
+  --latitude-column latitude \
+  --longitude-column longitude \
+  --minimum-midpoint-depth 2.0 \
+  --summary-out artifacts/lineages.phylogeography-map-summary.tsv \
+  --markers-out artifacts/lineages.phylogeography-map-markers.tsv \
+  --lines-out artifacts/lineages.phylogeography-map-lines.tsv \
+  --exclusions-out artifacts/lineages.phylogeography-map-exclusions.tsv \
+  --html-out artifacts/lineages.phylogeography-map.html \
+  --json
+```
+
+```bash
+bijux-phylogenetics phylogeography regions-map \
+  artifacts/lineages.nwk \
+  artifacts/lineages-regions.tsv \
+  --trait region \
+  --centroids artifacts/region-centroids.tsv \
+  --model ard \
+  --maximum-midpoint-depth 0.15 \
+  --summary-out artifacts/lineages.region-map-summary.tsv \
+  --markers-out artifacts/lineages.region-map-markers.tsv \
+  --lines-out artifacts/lineages.region-map-lines.tsv \
+  --exclusions-out artifacts/lineages.region-map-exclusions.tsv \
+  --html-out artifacts/lineages.region-map.html \
+  --json
+```
+
+The summary ledger keeps one row with the map mode, model, marker counts,
+line counts, visible line counts after optional midpoint-depth filtering, tree
+depth, and warning count. The marker ledger keeps one row per tip or ancestral
+location with latitude, longitude, confidence, and active-line context. The
+line ledger keeps one row per movement or transition path with source and
+target coordinates, midpoint depth, support, path distance, and one explicit
+`visible` flag. The exclusion ledger keeps dropped taxa, missing centroids, or
+other records that could not be placed on the rendered map. The HTML output is
+self-contained and intentionally uses one fixed world extent instead of a
+network-dependent tile service.
+
+When branch lengths represent dated depth, the midpoint-depth filters make one
+time-restricted visible line layer without refitting the reconstruction. This
+is explicit filtering over already reconstructed branches or events, not the
+full dated-tree interval analysis that belongs to the later time-aware
+biogeography workflow.
+
 When the goal is to rank which ancestral nodes or comparable clades remain
 weakly resolved, use `ancestral confidence`. This workflow reads the owned
 ancestral reconstruction surfaces and turns their uncertainty into one ranked
