@@ -321,6 +321,66 @@ This surface exists so Brownian trait-evolution review preserves both the fit
 statistics and the taxon-pruning contract instead of reducing the workflow to a
 single reported rate.
 
+`comparative ou` is the governed standalone OU trait-evolution surface for one
+numeric trait on a rooted tree with branch lengths. Its JSON metrics report:
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `alpha`
+- `theta`
+- `sigma_squared`
+- `log_likelihood`
+- `aic`
+- `aicc`
+
+The command preserves the full summary under `data`, including:
+- `analyzed_taxa`
+- `excluded_taxa`
+- `confidence_intervals`
+- `identifiability_warnings`
+- `residual_diagnostics`
+- `readiness`
+
+When `--summary-out` is supplied, `comparative ou` writes one flat summary
+ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `tree_taxon_count`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `alpha`
+- `alpha_lower_95`
+- `alpha_upper_95`
+- `theta`
+- `theta_lower_95`
+- `theta_upper_95`
+- `sigma_squared`
+- `sigma_squared_lower_95`
+- `sigma_squared_upper_95`
+- `log_likelihood`
+- `aic`
+- `aicc`
+- `convergence_status`
+- `identifiability_warning_count`
+- `residual_variance`
+- `max_abs_standardized_residual`
+- `phylogenetic_residual_lambda`
+
+When `--excluded-taxa-out` is supplied, `comparative ou` also writes one
+excluded-taxa ledger as CSV or TSV. Each row preserves:
+- `taxon`
+- `reason`
+
+The reasons are explicit reviewer-facing states rather than generic failures:
+- `missing_from_trait_table`
+- `missing_trait_value`
+- `non_numeric_trait_value`
+- `absent_from_tree`
+
+This surface exists so OU trait-evolution review preserves the fitted optimum,
+pull strength, diffusion rate, and the pruning contract instead of reducing the
+workflow to one preferred-alpha summary line.
+
 `comparative multivariate` is the governed review surface for fitting the same
 comparative predictor set across multiple response traits on one shared
 complete-case taxon set. Its JSON metrics report:
