@@ -392,6 +392,9 @@ from bijux_phylogenetics.comparative.reporting import (
     compare_comparative_results_across_trees,
     write_comparative_method_report,
 )
+from bijux_phylogenetics.comparative.report_package import (
+    build_comparative_report_package,
+)
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
@@ -3062,6 +3065,11 @@ def build_parser() -> argparse.ArgumentParser:
     comparative_report.add_argument("--formula")
     comparative_report.add_argument("--taxon-column")
     comparative_report.add_argument("--out", type=Path)
+    comparative_report.add_argument(
+        "--out-dir",
+        type=Path,
+        help="Write a full comparative analysis package directory with HTML and reviewer TSV ledgers.",
+    )
     comparative_report.add_argument(
         "--lambda-value",
         default="estimate",
@@ -8935,22 +8943,52 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.comparative_command == "report":
-                report = build_comparative_method_report(
-                    args.tree,
-                    args.table,
-                    response=args.response,
-                    predictors=list(args.predictors or []),
-                    formula=args.formula,
-                    taxon_column=args.taxon_column,
-                    lambda_value=lambda_value,
-                )
+                package_result = None
+                if args.out_dir is not None:
+                    package_result = build_comparative_report_package(
+                        args.tree,
+                        args.table,
+                        out_dir=args.out_dir,
+                        response=args.response,
+                        predictors=list(args.predictors or []),
+                        formula=args.formula,
+                        taxon_column=args.taxon_column,
+                        lambda_value=lambda_value,
+                    )
+                    report = package_result.report
+                else:
+                    report = build_comparative_method_report(
+                        args.tree,
+                        args.table,
+                        response=args.response,
+                        predictors=list(args.predictors or []),
+                        formula=args.formula,
+                        taxon_column=args.taxon_column,
+                        lambda_value=lambda_value,
+                    )
                 if args.out is not None:
                     write_comparative_method_report(args.out, report)
+                output_paths: list[Path | str] = [args.out] if args.out else []
+                if package_result is not None:
+                    output_paths.extend(
+                        [
+                            package_result.report_path,
+                            package_result.summary_table_path,
+                            package_result.coefficient_table_path,
+                            package_result.residual_table_path,
+                            package_result.signal_table_path,
+                            package_result.model_comparison_table_path,
+                            package_result.interpretation_table_path,
+                            package_result.audit_table_path,
+                            package_result.contrast_table_path,
+                            package_result.manifest_path,
+                        ]
+                    )
                 outputs = _finalize_outputs(
                     args,
                     command="comparative",
                     inputs=[args.tree, args.table],
-                    outputs=[args.out] if args.out else [],
+                    outputs=output_paths,
                 )
                 _print_result(
                     build_command_result(
@@ -8965,8 +9003,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 report.snapshot.pgls_inputs.formula_audit.excluded_taxa
                             ),
                             "limitation_count": len(report.snapshot.limitations),
+                            "coefficient_count": len(
+                                report.snapshot.pgls_model.coefficients
+                            ),
+                            "package_output_count": 0
+                            if package_result is None
+                            else 10,
                         },
-                        data=report,
+                        data=report if package_result is None else package_result,
                     ),
                     json_output=args.json,
                 )

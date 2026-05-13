@@ -1847,6 +1847,49 @@ def test_comparative_report_cli_reports_audit_and_limitations(capsys) -> None:
     assert payload["metrics"]["limitation_count"] >= 2
 
 
+def test_comparative_report_cli_can_export_full_review_package(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir = tmp_path / "comparative-report-package"
+    exit_code = main(
+        [
+            "comparative",
+            "report",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "0.0",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["metrics"]["coefficient_count"] >= 2
+    assert payload["metrics"]["package_output_count"] == 10
+    assert payload["data"]["output_dir"] == str(out_dir)
+    assert (out_dir / "comparative-report.html").exists()
+    assert (out_dir / "comparative-summary.tsv").exists()
+    assert (out_dir / "coefficient-table.tsv").exists()
+    assert (out_dir / "residual-summary.tsv").exists()
+    assert (out_dir / "signal-summary.tsv").exists()
+    assert (out_dir / "model-comparison.tsv").exists()
+    assert (out_dir / "interpretation-table.tsv").exists()
+    assert (out_dir / "audit-table.tsv").exists()
+    assert (out_dir / "contrast-table.tsv").exists()
+    assert (out_dir / "comparative-report.manifest.json").exists()
+    summary_rows = (out_dir / "comparative-summary.tsv").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    assert summary_rows[0].startswith("response\tformula\tpredictor_count")
+
+
 def test_comparative_influence_cli_reports_taxa(capsys) -> None:
     exit_code = main(
         [
