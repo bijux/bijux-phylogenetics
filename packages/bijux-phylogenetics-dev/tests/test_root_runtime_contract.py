@@ -200,6 +200,7 @@ def test_runtime_package_make_exposes_unfiltered_test_all_surface() -> None:
         in runtime_make
     )
     assert "test-all: TEST_MAIN_ARGS =" in runtime_make
+    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in runtime_make
     assert "test-all: test" in runtime_make
 
 
@@ -234,3 +235,17 @@ def test_avian_dataset_export_regression_surfaces_stay_slow_marked() -> None:
                 slow_functions.add(node.name)
 
     assert expected_slow_functions <= slow_functions
+
+
+def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -> None:
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+    alias_make = (
+        REPO_ROOT / "makes" / "packages" / "phylogenetic.mk"
+    ).read_text(encoding="utf-8")
+
+    assert "PYTEST_ADDOPTS_EXTRA='-o timeout=0'" in root_make
+    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
+    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in alias_make

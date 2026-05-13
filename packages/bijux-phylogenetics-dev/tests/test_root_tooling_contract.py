@@ -98,6 +98,8 @@ def test_root_make_routes_test_all_across_repository_packages() -> None:
     assert "makes/packages/bijux-phylogenetics.mk" in root_make
     assert "makes/packages/bijux-phylogenetics-dev.mk" in root_make
     assert "makes/packages/phylogenetic.mk" in root_make
+    assert root_make.count("PYTEST_ADDOPTS_EXTRA='-o timeout=0'") == 3
+    assert root_make.count("\ttest-all") == 3
 
 
 def test_root_apis_surface_has_no_placeholder_readme() -> None:
