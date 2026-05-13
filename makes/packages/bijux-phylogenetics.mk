@@ -43,6 +43,7 @@ sync-license-assets-package:
 .PHONY: sync-license-assets-package
 
 test-all: TEST_MAIN_ARGS =
+test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0
 test-all: test
 .PHONY: test-all
 

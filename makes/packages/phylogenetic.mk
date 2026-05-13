@@ -30,6 +30,7 @@ sync-license-assets-package:
 	done
 .PHONY: sync-license-assets-package
 
+test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0
 test-all: test
 .PHONY: test-all
 

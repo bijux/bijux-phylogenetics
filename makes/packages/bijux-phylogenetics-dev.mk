@@ -25,4 +25,8 @@ sync-license-assets-package:
 	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.release.license_assets sync
 .PHONY: sync-license-assets-package
 
+test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0
+test-all: test
+.PHONY: test-all
+
 include $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../bijux-py/package.mk

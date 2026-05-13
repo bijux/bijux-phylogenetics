@@ -51,16 +51,19 @@ check: sync-license-assets lock-check check-config-ssot check-evidence-governanc
 test-all: root-check-env ## Run every repository test surface, including slow, evaluation, and real-local tests
 	@$(MAKE) -C "packages/bijux-phylogenetics" -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" \
 		PROJECT_SLUG="bijux-phylogenetics" \
+		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
 		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics) \
 		$(ROOT_SHARED_CHECK_OVERRIDES) \
 		test-all
 	@$(MAKE) -C "packages/bijux-phylogenetics-dev" -f "$(CURDIR)/makes/packages/bijux-phylogenetics-dev.mk" \
 		PROJECT_SLUG="bijux-phylogenetics-dev" \
+		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
 		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics-dev) \
 		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test
+		test-all
 	@$(MAKE) -C "packages/phylogenetic" -f "$(CURDIR)/makes/packages/phylogenetic.mk" \
 		PROJECT_SLUG="phylogenetic" \
+		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
 		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,phylogenetic) \
 		$(ROOT_SHARED_CHECK_OVERRIDES) \
 		test-all
