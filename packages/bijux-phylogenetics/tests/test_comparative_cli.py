@@ -1771,14 +1771,24 @@ def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     assert payload["metrics"]["analysis_taxa"] == 6
     assert payload["metrics"]["excluded_taxa"] == 0
     assert payload["metrics"]["residual_covariance_row_count"] == 4
+    assert payload["metrics"]["residual_correlation_row_count"] == 4
     assert payload["metrics"]["residual_association_count"] == 1
+    assert payload["metrics"]["response_model_count"] == 2
+    assert payload["metrics"]["coefficient_row_count"] == 6
     assert len(payload["data"]["response_models"]) == 2
+    assert payload["data"]["missing_value_policy"] == (
+        "shared_complete_case_across_responses_and_predictor_terms"
+    )
+    assert payload["data"]["numerical_tolerance"] == 1e-12
 
 
 def test_comparative_multivariate_cli_writes_review_ledgers(
     tmp_path: Path, capsys
 ) -> None:
+    models_out = tmp_path / "multivariate-response-models.tsv"
+    coefficients_out = tmp_path / "multivariate-response-coefficients.tsv"
     covariance_out = tmp_path / "multivariate-residual-covariance.tsv"
+    correlation_out = tmp_path / "multivariate-residual-correlation.tsv"
     associations_out = tmp_path / "multivariate-residual-associations.tsv"
     excluded_out = tmp_path / "multivariate-excluded-taxa.tsv"
     exit_code = main(
@@ -1795,8 +1805,14 @@ def test_comparative_multivariate_cli_writes_review_ledgers(
             "predictor_two",
             "--lambda-value",
             "0.0",
+            "--response-models-out",
+            str(models_out),
+            "--coefficients-out",
+            str(coefficients_out),
             "--covariance-out",
             str(covariance_out),
+            "--correlation-out",
+            str(correlation_out),
             "--associations-out",
             str(associations_out),
             "--excluded-taxa-out",
@@ -1808,19 +1824,35 @@ def test_comparative_multivariate_cli_writes_review_ledgers(
     assert exit_code == 0
     assert payload["metrics"]["analysis_taxa"] == 5
     assert payload["metrics"]["excluded_taxa"] == 1
+    assert payload["metrics"]["response_model_count"] == 2
+    assert payload["metrics"]["coefficient_row_count"] == 6
+    assert payload["metrics"]["residual_correlation_row_count"] == 4
+    assert models_out.exists()
+    assert coefficients_out.exists()
     assert covariance_out.exists()
+    assert correlation_out.exists()
     assert associations_out.exists()
     assert excluded_out.exists()
+    model_rows = models_out.read_text(encoding="utf-8").splitlines()
+    coefficient_rows = coefficients_out.read_text(encoding="utf-8").splitlines()
     covariance_rows = covariance_out.read_text(encoding="utf-8").splitlines()
+    correlation_rows = correlation_out.read_text(encoding="utf-8").splitlines()
     association_rows = associations_out.read_text(encoding="utf-8").splitlines()
     excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    assert model_rows[0].startswith("response\tformula\tpredictor_term_count")
+    assert coefficient_rows[0].startswith("response\tformula\tterm\testimate")
     assert covariance_rows[0].startswith(
         "left_response\tright_response\tpair_count\tis_diagonal"
+    )
+    assert correlation_rows[0].startswith(
+        "left_response\tright_response\tpair_count\tis_diagonal\tcorrelation"
     )
     assert association_rows[0].startswith(
         "left_response\tright_response\tpair_count\tcovariance\tcorrelation"
     )
-    assert excluded_rows[0] == "taxon\treason\tmissing_columns"
+    assert excluded_rows[0] == (
+        "taxon\treason\tmissing_columns\tblocking_responses\tdetails"
+    )
 
 
 def test_comparative_report_cli_reports_audit_and_limitations(capsys) -> None:

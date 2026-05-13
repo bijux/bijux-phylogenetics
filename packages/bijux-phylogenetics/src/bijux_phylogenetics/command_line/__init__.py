@@ -317,7 +317,10 @@ from bijux_phylogenetics.comparative.models import (
 from bijux_phylogenetics.comparative.multivariate_regression import (
     run_multivariate_comparative_regression,
     write_multivariate_excluded_taxa_table,
+    write_multivariate_response_coefficient_table,
+    write_multivariate_response_model_table,
     write_multivariate_residual_association_table,
+    write_multivariate_residual_correlation_table,
     write_multivariate_residual_covariance_table,
 )
 from bijux_phylogenetics.comparative.clade_residuals import (
@@ -3074,9 +3077,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the residual covariance ledger as TSV or CSV.",
     )
     comparative_multivariate.add_argument(
+        "--correlation-out",
+        type=Path,
+        help="Write the residual correlation ledger as TSV or CSV.",
+    )
+    comparative_multivariate.add_argument(
         "--associations-out",
         type=Path,
         help="Write the residual trait-association ledger as TSV or CSV.",
+    )
+    comparative_multivariate.add_argument(
+        "--coefficients-out",
+        type=Path,
+        help="Write the per-response coefficient ledger as TSV or CSV.",
+    )
+    comparative_multivariate.add_argument(
+        "--response-models-out",
+        type=Path,
+        help="Write the per-response model summary ledger as TSV or CSV.",
     )
     comparative_multivariate.add_argument(
         "--excluded-taxa-out",
@@ -9044,9 +9062,21 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     write_multivariate_residual_covariance_table(
                         args.covariance_out, report
                     )
+                if args.correlation_out is not None:
+                    write_multivariate_residual_correlation_table(
+                        args.correlation_out, report
+                    )
                 if args.associations_out is not None:
                     write_multivariate_residual_association_table(
                         args.associations_out, report
+                    )
+                if args.coefficients_out is not None:
+                    write_multivariate_response_coefficient_table(
+                        args.coefficients_out, report
+                    )
+                if args.response_models_out is not None:
+                    write_multivariate_response_model_table(
+                        args.response_models_out, report
                     )
                 if args.excluded_taxa_out is not None:
                     write_multivariate_excluded_taxa_table(
@@ -9068,7 +9098,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "residual_covariance_row_count": len(
                                 report.covariance_rows
                             ),
+                            "residual_correlation_row_count": len(
+                                report.correlation_rows
+                            ),
                             "residual_association_count": len(report.association_rows),
+                            "response_model_count": len(report.response_model_rows),
+                            "coefficient_row_count": len(report.coefficient_rows),
+                            "warning_count": len(report.warnings),
                         },
                         data=report,
                     ),
