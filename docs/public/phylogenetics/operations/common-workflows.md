@@ -1250,6 +1250,48 @@ That bundle keeps one rich visual surface alongside the node tables, legend,
 caption, and manifest instead of forcing reviewers to regenerate alternate
 formats from the SVG by hand.
 
+When the goal is to deliver one complete ancestral reconstruction review
+package instead of a figure-only bundle, use `ancestral report --out-dir`.
+This workflow turns one continuous or discrete ancestral reconstruction into
+one governed directory that keeps the reconstructed node ledger, the
+uncertainty ledger, the transition or branch-change review ledgers, one
+embedded HTML report, and the same SVG, PNG, and HTML tree visualization
+surfaces in one handoff.
+
+```bash
+bijux-phylogenetics ancestral report \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait habitat \
+  --kind discrete \
+  --model equal-rates \
+  --taxon-column species \
+  --out-dir artifacts/primates-ancestral-report \
+  --json
+```
+
+The package always writes:
+- `ancestral-report.html`
+- `ancestral-figure.svg`
+- `ancestral-figure.png`
+- `ancestral-figure.html`
+- `summary.tsv`
+- `node-table.tsv`
+- `uncertainty-table.tsv`
+- `transition-counts.tsv`
+- `transition-branches.tsv`
+- `exclusions.tsv`
+- `ancestral-report.manifest.json`
+
+For discrete traits, the transition ledgers preserve directed ancestral state
+changes using the owned transition-counting surface. For continuous traits, the
+same filenames remain stable, but the transition ledgers become branch-change
+review ledgers over reconstructed value deltas instead of pretending that a
+continuous trajectory has categorical state transitions. The HTML report embeds
+the governed SVG figure directly and keeps the summary, uncertainty, and
+transition review surfaces visible in one place so reviewers do not need to
+reassemble them manually.
+
 When the goal is to review phylogenetic independent contrasts directly, use
 `comparative contrasts`. The base workflow computes one standardized contrast
 row per internal node for one numeric trait and can optionally fit one
