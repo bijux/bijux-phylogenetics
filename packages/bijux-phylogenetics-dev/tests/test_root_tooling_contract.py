@@ -46,6 +46,7 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "report-release-readiness:",
     "check-release-readiness:",
     "test-all:",
+    "test-all-plus-run-time:",
     "check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom",
 }
 
@@ -99,7 +100,23 @@ def test_root_make_routes_test_all_across_repository_packages() -> None:
     assert "makes/packages/bijux-phylogenetics-dev.mk" in root_make
     assert "makes/packages/phylogenetic.mk" in root_make
     assert root_make.count("PYTEST_ADDOPTS_EXTRA='-o timeout=0'") == 3
-    assert root_make.count("\ttest-all") == 3
+    assert root_make.count("\ttest-all\n") == 3
+
+
+def test_root_make_routes_test_all_plus_run_time_across_repository_packages() -> None:
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+
+    assert "test-all-plus-run-time: root-check-env" in root_make
+    assert "makes/packages/bijux-phylogenetics.mk" in root_make
+    assert "makes/packages/bijux-phylogenetics-dev.mk" in root_make
+    assert "makes/packages/phylogenetic.mk" in root_make
+    assert (
+        root_make.count(
+            "PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0'"
+        )
+        == 3
+    )
+    assert root_make.count("\ttest-all-plus-run-time\n") == 3
 
 
 def test_root_apis_surface_has_no_placeholder_readme() -> None:

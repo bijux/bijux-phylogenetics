@@ -42,6 +42,7 @@ def test_root_make_declares_shared_maintainer_commands() -> None:
 
     assert "check:" in root_make
     assert "test-all:" in root_make
+    assert "test-all-plus-run-time:" in root_make
     assert "sync-badges:" in root_make
     assert "check-badges:" in root_make
     assert "validate-evidence-book:" in root_make
@@ -204,6 +205,25 @@ def test_runtime_package_make_exposes_unfiltered_test_all_surface() -> None:
     assert "test-all: test" in runtime_make
 
 
+def test_runtime_package_make_exposes_unfiltered_test_all_plus_run_time_surface() -> (
+    None
+):
+    runtime_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics.mk"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        'TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"'
+        in runtime_make
+    )
+    assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in runtime_make
+    assert (
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        in runtime_make
+    )
+    assert "test-all-plus-run-time: test" in runtime_make
+
+
 def test_avian_dataset_export_regression_surfaces_stay_slow_marked() -> None:
     module_path = (
         REPO_ROOT
@@ -249,6 +269,31 @@ def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -
     assert "PYTEST_ADDOPTS_EXTRA='-o timeout=0'" in root_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in alias_make
+
+
+def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_durations_in_all_packages() -> (
+    None
+):
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+    alias_make = (REPO_ROOT / "makes" / "packages" / "phylogenetic.mk").read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0'"
+        in root_make
+    )
+    assert (
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        in dev_make
+    )
+    assert (
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        in alias_make
+    )
 
 
 def test_root_conftest_registers_markers_from_repository_pytest_config() -> None:
