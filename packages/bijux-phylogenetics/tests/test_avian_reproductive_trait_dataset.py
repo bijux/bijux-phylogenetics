@@ -93,6 +93,7 @@ def test_run_avian_reproductive_trait_demo_materializes_dataset_and_workflow(
     assert "workflow summary" in result.overview_path.read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_export_avian_reproductive_trait_dataset_copies_expected_outputs(
     tmp_path: Path,
 ) -> None:

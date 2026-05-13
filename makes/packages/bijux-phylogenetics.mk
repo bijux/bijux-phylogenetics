@@ -42,6 +42,10 @@ sync-license-assets-package:
 	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.release.license_assets sync
 .PHONY: sync-license-assets-package
 
+test-all: TEST_MAIN_ARGS =
+test-all: test
+.PHONY: test-all
+
 build-install-smoke:
 	@tmp_root="$(PROJECT_ARTIFACTS_DIR)/tmp/build-install-smoke"; \
 	dist_name="$$(printf '%s' "$(BUILD_PACKAGE_NAME)" | tr '-' '_')"; \
