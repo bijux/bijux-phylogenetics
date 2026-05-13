@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 from configparser import ConfigParser
+import ast
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -201,3 +202,36 @@ def test_runtime_package_make_exposes_unfiltered_test_all_surface() -> None:
     )
     assert "test-all: TEST_MAIN_ARGS =" in runtime_make
     assert "test-all: test" in runtime_make
+
+
+def test_avian_dataset_export_regression_surfaces_stay_slow_marked() -> None:
+    module_path = (
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "tests"
+        / "test_avian_reproductive_trait_dataset.py"
+    )
+    module = ast.parse(module_path.read_text(encoding="utf-8"))
+
+    expected_slow_functions = {
+        "test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expected_outputs",
+        "test_export_avian_reproductive_trait_dataset_copies_expected_outputs",
+    }
+    slow_functions: set[str] = set()
+    for node in module.body:
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        for decorator in node.decorator_list:
+            if not isinstance(decorator, ast.Attribute):
+                continue
+            if (
+                isinstance(decorator.value, ast.Attribute)
+                and isinstance(decorator.value.value, ast.Name)
+                and decorator.value.value.id == "pytest"
+                and decorator.value.attr == "mark"
+                and decorator.attr == "slow"
+            ):
+                slow_functions.add(node.name)
+
+    assert expected_slow_functions <= slow_functions
