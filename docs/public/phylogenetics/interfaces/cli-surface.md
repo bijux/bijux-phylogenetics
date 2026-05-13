@@ -243,6 +243,51 @@ This command requires MAFFT, trimAl, and IQ-TREE executables. Use
 `--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
 they are not available on the default `PATH`.
 
+`demo catarrhine-mitogenome-five-locus-panel` is the governed packaged
+multi-locus phylogenomics surface. It materializes the shipped catarrhine
+mitochondrial panel into one output directory and reruns the owned
+concatenation, occupancy, and partitioned IQ-TREE workflow over those packaged
+inputs. Its JSON metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `locus_count`
+- `alignment_length`
+- `partition_count`
+- `selected_model`
+- `minimum_support`
+- `maximum_support`
+- `weakly_supported_clade_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/taxa.csv`
+- `dataset/loci/*.fasta`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/catarrhine-mitogenome-five-locus-panel.supermatrix.fasta`
+- `workflow/catarrhine-mitogenome-five-locus-panel.partitions.txt`
+- `workflow/occupancy-taxa.tsv`
+- `workflow/occupancy-loci.tsv`
+- `workflow/occupancy-matrix.tsv`
+- `workflow/catarrhine-mitogenome-five-locus-panel.partition-summary.tsv`
+- `workflow/catarrhine-mitogenome-five-locus-panel.model-candidates.tsv`
+- `workflow/catarrhine-mitogenome-five-locus-panel.supported.tree`
+- `workflow/catarrhine-mitogenome-five-locus-panel.support.tsv`
+- `overview.md`
+
+The packaged dataset carries one explicit aligned-locus contract:
+
+- five mitochondrial coding loci
+- one shared six-taxon identifier set across every locus
+- partitioned IQ-TREE inference over the concatenated supermatrix
+
+This command requires only IQ-TREE. The loci are already aligned, so the
+governed demo focuses on multi-locus assembly and partitioned inference rather
+than raw alignment generation.
+
 `demo rabies-cross-host-panel` is the governed packaged pathogen
 host-switching surface. It materializes the shipped rabies nucleoprotein panel
 into one output directory and reruns the owned host-switching workflow over
