@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.data_quality_stress import (
     export_catarrhine_data_quality_stress_panel_dataset,
@@ -25,6 +26,29 @@ def test_load_catarrhine_data_quality_stress_panel_dataset_exposes_packaged_surf
     assert dataset.raw_tree_path.is_file()
     assert dataset.raw_traits_path.is_file()
     assert dataset.reference_output_root.is_dir()
+
+
+def test_public_runtime_exports_include_catarrhine_data_quality_stress_panel_surface(
+) -> None:
+    assert (
+        bijux_phylogenetics.load_catarrhine_data_quality_stress_panel_dataset
+        is load_catarrhine_data_quality_stress_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.export_catarrhine_data_quality_stress_panel_dataset
+        is export_catarrhine_data_quality_stress_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.run_catarrhine_data_quality_stress_panel_workflow
+        is run_catarrhine_data_quality_stress_panel_workflow
+    )
+    assert (
+        bijux_phylogenetics.write_catarrhine_data_quality_stress_panel_workflow_bundle
+        is write_catarrhine_data_quality_stress_panel_workflow_bundle
+    )
+    assert bijux_phylogenetics.run_catarrhine_data_quality_stress_panel_demo is (
+        run_catarrhine_data_quality_stress_panel_demo
+    )
 
 
 def test_workflow_identifies_intended_stress_conditions_and_cleans_subset(
