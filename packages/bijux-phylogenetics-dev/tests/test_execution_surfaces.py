@@ -46,16 +46,6 @@ evidence-governance = ["make check-evidence-governance", "make rerun-governed-ev
 evidence-completeness = ["make check-evidence-completeness"]
 publish-readiness = ["make report-release-readiness"]
 release-readiness-gate = ["make check-release-readiness"]
-
-[tool.bijux_phylogenetics.execution_surfaces.workflow_jobs]
-"repository-governance.yml" = ["repository-contracts", "config-ssot"]
-"runtime-quality.yml" = ["runtime-quality"]
-"evidence-governance.yml" = ["evidence-contracts", "evidence-cleanroom"]
-"publish-readiness.yml" = ["publish-readiness-report", "release-readiness-gate"]
-
-[[tool.bijux_phylogenetics.execution_surfaces.cleanroom_selections]]
-study_id = "demo-study"
-evidence_ids = ["evidence-001"]
 """.strip()
         + "\n",
     )
@@ -115,70 +105,6 @@ commands =
 [testenv:release-readiness-gate]
 commands =
     make check-release-readiness
-""".strip()
-        + "\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "repository-governance.yml",
-        """
-name: repository-governance
-on: workflow_dispatch
-jobs:
-  repository-contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - run: make check-shared-bijux-py
-  config-ssot:
-    runs-on: ubuntu-latest
-    steps:
-      - run: make check-config-ssot
-""".strip()
-        + "\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "runtime-quality.yml",
-        """
-name: runtime-quality
-on: workflow_dispatch
-jobs:
-  runtime-quality:
-    runs-on: ubuntu-latest
-    steps:
-      - run: tox -e lint-core,test-core,quality-core,build-core,sbom-core
-""".strip()
-        + "\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "evidence-governance.yml",
-        """
-name: evidence-governance
-on: workflow_dispatch
-jobs:
-  evidence-contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - run: make check-evidence-governance
-  evidence-cleanroom:
-    runs-on: ubuntu-latest
-    steps:
-      - run: make rerun-governed-evidence-cleanroom
-""".strip()
-        + "\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "publish-readiness.yml",
-        """
-name: publish-readiness
-on: workflow_dispatch
-jobs:
-  publish-readiness-report:
-    runs-on: ubuntu-latest
-    steps:
-      - run: make report-release-readiness
-  release-readiness-gate:
-    runs-on: ubuntu-latest
-    steps:
-      - run: make check-release-readiness
 """.strip()
         + "\n",
     )

@@ -124,16 +124,6 @@ evidence-governance = ["make check-evidence-governance", "make rerun-governed-ev
 evidence-completeness = ["make check-evidence-completeness"]
 publish-readiness = ["make report-release-readiness"]
 release-readiness-gate = ["make check-release-readiness"]
-
-[tool.bijux_phylogenetics.execution_surfaces.workflow_jobs]
-"repository-governance.yml" = ["repository-contracts", "config-ssot"]
-"runtime-quality.yml" = ["runtime-quality"]
-"evidence-governance.yml" = ["evidence-contracts", "evidence-cleanroom"]
-"publish-readiness.yml" = ["publish-readiness-report", "release-readiness-gate"]
-
-[[tool.bijux_phylogenetics.execution_surfaces.cleanroom_selections]]
-study_id = "demo-study"
-evidence_ids = ["evidence-001"]
 """.strip()
         + "\n",
     )
@@ -418,92 +408,6 @@ packages = ["src/bijux_phylogenetics_dev"]
         / "bijux_phylogenetics_dev"
         / "__init__.py",
         "__version__ = '0.1.0'\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "repository-governance.yml",
-        """
-name: repository-governance
-on: workflow_dispatch
-jobs:
-  repository-contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - run: tox -e repository-contracts
-  config-ssot:
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          tox -e config-ssot
-          make check-execution-surfaces
-      - uses: actions/upload-artifact@v4
-        with:
-          path: |
-            artifacts/root/config-ssot-audit.json
-            artifacts/root/execution-surfaces.json
-""".strip()
-        + "\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "runtime-quality.yml",
-        """
-name: runtime-quality
-on: workflow_dispatch
-jobs:
-  runtime-quality:
-    runs-on: ubuntu-latest
-    steps:
-      - run: tox -e lint-core,test-core,quality-core,build-core,sbom-core
-""".strip()
-        + "\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "evidence-governance.yml",
-        """
-name: evidence-governance
-on: workflow_dispatch
-jobs:
-  evidence-contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - run: tox -e evidence-governance,evidence-completeness
-      - uses: actions/upload-artifact@v4
-        with:
-          path: |
-            artifacts/root/evidence-book-validation.json
-            artifacts/root/evidence-completeness.json
-            artifacts/root/artifact-governance.json
-  evidence-cleanroom:
-    runs-on: ubuntu-latest
-    steps:
-      - run: make rerun-governed-evidence-cleanroom
-""".strip()
-        + "\n",
-    )
-    _write(
-        repo_root / ".github" / "workflows" / "publish-readiness.yml",
-        """
-name: publish-readiness
-on: workflow_dispatch
-jobs:
-  publish-readiness-report:
-    runs-on: ubuntu-latest
-    steps:
-      - run: tox -e publish-readiness
-      - uses: actions/upload-artifact@v4
-        with:
-          path: |
-            artifacts/root/package-bundles
-            artifacts/root/package-bundles.json
-            artifacts/root/package-boundaries.json
-            artifacts/root/publish-readiness.json
-            artifacts/root/artifact-governance.json
-            artifacts/root/execution-surfaces.json
-  release-readiness-gate:
-    runs-on: ubuntu-latest
-    steps:
-      - run: tox -e release-readiness-gate
-""".strip()
-        + "\n",
     )
     _write(
         repo_root / "evidence-book" / "studies" / "demo-study" / "README.md",
