@@ -12,6 +12,7 @@ last_reviewed: 2026-05-13
 Typical public workflows include:
 
 - validate and inspect a tree before downstream use
+- build a full reviewer-facing tree report package from one supplied tree
 - trim and inspect an alignment before reporting
 - run one command from raw FASTA to a supported inference bundle
 - assemble aligned loci into a concatenated supermatrix
@@ -22,6 +23,33 @@ Typical public workflows include:
 
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
+
+When the goal is to turn one supplied or inferred tree into a review-ready
+artifact bundle instead of only a diagnostic HTML page, use
+`report tree-package`. This workflow keeps the tree itself as the single input
+surface and materializes one coherent report directory with an image plus TSV
+ledgers.
+
+```bash
+bijux-phylogenetics report tree-package example_tree.nwk \
+  --out-dir artifacts/tree-report-package \
+  --json
+```
+
+The package writes:
+
+- one HTML report with the rendered tree image embedded
+- one SVG tree image rendered on the owned phylogram surface
+- one branch-support ledger
+- one clade ledger
+- one branch-statistics ledger
+- one machine-readable manifest
+
+This workflow is intentionally different from the older `report tree` audit
+surface. `report tree` remains the lightweight structural and forensic HTML
+diagnostic. `report tree-package` is the richer reviewer-facing output used
+when users need the image, support table, clade table, and branch-length
+statistics together in one durable bundle.
 
 When the goal is to start from a real packaged mammal dataset rather than
 assemble a tree and trait table by hand, use `demo primate-comparative`. This
