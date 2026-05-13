@@ -1,0 +1,91 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from bijux_phylogenetics.datasets.phylogenomics import (
+    export_catarrhine_mitogenome_five_locus_panel_dataset,
+    load_catarrhine_mitogenome_five_locus_panel_dataset,
+    run_catarrhine_mitogenome_five_locus_panel_demo,
+    run_catarrhine_mitogenome_five_locus_panel_workflow,
+    write_catarrhine_mitogenome_five_locus_panel_workflow_bundle,
+)
+
+
+def test_load_catarrhine_mitogenome_five_locus_panel_dataset_exposes_packaged_surface(
+) -> None:
+    dataset = load_catarrhine_mitogenome_five_locus_panel_dataset()
+    assert dataset.dataset_id == "catarrhine_mitogenome_five_locus_panel"
+    assert dataset.label == "Catarrhine mitogenome five-locus panel"
+    assert dataset.taxon_count == 6
+    assert dataset.locus_count == 5
+    assert dataset.locus_names == (
+        "mt-cox1",
+        "mt-cox2",
+        "mt-cox3",
+        "mt-cytb",
+        "mt-nd2",
+    )
+    assert dataset.sequence_type == "dna"
+    assert dataset.taxa_path.is_file()
+    assert dataset.locus_alignment_root.is_dir()
+    assert dataset.reference_output_root.is_dir()
+    assert "NC_012920.1" in dataset.source_accessions
+
+
+def test_write_catarrhine_mitogenome_five_locus_panel_workflow_bundle_matches_packaged_expected_outputs(
+    tmp_path: Path,
+) -> None:
+    report = run_catarrhine_mitogenome_five_locus_panel_workflow(tmp_path / "run")
+    bundle = write_catarrhine_mitogenome_five_locus_panel_workflow_bundle(
+        tmp_path / "workflow",
+        report,
+    )
+    expected_root = report.dataset.reference_output_root
+    generated = {
+        bundle.workflow_summary_path.name: bundle.workflow_summary_path,
+        bundle.supermatrix_path.name: bundle.supermatrix_path,
+        bundle.partitions_path.name: bundle.partitions_path,
+        bundle.occupancy_taxa_path.name: bundle.occupancy_taxa_path,
+        bundle.occupancy_loci_path.name: bundle.occupancy_loci_path,
+        bundle.occupancy_matrix_path.name: bundle.occupancy_matrix_path,
+        bundle.partition_summary_path.name: bundle.partition_summary_path,
+        bundle.model_candidates_path.name: bundle.model_candidates_path,
+        bundle.support_tree_path.name: bundle.support_tree_path,
+        bundle.support_table_path.name: bundle.support_table_path,
+    }
+    assert {path.name for path in expected_root.glob("*")} == set(generated)
+    for name, generated_path in generated.items():
+        assert generated_path.read_text(encoding="utf-8") == (
+            expected_root / name
+        ).read_text(encoding="utf-8")
+
+
+def test_run_catarrhine_mitogenome_five_locus_panel_demo_materializes_dataset_and_workflow(
+    tmp_path: Path,
+) -> None:
+    result = run_catarrhine_mitogenome_five_locus_panel_demo(tmp_path / "demo")
+    assert result.dataset.taxon_count == 6
+    assert result.dataset_export.taxa_path.is_file()
+    assert result.dataset_export.locus_alignment_root.is_dir()
+    assert result.workflow_bundle.workflow_summary_path.is_file()
+    assert result.workflow_bundle.supermatrix_path.is_file()
+    assert result.workflow_bundle.partitions_path.is_file()
+    assert result.workflow_bundle.support_tree_path.is_file()
+    assert result.overview_path.is_file()
+    assert "supported tree" in result.overview_path.read_text(encoding="utf-8")
+
+
+def test_export_catarrhine_mitogenome_five_locus_panel_dataset_copies_expected_outputs(
+    tmp_path: Path,
+) -> None:
+    result = export_catarrhine_mitogenome_five_locus_panel_dataset(
+        tmp_path / "dataset"
+    )
+    expected_files = {path.name for path in result.expected_output_root.glob("*")}
+    locus_files = {path.name for path in result.locus_alignment_root.glob("*.fasta")}
+    assert result.readme_path.is_file()
+    assert result.taxa_path.is_file()
+    assert result.locus_alignment_root.is_dir()
+    assert len(locus_files) == 5
+    assert len(expected_files) == 10
+    assert "catarrhine-mitogenome-five-locus-panel.supported.tree" in expected_files
