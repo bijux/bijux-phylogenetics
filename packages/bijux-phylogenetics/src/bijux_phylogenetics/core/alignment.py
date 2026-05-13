@@ -302,6 +302,7 @@ class SequenceCodingBehavior:
     coding_like: bool
     comparable_length: int
     divisible_by_three: bool
+    invalid_codon_count: int
     premature_stop_count: int
     terminal_stop_count: int
     note: str
@@ -314,10 +315,22 @@ class CodingSequenceExclusion:
     identifier: str
     comparable_length: int
     reason: str
+    invalid_codon_count: int
     premature_stop_count: int
     terminal_stop_count: int
     trailing_bases: int
     note: str
+
+
+@dataclass(frozen=True, slots=True)
+class InvalidCodonObservation:
+    """Observed invalid or ambiguous codon within a coding sequence."""
+
+    identifier: str
+    codon_index: int
+    nucleotide_start: int
+    codon: str
+    reason: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -336,6 +349,8 @@ class CodingAlignmentDiagnostics:
     """Coding-sequence diagnostics for one aligned nucleotide dataset."""
 
     path: Path
+    genetic_code_id: int
+    genetic_code_name: str
     sequence_count: int
     alignment_length: int
     alignment_length_multiple_of_three: bool
@@ -343,6 +358,7 @@ class CodingAlignmentDiagnostics:
     partial_codon_sequences: list[PartialCodonSequence]
     coding_behaviors: list[SequenceCodingBehavior]
     mixed_coding_signals: bool
+    invalid_codons: list[InvalidCodonObservation]
     stop_codons: list[StopCodonObservation]
 
 
@@ -351,9 +367,12 @@ class TranslationReport:
     """Explicit record of a coding-alignment translation run."""
 
     source_path: Path
+    genetic_code_id: int
+    genetic_code_name: str
     translated_sequence_count: int
     source_alignment_length: int
     translated_alignment_length: int
+    invalid_codon_count: int
     stop_codon_count: int
     frameshift_like_sequence_count: int
 
@@ -364,10 +383,13 @@ class CodingSequencePreparationReport:
 
     source_path: Path
     sequence_type: AlignmentAlphabet
+    genetic_code_id: int
+    genetic_code_name: str
     input_sequence_count: int
     accepted_sequence_count: int
     accepted_identifiers: list[str]
     excluded_sequences: list[CodingSequenceExclusion]
+    invalid_codon_sequence_count: int
     terminal_stop_sequence_count: int
     warnings: list[str]
 
