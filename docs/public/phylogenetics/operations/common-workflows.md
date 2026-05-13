@@ -2504,6 +2504,24 @@ written XML also names the default BEAST run logs as `STEM.$(seed).log` and
 `STEM.$(seed).trees` so later execution produces a predictable artifact set
 beside the XML.
 
+Use `adapter beast-xml` when you need a governed review surface over one
+prepared BEAST XML before execution. The command parses the XML, checks that
+the alignment block, site model, clock model, tree prior, MCMC run, and
+posterior loggers are all present, and reports the assumed substitution model,
+clock model, tree prior, starting-tree source, chain length, calibration
+count, and dated-tip count directly.
+
+```bash
+bijux-phylogenetics adapter beast-xml \
+  artifacts/multilocus-beast.xml \
+  --json
+```
+
+That JSON payload is the durable preparation evidence surface. It turns the
+XML into a reviewable assumptions contract instead of leaving prior choice,
+clock choice, chain settings, and dated-tree inputs buried inside engine
+markup.
+
 Calibration handling is explicit rather than silent. If a calibration table
 already provides both lower and upper bounds, the template preserves those hard
 bounds as a BEAST uniform prior. If a calibration provides only a lower bound,
@@ -2559,6 +2577,11 @@ with the post-burn-in mean, median, sample standard deviation, 95% HPD
 interval, min/max range, first-half and second-half means, standardized drift,
 and effective sample size so reviewers can audit BEAST log behaviour without
 re-parsing the engine file themselves.
+
+When a sibling preparation XML is available, the downstream Bayesian methods
+and diagnostics surfaces reuse that XML to state the actual BEAST substitution
+model, clock model, tree prior, calibration count, tip-date count, and chain
+settings explicitly in generated reviewer text.
 
 Use `adapter beast-parameters` when the main goal is posterior parameter
 diagnostics rather than raw log parsing.
