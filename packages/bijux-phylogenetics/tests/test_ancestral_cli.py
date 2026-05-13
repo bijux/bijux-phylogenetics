@@ -716,6 +716,43 @@ def test_ancestral_report_cli_writes_html_and_svg(tmp_path: Path, capsys) -> Non
     assert output.with_suffix(".svg").exists()
 
 
+def test_ancestral_report_cli_can_export_full_review_package(
+    tmp_path: Path, capsys
+) -> None:
+    output_dir = tmp_path / "ancestral-report-package"
+    exit_code = main(
+        [
+            "ancestral",
+            "report",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--kind",
+            "discrete",
+            "--model",
+            "equal-rates",
+            "--out-dir",
+            str(output_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["report_kind"] == "ancestral-report-package"
+    assert payload["metrics"]["reconstruction_kind"] == "discrete"
+    assert payload["metrics"]["artifact_count"] == 11
+    assert output_dir.exists()
+    assert (output_dir / "ancestral-report.html").exists()
+    assert (output_dir / "ancestral-figure.svg").exists()
+    assert (output_dir / "summary.tsv").exists()
+    assert (output_dir / "node-table.tsv").exists()
+    assert (output_dir / "uncertainty-table.tsv").exists()
+    assert (output_dir / "transition-counts.tsv").exists()
+    assert (output_dir / "transition-branches.tsv").exists()
+    assert (output_dir / "exclusions.tsv").exists()
+
+
 def test_ancestral_sensitivity_cli_reports_available_comparisons(capsys) -> None:
     exit_code = main(
         [

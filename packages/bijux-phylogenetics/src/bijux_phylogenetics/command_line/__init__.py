@@ -91,6 +91,9 @@ from bijux_phylogenetics.ancestral.transitions import (
     write_ancestral_transition_tree_set_tree_table,
 )
 from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
+from bijux_phylogenetics.ancestral.report_package import (
+    build_ancestral_report_package,
+)
 from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
@@ -3497,7 +3500,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--coding-map",
         help="Comma-delimited KEY=VALUE recoding map for discrete traits.",
     )
-    ancestral_report.add_argument("--out", required=True, type=Path)
+    ancestral_report.add_argument("--out", type=Path)
+    ancestral_report.add_argument(
+        "--out-dir",
+        type=Path,
+        help="Write a full ancestral reconstruction report package directory.",
+    )
     ancestral_report.add_argument(
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
@@ -10551,6 +10559,76 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             _validate_ancestral_discrete_model_arguments(args, parser)
+            if args.out is None and args.out_dir is None:
+                parser.error("ancestral report requires --out or --out-dir")
+            if args.out_dir is not None:
+                result = build_ancestral_report_package(
+                    tree_path=args.tree,
+                    traits_path=args.table,
+                    trait=args.trait,
+                    reconstruction_kind=args.kind,
+                    out_dir=args.out_dir,
+                    taxon_column=args.taxon_column,
+                    model=resolved_model,
+                    alpha=args.alpha,
+                    state_ordering=args.state_ordering,
+                    ordered_states=_split_csv_values(args.ordered_states) or None,
+                    compare_model=args.compare_model,
+                    compare_tree_path=args.compare_tree,
+                    drop_taxa=args.drop_taxa,
+                    coding_map=_parse_assignment_map(args.coding_map) or None,
+                )
+                output_paths: list[Path | str] = [
+                    result.report_path,
+                    result.figure_path,
+                    result.figure_png_path,
+                    result.figure_html_path,
+                    result.summary_table_path,
+                    result.node_table_path,
+                    result.uncertainty_table_path,
+                    result.transition_count_table_path,
+                    result.transition_branch_table_path,
+                    result.exclusion_table_path,
+                    result.manifest_path,
+                ]
+                if args.out is not None:
+                    args.out.parent.mkdir(parents=True, exist_ok=True)
+                    args.out.write_text(
+                        result.report_path.read_text(encoding="utf-8"),
+                        encoding="utf-8",
+                    )
+                    svg_out = args.out.with_suffix(".svg")
+                    svg_out.write_text(
+                        result.figure_path.read_text(encoding="utf-8"),
+                        encoding="utf-8",
+                    )
+                    output_paths.extend([args.out, svg_out])
+                outputs = _finalize_outputs(
+                    args,
+                    command="ancestral",
+                    inputs=[args.tree, args.table],
+                    outputs=output_paths,
+                )
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[args.tree, args.table],
+                        outputs=outputs,
+                        metrics={
+                            "report_kind": "ancestral-report-package",
+                            "reconstruction_kind": result.reconstruction_kind,
+                            "output_dir": str(result.output_dir),
+                            "artifact_count": 11,
+                            "transition_count_row_count": result.machine_manifest[
+                                "metrics"
+                            ]["transition_count_row_count"],
+                        },
+                        data=result,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            assert args.out is not None
             result = render_ancestral_state_report(
                 tree_path=args.tree,
                 traits_path=args.table,
