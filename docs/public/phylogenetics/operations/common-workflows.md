@@ -729,6 +729,47 @@ the branch depth interval and a deterministic midpoint-depth estimate so
 reviewers can place likely movement events on the tree without overstating
 temporal precision.
 
+When the goal is to deliver one complete geographic evolution review package
+rather than separate region, event, and map commands, use `biogeography
+report`. This workflow accepts one rooted tree, one taxon-region table, and
+one explicit centroid table. It reruns the owned ancestral-region model, the
+owned migration-event extraction surface, the owned ancestral-region tree
+renderer, and the owned region-map renderer into one governed package.
+
+```bash
+bijux-phylogenetics biogeography report \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --trait region \
+  artifacts/region-centroids.tsv \
+  --taxon-column species \
+  --model ard \
+  --out-dir artifacts/primates-biogeography-report \
+  --json
+```
+
+The package writes:
+- `biogeography-report.html`
+- `ancestral-region-tree.svg`
+- `geographic-region-map.html`
+- `summary.tsv`
+- `region-counts.tsv`
+- `ancestral-regions.tsv`
+- `transition-matrix.tsv`
+- `event-table.tsv`
+- `map-markers.tsv`
+- `map-lines.tsv`
+- `exclusions.tsv`
+- `biogeography-report.manifest.json`
+
+That bundle makes the core evidence surfaces explicit in one place: observed
+region counts at the tips, ancestral-region probabilities at internal nodes,
+the fitted directed transition matrix, branchwise migration-event rows, the
+ancestral-region tree figure, and the self-contained region-transition map.
+The HTML report embeds the tree figure directly and links the same package to
+the map artifact, so reviewers can move from rates and counts to geographic
+placement without reassembling outputs by hand.
+
 When the goal is to compare inferred geographic transition pressure across
 explicit historical intervals, use `biogeography time-stratified`. This
 workflow accepts one rooted tree with positive branch lengths, one taxon-region
