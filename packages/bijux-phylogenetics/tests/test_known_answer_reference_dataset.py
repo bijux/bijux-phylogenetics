@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.known_answer_reference import (
     export_known_answer_reference_dataset,
@@ -98,6 +99,28 @@ def test_export_known_answer_reference_dataset_copies_expected_outputs(
     assert result.true_discrete_nodes_path.is_file()
     assert len(expected_files) == 11
     assert "workflow-summary.tsv" in expected_files
+
+
+def test_public_runtime_exports_include_known_answer_reference_surface() -> None:
+    assert (
+        bijux_phylogenetics.load_known_answer_reference_dataset
+        is load_known_answer_reference_dataset
+    )
+    assert (
+        bijux_phylogenetics.export_known_answer_reference_dataset
+        is export_known_answer_reference_dataset
+    )
+    assert (
+        bijux_phylogenetics.run_known_answer_reference_workflow
+        is run_known_answer_reference_workflow
+    )
+    assert (
+        bijux_phylogenetics.write_known_answer_reference_workflow_bundle
+        is write_known_answer_reference_workflow_bundle
+    )
+    assert bijux_phylogenetics.run_known_answer_reference_demo is (
+        run_known_answer_reference_demo
+    )
 
 
 def test_cli_demo_known_answer_reference_panel_json_output_reports_recovery_metrics(
