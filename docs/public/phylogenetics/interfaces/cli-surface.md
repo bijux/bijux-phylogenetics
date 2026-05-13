@@ -332,6 +332,59 @@ The packaged stress contract is explicit about scope:
 - the raw trait table is intentionally dirty in duplicates and missingness
 - the workflow resolves duplicates deterministically and writes one cleaned comparative subset instead of mutating the raw dataset in place
 
+`demo known-answer-reference-panel` is the governed packaged known-answer
+simulation surface. It materializes the shipped deterministic simulation panel
+into one output directory and reruns the owned recovery workflow over the
+packaged true tree, simulated alignment, and simulated traits. Its JSON
+metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `sequence_length`
+- `distance_method`
+- `distance_model`
+- `rooted_topology_equal`
+- `same_unrooted_topology`
+- `same_taxa_different_rooting`
+- `robinson_foulds_distance`
+- `continuous_internal_node_mean_absolute_error`
+- `discrete_internal_node_accuracy`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/true-tree.nwk`
+- `dataset/simulated-alignment.fasta`
+- `dataset/continuous-traits.tsv`
+- `dataset/discrete-traits.tsv`
+- `dataset/true-parameters.tsv`
+- `dataset/true-continuous-nodes.tsv`
+- `dataset/true-discrete-nodes.tsv`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/recovered-distance-tree.nwk`
+- `workflow/tree-recovery.tsv`
+- `workflow/parameter-recovery.tsv`
+- `workflow/brownian-fit-summary.tsv`
+- `workflow/continuous-ancestral-summary.tsv`
+- `workflow/continuous-node-recovery.tsv`
+- `workflow/discrete-ancestral-summary.tsv`
+- `workflow/discrete-node-recovery.tsv`
+- `overview.md`
+
+The packaged simulation contract is explicit:
+
+- tree model `birth-death`
+- alignment model `jukes-cantor-like`
+- continuous trait model `brownian-motion`
+- discrete trait model `symmetric-discrete`
+- recovery tree method `neighbor-joining`
+- recovery distance model `p-distance`
+
+This command does not require external executables because both the truth
+surface and the governed recovery checks run entirely inside the owned runtime.
+
 `demo rabies-cross-host-panel` is the governed packaged pathogen
 host-switching surface. It materializes the shipped rabies nucleoprotein panel
 into one output directory and reruns the owned host-switching workflow over
