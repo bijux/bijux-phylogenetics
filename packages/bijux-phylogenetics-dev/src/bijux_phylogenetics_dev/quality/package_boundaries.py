@@ -317,26 +317,30 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
         contract_locators = _tuple_constant_strings(
             evidence_contract_module, "SUPPORTED_EVIDENCE_API_LOCATORS"
         )
-        if (
-            contract_modules
-            != policy.runtime_evidence_compatibility.supported_api_modules
-        ):
+        missing_contract_modules = tuple(
+            module_name
+            for module_name in policy.runtime_evidence_compatibility.supported_api_modules
+            if module_name not in contract_modules
+        )
+        if missing_contract_modules:
             issues.append(
                 BoundaryIssue(
                     code="runtime-evidence-module-contract-drift",
                     path=evidence_contract_module.relative_to(repo_root).as_posix(),
-                    message="runtime evidence API module contract does not match the governed package-boundary policy",
+                    message="runtime evidence API module contract is missing one or more governed compatibility modules",
                 )
             )
-        if (
-            contract_locators
-            != policy.runtime_evidence_compatibility.supported_api_locators
-        ):
+        missing_contract_locators = tuple(
+            locator
+            for locator in policy.runtime_evidence_compatibility.supported_api_locators
+            if locator not in contract_locators
+        )
+        if missing_contract_locators:
             issues.append(
                 BoundaryIssue(
                     code="runtime-evidence-locator-contract-drift",
                     path=evidence_contract_module.relative_to(repo_root).as_posix(),
-                    message="runtime evidence API locator contract does not match the governed package-boundary policy",
+                    message="runtime evidence API locator contract is missing one or more governed compatibility locators",
                 )
             )
 

@@ -7,6 +7,28 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CONFIGS_ROOT = REPO_ROOT / "configs"
+SHARED_PYTEST_MARKERS = {
+    "api: HTTP API tests (manual, not for CI)",
+    "e2e: end-to-end tests",
+    "evaluation: evaluation benchmarks (deterministic, no regressions)",
+    "gpu: requires CUDA",
+    "integration: integration tests",
+    "live: live provider integration",
+    "real: real local model tests (slow, manual, not for CI)",
+    "real_local: requires local models or hardware",
+    "regression: regression tests",
+    "slow: mark test as slow",
+    "smoke: smoke tests",
+    "unit: unit tests",
+    "windows: mark tests for Windows-only",
+}
+REPOSITORY_PYTEST_MARKERS = {
+    "engine_contract: fake-executable and parser contract tests for external engines",
+    "engine_real: real executable integration tests for external engines",
+    "scientific_validation: slower workflow checks against governed reference outputs",
+    "stress_heavy: governed heavy stress tier for large-dataset resource checks",
+    "stress_small: governed small stress tier for routine large-dataset resource checks",
+}
 
 
 def _config_parser(path: Path) -> ConfigParser:
@@ -90,23 +112,11 @@ def test_root_pytest_configuration_matches_shared_python_baseline() -> None:
         "--strict-markers",
         "--tb=short",
     ]
-    assert {
+    configured_markers = {
         line.strip() for line in pytest_config["markers"].splitlines() if line.strip()
-    } == {
-        "api: HTTP API tests (manual, not for CI)",
-        "e2e: end-to-end tests",
-        "evaluation: evaluation benchmarks (deterministic, no regressions)",
-        "gpu: requires CUDA",
-        "integration: integration tests",
-        "live: live provider integration",
-        "real: real local model tests (slow, manual, not for CI)",
-        "real_local: requires local models or hardware",
-        "regression: regression tests",
-        "slow: mark test as slow",
-        "smoke: smoke tests",
-        "unit: unit tests",
-        "windows: mark tests for Windows-only",
     }
+    assert SHARED_PYTEST_MARKERS.issubset(configured_markers)
+    assert configured_markers - SHARED_PYTEST_MARKERS == REPOSITORY_PYTEST_MARKERS
     assert [
         line.strip()
         for line in pytest_config["filterwarnings"].splitlines()

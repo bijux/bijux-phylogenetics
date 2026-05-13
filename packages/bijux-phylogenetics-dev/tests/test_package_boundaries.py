@@ -238,6 +238,36 @@ SUPPORTED_EVIDENCE_API_LOCATORS = ("demo_runtime.api:missing_export",)
     assert "runtime-evidence-locator-contract-drift" in issue_codes
 
 
+def test_build_package_boundary_report_allows_runtime_contract_supersets(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    _write(
+        repo_root
+        / "packages"
+        / "demo-runtime"
+        / "src"
+        / "demo_runtime"
+        / "comparative"
+        / "evidence_contract.py",
+        """
+SUPPORTED_EVIDENCE_API_MODULES = ("demo_runtime.api", "demo_runtime.extra")
+SUPPORTED_EVIDENCE_API_LOCATORS = ("demo_runtime.api:run_pgls", "demo_runtime.extra:run_extra")
+""".strip()
+        + "\n",
+    )
+    _write(
+        repo_root / "packages" / "demo-runtime" / "src" / "demo_runtime" / "extra.py",
+        "def run_extra() -> str:\n    return 'extra'\n",
+    )
+
+    report = build_package_boundary_report(repo_root)
+
+    issue_codes = {issue["code"] for issue in report["issues"]}
+    assert "runtime-evidence-module-contract-drift" not in issue_codes
+    assert "runtime-evidence-locator-contract-drift" not in issue_codes
+
+
 def test_repository_package_boundary_report_is_clean() -> None:
     report = build_package_boundary_report(REPO_ROOT)
 
