@@ -1,0 +1,2 @@
+taxon	occurrence_count	selected_row_number	selected_non_missing_field_count	discarded_row_numbers	selected_reason
+hylobates_lar	2	6	4	7	highest_non_missing_field_count_then_first_row

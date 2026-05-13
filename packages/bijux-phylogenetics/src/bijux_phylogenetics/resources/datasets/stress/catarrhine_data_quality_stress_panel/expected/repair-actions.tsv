@@ -1,0 +1,6 @@
+action_kind	affected_taxa	affected_nodes	reason	result
+resolve_duplicate_trait_taxon	hylobates_lar		multiple raw trait rows were present for one taxon	kept row 6 and discarded 7
+drop_taxa_for_missing_required_traits	pongo_pygmaeus		required comparative traits remained missing after duplicate resolution	excluded taxa from the cleaned comparative subset
+drop_sequence_outlier_taxa	macaca_mulatta		alignment composition outliers exceeded the governed stress threshold	excluded taxa from the cleaned alignment and downstream subset
+drop_tree_branch_outlier_taxa	macaca_mulatta		terminal branches were extreme relative to the raw tree baseline	excluded taxa from the cleaned tree and linked surfaces
+floor_nonpositive_branch_lengths		gorilla_gorilla	nonpositive branch lengths block comparative and tree-distance assumptions	replaced nonpositive branch lengths with 1e-06

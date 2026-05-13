@@ -1,0 +1,5 @@
+taxon	present_in_tree	present_in_alignment	present_in_traits
+gorilla_gorilla	true	true	true
+homo_sapiens	true	true	true
+hylobates_lar	true	true	true
+pan_troglodytes	true	true	true
