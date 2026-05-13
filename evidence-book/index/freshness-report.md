@@ -9,9 +9,9 @@
 ## Bundles
 
 - `primate-longevity-signal/evidence-001` — `current`
-  Generated: `2026-05-11`; latest governed change: `2026-05-11`
+  Generated: `2026-05-13`; latest governed change: `2026-05-13`
 - `primate-longevity-signal/evidence-002` — `current`
-  Generated: `2026-05-11`; latest governed change: `2026-05-11`
+  Generated: `2026-05-13`; latest governed change: `2026-05-11`
 - `primate-longevity-signal/evidence-003` — `current`
   Generated: `2026-05-11`; latest governed change: `2026-05-11`
 - `primate-longevity-signal/evidence-004` — `current`
@@ -29,7 +29,7 @@
 - `primate-pgls-and-signal/evidence-001` — `current`
   Generated: `2026-05-11`; latest governed change: `2026-05-11`
 - `primate-pgls-and-signal/evidence-002` — `current`
-  Generated: `2026-05-11`; latest governed change: `2026-05-11`
+  Generated: `2026-05-13`; latest governed change: `2026-05-11`
 - `primate-pgls-and-signal/evidence-003` — `current`
   Generated: `2026-05-11`; latest governed change: `2026-05-11`
 - `primate-pgls-and-signal/evidence-004` — `current`

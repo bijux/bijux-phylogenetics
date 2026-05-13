@@ -16,7 +16,7 @@
     "log_likelihood": -456.310146563131,
     "p_values": {
       "intercept": 0.0,
-      "social_group_size": 4.97675870070324e-07
+      "social_group_size": 3.43365580768307e-06
     },
     "r_squared": 0.257169890828586
   },
