@@ -4539,11 +4539,15 @@ fresh rerun.
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
 support inference, and FastTree approximate inference on the same input, then
 emits the two inferred trees, an HTML comparison report, a flat comparison
-table, a shared-clade ledger, a conflicting-clade ledger, and a manifest in
-one command. Its JSON summary exposes the selected model, shared-taxon count,
-Robinson-Foulds distance, shared-clade count, conflicting-clade count, and the
-count of support disagreements detected after fraction normalization, plus the
-shared timeout budget and whether any governed engine step was resumed.
+table, a shared-clade ledger, a conflicting-clade ledger, a support-weighted
+conflict ledger, a clade-conclusion ledger, a stability-summary ledger, a
+taxon-influence ledger when shared-taxon pruning can rank conflict drivers, and
+a manifest in one command. Its JSON summary exposes the selected model,
+shared-taxon count, Robinson-Foulds distance, shared-clade count,
+conflicting-clade count, stable-clade count, unstable-clade count,
+engine-specific-clade count, high-support conflict count,
+low-support disagreement count, serious-conflict count, the shared timeout
+budget, and whether any governed engine step was resumed.
 
 The support-normalization rule is public and narrow by design: FastTree
 SH-like local support and IQ-TREE UFBoot support are both rendered as fractions
