@@ -5,8 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 from typing import Any, TypeAlias
+import xml.etree.ElementTree as XmlET
 
-from defusedxml import ElementTree as ET
+from defusedxml import ElementTree as SafeET
+from defusedxml.common import DefusedXmlException
 
 from bijux_phylogenetics.bayesian.burnin import (
     DEFAULT_BURNIN_FRACTIONS,
@@ -583,7 +585,7 @@ def _append_sequence_alignment(
     records,
     beast_data_type: str,
 ) -> None:
-    data = ET.SubElement(
+    data = XmlET.SubElement(
         root,
         "data",
         {
@@ -592,7 +594,7 @@ def _append_sequence_alignment(
         },
     )
     for record in records:
-        sequence = ET.SubElement(data, "sequence", {"taxon": record.identifier})
+        sequence = XmlET.SubElement(data, "sequence", {"taxon": record.identifier})
         sequence.text = record.sequence
 
 
@@ -607,9 +609,9 @@ def _append_substitution_and_site_model(
     logger_elements: list[XmlElement] = []
 
     if beast_data_type == "nucleotide":
-        hky = ET.SubElement(root, "input", {"spec": "HKY", "id": "hky"})
-        ET.SubElement(hky, "parameter", {"name": "kappa", "idref": "hky.kappa"})
-        ET.SubElement(
+        hky = XmlET.SubElement(root, "input", {"spec": "HKY", "id": "hky"})
+        XmlET.SubElement(hky, "parameter", {"name": "kappa", "idref": "hky.kappa"})
+        XmlET.SubElement(
             hky,
             "input",
             {
@@ -619,16 +621,16 @@ def _append_substitution_and_site_model(
                 "frequencies": "@hky.frequencies",
             },
         )
-        site_model = ET.SubElement(
+        site_model = XmlET.SubElement(
             root, "input", {"spec": "SiteModel", "id": "siteModel"}
         )
-        ET.SubElement(site_model, "substModel", {"idref": "hky"})
-        ET.SubElement(
+        XmlET.SubElement(site_model, "substModel", {"idref": "hky"})
+        XmlET.SubElement(
             root,
             "parameter",
             {"id": "hky.kappa", "value": "2.0", "lower": "0.0"},
         )
-        ET.SubElement(
+        XmlET.SubElement(
             root,
             "parameter",
             {"id": "hky.frequencies", "value": "0.25", "dimension": "4"},
@@ -637,13 +639,13 @@ def _append_substitution_and_site_model(
 
         prior_elements.extend(
             [
-                ET.fromstring(
+                XmlET.fromstring(
                     "<distribution id='hky.kappa.prior' spec='beast.base.inference.distribution.Prior' x='@hky.kappa'>"
                     "<distr id='hky.kappa.lognormal' M='1.0' S='1.25' meanInRealSpace='false' "
                     "spec='beast.base.inference.distribution.LogNormalDistributionModel' />"
                     "</distribution>"
                 ),
-                ET.fromstring(
+                XmlET.fromstring(
                     "<distribution id='hky.frequencies.prior' spec='beast.base.inference.distribution.Prior' x='@hky.frequencies'>"
                     "<distr id='hky.frequencies.uniform' lower='0.0' upper='1.0' "
                     "spec='beast.base.inference.distribution.Uniform' />"
@@ -653,24 +655,24 @@ def _append_substitution_and_site_model(
         )
         operator_elements.extend(
             [
-                ET.fromstring(
+                XmlET.fromstring(
                     "<operator id='kappaScaler' spec='ScaleOperator' scaleFactor='0.75' weight='0.1' parameter='@hky.kappa' />"
                 ),
-                ET.fromstring(
+                XmlET.fromstring(
                     "<operator id='frequenciesDelta' spec='DeltaExchangeOperator' delta='0.01' weight='0.1' parameter='@hky.frequencies' />"
                 ),
             ]
         )
         logger_elements.extend(
             [
-                ET.fromstring("<log idref='hky.kappa' />"),
-                ET.fromstring("<log idref='hky.frequencies' />"),
+                XmlET.fromstring("<log idref='hky.kappa' />"),
+                XmlET.fromstring("<log idref='hky.frequencies' />"),
             ]
         )
         return state_node_ids, prior_elements, operator_elements, logger_elements
 
-    site_model = ET.SubElement(root, "input", {"spec": "SiteModel", "id": "siteModel"})
-    ET.SubElement(site_model, "substModel", {"spec": "JTT", "id": "jtt"})
+    site_model = XmlET.SubElement(root, "input", {"spec": "SiteModel", "id": "siteModel"})
+    XmlET.SubElement(site_model, "substModel", {"spec": "JTT", "id": "jtt"})
     return state_node_ids, prior_elements, operator_elements, logger_elements
 
 
@@ -681,7 +683,7 @@ def _append_starting_tree(
     tip_date_report: TipDatingValidationReport | None,
 ) -> str:
     if tree_path is not None:
-        tree = ET.SubElement(
+        tree = XmlET.SubElement(
             root,
             "tree",
             {
@@ -693,7 +695,7 @@ def _append_starting_tree(
             },
         )
         if tip_date_report is not None:
-            trait = ET.SubElement(
+            trait = XmlET.SubElement(
                 tree,
                 "trait",
                 {
@@ -703,14 +705,14 @@ def _append_starting_tree(
                     "value": _tip_date_trait_value(tip_date_report),
                 },
             )
-            ET.SubElement(
+            XmlET.SubElement(
                 trait,
                 "taxa",
                 {"spec": "TaxonSet", "alignment": "@alignment"},
             )
         return "provided-tree"
 
-    cluster_tree = ET.SubElement(
+    cluster_tree = XmlET.SubElement(
         root,
         "input",
         {
@@ -720,7 +722,7 @@ def _append_starting_tree(
         },
     )
     if tip_date_report is not None:
-        trait = ET.SubElement(
+        trait = XmlET.SubElement(
             cluster_tree,
             "trait",
             {
@@ -730,12 +732,12 @@ def _append_starting_tree(
                 "value": _tip_date_trait_value(tip_date_report),
             },
         )
-        ET.SubElement(
+        XmlET.SubElement(
             trait,
             "taxa",
             {"spec": "TaxonSet", "alignment": "@alignment"},
         )
-    ET.SubElement(cluster_tree, "taxa", {"idref": "alignment"})
+    XmlET.SubElement(cluster_tree, "taxa", {"idref": "alignment"})
     return "upgma"
 
 
@@ -751,7 +753,7 @@ def _append_clock_model(
     operator_elements: list[XmlElement] = []
     logger_elements: list[XmlElement] = []
     if normalized == "strict":
-        strict = ET.SubElement(
+        strict = XmlET.SubElement(
             root,
             "input",
             {
@@ -759,32 +761,32 @@ def _append_clock_model(
                 "id": "branchRates",
             },
         )
-        ET.SubElement(strict, "clock.rate", {"idref": "clockRate"})
-        ET.SubElement(
+        XmlET.SubElement(strict, "clock.rate", {"idref": "clockRate"})
+        XmlET.SubElement(
             root,
             "parameter",
             {"id": "clockRate", "value": "0.001", "lower": "0.0", "upper": "100.0"},
         )
         state_node_ids.append("clockRate")
         prior_elements.append(
-            ET.fromstring(
+            XmlET.fromstring(
                 "<distribution id='clockRate.prior' spec='beast.base.inference.distribution.Prior' x='@clockRate'>"
                 "<distr id='clockRate.uniform' lower='0.0' upper='100.0' spec='beast.base.inference.distribution.Uniform' />"
                 "</distribution>"
             )
         )
         operator_elements.append(
-            ET.fromstring(
+            XmlET.fromstring(
                 "<operator id='clockRateScaler' spec='ScaleOperator' scaleFactor='0.75' weight='3' parameter='@clockRate' />"
             )
         )
-        logger_elements.append(ET.fromstring("<log idref='clockRate' />"))
+        logger_elements.append(XmlET.fromstring("<log idref='clockRate' />"))
         return state_node_ids, prior_elements, operator_elements, logger_elements
     if normalized != "relaxed-lognormal":
         raise ValueError(
             "BEAST preparation supports clock_model values 'strict' and 'relaxed-lognormal'"
         )
-    relaxed = ET.SubElement(
+    relaxed = XmlET.SubElement(
         root,
         "input",
         {
@@ -792,7 +794,7 @@ def _append_clock_model(
             "id": "branchRates",
         },
     )
-    distr = ET.SubElement(
+    distr = XmlET.SubElement(
         relaxed,
         "distr",
         {
@@ -801,12 +803,12 @@ def _append_clock_model(
             "meanInRealSpace": "true",
         },
     )
-    ET.SubElement(
+    XmlET.SubElement(
         distr,
         "parameter",
         {"name": "M", "id": "ucld.mean", "value": "1.0", "lower": "0.0"},
     )
-    ET.SubElement(
+    XmlET.SubElement(
         distr,
         "parameter",
         {
@@ -816,7 +818,7 @@ def _append_clock_model(
             "lower": "0.0",
         },
     )
-    ET.SubElement(
+    XmlET.SubElement(
         relaxed,
         "parameter",
         {
@@ -827,10 +829,10 @@ def _append_clock_model(
             "value": "1",
         },
     )
-    ET.SubElement(relaxed, "tree", {"idref": "tree"})
+    XmlET.SubElement(relaxed, "tree", {"idref": "tree"})
     state_node_ids.extend(["ucld.mean", "ucld.stdev", "rateCategories"])
     prior_elements.append(
-        ET.fromstring(
+        XmlET.fromstring(
             "<distribution id='ucld.stdev.prior' spec='beast.base.inference.distribution.Prior' x='@ucld.stdev'>"
             "<distr id='ucld.stdev.exponential' mean='0.3333333333333333' spec='beast.base.inference.distribution.Exponential' />"
             "</distribution>"
@@ -838,31 +840,31 @@ def _append_clock_model(
     )
     operator_elements.extend(
         [
-            ET.fromstring(
+            XmlET.fromstring(
                 "<operator id='ucldMeanScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@ucld.mean' />"
             ),
-            ET.fromstring(
+            XmlET.fromstring(
                 "<operator id='ucldStdevScaler' spec='ScaleOperator' scaleFactor='0.75' weight='3' parameter='@ucld.stdev' />"
             ),
-            ET.fromstring(
+            XmlET.fromstring(
                 "<operator id='rateCategoriesRandomWalk' spec='IntRandomWalkOperator' windowSize='1' weight='10' parameter='@rateCategories' />"
             ),
-            ET.fromstring(
+            XmlET.fromstring(
                 "<operator id='rateCategoriesSwap' spec='SwapOperator' howMany='1' weight='10' intparameter='@rateCategories' />"
             ),
-            ET.fromstring(
+            XmlET.fromstring(
                 "<operator id='rateCategoriesUniform' spec='UniformOperator' weight='10' parameter='@rateCategories' />"
             ),
         ]
     )
     logger_elements.extend(
         [
-            ET.fromstring("<log idref='ucld.mean' />"),
-            ET.fromstring("<log idref='ucld.stdev' />"),
-            ET.fromstring(
+            XmlET.fromstring("<log idref='ucld.mean' />"),
+            XmlET.fromstring("<log idref='ucld.stdev' />"),
+            XmlET.fromstring(
                 "<log id='rateStatistic' spec='beast.base.evolution.RateStatistic' tree='@tree' branchratemodel='@branchRates' />"
             ),
-            ET.fromstring("<log idref='rateCategories' />"),
+            XmlET.fromstring("<log idref='rateCategories' />"),
         ]
     )
     return state_node_ids, prior_elements, operator_elements, logger_elements
@@ -877,43 +879,43 @@ def _append_tree_prior(
     state_node_ids: list[str] = ["birthRate"]
     prior_elements: list[XmlElement] = []
     operator_elements: list[XmlElement] = [
-        ET.fromstring(
+        XmlET.fromstring(
             "<operator id='birthRateScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@birthRate' />"
         )
     ]
-    logger_elements: list[XmlElement] = [ET.fromstring("<log idref='birthRate' />")]
+    logger_elements: list[XmlElement] = [XmlET.fromstring("<log idref='birthRate' />")]
     if normalized == "yule":
-        yule = ET.SubElement(
+        yule = XmlET.SubElement(
             root,
             "input",
             {"spec": "beast.base.evolution.speciation.YuleModel", "id": "treePrior"},
         )
-        ET.SubElement(yule, "birthDiffRate", {"idref": "birthRate"})
-        ET.SubElement(yule, "tree", {"idref": "tree"})
-        ET.SubElement(
+        XmlET.SubElement(yule, "birthDiffRate", {"idref": "birthRate"})
+        XmlET.SubElement(yule, "tree", {"idref": "tree"})
+        XmlET.SubElement(
             root,
             "parameter",
             {"id": "birthRate", "value": "1.0", "lower": "0.0", "upper": "100.0"},
         )
         prior_elements.extend(
             [
-                ET.fromstring(
+                XmlET.fromstring(
                     "<distribution id='treePrior.distribution' idref='treePrior' />"
                 ),
-                ET.fromstring(
+                XmlET.fromstring(
                     "<distribution id='birthRate.prior' spec='beast.base.inference.distribution.Prior' x='@birthRate'>"
                     "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.base.inference.distribution.OneOnX' />"
                     "</distribution>"
                 ),
             ]
         )
-        logger_elements.insert(0, ET.fromstring("<log idref='treePrior' />"))
+        logger_elements.insert(0, XmlET.fromstring("<log idref='treePrior' />"))
         return state_node_ids, prior_elements, operator_elements, logger_elements
     if normalized != "birth-death":
         raise ValueError(
             "BEAST preparation supports tree_prior values 'yule' and 'birth-death'"
         )
-    birth_death = ET.SubElement(
+    birth_death = XmlET.SubElement(
         root,
         "input",
         {
@@ -921,28 +923,28 @@ def _append_tree_prior(
             "id": "treePrior",
         },
     )
-    ET.SubElement(birth_death, "birthDiffRate", {"idref": "birthRate"})
-    ET.SubElement(birth_death, "relativeDeathRate", {"idref": "relativeDeathRate"})
-    ET.SubElement(birth_death, "sampleProbability", {"idref": "sampleProbability"})
-    ET.SubElement(birth_death, "tree", {"idref": "tree"})
-    ET.SubElement(
+    XmlET.SubElement(birth_death, "birthDiffRate", {"idref": "birthRate"})
+    XmlET.SubElement(birth_death, "relativeDeathRate", {"idref": "relativeDeathRate"})
+    XmlET.SubElement(birth_death, "sampleProbability", {"idref": "sampleProbability"})
+    XmlET.SubElement(birth_death, "tree", {"idref": "tree"})
+    XmlET.SubElement(
         root,
         "parameter",
         {"id": "birthRate", "value": "1.0", "lower": "0.0", "upper": "1000000.0"},
     )
-    ET.SubElement(
+    XmlET.SubElement(
         root,
         "parameter",
         {"id": "relativeDeathRate", "value": "0.5", "lower": "0.0", "upper": "1.0"},
     )
-    ET.SubElement(root, "parameter", {"id": "sampleProbability", "value": "1.0"})
+    XmlET.SubElement(root, "parameter", {"id": "sampleProbability", "value": "1.0"})
     state_node_ids.append("relativeDeathRate")
     prior_elements.extend(
         [
-            ET.fromstring(
+            XmlET.fromstring(
                 "<distribution id='treePrior.distribution' idref='treePrior' />"
             ),
-            ET.fromstring(
+            XmlET.fromstring(
                 "<distribution id='birthRate.prior' spec='beast.base.inference.distribution.Prior' x='@birthRate'>"
                 "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.base.inference.distribution.OneOnX' />"
                 "</distribution>"
@@ -951,13 +953,13 @@ def _append_tree_prior(
     )
     logger_elements.extend(
         [
-            ET.fromstring("<log idref='treePrior' />"),
-            ET.fromstring("<log idref='relativeDeathRate' />"),
-            ET.fromstring("<log idref='sampleProbability' />"),
+            XmlET.fromstring("<log idref='treePrior' />"),
+            XmlET.fromstring("<log idref='relativeDeathRate' />"),
+            XmlET.fromstring("<log idref='sampleProbability' />"),
         ]
     )
     operator_elements.append(
-        ET.fromstring(
+        XmlET.fromstring(
             "<operator id='relativeDeathRateScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@relativeDeathRate' />"
         )
     )
@@ -965,7 +967,7 @@ def _append_tree_prior(
 
 
 def _append_tree_likelihood(root: XmlElement) -> None:
-    likelihood = ET.SubElement(
+    likelihood = XmlET.SubElement(
         root,
         "distribution",
         {
@@ -975,15 +977,15 @@ def _append_tree_likelihood(root: XmlElement) -> None:
             "tree": "@tree",
         },
     )
-    ET.SubElement(likelihood, "siteModel", {"idref": "siteModel"})
-    ET.SubElement(likelihood, "branchRateModel", {"idref": "branchRates"})
+    XmlET.SubElement(likelihood, "siteModel", {"idref": "siteModel"})
+    XmlET.SubElement(likelihood, "branchRateModel", {"idref": "branchRates"})
 
 
 def _translate_calibration_distribution(
     calibration: ValidatedCalibration,
 ) -> tuple[XmlElement, BeastCalibration, str | None]:
     calibration_id = _xml_identifier(calibration.calibration_id)
-    mrca = ET.Element(
+    mrca = XmlET.Element(
         "distribution",
         {
             "spec": "beast.base.evolution.tree.MRCAPrior",
@@ -992,13 +994,13 @@ def _translate_calibration_distribution(
             "monophyletic": "true",
         },
     )
-    taxonset = ET.SubElement(
+    taxonset = XmlET.SubElement(
         mrca,
         "taxonset",
         {"spec": "TaxonSet", "id": f"{calibration_id}.taxa"},
     )
     for taxon in calibration.taxa:
-        ET.SubElement(taxonset, "taxon", {"spec": "Taxon", "id": taxon})
+        XmlET.SubElement(taxonset, "taxon", {"spec": "Taxon", "id": taxon})
 
     requested = calibration.distribution.strip().lower() or "uniform"
     lower = calibration.minimum_age
@@ -1011,7 +1013,7 @@ def _translate_calibration_distribution(
             f"BEAST preparation does not support upper-bound-only calibration '{calibration.calibration_id}'"
         )
     if lower is not None and upper is not None:
-        ET.SubElement(
+        XmlET.SubElement(
             mrca,
             "distr",
             {
@@ -1034,7 +1036,7 @@ def _translate_calibration_distribution(
             )
         if requested == "lognormal":
             beast_distribution = "LogNormalDistributionModel"
-            ET.SubElement(
+            XmlET.SubElement(
                 mrca,
                 "distr",
                 {
@@ -1053,7 +1055,7 @@ def _translate_calibration_distribution(
             )
         else:
             beast_distribution = "Exponential"
-            ET.SubElement(
+            XmlET.SubElement(
                 mrca,
                 "distr",
                 {
@@ -1568,7 +1570,7 @@ def prepare_beast_time_tree_analysis(
             "BEAST preparation requires all tip dates to validate successfully"
         )
 
-    root = ET.Element(
+    root = XmlET.Element(
         "beast",
         {
             "version": "2.7",
@@ -1612,7 +1614,7 @@ def prepare_beast_time_tree_analysis(
     ) = _append_tree_prior(root, tree_prior=tree_prior)
     _append_tree_likelihood(root)
 
-    run = ET.SubElement(
+    run = XmlET.SubElement(
         root,
         "run",
         {
@@ -1621,16 +1623,16 @@ def prepare_beast_time_tree_analysis(
             "chainLength": str(chain_length),
         },
     )
-    state = ET.SubElement(run, "state")
+    state = XmlET.SubElement(run, "state")
     for node_id in dict.fromkeys(
         [*site_state_ids, *clock_state_ids, *tree_state_ids, "tree"]
     ):
-        ET.SubElement(state, "stateNode", {"idref": node_id})
+        XmlET.SubElement(state, "stateNode", {"idref": node_id})
 
-    posterior = ET.SubElement(
+    posterior = XmlET.SubElement(
         run, "distribution", {"spec": "CompoundDistribution", "id": "posterior"}
     )
-    prior = ET.SubElement(
+    prior = XmlET.SubElement(
         posterior, "distribution", {"spec": "CompoundDistribution", "id": "prior"}
     )
     for element in [*site_prior_elements, *clock_prior_elements, *tree_prior_elements]:
@@ -1653,23 +1655,23 @@ def prepare_beast_time_tree_analysis(
             if warning is not None:
                 warnings.append(warning)
 
-    ET.SubElement(posterior, "distribution", {"idref": "likelihood"})
+    XmlET.SubElement(posterior, "distribution", {"idref": "likelihood"})
 
     generic_tree_operators = [
-        ET.fromstring(
+        XmlET.fromstring(
             "<operator id='treeScaler' spec='ScaleOperator' scaleFactor='0.75' weight='3' tree='@tree' />"
         ),
-        ET.fromstring("<operator spec='Uniform' weight='30' tree='@tree' />"),
-        ET.fromstring(
+        XmlET.fromstring("<operator spec='Uniform' weight='30' tree='@tree' />"),
+        XmlET.fromstring(
             "<operator spec='SubtreeSlide' weight='15' gaussian='true' size='0.5' tree='@tree' />"
         ),
-        ET.fromstring(
+        XmlET.fromstring(
             "<operator id='narrowExchange' spec='Exchange' isNarrow='true' weight='15' tree='@tree' />"
         ),
-        ET.fromstring(
+        XmlET.fromstring(
             "<operator id='wideExchange' spec='Exchange' isNarrow='false' weight='3' tree='@tree' />"
         ),
-        ET.fromstring(
+        XmlET.fromstring(
             "<operator id='wilsonBalding' spec='WilsonBalding' weight='3' tree='@tree' />"
         ),
     ]
@@ -1683,15 +1685,15 @@ def prepare_beast_time_tree_analysis(
 
     log_path = output_path.with_name(f"{output_path.stem}.$(seed).log")
     tree_log_path = output_path.with_name(f"{output_path.stem}.$(seed).trees")
-    file_logger = ET.SubElement(
+    file_logger = XmlET.SubElement(
         run,
         "logger",
         {"logEvery": str(log_every), "fileName": log_path.name},
     )
-    ET.SubElement(file_logger, "model", {"idref": "posterior"})
+    XmlET.SubElement(file_logger, "model", {"idref": "posterior"})
     for log_id in ["posterior", "prior", "likelihood"]:
-        ET.SubElement(file_logger, "log", {"idref": log_id})
-    ET.SubElement(
+        XmlET.SubElement(file_logger, "log", {"idref": log_id})
+    XmlET.SubElement(
         file_logger,
         "log",
         {"spec": "beast.base.evolution.tree.TreeHeightLogger", "tree": "@tree"},
@@ -1703,26 +1705,26 @@ def prepare_beast_time_tree_analysis(
     ]:
         file_logger.append(element)
     for calibration in beast_calibrations:
-        ET.SubElement(
+        XmlET.SubElement(
             file_logger, "log", {"idref": _xml_identifier(calibration.calibration_id)}
         )
 
-    tree_logger = ET.SubElement(
+    tree_logger = XmlET.SubElement(
         run,
         "logger",
         {"logEvery": str(log_every), "fileName": tree_log_path.name},
     )
-    ET.SubElement(tree_logger, "log", {"idref": "tree"})
+    XmlET.SubElement(tree_logger, "log", {"idref": "tree"})
 
-    screen_logger = ET.SubElement(
+    screen_logger = XmlET.SubElement(
         run,
         "logger",
         {"logEvery": str(max(log_every, 10000))},
     )
-    ET.SubElement(screen_logger, "model", {"idref": "posterior"})
+    XmlET.SubElement(screen_logger, "model", {"idref": "posterior"})
     for log_id in ["posterior", "prior", "likelihood"]:
-        ET.SubElement(screen_logger, "log", {"idref": log_id})
-    ET.SubElement(
+        XmlET.SubElement(screen_logger, "log", {"idref": log_id})
+    XmlET.SubElement(
         screen_logger,
         "log",
         {"spec": "beast.base.evolution.tree.TreeHeightLogger", "tree": "@tree"},
@@ -1732,13 +1734,13 @@ def prepare_beast_time_tree_analysis(
         *site_logger_elements,
         *clock_logger_elements,
     ]:
-        cloned = ET.fromstring(ET.tostring(element, encoding="unicode"))
+        cloned = XmlET.fromstring(XmlET.tostring(element, encoding="unicode"))
         if cloned.get("id") == "rateStatistic":
             cloned.set("id", "rateStatistic.screen")
         screen_logger.append(cloned)
 
-    xml_tree = ET.ElementTree(root)
-    ET.indent(xml_tree, space="    ")
+    xml_tree = XmlET.ElementTree(root)
+    XmlET.indent(xml_tree, space="    ")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     xml_tree.write(output_path, encoding="utf-8", xml_declaration=True)
     output_path.write_text(
@@ -1784,8 +1786,8 @@ def summarize_beast_analysis_xml(path: Path) -> BeastAnalysisXmlReport:
     """Summarize one prepared BEAST analysis XML into reviewer-facing assumptions."""
     issues: list[BeastAnalysisXmlIssue] = []
     try:
-        root = ET.parse(path).getroot()
-    except ET.ParseError as error:
+        root = SafeET.parse(path).getroot()
+    except (XmlET.ParseError, DefusedXmlException) as error:
         issues.append(
             BeastAnalysisXmlIssue(
                 code="invalid-xml",
