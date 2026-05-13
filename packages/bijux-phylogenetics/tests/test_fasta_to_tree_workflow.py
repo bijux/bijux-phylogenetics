@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 
 import pytest
@@ -120,6 +121,42 @@ print(warning, file=sys.stderr)
     )
 
 
+def _fake_trimal_empty_output(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print("trimAl v2.0")
+    raise SystemExit(0)
+
+args = sys.argv[1:]
+output_path = Path(args[args.index("-out") + 1])
+output_path.parent.mkdir(parents=True, exist_ok=True)
+output_path.write_text("", encoding="utf-8")
+print("warning: trimal fixture wrote an empty alignment", file=sys.stderr)
+""",
+    )
+
+
+def _fake_trimal_failure(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+
+if "--version" in sys.argv:
+    print("trimAl v2.0")
+    raise SystemExit(0)
+
+print("trimAl fixture failed deliberately", file=sys.stderr)
+raise SystemExit(9)
+""",
+    )
+
+
 def _fake_iqtree(path: Path) -> Path:
     return _write_executable(
         path,
@@ -209,6 +246,91 @@ prefix.with_suffix(".log").write_text(
 print("warning: iqtree fixture tree inference", file=sys.stderr)
 """,
     )
+
+
+def _fake_iqtree_failure(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+
+if "--version" in sys.argv:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+print("iqtree fixture failed deliberately", file=sys.stderr)
+raise SystemExit(11)
+""",
+    )
+
+
+def _fake_iqtree_missing_support_tree(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+if "-m" in args and args[args.index("-m") + 1] == "MF":
+    prefix.with_suffix(".iqtree").write_text(
+        "  1  GTR+G         123.456      12  270.912      330.912      272.912\\n"
+        "Akaike Information Criterion:           GTR+G\\n"
+        "Corrected Akaike Information Criterion: GTR+G\\n"
+        "Bayesian Information Criterion:         GTR+G\\n"
+        "Best-fit model according to BIC: GTR+G\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".model").write_text(
+        "Best-fit model: GTR+G\\n",
+        encoding="utf-8",
+    )
+    raise SystemExit(0)
+
+if "-bb" in args:
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -234.567\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
+    print("warning: iqtree fixture omitted the support tree", file=sys.stderr)
+    raise SystemExit(0)
+
+prefix.with_suffix(".treefile").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -345.678\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _load_json(path: Path) -> dict[str, object]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def test_infer_unaligned_sequence_type_detects_dna_and_protein_inputs() -> None:
@@ -369,6 +491,8 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert report.output_paths["log"].suffix == ".log"
         assert report.output_paths["model_table"].name.endswith(".model.tsv")
         assert report.output_paths["support_table"].name.endswith(".support.tsv")
+        assert report.output_paths["manifest"].name.endswith(".manifest.json")
+        assert report.output_paths["run_manifest"].name.endswith(".run.json")
         for path in report.output_paths.values():
             assert path.exists()
 
@@ -395,6 +519,18 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         model_text = report.output_paths["model_table"].read_text(encoding="utf-8")
         assert "engine-artifacts/" in model_text
         assert str(report.out_dir) not in model_text
+        workflow_manifest = _load_json(report.manifest_path)
+        run_manifest = _load_json(report.run_manifest_path)
+        assert workflow_manifest["selected_model"] == expected_model
+        assert workflow_manifest["iqtree_seed"] == 1
+        assert workflow_manifest["bootstrap_replicates"] == 1000
+        assert "alignment" in workflow_manifest["commands"]
+        assert "iqtree_model_selection" in workflow_manifest["engine_versions"]
+        assert report.run_manifest_path == report.output_paths["run_manifest"]
+        assert run_manifest["command"] == "run_fasta_to_tree_workflow"
+        assert str(report.manifest_path) in run_manifest["output_paths"]
+        assert str(input_path) in run_manifest["input_paths"]
+        assert str(report.output_paths["tree"]) in run_manifest["output_checksums"]
 
 
 def test_write_fasta_to_tree_log_renders_workflow_outputs_relative_to_root(
@@ -419,6 +555,7 @@ def test_write_fasta_to_tree_log_renders_workflow_outputs_relative_to_root(
 
     assert "manifest: engine-artifacts/portable-log/model-selection/model-selection.manifest.json" in log_text
     assert "output.alignment: engine-artifacts/portable-log/alignment/alignment.aln" in log_text
+    assert "run_manifest_path: portable-log.run.json" in log_text
     assert str(report.out_dir) not in log_text
 
 
@@ -610,6 +747,91 @@ def test_run_fasta_to_tree_workflow_passes_named_mafft_mode_to_alignment_step(
     assert report.alignment_workflow.notes[0] == "mafft alignment mode: linsi"
     assert "mafft alignment mode: linsi" in report.notes
     assert "command:" in report.output_paths["log"].read_text(encoding="utf-8")
+
+
+def test_run_fasta_to_tree_workflow_rejects_empty_trimmed_alignment(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal_empty_output(tmp_path / "trimal-empty-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    with pytest.raises(InvalidAlignmentError, match="contains no FASTA records"):
+        run_fasta_to_tree_workflow(
+            fixture("alignments/example_sequences_raw.fasta"),
+            out_dir=tmp_path / "empty-trimmed-alignment",
+            prefix="empty-trimmed-alignment",
+            mafft_executable=mafft,
+            trimal_executable=trimal,
+            iqtree_executable=iqtree,
+            bootstrap_replicates=1000,
+        )
+
+
+def test_run_fasta_to_tree_workflow_surfaces_trimming_failure(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal_failure(tmp_path / "trimal-failure-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    with pytest.raises(
+        EngineWorkflowError, match="trimal alignment-trimming failed with exit code 9"
+    ):
+        run_fasta_to_tree_workflow(
+            fixture("alignments/example_sequences_raw.fasta"),
+            out_dir=tmp_path / "trimming-failure",
+            prefix="trimming-failure",
+            mafft_executable=mafft,
+            trimal_executable=trimal,
+            iqtree_executable=iqtree,
+            bootstrap_replicates=1000,
+        )
+
+
+def test_run_fasta_to_tree_workflow_surfaces_tree_inference_failure(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree_failure(tmp_path / "iqtree-failure-fixture")
+
+    with pytest.raises(
+        EngineWorkflowError, match="iqtree model-selection failed with exit code 11"
+    ):
+        run_fasta_to_tree_workflow(
+            fixture("alignments/example_sequences_raw.fasta"),
+            out_dir=tmp_path / "inference-failure",
+            prefix="inference-failure",
+            mafft_executable=mafft,
+            trimal_executable=trimal,
+            iqtree_executable=iqtree,
+            bootstrap_replicates=1000,
+        )
+
+
+def test_run_fasta_to_tree_workflow_rejects_missing_support_tree_output(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree_missing_support_tree(
+        tmp_path / "iqtree-missing-support-tree-fixture"
+    )
+
+    with pytest.raises(
+        EngineWorkflowError,
+        match="iqtree bootstrap-support did not produce expected outputs",
+    ):
+        run_fasta_to_tree_workflow(
+            fixture("alignments/example_sequences_raw.fasta"),
+            out_dir=tmp_path / "missing-support-tree",
+            prefix="missing-support-tree",
+            mafft_executable=mafft,
+            trimal_executable=trimal,
+            iqtree_executable=iqtree,
+            bootstrap_replicates=1000,
+        )
 
 
 def test_run_fasta_to_tree_workflow_passes_named_trimal_mode_to_trimming_step(

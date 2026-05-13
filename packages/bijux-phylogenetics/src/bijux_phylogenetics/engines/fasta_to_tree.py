@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from bijux_phylogenetics.core.alignment import (
     FastaInputValidationReport,
     FastaRepairReport,
 )
+from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     detect_fasta_sequence_type,
@@ -84,9 +86,21 @@ class FastaToTreeWorkflowReport:
     prefix: str
     sequence_type: AlignmentAlphabet
     selected_model: str
+    alignment_mode: str
+    trimming_mode: str
+    trim_gap_threshold: float
+    iqtree_seed: int
+    iqtree_threads: int
+    bootstrap_replicates: int
+    started_at_utc: str
+    ended_at_utc: str
+    runtime_seconds: float
     engine_artifact_dir: Path
     manifest_path: Path
+    run_manifest_path: Path
     output_paths: dict[str, Path]
+    commands: dict[str, list[str]]
+    engine_versions: dict[str, str]
     step_manifests: dict[str, Path]
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
@@ -221,6 +235,7 @@ def _final_output_paths(out_dir: Path, prefix: str) -> dict[str, Path]:
         "model_table": root.with_suffix(".model.tsv"),
         "support_table": root.with_suffix(".support.tsv"),
         "manifest": root.with_suffix(".manifest.json"),
+        "run_manifest": root.with_suffix(".run.json"),
     }
 
 
@@ -306,6 +321,11 @@ def write_fasta_to_tree_log(
         f"{_display_path(report.prepared_input_path, root_dir=root_dir)}",
         f"sequence_type: {report.sequence_type}",
         f"selected_model: {report.selected_model}",
+        f"started_at_utc: {report.started_at_utc}",
+        f"ended_at_utc: {report.ended_at_utc}",
+        f"runtime_seconds: {report.runtime_seconds:.3f}",
+        "run_manifest_path: "
+        f"{_display_path(report.run_manifest_path, root_dir=root_dir)}",
         "",
         "[input-validation]",
         f"sequence_count: {report.input_validation.summary.sequence_count}",
@@ -390,6 +410,7 @@ def run_fasta_to_tree_workflow(
     incomplete_run_policy: str = "reject",
 ) -> FastaToTreeWorkflowReport:
     """Run alignment, trimming, model selection, ML inference, and bootstrap support in one workflow."""
+    started_at = datetime.now(UTC)
     workflow_prefix = input_path.stem if prefix is None else prefix
     engine_artifact_dir = out_dir / "engine-artifacts" / workflow_prefix
     input_validation = validate_fasta_input(input_path, sequence_type=sequence_type)
@@ -574,6 +595,35 @@ def run_fasta_to_tree_workflow(
         notes.append(
             f"prepared input FASTA written to {prepared_input_path} before alignment"
         )
+    run_manifest_arguments = [
+        str(input_path),
+        "--out-dir",
+        str(out_dir),
+        "--prefix",
+        workflow_prefix,
+        "--sequence-type",
+        inferred_sequence_type,
+        "--alignment-mode",
+        alignment_mode,
+        "--trimming-mode",
+        trimming_mode,
+        "--trim-gap-threshold",
+        format(trim_gap_threshold, ".12g"),
+        "--iqtree-seed",
+        str(iqtree_seed),
+        "--iqtree-threads",
+        str(iqtree_threads),
+        "--bootstrap-replicates",
+        str(bootstrap_replicates),
+        "--resume",
+        "true" if resume else "false",
+        "--incomplete-run-policy",
+        incomplete_run_policy,
+    ]
+    if timeout_seconds is not None:
+        run_manifest_arguments.extend(
+            ["--timeout-seconds", format(timeout_seconds, ".12g")]
+        )
     report = FastaToTreeWorkflowReport(
         input_path=input_path,
         prepared_input_path=prepared_input_path,
@@ -581,9 +631,35 @@ def run_fasta_to_tree_workflow(
         prefix=workflow_prefix,
         sequence_type=inferred_sequence_type,
         selected_model=model_selection_workflow.selected_model,
+        alignment_mode=alignment_mode,
+        trimming_mode=trimming_mode,
+        trim_gap_threshold=trim_gap_threshold,
+        iqtree_seed=iqtree_seed,
+        iqtree_threads=iqtree_threads,
+        bootstrap_replicates=bootstrap_replicates,
+        started_at_utc=started_at.replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z"),
+        ended_at_utc="",
+        runtime_seconds=0.0,
         engine_artifact_dir=engine_artifact_dir,
         manifest_path=final_outputs["manifest"],
+        run_manifest_path=final_outputs["run_manifest"],
         output_paths=final_outputs,
+        commands={
+            "alignment": alignment_workflow.run.command,
+            "trimming": trimming_workflow.run.command,
+            "model_selection": model_selection_workflow.run.command,
+            "maximum_likelihood": maximum_likelihood_workflow.run.command,
+            "bootstrap_support": bootstrap_workflow.run.command,
+        },
+        engine_versions={
+            "mafft": alignment_workflow.run.version.text,
+            "trimal": trimming_workflow.run.version.text,
+            "iqtree_model_selection": model_selection_workflow.run.version.text,
+            "iqtree_maximum_likelihood": maximum_likelihood_workflow.run.version.text,
+            "iqtree_bootstrap_support": bootstrap_workflow.run.version.text,
+        },
         step_manifests={
             "alignment": alignment_workflow.manifest_path,
             "trimming": trimming_workflow.manifest_path,
@@ -612,6 +688,14 @@ def run_fasta_to_tree_workflow(
         warnings=warnings,
         notes=notes,
     )
+    ended_at = datetime.now(UTC)
+    report.ended_at_utc = ended_at.replace(microsecond=0).isoformat().replace(
+        "+00:00", "Z"
+    )
+    report.runtime_seconds = max(
+        0.0,
+        round((ended_at - started_at).total_seconds(), 6),
+    )
     write_fasta_to_tree_log(final_outputs["log"], report, root_dir=out_dir)
     report.output_checksums = build_file_checksums(
         [
@@ -624,4 +708,25 @@ def run_fasta_to_tree_workflow(
         ]
     )
     write_engine_manifest(report.manifest_path, report)
+    write_run_manifest(
+        report.run_manifest_path,
+        build_run_manifest(
+            command="run_fasta_to_tree_workflow",
+            arguments=run_manifest_arguments,
+            input_paths=(
+                [input_path]
+                if prepared_input_path == input_path
+                else [input_path, prepared_input_path]
+            ),
+            output_paths=[
+                final_outputs["alignment"],
+                final_outputs["trimmed_alignment"],
+                final_outputs["tree"],
+                final_outputs["log"],
+                final_outputs["model_table"],
+                final_outputs["support_table"],
+                report.manifest_path,
+            ],
+        ),
+    )
     return report

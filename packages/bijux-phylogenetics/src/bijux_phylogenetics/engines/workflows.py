@@ -365,7 +365,12 @@ def _build_alignment_trimming_summary(
 
 
 def _validate_tree_output(path: Path) -> None:
-    loads_newick(path.read_text(encoding="utf-8"))
+    if not path.exists():
+        raise EngineWorkflowError(f"tree output was not created: {path}")
+    tree_text = path.read_text(encoding="utf-8")
+    if not tree_text.strip():
+        raise EngineWorkflowError(f"tree output is empty: {path}")
+    loads_newick(tree_text)
     validate_tree_path(path)
 
 
