@@ -1,0 +1,22 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-tree-data-correspondence-parity",
+      "claim_title": "PCM1 tree-data correspondence is explicit before model fitting",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "source_fragments": [
+        "tree-import-and-pruning",
+        "tip-order-alignment",
+        "treeio-node-mapping-and-join"
+      ],
+      "summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-008",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

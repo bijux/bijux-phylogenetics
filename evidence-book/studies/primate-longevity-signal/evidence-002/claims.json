@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-workbook-loading-parity",
+      "claim_title": "PCM1 workbook loading contract is governed explicitly",
+      "evidence_ids": [
+        "evidence-002"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-002",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

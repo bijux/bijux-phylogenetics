@@ -1,0 +1,2 @@
+dataset_id	sequence_count	degraded_sequence_count	selected_model	internal_node_count	supported_node_count	minimum_support	maximum_support	median_support	aligned_missing_data_fraction	cleaned_missing_data_fraction	removed_column_count	removed_sequence_count
+pleistocene_bear_cytb_fragments	5	2	HKY+F	3	2	80	100	90	0.0291228070175	0	166	0

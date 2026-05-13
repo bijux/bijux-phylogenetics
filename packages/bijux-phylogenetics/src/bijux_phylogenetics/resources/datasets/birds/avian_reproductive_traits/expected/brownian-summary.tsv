@@ -1,0 +1,2 @@
+trait	taxon_column	tree_taxon_count	analyzed_taxon_count	excluded_taxon_count	root_state	root_state_lower_95	root_state_upper_95	sigma_squared	sigma_squared_lower_95	sigma_squared_upper_95	log_likelihood	aic	aicc	residual_variance	max_abs_standardized_residual	phylogenetic_residual_lambda
+testes_mass	species	94	94	0	2.10154643061079	-4.81308237217395	9.01617523339554	0.583468230348074	0.446332299561866	0.79557740137825	-184.866903034702	373.733806069405	373.865674201273	2.57743173381377	7.63715037375019	0.6

@@ -1,0 +1,44 @@
+{
+  "intake_policy": "read-only-external-source",
+  "schema_version": 1,
+  "source_count": 4,
+  "sources": [
+    {
+      "concept_tags": [
+        "comparative-signal",
+        "tree-preprocessing",
+        "ancestral-reconstruction"
+      ],
+      "kind": "external-course-script",
+      "label": "Lund PCM1 plots and signal lecture script",
+      "locator": "external:lund/pcm1-plots-signal/script",
+      "path_hint": "PCM1_plots_signal/Lecture/R/Rcripts/PCM1_plots_signal.R",
+      "read_only": true,
+      "source_id": "lund-pcm1-script"
+    },
+    {
+      "kind": "external-course-data",
+      "label": "Lund PCM1 primate raw workbook",
+      "locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+      "path_hint": "PCM1_plots_signal/Lecture/R/Data/primate_raw.xlsx",
+      "read_only": true,
+      "source_id": "lund-pcm1-primate-workbook"
+    },
+    {
+      "kind": "external-course-data",
+      "label": "Lund PCM1 primate tree",
+      "locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
+      "path_hint": "PCM1_plots_signal/Lecture/R/Data/primatetree.nex",
+      "read_only": true,
+      "source_id": "lund-pcm1-primate-tree"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Checked-in R and Python reference adapters for the PCM1 study",
+      "locator": "evidence-book/studies/primate-longevity-signal/reference",
+      "read_only": false,
+      "source_id": "governed-pcm1-reference-adapters"
+    }
+  ],
+  "study_id": "primate-longevity-signal"
+}

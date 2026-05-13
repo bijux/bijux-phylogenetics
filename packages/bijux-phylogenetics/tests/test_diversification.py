@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.diversification import (
     compare_diversification_models,
     compute_lineage_through_time_curve,
@@ -17,7 +19,6 @@ from bijux_phylogenetics.diversification import (
     write_trait_dependent_diversification_table,
 )
 from bijux_phylogenetics.errors import DiversificationAnalysisError, UnrootedTreeError
-import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

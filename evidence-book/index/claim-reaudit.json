@@ -1,0 +1,103 @@
+{
+  "audit_status_counts": {
+    "downgraded_to_bounded": 4,
+    "supported_with_limits": 2
+  },
+  "claim_count": 6,
+  "claims": [
+    {
+      "audit_status": "downgraded_to_bounded",
+      "claim_id": "repository-overview-runtime-breadth",
+      "claim_text": "The repository provides runtime surfaces for phylogenetic validation, alignment diagnostics, comparative analysis, and reviewable reporting.",
+      "linked_surface_ids": [
+        "tree-diagnostics",
+        "alignment-diagnostics",
+        "comparative-analysis",
+        "reporting-surfaces"
+      ],
+      "linked_surface_statuses": {
+        "alignment-diagnostics": "uncovered",
+        "comparative-analysis": "bounded",
+        "reporting-surfaces": "bounded",
+        "tree-diagnostics": "bounded"
+      },
+      "recommendation": "Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.",
+      "relative_path": "README.md"
+    },
+    {
+      "audit_status": "supported_with_limits",
+      "claim_id": "repository-overview-evidence-book",
+      "claim_text": "The evidence-book is a first-class checked-in trust surface rather than a transient artifact dump.",
+      "linked_surface_ids": [
+        "comparative-analysis",
+        "reporting-surfaces"
+      ],
+      "linked_surface_statuses": {
+        "comparative-analysis": "bounded",
+        "reporting-surfaces": "bounded"
+      },
+      "recommendation": "Keep the claim, but pair it with an explicit evidence-book coverage link so reviewers can see the remaining boundaries.",
+      "relative_path": "README.md"
+    },
+    {
+      "audit_status": "downgraded_to_bounded",
+      "claim_id": "docs-home-runtime-workbench",
+      "claim_text": "The repository is a reproducible phylogenetics workbench across trees, alignments, evidence capture, and reports.",
+      "linked_surface_ids": [
+        "tree-diagnostics",
+        "alignment-diagnostics",
+        "reporting-surfaces"
+      ],
+      "linked_surface_statuses": {
+        "alignment-diagnostics": "uncovered",
+        "reporting-surfaces": "bounded",
+        "tree-diagnostics": "bounded"
+      },
+      "recommendation": "Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.",
+      "relative_path": "docs/index.md"
+    },
+    {
+      "audit_status": "supported_with_limits",
+      "claim_id": "repository-overview-comparative-scope",
+      "claim_text": "Comparative analysis, ancestral-state workflows, and evidence bundles are real current repository surfaces.",
+      "linked_surface_ids": [
+        "comparative-analysis",
+        "reporting-surfaces"
+      ],
+      "linked_surface_statuses": {
+        "comparative-analysis": "bounded",
+        "reporting-surfaces": "bounded"
+      },
+      "recommendation": "Keep the claim, but pair it with an explicit evidence-book coverage link so reviewers can see the remaining boundaries.",
+      "relative_path": "docs/public/phylogenetics/index.md"
+    },
+    {
+      "audit_status": "downgraded_to_bounded",
+      "claim_id": "repository-overview-alignment-scope",
+      "claim_text": "Alignment trimming, translation, and identity workflows exist in the runtime surface.",
+      "linked_surface_ids": [
+        "alignment-diagnostics"
+      ],
+      "linked_surface_statuses": {
+        "alignment-diagnostics": "uncovered"
+      },
+      "recommendation": "Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.",
+      "relative_path": "docs/public/phylogenetics/index.md"
+    },
+    {
+      "audit_status": "downgraded_to_bounded",
+      "claim_id": "repository-overview-distance-scope",
+      "claim_text": "Distance workflows and their maturity surfaces exist in the runtime.",
+      "linked_surface_ids": [
+        "distance-analysis"
+      ],
+      "linked_surface_statuses": {
+        "distance-analysis": "uncovered"
+      },
+      "recommendation": "Keep the runtime existence claim, but describe analytical trust as bounded until uncovered surfaces gain governed evidence families.",
+      "relative_path": "docs/public/phylogenetics/index.md"
+    }
+  ],
+  "downgraded_claim_count": 4,
+  "schema_version": 1
+}

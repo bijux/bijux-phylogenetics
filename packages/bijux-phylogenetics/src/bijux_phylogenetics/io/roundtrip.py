@@ -197,7 +197,13 @@ def validate_tree_roundtrip(
     _write_tree(target_path, original, target_format=target_format)
     reloaded = load_tree(target_path, source_format=target_format)
     topology = _compare_tree_objects(original, reloaded)
-    branch_lengths = _compare_branch_lengths_for_trees(original, reloaded)
+    branch_lengths = _compare_branch_lengths_for_trees(
+        source_path,
+        target_path,
+        original,
+        reloaded,
+        taxon_overlap_policy="require-identical",
+    )
     original_support = _support_rows(original)
     reloaded_support = _support_rows(reloaded)
     return TreeRoundtripValidationReport(

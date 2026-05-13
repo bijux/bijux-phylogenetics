@@ -1,0 +1,2 @@
+workflow	engine_name	sequence_type	selected_model	report_selected_model	artifact_selected_model	model_consistent	alignment_path	trimmed_alignment_path	manifest_path
+model-selection	iqtree	dna	HKY+F	HKY+F	HKY+F	true	pleistocene-bear-cytb-fragments.aln	pleistocene-bear-cytb-fragments.trimmed.aln	engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.manifest.json

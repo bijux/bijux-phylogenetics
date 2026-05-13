@@ -6,13 +6,18 @@ from pathlib import Path
 
 from bijux_phylogenetics.render.html import write_html_report
 
+from .bootstrap_artifacts import build_low_support_bootstrap_rows
 from .common import load_engine_manifest
+from .fasttree_artifacts import build_fasttree_low_support_rows
+from .sh_alrt_artifacts import build_conflicting_sh_alrt_support_rows
 from .validation import (
     classify_inference_workflow_failure,
     compare_inferred_trees_across_engines,
     compare_ml_trees_across_models,
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
+    summarize_fasttree_support_distribution,
+    summarize_sh_alrt_support_distribution,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
@@ -37,6 +42,11 @@ class InferenceWorkflowReportBuildResult:
 class ModelSelectionLimitationsReport:
     manifest_path: Path
     selected_model: str | None
+    selected_criterion: str | None
+    candidate_model_count: int
+    best_model_aic: str | None
+    best_model_aicc: str | None
+    best_model_bic: str | None
     validation_issues: list[str]
     limitations: list[str]
     interpretation_limits: list[str]
@@ -160,6 +170,21 @@ def render_inference_workflow_report(
             )
         )
         supplement_sections.append("model-selection-limitations")
+    if (
+        manifest["workflow"] == "alignment-trimming"
+        and manifest.get("trimming_summary") is not None
+    ):
+        sections.append(
+            (
+                "alignment-trimming-summary",
+                json.dumps(
+                    manifest["trimming_summary"],
+                    indent=2,
+                    sort_keys=True,
+                ),
+            )
+        )
+        supplement_sections.append("alignment-trimming-summary")
     if manifest["workflow"] == "maximum-likelihood-tree":
         sections.append(
             (
@@ -190,11 +215,40 @@ def render_inference_workflow_report(
             supplement_sections.append("bootstrap-tree-set-validation")
         tree_path = output_paths.get("tree") or output_paths.get("support_tree")
         if tree_path is not None:
+            bootstrap_support_summary = summarize_bootstrap_support_distribution(
+                tree_path
+            )
             sections.append(
                 (
                     "bootstrap-support-summary",
                     json.dumps(
-                        asdict(summarize_bootstrap_support_distribution(tree_path)),
+                        asdict(bootstrap_support_summary),
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "bootstrap-support-histogram",
+                    json.dumps(
+                        bootstrap_support_summary.support_histogram,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "low-support-branches",
+                    json.dumps(
+                        [
+                            asdict(row)
+                            for row in build_low_support_bootstrap_rows(
+                                bootstrap_support_summary
+                            )
+                        ],
                         default=str,
                         indent=2,
                         sort_keys=True,
@@ -212,7 +266,146 @@ def render_inference_workflow_report(
                     ),
                 )
             )
-            supplement_sections.extend(["bootstrap-support-summary", "weak-backbone"])
+            supplement_sections.extend(
+                [
+                    "bootstrap-support-summary",
+                    "bootstrap-support-histogram",
+                    "low-support-branches",
+                    "weak-backbone",
+                ]
+            )
+    if manifest["workflow"] == "fast-approximate-tree":
+        tree_path = output_paths.get("tree") or output_paths.get("support_tree")
+        if tree_path is not None:
+            fasttree_support_summary = summarize_fasttree_support_distribution(
+                tree_path
+            )
+            sections.append(
+                (
+                    "fasttree-approximation-limits",
+                    json.dumps(
+                        {
+                            "approximate_method": fasttree_support_summary.approximate_method,
+                            "support_label_kind": fasttree_support_summary.support_label_kind,
+                            "support_scale": fasttree_support_summary.support_scale,
+                            "limitations": [
+                                "FastTree uses an approximately maximum-likelihood search and should be reviewed as exploratory or large-alignment evidence rather than as a direct substitute for a fully optimized ML workflow",
+                                "FastTree local support values are SH-like proportions on a 0-to-1 scale and are not bootstrap percentages",
+                            ],
+                        },
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "fasttree-support-summary",
+                    json.dumps(
+                        asdict(fasttree_support_summary),
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "fasttree-support-histogram",
+                    json.dumps(
+                        fasttree_support_summary.support_histogram,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "fasttree-low-support-branches",
+                    json.dumps(
+                        [
+                            asdict(row)
+                            for row in build_fasttree_low_support_rows(
+                                fasttree_support_summary
+                            )
+                        ],
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            supplement_sections.extend(
+                [
+                    "fasttree-approximation-limits",
+                    "fasttree-support-summary",
+                    "fasttree-support-histogram",
+                    "fasttree-low-support-branches",
+                ]
+            )
+    if manifest["workflow"] == "sh-alrt-support":
+        bootstrap_path = output_paths.get("bootstrap_trees")
+        if bootstrap_path is not None:
+            sections.append(
+                (
+                    "bootstrap-tree-set-validation",
+                    json.dumps(
+                        asdict(validate_bootstrap_tree_set(bootstrap_path)),
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            supplement_sections.append("bootstrap-tree-set-validation")
+        tree_path = output_paths.get("tree") or output_paths.get("support_tree")
+        if tree_path is not None:
+            sh_alrt_support_summary = summarize_sh_alrt_support_distribution(tree_path)
+            sections.append(
+                (
+                    "sh-alrt-support-summary",
+                    json.dumps(
+                        asdict(sh_alrt_support_summary),
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "conflicting-support-branches",
+                    json.dumps(
+                        [
+                            asdict(row)
+                            for row in build_conflicting_sh_alrt_support_rows(
+                                sh_alrt_support_summary
+                            )
+                        ],
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            sections.append(
+                (
+                    "weak-backbone",
+                    json.dumps(
+                        asdict(detect_weakly_supported_backbone(tree_path)),
+                        default=str,
+                        indent=2,
+                        sort_keys=True,
+                    ),
+                )
+            )
+            supplement_sections.extend(
+                [
+                    "sh-alrt-support-summary",
+                    "conflicting-support-branches",
+                    "weak-backbone",
+                ]
+            )
     machine_manifest = {
         "report_kind": "inference-workflow",
         "title": title,
@@ -263,6 +456,11 @@ def build_model_selection_limitations_report(
     return ModelSelectionLimitationsReport(
         manifest_path=manifest_path,
         selected_model=None if selected_model is None else str(selected_model),
+        selected_criterion=validation.report_selected_criterion,
+        candidate_model_count=validation.candidate_model_count,
+        best_model_aic=validation.best_model_aic,
+        best_model_aicc=validation.best_model_aicc,
+        best_model_bic=validation.best_model_bic,
         validation_issues=validation.issues,
         limitations=limitations,
         interpretation_limits=interpretation_limits,

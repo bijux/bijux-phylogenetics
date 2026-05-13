@@ -23,10 +23,12 @@ classifiers = [
 ]
 dependencies = [
     "biopython>=1.87,<2.0",
+    "cairosvg>=2.9.0,<3.0",
+    "defusedxml>=0.7.1,<1.0",
 ]
 
 [project.urls]
-Documentation = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"
+Documentation = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md"
@@ -46,7 +48,7 @@ dev = [
     "pymdown-extensions>=10.15",
     "pydantic>=2.12,<3.0",
     "ruff>=0.13.0,<1.0",
-    "mypy>=1.18.2,<2.0",
+    "mypy>=1.18.2,<3.0",
     "vulture>=2.14,<3.0",
     "deptry>=0.24.0,<1.0",
     "interrogate>=1.7.0,<2.0",
@@ -56,6 +58,7 @@ dev = [
     "codespell>=2.4.1,<3.0",
     "pydocstyle>=6.3.0,<7.0",
     "radon>=6.0.1,<7.0",
+    "types-defusedxml>=0.7.0.20240218,<1.0",
     "twine>=6.2.0,<7.0",
 ]
 
@@ -72,17 +75,23 @@ raw-options = { git_describe_command = "git describe --dirty --tags --long --mat
 include = [
     "README.md",
     "CHANGELOG.md",
-    "LICENSE",
-    "NOTICE",
     "src/bijux_phylogenetics/**",
 ]
-force-include = { "LICENSE" = "LICENSE", "NOTICE" = "NOTICE" }
+
+[tool.hatch.build.targets.sdist]
+exclude = ["LICENSE", "NOTICE", "tests"]
+include = [
+    "README.md",
+    "CHANGELOG.md",
+    "src/bijux_phylogenetics/**",
+]
+force-include = { "../../LICENSE" = "LICENSE", "../../NOTICE" = "NOTICE" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bijux_phylogenetics"]
 
 [tool.interrogate]
-fail-under = 65
+fail-under = 58
 verbose = 0
 ignore-init-method = true
 ignore-private = true

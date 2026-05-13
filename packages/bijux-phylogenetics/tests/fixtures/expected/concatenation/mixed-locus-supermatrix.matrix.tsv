@@ -1,0 +1,6 @@
+taxon	alpha-dna	beta-protein	gamma-dna	covered_locus_count	total_locus_count	locus_coverage_fraction	observed_site_count	total_site_count	site_coverage_fraction	low_coverage
+TaxonA	1	1	1	3	3	1	11	11	1	false
+TaxonB	1	0	1	2	3	0.666666666667	7	11	0.636363636364	false
+TaxonC	1	0	0	1	3	0.333333333333	4	11	0.363636363636	false
+TaxonD	0	1	0	1	3	0.333333333333	4	11	0.363636363636	false
+TaxonE	0	1	0	1	3	0.333333333333	4	11	0.363636363636	false

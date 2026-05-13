@@ -1,0 +1,6 @@
+identifier	raw_sequence_length	degraded_sequence	aligned_missing_fraction	engine_trimmed_missing_fraction	cleaned_missing_fraction	removed_by_missingness_cleanup
+brown_bear_modern	1140	false	0	0	0	false
+polar_bear_modern	1140	false	0	0	0	false
+black_bear_modern	1140	false	0	0	0	false
+cave_bear_ud1838_fragment	640	true	0.0210526315789	0.0210526315789	0	false
+cave_bear_wk01_fragment	480	true	0.124561403509	0.124561403509	0	false

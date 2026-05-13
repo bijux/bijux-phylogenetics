@@ -1,0 +1,2 @@
+workflow	engine_name	sequence_type	selected_model	report_selected_model	artifact_selected_model	model_consistent	alignment_path	trimmed_alignment_path	manifest_path
+model-selection	iqtree	dna	TNe+G4	TNe+G4	TNe+G4	true	gnathostome-ortholog-coding-sequences.aln	gnathostome-ortholog-coding-sequences.trimmed.aln	engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.manifest.json

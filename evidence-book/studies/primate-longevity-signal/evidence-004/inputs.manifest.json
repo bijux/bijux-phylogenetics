@@ -1,0 +1,68 @@
+{
+  "evidence_id": "evidence-004",
+  "governed_local_artifact_count": 5,
+  "governed_local_artifacts": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/README.md",
+      "read_only": false,
+      "sha256": "dffb14e2dfce30a39d446dda36aba483516f10aed9f310630879a416fb3275c2"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/manifest.json",
+      "read_only": false,
+      "sha256": "08f6fcb22e80d43a55af7cf243a786c6ed948d4e7568c1d0b85a4b014337e7b0"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/missing-data-accounting-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/missing-data-accounting-parity.json",
+      "read_only": false,
+      "sha256": "8c72a559ef819c26f11868c36ea292af97fe545d712cd0d0cdf65c16fabed4df"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "5393bf9e13c6f7d332a02b2a22d635072231493bff463a12abd7c26d1a0ddd58"
+    },
+    {
+      "input_id": "local-input-005",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "3da0cc6dfbe582518dc004cb3f66359308e7d041172dd6e8a47bfbaad67a25ba"
+    }
+  ],
+  "local_input_count": 0,
+  "local_inputs": [],
+  "schema_version": 2,
+  "source_input_count": 2,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "read_only": true,
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "Primate missing-data accounting parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json",
+      "read_only": false
+    }
+  ],
+  "study_id": "primate-longevity-signal"
+}

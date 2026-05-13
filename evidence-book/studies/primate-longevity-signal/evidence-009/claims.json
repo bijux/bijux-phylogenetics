@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-processed-export-parity",
+      "claim_title": "PCM1 processed exports are governed as explicit downstream inputs",
+      "evidence_ids": [
+        "evidence-009"
+      ],
+      "source_fragments": [
+        "processed-analysis-artifacts"
+      ],
+      "summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-009",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

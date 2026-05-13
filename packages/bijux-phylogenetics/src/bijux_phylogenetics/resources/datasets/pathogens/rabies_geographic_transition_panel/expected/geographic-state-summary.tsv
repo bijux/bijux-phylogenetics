@@ -1,0 +1,2 @@
+trait	taxon_column	model	internal_model	likelihood_method	analyzed_taxon_count	excluded_taxon_count	observed_region_count	internal_node_count	ambiguous_internal_node_count	changed_branch_count	strongly_supported_transition_count	transition_rate_row_count	root_region	root_region_probability	warning_count
+region_group	taxon	ard	all-rates-different	deterministic-node-probability	9	0	5	8	4	4	0	25	north_asia	0.555555553777778	3

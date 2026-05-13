@@ -1,0 +1,91 @@
+{
+  "completion_state_counts": {
+    "bounded": 3,
+    "not_ready": 2
+  },
+  "gate_count": 5,
+  "gates": [
+    {
+      "completion_state": "bounded",
+      "linked_evidence_count": 3,
+      "minimum_requirements": [
+        "indexed evidence bundles",
+        "reviewer-readable summaries",
+        "portable checked-in artifacts",
+        "source-grounded provenance"
+      ],
+      "missing_conditions": [
+        "Broader surface coverage still depends on bounded or partial evidence families.",
+        "The repository scorecard still classifies the overall program as reviewable but incomplete."
+      ],
+      "surface_id": "tree-diagnostics",
+      "surface_title": "Tree diagnostics and tree-data correspondence"
+    },
+    {
+      "completion_state": "not_ready",
+      "linked_evidence_count": 0,
+      "minimum_requirements": [
+        "indexed evidence bundles",
+        "reviewer-readable summaries",
+        "portable checked-in artifacts",
+        "source-grounded provenance"
+      ],
+      "missing_conditions": [
+        "No governed evidence family is linked to this analytical surface yet.",
+        "Reviewer-readable parity or trust bundles are still absent."
+      ],
+      "surface_id": "alignment-diagnostics",
+      "surface_title": "Alignment diagnostics and trimming"
+    },
+    {
+      "completion_state": "bounded",
+      "linked_evidence_count": 12,
+      "minimum_requirements": [
+        "indexed evidence bundles",
+        "reviewer-readable summaries",
+        "portable checked-in artifacts",
+        "source-grounded provenance"
+      ],
+      "missing_conditions": [
+        "Broader surface coverage still depends on bounded or partial evidence families.",
+        "The repository scorecard still classifies the overall program as reviewable but incomplete."
+      ],
+      "surface_id": "comparative-analysis",
+      "surface_title": "Comparative models, signal testing, and regression"
+    },
+    {
+      "completion_state": "not_ready",
+      "linked_evidence_count": 0,
+      "minimum_requirements": [
+        "indexed evidence bundles",
+        "reviewer-readable summaries",
+        "portable checked-in artifacts",
+        "source-grounded provenance"
+      ],
+      "missing_conditions": [
+        "No governed evidence family is linked to this analytical surface yet.",
+        "Reviewer-readable parity or trust bundles are still absent."
+      ],
+      "surface_id": "distance-analysis",
+      "surface_title": "Distance analysis and distance maturity"
+    },
+    {
+      "completion_state": "bounded",
+      "linked_evidence_count": 1,
+      "minimum_requirements": [
+        "indexed evidence bundles",
+        "reviewer-readable summaries",
+        "portable checked-in artifacts",
+        "source-grounded provenance"
+      ],
+      "missing_conditions": [
+        "Broader surface coverage still depends on bounded or partial evidence families.",
+        "The repository scorecard still classifies the overall program as reviewable but incomplete."
+      ],
+      "surface_id": "reporting-surfaces",
+      "surface_title": "Reviewer-facing reporting and evidence rendering"
+    }
+  ],
+  "schema_version": 1,
+  "scorecard_maturity_tier": "reviewable_but_incomplete"
+}

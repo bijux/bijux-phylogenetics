@@ -1,0 +1,68 @@
+{
+  "evidence_id": "evidence-003",
+  "governed_local_artifact_count": 5,
+  "governed_local_artifacts": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/README.md",
+      "read_only": false,
+      "sha256": "0fec76ce34923cfa1743ebdd9891c0eec591e4663bb65daabd62a493b5e9bcec"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/manifest.json",
+      "read_only": false,
+      "sha256": "2e5d876344c7960db42bd1abbb6b73869cdb18042b59a40a1d89b84fc6fa404e"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "4b7ee44161d40dac8557bf8f3886720b80b850afe047265ff062f073c207d780"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "68966ce785fbfa26e66c56cc498b83dc3a56bd650ae97f1ada7e2d79bb407ae5"
+    },
+    {
+      "input_id": "local-input-005",
+      "kind": "governed-result-surface",
+      "label": "results/type-repair-parity.json",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/results/type-repair-parity.json",
+      "read_only": false,
+      "sha256": "833169bf6c0586b5f9a1f04ec884fe349e584ef1f23535cd55bca16181d71379"
+    }
+  ],
+  "local_input_count": 0,
+  "local_inputs": [],
+  "schema_version": 2,
+  "source_input_count": 2,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "read_only": true,
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "Primate type repair parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json",
+      "read_only": false
+    }
+  ],
+  "study_id": "primate-longevity-signal"
+}

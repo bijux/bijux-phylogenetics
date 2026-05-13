@@ -5,6 +5,8 @@ from pathlib import Path
 
 AlignmentAlphabet = str
 AlignmentState = str
+RawSequenceType = str
+SequenceTypeConfidence = str
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,6 +28,112 @@ class AlignmentSequenceKindReport:
     has_gap_characters: bool
     state: AlignmentState
     note: str
+
+
+@dataclass(frozen=True, slots=True)
+class FastaInputSummary:
+    """Summary of a raw or aligned FASTA input before downstream validation."""
+
+    path: Path
+    sequence_count: int
+    unique_identifier_count: int
+    empty_sequence_count: int
+    min_sequence_length: int
+    max_sequence_length: int
+    median_sequence_length: float
+    total_residue_count: int
+    inferred_alphabet: AlignmentAlphabet
+
+
+@dataclass(frozen=True, slots=True)
+class FastaSequenceTypeReport:
+    """Automatic raw-sequence type classification for one FASTA input."""
+
+    path: Path
+    record_count: int
+    detected_type: RawSequenceType
+    selected_type: AlignmentAlphabet | None
+    compatible_types: list[AlignmentAlphabet]
+    confidence: SequenceTypeConfidence
+    thymine_record_count: int
+    uracil_record_count: int
+    protein_signal_record_count: int
+    invalid_record_count: int
+    note: str
+    warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class FastaDuplicateIdentifier:
+    """One identifier observed more than once in a FASTA input."""
+
+    identifier: str
+    occurrences: int
+    record_indices: list[int]
+
+
+@dataclass(frozen=True, slots=True)
+class FastaIllegalCharacter:
+    """One unsupported sequence character observed in a FASTA input."""
+
+    identifier: str
+    record_index: int
+    position: int
+    character: str
+
+
+@dataclass(frozen=True, slots=True)
+class FastaEmptySequence:
+    """One FASTA record whose sequence body is empty."""
+
+    identifier: str
+    record_index: int
+
+
+@dataclass(frozen=True, slots=True)
+class FastaIdentifierRepair:
+    """One identifier rewrite applied during FASTA repair."""
+
+    original_identifier: str
+    repaired_identifier: str
+    record_index: int
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
+class FastaRemovedRecord:
+    """One record removed during FASTA repair."""
+
+    identifier: str
+    record_index: int
+    reason: str
+
+
+@dataclass(slots=True)
+class FastaInputValidationReport:
+    """Validation report for one FASTA sequence input before alignment."""
+
+    path: Path
+    summary: FastaInputSummary
+    sequence_type_report: FastaSequenceTypeReport
+    duplicate_identifiers: list[FastaDuplicateIdentifier]
+    illegal_characters: list[FastaIllegalCharacter]
+    empty_sequences: list[FastaEmptySequence]
+    length_outliers: list[SequenceLengthOutlier]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class FastaRepairReport:
+    """Repair report describing how a FASTA input changed."""
+
+    source_path: Path
+    output_path: Path | None
+    before: FastaInputSummary
+    after: FastaInputSummary
+    normalized_identifiers: list[FastaIdentifierRepair]
+    removed_records: list[FastaRemovedRecord]
+    warnings: list[str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -194,9 +302,35 @@ class SequenceCodingBehavior:
     coding_like: bool
     comparable_length: int
     divisible_by_three: bool
+    invalid_codon_count: int
     premature_stop_count: int
     terminal_stop_count: int
     note: str
+
+
+@dataclass(frozen=True, slots=True)
+class CodingSequenceExclusion:
+    """One raw coding sequence excluded before codon-aware alignment."""
+
+    identifier: str
+    comparable_length: int
+    reason: str
+    invalid_codon_count: int
+    premature_stop_count: int
+    terminal_stop_count: int
+    trailing_bases: int
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
+class InvalidCodonObservation:
+    """Observed invalid or ambiguous codon within a coding sequence."""
+
+    identifier: str
+    codon_index: int
+    nucleotide_start: int
+    codon: str
+    reason: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -215,6 +349,8 @@ class CodingAlignmentDiagnostics:
     """Coding-sequence diagnostics for one aligned nucleotide dataset."""
 
     path: Path
+    genetic_code_id: int
+    genetic_code_name: str
     sequence_count: int
     alignment_length: int
     alignment_length_multiple_of_three: bool
@@ -222,6 +358,7 @@ class CodingAlignmentDiagnostics:
     partial_codon_sequences: list[PartialCodonSequence]
     coding_behaviors: list[SequenceCodingBehavior]
     mixed_coding_signals: bool
+    invalid_codons: list[InvalidCodonObservation]
     stop_codons: list[StopCodonObservation]
 
 
@@ -230,11 +367,31 @@ class TranslationReport:
     """Explicit record of a coding-alignment translation run."""
 
     source_path: Path
+    genetic_code_id: int
+    genetic_code_name: str
     translated_sequence_count: int
     source_alignment_length: int
     translated_alignment_length: int
+    invalid_codon_count: int
     stop_codon_count: int
     frameshift_like_sequence_count: int
+
+
+@dataclass(slots=True)
+class CodingSequencePreparationReport:
+    """Preparation summary for codon-aware alignment from raw coding sequences."""
+
+    source_path: Path
+    sequence_type: AlignmentAlphabet
+    genetic_code_id: int
+    genetic_code_name: str
+    input_sequence_count: int
+    accepted_sequence_count: int
+    accepted_identifiers: list[str]
+    excluded_sequences: list[CodingSequenceExclusion]
+    invalid_codon_sequence_count: int
+    terminal_stop_sequence_count: int
+    warnings: list[str]
 
 
 @dataclass(slots=True)
@@ -244,20 +401,40 @@ class AlignmentQualityReport:
     path: Path
     sequence_count: int
     alignment_length: int
+    invariant_site_count: int
     missing_data_fraction: float
     gap_fraction: float
     ambiguity_fraction: float
     variable_site_count: int
     parsimony_informative_site_count: int
+    per_sequence_uncertainty: list[SequenceUncertaintyProfile]
+    per_site_uncertainty: list[SiteUncertaintyProfile]
     inferred_alphabet: AlignmentAlphabet
     invalid_characters: list[InvalidAlignmentCharacter]
     composition_outliers: list[SequenceCompositionOutlier]
     sequence_length_outliers: list[SequenceLengthOutlier]
     duplicate_sequence_groups: list[DuplicateSequenceGroup]
     near_duplicate_pairs: list[NearDuplicateSequencePair]
+    missing_data_concentration: AlignmentMissingDataConcentration
+    suspicious_alignment: bool
+    suspicious_reasons: list[str]
     quality_score: float
     quality_components: dict[str, float]
     warnings: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class AlignmentMissingDataConcentration:
+    """Compact summary of whether missing data clusters into concentrated columns."""
+
+    threshold: float
+    concentrated_column_count: int
+    concentrated_column_fraction: float
+    longest_concentrated_run: int
+    longest_concentrated_run_start: int | None
+    longest_concentrated_run_end: int | None
+    maximum_missing_fraction: float
+    maximum_missing_positions: list[int]
 
 
 @dataclass(frozen=True, slots=True)

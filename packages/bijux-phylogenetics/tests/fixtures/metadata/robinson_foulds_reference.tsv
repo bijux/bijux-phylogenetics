@@ -1,0 +1,11 @@
+reference_tool	left_tree	right_tree	rf_mode	taxon_overlap_policy	left_split_count	right_split_count	robinson_foulds_distance	normalized_robinson_foulds
+dendropy-force-rooted	example_tree.nwk	example_tree.nwk	rooted	require-identical	2	2	0	0
+dendropy-force-unrooted	example_tree.nwk	example_tree.nwk	unrooted	require-identical	1	1	0	0
+dendropy-force-rooted	example_tree.nwk	example_tree_rooting_diff.nwk	rooted	require-identical	2	2	2	0.5
+dendropy-force-unrooted	example_tree.nwk	example_tree_rooting_diff.nwk	unrooted	require-identical	1	1	0	0
+dendropy-force-rooted	example_tree.nwk	example_tree_alt.nwk	rooted	require-identical	2	2	2	0.5
+dendropy-force-unrooted	example_tree.nwk	example_tree_alt.nwk	unrooted	require-identical	1	1	0	0
+dendropy-force-rooted	example_tree.nwk	example_tree_topology_diff.nwk	rooted	require-identical	2	2	4	1
+dendropy-force-unrooted	example_tree.nwk	example_tree_topology_diff.nwk	unrooted	require-identical	1	1	2	1
+dendropy-force-rooted	example_tree.nwk	example_tree_overlap.nwk	rooted	prune-to-shared	1	1	0	0
+dendropy-force-unrooted	example_tree.nwk	example_tree_overlap.nwk	unrooted	prune-to-shared	0	0	0	0

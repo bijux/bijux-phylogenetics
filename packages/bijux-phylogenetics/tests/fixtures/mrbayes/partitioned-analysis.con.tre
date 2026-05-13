@@ -1,0 +1,22 @@
+#NEXUS
+[ID: 5783282377]
+begin taxa;
+	dimensions ntax=5;
+	taxlabels
+		TaxonA
+		TaxonB
+		TaxonC
+		TaxonD
+		TaxonE
+		;
+end;
+begin trees;
+	translate
+		1	TaxonA,
+		2	TaxonB,
+		3	TaxonC,
+		4	TaxonD,
+		5	TaxonE
+		;
+   tree con_50_majrule = [&U] (1[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:2.000000e-02[&length_mean=1.50344388e-02,length_median=2.00000000e-02,length_95%HPD={1.55324600e-03,2.81033300e-02}],3[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:2.000000e-02[&length_mean=1.66161816e-02,length_median=2.00000000e-02,length_95%HPD={2.34879900e-04,2.14014000e-02}],5[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:1.997491e-02[&length_mean=1.37890990e-02,length_median=1.99749100e-02,length_95%HPD={4.24936200e-03,2.00000000e-02}],(2[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:1.055746e-02[&length_mean=1.11969065e-02,length_median=1.05574600e-02,length_95%HPD={1.26400300e-03,2.00000000e-02}],4[&prob=1.00000000e+00,prob_stddev=0.00000000e+00,prob_range={1.00000000e+00,1.00000000e+00},prob(percent)="100",prob+-sd="100+-0"]:2.000000e-02[&length_mean=1.78309045e-02,length_median=2.00000000e-02,length_95%HPD={7.89215700e-03,2.00000000e-02}])[&prob=5.00000000e-01,prob_stddev=7.07106781e-01,prob_range={0.00000000e+00,1.00000000e+00},prob(percent)="50",prob+-sd="50+-71"]:3.555642e-02[&length_mean=3.04916467e-02,length_median=3.55564200e-02,length_95%HPD={2.00000000e-02,3.59185200e-02}]);
+end;

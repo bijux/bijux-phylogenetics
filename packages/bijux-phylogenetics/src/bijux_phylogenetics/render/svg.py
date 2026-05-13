@@ -29,6 +29,8 @@ class TreeRenderResult:
     rendered_metadata_strip_count: int
     rendered_heatmap_column_count: int
     rendered_internal_annotation_count: int
+    rendered_branch_color_count: int
+    rendered_internal_pie_count: int
     collapsed_clade_count: int
     missing_metadata_labels: list[str]
 
@@ -131,6 +133,40 @@ def _categorical_color_map(values: dict[str, str]) -> dict[str, str]:
         category: _CATEGORICAL_PALETTE[index % len(_CATEGORICAL_PALETTE)]
         for index, category in enumerate(categories)
     }
+
+
+def _svg_pie_slices(
+    center_x: float,
+    center_y: float,
+    radius: float,
+    segments: dict[str, float],
+    segment_colors: dict[str, str],
+) -> list[str]:
+    total = sum(value for value in segments.values() if value > 0.0)
+    if total <= 0.0:
+        return []
+    start_angle = -math.pi / 2
+    slices: list[str] = []
+    for label, raw_value in segments.items():
+        if raw_value <= 0.0:
+            continue
+        sweep = (raw_value / total) * 2 * math.pi
+        end_angle = start_angle + sweep
+        if sweep >= (2 * math.pi) - 1e-9:
+            slices.append(
+                f'<circle cx="{center_x:.1f}" cy="{center_y:.1f}" r="{radius:.1f}" fill="{segment_colors.get(label, "#94a3b8")}" class="internal-pie-slice"/>'
+            )
+        else:
+            start_x = center_x + radius * math.cos(start_angle)
+            start_y = center_y + radius * math.sin(start_angle)
+            end_x = center_x + radius * math.cos(end_angle)
+            end_y = center_y + radius * math.sin(end_angle)
+            large_arc = 1 if sweep > math.pi else 0
+            slices.append(
+                f'<path d="M {center_x:.1f} {center_y:.1f} L {start_x:.1f} {start_y:.1f} A {radius:.1f} {radius:.1f} 0 {large_arc} 1 {end_x:.1f} {end_y:.1f} Z" fill="{segment_colors.get(label, "#94a3b8")}" class="internal-pie-slice"/>'
+            )
+        start_angle = end_angle
+    return slices
 
 
 def _interpolate_channel(start: int, end: int, fraction: float) -> int:
@@ -254,6 +290,9 @@ def render_tree_svg(
     collapsed_clades: list[str] | None = None,
     internal_annotations: dict[str, str] | None = None,
     internal_annotation_colors: dict[str, str] | None = None,
+    branch_colors: dict[str, str] | None = None,
+    internal_pies: dict[str, dict[str, float]] | None = None,
+    internal_pie_colors: dict[str, str] | None = None,
     validated_support_labels: dict[str, str] | None = None,
     support_validation_warnings: list[str] | None = None,
 ) -> TreeRenderResult:
@@ -302,6 +341,8 @@ def render_tree_svg(
     rendered_categorical_trait_count = 0
     rendered_continuous_trait_count = 0
     rendered_internal_annotation_count = 0
+    rendered_branch_color_count = 0
+    rendered_internal_pie_count = 0
     rendered_collapsed_clades = 0
     validated_support_labels = validated_support_labels or {}
     support_validation_warnings = support_validation_warnings or []
@@ -318,6 +359,9 @@ def render_tree_svg(
     heatmap_columns = heatmap_columns or []
     internal_annotations = internal_annotations or {}
     internal_annotation_colors = internal_annotation_colors or {}
+    branch_colors = branch_colors or {}
+    internal_pies = internal_pies or {}
+    internal_pie_colors = internal_pie_colors or {}
     heatmap_specs: list[tuple[str, dict[str, str], float, float]] = []
     for column in heatmap_columns:
         observed_values = [value for value in column.values.values() if value]
@@ -342,6 +386,8 @@ def render_tree_svg(
         nonlocal rendered_categorical_trait_count
         nonlocal rendered_continuous_trait_count
         nonlocal rendered_internal_annotation_count
+        nonlocal rendered_branch_color_count
+        nonlocal rendered_internal_pie_count
         nonlocal rendered_collapsed_clades
         branch_distance = distance + float(node.branch_length or 0.0)
         x = node_x(depth, branch_distance if node is not tree.root else distance)
@@ -420,10 +466,19 @@ def render_tree_svg(
         lines.append(
             f'<line x1="{x:.1f}" y1="{min_y:.1f}" x2="{x:.1f}" y2="{max_y:.1f}" class="branch"/>'
         )
-        for child_point in child_points:
-            lines.append(
-                f'<line x1="{x:.1f}" y1="{child_point.y:.1f}" x2="{child_point.x:.1f}" y2="{child_point.y:.1f}" class="branch"/>'
+        for child, child_point in zip(node.children, child_points, strict=False):
+            branch_signature = _node_signature(child)
+            branch_color = branch_colors.get(branch_signature)
+            branch_attributes = (
+                f' stroke="{branch_color}" class="branch branch-colored"'
+                if branch_color is not None
+                else ' class="branch"'
             )
+            lines.append(
+                f'<line x1="{x:.1f}" y1="{child_point.y:.1f}" x2="{child_point.x:.1f}" y2="{child_point.y:.1f}"{branch_attributes}/>'
+            )
+            if branch_color is not None:
+                rendered_branch_color_count += 1
         support_label = None
         if show_support_values:
             support_label = validated_support_labels.get(_node_signature(node))
@@ -435,6 +490,18 @@ def render_tree_svg(
             )
             rendered_support_count += 1
         annotation = internal_annotations.get(_node_signature(node))
+        pie_segments = internal_pies.get(_node_signature(node))
+        if pie_segments and not node.is_leaf():
+            overlays.extend(
+                _svg_pie_slices(
+                    x,
+                    y,
+                    7.0,
+                    pie_segments,
+                    internal_pie_colors,
+                )
+            )
+            rendered_internal_pie_count += 1
         if annotation and not node.is_leaf():
             annotation_color = internal_annotation_colors.get(
                 _node_signature(node), "#7c3aed"
@@ -481,6 +548,8 @@ def render_tree_svg(
             nonlocal rendered_categorical_trait_count
             nonlocal rendered_continuous_trait_count
             nonlocal rendered_internal_annotation_count
+            nonlocal rendered_branch_color_count
+            nonlocal rendered_internal_pie_count
             nonlocal rendered_collapsed_clades
             branch_distance = distance + float(node.branch_length or 0.0)
             radial = radial_distance(
@@ -546,9 +615,18 @@ def render_tree_svg(
                 child_radial = radial_distance(depth + 1, child_branch_distance)
                 radial_start = _polar_point(center_x, center_y, radial, child_angle)
                 radial_end = _polar_point(center_x, center_y, child_radial, child_angle)
-                lines.append(
-                    f'<line x1="{radial_start.x:.1f}" y1="{radial_start.y:.1f}" x2="{radial_end.x:.1f}" y2="{radial_end.y:.1f}" class="branch"/>'
+                branch_signature = _node_signature(child)
+                branch_color = branch_colors.get(branch_signature)
+                branch_attributes = (
+                    f' stroke="{branch_color}" class="branch branch-colored"'
+                    if branch_color is not None
+                    else ' class="branch"'
                 )
+                lines.append(
+                    f'<line x1="{radial_start.x:.1f}" y1="{radial_start.y:.1f}" x2="{radial_end.x:.1f}" y2="{radial_end.y:.1f}"{branch_attributes}/>'
+                )
+                if branch_color is not None:
+                    rendered_branch_color_count += 1
             support_label = None
             if show_support_values:
                 support_label = validated_support_labels.get(_node_signature(node))
@@ -564,6 +642,21 @@ def render_tree_svg(
                 )
                 rendered_support_count += 1
             annotation = internal_annotations.get(_node_signature(node))
+            pie_segments = internal_pies.get(_node_signature(node))
+            if pie_segments and not node.is_leaf():
+                node_point = _polar_point(
+                    center_x, center_y, radial, angle_cache[id(node)]
+                )
+                overlays.extend(
+                    _svg_pie_slices(
+                        node_point.x,
+                        node_point.y,
+                        7.0,
+                        pie_segments,
+                        internal_pie_colors,
+                    )
+                )
+                rendered_internal_pie_count += 1
             if annotation and not node.is_leaf():
                 node_angle = angle_cache[id(node)]
                 annotation_point = _polar_point(
@@ -665,10 +758,12 @@ def render_tree_svg(
   <style>
     .panel {{ fill: #f7fbfa; stroke: #d7e3e1; stroke-width: 1; rx: 18; ry: 18; }}
     .branch {{ stroke: #0f172a; stroke-width: 2.2; stroke-linecap: round; fill: none; }}
+    .branch-colored {{ stroke-width: 2.8; }}
     .scale-bar {{ stroke: #0f172a; stroke-width: 2; stroke-linecap: round; }}
     .collapsed-clade {{ fill-opacity: 0.95; }}
     .metadata-strip-cell {{ stroke: #f8fafc; stroke-width: 1; }}
     .heatmap-cell {{ stroke: #f8fafc; stroke-width: 1; }}
+    .internal-pie-slice {{ stroke: #f8fafc; stroke-width: 0.9; }}
     .tip-label {{ fill: #0f172a; font: 16px "Avenir Next", "Segoe UI", sans-serif; }}
     .support-label {{ fill: #0f766e; font: 12px "Avenir Next", "Segoe UI", sans-serif; }}
     .internal-annotation-label {{ fill: #6d28d9; font: 12px "Avenir Next", "Segoe UI", sans-serif; }}
@@ -710,6 +805,8 @@ def render_tree_svg(
         rendered_metadata_strip_count=len(metadata_strips),
         rendered_heatmap_column_count=len(heatmap_columns),
         rendered_internal_annotation_count=rendered_internal_annotation_count,
+        rendered_branch_color_count=rendered_branch_color_count,
+        rendered_internal_pie_count=rendered_internal_pie_count,
         collapsed_clade_count=rendered_collapsed_clades,
         missing_metadata_labels=sorted(set(missing_labels)),
     )

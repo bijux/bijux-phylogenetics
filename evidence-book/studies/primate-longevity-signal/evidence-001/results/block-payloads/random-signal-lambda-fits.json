@@ -1,0 +1,84 @@
+{
+  "block_id": "random-signal-lambda-fits",
+  "evidence": {
+    "random_data": {
+      "bijux": {
+        "lambda_value": 1.0,
+        "log_likelihood": 14.547675504883657,
+        "name": "random_data",
+        "tip_count": 30
+      },
+      "r": {
+        "lambda_value": 0.9999681477851246,
+        "log_likelihood": 14.548576310159607,
+        "name": "random_data",
+        "tip_count": 30,
+        "traits_path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data.csv"
+      }
+    },
+    "random_data2": {
+      "bijux": {
+        "lambda_value": 1.0,
+        "log_likelihood": 10.521183027795132,
+        "name": "random_data2",
+        "tip_count": 30
+      },
+      "r": {
+        "lambda_value": 1,
+        "log_likelihood": 10.521183753157139,
+        "name": "random_data2",
+        "tip_count": 30,
+        "traits_path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data2.csv"
+      }
+    },
+    "random_data3": {
+      "bijux": {
+        "lambda_value": 1.0,
+        "log_likelihood": -63.70410540969894,
+        "name": "random_data3",
+        "tip_count": 30
+      },
+      "r": {
+        "lambda_value": 1,
+        "log_likelihood": -63.70410151227996,
+        "name": "random_data3",
+        "tip_count": 30,
+        "traits_path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data3.csv"
+      }
+    },
+    "random_data4": {
+      "bijux": {
+        "lambda_value": 1.0,
+        "log_likelihood": -62.16342973511061,
+        "name": "random_data4",
+        "tip_count": 30
+      },
+      "r": {
+        "lambda_value": 1,
+        "log_likelihood": -62.16342457427131,
+        "name": "random_data4",
+        "tip_count": 30,
+        "traits_path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data4.csv"
+      }
+    },
+    "random_data5": {
+      "bijux": {
+        "lambda_value": 1.0,
+        "log_likelihood": -45.10037250885125,
+        "name": "random_data5",
+        "tip_count": 30
+      },
+      "r": {
+        "lambda_value": 1,
+        "log_likelihood": -45.10037017189111,
+        "name": "random_data5",
+        "tip_count": 30,
+        "traits_path": "evidence-book/studies/primate-longevity-signal/evidence-001/results/random_data5.csv"
+      }
+    }
+  },
+  "note": "The report checks the explicit random-data fit calls and extends the implied checks to the other generated examples.",
+  "script_lines": "324-331",
+  "status": "verified_with_tolerance",
+  "title": "Random-data lambda fits"
+}

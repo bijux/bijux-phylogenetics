@@ -83,6 +83,16 @@ class PhylogeneticSignalTestReport:
     p_value: float
     permutations: int
     permuted_k_at_or_above_observed: int
+    permutation_rows: list[PhylogeneticSignalPermutation]
+
+
+@dataclass(slots=True)
+class PhylogeneticSignalPermutation:
+    """One permutation row for a Blomberg-K signal test."""
+
+    permutation_index: int
+    permuted_k: float
+    at_or_above_observed: bool
 
 
 def compute_phylogenetic_independent_contrasts(
@@ -237,7 +247,8 @@ def compute_phylogenetic_signal_test(
     randomizer = random.Random(seed)  # nosec B311
     exceed_count = 0
     permuted_values = list(dataset.trait_values)
-    for _ in range(permutations):
+    permutation_rows: list[PhylogeneticSignalPermutation] = []
+    for permutation_index in range(1, permutations + 1):
         randomizer.shuffle(permuted_values)
         permuted_dataset = ComparativeDataset(
             tree_path=dataset.tree_path,
@@ -250,8 +261,17 @@ def compute_phylogenetic_signal_test(
             covariance_matrix=dataset.covariance_matrix,
             readiness=dataset.readiness,
         )
-        if _compute_blombergs_k_from_dataset(permuted_dataset) >= observed_k:
+        permuted_k = _compute_blombergs_k_from_dataset(permuted_dataset)
+        at_or_above_observed = permuted_k >= observed_k
+        if at_or_above_observed:
             exceed_count += 1
+        permutation_rows.append(
+            PhylogeneticSignalPermutation(
+                permutation_index=permutation_index,
+                permuted_k=permuted_k,
+                at_or_above_observed=at_or_above_observed,
+            )
+        )
     p_value = (exceed_count + 1) / (permutations + 1)
     return PhylogeneticSignalTestReport(
         tree_path=tree_path,
@@ -263,6 +283,7 @@ def compute_phylogenetic_signal_test(
         p_value=p_value,
         permutations=permutations,
         permuted_k_at_or_above_observed=exceed_count,
+        permutation_rows=permutation_rows,
     )
 
 

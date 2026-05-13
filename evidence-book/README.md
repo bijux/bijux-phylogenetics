@@ -1,0 +1,44 @@
+# Evidence Book
+
+This directory holds checked-in Lund-derived evidence studies and curated
+evidence bundles for `bijux-phylogenetics`.
+
+These files are intentionally different from transient local outputs under
+`artifacts/`:
+
+- `evidence-book/` contains reviewed, versioned evidence summaries that are
+  meant to stay in the repository
+- `artifacts/` contains scratch execution products, caches, and local build
+  outputs that should not define repository trust on their own
+
+Current tracked studies:
+
+- Teaching and migration landing page:
+  [`index/teaching-and-migration.md`](./index/teaching-and-migration.md)
+- Reviewer-facing evidence overview:
+  [`../docs/public/phylogenetics-evidence-book/index.md`](../docs/public/phylogenetics-evidence-book/index.md)
+- Freshness tracking:
+  [`index/freshness-report.md`](./index/freshness-report.md)
+- Integrity tracking:
+  [`index/integrity-report.md`](./index/integrity-report.md)
+- Coverage gaps:
+  [`index/coverage-gaps.md`](./index/coverage-gaps.md)
+- Claim re-audit:
+  [`index/claim-reaudit.md`](./index/claim-reaudit.md)
+- Analytical surface coverage:
+  [`index/analytical-surface-coverage.md`](./index/analytical-surface-coverage.md)
+- Closure criteria:
+  [`index/closure-criteria.md`](./index/closure-criteria.md)
+- Maturity scorecard:
+  [`index/evidence-maturity-scorecard.md`](./index/evidence-maturity-scorecard.md)
+- Completion gates:
+  [`index/completion-gates.md`](./index/completion-gates.md)
+
+- [`primate-longevity-signal`](./studies/primate-longevity-signal/): PCM1 study
+  rooted in the Lund plots and signal lecture, with shared study datasets and
+  one repeatable evidence-bundle layout
+  Current bundle: [`evidence-001`](./studies/primate-longevity-signal/evidence-001/README.md)
+- [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/): governed parity
+  study for the Lund regression and phylogenetic-signal lecture sections, with
+  explicit coverage boundaries for the still-open EB and ancestral fragments
+  Current bundle: [`evidence-001`](./studies/primate-pgls-and-signal/evidence-001/README.md)

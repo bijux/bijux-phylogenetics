@@ -1,0 +1,74 @@
+{
+  "bundle_verdict_status": "matched_with_tolerance",
+  "bundle_verdict_summary": "Analytical and structural comparisons are tracked honestly, with numerical parity claims separated from plot-only surfaces.",
+  "claim_count": 10,
+  "claim_tags": [
+    "comparative-signal",
+    "teaching",
+    "parity"
+  ],
+  "claim_titles": [
+    "PCM1 reproducibility contract is tracked explicitly",
+    "PCM1 primate data preparation matches the governed reference",
+    "PCM1 tree import and pruning behavior matches the governed reference",
+    "PCM1 topology teaching operations preserve the intended structure",
+    "PCM1 tree and trait joining logic matches across R and Bijux",
+    "PCM1 random-data lambda fits agree within governed tolerance",
+    "PCM1 primate lambda inference agrees within governed tolerance",
+    "PCM1 ancestral-state outputs agree within governed tolerance",
+    "PCM1 visual surfaces are tracked without false equivalence claims",
+    "PCM1 saved artifacts remain governed provenance surfaces"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-001",
+  "evidence_title": "Primate longevity signal parity bundle",
+  "limitations": [
+    "Rendered figure equivalence remains out of scope for plot-only blocks.",
+    "The checked-in bundle captures one governed PCM1 evidence family rather than the full lecture decomposition."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Checked-in parity evidence for the Lund primate longevity signal workflow and the bijux-phylogenetics reproductions.",
+    "Comparison mode: direct_parity. Bundle verdict: matched_with_tolerance.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "ancestral-colored-tree-plot",
+    "ancestral-table-assembly",
+    "ape-alternate-layouts",
+    "ape-longevity-overlay",
+    "ape-plotting-basics",
+    "bonobo-gibbon-mrca-estimate",
+    "continuous-ancestral-intervals",
+    "continuous-ancestral-point-estimates",
+    "environment-and-package-contract",
+    "extract-clade-node-77",
+    "final-workspace-artifact",
+    "ggtree-tree-visualization",
+    "joined-ggtree-trait-plotting",
+    "lambda-zero-covariance-and-lrt",
+    "lambda-zero-visual-comparison",
+    "lifespan-increase-counts",
+    "phytools-tree-plotting",
+    "primate-data-preprocessing",
+    "primate-lambda-fit",
+    "primate-longevity-vector-assembly",
+    "primate-longevity-visual-inspection",
+    "processed-analysis-artifacts",
+    "random-signal-lambda-fits",
+    "random-simulation-inputs",
+    "random-simulation-plotting",
+    "rotate-nodes-behavior",
+    "tip-order-alignment",
+    "tree-import-and-pruning",
+    "treeio-node-mapping-and-join",
+    "unrooted-tree-demo"
+  ],
+  "source_locators": [
+    "external:lund/pcm1-plots-signal/script",
+    "evidence-book/studies/primate-longevity-signal/reference"
+  ],
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal"
+}

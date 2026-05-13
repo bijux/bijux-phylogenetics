@@ -1,0 +1,15 @@
+{
+  "block_id": "extract-clade-node-77",
+  "evidence": {
+    "bijux_matched_node_name": "Node2",
+    "bijux_tip_count": 54,
+    "r_source_node_label": "Node2",
+    "r_source_node_numeric": 77,
+    "r_tip_count": 54,
+    "same_taxa": true
+  },
+  "note": "The descendant tip set matches exactly when compared by stable taxon signature rather than recycled node labels.",
+  "script_lines": "168-170",
+  "status": "verified",
+  "title": "Extract clade descended from R node 77"
+}

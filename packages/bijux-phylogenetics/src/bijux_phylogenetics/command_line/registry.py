@@ -65,6 +65,34 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("ancestral-state-report",),
     ),
     CommandSpec(
+        name="biogeography",
+        domain="biogeography",
+        summary="Model ancestral geographic states and report region transition evidence.",
+        inputs=("tree", "traits-table"),
+        outputs=("biogeography-report",),
+    ),
+    CommandSpec(
+        name="host-association",
+        domain="host-association",
+        summary="Reconstruct host-state evolution and report host-switch evidence on a phylogeny.",
+        inputs=("tree", "traits-table"),
+        outputs=("host-association-report",),
+    ),
+    CommandSpec(
+        name="ecological-niche",
+        domain="ecological-niche",
+        summary="Model ecological niche evolution and report niche-transition evidence on a phylogeny.",
+        inputs=("tree", "traits-table"),
+        outputs=("ecological-niche-report",),
+    ),
+    CommandSpec(
+        name="phylogeography",
+        domain="geographic-reconstruction",
+        summary="Reconstruct geographic coordinates or regional states and render map-based geographic review outputs on a phylogeny.",
+        inputs=("tree", "traits-table"),
+        outputs=("geographic-reconstruction-report",),
+    ),
+    CommandSpec(
         name="discrete-evolution",
         domain="discrete-state-evolution",
         summary="Model, compare, render, and report discrete-state evolution on a phylogeny.",
@@ -105,6 +133,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         summary="Benchmark validation, comparison, and alignment diagnostics across size scales.",
         inputs=(),
         outputs=("benchmark-report",),
+    ),
+    CommandSpec(
+        name="parity",
+        domain="reference-validation",
+        summary="Validate core numerical phylogenetics methods against checked-in external reference outputs.",
+        inputs=(),
+        outputs=("reference-parity-report",),
     ),
     CommandSpec(
         name="inspect",
@@ -193,9 +228,9 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
     CommandSpec(
         name="evidence",
         domain="evidence",
-        summary="Bundle a run directory into a checksummed evidence pack.",
-        inputs=("run-root",),
-        outputs=("evidence-bundle",),
+        summary="Bundle evidence packs and govern the repository evidence-book.",
+        inputs=("run-root", "study-id", "evidence-id"),
+        outputs=("evidence-bundle", "evidence-book-index", "reviewer-summary"),
     ),
     CommandSpec(
         name="adapter",

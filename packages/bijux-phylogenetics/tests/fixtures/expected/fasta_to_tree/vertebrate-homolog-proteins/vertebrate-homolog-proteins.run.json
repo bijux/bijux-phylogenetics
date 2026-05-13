@@ -1,0 +1,60 @@
+{
+  "arguments": [
+    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
+    "--out-dir",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins",
+    "--prefix",
+    "vertebrate-homolog-proteins",
+    "--sequence-type",
+    "protein",
+    "--alignment-mode",
+    "auto",
+    "--trimming-mode",
+    "gap-threshold",
+    "--trim-gap-threshold",
+    "0.1",
+    "--iqtree-seed",
+    "1",
+    "--iqtree-threads",
+    "1",
+    "--bootstrap-replicates",
+    "1000",
+    "--resume",
+    "false",
+    "--incomplete-run-policy",
+    "reject"
+  ],
+  "command": "run_fasta_to_tree_workflow",
+  "dependency_versions": {
+    "bijux-phylogenetics": "0.1.1.dev706+dirty",
+    "biopython": "1.87"
+  },
+  "host_platform": "macOS-26.4.1-arm64-arm-64bit",
+  "input_checksums": {
+    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta": "b62b24024698108034fa9764e0c6bf2972ce09498874be50cfb6c781c089a0b3"
+  },
+  "input_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.log": "a2fedd1d4219914fee37a995a0885bf2ff1b6c7343188c3cc4cd68885cfd9857",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.manifest.json": "cf6b3d973a184e8061decefba8fe8595dc76f9b4a65a28c1b0f83d0e546becfb",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.model.tsv": "f72e122a52e7e992c8ab9d21ee4cb090caa56b2b1b4d6af8fa52188e3dc5b9e3",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.support.tsv": "805245204678961388ed7cc2c59320a65e023fa21e99a84cf43f2c7bf8849dc1",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.tree": "d5a1caf24fd0ae448733f042a2052a866866241d37f01b69c294003b68f3d60f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+  },
+  "output_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.trimmed.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.tree",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.log",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.model.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.support.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.manifest.json"
+  ],
+  "package_version": "0.1.1.dev706+dirty",
+  "python_version": "3.11.9",
+  "timestamp_utc": "2026-05-13T04:26:44.034177+00:00"
+}

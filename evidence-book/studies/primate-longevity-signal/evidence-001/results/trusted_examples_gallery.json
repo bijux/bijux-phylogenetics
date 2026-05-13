@@ -1,0 +1,100 @@
+{
+  "examples": [
+    {
+      "evidence_id": "evidence-001",
+      "reference_tools": [
+        "ape",
+        "geiger",
+        "phytools",
+        "treeio",
+        "tidytree"
+      ],
+      "source_script": "external:lund/pcm1-plots-signal/script",
+      "title": "Primate lifespan signal workflow",
+      "validated_blocks": [
+        {
+          "block_id": "primate-data-preprocessing",
+          "status": "verified",
+          "title": "Raw primate preprocessing to checked-in analysis table"
+        },
+        {
+          "block_id": "tree-import-and-pruning",
+          "status": "verified",
+          "title": "Tree import, checking, node labels, and pruning"
+        },
+        {
+          "block_id": "unrooted-tree-demo",
+          "status": "verified",
+          "title": "Unrooted tree demo"
+        },
+        {
+          "block_id": "extract-clade-node-77",
+          "status": "verified",
+          "title": "Extract clade descended from R node 77"
+        },
+        {
+          "block_id": "rotate-nodes-behavior",
+          "status": "verified",
+          "title": "Rotate-nodes teaching demo"
+        },
+        {
+          "block_id": "tip-order-alignment",
+          "status": "verified",
+          "title": "Tip-order alignment for joining data to the tree"
+        },
+        {
+          "block_id": "treeio-node-mapping-and-join",
+          "status": "verified",
+          "title": "Treeio node mapping and joined tree-data object"
+        },
+        {
+          "block_id": "random-signal-lambda-fits",
+          "status": "verified_with_tolerance",
+          "title": "Random-data lambda fits"
+        },
+        {
+          "block_id": "primate-longevity-vector-assembly",
+          "status": "verified",
+          "title": "Primate longevity vector assembly"
+        },
+        {
+          "block_id": "primate-lambda-fit",
+          "status": "verified_with_tolerance",
+          "title": "Primate longevity lambda fit"
+        },
+        {
+          "block_id": "lambda-zero-covariance-and-lrt",
+          "status": "verified_with_tolerance",
+          "title": "Lambda-zero covariance and likelihood-ratio test"
+        },
+        {
+          "block_id": "continuous-ancestral-point-estimates",
+          "status": "verified_with_tolerance",
+          "title": "Continuous ancestral point estimates"
+        },
+        {
+          "block_id": "continuous-ancestral-intervals",
+          "status": "verified_with_tolerance",
+          "title": "Continuous ancestral 95% intervals"
+        },
+        {
+          "block_id": "ancestral-table-assembly",
+          "status": "verified",
+          "title": "Assemble ancestral table and node mapping"
+        },
+        {
+          "block_id": "bonobo-gibbon-mrca-estimate",
+          "status": "verified_with_tolerance",
+          "title": "Bonobo/Gibbon MRCA estimate"
+        },
+        {
+          "block_id": "lifespan-increase-counts",
+          "status": "verified",
+          "title": "How many times lifespan increased across primates"
+        }
+      ]
+    }
+  ],
+  "gallery_kind": "trusted_examples",
+  "study_id": "primate-longevity-signal"
+}

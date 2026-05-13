@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-fitcontinuous-parity",
+      "claim_title": "PCM2 fitContinuous-style evolutionary mode fits agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "source_fragments": [
+        "continuous-model-comparison"
+      ],
+      "summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference.",
+      "verdict": "matched_with_tolerance"
+    }
+  ],
+  "evidence_id": "evidence-007",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

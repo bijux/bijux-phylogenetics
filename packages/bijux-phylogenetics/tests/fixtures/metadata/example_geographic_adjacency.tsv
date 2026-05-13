@@ -1,0 +1,4 @@
+region	north	south	island
+north	0	1	0
+south	1	0	1
+island	0	1	0

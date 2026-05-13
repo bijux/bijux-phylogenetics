@@ -42,6 +42,7 @@ def run_text(
     cwd: Path | None = None,
     check: bool,
     capture_output: bool = False,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run a trusted command and return its completed process record."""
     normalized = _normalize_command(command)
@@ -51,6 +52,7 @@ def run_text(
             cwd=cwd,
             check=check,
             capture_output=capture_output,
+            env=env,
             text=True,
         )
     except subprocess.CalledProcessError as error:

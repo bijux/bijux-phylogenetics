@@ -1,0 +1,8 @@
+{
+  "block_id": "random-simulation-plotting",
+  "evidence": {},
+  "note": "These are visual teaching plots and are tracked separately from the simulation inputs and signal fits.",
+  "script_lines": "290-318",
+  "status": "plot_only",
+  "title": "Random trait plotting surfaces"
+}

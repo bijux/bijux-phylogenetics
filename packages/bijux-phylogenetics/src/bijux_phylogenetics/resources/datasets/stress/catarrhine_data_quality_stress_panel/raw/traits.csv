@@ -1,0 +1,8 @@
+taxon,clade,body_mass_g,gestation_days,habitat_note
+homo_sapiens,hominidae,70000,280,terrestrial_generalist
+pan_troglodytes,hominidae,45000,230,forest_mosaic
+gorilla_gorilla,hominidae,160000,257,
+pongo_pygmaeus,hominidae,78000,,arboreal_forest
+hylobates_lar,hylobatidae,5600,213,canopy_specialist
+hylobates_lar,hylobatidae,5600,,duplicate_field_sheet
+macaca_mulatta,cercopithecidae,6500,166,edge_generalist

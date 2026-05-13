@@ -1,0 +1,43 @@
+[tool.bijux_phylogenetics.execution_surfaces]
+required_root_make_targets = [
+  "check-evidence-governance:",
+  "report-evidence-governance:",
+  "check-evidence-completeness:",
+  "report-evidence-completeness:",
+  "check-execution-surfaces:",
+  "report-execution-surfaces:",
+  "rerun-governed-evidence-cleanroom:",
+]
+required_tox_envs = [
+  "repository-contracts",
+  "config-ssot",
+  "evidence-governance",
+  "evidence-completeness",
+  "publish-readiness",
+  "release-readiness-gate",
+]
+
+[tool.bijux_phylogenetics.execution_surfaces.tox_commands]
+repository-contracts = [
+  "make check-shared-bijux-py check-config-layout check-make-layout help",
+]
+config-ssot = [
+  "make check-config-ssot",
+]
+evidence-governance = [
+  "make check-evidence-governance",
+  "make rerun-governed-evidence-cleanroom",
+]
+evidence-completeness = [
+  "make check-evidence-completeness",
+]
+publish-readiness = [
+  "make report-release-readiness",
+]
+release-readiness-gate = [
+  "make check-release-readiness",
+]
+
+[[tool.bijux_phylogenetics.execution_surfaces.cleanroom_selections]]
+study_id = "primate-longevity-signal"
+evidence_ids = ["evidence-002"]

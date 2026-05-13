@@ -7,7 +7,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
-    compare_clade_sets,
+    compare_clade_overlap,
     compare_support_values,
     compare_tree_paths,
     detect_clade_changes,
@@ -39,7 +39,7 @@ def build_tree_comparison_report(
 ) -> ComparisonReportBuildResult:
     """Build a deterministic HTML report for two-tree comparison."""
     topology = compare_tree_paths(left_path, right_path)
-    clades = compare_clade_sets(left_path, right_path)
+    clades = compare_clade_overlap([left_path, right_path])
     changes = detect_clade_changes(left_path, right_path)
     support = compare_support_values(left_path, right_path)
     branch_lengths = compare_branch_lengths(left_path, right_path)
@@ -63,6 +63,15 @@ def build_tree_comparison_report(
         (
             "support-comparison",
             json.dumps(asdict(support), default=str, indent=2, sort_keys=True),
+        ),
+        (
+            "support-conflicts",
+            json.dumps(
+                [asdict(row) for row in support.conflicting_clades],
+                default=str,
+                indent=2,
+                sort_keys=True,
+            ),
         ),
         (
             "branch-length-comparison",

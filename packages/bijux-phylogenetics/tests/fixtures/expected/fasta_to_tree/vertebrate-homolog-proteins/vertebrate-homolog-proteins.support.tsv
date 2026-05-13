@@ -1,0 +1,7 @@
+node	descendant_taxa	support	support_fraction	is_backbone
+Hsa167996|LcaH|Mmu024661|Xtr21234	Hsa167996,LcaH,Mmu024661,Xtr21234	44	0.44	true
+Hsa167996|LcaH|Mmu024661	Hsa167996,LcaH,Mmu024661	91	0.91	false
+Hsa167996|Mmu024661	Hsa167996,Mmu024661	93	0.93	false
+Dre37936|LcaM|Ola20972|Tru14292	Dre37936,LcaM,Ola20972,Tru14292	86	0.86	true
+LcaM|Ola20972|Tru14292	LcaM,Ola20972,Tru14292	73	0.73	false
+LcaM|Tru14292	LcaM,Tru14292	47	0.47	false

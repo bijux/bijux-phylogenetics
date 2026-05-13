@@ -1,0 +1,70 @@
+{
+  "generated_on": "2026-05-12",
+  "source_package": "R stats::model.matrix with treatment contrasts",
+  "observations": [
+    {
+      "case": "habitat-with-intercept",
+      "formula": "response ~ habitat",
+      "include_intercept": true,
+      "encoded_columns": [
+        "intercept",
+        "habitat[tundra]"
+      ],
+      "reference_level": "forest",
+      "rows": [
+        {
+          "taxon": "A",
+          "intercept": 1.0,
+          "habitat[tundra]": 0.0
+        },
+        {
+          "taxon": "B",
+          "intercept": 1.0,
+          "habitat[tundra]": 0.0
+        },
+        {
+          "taxon": "C",
+          "intercept": 1.0,
+          "habitat[tundra]": 1.0
+        },
+        {
+          "taxon": "D",
+          "intercept": 1.0,
+          "habitat[tundra]": 1.0
+        }
+      ]
+    },
+    {
+      "case": "habitat-without-intercept",
+      "formula": "response ~ 0 + habitat",
+      "include_intercept": false,
+      "encoded_columns": [
+        "habitat[forest]",
+        "habitat[tundra]"
+      ],
+      "reference_level": null,
+      "rows": [
+        {
+          "taxon": "A",
+          "habitat[forest]": 1.0,
+          "habitat[tundra]": 0.0
+        },
+        {
+          "taxon": "B",
+          "habitat[forest]": 1.0,
+          "habitat[tundra]": 0.0
+        },
+        {
+          "taxon": "C",
+          "habitat[forest]": 0.0,
+          "habitat[tundra]": 1.0
+        },
+        {
+          "taxon": "D",
+          "habitat[forest]": 0.0,
+          "habitat[tundra]": 1.0
+        }
+      ]
+    }
+  ]
+}

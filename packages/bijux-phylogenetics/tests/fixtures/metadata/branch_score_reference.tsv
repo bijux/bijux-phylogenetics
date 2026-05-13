@@ -1,0 +1,7 @@
+reference_tool	left_tree	right_tree	taxon_overlap_policy	same_taxon_set	branch_score_distance
+dendropy.euclidean_distance	example_tree.nwk	example_tree.nwk	prune-to-shared	true	0.0
+dendropy.euclidean_distance	example_tree.nwk	example_tree_branch_lengths_right.nwk	prune-to-shared	true	0.33166247903554
+dendropy.euclidean_distance	example_tree.nwk	example_tree_rooting_diff.nwk	prune-to-shared	true	0.28284271247461906
+dendropy.euclidean_distance	example_tree.nwk	example_tree_alt.nwk	prune-to-shared	true	0.28284271247461906
+dendropy.euclidean_distance	example_tree.nwk	example_tree_topology_diff.nwk	prune-to-shared	true	0.44721359549995804
+dendropy.euclidean_distance	example_tree.nwk	example_tree_overlap.nwk	prune-to-shared	false	0.0

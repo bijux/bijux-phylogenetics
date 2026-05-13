@@ -1,0 +1,1567 @@
+{
+  "bijux_ancestral_reconstruction": {
+    "brownian": {
+      "first_five_estimates": [
+        262.35,
+        295.3922,
+        369.7733,
+        411.276,
+        334.8041
+      ],
+      "node_count": 74,
+      "recent_five_estimates": [
+        192.3719,
+        189.8741,
+        171.5749,
+        174.0,
+        214.8
+      ],
+      "rows": [
+        {
+          "estimate": 262.35,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Cheirogaleus_major|Cheirogaleus_medius|Colobus_guereza|Colobus_polykomos|Daubentonia_madagascariensis|Erythrocebus_patas|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Hylobates_lar|Hylobates_pileatus|Lemur_catta|Leontopithecus_rosalia|Lepilemur_leucopus|Lepilemur_mustelinus|Lophocebus_albigena|Loris_tardigradus|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Microcebus_murinus|Microcebus_rufus|Miopithecus_talapoin|Mirza_coquereli|Nasalis_larvatus|Nomascus_concolor|Otolemur_crassicaudatus|Otolemur_garnettii|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 1
+        },
+        {
+          "estimate": 295.3922,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 2
+        },
+        {
+          "estimate": 369.7733,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 3
+        },
+        {
+          "estimate": 411.276,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 4
+        },
+        {
+          "estimate": 334.8041,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 5
+        },
+        {
+          "estimate": 362.1794,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 6
+        },
+        {
+          "estimate": 322.6948,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Miopithecus_talapoin",
+          "node_index": 7
+        },
+        {
+          "estimate": 301.7985,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas",
+          "node_index": 8
+        },
+        {
+          "estimate": 307.7491,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans",
+          "node_index": 9
+        },
+        {
+          "estimate": 304.0112,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 10
+        },
+        {
+          "estimate": 307.8,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus",
+          "node_index": 11
+        },
+        {
+          "estimate": 300.6,
+          "node": "Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 12
+        },
+        {
+          "estimate": 395.2748,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 13
+        },
+        {
+          "estimate": 404.9328,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 14
+        },
+        {
+          "estimate": 403.98,
+          "node": "Cercocebus_galeritus|Mandrillus_sphinx",
+          "node_index": 15
+        },
+        {
+          "estimate": 405.8632,
+          "node": "Lophocebus_albigena|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 16
+        },
+        {
+          "estimate": 413.2109,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 17
+        },
+        {
+          "estimate": 476.6479,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus",
+          "node_index": 18
+        },
+        {
+          "estimate": 432.3396,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas",
+          "node_index": 19
+        },
+        {
+          "estimate": 421.2,
+          "node": "Papio_anubis|Papio_cynocephalus",
+          "node_index": 20
+        },
+        {
+          "estimate": 382.4284,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus",
+          "node_index": 21
+        },
+        {
+          "estimate": 427.5003,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica",
+          "node_index": 22
+        },
+        {
+          "estimate": 414.0758,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_radiata|Macaca_sinica",
+          "node_index": 23
+        },
+        {
+          "estimate": 432.6536,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta",
+          "node_index": 24
+        },
+        {
+          "estimate": 414.0,
+          "node": "Macaca_fuscata|Macaca_mulatta",
+          "node_index": 25
+        },
+        {
+          "estimate": 390.0,
+          "node": "Macaca_radiata|Macaca_sinica",
+          "node_index": 26
+        },
+        {
+          "estimate": 445.8,
+          "node": "Macaca_nemestrina|Macaca_silenus",
+          "node_index": 27
+        },
+        {
+          "estimate": 299.04,
+          "node": "Colobus_guereza|Colobus_polykomos|Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 28
+        },
+        {
+          "estimate": 330.0,
+          "node": "Colobus_guereza|Colobus_polykomos",
+          "node_index": 29
+        },
+        {
+          "estimate": 283.0152,
+          "node": "Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 30
+        },
+        {
+          "estimate": 300.0,
+          "node": "Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 31
+        },
+        {
+          "estimate": 520.0784,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Pan_paniscus|Symphalangus_syndactylus",
+          "node_index": 32
+        },
+        {
+          "estimate": 480.0475,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Symphalangus_syndactylus",
+          "node_index": 33
+        },
+        {
+          "estimate": 456.0,
+          "node": "Hylobates_lar|Hylobates_pileatus|Symphalangus_syndactylus",
+          "node_index": 34
+        },
+        {
+          "estimate": 456.0,
+          "node": "Hylobates_lar|Hylobates_pileatus",
+          "node_index": 35
+        },
+        {
+          "estimate": 324.7381,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 36
+        },
+        {
+          "estimate": 330.0733,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 37
+        },
+        {
+          "estimate": 324.4085,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 38
+        },
+        {
+          "estimate": 283.1632,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus",
+          "node_index": 39
+        },
+        {
+          "estimate": 270.0,
+          "node": "Alouatta_palliata|Alouatta_pigra",
+          "node_index": 40
+        },
+        {
+          "estimate": 369.3383,
+          "node": "Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 41
+        },
+        {
+          "estimate": 390.6,
+          "node": "Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 42
+        },
+        {
+          "estimate": 332.263,
+          "node": "Aotus_trivirgatus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 43
+        },
+        {
+          "estimate": 339.1801,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 44
+        },
+        {
+          "estimate": 241.8041,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 45
+        },
+        {
+          "estimate": 233.636,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia",
+          "node_index": 46
+        },
+        {
+          "estimate": 201.2445,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 47
+        },
+        {
+          "estimate": 191.4,
+          "node": "Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 48
+        },
+        {
+          "estimate": 255.9669,
+          "node": "Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 49
+        },
+        {
+          "estimate": 231.0,
+          "node": "Saguinus_midas|Saguinus_oedipus",
+          "node_index": 50
+        },
+        {
+          "estimate": 459.2629,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus|Saimiri_sciureus",
+          "node_index": 51
+        },
+        {
+          "estimate": 568.7568,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus",
+          "node_index": 52
+        },
+        {
+          "estimate": 592.8,
+          "node": "Cebus_albifrons|Cebus_capucinus",
+          "node_index": 53
+        },
+        {
+          "estimate": 162.0,
+          "node": "Tarsius_bancanus|Tarsius_syrichta",
+          "node_index": 54
+        },
+        {
+          "estimate": 228.4963,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Loris_tardigradus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 55
+        },
+        {
+          "estimate": 231.7139,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 56
+        },
+        {
+          "estimate": 203.977,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 57
+        },
+        {
+          "estimate": 162.3047,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 58
+        },
+        {
+          "estimate": 187.6912,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 59
+        },
+        {
+          "estimate": 173.0361,
+          "node": "Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 60
+        },
+        {
+          "estimate": 165.0,
+          "node": "Microcebus_murinus|Microcebus_rufus",
+          "node_index": 61
+        },
+        {
+          "estimate": 205.8,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius",
+          "node_index": 62
+        },
+        {
+          "estimate": 123.5,
+          "node": "Lepilemur_leucopus|Lepilemur_mustelinus",
+          "node_index": 63
+        },
+        {
+          "estimate": 260.3929,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 64
+        },
+        {
+          "estimate": 269.4998,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus",
+          "node_index": 65
+        },
+        {
+          "estimate": 290.4,
+          "node": "Eulemur_coronatus|Eulemur_mongoz",
+          "node_index": 66
+        },
+        {
+          "estimate": 252.0,
+          "node": "Lemur_catta|Prolemur_simus",
+          "node_index": 67
+        },
+        {
+          "estimate": 224.1887,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Loris_tardigradus|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 68
+        },
+        {
+          "estimate": 235.9303,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 69
+        },
+        {
+          "estimate": 192.3719,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 70
+        },
+        {
+          "estimate": 189.8741,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 71
+        },
+        {
+          "estimate": 171.5749,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis",
+          "node_index": 72
+        },
+        {
+          "estimate": 174.0,
+          "node": "Galago_alleni|Galago_senegalensis",
+          "node_index": 73
+        },
+        {
+          "estimate": 214.8,
+          "node": "Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 74
+        }
+      ]
+    },
+    "early_burst": {
+      "first_five_estimates": [
+        260.1962,
+        285.3532,
+        371.7088,
+        415.4058,
+        334.0808
+      ],
+      "node_count": 74,
+      "rate_change": -2.0,
+      "recent_five_estimates": [
+        192.7689,
+        190.2801,
+        171.5387,
+        174.0,
+        214.8
+      ],
+      "rows": [
+        {
+          "estimate": 260.1962,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Cheirogaleus_major|Cheirogaleus_medius|Colobus_guereza|Colobus_polykomos|Daubentonia_madagascariensis|Erythrocebus_patas|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Hylobates_lar|Hylobates_pileatus|Lemur_catta|Leontopithecus_rosalia|Lepilemur_leucopus|Lepilemur_mustelinus|Lophocebus_albigena|Loris_tardigradus|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Microcebus_murinus|Microcebus_rufus|Miopithecus_talapoin|Mirza_coquereli|Nasalis_larvatus|Nomascus_concolor|Otolemur_crassicaudatus|Otolemur_garnettii|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 1
+        },
+        {
+          "estimate": 285.3532,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 2
+        },
+        {
+          "estimate": 371.7088,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 3
+        },
+        {
+          "estimate": 415.4058,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 4
+        },
+        {
+          "estimate": 334.0808,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 5
+        },
+        {
+          "estimate": 361.9512,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 6
+        },
+        {
+          "estimate": 323.6149,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Miopithecus_talapoin",
+          "node_index": 7
+        },
+        {
+          "estimate": 301.6808,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas",
+          "node_index": 8
+        },
+        {
+          "estimate": 307.8427,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans",
+          "node_index": 9
+        },
+        {
+          "estimate": 304.0161,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 10
+        },
+        {
+          "estimate": 307.8,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus",
+          "node_index": 11
+        },
+        {
+          "estimate": 300.6,
+          "node": "Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 12
+        },
+        {
+          "estimate": 394.6868,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 13
+        },
+        {
+          "estimate": 404.7796,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 14
+        },
+        {
+          "estimate": 403.98,
+          "node": "Cercocebus_galeritus|Mandrillus_sphinx",
+          "node_index": 15
+        },
+        {
+          "estimate": 405.5717,
+          "node": "Lophocebus_albigena|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 16
+        },
+        {
+          "estimate": 412.886,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 17
+        },
+        {
+          "estimate": 476.7912,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus",
+          "node_index": 18
+        },
+        {
+          "estimate": 432.3513,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas",
+          "node_index": 19
+        },
+        {
+          "estimate": 421.2,
+          "node": "Papio_anubis|Papio_cynocephalus",
+          "node_index": 20
+        },
+        {
+          "estimate": 381.1052,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus",
+          "node_index": 21
+        },
+        {
+          "estimate": 427.6024,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica",
+          "node_index": 22
+        },
+        {
+          "estimate": 414.0551,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_radiata|Macaca_sinica",
+          "node_index": 23
+        },
+        {
+          "estimate": 432.7388,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta",
+          "node_index": 24
+        },
+        {
+          "estimate": 414.0,
+          "node": "Macaca_fuscata|Macaca_mulatta",
+          "node_index": 25
+        },
+        {
+          "estimate": 390.0,
+          "node": "Macaca_radiata|Macaca_sinica",
+          "node_index": 26
+        },
+        {
+          "estimate": 445.8,
+          "node": "Macaca_nemestrina|Macaca_silenus",
+          "node_index": 27
+        },
+        {
+          "estimate": 299.2999,
+          "node": "Colobus_guereza|Colobus_polykomos|Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 28
+        },
+        {
+          "estimate": 330.0,
+          "node": "Colobus_guereza|Colobus_polykomos",
+          "node_index": 29
+        },
+        {
+          "estimate": 282.8489,
+          "node": "Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 30
+        },
+        {
+          "estimate": 300.0,
+          "node": "Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 31
+        },
+        {
+          "estimate": 521.8093,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Pan_paniscus|Symphalangus_syndactylus",
+          "node_index": 32
+        },
+        {
+          "estimate": 480.4571,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Symphalangus_syndactylus",
+          "node_index": 33
+        },
+        {
+          "estimate": 456.0,
+          "node": "Hylobates_lar|Hylobates_pileatus|Symphalangus_syndactylus",
+          "node_index": 34
+        },
+        {
+          "estimate": 456.0,
+          "node": "Hylobates_lar|Hylobates_pileatus",
+          "node_index": 35
+        },
+        {
+          "estimate": 325.0667,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 36
+        },
+        {
+          "estimate": 331.435,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 37
+        },
+        {
+          "estimate": 324.6484,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 38
+        },
+        {
+          "estimate": 283.2456,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus",
+          "node_index": 39
+        },
+        {
+          "estimate": 270.0,
+          "node": "Alouatta_palliata|Alouatta_pigra",
+          "node_index": 40
+        },
+        {
+          "estimate": 369.2564,
+          "node": "Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 41
+        },
+        {
+          "estimate": 390.6,
+          "node": "Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 42
+        },
+        {
+          "estimate": 334.1563,
+          "node": "Aotus_trivirgatus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 43
+        },
+        {
+          "estimate": 342.2889,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 44
+        },
+        {
+          "estimate": 242.5386,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 45
+        },
+        {
+          "estimate": 234.7204,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia",
+          "node_index": 46
+        },
+        {
+          "estimate": 201.4243,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 47
+        },
+        {
+          "estimate": 191.4,
+          "node": "Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 48
+        },
+        {
+          "estimate": 256.3237,
+          "node": "Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 49
+        },
+        {
+          "estimate": 231.0,
+          "node": "Saguinus_midas|Saguinus_oedipus",
+          "node_index": 50
+        },
+        {
+          "estimate": 456.807,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus|Saimiri_sciureus",
+          "node_index": 51
+        },
+        {
+          "estimate": 568.6264,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus",
+          "node_index": 52
+        },
+        {
+          "estimate": 592.8,
+          "node": "Cebus_albifrons|Cebus_capucinus",
+          "node_index": 53
+        },
+        {
+          "estimate": 162.0,
+          "node": "Tarsius_bancanus|Tarsius_syrichta",
+          "node_index": 54
+        },
+        {
+          "estimate": 232.3267,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Loris_tardigradus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 55
+        },
+        {
+          "estimate": 237.3089,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 56
+        },
+        {
+          "estimate": 204.2919,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 57
+        },
+        {
+          "estimate": 161.4519,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 58
+        },
+        {
+          "estimate": 187.9842,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 59
+        },
+        {
+          "estimate": 173.1998,
+          "node": "Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 60
+        },
+        {
+          "estimate": 165.0,
+          "node": "Microcebus_murinus|Microcebus_rufus",
+          "node_index": 61
+        },
+        {
+          "estimate": 205.8,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius",
+          "node_index": 62
+        },
+        {
+          "estimate": 123.5,
+          "node": "Lepilemur_leucopus|Lepilemur_mustelinus",
+          "node_index": 63
+        },
+        {
+          "estimate": 259.8855,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 64
+        },
+        {
+          "estimate": 269.5497,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus",
+          "node_index": 65
+        },
+        {
+          "estimate": 290.4,
+          "node": "Eulemur_coronatus|Eulemur_mongoz",
+          "node_index": 66
+        },
+        {
+          "estimate": 252.0,
+          "node": "Lemur_catta|Prolemur_simus",
+          "node_index": 67
+        },
+        {
+          "estimate": 225.8579,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Loris_tardigradus|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 68
+        },
+        {
+          "estimate": 240.1268,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 69
+        },
+        {
+          "estimate": 192.7689,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 70
+        },
+        {
+          "estimate": 190.2801,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 71
+        },
+        {
+          "estimate": 171.5387,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis",
+          "node_index": 72
+        },
+        {
+          "estimate": 174.0,
+          "node": "Galago_alleni|Galago_senegalensis",
+          "node_index": 73
+        },
+        {
+          "estimate": 214.8,
+          "node": "Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 74
+        }
+      ]
+    }
+  },
+  "evidence_id": "evidence-009",
+  "r_ancestral_reconstruction": {
+    "brownian": {
+      "first_five_estimates": [
+        262.35,
+        295.3922,
+        369.7733,
+        411.276,
+        334.8041
+      ],
+      "node_count": 74,
+      "recent_five_estimates": [
+        192.3719,
+        189.8741,
+        171.5749,
+        174,
+        214.8
+      ],
+      "rows": [
+        {
+          "estimate": 262.35,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Cheirogaleus_major|Cheirogaleus_medius|Colobus_guereza|Colobus_polykomos|Daubentonia_madagascariensis|Erythrocebus_patas|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Hylobates_lar|Hylobates_pileatus|Lemur_catta|Leontopithecus_rosalia|Lepilemur_leucopus|Lepilemur_mustelinus|Lophocebus_albigena|Loris_tardigradus|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Microcebus_murinus|Microcebus_rufus|Miopithecus_talapoin|Mirza_coquereli|Nasalis_larvatus|Nomascus_concolor|Otolemur_crassicaudatus|Otolemur_garnettii|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 1
+        },
+        {
+          "estimate": 295.3922,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 2
+        },
+        {
+          "estimate": 369.7733,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 3
+        },
+        {
+          "estimate": 411.276,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 4
+        },
+        {
+          "estimate": 334.8041,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 5
+        },
+        {
+          "estimate": 362.1794,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 6
+        },
+        {
+          "estimate": 322.6948,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Miopithecus_talapoin",
+          "node_index": 7
+        },
+        {
+          "estimate": 301.7985,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas",
+          "node_index": 8
+        },
+        {
+          "estimate": 307.7491,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans",
+          "node_index": 9
+        },
+        {
+          "estimate": 304.0112,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 10
+        },
+        {
+          "estimate": 307.8,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus",
+          "node_index": 11
+        },
+        {
+          "estimate": 300.6,
+          "node": "Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 12
+        },
+        {
+          "estimate": 395.2748,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 13
+        },
+        {
+          "estimate": 404.9328,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 14
+        },
+        {
+          "estimate": 403.98,
+          "node": "Cercocebus_galeritus|Mandrillus_sphinx",
+          "node_index": 15
+        },
+        {
+          "estimate": 405.8632,
+          "node": "Lophocebus_albigena|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 16
+        },
+        {
+          "estimate": 413.2109,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 17
+        },
+        {
+          "estimate": 476.6479,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus",
+          "node_index": 18
+        },
+        {
+          "estimate": 432.3396,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas",
+          "node_index": 19
+        },
+        {
+          "estimate": 421.2,
+          "node": "Papio_anubis|Papio_cynocephalus",
+          "node_index": 20
+        },
+        {
+          "estimate": 382.4284,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus",
+          "node_index": 21
+        },
+        {
+          "estimate": 427.5003,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica",
+          "node_index": 22
+        },
+        {
+          "estimate": 414.0758,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_radiata|Macaca_sinica",
+          "node_index": 23
+        },
+        {
+          "estimate": 432.6536,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta",
+          "node_index": 24
+        },
+        {
+          "estimate": 414,
+          "node": "Macaca_fuscata|Macaca_mulatta",
+          "node_index": 25
+        },
+        {
+          "estimate": 390,
+          "node": "Macaca_radiata|Macaca_sinica",
+          "node_index": 26
+        },
+        {
+          "estimate": 445.8,
+          "node": "Macaca_nemestrina|Macaca_silenus",
+          "node_index": 27
+        },
+        {
+          "estimate": 299.04,
+          "node": "Colobus_guereza|Colobus_polykomos|Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 28
+        },
+        {
+          "estimate": 330,
+          "node": "Colobus_guereza|Colobus_polykomos",
+          "node_index": 29
+        },
+        {
+          "estimate": 283.0152,
+          "node": "Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 30
+        },
+        {
+          "estimate": 300,
+          "node": "Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 31
+        },
+        {
+          "estimate": 520.0784,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Pan_paniscus|Symphalangus_syndactylus",
+          "node_index": 32
+        },
+        {
+          "estimate": 480.0475,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Symphalangus_syndactylus",
+          "node_index": 33
+        },
+        {
+          "estimate": 456,
+          "node": "Hylobates_lar|Hylobates_pileatus|Symphalangus_syndactylus",
+          "node_index": 34
+        },
+        {
+          "estimate": 456,
+          "node": "Hylobates_lar|Hylobates_pileatus",
+          "node_index": 35
+        },
+        {
+          "estimate": 324.7381,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 36
+        },
+        {
+          "estimate": 330.0733,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 37
+        },
+        {
+          "estimate": 324.4085,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 38
+        },
+        {
+          "estimate": 283.1632,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus",
+          "node_index": 39
+        },
+        {
+          "estimate": 270,
+          "node": "Alouatta_palliata|Alouatta_pigra",
+          "node_index": 40
+        },
+        {
+          "estimate": 369.3383,
+          "node": "Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 41
+        },
+        {
+          "estimate": 390.6,
+          "node": "Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 42
+        },
+        {
+          "estimate": 332.263,
+          "node": "Aotus_trivirgatus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 43
+        },
+        {
+          "estimate": 339.1801,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 44
+        },
+        {
+          "estimate": 241.8041,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 45
+        },
+        {
+          "estimate": 233.636,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia",
+          "node_index": 46
+        },
+        {
+          "estimate": 201.2445,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 47
+        },
+        {
+          "estimate": 191.4,
+          "node": "Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 48
+        },
+        {
+          "estimate": 255.9669,
+          "node": "Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 49
+        },
+        {
+          "estimate": 231,
+          "node": "Saguinus_midas|Saguinus_oedipus",
+          "node_index": 50
+        },
+        {
+          "estimate": 459.2629,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus|Saimiri_sciureus",
+          "node_index": 51
+        },
+        {
+          "estimate": 568.7568,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus",
+          "node_index": 52
+        },
+        {
+          "estimate": 592.8,
+          "node": "Cebus_albifrons|Cebus_capucinus",
+          "node_index": 53
+        },
+        {
+          "estimate": 162,
+          "node": "Tarsius_bancanus|Tarsius_syrichta",
+          "node_index": 54
+        },
+        {
+          "estimate": 228.4963,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Loris_tardigradus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 55
+        },
+        {
+          "estimate": 231.7139,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 56
+        },
+        {
+          "estimate": 203.977,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 57
+        },
+        {
+          "estimate": 162.3047,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 58
+        },
+        {
+          "estimate": 187.6912,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 59
+        },
+        {
+          "estimate": 173.0361,
+          "node": "Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 60
+        },
+        {
+          "estimate": 165,
+          "node": "Microcebus_murinus|Microcebus_rufus",
+          "node_index": 61
+        },
+        {
+          "estimate": 205.8,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius",
+          "node_index": 62
+        },
+        {
+          "estimate": 123.5,
+          "node": "Lepilemur_leucopus|Lepilemur_mustelinus",
+          "node_index": 63
+        },
+        {
+          "estimate": 260.3929,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 64
+        },
+        {
+          "estimate": 269.4998,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus",
+          "node_index": 65
+        },
+        {
+          "estimate": 290.4,
+          "node": "Eulemur_coronatus|Eulemur_mongoz",
+          "node_index": 66
+        },
+        {
+          "estimate": 252,
+          "node": "Lemur_catta|Prolemur_simus",
+          "node_index": 67
+        },
+        {
+          "estimate": 224.1887,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Loris_tardigradus|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 68
+        },
+        {
+          "estimate": 235.9303,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 69
+        },
+        {
+          "estimate": 192.3719,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 70
+        },
+        {
+          "estimate": 189.8741,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 71
+        },
+        {
+          "estimate": 171.5749,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis",
+          "node_index": 72
+        },
+        {
+          "estimate": 174,
+          "node": "Galago_alleni|Galago_senegalensis",
+          "node_index": 73
+        },
+        {
+          "estimate": 214.8,
+          "node": "Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 74
+        }
+      ]
+    },
+    "early_burst": {
+      "first_five_estimates": [
+        282.721,
+        336.8289,
+        355.3926,
+        386.4737,
+        341.7363
+      ],
+      "node_count": 74,
+      "rate_change": 10.6719,
+      "recent_five_estimates": [
+        190.3015,
+        187.9457,
+        171.7538,
+        174,
+        214.8
+      ],
+      "rows": [
+        {
+          "estimate": 282.721,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Cheirogaleus_major|Cheirogaleus_medius|Colobus_guereza|Colobus_polykomos|Daubentonia_madagascariensis|Erythrocebus_patas|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Hylobates_lar|Hylobates_pileatus|Lemur_catta|Leontopithecus_rosalia|Lepilemur_leucopus|Lepilemur_mustelinus|Lophocebus_albigena|Loris_tardigradus|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Microcebus_murinus|Microcebus_rufus|Miopithecus_talapoin|Mirza_coquereli|Nasalis_larvatus|Nomascus_concolor|Otolemur_crassicaudatus|Otolemur_garnettii|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 1
+        },
+        {
+          "estimate": 336.8289,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Tarsius_bancanus|Tarsius_syrichta|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 2
+        },
+        {
+          "estimate": 355.3926,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Leontopithecus_rosalia|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 3
+        },
+        {
+          "estimate": 386.4737,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Hylobates_lar|Hylobates_pileatus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Nomascus_concolor|Pan_paniscus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Symphalangus_syndactylus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 4
+        },
+        {
+          "estimate": 341.7363,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Colobus_guereza|Colobus_polykomos|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Nasalis_larvatus|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Semnopithecus_entellus|Theropithecus_gelada|Trachypithecus_obscurus",
+          "node_index": 5
+        },
+        {
+          "estimate": 364.1018,
+          "node": "Cercocebus_galeritus|Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Miopithecus_talapoin|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 6
+        },
+        {
+          "estimate": 318.1612,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas|Miopithecus_talapoin",
+          "node_index": 7
+        },
+        {
+          "estimate": 302.351,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans|Erythrocebus_patas",
+          "node_index": 8
+        },
+        {
+          "estimate": 307.277,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_neglectus|Cercopithecus_nictitans",
+          "node_index": 9
+        },
+        {
+          "estimate": 303.9973,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus|Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 10
+        },
+        {
+          "estimate": 307.8,
+          "node": "Cercopithecus_ascanius|Cercopithecus_cephus",
+          "node_index": 11
+        },
+        {
+          "estimate": 300.6,
+          "node": "Cercopithecus_mitis|Cercopithecus_nictitans",
+          "node_index": 12
+        },
+        {
+          "estimate": 398.2421,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 13
+        },
+        {
+          "estimate": 405.911,
+          "node": "Cercocebus_galeritus|Lophocebus_albigena|Mandrillus_sphinx|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 14
+        },
+        {
+          "estimate": 403.98,
+          "node": "Cercocebus_galeritus|Mandrillus_sphinx",
+          "node_index": 15
+        },
+        {
+          "estimate": 407.5883,
+          "node": "Lophocebus_albigena|Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 16
+        },
+        {
+          "estimate": 415.1416,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus|Theropithecus_gelada",
+          "node_index": 17
+        },
+        {
+          "estimate": 475.871,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas|Papio_ursinus",
+          "node_index": 18
+        },
+        {
+          "estimate": 432.278,
+          "node": "Papio_anubis|Papio_cynocephalus|Papio_hamadryas",
+          "node_index": 19
+        },
+        {
+          "estimate": 421.2,
+          "node": "Papio_anubis|Papio_cynocephalus",
+          "node_index": 20
+        },
+        {
+          "estimate": 389.1058,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica|Macaca_sylvanus",
+          "node_index": 21
+        },
+        {
+          "estimate": 426.8759,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_nemestrina|Macaca_radiata|Macaca_silenus|Macaca_sinica",
+          "node_index": 22
+        },
+        {
+          "estimate": 414.1446,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta|Macaca_radiata|Macaca_sinica",
+          "node_index": 23
+        },
+        {
+          "estimate": 432.1806,
+          "node": "Macaca_fascicularis|Macaca_fuscata|Macaca_mulatta",
+          "node_index": 24
+        },
+        {
+          "estimate": 414,
+          "node": "Macaca_fuscata|Macaca_mulatta",
+          "node_index": 25
+        },
+        {
+          "estimate": 390,
+          "node": "Macaca_radiata|Macaca_sinica",
+          "node_index": 26
+        },
+        {
+          "estimate": 445.8,
+          "node": "Macaca_nemestrina|Macaca_silenus",
+          "node_index": 27
+        },
+        {
+          "estimate": 298.4194,
+          "node": "Colobus_guereza|Colobus_polykomos|Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 28
+        },
+        {
+          "estimate": 330,
+          "node": "Colobus_guereza|Colobus_polykomos",
+          "node_index": 29
+        },
+        {
+          "estimate": 283.6472,
+          "node": "Nasalis_larvatus|Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 30
+        },
+        {
+          "estimate": 300,
+          "node": "Semnopithecus_entellus|Trachypithecus_obscurus",
+          "node_index": 31
+        },
+        {
+          "estimate": 509.3724,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Pan_paniscus|Symphalangus_syndactylus",
+          "node_index": 32
+        },
+        {
+          "estimate": 478.0265,
+          "node": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Symphalangus_syndactylus",
+          "node_index": 33
+        },
+        {
+          "estimate": 456,
+          "node": "Hylobates_lar|Hylobates_pileatus|Symphalangus_syndactylus",
+          "node_index": 34
+        },
+        {
+          "estimate": 456,
+          "node": "Hylobates_lar|Hylobates_pileatus",
+          "node_index": 35
+        },
+        {
+          "estimate": 319.327,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callicebus_moloch|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 36
+        },
+        {
+          "estimate": 321.0361,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Aotus_trivirgatus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 37
+        },
+        {
+          "estimate": 323.0856,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus|Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 38
+        },
+        {
+          "estimate": 282.7056,
+          "node": "Alouatta_palliata|Alouatta_pigra|Alouatta_seniculus",
+          "node_index": 39
+        },
+        {
+          "estimate": 270,
+          "node": "Alouatta_palliata|Alouatta_pigra",
+          "node_index": 40
+        },
+        {
+          "estimate": 369.7639,
+          "node": "Ateles_belzebuth|Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 41
+        },
+        {
+          "estimate": 390.6,
+          "node": "Ateles_geoffroyi|Ateles_paniscus",
+          "node_index": 42
+        },
+        {
+          "estimate": 320.358,
+          "node": "Aotus_trivirgatus|Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 43
+        },
+        {
+          "estimate": 322.7652,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Cebus_albifrons|Cebus_apella|Cebus_capucinus|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus|Saimiri_sciureus",
+          "node_index": 44
+        },
+        {
+          "estimate": 238.6188,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia|Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 45
+        },
+        {
+          "estimate": 228.5203,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea|Leontopithecus_rosalia",
+          "node_index": 46
+        },
+        {
+          "estimate": 200.3152,
+          "node": "Callimico_goeldii|Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 47
+        },
+        {
+          "estimate": 191.4,
+          "node": "Callithrix_jacchus|Callithrix_pygmaea",
+          "node_index": 48
+        },
+        {
+          "estimate": 254.2467,
+          "node": "Saguinus_fuscicollis|Saguinus_midas|Saguinus_oedipus",
+          "node_index": 49
+        },
+        {
+          "estimate": 231,
+          "node": "Saguinus_midas|Saguinus_oedipus",
+          "node_index": 50
+        },
+        {
+          "estimate": 474.82,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus|Saimiri_sciureus",
+          "node_index": 51
+        },
+        {
+          "estimate": 569.535,
+          "node": "Cebus_albifrons|Cebus_apella|Cebus_capucinus",
+          "node_index": 52
+        },
+        {
+          "estimate": 592.8,
+          "node": "Cebus_albifrons|Cebus_capucinus",
+          "node_index": 53
+        },
+        {
+          "estimate": 162,
+          "node": "Tarsius_bancanus|Tarsius_syrichta",
+          "node_index": 54
+        },
+        {
+          "estimate": 212.9468,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Loris_tardigradus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 55
+        },
+        {
+          "estimate": 213.2593,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Daubentonia_madagascariensis|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 56
+        },
+        {
+          "estimate": 204.3777,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 57
+        },
+        {
+          "estimate": 166.1336,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Lepilemur_leucopus|Lepilemur_mustelinus|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 58
+        },
+        {
+          "estimate": 186.3004,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius|Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 59
+        },
+        {
+          "estimate": 172.1541,
+          "node": "Microcebus_murinus|Microcebus_rufus|Mirza_coquereli",
+          "node_index": 60
+        },
+        {
+          "estimate": 165,
+          "node": "Microcebus_murinus|Microcebus_rufus",
+          "node_index": 61
+        },
+        {
+          "estimate": 205.8,
+          "node": "Cheirogaleus_major|Cheirogaleus_medius",
+          "node_index": 62
+        },
+        {
+          "estimate": 123.5,
+          "node": "Lepilemur_leucopus|Lepilemur_mustelinus",
+          "node_index": 63
+        },
+        {
+          "estimate": 263.4895,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus|Propithecus_verreauxi",
+          "node_index": 64
+        },
+        {
+          "estimate": 269.6069,
+          "node": "Eulemur_coronatus|Eulemur_mongoz|Lemur_catta|Prolemur_simus",
+          "node_index": 65
+        },
+        {
+          "estimate": 290.4,
+          "node": "Eulemur_coronatus|Eulemur_mongoz",
+          "node_index": 66
+        },
+        {
+          "estimate": 252,
+          "node": "Lemur_catta|Prolemur_simus",
+          "node_index": 67
+        },
+        {
+          "estimate": 212.4051,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Loris_tardigradus|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 68
+        },
+        {
+          "estimate": 215.6962,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii|Perodicticus_potto",
+          "node_index": 69
+        },
+        {
+          "estimate": 190.3015,
+          "node": "Galago_alleni|Galago_demidoff|Galago_moholi|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 70
+        },
+        {
+          "estimate": 187.9457,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis|Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 71
+        },
+        {
+          "estimate": 171.7538,
+          "node": "Galago_alleni|Galago_demidoff|Galago_senegalensis",
+          "node_index": 72
+        },
+        {
+          "estimate": 174,
+          "node": "Galago_alleni|Galago_senegalensis",
+          "node_index": 73
+        },
+        {
+          "estimate": 214.8,
+          "node": "Otolemur_crassicaudatus|Otolemur_garnettii",
+          "node_index": 74
+        }
+      ]
+    }
+  },
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

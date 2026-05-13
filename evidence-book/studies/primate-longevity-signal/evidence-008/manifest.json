@@ -1,0 +1,82 @@
+{
+  "claim_ids": [
+    "pcm1-tree-data-correspondence-parity"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "data-preparation",
+    "tree-data-correspondence"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-008",
+  "evidence_title": "Primate tree-data correspondence parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+    ],
+    "last_generated_on": "2026-05-11",
+    "source_basis_locators": [
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json"
+    ]
+  },
+  "limitations": [
+    "This bundle covers correspondence and join readiness only; later lambda and ancestral-state results are separate evidence."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "tree-data-alignment"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_bundle_locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+  "reference_script_locators": [
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L81-L83",
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L99-L107"
+  ],
+  "report_keys": [
+    "aligned_species_equals_tip_order",
+    "checked_in_trimmed_tip_order_matches_reference",
+    "checked_in_trimmed_tip_set_matches_reference",
+    "evidence_id",
+    "first_six_species_match",
+    "missing_tips",
+    "nodeid_examples_bijux",
+    "nodeid_examples_r",
+    "schema_version",
+    "study_id"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed trimmed tree export",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate tree-data correspondence parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json"
+    }
+  ],
+  "source_fragments": [
+    "tree-import-and-pruning",
+    "tip-order-alignment",
+    "treeio-node-mapping-and-join"
+  ],
+  "study_id": "primate-longevity-signal",
+  "summary": "Governed evidence for missing-tip trimming, tip-order alignment, and node-aware tree-data joining.",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json",
+  "verdict": {
+    "status": "matched",
+    "summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference."
+  }
+}

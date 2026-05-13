@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_site_scaling,
@@ -104,6 +106,7 @@ def test_benchmark_tree_set_consensus_reports_tree_count_scaling() -> None:
     assert [row.item_count for row in report.observations] == [4, 8]
 
 
+@pytest.mark.slow
 def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> (
     None
 ):
@@ -116,6 +119,7 @@ def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rate
     assert surfaces["regression-dataset-corpus"].failed_count == 0
 
 
+@pytest.mark.slow
 def test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples() -> (
     None
 ):
@@ -147,6 +151,7 @@ def test_build_method_limitation_registry_marks_experimental_and_validated_surfa
     assert statuses["bayesian-time-tree"] == "experimental"
 
 
+@pytest.mark.slow
 def test_build_scientific_validation_report_separates_claim_statuses() -> None:
     report = build_scientific_validation_report(fixtures_root=FIXTURES)
 

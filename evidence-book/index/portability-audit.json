@@ -1,0 +1,14 @@
+{
+  "action_required_count": 0,
+  "audited_json_file_count": 216,
+  "issues": [],
+  "locator_kind_counts": {
+    "external_locator": 72,
+    "repo_relative": 1196,
+    "suspicious_path_like": 339
+  },
+  "report_like_file_count": 321,
+  "rule_count": 3,
+  "rules_markdown": "# Portability Rules\n\nChecked-in evidence paths must stay portable and reviewer-readable.\n\nAllowed locator forms:\n\n- repository-relative paths rooted at governed prefixes such as `evidence-book/`, `packages/`, `docs/`, or `artifacts/`\n- explicit external locators such as `external:lund/...`\n\nForbidden locator forms:\n\n- workstation-local absolute paths tied to one machine layout\n- parent traversal such as `../...` that guesses sibling repositories or ambient workspace shape\n- ambiguous path-like strings that are neither explicit external locators nor rooted repository-relative paths\n\nPortable checked-in reports and plots must reference their governed sources through those same locator forms.\n",
+  "schema_version": 1
+}

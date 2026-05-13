@@ -13,6 +13,7 @@ from Bio.Phylo.BaseTree import Tree as BioTree
 from bijux_phylogenetics.compare.topology import (
     _informative_clade_nodes,
     _informative_clades,
+    _robinson_foulds_metrics,
     _unrooted_splits,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -83,6 +84,21 @@ class TreeDistanceMatrixReport:
     pairs: list[TreeDistancePair]
 
 
+@dataclass(slots=True)
+class PosteriorTopologyDiversityReport:
+    path: Path
+    tree_count: int
+    rooted_topology_count: int
+    dominant_topology_frequency: float
+    effective_topology_count: float
+    pair_count: int
+    mean_robinson_foulds_distance: float
+    mean_normalized_robinson_foulds_distance: float
+    maximum_robinson_foulds_distance: int
+    maximum_normalized_robinson_foulds_distance: float
+    unstable_clade_count: int
+
+
 @dataclass(frozen=True, slots=True)
 class TreeTopologyCluster:
     rooted_topology_id: str
@@ -140,6 +156,44 @@ class UnstableCladeReport:
     path: Path
     tree_count: int
     clades: list[UnstableClade]
+
+
+@dataclass(frozen=True, slots=True)
+class BootstrapUnstableBranch:
+    clade: str
+    bootstrap_tree_count: int
+    bootstrap_frequency: float
+    bootstrap_support_percent: float
+    conflict_count: int
+    instability_score: float
+    support_classification: str
+    conflicting_clades: list[str]
+
+
+@dataclass(slots=True)
+class BootstrapTreeSetSummaryReport:
+    path: Path
+    consensus_threshold: float
+    robust_support_threshold: float
+    tree_count: int
+    shared_taxa: list[str]
+    summary: TreeSetReport
+    clade_frequencies: CladeFrequencyReport
+    consensus: ConsensusTreeReport
+    diversity: PosteriorTopologyDiversityReport
+    unstable_clades: UnstableCladeReport
+    unstable_branch_count: int
+    unstable_branches: list[BootstrapUnstableBranch]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
+class BootstrapTreeSetArtifactReport:
+    input_path: Path
+    out_dir: Path
+    prefix: str
+    summary_report: BootstrapTreeSetSummaryReport
+    output_paths: dict[str, Path]
 
 
 @dataclass(frozen=True, slots=True)
@@ -586,12 +640,13 @@ def _build_consensus_node(
 def _tree_distance(
     left: PhyloTree, right: PhyloTree, shared_taxa: set[str]
 ) -> tuple[int, float]:
-    left_clades = _informative_clades(left, shared_taxa)
-    right_clades = _informative_clades(right, shared_taxa)
-    symmetric_difference = left_clades.symmetric_difference(right_clades)
-    denominator = len(left_clades) + len(right_clades)
-    normalized = 0.0 if denominator == 0 else len(symmetric_difference) / denominator
-    return len(symmetric_difference), normalized
+    _left_count, _right_count, distance, normalized = _robinson_foulds_metrics(
+        left,
+        right,
+        shared_taxa,
+        rf_mode="rooted",
+    )
+    return distance, normalized
 
 
 def load_tree_set(path: Path) -> TreeSetReport:
@@ -787,6 +842,56 @@ def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> 
     return path
 
 
+def summarize_posterior_topology_diversity(
+    path: Path,
+) -> PosteriorTopologyDiversityReport:
+    """Summarize topology dispersion and instability across one posterior tree set."""
+    summary = load_tree_set(path)
+    clusters = cluster_trees_by_topology(path)
+    distances = compute_tree_distance_matrix(path)
+    unstable_clades = detect_unstable_clades(path)
+    informative_pairs = [
+        row for row in distances.pairs if row.left_index != row.right_index
+    ]
+    pair_count = len(informative_pairs)
+    mean_rf = 0.0
+    mean_normalized_rf = 0.0
+    maximum_rf = 0
+    maximum_normalized_rf = 0.0
+    if informative_pairs:
+        mean_rf = round(
+            sum(row.robinson_foulds_distance for row in informative_pairs) / pair_count,
+            15,
+        )
+        mean_normalized_rf = round(
+            sum(row.normalized_robinson_foulds for row in informative_pairs)
+            / pair_count,
+            15,
+        )
+        maximum_rf = max(row.robinson_foulds_distance for row in informative_pairs)
+        maximum_normalized_rf = round(
+            max(row.normalized_robinson_foulds for row in informative_pairs), 15
+        )
+    dominant_topology_frequency = (
+        0.0 if not clusters.clusters else clusters.clusters[0].frequency
+    )
+    return PosteriorTopologyDiversityReport(
+        path=path,
+        tree_count=summary.tree_count,
+        rooted_topology_count=summary.rooted_topology_count,
+        dominant_topology_frequency=dominant_topology_frequency,
+        effective_topology_count=_shannon_effective_count(
+            [cluster.frequency for cluster in clusters.clusters]
+        ),
+        pair_count=pair_count,
+        mean_robinson_foulds_distance=mean_rf,
+        mean_normalized_robinson_foulds_distance=mean_normalized_rf,
+        maximum_robinson_foulds_distance=maximum_rf,
+        maximum_normalized_robinson_foulds_distance=maximum_normalized_rf,
+        unstable_clade_count=len(unstable_clades.clades),
+    )
+
+
 def write_topology_cluster_table(path: Path, report: TreeTopologyClusterReport) -> Path:
     """Write rooted topology clusters as a TSV table."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -925,6 +1030,276 @@ def detect_unstable_clades(path: Path) -> UnstableCladeReport:
         key=lambda row: (-row.instability_score, -row.conflict_count, row.clade)
     )
     return UnstableCladeReport(path=path, tree_count=len(trees), clades=unstable_clades)
+
+
+def summarize_bootstrap_tree_set(
+    path: Path,
+    *,
+    consensus_threshold: float = 0.5,
+    robust_support_threshold: float = 0.9,
+) -> BootstrapTreeSetSummaryReport:
+    """Summarize bootstrap replicate trees through one review-oriented report."""
+    if not 0.0 < consensus_threshold < 1.0:
+        raise ValueError(
+            f"consensus_threshold must be between 0 and 1, got {consensus_threshold}"
+        )
+    if not 0.0 < robust_support_threshold <= 1.0:
+        raise ValueError(
+            "robust_support_threshold must be between 0 and 1, "
+            f"got {robust_support_threshold}"
+        )
+    summary = load_tree_set(path)
+    clade_frequencies = compute_clade_frequency_table(path)
+    consensus_tree, consensus = compute_consensus_tree_with_threshold(
+        path, threshold=consensus_threshold
+    )
+    diversity = summarize_posterior_topology_diversity(path)
+    unstable_clades = detect_unstable_clades(path)
+    shared_taxa = set(summary.shared_taxa)
+    consensus_clades = _informative_clade_nodes(consensus_tree, shared_taxa)
+    frequencies_by_clade = {
+        row.clade: row for row in clade_frequencies.clade_frequencies
+    }
+    unstable_by_clade = {row.clade: row for row in unstable_clades.clades}
+    unstable_branches: list[BootstrapUnstableBranch] = []
+    for clade in sorted(consensus_clades, key=_format_clade):
+        clade_id = _format_clade(clade)
+        frequency = frequencies_by_clade[clade_id]
+        unstable_row = unstable_by_clade.get(clade_id)
+        conflict_count = 0 if unstable_row is None else unstable_row.conflict_count
+        instability_score = (
+            0.0 if unstable_row is None else unstable_row.instability_score
+        )
+        support_classification = _support_classification(
+            frequency.frequency, conflict_count
+        )
+        if frequency.frequency >= robust_support_threshold and conflict_count == 0:
+            continue
+        unstable_branches.append(
+            BootstrapUnstableBranch(
+                clade=clade_id,
+                bootstrap_tree_count=frequency.tree_count,
+                bootstrap_frequency=frequency.frequency,
+                bootstrap_support_percent=round(frequency.frequency * 100.0, 15),
+                conflict_count=conflict_count,
+                instability_score=instability_score,
+                support_classification=support_classification,
+                conflicting_clades=(
+                    [] if unstable_row is None else unstable_row.conflicting_clades
+                ),
+            )
+        )
+    unstable_branches.sort(
+        key=lambda row: (
+            -row.instability_score,
+            row.bootstrap_frequency,
+            -row.conflict_count,
+            row.clade,
+        )
+    )
+    warnings: list[str] = []
+    if diversity.rooted_topology_count > 1:
+        warnings.append("bootstrap replicate trees contain multiple rooted topologies")
+    if unstable_branches:
+        warnings.append(
+            "consensus tree contains branches below the robust bootstrap threshold or with conflicting alternatives"
+        )
+    return BootstrapTreeSetSummaryReport(
+        path=path,
+        consensus_threshold=consensus_threshold,
+        robust_support_threshold=robust_support_threshold,
+        tree_count=summary.tree_count,
+        shared_taxa=summary.shared_taxa,
+        summary=summary,
+        clade_frequencies=clade_frequencies,
+        consensus=consensus,
+        diversity=diversity,
+        unstable_clades=unstable_clades,
+        unstable_branch_count=len(unstable_branches),
+        unstable_branches=unstable_branches,
+        warnings=warnings,
+    )
+
+
+def write_bootstrap_tree_set_summary_table(
+    path: Path, report: BootstrapTreeSetSummaryReport
+) -> Path:
+    """Write a one-row TSV summary for one bootstrap tree set."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "tree_count",
+                "shared_taxon_count",
+                "rooted_topology_count",
+                "dominant_topology_frequency",
+                "effective_topology_count",
+                "mean_robinson_foulds_distance",
+                "mean_normalized_robinson_foulds_distance",
+                "consensus_threshold",
+                "robust_support_threshold",
+                "unstable_branch_count",
+                "warning_count",
+                "consensus_newick",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "tree_count": report.tree_count,
+                "shared_taxon_count": len(report.shared_taxa),
+                "rooted_topology_count": report.diversity.rooted_topology_count,
+                "dominant_topology_frequency": format(
+                    report.diversity.dominant_topology_frequency, ".15g"
+                ),
+                "effective_topology_count": format(
+                    report.diversity.effective_topology_count, ".15g"
+                ),
+                "mean_robinson_foulds_distance": format(
+                    report.diversity.mean_robinson_foulds_distance, ".15g"
+                ),
+                "mean_normalized_robinson_foulds_distance": format(
+                    report.diversity.mean_normalized_robinson_foulds_distance, ".15g"
+                ),
+                "consensus_threshold": format(report.consensus_threshold, ".15g"),
+                "robust_support_threshold": format(
+                    report.robust_support_threshold, ".15g"
+                ),
+                "unstable_branch_count": report.unstable_branch_count,
+                "warning_count": len(report.warnings),
+                "consensus_newick": report.consensus.consensus_newick,
+            }
+        )
+    return path
+
+
+def write_bootstrap_unstable_branch_table(
+    path: Path, report: BootstrapTreeSetSummaryReport
+) -> Path:
+    """Write consensus-branch instability evidence for one bootstrap tree set."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "clade",
+                "bootstrap_tree_count",
+                "bootstrap_frequency",
+                "bootstrap_support_percent",
+                "conflict_count",
+                "instability_score",
+                "support_classification",
+                "conflicting_clades",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.unstable_branches:
+            writer.writerow(
+                {
+                    "clade": row.clade,
+                    "bootstrap_tree_count": row.bootstrap_tree_count,
+                    "bootstrap_frequency": format(row.bootstrap_frequency, ".15g"),
+                    "bootstrap_support_percent": format(
+                        row.bootstrap_support_percent, ".15g"
+                    ),
+                    "conflict_count": row.conflict_count,
+                    "instability_score": format(row.instability_score, ".15g"),
+                    "support_classification": row.support_classification,
+                    "conflicting_clades": ",".join(row.conflicting_clades),
+                }
+            )
+    return path
+
+
+def write_bootstrap_tree_set_artifacts(
+    tree_set_path: Path,
+    *,
+    out_dir: Path,
+    prefix: str = "bootstrap-tree-set",
+    consensus_threshold: float = 0.5,
+    robust_support_threshold: float = 0.9,
+) -> BootstrapTreeSetArtifactReport:
+    """Write a governed artifact set for one bootstrap replicate tree file."""
+    summary_report = summarize_bootstrap_tree_set(
+        tree_set_path,
+        consensus_threshold=consensus_threshold,
+        robust_support_threshold=robust_support_threshold,
+    )
+    consensus_tree, _ = compute_consensus_tree_with_threshold(
+        tree_set_path, threshold=consensus_threshold
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
+    base_path = out_dir / prefix
+    output_paths = {
+        "summary_table": write_bootstrap_tree_set_summary_table(
+            base_path.with_suffix(".summary.tsv"), summary_report
+        ),
+        "consensus_tree": write_consensus_tree(
+            base_path.with_suffix(".consensus.nwk"), consensus_tree
+        ),
+        "clade_frequencies": write_clade_frequency_table(
+            base_path.with_suffix(".clade-frequencies.tsv"),
+            summary_report.clade_frequencies,
+        ),
+        "unstable_branches": write_bootstrap_unstable_branch_table(
+            base_path.with_suffix(".unstable-branches.tsv"), summary_report
+        ),
+        "unstable_clades": write_unstable_clade_table(
+            base_path.with_suffix(".unstable-clades.tsv"),
+            summary_report.unstable_clades,
+        ),
+        "distance_matrix": write_tree_distance_matrix(
+            base_path.with_suffix(".distance-matrix.tsv"),
+            compute_tree_distance_matrix(tree_set_path),
+        ),
+        "topology_clusters": write_topology_cluster_table(
+            base_path.with_suffix(".topology-clusters.tsv"),
+            cluster_trees_by_topology(tree_set_path),
+        ),
+    }
+    return BootstrapTreeSetArtifactReport(
+        input_path=tree_set_path,
+        out_dir=out_dir,
+        prefix=prefix,
+        summary_report=summary_report,
+        output_paths=output_paths,
+    )
+
+
+def write_unstable_clade_table(path: Path, report: UnstableCladeReport) -> Path:
+    """Write unstable clades and their conflicting alternatives as a TSV table."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "clade",
+                "tree_count",
+                "frequency",
+                "conflict_count",
+                "instability_score",
+                "support_classification",
+                "conflicting_clades",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.clades:
+            writer.writerow(
+                {
+                    "clade": row.clade,
+                    "tree_count": row.tree_count,
+                    "frequency": format(row.frequency, ".15g"),
+                    "conflict_count": row.conflict_count,
+                    "instability_score": format(row.instability_score, ".15g"),
+                    "support_classification": row.support_classification,
+                    "conflicting_clades": ",".join(row.conflicting_clades),
+                }
+            )
+    return path
 
 
 def compare_posterior_topological_diversity(

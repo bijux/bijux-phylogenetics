@@ -1,0 +1,2 @@
+method	model	taxon_count	pair_count	rooted_topology_equal	same_unrooted_topology	same_taxa_different_rooting	robinson_foulds_distance	rooted_robinson_foulds_distance	unrooted_robinson_foulds_distance	normalized_robinson_foulds	rooted_normalized_robinson_foulds	unrooted_normalized_robinson_foulds
+neighbor-joining	p-distance	8	36	false	true	true	3	3	0	0.272727272727273	0.272727272727273	0

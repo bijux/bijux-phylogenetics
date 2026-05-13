@@ -8,14 +8,16 @@ from bijux_phylogenetics.ancestral.common import write_ancestral_rows
 from bijux_phylogenetics.ancestral.continuous import (
     ContinuousAncestralReport,
     reconstruct_continuous_ancestral_states,
+    write_continuous_ancestral_uncertainty_table,
 )
 from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
+    write_discrete_ancestral_probability_table,
 )
-from bijux_phylogenetics.ancestral.service import (
-    render_ancestral_state_tree,
-    write_ancestral_state_table,
+from bijux_phylogenetics.ancestral.service import write_ancestral_state_table
+from bijux_phylogenetics.ancestral.visualization import (
+    render_ancestral_state_visualization,
 )
 
 
@@ -23,6 +25,8 @@ from bijux_phylogenetics.ancestral.service import (
 class AncestralFigurePackageResult:
     output_dir: Path
     figure_path: Path
+    figure_png_path: Path
+    figure_html_path: Path
     node_table_path: Path
     uncertainty_table_path: Path
     legend_path: Path
@@ -70,6 +74,8 @@ def build_ancestral_figure_package(
         )
 
     figure_path = out_dir / "ancestral-figure.svg"
+    figure_png_path = out_dir / "ancestral-figure.png"
+    figure_html_path = out_dir / "ancestral-figure.html"
     node_table_path = out_dir / "node-states.tsv"
     uncertainty_table_path = out_dir / "uncertainty.tsv"
     legend_path = out_dir / "legend.md"
@@ -77,9 +83,41 @@ def build_ancestral_figure_package(
     caption_path = out_dir / "figure-caption.md"
     manifest_path = out_dir / "figure-manifest.json"
 
-    render_ancestral_state_tree(tree_path, report, out_path=figure_path, layout=layout)
+    render_ancestral_state_visualization(
+        tree_path,
+        report,
+        out_path=figure_path,
+        layout=layout,
+        discrete_node_style="pies",
+        branch_coloring="regime"
+        if isinstance(report, ContinuousAncestralReport)
+        else "state",
+    )
+    render_ancestral_state_visualization(
+        tree_path,
+        report,
+        out_path=figure_png_path,
+        layout=layout,
+        discrete_node_style="pies",
+        branch_coloring="regime"
+        if isinstance(report, ContinuousAncestralReport)
+        else "state",
+    )
+    render_ancestral_state_visualization(
+        tree_path,
+        report,
+        out_path=figure_html_path,
+        layout=layout,
+        discrete_node_style="pies",
+        branch_coloring="regime"
+        if isinstance(report, ContinuousAncestralReport)
+        else "state",
+    )
     write_ancestral_state_table(node_table_path, report)
-    _write_uncertainty_table(uncertainty_table_path, report)
+    if isinstance(report, ContinuousAncestralReport):
+        write_continuous_ancestral_uncertainty_table(uncertainty_table_path, report)
+    else:
+        write_discrete_ancestral_probability_table(uncertainty_table_path, report)
     legend_path.write_text(_legend_markdown(report), encoding="utf-8")
     model_description_path.write_text(_model_description(report), encoding="utf-8")
     caption_path.write_text(_caption_markdown(report, layout=layout), encoding="utf-8")
@@ -94,6 +132,8 @@ def build_ancestral_figure_package(
                 "layout": layout,
                 "artifacts": {
                     "figure": str(figure_path),
+                    "figure_png": str(figure_png_path),
+                    "figure_html": str(figure_html_path),
                     "node_table": str(node_table_path),
                     "uncertainty_table": str(uncertainty_table_path),
                     "legend": str(legend_path),
@@ -112,6 +152,8 @@ def build_ancestral_figure_package(
     return AncestralFigurePackageResult(
         output_dir=out_dir,
         figure_path=figure_path,
+        figure_png_path=figure_png_path,
+        figure_html_path=figure_html_path,
         node_table_path=node_table_path,
         uncertainty_table_path=uncertainty_table_path,
         legend_path=legend_path,

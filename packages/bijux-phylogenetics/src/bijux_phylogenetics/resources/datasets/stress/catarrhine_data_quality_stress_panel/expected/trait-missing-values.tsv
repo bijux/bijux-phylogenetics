@@ -1,0 +1,4 @@
+taxon	row_number	trait	required_for_analysis	action
+gorilla_gorilla	4	habitat_note	false	preserve_nonrequired_missingness
+pongo_pygmaeus	5	gestation_days	true	drop_taxon_from_cleaned_traits
+hylobates_lar	7	gestation_days	true	dropped_duplicate_row

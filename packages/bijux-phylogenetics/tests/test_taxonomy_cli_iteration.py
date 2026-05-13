@@ -132,3 +132,39 @@ def test_cli_taxonomy_audit_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["status"] == "needs_review"
     assert payload["metrics"]["mapping_conflict_count"] >= 1
+
+
+def test_cli_report_taxonomy_json_output_includes_workflow_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    out_path = tmp_path / "taxonomy-report.html"
+    exit_code = main(
+        [
+            "report",
+            "taxonomy",
+            "--tree",
+            str(fixture("example_taxon_workflow_tree.nwk")),
+            "--metadata",
+            str(fixture("example_taxon_workflow_metadata.csv")),
+            "--traits",
+            str(fixture("example_taxon_workflow_traits.csv")),
+            "--alignment",
+            str(fixture("example_taxon_workflow_alignment.fasta")),
+            "--filtered-alignment",
+            str(fixture("example_taxon_workflow_filtered_alignment.fasta")),
+            "--inference-tree",
+            str(fixture("example_taxon_workflow_inference.nwk")),
+            "--reported-taxa",
+            str(fixture("example_taxon_workflow_reported.csv")),
+            "--out",
+            str(out_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert out_path.exists()
+    assert payload["metrics"]["crosswalk_rows"] == 4
+    assert payload["metrics"]["excluded_taxa"] == 2
+    assert payload["metrics"]["loss_stage_count"] == 3
+    assert payload["metrics"]["unstable_taxa"] == 3

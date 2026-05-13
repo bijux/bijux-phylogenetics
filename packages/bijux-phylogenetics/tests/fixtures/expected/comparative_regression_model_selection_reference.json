@@ -1,0 +1,25 @@
+{
+  "reference_tool": "phylolm::phyloglm",
+  "selected_criterion": "AIC",
+  "best_formula": "presence ~ body_size",
+  "rows": [
+    {
+      "formula": "presence ~ body_size",
+      "log_likelihood": -1.523629,
+      "aic": 9.047258,
+      "bic": 9.285583
+    },
+    {
+      "formula": "presence ~ habitat",
+      "log_likelihood": -3.531696,
+      "aic": 13.06339,
+      "bic": 13.30172
+    },
+    {
+      "formula": "presence ~ body_size + habitat",
+      "log_likelihood": -1.649292,
+      "aic": 11.29858,
+      "bic": 11.61635
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "debts": [
+    {
+      "debt_kind": "experimental",
+      "detail": "ancestral reconstruction and Bayesian time-tree workflows have substantive support but still carry incomplete maturity evidence",
+      "evidence": [
+        "ancestral-reconstruction",
+        "bayesian-time-tree"
+      ]
+    },
+    {
+      "debt_kind": "unvalidated",
+      "detail": "cross-environment reproducibility is not yet claimed, and external R ecosystem comparisons remain narrower than the broader validation roadmap",
+      "evidence": [
+        "goal-252 remains outside this iteration",
+        "evidence-book/studies/primate-longevity-signal/evidence-001 demonstrates one checked-in R comparison bundle"
+      ]
+    },
+    {
+      "debt_kind": "unsafe",
+      "detail": "publication-grade time-tree conclusions remain unsafe when tip dates, calibrations, or convergence diagnostics fail",
+      "evidence": [
+        "dataset-audit blockers include invalid tip dates and invalid calibrations",
+        "bayesian-time-tree is still marked experimental in the limitation registry"
+      ]
+    },
+    {
+      "block_id": "environment-and-package-contract",
+      "debt_kind": "workflow_only",
+      "detail": "This setup block is documented for reproducibility, but it is not an analysis-equivalence target."
+    },
+    {
+      "block_id": "processed-analysis-artifacts",
+      "debt_kind": "artifact_only",
+      "detail": "This block writes the processed CSV and trimmed tree that the Python evidence pass later consumes."
+    },
+    {
+      "block_id": "ape-plotting-basics",
+      "debt_kind": "plot_only",
+      "detail": "This is a visual exploration block; the current report does not claim figure-equivalence for base `ape` plots."
+    },
+    {
+      "block_id": "ape-alternate-layouts",
+      "debt_kind": "plot_only",
+      "detail": "These layout variants are tracked as visual surfaces only."
+    },
+    {
+      "block_id": "phytools-tree-plotting",
+      "debt_kind": "plot_only",
+      "detail": "The `phytools::plotTree()` surface is tracked, but no rendered-figure claim is made here."
+    },
+    {
+      "block_id": "ggtree-tree-visualization",
+      "debt_kind": "plot_only",
+      "detail": "These `ggtree` examples are tracked as visual surfaces only."
+    },
+    {
+      "block_id": "ape-longevity-overlay",
+      "debt_kind": "plot_only",
+      "detail": "This is a rendered trait-overlay surface and is tracked separately from ordering correctness."
+    },
+    {
+      "block_id": "joined-ggtree-trait-plotting",
+      "debt_kind": "plot_only",
+      "detail": "Joined-data `ggtree` figures are tracked here as visual outputs only."
+    },
+    {
+      "block_id": "random-simulation-inputs",
+      "debt_kind": "seeded_input_only",
+      "detail": "For credibility, the report freezes these R-generated simulation inputs with `set.seed(1)` and reuses the resulting artifacts on both sides."
+    },
+    {
+      "block_id": "random-simulation-plotting",
+      "debt_kind": "plot_only",
+      "detail": "These are visual teaching plots and are tracked separately from the simulation inputs and signal fits."
+    },
+    {
+      "block_id": "random-signal-lambda-fits",
+      "debt_kind": "tolerance_validated",
+      "detail": "The report checks the explicit random-data fit calls and extends the implied checks to the other generated examples."
+    },
+    {
+      "block_id": "primate-longevity-visual-inspection",
+      "debt_kind": "plot_only",
+      "detail": "These are visual inspection surfaces only."
+    },
+    {
+      "block_id": "primate-lambda-fit",
+      "debt_kind": "tolerance_validated",
+      "detail": "The `bijux-phylogenetics` lambda estimate is within a small numerical tolerance of the R fit."
+    },
+    {
+      "block_id": "lambda-zero-visual-comparison",
+      "debt_kind": "plot_only",
+      "detail": "The side-by-side real-tree versus lambda=0 plots are tracked as visual outputs only."
+    },
+    {
+      "block_id": "lambda-zero-covariance-and-lrt",
+      "debt_kind": "tolerance_validated",
+      "detail": "The covariance surface and lambda-vs-zero test agree within numerical tolerance."
+    },
+    {
+      "block_id": "continuous-ancestral-point-estimates",
+      "debt_kind": "tolerance_validated",
+      "detail": "Clade-aligned ancestral point estimates match to floating-point noise."
+    },
+    {
+      "block_id": "continuous-ancestral-intervals",
+      "debt_kind": "tolerance_validated",
+      "detail": "The Brownian/PIC confidence-interval surface now matches the R reference to floating-point noise."
+    },
+    {
+      "block_id": "ancestral-colored-tree-plot",
+      "debt_kind": "plot_only",
+      "detail": "The ancestral-state branch-color figure is tracked as a visual rendering surface only."
+    },
+    {
+      "block_id": "bonobo-gibbon-mrca-estimate",
+      "debt_kind": "tolerance_validated",
+      "detail": "The MRCA clade and the ancestral point estimate match."
+    },
+    {
+      "block_id": "final-workspace-artifact",
+      "debt_kind": "artifact_only",
+      "detail": "The lecture script saves an `.RData` workspace; this report saves explicit machine-readable evidence artifacts instead."
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "limitations": [
+    "the report summarizes current checked-in evidence; it does not replace method-specific diagnostics on a new biological dataset"
+  ],
+  "study_id": "primate-longevity-signal",
+  "validation_goal_id": 249
+}

@@ -1,0 +1,132 @@
+{
+  "checked_fixture_path": "packages/bijux-phylogenetics/tests/fixtures/expected/comparative_reference_validation.json",
+  "evidence_id": "evidence-001",
+  "fixture_observations": [
+    {
+      "case": "brownian-example-tree",
+      "expected_parameters": {
+        "log_likelihood": -6.04152073381702,
+        "rate": 4.774305542457443,
+        "root_state": 2.805555555555556
+      },
+      "model": "brownian",
+      "source": "geiger::fitContinuous(model='BM')",
+      "tolerance": 1e-06,
+      "trait": "response"
+    },
+    {
+      "case": "ou-example-tree-grid",
+      "expected_parameters": {
+        "alpha": 33.333333,
+        "log_likelihood": -5.260966005446836,
+        "theta": 2.750317551253208
+      },
+      "model": "ou",
+      "source": "ape::corMartins fixed-alpha grid via nlme::gls",
+      "tolerance": 1e-06,
+      "trait": "response"
+    },
+    {
+      "case": "pic-example-tree",
+      "expected_parameters": {
+        "A|B": -3.354101966249685,
+        "A|B|C|D": -1.49071198499986,
+        "C|D": -2.371708245126285
+      },
+      "model": "independent-contrasts",
+      "source": "ape::pic",
+      "tolerance": 1e-06,
+      "trait": "response"
+    },
+    {
+      "case": "pgls-example-tree-brownian",
+      "expected_parameters": {
+        "intercept": 0.305084745762712,
+        "log_likelihood": -2.948637910520331,
+        "predictor_one": 0.957627118644068,
+        "residual_A": 0.23728813559322,
+        "residual_B": 0.779661016949153,
+        "residual_C": -0.677966101694915,
+        "residual_D": -0.135593220338983
+      },
+      "model": "pgls",
+      "source": "ape::corBrownian fixed covariance via nlme::gls",
+      "tolerance": 1e-06,
+      "trait": "response"
+    },
+    {
+      "case": "blomberg-k-example-tree",
+      "expected_parameters": {
+        "k": 0.678288770053476
+      },
+      "model": "blombergs-k",
+      "source": "phytools::phylosig(method='K')",
+      "tolerance": 1e-06,
+      "trait": "response"
+    },
+    {
+      "case": "pagel-lambda-example-tree",
+      "expected_parameters": {
+        "lambda_value": 6.796558e-05,
+        "log_likelihood": -5.260501868278937
+      },
+      "model": "pagels-lambda",
+      "source": "phytools::phylosig(method='lambda')",
+      "tolerance": 0.0001,
+      "trait": "response"
+    }
+  ],
+  "reference_tools": [
+    "ape",
+    "geiger",
+    "phytools",
+    "treeio",
+    "tidytree"
+  ],
+  "study_id": "primate-longevity-signal",
+  "suite_kind": "comparative_reference_validation",
+  "validated_methods": [
+    {
+      "method": "bonobo-gibbon-mrca-estimate",
+      "script_lines": "421-429",
+      "status": "verified_with_tolerance",
+      "verdict": "The MRCA clade and the ancestral point estimate match."
+    },
+    {
+      "method": "continuous-ancestral-intervals",
+      "script_lines": "400",
+      "status": "verified_with_tolerance",
+      "verdict": "The Brownian/PIC confidence-interval surface now matches the R reference to floating-point noise."
+    },
+    {
+      "method": "continuous-ancestral-point-estimates",
+      "script_lines": "395-399",
+      "status": "verified_with_tolerance",
+      "verdict": "Clade-aligned ancestral point estimates match to floating-point noise."
+    },
+    {
+      "method": "lambda-zero-covariance-and-lrt",
+      "script_lines": "375-388",
+      "status": "verified_with_tolerance",
+      "verdict": "The covariance surface and lambda-vs-zero test agree within numerical tolerance."
+    },
+    {
+      "method": "lifespan-increase-counts",
+      "script_lines": "431-448",
+      "status": "verified",
+      "verdict": "The branch-wise increase counts match the direct R reference path."
+    },
+    {
+      "method": "primate-lambda-fit",
+      "script_lines": "347-354",
+      "status": "verified_with_tolerance",
+      "verdict": "The `bijux-phylogenetics` lambda estimate is within a small numerical tolerance of the R fit."
+    },
+    {
+      "method": "random-signal-lambda-fits",
+      "script_lines": "324-331",
+      "status": "verified_with_tolerance",
+      "verdict": "The report checks the explicit random-data fit calls and extends the implied checks to the other generated examples."
+    }
+  ]
+}

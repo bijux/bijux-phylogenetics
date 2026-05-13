@@ -1,0 +1,95 @@
+species,common_name,mating_system,testes_mass,body_mass,multiple_paternity_percentage,development_mode
+Aegithalos_caudatus,Long tailed tit,cooperative,0.03,8.2,12.5,altricial
+Cercomacra_tyrannina,Dusky Antbird,pair,0.03,17.7992,0,altricial
+Dendroica_caerulescens,Black throated Blue Warbler,pair,0.04,9.7994,34.19,altricial
+Ficedula_hypoleuca,European Pied Flycatcher,polyandrous,0.04,12,11.11,altricial
+Ficedula_albicollis,Collared Flycatcher,pair,0.04,10.3,51.85,altricial
+Taeniopygia_guttata,Zebra Finch,pair,0.05,12,8,altricial
+Malurus_coronatus,Purple crowned fairywren,cooperative,0.05,14.5011,3.8,altricial
+Phylloscopus_fuscatus,Dusky warbler,polyandrous,0.077,9.6,59,altricial
+Troglodytes_aedon,House Wren,polyandrous,0.085,11.1,11.11,altricial
+Falco_peregrinus,Peregrine Falcon,pair,0.09,610.942,0,altricial
+Vireo_solitarius,Blue headed Vireo,pair,0.09,16.5997,6.3,altricial
+Sterna_hirundo,Common Tern,pair,0.09,120.0052,0,altricial
+Charadrius_semipalmatus,Semipalmated Plover,pair,0.1,43.9036,4.2,precocial
+Acanthiza_pusilla,Brown thornbill,pair,0.11,7.5998,11.9,altricial
+Acrocephalus_palustris,Marsh Warbler,pair,0.14,12,9.1,altricial
+Acrocephalus_scirpaceus,Reed warbler,pair,0.15,12,15.4,altricial
+Serinus_serinus,European Serin,pair,0.15,11.2,0,altricial
+Spizella_pusilla,Field Sparrow,pair,0.16,13.2008,20.57,altricial
+Phylloscopus_sibilatrix,Wood Warbler,polyandrous,0.16,9,0,altricial
+Wilsonia_pusilla,Wilson s Warbler,polyandrous,0.16,8.0002,53,altricial
+Carpodacus_mexicanus,House Finch,pair,0.17,21.4,14.29,altricial
+Acrocephalus_schoenobaenus,Sedge Warbler,polyandrous,0.17,12.1,22.73,altricial
+Baeolophus_bicolor,Tufted titmouse,pair,0.17,20.8018,22.2,altricial
+Phylloscopus_trochilus,Willow Warbler,pair,0.18,9,58.33,altricial
+Falco_columbarius,Merlin,cooperative,0.19,173,0,altricial
+Sialia_mexicana,Western Bluebird,cooperative,0.2,29.0001,39.22,altricial
+Thryothorus_ludovicianus,Carolina Wren,pair,0.2,20.3002,0,altricial
+Carduelis_cannabina,Linnet,pair,0.2,19.002,9.09,altricial
+Delichon_urbicum,House Martin,pair,0.2,16.9981,31.58,altricial
+Zosterops_lateralis,Silvereye,pair,0.21,12.0005,0,altricial
+Carduelis_tristis,American Goldfinch,pair,0.23,12.8,26.7,altricial
+Erithacus_rubecula,European Robin,pair,0.23,18.2,16.57,altricial
+Serinus_canaria,Atlantic Canary,pair,0.23,13,0,altricial
+Carpodacus_erythrinus,Scarlet Rose Finch,pair,0.24,21.9989,33.87,altricial
+Manorina_melanocephala,Noisy Miner,cooperative,0.26,56.0015,3.2,altricial
+Jynx_torquilla,Eurasian Wryneck,pair,0.26,31.0027,2,altricial
+Sialia_sialis,Eastern Bluebird,pair,0.265,31,23.81,altricial
+Acrocephalus_melanopogon,Moustached warbler,polyandrous,0.27,11,56,altricial
+Hirundo_rustica,Barn Swallow,pair,0.33,16.2,55.56,altricial
+Ammodramus_maritimus,Seaside sparrow,pair,0.33,22.5009,17,altricial
+Sericornis_frontalis,White browed Scrubwren,polyandrous,0.37,11.0002,12.5,altricial
+Dolichonyx_oryzivorus,Bobolink,polyandrous,0.39,47,38,altricial
+Charadrius_hiaticula,Ringed Plover,pair,0.4,54,0,precocial
+Rhipidura_fuliginosa,Grey Fantail,pair,0.4,9.3004,64,altricial
+Anthus_spinoletta,Water Pipit,pair,0.425,23.8,12.4,altricial
+Wilsonia_citrina,Hooded Warbler,pair,0.43,10.6,35.3,altricial
+Zonotrichia_albicollis,White throated Sparrow,pair,0.43,27.1019,31.3,altricial
+Acrocephalus_arundinaceus,Great Reed Warbler,polyandrous,0.46,27.2,10.42,altricial
+Malurus_cyaneus,Superb Fairywren,cooperative,0.48,9,95,altricial
+Malurus_splendens,Splendid Fairywren,cooperative,0.48,10,29.51,altricial
+Passerculus_sandwichensis,Savannah Sparrow,polyandrous,0.49,18.9017,69.23,altricial
+Haematopus_ostralegus,Eurasian Oystercatcher,pair,0.54,529.2,3.9,precocial
+Pomatostomus_temporalis,Grey crowned babblers,cooperative,0.54,121,18.33,altricial
+Colaptes_auratus,Northern flicker,pair,0.61,128.5879,16.9,altricial
+Tachycineta_bicolor,Tree Swallow,pair,0.64,20.1,85,altricial
+Sialia_currucoides,Mountain bluebird,pair,0.66,29.6006,71.74,altricial
+Alauda_arvensis,Skylark,pair,0.685,39.0032,51.75,altricial
+Prunella_modularis,Dunnock,polyandrous,0.69,20.8,2.2,altricial
+Rissa_tridactyla,Black legged Kittiwake,pair,0.7,390,0,altricial
+Falco_tinnunculus,Kestrel,pair,0.72,192,2.7,altricial
+Icterus_galbula,Baltimore Oriole,pair,0.74,37.0023,46,altricial
+Struthidea_cinerea,Apostlebird,cooperative,0.75,127.9971,0,altricial
+Hymenolaimus_malacorhynchos,Blue Duck,pair,0.84,833,0,altricial
+Agelaius_phoeniceus,Red winged Blackbird,polyandrous,0.92,66,41.18,altricial
+Melanerpes_formicivorus,Acorn Woodpecker,polyandrous,0.93,64,0,altricial
+Turdus_merula,European Blackbird,pair,1.01,76,28.57,altricial
+Lagopus_lagopus,Willow Ptarmigan,polyandrous,1.02,657.0997,13.16,precocial
+Apus_apus,Swift,pair,1.13,41,9.5,altricial
+Corvus_brachyrhynchos,American crow,cooperative,1.14,756,21.7,altricial
+Calcarius_pictus,Smiths Longspur,polyandrous,1.2,28.5,3.23,altricial
+Pica_pica,Eurasian Magpie,pair,1.25,220,16.98,altricial
+Ammodramus_caudacutus,Saltmarsh sparrow,polyandrous,1.26,17.4,95,altricial
+Aegolius_funereus,Boreal Owl,pair,1.28,100,0,altricial
+Aphelocoma_coerulescens,Florida Scrub Jay,cooperative,1.405,82.0918,0,altricial
+Gallinula_chloropus,Moorhen,cooperative,1.47,340.0165,0,precocial
+Cyanocorax_morio,Brown jay,cooperative,1.6,242.9965,21.6,altricial
+Aphelocoma_ultramarina,Mexican jay ,polyandrous,1.955,119.7016,3.92,altricial
+Dacelo_novaeguineae,Laughing Kookaburra,cooperative,2.06,313.25,0,altricial
+Fratercula_arctica,Atlantic Puffin,pair,2.1,450,0,altricial
+Falco_sparverius,American Kestrel,pair,2.11,95,9.5,altricial
+Larus_argentatus,European Herring Gull,pair,2.5,1115,0,altricial
+Alle_alle,Little auk,pair,2.54,140,0,altricial
+Cepphus_grylle,Black Guillemot,pair,2.63,397.1915,0,altricial
+Asio_otus,Long eared Owl,pair,2.71,273,0,altricial
+Gymnorhina_tibicen,Australian magpie,cooperative,2.97,211.9825,86.36,altricial
+Prunella_collaris,Alpine Accentor,polyandrous,3.04,47.1,0,altricial
+Corvus_corone,Carrion crow,cooperative,3.04,589,0,altricial
+Strix_aluco,Tawny owl,pair,3.2,420,2.7,altricial
+Branta_canadensis,Canada Goose,pair,4.26,3878.7,14.29,precocial
+Centropus_phasianinus,Pheasant Coucal,pair,4.68,331.9709,47.62,altricial
+Cygnus_atratus,Black swan,pair,5.89,6200.1186,37.65,precocial
+Accipiter_gentilis,Northern Goshawk,pair,7.29,860.5973,2.56,altricial
+Porphyrio_porphyrio,Purple Swamphen,polyandrous,7.33,670,0,precocial
+Grus_canadensis,Sandhill cranes,pair,7.83,4500,22,precocial

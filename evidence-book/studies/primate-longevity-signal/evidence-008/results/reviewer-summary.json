@@ -1,0 +1,39 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "data-preparation",
+    "tree-data-correspondence"
+  ],
+  "claim_titles": [
+    "PCM1 tree-data correspondence is explicit before model fitting"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-008",
+  "evidence_title": "Primate tree-data correspondence parity bundle",
+  "limitations": [
+    "This bundle covers correspondence and join readiness only; later lambda and ancestral-state results are separate evidence."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed evidence for missing-tip trimming, tip-order alignment, and node-aware tree-data joining.",
+    "Comparison mode: direct_parity. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "tip-order-alignment",
+    "tree-import-and-pruning",
+    "treeio-node-mapping-and-join"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json"
+  ],
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal"
+}

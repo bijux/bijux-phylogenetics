@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-duplicate-species-aggregation-parity",
+      "claim_title": "PCM1 duplicate-species aggregation is explicit and quantified",
+      "evidence_ids": [
+        "evidence-005"
+      ],
+      "source_fragments": [
+        "primate-data-preprocessing"
+      ],
+      "summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-005",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

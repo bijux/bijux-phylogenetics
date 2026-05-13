@@ -1,0 +1,2 @@
+constraint_mode	model	analyzed_taxon_count	log_likelihood	parameter_count	aic	root_host	root_confidence
+unconstrained	all-rates-different	9	-4.87509299391493	6	21.7501859878299	bat	1.0

@@ -1,0 +1,20 @@
+{
+  "columns_with_missing_values": [],
+  "evidence_id": "evidence-004",
+  "missing_counts_by_column": {
+    "body_mass": 0,
+    "family": 0,
+    "gestation": 0,
+    "home_range": 0,
+    "longevity": 0,
+    "mating_system": 0,
+    "sex_dimorphism": 0,
+    "social_group_size": 0,
+    "species": 0
+  },
+  "na_rm_reference_rule": "across(body_mass:social_group_size, ~mean(.x, na.rm = TRUE))",
+  "post_repair_row_count": 75,
+  "rows_with_any_missing_values": 0,
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

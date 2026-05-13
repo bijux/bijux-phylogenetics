@@ -1,0 +1,92 @@
+{
+  "evidence_id": "evidence-005",
+  "governed_local_artifact_count": 5,
+  "governed_local_artifacts": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/README.md",
+      "read_only": false,
+      "sha256": "24c572e8c33dafbd474be57fa3d31dd57f0a79191f9a864c40867d54653421e9"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/manifest.json",
+      "read_only": false,
+      "sha256": "f278a55890be8d13e249005c8d0982e034bf2d04c917bc5c5ebc01fa666c6809"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/residual-diagnostics-parity.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/residual-diagnostics-parity.json",
+      "read_only": false,
+      "sha256": "bed7a3490291e53d09aee1cab6e4da17a69530d44df0f854c9007dda681c3e44"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "7511dba6df47b506c4f3566111d2536bfa49d15979a3622132c194f17d2467b2"
+    },
+    {
+      "input_id": "local-input-005",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "8e29d86350d49680af8396bef38c77b734d0a3ca008802673a87d0024133201e"
+    }
+  ],
+  "local_input_count": 0,
+  "local_inputs": [],
+  "schema_version": 2,
+  "source_input_count": 5,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "external-source-descriptor",
+      "label": "Lund source descriptors",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+      "read_only": true,
+      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "governed primate reference table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "read_only": true,
+      "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
+    },
+    {
+      "input_id": "source-input-003",
+      "kind": "repository-reference",
+      "label": "governed primate trimmed tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+      "read_only": true,
+      "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
+    },
+    {
+      "input_id": "source-input-004",
+      "kind": "repository-reference",
+      "label": "R reference results for the PGLS and signal study",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+      "read_only": true,
+      "sha256": "d7b74a5da5e73a3cdff702d2d86b2936a3ad96f77dc45b5cb95df2af611b9ed9"
+    },
+    {
+      "input_id": "source-input-005",
+      "kind": "repository-reference",
+      "label": "Primate residual diagnostics parity bundle report payload",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/residual-diagnostics-parity.json",
+      "read_only": false
+    }
+  ],
+  "study_id": "primate-pgls-and-signal"
+}

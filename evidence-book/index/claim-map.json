@@ -1,0 +1,534 @@
+{
+  "claim_count": 28,
+  "claims": [
+    {
+      "claim_id": "pcm1-ancestral-state-parity",
+      "claim_title": "PCM1 ancestral-state outputs agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "continuous-ancestral-point-estimates",
+            "continuous-ancestral-intervals",
+            "ancestral-table-assembly",
+            "bonobo-gibbon-mrca-estimate",
+            "lifespan-increase-counts"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-artifact-provenance-tracking",
+      "claim_title": "PCM1 saved artifacts remain governed provenance surfaces",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "not_comparable",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "processed-analysis-artifacts",
+            "final-workspace-artifact"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-duplicate-species-aggregation-parity",
+      "claim_title": "PCM1 duplicate-species aggregation is explicit and quantified",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-005",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-005",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-missing-data-accounting-parity",
+      "claim_title": "PCM1 missing-data accounting is visible before downstream inference",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-004",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-004",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-primate-data-preparation-parity",
+      "claim_title": "PCM1 primate data preparation matches the governed reference",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-primate-lambda-fit-parity",
+      "claim_title": "PCM1 primate lambda inference agrees within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "primate-lambda-fit",
+            "lambda-zero-covariance-and-lrt"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-processed-export-parity",
+      "claim_title": "PCM1 processed exports are governed as explicit downstream inputs",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-009",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-009",
+          "source_fragments": [
+            "processed-analysis-artifacts"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-random-lambda-fit-parity",
+      "claim_title": "PCM1 random-data lambda fits agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "random-simulation-inputs",
+            "random-signal-lambda-fits"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-reproducibility-contract-tracked",
+      "claim_title": "PCM1 reproducibility contract is tracked explicitly",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "not_comparable",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "environment-and-package-contract"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-topology-operation-parity",
+      "claim_title": "PCM1 topology teaching operations preserve the intended structure",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "unrooted-tree-demo",
+            "extract-clade-node-77",
+            "rotate-nodes-behavior"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-data-correspondence-parity",
+      "claim_title": "PCM1 tree-data correspondence is explicit before model fitting",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-008",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-008",
+          "source_fragments": [
+            "tree-import-and-pruning",
+            "tip-order-alignment",
+            "treeio-node-mapping-and-join"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-data-join-parity",
+      "claim_title": "PCM1 tree and trait joining logic matches across R and Bijux",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "tip-order-alignment",
+            "treeio-node-mapping-and-join",
+            "primate-longevity-vector-assembly"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-diagnostics-parity",
+      "claim_title": "PCM1 tree diagnostics are separated from later comparative results",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-007",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-007",
+          "source_fragments": [
+            "tree-import-and-pruning",
+            "extract-clade-node-77"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-import-parity",
+      "claim_title": "PCM1 tree import behavior is governed explicitly",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-006",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-006",
+          "source_fragments": [
+            "tree-import-and-pruning"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-tree-import-pruning-parity",
+      "claim_title": "PCM1 tree import and pruning behavior matches the governed reference",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "tree-import-and-pruning"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-type-repair-parity",
+      "claim_title": "PCM1 type repair contract is explicit and reviewable",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-003",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-003",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-visual-surface-tracking",
+      "claim_title": "PCM1 visual surfaces are tracked without false equivalence claims",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "not_comparable",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "source_fragments": [
+            "ape-plotting-basics",
+            "ape-alternate-layouts",
+            "phytools-tree-plotting",
+            "ggtree-tree-visualization",
+            "ape-longevity-overlay",
+            "joined-ggtree-trait-plotting",
+            "random-simulation-plotting",
+            "primate-longevity-visual-inspection",
+            "lambda-zero-visual-comparison",
+            "ancestral-colored-tree-plot"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm1-workbook-loading-parity",
+      "claim_title": "PCM1 workbook loading contract is governed explicitly",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-002",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-002",
+          "source_fragments": [
+            "primate-data-preprocessing"
+          ],
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-ancestral-parity",
+      "claim_title": "PCM2 Brownian and early-burst ancestral reconstructions agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-009",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-009",
+          "source_fragments": [
+            "ancestral-mode-comparison"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-baseline-gls-parity",
+      "claim_title": "PCM2 baseline GLS outputs match before phylogenetic correction",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-002",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-002",
+          "source_fragments": [
+            "baseline-gls-fit"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-coverage-boundary-explicit",
+      "claim_title": "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit",
+      "evidence": [
+        {
+          "bundle_verdict_status": "not_comparable",
+          "claim_verdict": "not_comparable",
+          "evidence_id": "evidence-010",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-010",
+          "source_fragments": [
+            "mode-linked-intercept-models"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-diagnostics-parity",
+      "claim_title": "PCM2 residual diagnostics are machine-recorded and scientifically equivalent",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-005",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-005",
+          "source_fragments": [
+            "baseline-gls-diagnostics",
+            "estimated-lambda-diagnostics"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-fitcontinuous-parity",
+      "claim_title": "PCM2 fitContinuous-style evolutionary mode fits agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-007",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-007",
+          "source_fragments": [
+            "continuous-model-comparison"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-likelihood-ratio-parity",
+      "claim_title": "PCM2 likelihood-ratio model comparisons agree within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-008",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-008",
+          "source_fragments": [
+            "evolutionary-mode-likelihood-ratios"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-pagel-lambda-regression-parity",
+      "claim_title": "PCM2 Pagel-lambda regression agrees within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-003",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-003",
+          "source_fragments": [
+            "pagel-lambda-regression"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-phylogenetic-signal-parity",
+      "claim_title": "PCM2 phylogenetic signal testing agrees within governed tolerance",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched_with_tolerance",
+          "claim_verdict": "matched_with_tolerance",
+          "evidence_id": "evidence-004",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-004",
+          "source_fragments": [
+            "phylogenetic-signal-test"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-reload-contract-governed",
+      "claim_title": "PCM2 reload semantics are represented explicitly",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-001",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "source_fragments": [
+            "workspace-reload-contract"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    },
+    {
+      "claim_id": "pcm2-transformed-tree-parity",
+      "claim_title": "PCM2 transformed-tree workflows match on governed branch summaries",
+      "evidence": [
+        {
+          "bundle_verdict_status": "matched",
+          "claim_verdict": "matched",
+          "evidence_id": "evidence-006",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "source_fragments": [
+            "transformed-tree-workflows"
+          ],
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal"
+        }
+      ]
+    }
+  ],
+  "schema_version": 1
+}

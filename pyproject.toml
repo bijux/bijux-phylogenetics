@@ -20,6 +20,7 @@ Security = "https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md"
 [dependency-groups]
 dev = [
     "bijux-phylogenetics[dev]",
+    "phylogenetic[dev]",
     "bijux-phylogenetics-dev[dev]",
     "mkdocs-redirects>=1.2.1,<2.0",
     "PyYAML>=6.0,<7.0",
@@ -39,18 +40,34 @@ update_changelog_on_bump = false
 api_dir = "apis"
 packages = [
     "bijux-phylogenetics",
+    "phylogenetic",
     "bijux-phylogenetics-dev",
 ]
 docs_package = "bijux-phylogenetics-dev"
 config_dir = "configs"
 make_dir = "makes"
 
+# Shared workspace package index consumed by common Bijux make tooling.
+[tool.bijux_canon.package_dirs]
+"bijux-phylogenetics" = "packages/bijux-phylogenetics"
+"phylogenetic" = "packages/phylogenetic"
+"bijux-phylogenetics-dev" = "packages/bijux-phylogenetics-dev"
+
 [tool.uv.sources]
 bijux-phylogenetics = { workspace = true }
+phylogenetic = { workspace = true }
 bijux-phylogenetics-dev = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
+
+[tool.interrogate]
+fail-under = 32
+color = true
+
+[tool.bandit]
+skips = ["B404", "B311"]
+exclude_dirs = [".venv", "tests", "artifacts", ".pytest_cache", ".ruff_cache"]
 
 [tool.hatch.version]
 source = "vcs"

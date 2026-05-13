@@ -1,0 +1,81 @@
+{
+  "claim_ids": [
+    "pcm1-workbook-loading-parity"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "data-preparation",
+    "workbook-loading"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-002",
+  "evidence_title": "Primate workbook loading parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+    ],
+    "last_generated_on": "2026-05-13",
+    "source_basis_locators": [
+      "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
+    ]
+  },
+  "limitations": [
+    "The raw workbook remains an external teaching source; the Python-side review starts from the governed processed reference artifact."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "data-preparation"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_bundle_locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+  "reference_script_locators": [
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L33-L34",
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L77"
+  ],
+  "report_keys": [
+    "boundary_note",
+    "checked_in_processed_matches_reference",
+    "evidence_id",
+    "governed_processed_reference_locator",
+    "processed_row_count",
+    "processed_species_count",
+    "raw_row_count",
+    "raw_workbook_locator",
+    "reference_column_order",
+    "schema_version",
+    "study_id"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "external-course-material",
+      "label": "lund pcm1 raw primate workbook",
+      "locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate workbook loading parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
+    }
+  ],
+  "source_fragments": [
+    "primate-data-preprocessing"
+  ],
+  "study_id": "primate-longevity-signal",
+  "summary": "Governed evidence for the raw workbook intake boundary and the resulting processed table contract.",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json",
+  "verdict": {
+    "status": "matched",
+    "summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact."
+  }
+}

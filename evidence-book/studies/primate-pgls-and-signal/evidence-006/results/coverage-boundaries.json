@@ -1,0 +1,17 @@
+{
+  "coverage_boundaries": {
+    "notes": [
+      "The lecture EB surfaces remain outside the current canonical runtime parity surface.",
+      "Transformed-tree and ancestral comparison fragments stay explicitly indexed until governed runtime coverage exists."
+    ],
+    "uncovered_fragments": [
+      "transformed-tree-workflows",
+      "continuous-model-comparison",
+      "ancestral-mode-comparison",
+      "mode-linked-intercept-models"
+    ]
+  },
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

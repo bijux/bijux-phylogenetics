@@ -1,0 +1,10 @@
+{
+  "source": "governed fixed-alpha OU covariance regression fixture",
+  "alpha": 1.0,
+  "log_likelihood": -2.906748897463272,
+  "aic": 9.813497794926544,
+  "coefficients": {
+    "intercept": 0.43120431282304317,
+    "predictor_one": 0.9087628025668772
+  }
+}

@@ -5,20 +5,28 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import (
+    load_continuous_dataset,
     reconstruction_manifest,
     write_ancestral_rows,
 )
 from bijux_phylogenetics.ancestral.continuous import (
     ContinuousAncestralReport,
+    _reconstruct_continuous_from_dataset,
     reconstruct_continuous_ancestral_states,
 )
 from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     reconstruct_discrete_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.visualization import (
+    render_ancestral_state_visualization,
+)
+from bijux_phylogenetics.comparative.evolutionary_modes import (
+    transform_tree_for_evolutionary_mode,
+)
 from bijux_phylogenetics.discrete_evolution import run_discrete_state_transition_model
 from bijux_phylogenetics.render.html import write_html_report
-from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
+from bijux_phylogenetics.render.svg import TreeRenderResult
 
 
 @dataclass(slots=True)
@@ -80,6 +88,41 @@ class DiscreteAncestralModelComparisonReport:
     selected_model: str
     rows: list[DiscreteAncestralModelComparisonRow]
     node_differences: list[DiscreteAncestralModelDifference]
+
+
+@dataclass(slots=True)
+class DiscreteAncestralPairComparisonRow:
+    """Node-wise comparison between two discrete ancestral reconstructions."""
+
+    node: str
+    descendant_taxa: list[str]
+    left_state: str
+    right_state: str
+    left_state_set: list[str]
+    right_state_set: list[str]
+    left_confidence: float
+    right_confidence: float
+    left_ambiguous: bool
+    right_ambiguous: bool
+    differs: bool
+    ambiguity_changed: bool
+
+
+@dataclass(slots=True)
+class DiscreteAncestralPairComparisonReport:
+    """Direct comparison between two discrete ancestral reconstruction models."""
+
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    taxon_count: int
+    left_model: str
+    right_model: str
+    left_minimal_change_count: int | None
+    right_minimal_change_count: int | None
+    differing_node_count: int
+    ambiguity_change_count: int
+    rows: list[DiscreteAncestralPairComparisonRow]
 
 
 @dataclass(slots=True)
@@ -147,6 +190,20 @@ class AncestralStateReportBuildResult:
     machine_manifest: dict[str, object]
 
 
+@dataclass(slots=True)
+class ContinuousEvolutionaryModeAncestralReport:
+    """Continuous ancestral reconstruction over a governed transformed-tree mode."""
+
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    mode: str
+    parameter_name: str | None
+    parameter_value: float | None
+    transformed_tree_newick: str
+    reconstruction: ContinuousAncestralReport
+
+
 def compare_continuous_ancestral_models(
     tree_path: Path,
     traits_path: Path,
@@ -203,6 +260,67 @@ def compare_continuous_ancestral_models(
         left_model=left_model,
         right_model=right_model,
         rows=rows,
+    )
+
+
+def reconstruct_continuous_evolutionary_mode_states(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    mode: str = "brownian",
+    rate_change: float = 0.0,
+) -> ContinuousEvolutionaryModeAncestralReport:
+    """Reconstruct continuous ancestral states under Brownian or early-burst tree modes."""
+    if mode == "brownian":
+        reconstruction = reconstruct_continuous_ancestral_states(
+            tree_path,
+            traits_path,
+            trait=trait,
+            taxon_column=taxon_column,
+            model="brownian",
+        )
+        return ContinuousEvolutionaryModeAncestralReport(
+            tree_path=tree_path,
+            traits_path=traits_path,
+            trait=trait,
+            mode="brownian",
+            parameter_name=None,
+            parameter_value=None,
+            transformed_tree_newick=reconstruction.analysis_tree_newick,
+            reconstruction=reconstruction,
+        )
+    if mode != "early-burst":
+        raise ValueError(
+            "unsupported evolutionary mode for continuous ancestral reconstruction"
+        )
+    dataset = load_continuous_dataset(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+    )
+    transformed_tree = transform_tree_for_evolutionary_mode(
+        dataset.tree,
+        mode="early-burst",
+        parameter_value=rate_change,
+    )
+    reconstruction = _reconstruct_continuous_from_dataset(
+        dataset,
+        working_tree=transformed_tree,
+        model="brownian",
+        alpha=1.0,
+    )
+    return ContinuousEvolutionaryModeAncestralReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        trait=trait,
+        mode="early-burst",
+        parameter_name="rate_change",
+        parameter_value=rate_change,
+        transformed_tree_newick=reconstruction.analysis_tree_newick,
+        reconstruction=reconstruction,
     )
 
 
@@ -285,6 +403,130 @@ def compare_discrete_ancestral_models(
         selected_model=selected_model,
         rows=rows,
         node_differences=node_differences,
+    )
+
+
+def compare_discrete_ancestral_reconstructions(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None = None,
+    left_model: str = "fitch",
+    right_model: str = "equal-rates",
+    state_ordering: str = "unordered",
+    ordered_states: list[str] | None = None,
+) -> DiscreteAncestralPairComparisonReport:
+    """Compare two discrete ancestral reconstructions node by node."""
+    if left_model == right_model:
+        raise ValueError("discrete ancestral comparison requires distinct models")
+    left = reconstruct_discrete_ancestral_states(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=left_model,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    right = reconstruct_discrete_ancestral_states(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        model=right_model,
+        state_ordering=state_ordering,
+        ordered_states=ordered_states,
+    )
+    right_by_node = {
+        estimate.node: estimate for estimate in right.estimates if not estimate.is_tip
+    }
+    rows: list[DiscreteAncestralPairComparisonRow] = []
+    differing_node_count = 0
+    ambiguity_change_count = 0
+    for left_estimate in left.estimates:
+        if left_estimate.is_tip or left_estimate.node not in right_by_node:
+            continue
+        right_estimate = right_by_node[left_estimate.node]
+        differs = left_estimate.most_likely_state != right_estimate.most_likely_state
+        ambiguity_changed = left_estimate.ambiguous != right_estimate.ambiguous
+        if differs:
+            differing_node_count += 1
+        if ambiguity_changed:
+            ambiguity_change_count += 1
+        rows.append(
+            DiscreteAncestralPairComparisonRow(
+                node=left_estimate.node,
+                descendant_taxa=left_estimate.descendant_taxa,
+                left_state=left_estimate.most_likely_state,
+                right_state=right_estimate.most_likely_state,
+                left_state_set=left_estimate.state_set,
+                right_state_set=right_estimate.state_set,
+                left_confidence=left_estimate.confidence,
+                right_confidence=right_estimate.confidence,
+                left_ambiguous=left_estimate.ambiguous,
+                right_ambiguous=right_estimate.ambiguous,
+                differs=differs,
+                ambiguity_changed=ambiguity_changed,
+            )
+        )
+    return DiscreteAncestralPairComparisonReport(
+        tree_path=tree_path,
+        traits_path=traits_path,
+        trait=trait,
+        taxon_count=left.taxon_count,
+        left_model=left.model,
+        right_model=right.model,
+        left_minimal_change_count=left.minimal_change_count,
+        right_minimal_change_count=right.minimal_change_count,
+        differing_node_count=differing_node_count,
+        ambiguity_change_count=ambiguity_change_count,
+        rows=rows,
+    )
+
+
+def write_discrete_ancestral_comparison_table(
+    path: Path,
+    report: DiscreteAncestralPairComparisonReport,
+) -> Path:
+    """Write a node-wise discrete ancestral comparison ledger."""
+    return write_ancestral_rows(
+        path,
+        columns=[
+            "node",
+            "descendant_taxa",
+            "left_model",
+            "right_model",
+            "left_state",
+            "right_state",
+            "left_state_set",
+            "right_state_set",
+            "left_confidence",
+            "right_confidence",
+            "left_ambiguous",
+            "right_ambiguous",
+            "differs",
+            "ambiguity_changed",
+        ],
+        rows=[
+            {
+                "node": row.node,
+                "descendant_taxa": ",".join(row.descendant_taxa),
+                "left_model": report.left_model,
+                "right_model": report.right_model,
+                "left_state": row.left_state,
+                "right_state": row.right_state,
+                "left_state_set": ",".join(row.left_state_set),
+                "right_state_set": ",".join(row.right_state_set),
+                "left_confidence": str(row.left_confidence),
+                "right_confidence": str(row.right_confidence),
+                "left_ambiguous": str(row.left_ambiguous).lower(),
+                "right_ambiguous": str(row.right_ambiguous).lower(),
+                "differs": str(row.differs).lower(),
+                "ambiguity_changed": str(row.ambiguity_changed).lower(),
+            }
+            for row in report.rows
+        ],
     )
 
 
@@ -467,65 +709,15 @@ def render_ancestral_state_tree(
     layout: str = "cladogram",
 ) -> TreeRenderResult:
     """Render one tree with internal ancestral-state annotations."""
-    internal_annotations: dict[str, str]
-    internal_annotation_colors: dict[str, str]
-    if isinstance(report, ContinuousAncestralReport):
-        internal_annotations = {
-            estimate.node: format(estimate.estimate, ".3g")
-            for estimate in report.estimates
-            if not estimate.is_tip
-        }
-        internal_annotation_colors = {
-            estimate.node: "#6d28d9"
-            for estimate in report.estimates
-            if not estimate.is_tip
-        }
-        continuous_traits = {
-            estimate.node_name: estimate.estimate
-            for estimate in report.estimates
-            if estimate.is_tip and estimate.node_name is not None
-        }
-        return render_tree_svg(
-            tree_path,
-            out_path=out_path,
-            layout=layout,
-            continuous_traits=continuous_traits,
-            internal_annotations=internal_annotations,
-            internal_annotation_colors=internal_annotation_colors,
-        )
-
-    internal_annotations = {
-        estimate.node: estimate.most_likely_state
-        if not estimate.ambiguous
-        else "/".join(estimate.state_set)
-        for estimate in report.estimates
-        if not estimate.is_tip
-    }
-    discrete_tip_states = {
-        estimate.node_name: estimate.most_likely_state
-        for estimate in report.estimates
-        if estimate.is_tip and estimate.node_name is not None
-    }
-    palette = dict(
-        zip(
-            sorted(report.observed_states),
-            ("#0f766e", "#1d4ed8", "#c2410c", "#7c3aed", "#b91c1c", "#047857"),
-            strict=False,
-        )
-    )
-    internal_annotation_colors = {
-        estimate.node: palette.get(estimate.most_likely_state, "#6d28d9")
-        for estimate in report.estimates
-        if not estimate.is_tip
-    }
-    return render_tree_svg(
+    visualization = render_ancestral_state_visualization(
         tree_path,
+        report,
         out_path=out_path,
         layout=layout,
-        categorical_traits=discrete_tip_states,
-        internal_annotations=internal_annotations,
-        internal_annotation_colors=internal_annotation_colors,
+        discrete_node_style="labels",
+        branch_coloring="none",
     )
+    return visualization.tree_render
 
 
 def render_ancestral_state_report(
@@ -580,16 +772,17 @@ def render_ancestral_state_report(
             ordered_states=ordered_states,
         )
         comparison = (
-            compare_discrete_ancestral_models(
+            compare_discrete_ancestral_reconstructions(
                 tree_path,
                 traits_path,
                 trait=trait,
                 taxon_column=taxon_column,
-                models=(model, compare_model, "all-rates-different"),
+                left_model=model,
+                right_model=compare_model,
                 state_ordering=state_ordering,
                 ordered_states=ordered_states,
             )
-            if compare_model is not None and model != "fitch"
+            if compare_model is not None
             else None
         )
     from bijux_phylogenetics.ancestral.sensitivity import (

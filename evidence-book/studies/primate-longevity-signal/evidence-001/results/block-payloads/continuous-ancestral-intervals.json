@@ -1,0 +1,12 @@
+{
+  "block_id": "continuous-ancestral-intervals",
+  "evidence": {
+    "lower_95_max_abs_diff": 5.684341886080801e-13,
+    "shared_node_count": 74,
+    "upper_95_max_abs_diff": 5.115907697472721e-13
+  },
+  "note": "The Brownian/PIC confidence-interval surface now matches the R reference to floating-point noise.",
+  "script_lines": "400",
+  "status": "verified_with_tolerance",
+  "title": "Continuous ancestral 95% intervals"
+}

@@ -1,0 +1,7 @@
+taxon	mt-cox1	mt-cox2	mt-cox3	mt-cytb	mt-nd2	covered_locus_count	total_locus_count	locus_coverage_fraction	observed_site_count	total_site_count	site_coverage_fraction	low_coverage
+pan_troglodytes	1.0	1.0	1.0	1.0	1.0	5	5	1.0	5222	5222	1.0	false
+pongo_pygmaeus	1.0	1.0	1.0	1.0	1.0	5	5	1.0	5222	5222	1.0	false
+hylobates_lar	1.0	1.0	1.0	1.0	1.0	5	5	1.0	5222	5222	1.0	false
+macaca_mulatta	1.0	1.0	1.0	1.0	1.0	5	5	1.0	5222	5222	1.0	false
+gorilla_gorilla	1.0	1.0	1.0	1.0	1.0	5	5	1.0	5222	5222	1.0	false
+homo_sapiens	1.0	1.0	1.0	1.0	1.0	5	5	1.0	5222	5222	1.0	false

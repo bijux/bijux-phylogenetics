@@ -1,0 +1,109 @@
+{
+  "cases": [
+    {
+      "abs_tolerance": 0.0005,
+      "case_id": "geography_equal_rates",
+      "model": "equal-rates",
+      "r_model": "ER",
+      "rows": [
+        {
+          "node": "A|B|C|D",
+          "probabilities": {
+            "island": 0.2969,
+            "north": 0.4063,
+            "south": 0.2969
+          }
+        },
+        {
+          "node": "A|B",
+          "probabilities": {
+            "island": 0.0474,
+            "north": 0.9053,
+            "south": 0.0474
+          }
+        },
+        {
+          "node": "C|D",
+          "probabilities": {
+            "island": 0.3764,
+            "north": 0.2473,
+            "south": 0.3764
+          }
+        }
+      ],
+      "table": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_geography.tsv",
+      "taxon_column": "taxon",
+      "trait": "region",
+      "tree": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk"
+    },
+    {
+      "abs_tolerance": 0.0005,
+      "case_id": "geography_symmetric",
+      "model": "symmetric",
+      "r_model": "SYM",
+      "rows": [
+        {
+          "node": "A|B|C|D",
+          "probabilities": {
+            "island": 0.3006,
+            "north": 0.3988,
+            "south": 0.3006
+          }
+        },
+        {
+          "node": "A|B",
+          "probabilities": {
+            "island": 0.0247,
+            "north": 0.9506,
+            "south": 0.0247
+          }
+        },
+        {
+          "node": "C|D",
+          "probabilities": {
+            "island": 0.4119,
+            "north": 0.1762,
+            "south": 0.4119
+          }
+        }
+      ],
+      "table": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_geography.tsv",
+      "taxon_column": "taxon",
+      "trait": "region",
+      "tree": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk"
+    },
+    {
+      "abs_tolerance": 0.025,
+      "case_id": "habitat_all_rates_different",
+      "model": "all-rates-different",
+      "r_model": "ARD",
+      "rows": [
+        {
+          "node": "A|B|C|D",
+          "probabilities": {
+            "forest": 0.5045,
+            "tundra": 0.4955
+          }
+        },
+        {
+          "node": "A|B",
+          "probabilities": {
+            "forest": 0.9558,
+            "tundra": 0.0442
+          }
+        },
+        {
+          "node": "C|D",
+          "probabilities": {
+            "forest": 0.243,
+            "tundra": 0.757
+          }
+        }
+      ],
+      "table": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_comparative.tsv",
+      "taxon_column": "taxon",
+      "trait": "habitat",
+      "tree": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk"
+    }
+  ]
+}

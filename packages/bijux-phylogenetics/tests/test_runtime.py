@@ -1,23 +1,107 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
+
+import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.ancestral import (
     build_ancestral_figure_package,
+    build_ancestral_report_package,
     build_ancestral_sensitivity_report,
+    build_continuous_ancestral_confidence_rows,
+    build_continuous_ancestral_tree_set_confidence_rows,
+    build_discrete_ancestral_confidence_rows,
+    build_discrete_ancestral_tree_set_confidence_rows,
     compare_continuous_ancestral_models,
+    compare_discrete_ancestral_reconstructions,
+    continuous_ancestral_exclusions,
+    discrete_ancestral_exclusions,
     reconstruct_continuous_ancestral_states,
     reconstruct_discrete_ancestral_states,
     render_ancestral_state_report,
     render_ancestral_state_tree,
+    render_ancestral_state_visualization,
+    summarize_ancestral_root_sensitivity,
+    summarize_ancestral_root_sensitivity_report,
+    summarize_ancestral_transition_report,
+    summarize_ancestral_transition_tree_set,
+    summarize_ancestral_transition_tree_set_report,
+    summarize_ancestral_transitions,
+    summarize_continuous_ancestral_confidence,
+    summarize_continuous_ancestral_report,
+    summarize_continuous_ancestral_tree_set,
+    summarize_continuous_ancestral_tree_set_confidence,
+    summarize_continuous_ancestral_tree_set_report,
+    summarize_continuous_change_branches,
+    summarize_continuous_change_counts,
+    summarize_discrete_ancestral_confidence,
+    summarize_discrete_ancestral_report,
+    summarize_discrete_ancestral_tree_set,
+    summarize_discrete_ancestral_tree_set_confidence,
+    summarize_discrete_ancestral_tree_set_report,
+    summarize_irreversible_discrete_reconstruction,
+    summarize_irreversible_discrete_report,
+    summarize_ordered_discrete_reconstruction,
+    summarize_ordered_discrete_report,
+    write_ancestral_confidence_summary_table,
+    write_ancestral_root_assumption_table,
+    write_ancestral_root_sensitivity_node_table,
+    write_ancestral_root_sensitivity_summary_table,
     write_ancestral_state_table,
+    write_ancestral_transition_branch_table,
+    write_ancestral_transition_count_table,
+    write_ancestral_transition_exclusion_table,
+    write_ancestral_transition_summary_table,
+    write_ancestral_transition_tree_set_branch_table,
+    write_ancestral_transition_tree_set_count_table,
+    write_ancestral_transition_tree_set_summary_table,
+    write_ancestral_transition_tree_set_tree_table,
+    write_ancestral_tree_set_exclusion_table,
+    write_ancestral_tree_set_tree_table,
+    write_continuous_ancestral_confidence_table,
+    write_continuous_ancestral_exclusion_table,
+    write_continuous_ancestral_summary_table,
+    write_continuous_ancestral_tree_set_clade_table,
+    write_continuous_ancestral_tree_set_confidence_table,
+    write_continuous_ancestral_tree_set_node_table,
+    write_continuous_ancestral_tree_set_summary_table,
+    write_continuous_ancestral_uncertainty_table,
+    write_continuous_change_branch_table,
+    write_continuous_change_count_table,
+    write_discrete_ancestral_comparison_table,
+    write_discrete_ancestral_confidence_table,
+    write_discrete_ancestral_exclusion_table,
+    write_discrete_ancestral_probability_table,
+    write_discrete_ancestral_summary_table,
+    write_discrete_ancestral_tree_set_clade_table,
+    write_discrete_ancestral_tree_set_confidence_table,
+    write_discrete_ancestral_tree_set_node_table,
+    write_discrete_ancestral_tree_set_summary_table,
+    write_irreversible_discrete_fit_table,
+    write_irreversible_discrete_node_table,
+    write_irreversible_discrete_summary_table,
+    write_irreversible_discrete_transition_table,
+    write_ordered_discrete_fit_table,
+    write_ordered_discrete_node_table,
+    write_ordered_discrete_summary_table,
+    write_ordered_discrete_transition_table,
 )
 from bijux_phylogenetics.bayesian import (
+    BeastAnalysisXmlReport,
+    BeastCalibration,
+    BeastPosteriorConsensusReport,
+    BeastPosteriorTopologyDiversityReport,
+    MrBayesBurninSensitivityReport,
+    MrBayesBurninSensitivitySlice,
+    MrBayesParameterDiagnosticsReport,
+    MrBayesParameterSummary,
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
     assess_beast_convergence,
+    assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
     build_bayesian_evidence_package,
     build_posterior_uncertainty_figure_package,
@@ -28,22 +112,43 @@ from bijux_phylogenetics.bayesian import (
     compute_mrbayes_effective_sample_sizes,
     detect_impossible_calibration_constraints,
     parse_beast_log,
+    parse_beast_posterior_tree_samples,
+    parse_mrbayes_consensus_tree,
+    parse_mrbayes_mcmc_diagnostics,
     parse_mrbayes_parameter_traces,
+    parse_mrbayes_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
     prepare_mrbayes_analysis,
     render_bayesian_diagnostics_report,
     render_bayesian_posterior_report,
     render_bayesian_run_comparison_report,
     render_calibration_audit_report,
+    run_beast_posterior_inference,
     run_mrbayes_posterior_inference,
+    subsample_beast_posterior_tree_set,
+    subsample_mrbayes_posterior_tree_set,
+    subsample_posterior_tree_set,
+    summarize_beast_analysis_xml,
+    summarize_beast_log,
+    summarize_beast_posterior_topology_diversity,
+    summarize_beast_posterior_trees,
     summarize_maximum_clade_credibility_tree,
+    summarize_mrbayes_parameter_diagnostics,
     summarize_mrbayes_posterior_trees,
     summarize_posterior_node_ages,
     thin_posterior_tree_set,
+    validate_beast_analysis_xml,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
     write_bayesian_methods_summary_text,
+    write_beast_burnin_sensitivity_slice_table,
+    write_beast_log_summary_table,
+    write_beast_posterior_tree_set,
+    write_mrbayes_burnin_sensitivity_slice_table,
+    write_mrbayes_parameter_summary_table,
+    write_posterior_tree_subsample,
+    write_posterior_tree_subsample_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -51,32 +156,322 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
+from bijux_phylogenetics.biogeography import (
+    BiogeographyRegionCountRow,
+    BiogeographyReportExclusionRow,
+    BiogeographyReportPackageResult,
+    ConstrainedGeographicFitRow,
+    ConstrainedGeographicReport,
+    ConstrainedGeographicSummary,
+    ConstrainedGeographicTransitionRow,
+    DatedBiogeographyEventRow,
+    DatedBiogeographyNodeRow,
+    DatedBiogeographyReport,
+    DatedBiogeographySummary,
+    DatedBiogeographyTimeBinRow,
+    GeographicMigrationEventReport,
+    GeographicMigrationEventRow,
+    GeographicMigrationEventSummary,
+    GeographicMigrationTreeRow,
+    GeographicMigrationTreeSetEventRow,
+    GeographicMigrationTreeSetEventSummaryRow,
+    GeographicMigrationTreeSetReport,
+    GeographicMigrationTreeSetSummary,
+    GeographicSamplingBiasNodeRow,
+    GeographicSamplingBiasReport,
+    GeographicSamplingBiasSummary,
+    GeographicSamplingBiasTransitionRow,
+    GeographicSamplingCountRow,
+    TimeBinDefinition,
+    TimeStratifiedBranchRow,
+    TimeStratifiedTransitionMatrixRow,
+    TimeStratifiedTransitionReport,
+    TimeStratifiedTransitionSummary,
+    UnsupportedGeographicTransitionClaimRow,
+    build_biogeography_report_package,
+    summarize_biogeographic_transition_chronology,
+    summarize_biogeography_region_counts,
+    summarize_constrained_geographic_model,
+    summarize_constrained_geographic_report,
+    summarize_geographic_migration_event_tree_set,
+    summarize_geographic_migration_events,
+    summarize_geographic_sampling_bias,
+    summarize_geographic_state_model,
+    summarize_time_stratified_geographic_transitions,
+    write_biogeography_region_count_table,
+    write_biogeography_report_exclusion_table,
+    write_constrained_geographic_exclusion_table,
+    write_constrained_geographic_fit_table,
+    write_constrained_geographic_summary_table,
+    write_constrained_geographic_transition_table,
+    write_dated_biogeography_event_table,
+    write_dated_biogeography_exclusion_table,
+    write_dated_biogeography_node_table,
+    write_dated_biogeography_summary_table,
+    write_dated_biogeography_time_bin_table,
+    write_geographic_exclusion_table,
+    write_geographic_migration_event_summary_table,
+    write_geographic_migration_event_table,
+    write_geographic_migration_exclusion_table,
+    write_geographic_migration_tree_set_event_summary_table,
+    write_geographic_migration_tree_set_event_table,
+    write_geographic_migration_tree_set_exclusion_table,
+    write_geographic_migration_tree_set_summary_table,
+    write_geographic_migration_tree_set_tree_table,
+    write_geographic_region_probability_table,
+    write_geographic_sampling_bias_exclusion_table,
+    write_geographic_sampling_bias_node_table,
+    write_geographic_sampling_bias_summary_table,
+    write_geographic_sampling_bias_transition_table,
+    write_geographic_sampling_count_table,
+    write_geographic_state_summary_table,
+    write_geographic_transition_event_table,
+    write_geographic_transition_rate_table,
+    write_time_stratified_branch_table,
+    write_time_stratified_exclusion_table,
+    write_time_stratified_transition_matrix_table,
+    write_time_stratified_transition_summary_table,
+    write_unsupported_geographic_transition_claim_table,
+)
+from bijux_phylogenetics.branch_lengths import (
+    BranchLengthAggregate,
+    BranchLengthDistributionReport,
+    BranchLengthRow,
+    analyze_branch_length_distribution,
+    analyze_tree_set_branch_lengths,
+    write_branch_length_table,
+)
+from bijux_phylogenetics.clades import (
+    CladeMetadataObservation,
+    CladeTableReport,
+    CladeTableRow,
+    extract_tree_clades,
+    extract_tree_set_clades,
+    write_clade_table,
+)
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.comparative import (
+    BranchIdentityMetadata,
+    BrownianRegimeBranchRow,
+    BrownianRegimeExclusion,
+    BrownianRegimeFitSummaryReport,
+    BrownianRegimeIdentifiabilityWarning,
+    BrownianRegimeProfileRow,
+    BrownianRegimeRateRow,
+    CladeTraitExclusion,
+    CladeTraitRow,
+    CladeTraitStateCount,
+    CladeTraitSummaryReport,
+    ComparativeAnalysisSummaryRow,
+    ComparativeAuditTableRow,
+    ComparativeCladeCoefficientChangeRow,
+    ComparativeCladeResidualReport,
+    ComparativeCladeStabilityReport,
+    ComparativeCladeStabilityRow,
+    ComparativeCoefficientTableRow,
+    ComparativeInterpretationRow,
+    ComparativeRegressionModelExclusion,
+    ComparativeRegressionModelRow,
+    ComparativeRegressionModelSelectionReport,
+    ComparativeRegressionPairwiseComparisonRow,
+    ComparativeReportPackageResult,
+    ComparativeResidualCladeRow,
+    ComparativeResidualTableRow,
+    ComparativeResidualTaxonRow,
+    ComparativeSignalTableRow,
+    CorrelatedTraitComparisonRow,
+    CorrelatedTraitEvolutionReport,
+    CorrelatedTraitExclusion,
+    CorrelatedTraitObservationRow,
+    EarlyBurstIdentifiabilityWarning,
+    EarlyBurstRateChangeProfileRow,
+    EarlyBurstTraitEvolutionExclusion,
+    EarlyBurstTraitEvolutionSummaryReport,
+    IndependentContrastRegressionReport,
+    IndependentContrastRegressionRow,
+    MultivariateComparativeRegressionReport,
+    MultivariateResidualAssociationRow,
+    MultivariateResidualCorrelationRow,
+    MultivariateResidualCovarianceRow,
+    MultivariateResponseCoefficientRow,
+    MultivariateResponseModelRow,
+    MultivariateTaxonExclusion,
+    PhylogeneticLogisticCoefficient,
+    PhylogeneticLogisticFittedRow,
+    PhylogeneticLogisticReport,
+    PhylogeneticLogisticWarning,
+    PhylogeneticSignalPermutation,
+    PhylogeneticSignalSummaryReport,
+    PosteriorTreePGLSCoefficientRow,
+    PosteriorTreePGLSCoefficientSummaryRow,
+    PosteriorTreePGLSReport,
+    PosteriorTreePGLSTreeFitRow,
+    TraitImputationExclusion,
+    TraitImputationHoldoutRow,
+    TraitImputationRow,
+    TraitImputationSummaryReport,
+    TraitOutlierExclusion,
+    TraitOutlierSummaryReport,
+    TraitOutlierTaxonRow,
+    TraitRateThroughTimeExclusion,
+    TraitRateThroughTimeIntervalRow,
+    TraitRateThroughTimeSummaryReport,
+    TraitRegimeBranchRow,
+    TraitRegimeExclusion,
+    TraitRegimeMappingReport,
+    TraitRegimeNodeRow,
+    analyze_comparative_clade_stability,
+    analyze_comparative_residual_clades,
     assess_comparative_method_maturity,
     audit_comparative_parameter_uncertainty,
     audit_ou_identifiability_reference_examples,
+    build_branch_identity_lookup,
+    build_comparative_report_package,
+    build_pgls_model_matrix,
+    compare_comparative_regression_models,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
     inspect_pgls_inputs,
+    run_multivariate_comparative_regression,
     run_pgls,
+    run_posterior_tree_pgls,
+    summarize_brownian_covariance_pgls,
+    summarize_brownian_regime_rates,
+    summarize_brownian_trait_evolution,
+    summarize_clade_traits,
+    summarize_comparative_analysis,
+    summarize_comparative_audit,
+    summarize_comparative_coefficients,
+    summarize_comparative_interpretation,
+    summarize_comparative_residuals,
+    summarize_comparative_signal,
+    summarize_correlated_trait_evolution,
+    summarize_early_burst_trait_evolution,
+    summarize_independent_contrast_regression,
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
+    summarize_ou_covariance_pgls,
+    summarize_ou_trait_evolution,
+    summarize_pgls_categorical_contrasts,
+    summarize_pgls_interaction_coefficients,
+    summarize_pgls_lambda_fit,
+    summarize_phylogenetic_logistic,
+    summarize_phylogenetic_signal,
+    summarize_trait_imputation,
+    summarize_trait_outliers,
+    summarize_trait_rate_through_time,
+    summarize_trait_regime_mapping,
+    write_brownian_covariance_table,
+    write_brownian_regime_branch_table,
+    write_brownian_regime_comparison_table,
+    write_brownian_regime_exclusion_table,
+    write_brownian_regime_profile_table,
+    write_brownian_regime_rate_table,
+    write_brownian_regime_summary_table,
+    write_brownian_trait_evolution_exclusion_table,
+    write_brownian_trait_evolution_summary_table,
+    write_clade_trait_clade_table,
+    write_clade_trait_exclusion_table,
+    write_clade_trait_summary_table,
+    write_comparative_audit_table,
+    write_comparative_clade_coefficient_change_table,
+    write_comparative_clade_stability_table,
+    write_comparative_coefficient_table,
+    write_comparative_contrast_table,
+    write_comparative_interpretation_table,
+    write_comparative_model_comparison_table,
+    write_comparative_regression_excluded_taxa_table,
+    write_comparative_regression_model_ranking_table,
+    write_comparative_regression_pairwise_table,
+    write_comparative_residual_clade_table,
+    write_comparative_residual_table,
+    write_comparative_residual_taxon_table,
+    write_comparative_signal_table,
+    write_comparative_summary_table,
+    write_correlated_trait_comparison_table,
+    write_correlated_trait_exclusion_table,
+    write_correlated_trait_observation_table,
+    write_correlated_trait_summary_table,
+    write_early_burst_rate_change_profile_table,
+    write_early_burst_trait_evolution_comparison_table,
+    write_early_burst_trait_evolution_exclusion_table,
+    write_early_burst_trait_evolution_summary_table,
+    write_independent_contrast_regression_table,
+    write_independent_contrast_table,
+    write_multivariate_excluded_taxa_table,
+    write_multivariate_residual_association_table,
+    write_multivariate_residual_correlation_table,
+    write_multivariate_residual_covariance_table,
+    write_multivariate_response_coefficient_table,
+    write_multivariate_response_model_table,
+    write_ou_alpha_profile_table,
+    write_ou_covariance_table,
+    write_ou_trait_evolution_exclusion_table,
+    write_ou_trait_evolution_summary_table,
+    write_pgls_categorical_contrast_table,
+    write_pgls_interaction_coefficient_table,
+    write_pgls_lambda_profile_table,
+    write_pgls_model_matrix_table,
+    write_phylogenetic_logistic_coefficient_table,
+    write_phylogenetic_logistic_excluded_taxa_table,
+    write_phylogenetic_logistic_fitted_table,
+    write_phylogenetic_signal_permutation_table,
+    write_phylogenetic_signal_summary_table,
+    write_posterior_tree_pgls_coefficient_table,
+    write_posterior_tree_pgls_summary_table,
+    write_posterior_tree_pgls_tree_table,
+    write_trait_imputation_exclusion_table,
+    write_trait_imputation_holdout_table,
+    write_trait_imputation_summary_table,
+    write_trait_imputation_table,
+    write_trait_outlier_exclusion_table,
+    write_trait_outlier_summary_table,
+    write_trait_outlier_taxon_table,
+    write_trait_rate_through_time_exclusion_table,
+    write_trait_rate_through_time_interval_table,
+    write_trait_rate_through_time_summary_table,
+    write_trait_regime_branch_table,
+    write_trait_regime_exclusion_table,
+    write_trait_regime_node_table,
+    write_trait_regime_summary_table,
 )
+from bijux_phylogenetics.comparative.evidence_contract import (
+    SUPPORTED_EVIDENCE_API_LOCATORS,
+    resolve_supported_evidence_api,
+)
+import bijux_phylogenetics.compare as compare_api
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
+from bijux_phylogenetics.compare.taxon_influence import (
+    TaxonInfluenceReport,
+    TaxonInfluenceRow,
+    analyze_taxon_influence,
+    write_taxon_influence_table,
+)
 from bijux_phylogenetics.compare.topology import (
+    BranchScoreComparisonReport,
+    CladeOverlapComparisonReport,
+    RobinsonFouldsComparisonReport,
+    SharedTaxaPruningReport,
+    SupportComparisonReport,
+    SupportConflictRow,
     compare_branch_lengths,
+    compare_branch_score_distance,
+    compare_clade_overlap,
     compare_clade_sets,
+    compare_robinson_foulds,
     compare_support_values,
     compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
-    write_tree_comparison_table,
+    write_clade_overlap_table,
+    write_shared_taxa_pruning_table,
+    write_shared_taxa_removed_taxa_table,
+    write_support_comparison_table,
 )
-from bijux_phylogenetics.core.alignment import AlignmentSummary
+from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
     audit_dataset_taxon_ordering,
@@ -87,8 +482,19 @@ from bijux_phylogenetics.core.dataset import (
 )
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
+from bijux_phylogenetics.core.locus_occupancy import (
+    LocusOccupancyFilterIteration,
+    build_locus_occupancy_report,
+    filter_locus_occupancy,
+)
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
+from bijux_phylogenetics.core.partitions import (
+    build_partition_summary_report,
+    parse_locus_partitions,
+    write_locus_partitions,
+    write_partition_summary_table,
+)
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
     prune_alignment_to_tree,
@@ -110,13 +516,17 @@ from bijux_phylogenetics.core.taxonomy import (
     write_taxon_mapping,
 )
 from bijux_phylogenetics.core.topology import (
+    TreeRootingReport,
     collapse_branches_below_length,
     extract_named_clade,
     ladderize_tree,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
+    rotate_all_internal_nodes,
+    rotate_named_node,
     sort_tree_tips_alphabetically,
     unroot_tree,
+    write_tree_rooting_report,
 )
 from bijux_phylogenetics.core.traits import (
     detect_missing_trait_values,
@@ -185,23 +595,56 @@ from bijux_phylogenetics.diversification import (
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
+from bijux_phylogenetics.ecological_niche import (
+    NicheStateNodeRow,
+    NicheTransitionBranchRow,
+    NicheTransitionCladeRow,
+    NicheTransitionCountRow,
+    NicheTransitionExclusionRow,
+    NicheTransitionRateRow,
+    NicheTransitionReport,
+    NicheTransitionSummary,
+    summarize_niche_transitions,
+    write_niche_state_node_table,
+    write_niche_transition_branch_table,
+    write_niche_transition_clade_table,
+    write_niche_transition_count_table,
+    write_niche_transition_exclusion_table,
+    write_niche_transition_rate_table,
+    write_niche_transition_summary_table,
+)
 from bijux_phylogenetics.engines import (
     audit_alignment_inference_readiness,
+    build_inference_comparison_conclusion_rows,
+    build_inference_comparison_shared_clade_rows,
+    build_inference_comparison_weighted_conflict_rows,
     classify_inference_workflow_failure,
     compare_fast_and_ml_trees,
     compare_inferred_tree_to_taxon_metadata,
+    infer_unaligned_sequence_type,
     render_inference_workflow_report,
+    rewrite_inference_comparison_report_html,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
+    run_codon_aware_multiple_sequence_alignment,
     run_fast_tree_inference,
+    run_fasta_to_tree_workflow,
+    run_inference_reproducibility_check,
+    run_large_alignment_inference,
     run_maximum_likelihood_tree_inference,
     run_model_selection,
     run_multiple_sequence_alignment,
+    run_sh_alrt_support_estimation,
+    run_tree_inference_comparison,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
+    write_inference_comparison_clade_table,
+    write_inference_comparison_conclusion_table,
+    write_inference_comparison_summary_table,
+    write_inference_comparison_weighted_conflict_table,
 )
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
@@ -221,6 +664,24 @@ from bijux_phylogenetics.evidence.bundles import (
     bundle_file_paths,
     validate_bundle,
 )
+from bijux_phylogenetics.host_association import (
+    HostStateNodeRow,
+    HostSwitchBranchRow,
+    HostSwitchCountRow,
+    HostSwitchExclusionRow,
+    HostSwitchFitRow,
+    HostSwitchingReport,
+    HostSwitchSummary,
+    UnsupportedHostSwitchClaimRow,
+    summarize_host_switching,
+    write_host_state_node_table,
+    write_host_switch_branch_table,
+    write_host_switch_count_table,
+    write_host_switch_exclusion_table,
+    write_host_switch_fit_table,
+    write_host_switch_summary_table,
+    write_unsupported_host_switch_claim_table,
+)
 from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.fasta import (
     assess_alignment_low_information,
@@ -236,6 +697,7 @@ from bijux_phylogenetics.io.fasta import (
     compute_nucleotide_composition,
     compute_pairwise_sequence_identity_matrix,
     detect_composition_outlier_sequences,
+    detect_fasta_sequence_type,
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
@@ -250,15 +712,19 @@ from bijux_phylogenetics.io.fasta import (
     link_alignment_to_tree,
     list_alignment_filter_profiles,
     load_fasta_alignment,
+    prepare_coding_sequences_for_alignment,
     remove_all_gap_columns,
     remove_all_missing_columns,
     remove_sequences_above_missingness_threshold,
+    repair_fasta_input,
     summarise_fasta,
     summarize_alignment_readiness,
     summarize_alignment_windows,
+    summarize_fasta_input,
     translate_coding_alignment,
     trim_alignment,
     trim_columns_above_missingness_threshold,
+    validate_fasta_input,
     write_fasta_alignment,
 )
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
@@ -266,6 +732,40 @@ from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylogeography import (
+    CoordinateEstimateRow,
+    CoordinateMovementBranchRow,
+    CoordinateMovementExclusionRow,
+    CoordinateMovementOutlierRow,
+    CoordinateMovementSummary,
+    CoordinateMovementVisualization,
+    GeographicMapArtifact,
+    GeographicMapExclusionRow,
+    GeographicMapLineRow,
+    GeographicMapMarkerRow,
+    GeographicMapReport,
+    GeographicMapSummary,
+    PhylogeographicCoordinateReport,
+    render_coordinate_movement_visualization,
+    render_geographic_map_html,
+    summarize_continuous_phylogeography,
+    summarize_continuous_phylogeography_map,
+    summarize_discrete_region_map,
+    write_coordinate_estimate_table,
+    write_coordinate_movement_branch_table,
+    write_coordinate_movement_exclusion_table,
+    write_coordinate_movement_outlier_table,
+    write_coordinate_movement_summary_table,
+    write_geographic_map_exclusion_table,
+    write_geographic_map_line_table,
+    write_geographic_map_marker_table,
+    write_geographic_map_summary_table,
+)
+from bijux_phylogenetics.reference_parity import (
+    validate_reference_parity_examples,
+    write_reference_parity_observation_table,
+    write_reference_parity_summary_table,
+)
 from bijux_phylogenetics.reference_validation import (
     build_core_workflow_failure_gallery,
     build_core_workflow_validation_report,
@@ -309,6 +809,9 @@ from bijux_phylogenetics.simulation import (
     write_tree_set,
 )
 from bijux_phylogenetics.tree_set import (
+    BootstrapTreeSetArtifactReport,
+    BootstrapTreeSetSummaryReport,
+    BootstrapUnstableBranch,
     cluster_trees_by_topology,
     compare_bootstrap_and_posterior_uncertainty,
     compare_posterior_topological_diversity,
@@ -320,15 +823,28 @@ from bijux_phylogenetics.tree_set import (
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
+    summarize_bootstrap_tree_set,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
+    write_bootstrap_tree_set_artifacts,
+    write_bootstrap_tree_set_summary_table,
+    write_bootstrap_unstable_branch_table,
     write_clade_credibility_conflict_table,
     write_topology_cluster_table,
     write_uncertainty_conclusion_table,
 )
+from bijux_phylogenetics.tree_shape import (
+    TreeShapeAggregate,
+    TreeShapeReport,
+    TreeShapeRow,
+    summarize_tree_set_shapes,
+    summarize_tree_shape,
+    write_tree_shape_table,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def fixture(name: str) -> Path:
@@ -340,6 +856,20 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def _load_robinson_foulds_reference_rows() -> list[dict[str, str]]:
+    with fixture("robinson_foulds_reference.tsv").open(
+        encoding="utf-8", newline=""
+    ) as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _load_branch_score_reference_rows() -> list[dict[str, str]]:
+    with fixture("branch_score_reference.tsv").open(
+        encoding="utf-8", newline=""
+    ) as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
 
 
 def test_package_identity_matches_canonical_names() -> None:
@@ -394,6 +924,97 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is compare_distance_tree_topologies
     )
     assert (
+        bijux_phylogenetics.BranchScoreComparisonReport is BranchScoreComparisonReport
+    )
+    assert (
+        bijux_phylogenetics.CladeOverlapComparisonReport is CladeOverlapComparisonReport
+    )
+    assert bijux_phylogenetics.CladeMetadataObservation is CladeMetadataObservation
+    assert bijux_phylogenetics.BranchLengthAggregate is BranchLengthAggregate
+    assert (
+        bijux_phylogenetics.BranchLengthDistributionReport
+        is BranchLengthDistributionReport
+    )
+    assert bijux_phylogenetics.BranchLengthRow is BranchLengthRow
+    assert bijux_phylogenetics.CladeTableReport is CladeTableReport
+    assert bijux_phylogenetics.CladeTableRow is CladeTableRow
+    assert bijux_phylogenetics.TreeShapeAggregate is TreeShapeAggregate
+    assert bijux_phylogenetics.TreeShapeReport is TreeShapeReport
+    assert bijux_phylogenetics.TreeShapeRow is TreeShapeRow
+    assert bijux_phylogenetics.SharedTaxaPruningReport is SharedTaxaPruningReport
+    assert bijux_phylogenetics.SupportComparisonReport is SupportComparisonReport
+    assert bijux_phylogenetics.SupportConflictRow is SupportConflictRow
+    assert bijux_phylogenetics.TaxonInfluenceReport is TaxonInfluenceReport
+    assert bijux_phylogenetics.TaxonInfluenceRow is TaxonInfluenceRow
+    assert (
+        bijux_phylogenetics.compare_branch_score_distance
+        is compare_branch_score_distance
+    )
+    assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
+    assert bijux_phylogenetics.analyze_taxon_influence is analyze_taxon_influence
+    assert (
+        bijux_phylogenetics.analyze_branch_length_distribution
+        is analyze_branch_length_distribution
+    )
+    assert (
+        bijux_phylogenetics.analyze_tree_set_branch_lengths
+        is analyze_tree_set_branch_lengths
+    )
+    assert bijux_phylogenetics.extract_tree_clades is extract_tree_clades
+    assert bijux_phylogenetics.extract_tree_set_clades is extract_tree_set_clades
+    assert bijux_phylogenetics.summarize_tree_shape is summarize_tree_shape
+    assert bijux_phylogenetics.summarize_tree_set_shapes is summarize_tree_set_shapes
+    assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
+    assert bijux_phylogenetics.compare_support_values is compare_support_values
+    assert bijux_phylogenetics.write_branch_length_table is write_branch_length_table
+    assert bijux_phylogenetics.write_clade_table is write_clade_table
+    assert bijux_phylogenetics.write_tree_shape_table is write_tree_shape_table
+    assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
+    assert (
+        bijux_phylogenetics.write_shared_taxa_pruning_table
+        is write_shared_taxa_pruning_table
+    )
+    assert (
+        bijux_phylogenetics.write_shared_taxa_removed_taxa_table
+        is write_shared_taxa_removed_taxa_table
+    )
+    assert (
+        bijux_phylogenetics.write_support_comparison_table
+        is write_support_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_taxon_influence_table is write_taxon_influence_table
+    )
+    assert (
+        bijux_phylogenetics.RobinsonFouldsComparisonReport
+        is RobinsonFouldsComparisonReport
+    )
+    assert compare_api.CladeOverlapComparisonReport is CladeOverlapComparisonReport
+    assert compare_api.SharedTaxaPruningReport is SharedTaxaPruningReport
+    assert compare_api.SupportComparisonReport is SupportComparisonReport
+    assert compare_api.SupportConflictRow is SupportConflictRow
+    assert compare_api.TaxonInfluenceReport is TaxonInfluenceReport
+    assert compare_api.TaxonInfluenceRow is TaxonInfluenceRow
+    assert compare_api.compare_clade_overlap is compare_clade_overlap
+    assert compare_api.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
+    assert compare_api.compare_support_values is compare_support_values
+    assert compare_api.analyze_taxon_influence is analyze_taxon_influence
+    assert compare_api.write_clade_overlap_table is write_clade_overlap_table
+    assert (
+        compare_api.write_shared_taxa_pruning_table is write_shared_taxa_pruning_table
+    )
+    assert (
+        compare_api.write_shared_taxa_removed_taxa_table
+        is write_shared_taxa_removed_taxa_table
+    )
+    assert compare_api.write_support_comparison_table is write_support_comparison_table
+    assert compare_api.write_taxon_influence_table is write_taxon_influence_table
+    assert compare_api.BranchScoreComparisonReport is BranchScoreComparisonReport
+    assert compare_api.compare_branch_score_distance is compare_branch_score_distance
+    assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
+    assert compare_api.RobinsonFouldsComparisonReport is RobinsonFouldsComparisonReport
+    assert compare_api.compare_robinson_foulds is compare_robinson_foulds
+    assert (
         bijux_phylogenetics.assess_distance_method_maturity
         is assess_distance_method_maturity
     )
@@ -437,6 +1058,430 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_transition_summary_table
         is write_transition_summary_table
     )
+    assert (
+        bijux_phylogenetics.summarize_constrained_geographic_model
+        is summarize_constrained_geographic_model
+    )
+    assert (
+        bijux_phylogenetics.summarize_constrained_geographic_report
+        is summarize_constrained_geographic_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_biogeographic_transition_chronology
+        is summarize_biogeographic_transition_chronology
+    )
+    assert (
+        bijux_phylogenetics.summarize_geographic_sampling_bias
+        is summarize_geographic_sampling_bias
+    )
+    assert bijux_phylogenetics.BiogeographyRegionCountRow is BiogeographyRegionCountRow
+    assert (
+        bijux_phylogenetics.BiogeographyReportExclusionRow
+        is BiogeographyReportExclusionRow
+    )
+    assert (
+        bijux_phylogenetics.BiogeographyReportPackageResult
+        is BiogeographyReportPackageResult
+    )
+    assert (
+        bijux_phylogenetics.summarize_biogeography_region_counts
+        is summarize_biogeography_region_counts
+    )
+    assert (
+        bijux_phylogenetics.summarize_geographic_state_model
+        is summarize_geographic_state_model
+    )
+    assert (
+        bijux_phylogenetics.build_biogeography_report_package
+        is build_biogeography_report_package
+    )
+    assert (
+        bijux_phylogenetics.summarize_geographic_migration_events
+        is summarize_geographic_migration_events
+    )
+    assert (
+        bijux_phylogenetics.summarize_geographic_migration_event_tree_set
+        is summarize_geographic_migration_event_tree_set
+    )
+    assert (
+        bijux_phylogenetics.summarize_time_stratified_geographic_transitions
+        is summarize_time_stratified_geographic_transitions
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_summary_table
+        is write_constrained_geographic_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_fit_table
+        is write_constrained_geographic_fit_table
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_transition_table
+        is write_constrained_geographic_transition_table
+    )
+    assert (
+        bijux_phylogenetics.write_biogeography_region_count_table
+        is write_biogeography_region_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_biogeography_report_exclusion_table
+        is write_biogeography_report_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_constrained_geographic_exclusion_table
+        is write_constrained_geographic_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_summary_table
+        is write_dated_biogeography_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_node_table
+        is write_dated_biogeography_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_event_table
+        is write_dated_biogeography_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_time_bin_table
+        is write_dated_biogeography_time_bin_table
+    )
+    assert (
+        bijux_phylogenetics.write_dated_biogeography_exclusion_table
+        is write_dated_biogeography_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_summary_table
+        is write_geographic_sampling_bias_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_count_table
+        is write_geographic_sampling_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_node_table
+        is write_geographic_sampling_bias_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_transition_table
+        is write_geographic_sampling_bias_transition_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_sampling_bias_exclusion_table
+        is write_geographic_sampling_bias_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_unsupported_geographic_transition_claim_table
+        is write_unsupported_geographic_transition_claim_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_state_summary_table
+        is write_geographic_state_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_region_probability_table
+        is write_geographic_region_probability_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_transition_rate_table
+        is write_geographic_transition_rate_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_transition_event_table
+        is write_geographic_transition_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_exclusion_table
+        is write_geographic_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_event_summary_table
+        is write_geographic_migration_event_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_event_table
+        is write_geographic_migration_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_exclusion_table
+        is write_geographic_migration_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_summary_table
+        is write_geographic_migration_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_tree_table
+        is write_geographic_migration_tree_set_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_event_table
+        is write_geographic_migration_tree_set_event_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_event_summary_table
+        is write_geographic_migration_tree_set_event_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_migration_tree_set_exclusion_table
+        is write_geographic_migration_tree_set_exclusion_table
+    )
+    assert bijux_phylogenetics.TimeBinDefinition is TimeBinDefinition
+    assert (
+        bijux_phylogenetics.GeographicMigrationEventReport
+        is GeographicMigrationEventReport
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationEventRow is GeographicMigrationEventRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationEventSummary
+        is GeographicMigrationEventSummary
+    )
+    assert bijux_phylogenetics.GeographicMigrationTreeRow is GeographicMigrationTreeRow
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetEventRow
+        is GeographicMigrationTreeSetEventRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetEventSummaryRow
+        is GeographicMigrationTreeSetEventSummaryRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetReport
+        is GeographicMigrationTreeSetReport
+    )
+    assert (
+        bijux_phylogenetics.GeographicMigrationTreeSetSummary
+        is GeographicMigrationTreeSetSummary
+    )
+    assert bijux_phylogenetics.DatedBiogeographyEventRow is DatedBiogeographyEventRow
+    assert bijux_phylogenetics.DatedBiogeographyNodeRow is DatedBiogeographyNodeRow
+    assert bijux_phylogenetics.DatedBiogeographyReport is DatedBiogeographyReport
+    assert bijux_phylogenetics.DatedBiogeographySummary is DatedBiogeographySummary
+    assert (
+        bijux_phylogenetics.DatedBiogeographyTimeBinRow is DatedBiogeographyTimeBinRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasNodeRow
+        is GeographicSamplingBiasNodeRow
+    )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasReport is GeographicSamplingBiasReport
+    )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasSummary
+        is GeographicSamplingBiasSummary
+    )
+    assert (
+        bijux_phylogenetics.GeographicSamplingBiasTransitionRow
+        is GeographicSamplingBiasTransitionRow
+    )
+    assert bijux_phylogenetics.GeographicSamplingCountRow is GeographicSamplingCountRow
+    assert (
+        bijux_phylogenetics.ConstrainedGeographicFitRow is ConstrainedGeographicFitRow
+    )
+    assert (
+        bijux_phylogenetics.ConstrainedGeographicReport is ConstrainedGeographicReport
+    )
+    assert (
+        bijux_phylogenetics.ConstrainedGeographicSummary is ConstrainedGeographicSummary
+    )
+    assert (
+        bijux_phylogenetics.ConstrainedGeographicTransitionRow
+        is ConstrainedGeographicTransitionRow
+    )
+    assert bijux_phylogenetics.TimeStratifiedBranchRow is TimeStratifiedBranchRow
+    assert (
+        bijux_phylogenetics.TimeStratifiedTransitionMatrixRow
+        is TimeStratifiedTransitionMatrixRow
+    )
+    assert (
+        bijux_phylogenetics.TimeStratifiedTransitionReport
+        is TimeStratifiedTransitionReport
+    )
+    assert (
+        bijux_phylogenetics.UnsupportedGeographicTransitionClaimRow
+        is UnsupportedGeographicTransitionClaimRow
+    )
+    assert (
+        bijux_phylogenetics.TimeStratifiedTransitionSummary
+        is TimeStratifiedTransitionSummary
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_transition_summary_table
+        is write_time_stratified_transition_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_transition_matrix_table
+        is write_time_stratified_transition_matrix_table
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_branch_table
+        is write_time_stratified_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_time_stratified_exclusion_table
+        is write_time_stratified_exclusion_table
+    )
+    assert bijux_phylogenetics.summarize_host_switching is summarize_host_switching
+    assert bijux_phylogenetics.HostStateNodeRow is HostStateNodeRow
+    assert bijux_phylogenetics.HostSwitchBranchRow is HostSwitchBranchRow
+    assert bijux_phylogenetics.HostSwitchCountRow is HostSwitchCountRow
+    assert bijux_phylogenetics.HostSwitchExclusionRow is HostSwitchExclusionRow
+    assert bijux_phylogenetics.HostSwitchFitRow is HostSwitchFitRow
+    assert bijux_phylogenetics.HostSwitchSummary is HostSwitchSummary
+    assert bijux_phylogenetics.HostSwitchingReport is HostSwitchingReport
+    assert (
+        bijux_phylogenetics.UnsupportedHostSwitchClaimRow
+        is UnsupportedHostSwitchClaimRow
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_summary_table
+        is write_host_switch_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_state_node_table is write_host_state_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_branch_table
+        is write_host_switch_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_count_table
+        is write_host_switch_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_fit_table is write_host_switch_fit_table
+    )
+    assert (
+        bijux_phylogenetics.write_unsupported_host_switch_claim_table
+        is write_unsupported_host_switch_claim_table
+    )
+    assert (
+        bijux_phylogenetics.write_host_switch_exclusion_table
+        is write_host_switch_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.summarize_niche_transitions is summarize_niche_transitions
+    )
+    assert bijux_phylogenetics.NicheStateNodeRow is NicheStateNodeRow
+    assert bijux_phylogenetics.NicheTransitionBranchRow is NicheTransitionBranchRow
+    assert bijux_phylogenetics.NicheTransitionCladeRow is NicheTransitionCladeRow
+    assert bijux_phylogenetics.NicheTransitionCountRow is NicheTransitionCountRow
+    assert (
+        bijux_phylogenetics.NicheTransitionExclusionRow is NicheTransitionExclusionRow
+    )
+    assert bijux_phylogenetics.NicheTransitionRateRow is NicheTransitionRateRow
+    assert bijux_phylogenetics.NicheTransitionReport is NicheTransitionReport
+    assert bijux_phylogenetics.NicheTransitionSummary is NicheTransitionSummary
+    assert (
+        bijux_phylogenetics.write_niche_transition_summary_table
+        is write_niche_transition_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_state_node_table is write_niche_state_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_rate_table
+        is write_niche_transition_rate_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_branch_table
+        is write_niche_transition_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_count_table
+        is write_niche_transition_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_clade_table
+        is write_niche_transition_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_niche_transition_exclusion_table
+        is write_niche_transition_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_phylogeography
+        is summarize_continuous_phylogeography
+    )
+    assert bijux_phylogenetics.CoordinateEstimateRow is CoordinateEstimateRow
+    assert (
+        bijux_phylogenetics.CoordinateMovementBranchRow is CoordinateMovementBranchRow
+    )
+    assert (
+        bijux_phylogenetics.CoordinateMovementExclusionRow
+        is CoordinateMovementExclusionRow
+    )
+    assert (
+        bijux_phylogenetics.CoordinateMovementOutlierRow is CoordinateMovementOutlierRow
+    )
+    assert bijux_phylogenetics.CoordinateMovementSummary is CoordinateMovementSummary
+    assert (
+        bijux_phylogenetics.CoordinateMovementVisualization
+        is CoordinateMovementVisualization
+    )
+    assert (
+        bijux_phylogenetics.PhylogeographicCoordinateReport
+        is PhylogeographicCoordinateReport
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_summary_table
+        is write_coordinate_movement_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_estimate_table
+        is write_coordinate_estimate_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_branch_table
+        is write_coordinate_movement_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_outlier_table
+        is write_coordinate_movement_outlier_table
+    )
+    assert (
+        bijux_phylogenetics.write_coordinate_movement_exclusion_table
+        is write_coordinate_movement_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.render_coordinate_movement_visualization
+        is render_coordinate_movement_visualization
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_phylogeography_map
+        is summarize_continuous_phylogeography_map
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_region_map
+        is summarize_discrete_region_map
+    )
+    assert bijux_phylogenetics.GeographicMapArtifact is GeographicMapArtifact
+    assert bijux_phylogenetics.GeographicMapExclusionRow is GeographicMapExclusionRow
+    assert bijux_phylogenetics.GeographicMapLineRow is GeographicMapLineRow
+    assert bijux_phylogenetics.GeographicMapMarkerRow is GeographicMapMarkerRow
+    assert bijux_phylogenetics.GeographicMapReport is GeographicMapReport
+    assert bijux_phylogenetics.GeographicMapSummary is GeographicMapSummary
+    assert (
+        bijux_phylogenetics.write_geographic_map_summary_table
+        is write_geographic_map_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_map_marker_table
+        is write_geographic_map_marker_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_map_line_table
+        is write_geographic_map_line_table
+    )
+    assert (
+        bijux_phylogenetics.write_geographic_map_exclusion_table
+        is write_geographic_map_exclusion_table
+    )
+    assert bijux_phylogenetics.render_geographic_map_html is render_geographic_map_html
     assert (
         bijux_phylogenetics.simulate_discrete_stochastic_maps
         is simulate_discrete_stochastic_maps
@@ -524,7 +1569,19 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is detect_sequence_length_outliers
     )
     assert (
+        bijux_phylogenetics.prepare_coding_sequences_for_alignment
+        is prepare_coding_sequences_for_alignment
+    )
+    assert bijux_phylogenetics.detect_fasta_sequence_type is detect_fasta_sequence_type
+    assert bijux_phylogenetics.validate_fasta_input is validate_fasta_input
+    assert bijux_phylogenetics.repair_fasta_input is repair_fasta_input
+    assert bijux_phylogenetics.summarize_fasta_input is summarize_fasta_input
+    assert (
         bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
+    )
+    assert (
+        bijux_phylogenetics.run_codon_aware_multiple_sequence_alignment
+        is run_codon_aware_multiple_sequence_alignment
     )
     assert (
         bijux_phylogenetics.detect_under_aligned_regions is detect_under_aligned_regions
@@ -559,6 +1616,24 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
     )
+    assert (
+        bijux_phylogenetics.build_locus_occupancy_report is build_locus_occupancy_report
+    )
+    assert (
+        bijux_phylogenetics.LocusOccupancyFilterIteration
+        is LocusOccupancyFilterIteration
+    )
+    assert (
+        bijux_phylogenetics.build_partition_summary_report
+        is build_partition_summary_report
+    )
+    assert bijux_phylogenetics.filter_locus_occupancy is filter_locus_occupancy
+    assert bijux_phylogenetics.parse_locus_partitions is parse_locus_partitions
+    assert (
+        bijux_phylogenetics.write_partition_summary_table
+        is write_partition_summary_table
+    )
+    assert bijux_phylogenetics.write_locus_partitions is write_locus_partitions
     assert bijux_phylogenetics.build_taxon_audit_report is build_taxon_audit_report
     assert (
         bijux_phylogenetics.build_taxon_mapping_conflict_report
@@ -578,6 +1653,15 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.write_accepted_name_mapping is write_accepted_name_mapping
     )
     assert bijux_phylogenetics.load_tree_set is load_tree_set
+    assert (
+        bijux_phylogenetics.BootstrapTreeSetSummaryReport
+        is BootstrapTreeSetSummaryReport
+    )
+    assert (
+        bijux_phylogenetics.BootstrapTreeSetArtifactReport
+        is BootstrapTreeSetArtifactReport
+    )
+    assert bijux_phylogenetics.BootstrapUnstableBranch is BootstrapUnstableBranch
     assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
     assert (
         bijux_phylogenetics.compute_clade_frequency_table
@@ -589,6 +1673,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.cluster_trees_by_topology is cluster_trees_by_topology
     assert bijux_phylogenetics.detect_unstable_taxa is detect_unstable_taxa
     assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
+    assert (
+        bijux_phylogenetics.summarize_bootstrap_tree_set is summarize_bootstrap_tree_set
+    )
     assert (
         bijux_phylogenetics.compare_posterior_topological_diversity
         is compare_posterior_topological_diversity
@@ -604,6 +1691,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_uncertainty_aware_conclusions
         is summarize_uncertainty_aware_conclusions
+    )
+    assert (
+        bijux_phylogenetics.write_bootstrap_tree_set_summary_table
+        is write_bootstrap_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_bootstrap_unstable_branch_table
+        is write_bootstrap_unstable_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_bootstrap_tree_set_artifacts
+        is write_bootstrap_tree_set_artifacts
     )
     assert (
         bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
@@ -652,6 +1751,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.build_level_one_release_gate_report
         is build_level_one_release_gate_report
     )
+    assert (
+        bijux_phylogenetics.validate_reference_parity_examples
+        is validate_reference_parity_examples
+    )
+    assert (
+        bijux_phylogenetics.write_reference_parity_summary_table
+        is write_reference_parity_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_reference_parity_observation_table
+        is write_reference_parity_observation_table
+    )
     assert bijux_phylogenetics.render_tree_report is render_tree_report
     assert (
         bijux_phylogenetics.render_workflow_validation_report
@@ -677,6 +1788,41 @@ def test_command_registry_exposes_discrete_evolution_surface() -> None:
     assert spec.outputs == ("discrete-state-evolution-report",)
 
 
+def test_command_registry_exposes_biogeography_surface() -> None:
+    spec = get_command_spec("biogeography")
+
+    assert spec.domain == "biogeography"
+    assert spec.outputs == ("biogeography-report",)
+
+
+def test_command_registry_exposes_host_association_surface() -> None:
+    spec = get_command_spec("host-association")
+
+    assert spec.domain == "host-association"
+    assert spec.outputs == ("host-association-report",)
+
+
+def test_command_registry_exposes_ecological_niche_surface() -> None:
+    spec = get_command_spec("ecological-niche")
+
+    assert spec.domain == "ecological-niche"
+    assert spec.outputs == ("ecological-niche-report",)
+
+
+def test_command_registry_exposes_phylogeography_surface() -> None:
+    spec = get_command_spec("phylogeography")
+
+    assert spec.domain == "geographic-reconstruction"
+    assert spec.outputs == ("geographic-reconstruction-report",)
+
+
+def test_command_registry_exposes_reference_parity_surface() -> None:
+    spec = get_command_spec("parity")
+
+    assert spec.domain == "reference-validation"
+    assert spec.outputs == ("reference-parity-report",)
+
+
 def test_command_registry_exposes_diversification_surface() -> None:
     spec = get_command_spec("diversification")
 
@@ -685,6 +1831,26 @@ def test_command_registry_exposes_diversification_surface() -> None:
 
 
 def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
+    assert bijux_phylogenetics.BranchIdentityMetadata is BranchIdentityMetadata
+    assert (
+        bijux_phylogenetics.CorrelatedTraitComparisonRow is CorrelatedTraitComparisonRow
+    )
+    assert (
+        bijux_phylogenetics.CorrelatedTraitEvolutionReport
+        is CorrelatedTraitEvolutionReport
+    )
+    assert bijux_phylogenetics.CorrelatedTraitExclusion is CorrelatedTraitExclusion
+    assert (
+        bijux_phylogenetics.CorrelatedTraitObservationRow
+        is CorrelatedTraitObservationRow
+    )
+    assert bijux_phylogenetics.TraitRegimeBranchRow is TraitRegimeBranchRow
+    assert bijux_phylogenetics.TraitRegimeExclusion is TraitRegimeExclusion
+    assert bijux_phylogenetics.TraitRegimeMappingReport is TraitRegimeMappingReport
+    assert bijux_phylogenetics.TraitRegimeNodeRow is TraitRegimeNodeRow
+    assert (
+        bijux_phylogenetics.build_branch_identity_lookup is build_branch_identity_lookup
+    )
     assert bijux_phylogenetics.benchmark_tree_validation is benchmark_tree_validation
     assert bijux_phylogenetics.benchmark_tree_comparison is benchmark_tree_comparison
     assert (
@@ -699,6 +1865,39 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.compute_phylogenetic_independent_contrasts
         is compute_phylogenetic_independent_contrasts
+    )
+    assert (
+        bijux_phylogenetics.summarize_independent_contrast_regression
+        is summarize_independent_contrast_regression
+    )
+    assert (
+        bijux_phylogenetics.run_multivariate_comparative_regression
+        is run_multivariate_comparative_regression
+    )
+    assert (
+        bijux_phylogenetics.summarize_correlated_trait_evolution
+        is summarize_correlated_trait_evolution
+    )
+    assert bijux_phylogenetics.run_posterior_tree_pgls is run_posterior_tree_pgls
+    assert (
+        bijux_phylogenetics.analyze_comparative_clade_stability
+        is analyze_comparative_clade_stability
+    )
+    assert (
+        bijux_phylogenetics.analyze_comparative_residual_clades
+        is analyze_comparative_residual_clades
+    )
+    assert (
+        bijux_phylogenetics.compare_comparative_regression_models
+        is compare_comparative_regression_models
+    )
+    assert (
+        bijux_phylogenetics.summarize_phylogenetic_logistic
+        is summarize_phylogenetic_logistic
+    )
+    assert (
+        bijux_phylogenetics.summarize_phylogenetic_signal
+        is summarize_phylogenetic_signal
     )
     assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
     assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
@@ -718,19 +1917,569 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.audit_ou_identifiability_reference_examples
         is audit_ou_identifiability_reference_examples
     )
+    assert (
+        bijux_phylogenetics.build_comparative_report_package
+        is build_comparative_report_package
+    )
+    assert bijux_phylogenetics.build_pgls_model_matrix is build_pgls_model_matrix
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
     assert (
+        bijux_phylogenetics.summarize_brownian_covariance_pgls
+        is summarize_brownian_covariance_pgls
+    )
+    assert (
+        bijux_phylogenetics.summarize_brownian_regime_rates
+        is summarize_brownian_regime_rates
+    )
+    assert (
+        bijux_phylogenetics.summarize_trait_regime_mapping
+        is summarize_trait_regime_mapping
+    )
+    assert (
+        bijux_phylogenetics.summarize_brownian_trait_evolution
+        is summarize_brownian_trait_evolution
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_analysis
+        is summarize_comparative_analysis
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_audit is summarize_comparative_audit
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_coefficients
+        is summarize_comparative_coefficients
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_interpretation
+        is summarize_comparative_interpretation
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_residuals
+        is summarize_comparative_residuals
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_signal is summarize_comparative_signal
+    )
+    assert (
+        bijux_phylogenetics.summarize_early_burst_trait_evolution
+        is summarize_early_burst_trait_evolution
+    )
+    assert bijux_phylogenetics.summarize_clade_traits is summarize_clade_traits
+    assert bijux_phylogenetics.summarize_trait_outliers is summarize_trait_outliers
+    assert bijux_phylogenetics.summarize_trait_imputation is summarize_trait_imputation
+    assert (
+        bijux_phylogenetics.summarize_trait_rate_through_time
+        is summarize_trait_rate_through_time
+    )
+    assert (
+        bijux_phylogenetics.summarize_ou_covariance_pgls is summarize_ou_covariance_pgls
+    )
+    assert (
+        bijux_phylogenetics.summarize_ou_trait_evolution is summarize_ou_trait_evolution
+    )
+    assert (
+        bijux_phylogenetics.BrownianRegimeFitSummaryReport
+        is BrownianRegimeFitSummaryReport
+    )
+    assert bijux_phylogenetics.BrownianRegimeBranchRow is BrownianRegimeBranchRow
+    assert bijux_phylogenetics.BrownianRegimeRateRow is BrownianRegimeRateRow
+    assert bijux_phylogenetics.BrownianRegimeProfileRow is BrownianRegimeProfileRow
+    assert bijux_phylogenetics.BrownianRegimeExclusion is BrownianRegimeExclusion
+    assert (
+        bijux_phylogenetics.BrownianRegimeIdentifiabilityWarning
+        is BrownianRegimeIdentifiabilityWarning
+    )
+    assert (
+        bijux_phylogenetics.ComparativeAnalysisSummaryRow
+        is ComparativeAnalysisSummaryRow
+    )
+    assert bijux_phylogenetics.ComparativeAuditTableRow is ComparativeAuditTableRow
+    assert (
+        bijux_phylogenetics.ComparativeCoefficientTableRow
+        is ComparativeCoefficientTableRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeInterpretationRow is ComparativeInterpretationRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeReportPackageResult
+        is ComparativeReportPackageResult
+    )
+    assert (
+        bijux_phylogenetics.ComparativeResidualTableRow is ComparativeResidualTableRow
+    )
+    assert bijux_phylogenetics.ComparativeSignalTableRow is ComparativeSignalTableRow
+    assert (
+        bijux_phylogenetics.EarlyBurstTraitEvolutionSummaryReport
+        is EarlyBurstTraitEvolutionSummaryReport
+    )
+    assert (
+        bijux_phylogenetics.EarlyBurstTraitEvolutionExclusion
+        is EarlyBurstTraitEvolutionExclusion
+    )
+    assert (
+        bijux_phylogenetics.EarlyBurstRateChangeProfileRow
+        is EarlyBurstRateChangeProfileRow
+    )
+    assert (
+        bijux_phylogenetics.EarlyBurstIdentifiabilityWarning
+        is EarlyBurstIdentifiabilityWarning
+    )
+    assert bijux_phylogenetics.CladeTraitSummaryReport is CladeTraitSummaryReport
+    assert bijux_phylogenetics.CladeTraitRow is CladeTraitRow
+    assert bijux_phylogenetics.CladeTraitStateCount is CladeTraitStateCount
+    assert bijux_phylogenetics.CladeTraitExclusion is CladeTraitExclusion
+    assert bijux_phylogenetics.TraitOutlierSummaryReport is TraitOutlierSummaryReport
+    assert bijux_phylogenetics.TraitOutlierTaxonRow is TraitOutlierTaxonRow
+    assert bijux_phylogenetics.TraitOutlierExclusion is TraitOutlierExclusion
+    assert (
+        bijux_phylogenetics.write_comparative_audit_table
+        is write_comparative_audit_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_coefficient_table
+        is write_comparative_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_contrast_table
+        is write_comparative_contrast_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_interpretation_table
+        is write_comparative_interpretation_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_model_comparison_table
+        is write_comparative_model_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_residual_table
+        is write_comparative_residual_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_signal_table
+        is write_comparative_signal_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_summary_table
+        is write_comparative_summary_table
+    )
+    assert (
+        bijux_phylogenetics.TraitImputationSummaryReport is TraitImputationSummaryReport
+    )
+    assert bijux_phylogenetics.TraitImputationRow is TraitImputationRow
+    assert bijux_phylogenetics.TraitImputationHoldoutRow is TraitImputationHoldoutRow
+    assert bijux_phylogenetics.TraitImputationExclusion is TraitImputationExclusion
+    assert (
+        bijux_phylogenetics.TraitRateThroughTimeSummaryReport
+        is TraitRateThroughTimeSummaryReport
+    )
+    assert (
+        bijux_phylogenetics.TraitRateThroughTimeIntervalRow
+        is TraitRateThroughTimeIntervalRow
+    )
+    assert (
+        bijux_phylogenetics.TraitRateThroughTimeExclusion
+        is TraitRateThroughTimeExclusion
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_regime_summary_table
+        is write_brownian_regime_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_branch_table
+        is write_trait_regime_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_exclusion_table
+        is write_trait_regime_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_node_table
+        is write_trait_regime_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_regime_summary_table
+        is write_trait_regime_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_regime_rate_table
+        is write_brownian_regime_rate_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_regime_profile_table
+        is write_brownian_regime_profile_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_regime_comparison_table
+        is write_brownian_regime_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_regime_branch_table
+        is write_brownian_regime_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_regime_exclusion_table
+        is write_brownian_regime_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_trait_evolution_summary_table
+        is write_early_burst_trait_evolution_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_trait_evolution_exclusion_table
+        is write_early_burst_trait_evolution_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_trait_evolution_comparison_table
+        is write_early_burst_trait_evolution_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_early_burst_rate_change_profile_table
+        is write_early_burst_rate_change_profile_table
+    )
+    assert (
+        bijux_phylogenetics.write_clade_trait_summary_table
+        is write_clade_trait_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_clade_trait_clade_table
+        is write_clade_trait_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_clade_trait_exclusion_table
+        is write_clade_trait_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_outlier_summary_table
+        is write_trait_outlier_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_outlier_taxon_table
+        is write_trait_outlier_taxon_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_outlier_exclusion_table
+        is write_trait_outlier_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_summary_table
+        is write_trait_imputation_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_table is write_trait_imputation_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_holdout_table
+        is write_trait_imputation_holdout_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_imputation_exclusion_table
+        is write_trait_imputation_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_rate_through_time_summary_table
+        is write_trait_rate_through_time_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_rate_through_time_interval_table
+        is write_trait_rate_through_time_interval_table
+    )
+    assert (
+        bijux_phylogenetics.write_trait_rate_through_time_exclusion_table
+        is write_trait_rate_through_time_exclusion_table
+    )
+    assert bijux_phylogenetics.summarize_pgls_lambda_fit is summarize_pgls_lambda_fit
+    assert (
+        bijux_phylogenetics.summarize_pgls_categorical_contrasts
+        is summarize_pgls_categorical_contrasts
+    )
+    assert (
+        bijux_phylogenetics.ComparativeCladeCoefficientChangeRow
+        is ComparativeCladeCoefficientChangeRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeCladeResidualReport
+        is ComparativeCladeResidualReport
+    )
+    assert (
+        bijux_phylogenetics.ComparativeCladeStabilityReport
+        is ComparativeCladeStabilityReport
+    )
+    assert (
+        bijux_phylogenetics.ComparativeCladeStabilityRow is ComparativeCladeStabilityRow
+    )
+    assert (
+        bijux_phylogenetics.PosteriorTreePGLSTreeFitRow is PosteriorTreePGLSTreeFitRow
+    )
+    assert (
+        bijux_phylogenetics.PosteriorTreePGLSCoefficientRow
+        is PosteriorTreePGLSCoefficientRow
+    )
+    assert (
+        bijux_phylogenetics.PosteriorTreePGLSCoefficientSummaryRow
+        is PosteriorTreePGLSCoefficientSummaryRow
+    )
+    assert bijux_phylogenetics.PosteriorTreePGLSReport is PosteriorTreePGLSReport
+    assert (
+        bijux_phylogenetics.ComparativeResidualTaxonRow is ComparativeResidualTaxonRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeResidualCladeRow is ComparativeResidualCladeRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionModelSelectionReport
+        is ComparativeRegressionModelSelectionReport
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionModelRow
+        is ComparativeRegressionModelRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionPairwiseComparisonRow
+        is ComparativeRegressionPairwiseComparisonRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeRegressionModelExclusion
+        is ComparativeRegressionModelExclusion
+    )
+    assert (
+        bijux_phylogenetics.IndependentContrastRegressionReport
+        is IndependentContrastRegressionReport
+    )
+    assert (
+        bijux_phylogenetics.IndependentContrastRegressionRow
+        is IndependentContrastRegressionRow
+    )
+    assert (
+        bijux_phylogenetics.MultivariateComparativeRegressionReport
+        is MultivariateComparativeRegressionReport
+    )
+    assert (
+        bijux_phylogenetics.MultivariateResidualCorrelationRow
+        is MultivariateResidualCorrelationRow
+    )
+    assert (
+        bijux_phylogenetics.MultivariateResidualAssociationRow
+        is MultivariateResidualAssociationRow
+    )
+    assert (
+        bijux_phylogenetics.MultivariateResidualCovarianceRow
+        is MultivariateResidualCovarianceRow
+    )
+    assert (
+        bijux_phylogenetics.MultivariateResponseCoefficientRow
+        is MultivariateResponseCoefficientRow
+    )
+    assert (
+        bijux_phylogenetics.MultivariateResponseModelRow is MultivariateResponseModelRow
+    )
+    assert bijux_phylogenetics.MultivariateTaxonExclusion is MultivariateTaxonExclusion
+    assert (
+        bijux_phylogenetics.PhylogeneticLogisticCoefficient
+        is PhylogeneticLogisticCoefficient
+    )
+    assert (
+        bijux_phylogenetics.PhylogeneticLogisticFittedRow
+        is PhylogeneticLogisticFittedRow
+    )
+    assert bijux_phylogenetics.PhylogeneticLogisticReport is PhylogeneticLogisticReport
+    assert (
+        bijux_phylogenetics.PhylogeneticLogisticWarning is PhylogeneticLogisticWarning
+    )
+    assert (
+        bijux_phylogenetics.PhylogeneticSignalPermutation
+        is PhylogeneticSignalPermutation
+    )
+    assert (
+        bijux_phylogenetics.PhylogeneticSignalSummaryReport
+        is PhylogeneticSignalSummaryReport
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_covariance_table
+        is write_brownian_covariance_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_trait_evolution_summary_table
+        is write_brownian_trait_evolution_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_brownian_trait_evolution_exclusion_table
+        is write_brownian_trait_evolution_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_logistic_coefficient_table
+        is write_phylogenetic_logistic_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_logistic_excluded_taxa_table
+        is write_phylogenetic_logistic_excluded_taxa_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_logistic_fitted_table
+        is write_phylogenetic_logistic_fitted_table
+    )
+    assert (
+        bijux_phylogenetics.write_independent_contrast_table
+        is write_independent_contrast_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_clade_stability_table
+        is write_comparative_clade_stability_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_clade_coefficient_change_table
+        is write_comparative_clade_coefficient_change_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_pgls_tree_table
+        is write_posterior_tree_pgls_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_pgls_coefficient_table
+        is write_posterior_tree_pgls_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_pgls_summary_table
+        is write_posterior_tree_pgls_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_residual_taxon_table
+        is write_comparative_residual_taxon_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_residual_clade_table
+        is write_comparative_residual_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_regression_model_ranking_table
+        is write_comparative_regression_model_ranking_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_regression_pairwise_table
+        is write_comparative_regression_pairwise_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_regression_excluded_taxa_table
+        is write_comparative_regression_excluded_taxa_table
+    )
+    assert (
+        bijux_phylogenetics.write_independent_contrast_regression_table
+        is write_independent_contrast_regression_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_residual_covariance_table
+        is write_multivariate_residual_covariance_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_residual_correlation_table
+        is write_multivariate_residual_correlation_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_residual_association_table
+        is write_multivariate_residual_association_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_response_model_table
+        is write_multivariate_response_model_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_response_coefficient_table
+        is write_multivariate_response_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_excluded_taxa_table
+        is write_multivariate_excluded_taxa_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_signal_summary_table
+        is write_phylogenetic_signal_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_phylogenetic_signal_permutation_table
+        is write_phylogenetic_signal_permutation_table
+    )
+    assert (
+        bijux_phylogenetics.write_ou_alpha_profile_table is write_ou_alpha_profile_table
+    )
+    assert (
+        bijux_phylogenetics.write_ou_trait_evolution_summary_table
+        is write_ou_trait_evolution_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ou_trait_evolution_exclusion_table
+        is write_ou_trait_evolution_exclusion_table
+    )
+    assert bijux_phylogenetics.write_ou_covariance_table is write_ou_covariance_table
+    assert (
+        bijux_phylogenetics.write_pgls_categorical_contrast_table
+        is write_pgls_categorical_contrast_table
+    )
+    assert (
+        bijux_phylogenetics.summarize_pgls_interaction_coefficients
+        is summarize_pgls_interaction_coefficients
+    )
+    assert (
+        bijux_phylogenetics.write_pgls_interaction_coefficient_table
+        is write_pgls_interaction_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_pgls_lambda_profile_table
+        is write_pgls_lambda_profile_table
+    )
+    assert (
+        bijux_phylogenetics.write_pgls_model_matrix_table
+        is write_pgls_model_matrix_table
+    )
+    assert (
         bijux_phylogenetics.reconstruct_continuous_ancestral_states
         is reconstruct_continuous_ancestral_states
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_report
+        is summarize_continuous_ancestral_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_confidence
+        is summarize_continuous_ancestral_confidence
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_change_branches
+        is summarize_continuous_change_branches
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_change_counts
+        is summarize_continuous_change_counts
+    )
+    assert (
+        bijux_phylogenetics.continuous_ancestral_exclusions
+        is continuous_ancestral_exclusions
+    )
+    assert (
+        bijux_phylogenetics.discrete_ancestral_exclusions
+        is discrete_ancestral_exclusions
     )
     assert (
         bijux_phylogenetics.reconstruct_discrete_ancestral_states
         is reconstruct_discrete_ancestral_states
     )
     assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_report
+        is summarize_discrete_ancestral_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_confidence
+        is summarize_discrete_ancestral_confidence
+    )
+    assert (
         bijux_phylogenetics.build_ancestral_figure_package
         is build_ancestral_figure_package
+    )
+    assert (
+        bijux_phylogenetics.build_ancestral_report_package
+        is build_ancestral_report_package
     )
     assert (
         bijux_phylogenetics.build_ancestral_sensitivity_report
@@ -741,7 +2490,67 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is compare_continuous_ancestral_models
     )
     assert (
+        bijux_phylogenetics.compare_discrete_ancestral_reconstructions
+        is compare_discrete_ancestral_reconstructions
+    )
+    assert (
         bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
+    )
+    assert (
+        bijux_phylogenetics.build_continuous_ancestral_confidence_rows
+        is build_continuous_ancestral_confidence_rows
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_summary_table
+        is write_continuous_ancestral_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_change_branch_table
+        is write_continuous_change_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_change_count_table
+        is write_continuous_change_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_confidence_table
+        is write_continuous_ancestral_confidence_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_uncertainty_table
+        is write_continuous_ancestral_uncertainty_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_exclusion_table
+        is write_continuous_ancestral_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.build_discrete_ancestral_confidence_rows
+        is build_discrete_ancestral_confidence_rows
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_summary_table
+        is write_discrete_ancestral_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_confidence_table
+        is write_discrete_ancestral_confidence_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_probability_table
+        is write_discrete_ancestral_probability_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_comparison_table
+        is write_discrete_ancestral_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_exclusion_table
+        is write_discrete_ancestral_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_confidence_summary_table
+        is write_ancestral_confidence_summary_table
     )
     assert (
         bijux_phylogenetics.render_ancestral_state_report
@@ -749,6 +2558,198 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert (
         bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
+    )
+    assert (
+        bijux_phylogenetics.render_ancestral_state_visualization
+        is render_ancestral_state_visualization
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_tree_set
+        is summarize_continuous_ancestral_tree_set
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_tree_set_confidence
+        is summarize_continuous_ancestral_tree_set_confidence
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_ancestral_tree_set_report
+        is summarize_continuous_ancestral_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.build_continuous_ancestral_tree_set_confidence_rows
+        is build_continuous_ancestral_tree_set_confidence_rows
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_tree_set
+        is summarize_discrete_ancestral_tree_set
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_tree_set_confidence
+        is summarize_discrete_ancestral_tree_set_confidence
+    )
+    assert (
+        bijux_phylogenetics.summarize_discrete_ancestral_tree_set_report
+        is summarize_discrete_ancestral_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.build_discrete_ancestral_tree_set_confidence_rows
+        is build_discrete_ancestral_tree_set_confidence_rows
+    )
+    assert (
+        bijux_phylogenetics.summarize_irreversible_discrete_reconstruction
+        is summarize_irreversible_discrete_reconstruction
+    )
+    assert (
+        bijux_phylogenetics.summarize_irreversible_discrete_report
+        is summarize_irreversible_discrete_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_ordered_discrete_reconstruction
+        is summarize_ordered_discrete_reconstruction
+    )
+    assert (
+        bijux_phylogenetics.summarize_ordered_discrete_report
+        is summarize_ordered_discrete_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_root_sensitivity
+        is summarize_ancestral_root_sensitivity
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_root_sensitivity_report
+        is summarize_ancestral_root_sensitivity_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_transitions
+        is summarize_ancestral_transitions
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_transition_report
+        is summarize_ancestral_transition_report
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_transition_tree_set
+        is summarize_ancestral_transition_tree_set
+    )
+    assert (
+        bijux_phylogenetics.summarize_ancestral_transition_tree_set_report
+        is summarize_ancestral_transition_tree_set_report
+    )
+    assert (
+        bijux_phylogenetics.write_irreversible_discrete_summary_table
+        is write_irreversible_discrete_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_irreversible_discrete_fit_table
+        is write_irreversible_discrete_fit_table
+    )
+    assert (
+        bijux_phylogenetics.write_irreversible_discrete_node_table
+        is write_irreversible_discrete_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_irreversible_discrete_transition_table
+        is write_irreversible_discrete_transition_table
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_summary_table
+        is write_ordered_discrete_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_fit_table
+        is write_ordered_discrete_fit_table
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_node_table
+        is write_ordered_discrete_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_ordered_discrete_transition_table
+        is write_ordered_discrete_transition_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_root_sensitivity_summary_table
+        is write_ancestral_root_sensitivity_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_root_assumption_table
+        is write_ancestral_root_assumption_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_root_sensitivity_node_table
+        is write_ancestral_root_sensitivity_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_tree_set_tree_table
+        is write_ancestral_tree_set_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_summary_table
+        is write_ancestral_transition_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_branch_table
+        is write_ancestral_transition_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_count_table
+        is write_ancestral_transition_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_exclusion_table
+        is write_ancestral_transition_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_summary_table
+        is write_ancestral_transition_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_tree_table
+        is write_ancestral_transition_tree_set_tree_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_branch_table
+        is write_ancestral_transition_tree_set_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_transition_tree_set_count_table
+        is write_ancestral_transition_tree_set_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_ancestral_tree_set_exclusion_table
+        is write_ancestral_tree_set_exclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_summary_table
+        is write_continuous_ancestral_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_confidence_table
+        is write_continuous_ancestral_tree_set_confidence_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_node_table
+        is write_continuous_ancestral_tree_set_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_ancestral_tree_set_clade_table
+        is write_continuous_ancestral_tree_set_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_summary_table
+        is write_discrete_ancestral_tree_set_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_confidence_table
+        is write_discrete_ancestral_tree_set_confidence_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_node_table
+        is write_discrete_ancestral_tree_set_node_table
+    )
+    assert (
+        bijux_phylogenetics.write_discrete_ancestral_tree_set_clade_table
+        is write_discrete_ancestral_tree_set_clade_table
     )
     assert (
         bijux_phylogenetics.run_multiple_sequence_alignment
@@ -777,13 +2778,66 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_bootstrap_support_estimation
     )
     assert (
+        bijux_phylogenetics.run_sh_alrt_support_estimation
+        is run_sh_alrt_support_estimation
+    )
+    assert bijux_phylogenetics.run_fasta_to_tree_workflow is run_fasta_to_tree_workflow
+    assert (
+        bijux_phylogenetics.infer_unaligned_sequence_type
+        is infer_unaligned_sequence_type
+    )
+    assert (
         bijux_phylogenetics.validate_bootstrap_tree_set is validate_bootstrap_tree_set
     )
     assert (
         bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
     )
     assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
+    assert (
+        bijux_phylogenetics.run_large_alignment_inference
+        is run_large_alignment_inference
+    )
+    assert (
+        bijux_phylogenetics.run_inference_reproducibility_check
+        is run_inference_reproducibility_check
+    )
+    assert (
+        bijux_phylogenetics.run_tree_inference_comparison
+        is run_tree_inference_comparison
+    )
     assert bijux_phylogenetics.compare_fast_and_ml_trees is compare_fast_and_ml_trees
+    assert (
+        bijux_phylogenetics.build_inference_comparison_shared_clade_rows
+        is build_inference_comparison_shared_clade_rows
+    )
+    assert (
+        bijux_phylogenetics.build_inference_comparison_weighted_conflict_rows
+        is build_inference_comparison_weighted_conflict_rows
+    )
+    assert (
+        bijux_phylogenetics.build_inference_comparison_conclusion_rows
+        is build_inference_comparison_conclusion_rows
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_clade_table
+        is write_inference_comparison_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_weighted_conflict_table
+        is write_inference_comparison_weighted_conflict_table
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_conclusion_table
+        is write_inference_comparison_conclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_summary_table
+        is write_inference_comparison_summary_table
+    )
+    assert (
+        bijux_phylogenetics.rewrite_inference_comparison_report_html
+        is rewrite_inference_comparison_report_html
+    )
     assert (
         bijux_phylogenetics.compare_inferred_tree_to_taxon_metadata
         is compare_inferred_tree_to_taxon_metadata
@@ -814,10 +2868,50 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is parse_mrbayes_parameter_traces
     )
     assert (
+        bijux_phylogenetics.parse_mrbayes_posterior_tree_samples
+        is parse_mrbayes_posterior_tree_samples
+    )
+    assert (
+        bijux_phylogenetics.parse_mrbayes_mcmc_diagnostics
+        is parse_mrbayes_mcmc_diagnostics
+    )
+    assert (
+        bijux_phylogenetics.parse_mrbayes_consensus_tree is parse_mrbayes_consensus_tree
+    )
+    assert (
         bijux_phylogenetics.compute_mrbayes_effective_sample_sizes
         is compute_mrbayes_effective_sample_sizes
     )
+    assert (
+        bijux_phylogenetics.summarize_mrbayes_parameter_diagnostics
+        is summarize_mrbayes_parameter_diagnostics
+    )
+    assert (
+        bijux_phylogenetics.write_mrbayes_parameter_summary_table
+        is write_mrbayes_parameter_summary_table
+    )
+    assert (
+        bijux_phylogenetics.assess_mrbayes_burnin_sensitivity
+        is assess_mrbayes_burnin_sensitivity
+    )
+    assert (
+        bijux_phylogenetics.write_mrbayes_burnin_sensitivity_slice_table
+        is write_mrbayes_burnin_sensitivity_slice_table
+    )
     assert bijux_phylogenetics.assess_mrbayes_convergence is assess_mrbayes_convergence
+    assert bijux_phylogenetics.MrBayesParameterSummary is MrBayesParameterSummary
+    assert (
+        bijux_phylogenetics.MrBayesParameterDiagnosticsReport
+        is MrBayesParameterDiagnosticsReport
+    )
+    assert (
+        bijux_phylogenetics.MrBayesBurninSensitivityReport
+        is MrBayesBurninSensitivityReport
+    )
+    assert (
+        bijux_phylogenetics.MrBayesBurninSensitivitySlice
+        is MrBayesBurninSensitivitySlice
+    )
     assert (
         bijux_phylogenetics.render_bayesian_posterior_report
         is render_bayesian_posterior_report
@@ -837,8 +2931,41 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.prepare_beast_time_tree_analysis
         is prepare_beast_time_tree_analysis
     )
+    assert (
+        bijux_phylogenetics.run_beast_posterior_inference
+        is run_beast_posterior_inference
+    )
+    assert bijux_phylogenetics.BeastAnalysisXmlReport is BeastAnalysisXmlReport
+    assert bijux_phylogenetics.BeastCalibration is BeastCalibration
+    assert (
+        bijux_phylogenetics.BeastPosteriorConsensusReport
+        is BeastPosteriorConsensusReport
+    )
+    assert (
+        bijux_phylogenetics.BeastPosteriorTopologyDiversityReport
+        is BeastPosteriorTopologyDiversityReport
+    )
     assert bijux_phylogenetics.parse_beast_log is parse_beast_log
+    assert (
+        bijux_phylogenetics.parse_beast_posterior_tree_samples
+        is parse_beast_posterior_tree_samples
+    )
+    assert (
+        bijux_phylogenetics.summarize_beast_analysis_xml is summarize_beast_analysis_xml
+    )
+    assert bijux_phylogenetics.summarize_beast_log is summarize_beast_log
+    assert (
+        bijux_phylogenetics.summarize_beast_posterior_trees
+        is summarize_beast_posterior_trees
+    )
+    assert (
+        bijux_phylogenetics.summarize_beast_posterior_topology_diversity
+        is summarize_beast_posterior_topology_diversity
+    )
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
+    assert (
+        bijux_phylogenetics.validate_beast_analysis_xml is validate_beast_analysis_xml
+    )
     assert (
         bijux_phylogenetics.validate_beast_posterior_log is validate_beast_posterior_log
     )
@@ -847,6 +2974,29 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is assess_beast_burnin_sensitivity
     )
     assert bijux_phylogenetics.assess_beast_chain_mixing is assess_beast_chain_mixing
+    assert (
+        bijux_phylogenetics.write_beast_burnin_sensitivity_slice_table
+        is write_beast_burnin_sensitivity_slice_table
+    )
+    assert (
+        bijux_phylogenetics.write_beast_log_summary_table
+        is write_beast_log_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_beast_posterior_tree_set
+        is write_beast_posterior_tree_set
+    )
+    assert (
+        bijux_phylogenetics.subsample_beast_posterior_tree_set
+        is subsample_beast_posterior_tree_set
+    )
+    assert (
+        bijux_phylogenetics.subsample_mrbayes_posterior_tree_set
+        is subsample_mrbayes_posterior_tree_set
+    )
+    assert (
+        bijux_phylogenetics.subsample_posterior_tree_set is subsample_posterior_tree_set
+    )
     assert (
         bijux_phylogenetics.summarize_maximum_clade_credibility_tree
         is summarize_maximum_clade_credibility_tree
@@ -884,6 +3034,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_supplementary_bayesian_diagnostics_table
         is write_supplementary_bayesian_diagnostics_table
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_subsample
+        is write_posterior_tree_subsample
+    )
+    assert (
+        bijux_phylogenetics.write_posterior_tree_subsample_table
+        is write_posterior_tree_subsample_table
     )
     assert (
         bijux_phylogenetics.write_bayesian_methods_summary_text
@@ -1123,9 +3281,13 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     )
     assert bijux_phylogenetics.trim_alignment is trim_alignment
     assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
+    assert bijux_phylogenetics.TreeRootingReport is TreeRootingReport
     assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
     assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
+    assert bijux_phylogenetics.rotate_named_node is rotate_named_node
+    assert bijux_phylogenetics.rotate_all_internal_nodes is rotate_all_internal_nodes
     assert bijux_phylogenetics.unroot_tree is unroot_tree
+    assert bijux_phylogenetics.write_tree_rooting_report is write_tree_rooting_report
     assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
 
 
@@ -1468,6 +3630,11 @@ def test_normalize_tree_taxa_reports_rename_mapping() -> None:
         ("Homo sapiens", "Homo_sapiens"),
         ("Mus musculus", "Mus_musculus"),
     ]
+    assert report.original_tip_count == 3
+    assert report.normalized_tip_count == 3
+    assert report.unchanged_taxa == ["A"]
+    assert report.topology_preserved is True
+    assert report.branch_lengths_preserved is True
 
 
 def test_taxon_safety_reports_unsafe_labels_and_normalization_collisions(
@@ -1832,6 +3999,27 @@ def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
     assert report.summary.removed_taxa == ["C", "D"]
 
 
+def test_rotate_named_node_reverses_child_order_without_changing_topology() -> None:
+    tree, report = rotate_named_node(
+        fixture("example_tree_named_clades.nwk"),
+        clade_name="Mammals",
+    )
+    assert tree.tip_names == ["B", "A", "C", "D"]
+    assert report.strategy == "rotate:Mammals"
+    assert report.tip_order == ["B", "A", "C", "D"]
+    assert report.rooted_topology_preserved is True
+    assert report.unrooted_topology_preserved is True
+
+
+def test_rotate_all_internal_nodes_reverses_every_internal_child_order() -> None:
+    tree, report = rotate_all_internal_nodes(fixture("example_tree_named_clades.nwk"))
+    assert tree.tip_names == ["D", "C", "B", "A"]
+    assert report.strategy == "rotate-all"
+    assert report.tip_order == ["D", "C", "B", "A"]
+    assert report.rooted_topology_preserved is True
+    assert report.unrooted_topology_preserved is True
+
+
 def test_collapse_branches_below_length_turns_short_internal_edges_into_polytomies() -> (
     None
 ):
@@ -1884,9 +4072,85 @@ def test_root_tree_on_outgroup_reports_absent_taxa_and_roots_tree() -> None:
     assert report.requested_taxa == ["D", "Z"]
     assert report.matched_taxa == ["D"]
     assert report.absent_taxa == ["Z"]
+    assert report.ingroup_taxa == ["A", "B", "C"]
+    assert report.outgroup_monophyletic is True
+    assert report.outgroup_mrca_taxa == ["D"]
+    assert report.outgroup_mrca_extra_taxa == []
+    assert report.rooted_outgroup_taxa == ["D"]
+    assert report.rooted_ingroup_taxa == ["A", "B", "C"]
+    assert report.warnings == [
+        "one or more requested outgroup taxa were absent from the input tree"
+    ]
     assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);"
     assert report.summary.retained_taxa == ["A", "B", "C", "D"]
     assert report.summary.removed_taxa == []
+
+
+def test_root_tree_on_outgroup_reports_monophyletic_outgroup_clade() -> None:
+    _tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["C", "D"],
+    )
+
+    assert report.matched_taxa == ["C", "D"]
+    assert report.absent_taxa == []
+    assert report.ingroup_taxa == ["A", "B"]
+    assert report.outgroup_monophyletic is True
+    assert report.outgroup_mrca_taxa == ["C", "D"]
+    assert report.outgroup_mrca_extra_taxa == []
+    assert report.rooted_outgroup_taxa == ["C", "D"]
+    assert report.rooted_ingroup_taxa == ["A", "B"]
+    assert report.warnings == []
+
+
+def test_root_tree_on_outgroup_reports_non_monophyletic_outgroup_clade() -> None:
+    _tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["B", "D"],
+    )
+
+    assert report.matched_taxa == ["B", "D"]
+    assert report.absent_taxa == []
+    assert report.outgroup_monophyletic is False
+    assert report.outgroup_mrca_taxa == ["A", "B", "C", "D"]
+    assert report.outgroup_mrca_extra_taxa == ["A", "C"]
+    assert report.rooted_outgroup_taxa == []
+    assert report.rooted_ingroup_taxa == ["A", "B", "C", "D"]
+    assert report.warnings == [
+        "requested outgroup taxa are not monophyletic in the input tree",
+        "rooted tree does not isolate every matched outgroup taxon on one root child",
+    ]
+
+
+def test_write_tree_rooting_report_writes_monophyly_and_root_partition_fields(
+    tmp_path: Path,
+) -> None:
+    _tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["C", "D"],
+    )
+    output_path = tmp_path / "rooting.tsv"
+
+    write_tree_rooting_report(output_path, report)
+
+    text = output_path.read_text(encoding="utf-8")
+    assert "outgroup_monophyletic" in text
+    assert "rooted_outgroup_taxa" in text
+    assert "\ttrue\tC,D\t\tC,D\tA,B\t" in text
+
+
+def test_write_tree_rooting_report_writes_midpoint_position_fields(
+    tmp_path: Path,
+) -> None:
+    _tree, report = reroot_tree_by_midpoint(fixture("example_tree_rootable.nwk"))
+    output_path = tmp_path / "midpoint.tsv"
+
+    write_tree_rooting_report(output_path, report)
+
+    text = output_path.read_text(encoding="utf-8")
+    assert "midpoint_anchor_taxa" in text
+    assert "midpoint_position_kind" in text
+    assert "\tA,C\t1.0\t0.5\tnode\tA,B\tC,D\ttrue\n" in text
 
 
 def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
@@ -1894,8 +4158,31 @@ def test_reroot_tree_by_midpoint_preserves_taxa_and_branch_lengths() -> None:
     assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
     assert report.strategy == "midpoint"
     assert report.tip_order == ["C", "D", "B", "A"]
+    assert report.midpoint_anchor_taxa == ["A", "C"]
+    assert report.midpoint_path_length == 1.0
+    assert report.midpoint_distance_from_anchor == 0.5
+    assert report.midpoint_position_kind == "node"
+    assert report.midpoint_anchor_side_taxa == ["A", "B"]
+    assert report.midpoint_opposite_side_taxa == ["C", "D"]
+    assert report.midpoint_suitable is True
     assert dumps_newick(tree) == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);"
     assert report.summary.branch_lengths_affected != []
+
+
+def test_reroot_tree_by_midpoint_warns_when_tree_is_not_strictly_bifurcating() -> None:
+    tree, report = reroot_tree_by_midpoint(fixture("example_tree_polytomy.nwk"))
+
+    assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
+    assert report.midpoint_suitable is False
+    assert report.midpoint_anchor_taxa == ["C", "D"]
+    assert report.midpoint_path_length == 1.2
+    assert report.midpoint_distance_from_anchor == 0.6
+    assert report.midpoint_position_kind == "branch"
+    assert report.midpoint_anchor_side_taxa == ["A", "B", "C"]
+    assert report.midpoint_opposite_side_taxa == ["D"]
+    assert report.warnings == [
+        "midpoint rooting is exploratory because the input tree is not strictly bifurcating"
+    ]
 
 
 def test_unroot_tree_converts_rooted_binary_tree_into_trifurcation() -> None:
@@ -2295,6 +4582,71 @@ def test_alignment_quality_report_includes_transparent_score_components() -> Non
         "missingness",
     }
     assert 0.0 <= report.quality_score <= 100.0
+
+
+def test_alignment_quality_report_exposes_per_sequence_and_per_column_gap_profiles() -> (
+    None
+):
+    report = build_alignment_quality_report(
+        fixture("example_alignment_ambiguity.fasta")
+    )
+
+    assert report.invariant_site_count == 4
+    assert [
+        (row.identifier, row.gap_fraction, row.missing_fraction, row.ambiguity_fraction)
+        for row in report.per_sequence_uncertainty
+    ] == [
+        ("A", 0.0, 2 / 6, 1 / 6),
+        ("B", 0.0, 2 / 6, 1 / 6),
+        ("C", 1 / 6, 1 / 6, 0.0),
+    ]
+    assert [
+        (row.position, row.gap_fraction, row.missing_fraction, row.ambiguity_fraction)
+        for row in report.per_site_uncertainty
+    ] == [
+        (1, 0.0, 0.0, 0.0),
+        (2, 0.0, 0.0, 0.0),
+        (3, 0.0, 0.0, 0.0),
+        (4, 0.0, 0.0, 0.0),
+        (5, 1 / 3, 2 / 3, 2 / 3),
+        (6, 0.0, 1.0, 0.0),
+    ]
+
+
+def test_alignment_quality_report_flags_missingness_concentration_and_suspicious_windows() -> (
+    None
+):
+    missingness_report = build_alignment_quality_report(
+        fixture("example_alignment_missingness.fasta")
+    )
+    suspicious_window_report = build_alignment_quality_report(
+        fixture("example_alignment_filtering.fasta")
+    )
+
+    assert missingness_report.missing_data_concentration.concentrated_column_count == 2
+    assert missingness_report.missing_data_concentration.longest_concentrated_run == 2
+    assert (
+        missingness_report.missing_data_concentration.longest_concentrated_run_start
+        == 5
+    )
+    assert (
+        missingness_report.missing_data_concentration.longest_concentrated_run_end == 6
+    )
+    assert missingness_report.suspicious_alignment is True
+    assert (
+        "alignment concentrates missing data into adjacent columns"
+        in missingness_report.suspicious_reasons
+    )
+    assert (
+        "alignment has low information content for defensible inference"
+        in missingness_report.suspicious_reasons
+    )
+
+    assert suspicious_window_report.suspicious_alignment is True
+    assert (
+        "alignment contains suspiciously over-aligned windows"
+        in suspicious_window_report.suspicious_reasons
+    )
 
 
 def test_alignment_low_information_detection_blocks_sparse_inference_inputs() -> None:
@@ -2709,6 +5061,8 @@ def test_alignment_identity_matrix_reports_pairs_and_comparable_sites() -> None:
 
 def test_coding_alignment_reports_frameshift_like_sequences_and_stop_codons() -> None:
     diagnostics = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
+    assert diagnostics.genetic_code_id == 1
+    assert diagnostics.genetic_code_name == "Standard"
     assert diagnostics.sequence_count == 4
     assert diagnostics.alignment_length_multiple_of_three is True
     assert [
@@ -2726,6 +5080,7 @@ def test_coding_alignment_reports_frameshift_like_sequences_and_stop_codons() ->
         ("A", 3, 7, "TAA", True),
         ("D", 2, 4, "TAG", False),
     ]
+    assert diagnostics.invalid_codons == []
 
 
 def test_translate_coding_alignment_emits_amino_acid_records() -> None:
@@ -2738,11 +5093,182 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
         ("C", "MXW"),
         ("D", "M*W"),
     ]
+    assert report.genetic_code_id == 1
+    assert report.genetic_code_name == "Standard"
     assert report.translated_sequence_count == 4
     assert report.source_alignment_length == 9
     assert report.translated_alignment_length == 3
+    assert report.invalid_codon_count == 0
     assert report.stop_codon_count == 2
     assert report.frameshift_like_sequence_count == 1
+
+
+def test_prepare_coding_sequences_for_alignment_excludes_frame_and_stop_failures(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-raw.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="good", sequence="ATGGAATGG"),
+            AlignmentRecord(identifier="terminal_stop", sequence="ATGGAATAA"),
+            AlignmentRecord(identifier="frameshift", sequence="ATGGAATG"),
+            AlignmentRecord(identifier="internal_stop", sequence="ATGTAGTGG"),
+        ],
+    )
+
+    records, report = prepare_coding_sequences_for_alignment(input_path)
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("good", "ATGGAATGG"),
+        ("terminal_stop", "ATGGAATAA"),
+    ]
+    assert report.sequence_type == "dna"
+    assert report.genetic_code_id == 1
+    assert report.genetic_code_name == "Standard"
+    assert report.input_sequence_count == 4
+    assert report.accepted_sequence_count == 2
+    assert report.accepted_identifiers == ["good", "terminal_stop"]
+    assert report.invalid_codon_sequence_count == 0
+    assert report.terminal_stop_sequence_count == 1
+    assert [
+        (row.identifier, row.reason, row.invalid_codon_count, row.trailing_bases)
+        for row in report.excluded_sequences
+    ] == [
+        ("frameshift", "frame-error", 0, 2),
+        ("internal_stop", "internal-stop-codon", 0, 0),
+    ]
+    assert (
+        "one or more coding sequences were excluded before codon-aware alignment"
+        in report.warnings
+    )
+    assert (
+        "terminal stop codons were retained in accepted coding sequences"
+        in report.warnings
+    )
+
+
+def test_prepare_coding_sequences_for_alignment_preserves_rna_residues(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-rna.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="rna_a", sequence="AUGGAAUGG"),
+            AlignmentRecord(identifier="rna_b", sequence="AUGGAAUAA"),
+        ],
+    )
+
+    records, report = prepare_coding_sequences_for_alignment(input_path)
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("rna_a", "AUGGAAUGG"),
+        ("rna_b", "AUGGAAUAA"),
+    ]
+    assert report.sequence_type == "rna"
+
+
+def test_prepare_coding_sequences_for_alignment_excludes_invalid_codons(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-invalid-codon.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="good", sequence="ATGGAATGG"),
+            AlignmentRecord(identifier="ambiguous_one", sequence="ATGNNNTGG"),
+            AlignmentRecord(identifier="ambiguous_two", sequence="ATGRYATGG"),
+        ],
+    )
+
+    records, report = prepare_coding_sequences_for_alignment(input_path)
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("good", "ATGGAATGG"),
+    ]
+    assert report.invalid_codon_sequence_count == 2
+    assert [
+        (row.identifier, row.reason, row.invalid_codon_count)
+        for row in report.excluded_sequences
+    ] == [
+        ("ambiguous_one", "invalid-codon", 1),
+        ("ambiguous_two", "invalid-codon", 1),
+    ]
+    assert any("ambiguous or invalid codons" in warning for warning in report.warnings)
+
+
+def test_prepare_coding_sequences_for_alignment_honors_configurable_genetic_code(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-mito.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="standard_only", sequence="ATGTGAGGG"),
+            AlignmentRecord(identifier="shared_good", sequence="ATGGAATGG"),
+        ],
+    )
+
+    standard_records, standard_report = prepare_coding_sequences_for_alignment(
+        input_path,
+        genetic_code="1",
+    )
+    mitochondrial_records, mitochondrial_report = (
+        prepare_coding_sequences_for_alignment(
+            input_path,
+            genetic_code="2",
+        )
+    )
+
+    assert [record.identifier for record in standard_records] == ["shared_good"]
+    assert [
+        (row.identifier, row.reason, row.premature_stop_count)
+        for row in standard_report.excluded_sequences
+    ] == [("standard_only", "internal-stop-codon", 1)]
+    assert [record.identifier for record in mitochondrial_records] == [
+        "shared_good",
+        "standard_only",
+    ]
+    assert mitochondrial_report.excluded_sequences == []
+    assert mitochondrial_report.genetic_code_id == 2
+    assert mitochondrial_report.genetic_code_name == "Vertebrate Mitochondrial"
+
+
+def test_translate_coding_alignment_honors_configurable_genetic_code_and_invalid_codons(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-translate.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="mito_triplet", sequence="ATGTGAGGG"),
+            AlignmentRecord(identifier="ambiguous_triplet", sequence="ATGNNNGGG"),
+        ],
+    )
+
+    standard_records, standard_report = translate_coding_alignment(
+        input_path,
+        genetic_code="1",
+    )
+    mitochondrial_records, mitochondrial_report = translate_coding_alignment(
+        input_path,
+        genetic_code="2",
+    )
+
+    assert [(record.identifier, record.sequence) for record in standard_records] == [
+        ("mito_triplet", "M*G"),
+        ("ambiguous_triplet", "MXG"),
+    ]
+    assert [
+        (record.identifier, record.sequence) for record in mitochondrial_records
+    ] == [
+        ("mito_triplet", "MWG"),
+        ("ambiguous_triplet", "MXG"),
+    ]
+    assert standard_report.stop_codon_count == 1
+    assert mitochondrial_report.stop_codon_count == 0
+    assert mitochondrial_report.invalid_codon_count == 1
 
 
 def test_cli_alignment_trim_writes_trimmed_fasta_and_report(
@@ -3365,6 +5891,7 @@ def test_cli_simulate_dna_alignment_writes_fasta(tmp_path: Path, capsys) -> None
     assert ">A\nACTAACGA\n" in output_path.read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_cli_benchmark_tree_validation_reports_observations(capsys) -> None:
     exit_code = main(["benchmark", "tree-validation", "--replicates", "1", "--json"])
     captured = capsys.readouterr()
@@ -3414,8 +5941,11 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
     assert payload["metrics"]["stop_codon_count"] == 2
 
 
-def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -> None:
+def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "rooted.nwk"
+    report_path = tmp_path / "rooting.tsv"
     exit_code = main(
         [
             "topology",
@@ -3426,6 +5956,8 @@ def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -
             "Z",
             "--out",
             str(output_path),
+            "--report-out",
+            str(report_path),
             "--json",
         ]
     )
@@ -3436,12 +5968,27 @@ def test_cli_topology_root_outgroup_writes_rooted_tree(tmp_path: Path, capsys) -
         output_path.read_text(encoding="utf-8")
         == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);\n"
     )
+    report_text = report_path.read_text(encoding="utf-8")
+    assert "outgroup_monophyletic" in report_text
+    assert "\ttrue\tD\t\tD\tA,B,C\t" in report_text
     assert payload["metrics"]["matched_taxa"] == 1
     assert payload["metrics"]["absent_taxa"] == 1
+    assert payload["metrics"]["ingroup_taxa"] == 3
+    assert payload["metrics"]["outgroup_monophyletic"] is True
+    assert payload["metrics"]["outgroup_mrca_extra_taxa"] == 0
+    assert payload["metrics"]["rooted_outgroup_taxa"] == 1
+    assert payload["metrics"]["rooted_ingroup_taxa"] == 3
+    assert payload["metrics"]["warning_count"] == 1
+    assert payload["data"]["warnings"] == [
+        "one or more requested outgroup taxa were absent from the input tree"
+    ]
 
 
-def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> None:
+def test_cli_topology_reroot_midpoint_writes_tree_and_report(
+    tmp_path: Path, capsys
+) -> None:
     output_path = tmp_path / "midpoint.nwk"
+    report_path = tmp_path / "midpoint.tsv"
     exit_code = main(
         [
             "topology",
@@ -3449,6 +5996,8 @@ def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> Non
             str(fixture("example_tree_rootable.nwk")),
             "--out",
             str(output_path),
+            "--report-out",
+            str(report_path),
             "--json",
         ]
     )
@@ -3459,8 +6008,46 @@ def test_cli_topology_reroot_midpoint_writes_tree(tmp_path: Path, capsys) -> Non
         output_path.read_text(encoding="utf-8")
         == "((A:0.2,B:0.2):0.3,(C:0.1,D:0.1):0.4);\n"
     )
+    report_text = report_path.read_text(encoding="utf-8")
+    assert "midpoint_anchor_taxa" in report_text
+    assert "\tA,C\t1.0\t0.5\tnode\tA,B\tC,D\ttrue\n" in report_text
     assert payload["data"]["strategy"] == "midpoint"
     assert payload["metrics"]["tip_count"] == 4
+    assert payload["metrics"]["midpoint_anchor_taxa"] == 2
+    assert payload["metrics"]["midpoint_path_length"] == 1.0
+    assert payload["metrics"]["midpoint_position_kind"] == "node"
+    assert payload["metrics"]["midpoint_anchor_side_taxa"] == 2
+    assert payload["metrics"]["midpoint_opposite_side_taxa"] == 2
+    assert payload["metrics"]["midpoint_suitable"] is True
+
+
+def test_cli_topology_reroot_midpoint_reports_exploratory_warning(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "midpoint-polytomy.nwk"
+    report_path = tmp_path / "midpoint-polytomy.tsv"
+    exit_code = main(
+        [
+            "topology",
+            "reroot-midpoint",
+            str(fixture("example_tree_polytomy.nwk")),
+            "--out",
+            str(output_path),
+            "--report-out",
+            str(report_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.exists()
+    assert "midpoint_suitable" in report_path.read_text(encoding="utf-8")
+    assert payload["metrics"]["midpoint_suitable"] is False
+    assert payload["metrics"]["warning_count"] == 1
+    assert payload["data"]["warnings"] == [
+        "midpoint rooting is exploratory because the input tree is not strictly bifurcating"
+    ]
 
 
 def test_cli_topology_unroot_writes_trifurcating_tree(tmp_path: Path, capsys) -> None:
@@ -3740,23 +6327,32 @@ def test_inspect_tree_path_classifies_internal_support_and_name_labels() -> None
     support = inspect_tree_path(fixture("example_tree_support_mixed.nwk"))
     names = inspect_tree_path(fixture("example_tree_named_clades.nwk"))
     assert [
-        (row.node, row.label, row.numeric_value)
+        (row.node, row.label, row.interpretation, row.numeric_value)
         for row in support.likely_support_labels
     ] == [
-        ("A|B", "0.95", 0.95),
-        ("A|B|C|D", "99", 99.0),
-        ("C|D", "88", 88.0),
+        ("A|B", "0.95", "fractional_support", 0.95),
+        ("A|B|C|D", "99", "percentage_support", 99.0),
+        ("C|D", "88", "percentage_support", 88.0),
     ]
     assert support.likely_named_internal_labels == []
     assert [
         (row.node, row.label, row.interpretation)
         for row in names.likely_named_internal_labels
     ] == [
-        ("A|B", "Mammals", "name"),
-        ("A|B|C|D", "Root", "name"),
-        ("C|D", "Birds", "name"),
+        ("A|B", "Mammals", "named_internal_label"),
+        ("A|B|C|D", "Root", "named_internal_label"),
+        ("C|D", "Birds", "named_internal_label"),
     ]
     assert names.likely_support_labels == []
+
+    invalid = inspect_tree_path(fixture("example_tree_support_invalid.nwk"))
+    assert [
+        (row.label, row.interpretation) for row in invalid.likely_support_labels
+    ] == [
+        ("120", "out_of_range_support"),
+        ("101", "out_of_range_support"),
+        ("-5", "out_of_range_support"),
+    ]
 
 
 def test_inspect_tree_path_detects_suspicious_and_mixed_support_scales() -> None:
@@ -4021,6 +6617,14 @@ def test_detect_tree_format_uses_filename_suffixes() -> None:
     assert detect_tree_format(Path("x.phyloxml")) == "phyloxml"
 
 
+def test_detect_tree_format_prefers_file_content_over_misleading_suffix(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "tree.nex"
+    path.write_text("(A:1,B:1);\n", encoding="utf-8")
+    assert detect_tree_format(path) == "newick"
+
+
 def test_validate_cli_reports_unsupported_format_error(tmp_path: Path, capsys) -> None:
     path = tmp_path / "tree.txt"
     path.write_text("not a tree\n", encoding="utf-8")
@@ -4223,6 +6827,22 @@ def test_compare_tree_paths_reports_nonzero_distance() -> None:
     assert report.robinson_foulds_distance > 0
 
 
+def test_compare_robinson_foulds_matches_reference_fixture_cases() -> None:
+    for row in _load_robinson_foulds_reference_rows():
+        report = compare_robinson_foulds(
+            fixture(row["left_tree"]),
+            fixture(row["right_tree"]),
+            rf_mode=row["rf_mode"],
+            taxon_overlap_policy=row["taxon_overlap_policy"],
+        )
+        assert report.left_split_count == int(row["left_split_count"])
+        assert report.right_split_count == int(row["right_split_count"])
+        assert report.robinson_foulds_distance == int(row["robinson_foulds_distance"])
+        assert report.normalized_robinson_foulds == float(
+            row["normalized_robinson_foulds"]
+        )
+
+
 def test_prune_trees_to_shared_taxa_keeps_identical_tip_sets() -> None:
     left, right, report = prune_trees_to_shared_taxa(
         fixture("example_tree.nwk"),
@@ -4246,6 +6866,20 @@ def test_compare_tree_paths_reports_identical_topology_boolean() -> None:
     assert report.robinson_foulds_distance == 0
 
 
+def test_compare_tree_paths_supports_explicit_unrooted_rf_mode() -> None:
+    report = compare_tree_paths(
+        fixture("example_tree.nwk"),
+        fixture("example_tree_rooting_diff.nwk"),
+        rf_mode="unrooted",
+    )
+    assert report.rf_mode == "unrooted"
+    assert report.robinson_foulds_distance == 0
+    assert report.unrooted_robinson_foulds_distance == 0
+    assert report.rooted_robinson_foulds_distance == 2
+    assert report.same_unrooted_topology is True
+    assert report.same_taxa_different_rooting is True
+
+
 def test_compare_tree_paths_reports_different_topology_boolean() -> None:
     report = compare_tree_paths(
         fixture("example_tree.nwk"), fixture("example_tree_topology_diff.nwk")
@@ -4255,6 +6889,19 @@ def test_compare_tree_paths_reports_different_topology_boolean() -> None:
     assert report.same_taxa_different_rooting is False
 
 
+def test_compare_tree_paths_enforces_identical_taxa_when_requested() -> None:
+    try:
+        compare_tree_paths(
+            fixture("example_tree.nwk"),
+            fixture("example_tree_overlap.nwk"),
+            taxon_overlap_policy="require-identical",
+        )
+    except ValueError as error:
+        assert "requires identical taxon sets" in str(error)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected identical-taxon RF comparison to fail")
+
+
 def test_compare_clade_sets_reports_shared_and_unique_clades() -> None:
     report = compare_clade_sets(
         fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
@@ -4262,6 +6909,75 @@ def test_compare_clade_sets_reports_shared_and_unique_clades() -> None:
     assert report.shared_clades == ["A|B"]
     assert report.left_only_clades == ["C|D"]
     assert report.right_only_clades == ["A|B|C"]
+
+
+def test_compare_clade_overlap_reports_multi_tree_presence_and_support() -> None:
+    report = compare_clade_overlap(
+        [
+            fixture("example_tree.nwk"),
+            fixture("example_tree_support_left.nwk"),
+            fixture("example_tree_alt.nwk"),
+        ]
+    )
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.shared_clades == ["A|B"]
+    assert report.conflicting_clades == ["C|D", "A|B|C"]
+    assert [
+        (
+            summary.tree_path.name,
+            summary.clade_count,
+            summary.support_clade_count,
+            summary.unique_clades,
+        )
+        for summary in report.tree_summaries
+    ] == [
+        ("example_tree.nwk", 2, 0, []),
+        ("example_tree_support_left.nwk", 2, 2, []),
+        ("example_tree_alt.nwk", 2, 0, ["A|B|C"]),
+    ]
+    by_clade = {row.clade_id: row for row in report.clade_rows}
+    assert [
+        (item.tree_path.name, item.present, item.support)
+        for item in by_clade["A|B"].observations
+    ] == [
+        ("example_tree.nwk", True, None),
+        ("example_tree_support_left.nwk", True, 95.0),
+        ("example_tree_alt.nwk", True, None),
+    ]
+    assert [
+        (item.tree_path.name, item.present, item.support)
+        for item in by_clade["C|D"].observations
+    ] == [
+        ("example_tree.nwk", True, None),
+        ("example_tree_support_left.nwk", True, 88.0),
+        ("example_tree_alt.nwk", False, None),
+    ]
+
+
+def test_write_clade_overlap_table_writes_one_row_per_clade_per_tree(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "clade-overlap.tsv"
+    write_clade_overlap_table(
+        output,
+        [
+            fixture("example_tree.nwk"),
+            fixture("example_tree_support_left.nwk"),
+            fixture("example_tree_alt.nwk"),
+        ],
+    )
+    assert output.read_text(encoding="utf-8") == (
+        "clade_id\ttree_path\tpresent\tsupport\tpresent_in_all_trees\tpresent_tree_count\tabsent_tree_count\n"
+        f"A|B\t{fixture('example_tree.nwk')}\ttrue\t\ttrue\t3\t0\n"
+        f"A|B\t{fixture('example_tree_support_left.nwk')}\ttrue\t95.0\ttrue\t3\t0\n"
+        f"A|B\t{fixture('example_tree_alt.nwk')}\ttrue\t\ttrue\t3\t0\n"
+        f"C|D\t{fixture('example_tree.nwk')}\ttrue\t\tfalse\t2\t1\n"
+        f"C|D\t{fixture('example_tree_support_left.nwk')}\ttrue\t88.0\tfalse\t2\t1\n"
+        f"C|D\t{fixture('example_tree_alt.nwk')}\tfalse\t\tfalse\t2\t1\n"
+        f"A|B|C\t{fixture('example_tree.nwk')}\tfalse\t\tfalse\t1\t2\n"
+        f"A|B|C\t{fixture('example_tree_support_left.nwk')}\tfalse\t\tfalse\t1\t2\n"
+        f"A|B|C\t{fixture('example_tree_alt.nwk')}\ttrue\t\tfalse\t1\t2\n"
+    )
 
 
 def test_compare_tree_paths_detects_same_topology_with_different_branch_lengths() -> (
@@ -4306,6 +7022,31 @@ def test_compare_support_values_pairs_shared_clades() -> None:
     ]
 
 
+def test_compare_support_values_prefers_ufboot_when_iqtree_dual_support_is_present(
+    tmp_path: Path,
+) -> None:
+    left_path = tmp_path / "left.nwk"
+    right_path = tmp_path / "right.nwk"
+    left_path.write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\n",
+        encoding="utf-8",
+    )
+    right_path.write_text(
+        "((A:0.1,B:0.1)81/93:0.2,(C:0.1,D:0.1)78/94:0.2);\n",
+        encoding="utf-8",
+    )
+
+    report = compare_support_values(left_path, right_path)
+
+    assert [
+        (row.split_id, row.left_support, row.right_support)
+        for row in report.shared_clades
+    ] == [
+        ("A|B", 97.0, 93.0),
+        ("C|D", 96.0, 94.0),
+    ]
+
+
 def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> None:
     scaled = compare_branch_lengths(
         fixture("example_tree.nwk"), fixture("example_tree_branch_lengths_right.nwk")
@@ -4317,6 +7058,18 @@ def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> Non
         ("A|B", 0.2, 2.0),
         ("C|D", 0.1, 2.0),
     ]
+    assert scaled.same_taxon_set is True
+    assert scaled.branch_score.branch_score_distance == 0.33166247903554
+    assert [
+        (row.split_id, row.comparison_status, row.left_length, row.right_length)
+        for row in scaled.branch_score.splits
+    ] == [
+        ("A", "shared", 0.1, 0.2),
+        ("B", "shared", 0.1, 0.2),
+        ("C", "shared", 0.2, 0.2),
+        ("D", "shared", 0.2, 0.2),
+        ("A|B", "shared", 0.30000000000000004, 0.6000000000000001),
+    ]
     assert [
         (row.split_id, row.left_length, row.right_length, row.delta, row.ratio)
         for row in missing.shared_splits
@@ -4324,21 +7077,32 @@ def test_compare_branch_lengths_reports_delta_ratio_and_missing_lengths() -> Non
         ("A|B", 0.2, None, None, None),
         ("C|D", 0.1, 0.2, 0.1, 2.0),
     ]
+    assert missing.branch_score.branch_score_distance is None
+    assert missing.branch_score.missing_length_split_count == 1
 
 
-def test_write_tree_comparison_table_writes_one_row_per_compared_split(
-    tmp_path: Path,
-) -> None:
-    output = tmp_path / "comparison.tsv"
-    write_tree_comparison_table(
-        output, fixture("example_tree.nwk"), fixture("example_tree_alt.nwk")
-    )
-    assert output.read_text(encoding="utf-8") == (
-        "split_id\tcomparison_status\tshared_clade\tleft_support\tright_support\tleft_length\tright_length\tlength_delta\tlength_ratio\n"
-        "A|B\tshared\ttrue\t\t\t0.2\t0.1\t-0.1\t0.5\n"
-        "A|B|C\tright_only\tfalse\t\t\t\t\t\t\n"
-        "C|D\tleft_only\tfalse\t\t\t\t\t\t\n"
-    )
+def test_compare_branch_score_distance_matches_reference_fixture_cases() -> None:
+    for row in _load_branch_score_reference_rows():
+        report = compare_branch_score_distance(
+            fixture(row["left_tree"]),
+            fixture(row["right_tree"]),
+            taxon_overlap_policy=row["taxon_overlap_policy"],
+        )
+        assert report.same_taxon_set is (row["same_taxon_set"] == "true")
+        assert report.branch_score_distance == float(row["branch_score_distance"])
+
+
+def test_compare_branch_score_distance_enforces_identical_taxa_when_requested() -> None:
+    try:
+        compare_branch_score_distance(
+            fixture("example_tree.nwk"),
+            fixture("example_tree_overlap.nwk"),
+            taxon_overlap_policy="require-identical",
+        )
+    except ValueError as error:
+        assert "identical taxon sets" in str(error)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected identical-taxon branch-score comparison to fail")
 
 
 def test_build_tree_comparison_report_writes_html_with_checksums(
@@ -4357,6 +7121,8 @@ def test_build_tree_comparison_report_writes_html_with_checksums(
     assert "clade-comparison" in html
     assert "clade-changes" in html
     assert "support-comparison" in html
+    assert "conflicting_clades" in html
+    assert "unique_clades" in html
 
 
 def test_render_tree_svg_writes_static_tree_image(tmp_path: Path) -> None:
@@ -4410,6 +7176,44 @@ def test_render_tree_svg_can_render_internal_support_values(tmp_path: Path) -> N
     assert 'class="support-label"' in svg
     assert ">95<" in svg
     assert ">88<" in svg
+
+
+def test_render_tree_svg_can_render_branch_color_overlays(tmp_path: Path) -> None:
+    output = tmp_path / "branch-colors.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        branch_colors={
+            "A": "#dc2626",
+            "C|D": "#0f766e",
+        },
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_branch_color_count == 2
+    assert 'class="branch branch-colored"' in svg
+    assert "#dc2626" in svg
+    assert "#0f766e" in svg
+
+
+def test_render_tree_svg_can_render_internal_pie_markers(tmp_path: Path) -> None:
+    output = tmp_path / "internal-pies.svg"
+    result = render_tree_svg(
+        fixture("example_tree.nwk"),
+        out_path=output,
+        internal_pies={
+            "A|B": {"forest": 1.0},
+            "C|D": {"forest": 0.25, "desert": 0.75},
+        },
+        internal_pie_colors={
+            "forest": "#0f766e",
+            "desert": "#c2410c",
+        },
+    )
+    svg = output.read_text(encoding="utf-8")
+    assert result.rendered_internal_pie_count == 2
+    assert 'class="internal-pie-slice"' in svg
+    assert "#0f766e" in svg
+    assert "#c2410c" in svg
 
 
 def test_render_tree_svg_can_render_categorical_tip_traits(tmp_path: Path) -> None:
@@ -4844,7 +7648,7 @@ def test_cli_alignment_link_strict_mode_returns_typed_error(capsys) -> None:
     assert payload["errors"][0]["code"] == AlignmentTaxonMismatchError.code
 
 
-def test_cli_alignment_quality_json_output(capsys) -> None:
+def test_cli_alignment_quality_json_output_surfaces_suspicion_metrics(capsys) -> None:
     exit_code = main(
         [
             "alignment",
@@ -4871,6 +7675,78 @@ def test_cli_alignment_classify_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["state"] == "raw_sequence_fasta"
     assert payload["data"]["sequence_count"] == 4
+
+
+def test_cli_alignment_sequence_type_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "sequence-type",
+            str(fixture("example_sequences_raw.fasta")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["detected_type"] == "dna"
+    assert payload["metrics"]["selected_type"] == "dna"
+    assert payload["metrics"]["confidence"] == "medium"
+    assert payload["data"]["compatible_types"] == ["dna", "protein"]
+
+
+def test_cli_alignment_validate_input_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "validate-input",
+            str(fixture("example_sequences_invalid_input.fasta")),
+            "--sequence-type",
+            "dna",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["duplicate_identifier_count"] == 1
+    assert payload["metrics"]["illegal_character_count"] == 1
+    assert payload["metrics"]["empty_sequence_count"] == 1
+    assert payload["metrics"]["sequence_length_outlier_count"] == 2
+    assert payload["metrics"]["detected_type"] == "invalid"
+    assert payload["metrics"]["selected_type"] is None
+    assert payload["metrics"]["sequence_type_confidence"] == "blocked"
+
+
+def test_cli_alignment_repair_input_writes_repaired_fasta(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "repaired.fasta"
+    exit_code = main(
+        [
+            "alignment",
+            "repair-input",
+            str(fixture("example_sequences_invalid_input.fasta")),
+            "--out",
+            str(output),
+            "--sequence-type",
+            "dna",
+            "--normalize-identifiers",
+            "--remove-invalid-records",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output.read_text(encoding="utf-8") == (
+        ">Alpha_sample\nACTGACTG\n>rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
+    )
+    assert payload["metrics"]["normalized_identifier_count"] == 2
+    assert payload["metrics"]["removed_record_count"] == 2
+    assert payload["metrics"]["remaining_duplicate_identifier_count"] == 0
+    assert payload["metrics"]["remaining_illegal_character_count"] == 0
+    assert payload["metrics"]["remaining_empty_sequence_count"] == 0
 
 
 def test_cli_alignment_windows_json_output(capsys) -> None:
@@ -4923,6 +7799,156 @@ def test_cli_alignment_profiles_json_output(capsys) -> None:
     assert any(profile["name"] == "coding-safe" for profile in payload["data"])
 
 
+def test_cli_alignment_occupancy_writes_tables_and_filtered_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    taxa_out = tmp_path / "taxa.tsv"
+    loci_out = tmp_path / "loci.tsv"
+    matrix_out = tmp_path / "matrix.tsv"
+    filtered_alignment_out = tmp_path / "filtered_alignment.fasta"
+    filtered_partitions_out = tmp_path / "filtered_partitions.txt"
+
+    exit_code = main(
+        [
+            "alignment",
+            "occupancy",
+            str(fixture("example_multilocus_alignment.fasta")),
+            str(fixture("example_multilocus_partitions.txt")),
+            "--taxon-coverage-threshold",
+            "0.6",
+            "--locus-coverage-threshold",
+            "0.6",
+            "--taxa-out",
+            str(taxa_out),
+            "--loci-out",
+            str(loci_out),
+            "--matrix-out",
+            str(matrix_out),
+            "--filtered-alignment-out",
+            str(filtered_alignment_out),
+            "--filtered-partitions-out",
+            str(filtered_partitions_out),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["metrics"]["locus_count"] == 3
+    assert payload["metrics"]["minimum_locus_occupancy"] == 0.0
+    assert payload["metrics"]["filtered_taxon_count"] == 2
+    assert payload["metrics"]["filtered_locus_count"] == 2
+    assert payload["data"]["filter_report"]["removed_taxa"] == [
+        "TaxonC",
+        "TaxonD",
+        "TaxonE",
+    ]
+    assert payload["data"]["filter_report"]["removed_loci"] == ["gene_beta"]
+
+    assert taxa_out.read_text(encoding="utf-8").startswith(
+        "taxon\tcovered_locus_count\ttotal_locus_count\t"
+        "locus_coverage_fraction\tobserved_site_count\t"
+        "total_site_count\tsite_coverage_fraction\tlow_coverage"
+    )
+    assert "gene_gamma\t2\t5\t0.4\t6\t15\t0.4\ttrue\n" in loci_out.read_text(
+        encoding="utf-8"
+    )
+    assert matrix_out.read_text(encoding="utf-8").splitlines()[0] == (
+        "taxon\tgene_alpha\tgene_beta\tgene_gamma\tcovered_locus_count\t"
+        "total_locus_count\tlocus_coverage_fraction\tobserved_site_count\t"
+        "total_site_count\tsite_coverage_fraction\tlow_coverage"
+    )
+    assert filtered_alignment_out.read_text(encoding="utf-8") == (
+        ">TaxonA\nAAAAGGG\n>TaxonB\nAAAAGGG\n"
+    )
+    assert filtered_partitions_out.read_text(encoding="utf-8") == (
+        "DNA,gene_alpha = 1-4\nDNA,gene_gamma = 5-7\n"
+    )
+
+
+def test_cli_alignment_occupancy_supports_minimum_locus_occupancy(
+    tmp_path: Path, capsys
+) -> None:
+    taxa_out = tmp_path / "partial-taxa.tsv"
+    loci_out = tmp_path / "partial-loci.tsv"
+    matrix_out = tmp_path / "partial-matrix.tsv"
+    filtered_alignment_out = tmp_path / "partial-filtered.fasta"
+    filtered_partitions_out = tmp_path / "partial-filtered.partitions.txt"
+
+    exit_code = main(
+        [
+            "alignment",
+            "occupancy",
+            str(fixture("example_multilocus_partial_occupancy.fasta")),
+            str(fixture("example_multilocus_partial_occupancy_partitions.txt")),
+            "--taxon-coverage-threshold",
+            "0.5",
+            "--locus-coverage-threshold",
+            "0.75",
+            "--minimum-locus-occupancy",
+            "0.75",
+            "--taxa-out",
+            str(taxa_out),
+            "--loci-out",
+            str(loci_out),
+            "--matrix-out",
+            str(matrix_out),
+            "--filtered-alignment-out",
+            str(filtered_alignment_out),
+            "--filtered-partitions-out",
+            str(filtered_partitions_out),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["minimum_locus_occupancy"] == 0.75
+    assert payload["metrics"]["filtered_taxon_count"] == 2
+    assert payload["metrics"]["filtered_locus_count"] == 2
+    assert payload["data"]["report"]["minimum_locus_occupancy"] == 0.75
+    assert payload["data"]["report"]["low_coverage_loci"] == [
+        "gene_alpha",
+        "gene_gamma",
+    ]
+    assert payload["data"]["filter_report"]["retained_taxa"] == ["TaxonA", "TaxonB"]
+    assert payload["data"]["filter_report"]["retained_loci"] == [
+        "gene_alpha",
+        "gene_beta",
+    ]
+    assert payload["data"]["filter_report"]["filter_iterations"][0] == {
+        "input_loci": ["gene_alpha", "gene_beta", "gene_gamma"],
+        "input_taxa": ["TaxonA", "TaxonB", "TaxonC", "TaxonD", "TaxonE"],
+        "iteration": 1,
+        "low_coverage_loci": ["gene_gamma"],
+        "low_coverage_taxa": ["TaxonC", "TaxonD", "TaxonE"],
+        "removed_loci": ["gene_gamma"],
+        "removed_taxa": ["TaxonC", "TaxonD", "TaxonE"],
+        "retained_loci": ["gene_alpha", "gene_beta"],
+        "retained_taxa": ["TaxonA", "TaxonB"],
+    }
+    assert filtered_alignment_out.read_text(encoding="utf-8") == (
+        ">TaxonA\nAAAACCCC\n>TaxonB\nAAAACCCC\n"
+    )
+    assert filtered_partitions_out.read_text(encoding="utf-8") == (
+        "DNA,gene_alpha = 1-4\nDNA,gene_beta = 5-8\n"
+    )
+    assert "TaxonB\t2\t3\t0.666666666667\t9\t12\t0.75\tfalse\n" in taxa_out.read_text(
+        encoding="utf-8"
+    )
+    assert "gene_gamma\t2\t5\t0.4\t9\t20\t0.45\ttrue\n" in loci_out.read_text(
+        encoding="utf-8"
+    )
+    assert matrix_out.read_text(encoding="utf-8").splitlines()[0] == (
+        "taxon\tgene_alpha\tgene_beta\tgene_gamma\tcovered_locus_count\t"
+        "total_locus_count\tlocus_coverage_fraction\tobserved_site_count\t"
+        "total_site_count\tsite_coverage_fraction\tlow_coverage"
+    )
+
+
 def test_cli_alignment_forensic_json_output(capsys) -> None:
     exit_code = main(
         [
@@ -4937,6 +7963,29 @@ def test_cli_alignment_forensic_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["metrics"]["safe_for_coding_analysis"] is False
     assert payload["data"]["coding"]["mixed_coding_signals"] is True
+
+
+def test_cli_alignment_quality_json_output(capsys) -> None:
+    exit_code = main(
+        [
+            "alignment",
+            "quality",
+            str(fixture("example_alignment_missingness.fasta")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["quality_score"] == payload["data"]["quality_score"]
+    assert payload["metrics"]["invariant_site_count"] == 6
+    assert payload["metrics"]["parsimony_informative_site_count"] == 0
+    assert payload["metrics"]["suspicious_alignment"] is True
+    assert payload["metrics"]["suspicious_reason_count"] >= 2
+    assert payload["metrics"]["concentrated_column_count"] == 2
+    assert (
+        payload["data"]["missing_data_concentration"]["longest_concentrated_run"] == 2
+    )
 
 
 def test_cli_alignment_low_information_json_output(capsys) -> None:
@@ -5237,6 +8286,48 @@ def test_cli_compare_branch_lengths_json_output(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["metrics"]["shared_splits"] == 2
+    assert payload["metrics"]["branch_score_distance"] == 0.33166247903554
+    assert payload["metrics"]["same_taxon_set"] is True
+    assert payload["data"]["branch_score"]["split_count"] == 5
+
+
+def test_cli_compare_branch_lengths_reports_pruned_taxon_set_status(capsys) -> None:
+    exit_code = main(
+        [
+            "compare",
+            "branch-lengths",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_overlap.nwk")),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["same_taxon_set"] is False
+    assert payload["data"]["left_only_taxa"] == ["D"]
+    assert payload["data"]["right_only_taxa"] == ["E"]
+    assert payload["data"]["branch_score"]["branch_score_distance"] == 0.0
+
+
+def test_cli_compare_branch_lengths_requires_identical_taxa_when_requested() -> None:
+    try:
+        main(
+            [
+                "compare",
+                "branch-lengths",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_tree_overlap.nwk")),
+                "--taxon-overlap-policy",
+                "require-identical",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError(
+            "expected CLI branch-length comparison to reject mismatched taxa"
+        )
 
 
 def test_cli_compare_clades_json_output(capsys) -> None:
@@ -5252,9 +8343,80 @@ def test_cli_compare_clades_json_output(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 2
     assert payload["data"]["shared_clades"] == ["A|B"]
-    assert payload["data"]["left_only_clades"] == ["C|D"]
-    assert payload["data"]["right_only_clades"] == ["A|B|C"]
+    assert payload["data"]["conflicting_clades"] == ["C|D", "A|B|C"]
+    assert [
+        (row["tree_path"].split("/")[-1], row["unique_clades"])
+        for row in payload["data"]["tree_summaries"]
+    ] == [
+        ("example_tree.nwk", ["C|D"]),
+        ("example_tree_alt.nwk", ["A|B|C"]),
+    ]
+
+
+def test_cli_compare_clades_supports_multiple_trees_and_table_output(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "clade-overlap.tsv"
+    exit_code = main(
+        [
+            "compare",
+            "clades",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_support_left.nwk")),
+            "--tree",
+            str(fixture("example_tree_alt.nwk")),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 3
+    assert payload["metrics"]["shared_clades"] == 1
+    assert payload["metrics"]["conflicting_clades"] == 2
+    assert output.exists()
+    assert "clade_id\ttree_path\tpresent\tsupport" in output.read_text(encoding="utf-8")
+
+
+def test_cli_compare_json_output_supports_unrooted_rf_mode(capsys) -> None:
+    exit_code = main(
+        [
+            "compare",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_rooting_diff.nwk")),
+            "--rf-mode",
+            "unrooted",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["robinson_foulds_distance"] == 0
+    assert payload["metrics"]["rf_mode"] == "unrooted"
+    assert payload["data"]["rooted_robinson_foulds_distance"] == 2
+    assert payload["data"]["same_unrooted_topology"] is True
+
+
+def test_cli_compare_requires_identical_taxa_when_policy_requests_it() -> None:
+    try:
+        main(
+            [
+                "compare",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_tree_overlap.nwk")),
+                "--taxon-overlap-policy",
+                "require-identical",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected CLI compare to reject mismatched taxa")
 
 
 def test_cli_compare_changes_json_output(capsys) -> None:
@@ -5315,7 +8477,7 @@ def test_cli_compare_table_writes_tsv_output(tmp_path: Path, capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["table_rows"] == 3
+    assert payload["metrics"]["table_rows"] == 7
     assert output.read_text(encoding="utf-8").startswith(
         "split_id\tcomparison_status\tshared_clade\t"
     )
@@ -5546,7 +8708,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     output = tmp_path / "phylo-inputs-report.html"
     result = render_phylo_inputs_report(
         tree_path=fixture("example_tree.nwk"),
-        alignment_path=fixture("example_alignment.fasta"),
+        alignment_path=fixture("example_alignment_missingness.fasta"),
         out_path=output,
     )
     text = output.read_text(encoding="utf-8")
@@ -5576,6 +8738,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
     ]
     assert result.machine_manifest_path.exists()
     assert "Bijux Phylo Inputs Report" in text
+    assert "alignment suspicious diagnostics: flagged" in text
     assert result.alignment_low_information is not None
     assert result.alignment_duplicate_policy is not None
     assert result.alignment_ambiguous_columns is not None
@@ -5585,7 +8748,7 @@ def test_render_phylo_inputs_report_writes_alignment_sections(tmp_path: Path) ->
 def test_render_alignment_report_writes_alignment_sections(tmp_path: Path) -> None:
     output = tmp_path / "alignment-report.html"
     result = render_alignment_report(
-        alignment_path=fixture("example_alignment_coding.fasta"),
+        alignment_path=fixture("example_alignment_filtering.fasta"),
         out_path=output,
     )
 
@@ -5609,6 +8772,8 @@ def test_render_alignment_report_writes_alignment_sections(tmp_path: Path) -> No
     ]
     assert result.machine_manifest_path.exists()
     assert "Bijux Alignment Report" in text
+    assert "alignment suspicious diagnostics: flagged" in text
+    assert "longest concentrated missing-data run: 4" in text
 
 
 def test_render_taxon_report_writes_taxon_sections(tmp_path: Path) -> None:
@@ -5636,6 +8801,67 @@ def test_render_taxon_report_writes_taxon_sections(tmp_path: Path) -> None:
     ]
     assert result.machine_manifest_path.exists()
     assert "Bijux Taxon Audit Report" in text
+
+
+def test_render_taxon_report_includes_crosswalk_exclusions_loss_stability_and_input_ledger(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "taxonomy-report-workflow.html"
+    result = render_taxon_report(
+        tree_path=fixture("example_taxon_workflow_tree.nwk"),
+        metadata_path=fixture("example_taxon_workflow_metadata.csv"),
+        traits_path=fixture("example_taxon_workflow_traits.csv"),
+        alignment_path=fixture("example_taxon_workflow_alignment.fasta"),
+        filtered_alignment_path=fixture(
+            "example_taxon_workflow_filtered_alignment.fasta"
+        ),
+        inference_tree_path=fixture("example_taxon_workflow_inference.nwk"),
+        reported_taxa_path=fixture("example_taxon_workflow_reported.csv"),
+        out_path=output,
+    )
+
+    sidecar = json.loads(result.machine_manifest_path.read_text(encoding="utf-8"))
+    assert result.taxon_crosswalk is not None
+    assert result.taxon_exclusions is not None
+    assert result.taxon_workflow_loss is not None
+    assert result.taxon_stability is not None
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "taxon-audit",
+        "taxon-identity",
+        "taxon-safety",
+        "taxon-namespaces",
+        "taxon-rank-consistency",
+        "taxon-duplicate-identities",
+        "taxon-mapping-conflicts",
+        "taxon-crosswalk",
+        "taxon-exclusions",
+        "taxon-loss",
+        "taxon-loss-events",
+        "taxon-stability",
+        "limitations",
+    ]
+    assert sidecar["metrics"]["crosswalk_rows"] == 4
+    assert sidecar["metrics"]["excluded_taxa"] == 2
+    assert sidecar["metrics"]["loss_stage_count"] == 3
+    assert sidecar["metrics"]["unstable_taxa"] == 3
+    assert [row["role"] for row in sidecar["input_ledger"]] == [
+        "tree",
+        "metadata",
+        "traits",
+        "alignment",
+        "filtered_alignment",
+        "inference_tree",
+        "reported_taxa",
+    ]
+    assert any(
+        line == "excluded taxa with explicit causes: 2"
+        for line in sidecar["reviewer_summary"]
+    )
+    assert any(
+        line == "unstable taxa across linked sources: 3"
+        for line in sidecar["reviewer_summary"]
+    )
 
 
 def test_render_reports_write_machine_readable_sidecars_and_reviewer_sections(
@@ -5691,6 +8917,21 @@ def test_reference_validation_suites_cover_goals_91_through_96() -> None:
     assert [suite.goal_id for suite in suites] == [91, 92, 93, 94, 95, 96]
     assert all(suite.passed for suite in suites)
     assert sum(suite.fixture_count for suite in suites) >= 18
+
+
+def test_alignment_quality_reference_fixtures_lock_suspicion_and_concentration() -> (
+    None
+):
+    suite = validate_alignment_quality_reference_fixtures()
+    fixtures = {fixture.name: fixture for fixture in suite.fixtures}
+
+    assert fixtures["clean_alignment_quality"].observed["suspicious_alignment"] is False
+    assert (
+        fixtures["missingness_heavy_alignment"].observed["concentrated_missing_run"]
+        == 2
+    )
+    assert fixtures["ambiguity_heavy_alignment"].observed["warning_count"] == 5
+    assert suite.passed is True
 
 
 def test_build_core_workflow_validation_report_aggregates_suites_failures_and_maturity() -> (
@@ -6003,12 +9244,17 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "alignment",
         "comparative",
         "ancestral",
+        "biogeography",
+        "host-association",
+        "ecological-niche",
+        "phylogeography",
         "discrete-evolution",
         "diversification",
         "distance",
         "tree-set",
         "simulate",
         "benchmark",
+        "parity",
         "inspect",
         "validate",
         "normalize",
@@ -6026,13 +9272,473 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     ]
 
 
+def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints() -> (
+    None
+):
+    resolved = {
+        locator: resolve_supported_evidence_api(locator)
+        for locator in SUPPORTED_EVIDENCE_API_LOCATORS
+    }
+
+    assert (
+        resolved["bijux_phylogenetics.comparative:inspect_pgls_inputs"]
+        is inspect_pgls_inputs
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:build_pgls_model_matrix"]
+        is build_pgls_model_matrix
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_pgls_lambda_fit"]
+        is summarize_pgls_lambda_fit
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_brownian_covariance_pgls"]
+        is summarize_brownian_covariance_pgls
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_brownian_regime_rates"]
+        is summarize_brownian_regime_rates
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_trait_regime_mapping"]
+        is summarize_trait_regime_mapping
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_brownian_trait_evolution"]
+        is summarize_brownian_trait_evolution
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:summarize_early_burst_trait_evolution"
+        ]
+        is summarize_early_burst_trait_evolution
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_clade_traits"]
+        is summarize_clade_traits
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_trait_outliers"]
+        is summarize_trait_outliers
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_trait_imputation"]
+        is summarize_trait_imputation
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_trait_rate_through_time"]
+        is summarize_trait_rate_through_time
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_ou_covariance_pgls"]
+        is summarize_ou_covariance_pgls
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_ou_trait_evolution"]
+        is summarize_ou_trait_evolution
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_correlated_trait_evolution"]
+        is summarize_correlated_trait_evolution
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_trait_evolution_summary_table"
+        ]
+        is write_early_burst_trait_evolution_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_correlated_trait_summary_table"]
+        is write_correlated_trait_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_correlated_trait_comparison_table"
+        ]
+        is write_correlated_trait_comparison_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_correlated_trait_observation_table"
+        ]
+        is write_correlated_trait_observation_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_correlated_trait_exclusion_table"
+        ]
+        is write_correlated_trait_exclusion_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_trait_evolution_exclusion_table"
+        ]
+        is write_early_burst_trait_evolution_exclusion_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_trait_evolution_comparison_table"
+        ]
+        is write_early_burst_trait_evolution_comparison_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_early_burst_rate_change_profile_table"
+        ]
+        is write_early_burst_rate_change_profile_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_clade_trait_summary_table"]
+        is write_clade_trait_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_clade_trait_clade_table"]
+        is write_clade_trait_clade_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_clade_trait_exclusion_table"]
+        is write_clade_trait_exclusion_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_outlier_summary_table"]
+        is write_trait_outlier_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_outlier_taxon_table"]
+        is write_trait_outlier_taxon_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_outlier_exclusion_table"]
+        is write_trait_outlier_exclusion_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_imputation_summary_table"]
+        is write_trait_imputation_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_imputation_table"]
+        is write_trait_imputation_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_imputation_holdout_table"]
+        is write_trait_imputation_holdout_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_imputation_exclusion_table"
+        ]
+        is write_trait_imputation_exclusion_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_rate_through_time_summary_table"
+        ]
+        is write_trait_rate_through_time_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_rate_through_time_interval_table"
+        ]
+        is write_trait_rate_through_time_interval_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_trait_rate_through_time_exclusion_table"
+        ]
+        is write_trait_rate_through_time_exclusion_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_pgls_categorical_contrasts"]
+        is summarize_pgls_categorical_contrasts
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:summarize_independent_contrast_regression"
+        ]
+        is summarize_independent_contrast_regression
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_phylogenetic_signal"]
+        is summarize_phylogenetic_signal
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_phylogenetic_logistic"]
+        is summarize_phylogenetic_logistic
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:run_posterior_tree_pgls"]
+        is run_posterior_tree_pgls
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:analyze_comparative_clade_stability"]
+        is analyze_comparative_clade_stability
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:analyze_comparative_residual_clades"]
+        is analyze_comparative_residual_clades
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:compare_comparative_regression_models"
+        ]
+        is compare_comparative_regression_models
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:run_multivariate_comparative_regression"
+        ]
+        is run_multivariate_comparative_regression
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:summarize_pgls_interaction_coefficients"
+        ]
+        is summarize_pgls_interaction_coefficients
+    )
+    assert resolved["bijux_phylogenetics.comparative:run_pgls"] is run_pgls
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_brownian_covariance_table"]
+        is write_brownian_covariance_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_brownian_regime_summary_table"]
+        is write_brownian_regime_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_branch_table"]
+        is write_trait_regime_branch_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_exclusion_table"]
+        is write_trait_regime_exclusion_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_node_table"]
+        is write_trait_regime_node_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_trait_regime_summary_table"]
+        is write_trait_regime_summary_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_brownian_regime_rate_table"]
+        is write_brownian_regime_rate_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_brownian_regime_profile_table"]
+        is write_brownian_regime_profile_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_brownian_regime_comparison_table"
+        ]
+        is write_brownian_regime_comparison_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_brownian_regime_branch_table"]
+        is write_brownian_regime_branch_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_brownian_regime_exclusion_table"
+        ]
+        is write_brownian_regime_exclusion_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_brownian_trait_evolution_summary_table"
+        ]
+        is write_brownian_trait_evolution_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_brownian_trait_evolution_exclusion_table"
+        ]
+        is write_brownian_trait_evolution_exclusion_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_clade_stability_table"
+        ]
+        is write_comparative_clade_stability_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_clade_coefficient_change_table"
+        ]
+        is write_comparative_clade_coefficient_change_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_posterior_tree_pgls_tree_table"]
+        is write_posterior_tree_pgls_tree_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_posterior_tree_pgls_coefficient_table"
+        ]
+        is write_posterior_tree_pgls_coefficient_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_posterior_tree_pgls_summary_table"
+        ]
+        is write_posterior_tree_pgls_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_residual_taxon_table"
+        ]
+        is write_comparative_residual_taxon_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_residual_clade_table"
+        ]
+        is write_comparative_residual_clade_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_regression_model_ranking_table"
+        ]
+        is write_comparative_regression_model_ranking_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_regression_pairwise_table"
+        ]
+        is write_comparative_regression_pairwise_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_comparative_regression_excluded_taxa_table"
+        ]
+        is write_comparative_regression_excluded_taxa_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_logistic_coefficient_table"
+        ]
+        is write_phylogenetic_logistic_coefficient_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_logistic_excluded_taxa_table"
+        ]
+        is write_phylogenetic_logistic_excluded_taxa_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_logistic_fitted_table"
+        ]
+        is write_phylogenetic_logistic_fitted_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_independent_contrast_table"]
+        is write_independent_contrast_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_residual_covariance_table"
+        ]
+        is write_multivariate_residual_covariance_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_residual_correlation_table"
+        ]
+        is write_multivariate_residual_correlation_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_residual_association_table"
+        ]
+        is write_multivariate_residual_association_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_response_model_table"
+        ]
+        is write_multivariate_response_model_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_response_coefficient_table"
+        ]
+        is write_multivariate_response_coefficient_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_excluded_taxa_table"
+        ]
+        is write_multivariate_excluded_taxa_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_independent_contrast_regression_table"
+        ]
+        is write_independent_contrast_regression_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_signal_summary_table"
+        ]
+        is write_phylogenetic_signal_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_phylogenetic_signal_permutation_table"
+        ]
+        is write_phylogenetic_signal_permutation_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_ou_alpha_profile_table"]
+        is write_ou_alpha_profile_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_ou_trait_evolution_summary_table"
+        ]
+        is write_ou_trait_evolution_summary_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_ou_trait_evolution_exclusion_table"
+        ]
+        is write_ou_trait_evolution_exclusion_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_ou_covariance_table"]
+        is write_ou_covariance_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_pgls_categorical_contrast_table"
+        ]
+        is write_pgls_categorical_contrast_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_pgls_interaction_coefficient_table"
+        ]
+        is write_pgls_interaction_coefficient_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_pgls_lambda_profile_table"]
+        is write_pgls_lambda_profile_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_pgls_model_matrix_table"]
+        is write_pgls_model_matrix_table
+    )
+
+
 def test_run_capability_demo_creates_expected_artifacts(tmp_path: Path) -> None:
     result = run_capability_demo(tmp_path / "demo")
     assert result.tree_report.exists()
     assert result.dataset_report.exists()
     assert result.phylo_inputs_report.exists()
     assert result.comparison_report.exists()
-    assert result.evidence_bundle.exists()
     assert result.capability_summary.exists()
 
 
@@ -6073,6 +9779,108 @@ def test_cli_evidence_bundle_and_validate_json_output(tmp_path: Path, capsys) ->
     assert validate_payload["data"]["valid"] is True
 
 
+def test_cli_evidence_book_studies_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(["evidence", "book", "studies", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["study_count"] == 2
+    assert payload["metrics"]["partial_rerun_capable_count"] == 2
+    assert payload["data"]["studies"][0]["study_id"] == "primate-longevity-signal"
+
+
+@pytest.mark.slow
+def test_cli_evidence_book_validate_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(["evidence", "book", "validate", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["data"]["valid"] is True
+    assert payload["metrics"]["bundle_count"] == 19
+    assert payload["metrics"]["coverage_gap_count"] >= 1
+    assert payload["metrics"]["downgraded_claim_count"] >= 1
+    assert payload["metrics"]["foundational_numerical_trust_status"] == "bounded"
+    assert payload["metrics"]["maturity_tier"] == "reviewable_but_incomplete"
+    assert payload["metrics"]["completion_not_ready_count"] == 2
+
+
+@pytest.mark.slow
+def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(["evidence", "book", "build", "--json"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["reviewer_summary_count"] == 19
+    assert payload["metrics"]["updated_path_count"] >= 1
+    assert payload["metrics"]["bundle_count"] == 19
+    assert payload["metrics"]["reviewer_readiness_status"] == "bounded"
+
+
+@pytest.mark.slow
+def test_cli_evidence_book_build_selected_evidence_json_output(
+    capsys, monkeypatch
+) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(
+        [
+            "evidence",
+            "book",
+            "build",
+            "primate-pgls-and-signal",
+            "--evidence-id",
+            "evidence-002",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["selected_study_count"] == 1
+    assert payload["metrics"]["selected_evidence_count"] == 1
+    assert payload["data"]["study_id"] == "primate-pgls-and-signal"
+    assert payload["data"]["selected_evidence_ids"] == ["evidence-002"]
+
+
+@pytest.mark.slow
+def test_cli_evidence_book_rerun_json_output(capsys, monkeypatch) -> None:
+    monkeypatch.chdir(REPO_ROOT)
+
+    exit_code = main(
+        [
+            "evidence",
+            "book",
+            "rerun",
+            "primate-pgls-and-signal",
+            "evidence-002",
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["selected_evidence_count"] == 1
+    assert payload["metrics"]["downgraded_claim_count"] >= 1
+    assert payload["data"]["rerun_report"]["study_id"] == "primate-pgls-and-signal"
+    assert payload["data"]["rerun_report"]["selected_evidence_ids"] == ["evidence-002"]
+
+
 def test_cli_demo_run_json_output_reports_generated_artifacts(
     tmp_path: Path, capsys
 ) -> None:
@@ -6082,11 +9890,13 @@ def test_cli_demo_run_json_output_reports_generated_artifacts(
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 6
+    assert payload["metrics"]["artifact_count"] == 5
     assert payload["data"]["tree_report"] == str(
         output / "reports" / "tree-report.html"
     )
-    assert payload["data"]["evidence_bundle"] == str(output / "evidence-pack")
+    assert payload["data"]["capability_summary"] == str(
+        output / "capability-summary.md"
+    )
 
 
 def test_cli_report_json_output_uses_result_envelope(tmp_path: Path, capsys) -> None:

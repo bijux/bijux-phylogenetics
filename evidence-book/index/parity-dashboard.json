@@ -1,0 +1,55 @@
+{
+  "comparison_kind_counts": {
+    "exact_answer": 14,
+    "scientific_equivalence": 4,
+    "tolerance": 24
+  },
+  "parity_expectation_counts": {},
+  "scalar_row_count": 73,
+  "scalar_verdict_counts": {
+    "matched": 35,
+    "matched_with_tolerance": 31,
+    "mismatch_explained": 4,
+    "mismatch_unexplained": 3
+  },
+  "schema_version": 1,
+  "studies": [
+    {
+      "bundle_verdict_status": "matched_with_tolerance",
+      "comparison_kind_counts": {},
+      "evidence_id": "evidence-001",
+      "family_verdicts": [],
+      "parity_expectation_counts": {},
+      "relative_path": "studies/primate-longevity-signal/evidence-001",
+      "scalar_row_count": 31,
+      "scalar_verdict_counts": {
+        "matched": 16,
+        "matched_with_tolerance": 15
+      },
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal"
+    },
+    {
+      "bundle_verdict_status": "matched",
+      "comparison_kind_counts": {
+        "exact_answer": 14,
+        "scientific_equivalence": 4,
+        "tolerance": 24
+      },
+      "evidence_id": "evidence-001",
+      "family_verdicts": [],
+      "parity_expectation_counts": {},
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "scalar_row_count": 42,
+      "scalar_verdict_counts": {
+        "matched": 19,
+        "matched_with_tolerance": 16,
+        "mismatch_explained": 4,
+        "mismatch_unexplained": 3
+      },
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal"
+    }
+  ],
+  "study_count": 2
+}

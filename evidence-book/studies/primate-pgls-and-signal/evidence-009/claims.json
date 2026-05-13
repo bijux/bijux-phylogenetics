@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-ancestral-parity",
+      "claim_title": "PCM2 Brownian and early-burst ancestral reconstructions agree within governed tolerance",
+      "evidence_ids": [
+        "evidence-009"
+      ],
+      "source_fragments": [
+        "ancestral-mode-comparison"
+      ],
+      "summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities.",
+      "verdict": "matched_with_tolerance"
+    }
+  ],
+  "evidence_id": "evidence-009",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

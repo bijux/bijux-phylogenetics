@@ -1,0 +1,11 @@
+{
+  "duplicate_species_contract_count": 1,
+  "duplicates_remaining_after_grouping": 0,
+  "evidence_id": "evidence-005",
+  "processed_row_count": 75,
+  "processed_species_count": 75,
+  "raw_row_count": 76,
+  "raw_to_processed_row_delta": 1,
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

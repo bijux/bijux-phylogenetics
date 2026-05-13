@@ -42,6 +42,11 @@ class TaxonNormalizationReport:
 
     policy: str
     renamed_taxa: list[TaxonRename]
+    original_tip_count: int
+    normalized_tip_count: int
+    unchanged_taxa: list[str]
+    topology_preserved: bool
+    branch_lengths_preserved: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -1083,6 +1088,26 @@ def build_taxon_audit_report(
         + list(duplicate_identities.warnings)
         + list(mapping_conflicts.warnings)
     )
+    identity_variant_pairs = (
+        len(identity.spelling_variants)
+        + len(identity.whitespace_variants)
+        + len(identity.underscore_space_collisions)
+        + len(identity.case_collisions)
+    )
+    if identity_variant_pairs:
+        warnings.append(
+            "one or more taxon labels differ only by spacing, punctuation, or case and should be reviewed before normalization"
+        )
+        summary.append(
+            f"{identity_variant_pairs} spelling or formatting collision pairs were detected across taxon labels"
+        )
+    if identity.suspicious_near_duplicates:
+        warnings.append(
+            "one or more near-duplicate taxon labels may represent the same biological identity"
+        )
+        summary.append(
+            f"{len(identity.suspicious_near_duplicates)} near-duplicate taxon label pairs need manual review"
+        )
     if safety.unsafe_taxa:
         warnings.append(
             "one or more taxon labels are unsafe for downstream external engines"
@@ -1168,7 +1193,18 @@ def normalize_tree_taxa(
         rooted=tree.rooted,
     )
     return normalized_tree, TaxonNormalizationReport(
-        policy=policy, renamed_taxa=renames
+        policy=policy,
+        renamed_taxa=renames,
+        original_tip_count=tree.tip_count,
+        normalized_tip_count=normalized_tree.tip_count,
+        unchanged_taxa=sorted(
+            label
+            for label in tree.tip_names
+            if label not in {rename.raw_label for rename in renames}
+        ),
+        topology_preserved=True,
+        branch_lengths_preserved=tree.branch_lengths()
+        == normalized_tree.branch_lengths(),
     )
 
 

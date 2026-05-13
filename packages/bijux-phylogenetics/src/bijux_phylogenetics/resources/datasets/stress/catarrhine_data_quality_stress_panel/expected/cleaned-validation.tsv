@@ -1,0 +1,5 @@
+surface	status	warning_count	detail
+alignment	pass	0	4 sequences remain in the cleaned alignment
+tree	pass	1	valid_with_warnings
+traits	pass	0	4 cleaned trait rows keep all required comparative fields populated
+linkage	pass	0	4 taxa overlap exactly across the cleaned tree and trait table

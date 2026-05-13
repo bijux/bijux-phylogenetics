@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.engines import run_model_selection
@@ -11,6 +12,7 @@ from bijux_phylogenetics.engines.validation import (
     compare_ml_trees_across_models,
     detect_weakly_supported_backbone,
     summarize_bootstrap_support_distribution,
+    summarize_sh_alrt_support_distribution,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
@@ -52,7 +54,22 @@ if "--version" in args:
 
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
-prefix.with_suffix(".iqtree").write_text("Best-fit model according to BIC: GTR+G\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    " No. Model         -LnL         df  AIC          AICc         BIC\\n"
+    "  1  GTR+G         123.456      12  270.912      330.912      272.912\\n"
+    "  2  HKY+G         124.000      10  268.000      320.000      269.000\\n"
+    "  3  JC            130.500      5   271.000      300.000      271.500\\n"
+    "Akaike Information Criterion:           HKY+G\\n"
+    "Corrected Akaike Information Criterion: JC\\n"
+    "Bayesian Information Criterion:         GTR+G\\n"
+    "Best-fit model according to BIC: GTR+G\\n"
+    "Log-likelihood of the tree: -123.456\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture model-selection log\\nBEST SCORE FOUND : -123.456\\n",
+    encoding="utf-8",
+)
 prefix.with_suffix(".model").write_text("Best-fit model: GTR+G\\n", encoding="utf-8")
 raise SystemExit(0)
 """,
@@ -73,8 +90,51 @@ if "--version" in args:
 
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
+if "-alrt" in args:
+    prefix.with_suffix(".treefile").write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSH-aLRT and ultrafast bootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture sh-alrt log\\nBEST SCORE FOUND : -222.222\\n",
+        encoding="utf-8",
+    )
+    raise SystemExit(0)
+if "-bb" in args:
+    prefix.with_suffix(".treefile").write_text(
+        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        "Best-fit model: GTR+G\\nLog-likelihood of the tree: -234.567\\nBootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
+    raise SystemExit(0)
 prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n", encoding="utf-8")
-prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -345.678\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
+    encoding="utf-8",
+)
 raise SystemExit(0)
 """,
     )
@@ -95,7 +155,14 @@ if "--version" in args:
 prefix = Path(args[args.index("-pre") + 1])
 prefix.parent.mkdir(parents=True, exist_ok=True)
 prefix.with_suffix(".treefile").write_text({tree_newick!r} + "\\n", encoding="utf-8")
-prefix.with_suffix(".iqtree").write_text("Tree inference completed\\n", encoding="utf-8")
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: {model}\\nLog-likelihood of the tree: -456.789\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -456.789\\n",
+    encoding="utf-8",
+)
 prefix.with_suffix(".model").write_text("Best-fit model: {model}\\n", encoding="utf-8")
 raise SystemExit(0)
 """,
@@ -154,8 +221,60 @@ def test_validate_model_selection_against_engine_outputs_requires_exact_match(
     report = validate_model_selection_against_engine_outputs(workflow.manifest_path)
     assert report.valid is True
     assert report.manifest_selected_model == "GTR+G"
+    assert report.manifest_selected_criterion == "BIC"
     assert report.report_selected_model == "GTR+G"
+    assert report.report_selected_criterion == "BIC"
     assert report.artifact_selected_model == "GTR+G"
+    assert report.candidate_model_count == 3
+    assert report.best_model_aic == "HKY+G"
+    assert report.best_model_aicc == "JC"
+    assert report.best_model_bic == "GTR+G"
+
+
+def test_validate_model_selection_against_engine_outputs_requires_manifest_likelihood(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    workflow = run_model_selection(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="example",
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    payload["log_likelihood"] = None
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_model_selection_against_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert "manifest log_likelihood field is missing" in report.issues
+
+
+def test_validate_model_selection_against_engine_outputs_requires_candidate_summary(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture")
+    workflow = run_model_selection(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "model",
+        executable=executable,
+        prefix="example",
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    payload["model_selection_summary"]["candidate_count"] = 0
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_model_selection_against_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert "manifest does not record any candidate substitution models" in report.issues
 
 
 def test_validate_ml_tree_contains_expected_taxa_matches_alignment_ids(
@@ -294,6 +413,36 @@ def test_detect_weakly_supported_backbone_flags_major_internal_branches(
     assert any("backbone" in warning for warning in report.warnings)
 
 
+def test_summarize_sh_alrt_support_distribution_tracks_conflicting_support_signals(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "sh-alrt.treefile"
+    tree_path.write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\n",
+        encoding="utf-8",
+    )
+
+    report = summarize_sh_alrt_support_distribution(tree_path)
+
+    assert report.annotated_node_count == 2
+    assert report.fully_scored_node_count == 2
+    assert report.minimum_sh_alrt_support == 79.0
+    assert report.maximum_sh_alrt_support == 82.0
+    assert report.minimum_ufboot_support == 96.0
+    assert report.maximum_ufboot_support == 97.0
+    assert report.weak_sh_alrt_clade_count == 1
+    assert report.weak_ufboot_clade_count == 0
+    assert report.conflicting_support_signal_count == 1
+    assert [node.support_agreement for node in report.nodes] == [
+        "both_strong",
+        "ufboot_only",
+    ]
+    assert (
+        "one or more internal clades show conflicting sh-alrt and ufboot support signals"
+        in report.warnings
+    )
+
+
 def test_compare_ml_trees_across_models_reports_topology_and_branch_length_differences(
     tmp_path: Path,
 ) -> None:
@@ -373,6 +522,44 @@ def test_compare_inferred_trees_across_engines_reports_engine_labels(
     assert any("branch-length" in warning for warning in report.warnings)
 
 
+def test_compare_inferred_trees_across_engines_accepts_support_tree_manifests(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import (
+        run_bootstrap_support_estimation,
+        run_fast_tree_inference,
+    )
+
+    iqtree_executable = _fake_iqtree_tree(tmp_path / "iqtree-engine")
+    fasttree_executable = _fake_fasttree_tree(
+        tmp_path / "fasttree-engine",
+        tree_newick="((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);",
+    )
+    iqtree = run_bootstrap_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=iqtree_executable,
+        prefix="engine",
+        replicates=1000,
+    )
+    fast = run_fast_tree_inference(
+        fixture("example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=fasttree_executable,
+    )
+
+    report = compare_inferred_trees_across_engines(
+        fast.manifest_path, iqtree.manifest_path
+    )
+
+    assert report.comparison_kind == "engine"
+    assert report.left_label == "FastTree"
+    assert report.right_label == "IQ-TREE"
+    assert report.topology.topology_equal is True
+    assert report.support.shared_clades
+
+
 def test_validate_inference_engine_outputs_checks_manifest_consistency(
     tmp_path: Path,
 ) -> None:
@@ -390,6 +577,27 @@ def test_validate_inference_engine_outputs_checks_manifest_consistency(
     assert report.valid is True
     assert report.current_output_checksum_match is True
 
+
+def test_validate_inference_engine_outputs_requires_fasttree_support_evidence(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_fast_tree_inference
+
+    executable = _fake_fasttree_tree(
+        tmp_path / "fasttree-engine",
+        tree_newick="((A:0.1,B:0.1)0.96:0.3,(C:0.1,D:0.1)0.64:0.3);",
+    )
+    workflow = run_fast_tree_inference(
+        fixture("example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=executable,
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is True
+    assert report.current_output_checksum_match is True
+
     workflow.output_paths["tree"].write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,X:0.1):0.2);\n", encoding="utf-8"
     )
@@ -398,4 +606,125 @@ def test_validate_inference_engine_outputs_checks_manifest_consistency(
     assert any(
         "checksums" in issue or "expected taxa" in issue
         for issue in drift_report.issues
+    )
+
+
+def test_validate_inference_engine_outputs_requires_bootstrap_support_summary(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_bootstrap_support_estimation
+
+    executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
+    workflow = run_bootstrap_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        replicates=1000,
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    payload["iqtree_summary"]["support_value_count"] = 0
+    payload["iqtree_summary"]["support_values"] = []
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert (
+        "bootstrap-support manifest does not record parsed support values"
+        in report.issues
+    )
+
+
+def test_validate_inference_engine_outputs_requires_bootstrap_review_artifacts(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_bootstrap_support_estimation
+
+    executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
+    workflow = run_bootstrap_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        replicates=1000,
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    del payload["output_paths"]["support_table"]
+    del payload["output_paths"]["low_support_branches"]
+    del payload["output_paths"]["support_histogram"]
+    payload["bootstrap_support_summary"] = None
+    payload["weak_backbone_report"] = None
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert (
+        "bootstrap-support manifest is missing the support_table output"
+        in report.issues
+    )
+    assert (
+        "bootstrap-support manifest is missing the low_support_branches output"
+        in report.issues
+    )
+    assert (
+        "bootstrap-support manifest is missing the support_histogram output"
+        in report.issues
+    )
+    assert (
+        "bootstrap-support manifest is missing the bootstrap_support_summary"
+        in report.issues
+    )
+    assert (
+        "bootstrap-support manifest is missing the weak_backbone_report"
+        in report.issues
+    )
+
+
+def test_validate_inference_engine_outputs_requires_sh_alrt_review_evidence(
+    tmp_path: Path,
+) -> None:
+    from bijux_phylogenetics.engines import run_sh_alrt_support_estimation
+
+    executable = _fake_iqtree_tree(tmp_path / "iqtree-tree-fixture")
+    workflow = run_sh_alrt_support_estimation(
+        fixture("example_alignment.fasta"),
+        out_dir=tmp_path / "sh-alrt",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        sh_alrt_replicates=1000,
+        bootstrap_replicates=1000,
+    )
+    payload = json.loads(workflow.manifest_path.read_text(encoding="utf-8"))
+    del payload["output_paths"]["support_table"]
+    del payload["output_paths"]["conflicting_support_branches"]
+    payload["sh_alrt_support_summary"] = None
+    workflow.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    report = validate_inference_engine_outputs(workflow.manifest_path)
+
+    assert report.valid is False
+    assert (
+        "sh-alrt-support manifest is missing the support_table output" in report.issues
+    )
+    assert (
+        "sh-alrt-support manifest is missing the conflicting_support_branches output"
+        in report.issues
+    )
+    assert (
+        "sh-alrt-support manifest is missing the sh_alrt_support_summary"
+        in report.issues
     )

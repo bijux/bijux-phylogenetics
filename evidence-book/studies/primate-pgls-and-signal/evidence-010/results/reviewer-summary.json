@@ -1,0 +1,38 @@
+{
+  "bundle_verdict_status": "not_comparable",
+  "bundle_verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "coverage-gap",
+    "not-comparable"
+  ],
+  "claim_titles": [
+    "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-010",
+  "evidence_title": "Primate intercept sweep coverage boundary bundle",
+  "limitations": [
+    "This bundle is intentionally a boundary register, not a parity claim."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed record of the remaining lecture corBlomberg intercept-mode likelihood sweep boundary.",
+    "Comparison mode: direct_parity. Bundle verdict: not_comparable.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "mode-linked-intercept-models"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-010/coverage-boundaries.json"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS And Signal"
+}

@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-tree-diagnostics-parity",
+      "claim_title": "PCM1 tree diagnostics are separated from later comparative results",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "source_fragments": [
+        "tree-import-and-pruning",
+        "extract-clade-node-77"
+      ],
+      "summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-007",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

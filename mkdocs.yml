@@ -60,7 +60,43 @@ not_in_nav: |
 
 nav:
   - Home: index.md
-  - Repository:
-      - Repository: 01-bijux-phylogenetics/index.md
-  - Maintainer:
-      - Maintainer: 03-bijux-phylogenetics-maintain/index.md
+  - Public:
+      - Phylogenetics:
+          - Overview: public/phylogenetics/index.md
+          - Foundation:
+              - Overview: public/phylogenetics/foundation/index.md
+              - Repository Scope and Limits: public/phylogenetics/foundation/repository-scope-and-limits.md
+              - Product Surface and Ownership: public/phylogenetics/foundation/product-surface-and-ownership.md
+              - Runtime and Evidence Boundary: public/phylogenetics/foundation/evidence-boundary.md
+          - Architecture:
+              - Overview: public/phylogenetics/architecture/index.md
+              - Runtime System Map: public/phylogenetics/architecture/runtime-system-map.md
+              - Package Map: public/phylogenetics/architecture/package-map.md
+              - Evidence Consumer Boundary: public/phylogenetics/architecture/evidence-consumer-boundary.md
+          - Interfaces:
+              - Overview: public/phylogenetics/interfaces/index.md
+              - API Surface: public/phylogenetics/interfaces/api-surface.md
+              - CLI Surface: public/phylogenetics/interfaces/cli-surface.md
+              - Python Surface: public/phylogenetics/interfaces/python-surface.md
+              - Artifact Contracts: public/phylogenetics/interfaces/artifact-contracts.md
+          - Operations:
+              - Overview: public/phylogenetics/operations/index.md
+              - Installation and Setup: public/phylogenetics/operations/installation-and-setup.md
+              - Common Workflows: public/phylogenetics/operations/common-workflows.md
+              - Operational Boundaries: public/phylogenetics/operations/operational-boundaries.md
+          - Quality:
+              - Overview: public/phylogenetics/quality/index.md
+              - Test Strategy: public/phylogenetics/quality/test-strategy.md
+              - Release and Publication Gates: public/phylogenetics/quality/release-and-publication-gates.md
+              - Evidence Honesty and Limits: public/phylogenetics/quality/evidence-honesty-and-limits.md
+      - Evidence Book:
+          - Overview: public/phylogenetics-evidence-book/index.md
+          - PCM1: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
+          - PCM1 Data and Tree Preparation: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
+          - PCM1 Signal and Ancestral Results: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
+          - PCM2: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
+          - PCM2 Model Comparisons and PGLS: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
+          - PCM2 Signal Diagnostics and Open Boundaries: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
+  - Internal:
+      - Overview: internal/index.md
+      - Maintainer: internal/maintain/index.md

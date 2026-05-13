@@ -3,17 +3,20 @@
 <!-- bijux-phylogenetics-badges:generated:start -->
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://pypi.org/project/bijux-phylogenetics/)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-0F766E)](https://github.com/bijux/bijux-phylogenetics/blob/main/LICENSE)
-[![Verify](https://github.com/bijux/bijux-phylogenetics/workflows/repo%20/%20verify/badge.svg)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/verify.yml?query=branch%3Amain)
-[![Release PyPI](https://github.com/bijux/bijux-phylogenetics/workflows/release-pypi/badge.svg)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/release-pypi.yml)
-[![Release GHCR](https://github.com/bijux/bijux-phylogenetics/workflows/release-ghcr/badge.svg)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/release-ghcr.yml)
-[![Release GitHub](https://github.com/bijux/bijux-phylogenetics/workflows/release-github/badge.svg)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/release-github.yml)
+[![Verify](https://github.com/bijux/bijux-phylogenetics/actions/workflows/verify.yml/badge.svg?branch=main)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/verify.yml?query=branch%3Amain)
+[![Release PyPI](https://img.shields.io/badge/release-pypi%20workflow-2563EB?logo=githubactions&logoColor=white)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/release-pypi.yml)
+[![Release GHCR](https://img.shields.io/badge/release-ghcr%20workflow-2563EB?logo=githubactions&logoColor=white)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/release-ghcr.yml)
+[![Release GitHub](https://img.shields.io/badge/release-github%20workflow-2563EB?logo=githubactions&logoColor=white)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/release-github.yml)
 [![Docs](https://github.com/bijux/bijux-phylogenetics/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/bijux/bijux-phylogenetics/actions/workflows/deploy-docs.yml)
 
 [![bijux-phylogenetics](https://img.shields.io/pypi/v/bijux-phylogenetics?label=bijux--phylogenetics&logo=pypi)](https://pypi.org/project/bijux-phylogenetics/)
+[![phylogenetic](https://img.shields.io/pypi/v/phylogenetic?label=phylogenetic&logo=pypi)](https://pypi.org/project/phylogenetic/)
 
 [![bijux-phylogenetics](https://img.shields.io/badge/bijux--phylogenetics-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics)
+[![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic)
 
-[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 Runtime package for the bijux-phylogenetics repository.
@@ -67,6 +70,7 @@ bijux-phylogenetics --help
 - define named alignment-filtering profiles, generate cleaned alignments, compare original versus cleaned versions, and warn when filtering removes signal or biases taxon groups
 - score alignment quality with transparent components and emit one-shot alignment forensic reports
 - detect low-information alignments, ambiguity-heavy columns, duplicate-handling policy needs, and per-sequence quality rankings before inference
+- quantify per-taxon locus occupancy, per-locus taxon occupancy, site-coverage fractions, low-coverage taxa, and low-coverage loci from concatenated multi-locus alignments with retained-matrix exports
 - audit tree, metadata, traits, alignment, tip dates, and calibrations together through one-shot dataset readiness decisions
 - render dedicated reviewer-facing alignment, dataset, phylo-input, and taxonomy HTML reports with machine-readable sidecars
 - validate checked-in Level 1 reference fixtures, aggregate workflow coverage, document known failure cases, classify workflow maturity, and render reviewer-facing workflow-validation or release-gate reports
@@ -95,10 +99,13 @@ bijux-phylogenetics alignment classify sequences.fasta --json
 bijux-phylogenetics alignment profiles --json
 bijux-phylogenetics alignment windows alignment.fasta --window-size 50 --step-size 10 --json
 bijux-phylogenetics alignment readiness alignment.fasta --json
+bijux-phylogenetics alignment quality alignment.fasta --json
 bijux-phylogenetics alignment low-information alignment.fasta --json
 bijux-phylogenetics alignment duplicate-policy alignment.fasta --identity-threshold 0.99 --json
 bijux-phylogenetics alignment ambiguous-columns alignment.fasta --threshold 0.5 --json
 bijux-phylogenetics alignment sequence-ranking alignment.fasta --json
+bijux-phylogenetics alignment concatenate loci/gene-alpha.fasta loci/gene-beta.fasta loci/gene-gamma.fasta --out artifacts/supermatrix.aln.fasta --partitions-out artifacts/supermatrix.partitions.txt --matrix-out artifacts/supermatrix.matrix.tsv --json
+bijux-phylogenetics alignment occupancy supermatrix.fasta partitions.txt --taxon-coverage-threshold 0.6 --locus-coverage-threshold 0.6 --minimum-locus-occupancy 0.75 --taxa-out artifacts/occupancy/taxa.tsv --loci-out artifacts/occupancy/loci.tsv --matrix-out artifacts/occupancy/matrix.tsv --filtered-alignment-out artifacts/occupancy/filtered.fasta --filtered-partitions-out artifacts/occupancy/filtered-partitions.txt --json
 bijux-phylogenetics alignment length-outliers sequences.fasta --json
 bijux-phylogenetics alignment forensic alignment.fasta --json
 bijux-phylogenetics alignment filter alignment.fasta --profile moderate --out cleaned.fasta --json
@@ -150,7 +157,13 @@ bijux-phylogenetics discrete-evolution summarize-maps artifacts/geography-maps.j
 bijux-phylogenetics discrete-evolution report tree.nwk geography.tsv --trait region --compare-model symmetric --out artifacts/geography-report.html
 bijux-phylogenetics diversification estimate tree.nwk --metadata sampling.tsv --model birth-death --json
 bijux-phylogenetics diversification report tree.nwk --metadata sampling.tsv --traits traits.tsv --trait habitat --out artifacts/diversification-report.html
-bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --json
+bijux-phylogenetics adapter align unaligned.fasta --out aligned.fasta --mode linsi --json
+bijux-phylogenetics adapter align coding-cds.fasta --out coding.aligned.fasta --mode linsi --codon-aware --json
+bijux-phylogenetics adapter trim aligned.fasta --out trimmed.fasta --mode automated1 --json
+bijux-phylogenetics alignment sequence-type raw-sequences.fasta --json
+bijux-phylogenetics alignment validate-input raw-sequences.fasta --json
+bijux-phylogenetics alignment repair-input raw-sequences.fasta --out artifacts/raw-sequences.repaired.fasta --normalize-identifiers --remove-invalid-records --json
+bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta --out-dir artifacts/fasta-to-tree --prefix mammals --alignment-mode einsi --trimming-mode strictplus --normalize-identifiers --remove-invalid-records --bootstrap-replicates 1000 --json
 bijux-phylogenetics adapter model-select alignment.fasta --out-dir artifacts/model-select --prefix mammals --json
 bijux-phylogenetics adapter infer-ml alignment.fasta --out-dir artifacts/ml --model GTR+G --prefix mammals --json
 bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootstrap --model GTR+G --replicates 1000 --prefix mammals --json
@@ -175,6 +188,112 @@ bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment 
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
 
+For aligned multi-locus datasets, `alignment concatenate` is now the canonical
+supermatrix assembly surface. It preserves taxon identifiers across loci,
+inserts `?` blocks for absent taxa, writes a remapped partition file, and can
+materialize the taxon-by-locus occupancy matrix in the same run. When a locus
+contains residues that are alphabet-ambiguous across DNA and protein codes, use
+repeated `--data-type` flags so the partition file declares the intended
+datatype honestly instead of guessing from overlapping symbols alone.
+
+Run `alignment occupancy` before inference when the supermatrix contains partial
+fragments, short recovered loci, or uneven locus completeness. By default, a
+locus counts as covered when at least one non-missing site is present. Raise
+`--minimum-locus-occupancy` when thin fragments should count as absent for
+taxon/locus thresholding instead. The occupancy TSV outputs include both
+binary-coverage summaries and `site_coverage_fraction` columns so reviewers can
+see the difference between locus presence and overall retained signal.
+
+The `adapter fasta-to-tree` workflow is the canonical one-command bridge from
+raw FASTA to a supported inference bundle. It accepts DNA and protein FASTA
+inputs, runs alignment, trimming, model selection, maximum-likelihood
+inference, and bootstrap support estimation, then writes:
+
+- `prefix.aln`
+- `prefix.trimmed.aln`
+- `prefix.tree`
+- `prefix.log`
+- `prefix.model.tsv`
+- `prefix.support.tsv`
+- `prefix.manifest.json`
+
+Engine-specific intermediate manifests and working files stay under
+`out-dir/engine-artifacts/prefix/` so the final output set remains compact
+without hiding reviewable run details.
+
+The workflow now defaults IQ-TREE to `--iqtree-seed 1` and `--iqtree-threads 1`
+so the checked output bundle is reproducible across reruns. Ultrafast bootstrap
+support remains the supported branch-support backend here, which means
+`--bootstrap-replicates` must be at least `1000`.
+
+Named MAFFT strategies are now first-class on both `adapter align` and
+`adapter fasta-to-tree`. Use `--mode` or `--alignment-mode` with one of
+`auto`, `linsi`, `ginsi`, `einsi`, or `fast`. The runtime expands each named
+strategy into the explicit MAFFT arguments it runs, and the workflow manifest
+captures both the resolved command and the detected MAFFT version for review.
+
+The direct IQ-TREE adapter surface now preserves the native engine artifacts
+that reviewers expect instead of collapsing everything into one opaque tree
+file. `adapter model-select` retains `.iqtree`, `.log`, the native model
+sidecar, and a generated `.model-candidates.tsv`; `adapter infer-ml` retains
+`.treefile`, `.iqtree`, and `.log`; `adapter bootstrap` retains `.treefile`,
+`.iqtree`, `.log`, `.ufboot`, and `.contree` when IQ-TREE emits them; and
+`adapter consensus` retains the consensus `.contree` plus the matching
+`.iqtree` and `.log`. The JSON report and persisted manifest for those runs
+also expose the parsed `selected_model`, `selected_criterion`,
+`candidate_model_count`, `best_model_aic`, `best_model_aicc`, `best_model_bic`,
+`log_likelihood`, and support-value counts so downstream review does not have
+to scrape IQ-TREE text again by hand.
+
+Coding-sequence alignment is now first-class on `adapter align` through
+`--codon-aware`. That workflow accepts raw coding DNA or RNA FASTA, excludes
+frame-broken sequences and sequences with premature stop codons, aligns a
+translated amino-acid guide with MAFFT, and back-translates guide gaps into
+codon triplets so the final nucleotide alignment preserves reading-frame
+boundaries. The workflow also writes audit artifacts for the translated guide
+input, the aligned guide, and the excluded-sequence ledger.
+
+Named trimAl strategies are also first-class on `adapter trim` and
+`adapter fasta-to-tree`. Use `--mode` or `--trimming-mode` with one of
+`gap-threshold`, `gappyout`, `strict`, `strictplus`, or `automated1`. The
+workflow report and manifest record retained sites, removed sites, and
+gap percentage before and after trimming alongside the explicit trimAl command
+and detected version.
+
+Raw sequence hygiene is now explicit. Use `alignment sequence-type` when you
+need the raw FASTA type decision itself: compatible types, selected default,
+confidence, and mixed or invalid blocking signals. Use `alignment validate-input`
+to inspect duplicate identifiers, illegal sequence characters, empty records,
+sequence-length outliers, and the same sequence-type report in one payload.
+Use `alignment repair-input` when you want the runtime to normalize identifiers
+or remove invalid records into a new FASTA. The same repair controls are
+available on `adapter fasta-to-tree`; without them, the workflow now fails fast
+instead of silently continuing on bad raw input. Mixed raw inputs must now
+either be fixed or forced with an explicit `--sequence-type` choice before the
+workflow continues.
+
+The checked real-dataset regression corpus for this end-to-end workflow now
+lives under `packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/`.
+It currently pins reviewer-facing output bundles for:
+
+- `gnathostome-ortholog-proteins`
+- `gnathostome-ortholog-coding-sequences`
+- `strnog-enog411bqtj-proteins`
+
+For coding nucleotide phylogenetics, use `adapter align --codon-aware` first
+and then run downstream inference steps such as `adapter model-select`,
+`adapter infer-ml`, and `adapter bootstrap` on the codon alignment it writes.
+The current `adapter fasta-to-tree` workflow remains a generic alignment and
+trim pipeline, so it is not the codon-preserving entrypoint for coding DNA.
+
+Internal alignment-quality scoring is available without any external engine.
+Use `alignment quality` when you want one scored view that combines
+per-sequence gap fractions, per-column gap fractions, invariant-site counts,
+parsimony-informative-site counts, missing-data concentration, and a direct
+suspicious-alignment verdict. The reviewer-facing alignment reports reuse the
+same scoring contract so command-line JSON, HTML reports, and checked-in
+reference fixtures stay aligned.
+
 ## Alignment Filter Profiles
 
 The built-in alignment filtering profiles are `conservative`, `moderate`,
@@ -192,7 +311,7 @@ uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "heigh
 
 ## Read this next
 
-- package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+- package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
 - source directory: [Runtime source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
 - changelog: [Runtime package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md)
 - security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

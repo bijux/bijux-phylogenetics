@@ -1,0 +1,8 @@
+{
+  "block_id": "primate-longevity-visual-inspection",
+  "evidence": {},
+  "note": "These are visual inspection surfaces only.",
+  "script_lines": "337,343-345",
+  "status": "plot_only",
+  "title": "Primate longevity histogram and tip-size plot"
+}

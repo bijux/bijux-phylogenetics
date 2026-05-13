@@ -16,11 +16,14 @@ from Bio.Phylo.TreeConstruction import DistanceMatrix, DistanceTreeConstructor
 from bijux_phylogenetics.compare.topology import (
     BranchLengthComparisonReport,
     TreeComparisonReport,
+    _informative_clades,
+    _robinson_foulds_metrics,
+    _unrooted_splits,
     compare_branch_lengths,
     compare_tree_paths,
 )
 from bijux_phylogenetics.core.alignment import AlignmentRecord
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidDistanceMatrixError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
@@ -1320,53 +1323,6 @@ def _bio_distance_matrix_from_imported(
     return DistanceMatrix(report.identifiers, rows)
 
 
-def _informative_clades(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
-    clades: set[frozenset[str]] = set()
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name in shared_taxa else set()
-
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-
-        if 1 < len(taxa) < len(shared_taxa):
-            clades.add(frozenset(taxa))
-        return taxa
-
-    visit(tree.root)
-    return clades
-
-
-def _canonical_bipartition(taxa: set[str], universe: set[str]) -> frozenset[str]:
-    complement = universe - taxa
-    left = sorted(taxa)
-    right = sorted(complement)
-    if (len(left), left) <= (len(right), right):
-        return frozenset(taxa)
-    return frozenset(complement)
-
-
-def _unrooted_splits(tree: PhyloTree, shared_taxa: set[str]) -> set[frozenset[str]]:
-    splits: set[frozenset[str]] = set()
-
-    def visit(node: TreeNode) -> set[str]:
-        if node.is_leaf():
-            return {node.name} if node.name in shared_taxa else set()
-
-        taxa: set[str] = set()
-        for child in node.children:
-            taxa.update(visit(child))
-
-        if node is not tree.root and 1 < len(taxa) < len(shared_taxa) - 1:
-            splits.add(_canonical_bipartition(taxa, shared_taxa))
-        return taxa
-
-    visit(tree.root)
-    return splits
-
-
 def compute_pairwise_genetic_distance_matrix(
     path: Path,
     *,
@@ -1937,11 +1893,18 @@ def compare_distance_tree_topologies(
         ambiguity_policy=ambiguity_policy,
     )
     shared_taxa = set(nj_tree.tip_names) & set(upgma_tree.tip_names)
-    nj_clades = _informative_clades(nj_tree, shared_taxa)
-    upgma_clades = _informative_clades(upgma_tree, shared_taxa)
-    symmetric_difference = nj_clades.symmetric_difference(upgma_clades)
-    denominator = len(nj_clades) + len(upgma_clades)
-    topology_equal = len(symmetric_difference) == 0
+    (
+        nj_clade_count,
+        upgma_clade_count,
+        rooted_distance,
+        rooted_normalized,
+    ) = _robinson_foulds_metrics(
+        nj_tree,
+        upgma_tree,
+        shared_taxa,
+        rf_mode="rooted",
+    )
+    topology_equal = rooted_distance == 0
     same_unrooted_topology = _unrooted_splits(nj_tree, shared_taxa) == _unrooted_splits(
         upgma_tree, shared_taxa
     )
@@ -1951,12 +1914,10 @@ def compare_distance_tree_topologies(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
         shared_taxa=sorted(shared_taxa),
-        nj_informative_clades=len(nj_clades),
-        upgma_informative_clades=len(upgma_clades),
-        robinson_foulds_distance=len(symmetric_difference),
-        normalized_robinson_foulds=0.0
-        if denominator == 0
-        else len(symmetric_difference) / denominator,
+        nj_informative_clades=nj_clade_count,
+        upgma_informative_clades=upgma_clade_count,
+        robinson_foulds_distance=rooted_distance,
+        normalized_robinson_foulds=rooted_normalized,
         topology_equal=topology_equal,
         same_unrooted_topology=same_unrooted_topology,
         same_taxa_different_rooting=topology_equal is False and same_unrooted_topology,
@@ -2013,7 +1974,8 @@ def bootstrap_distance_trees(
             + "; ".join(quality.method_assessment.reasons)
         )
     records, _ = _load_alignment_for_model(path, model=model)
-    rng = random.Random(seed)
+    # Deterministic scientific resampling is required for reproducible bootstrap review.
+    rng = random.Random(seed)  # nosec B311
     temp_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-bootstrap-"))
     trees: list[PhyloTree] = []
     for index in range(replicates):

@@ -42,10 +42,25 @@ on:
       - main
 permissions:
   contents: read
+  actions: read
+  pull-requests: read
 concurrency:
   group: "verify-${{ github.ref }}"
   cancel-in-progress: true
 jobs:
+  policy_gate:
+    name: policy-prerequisites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - name: "Wait for policy and standards prerequisites"
+        shell: bash
+        env:
+          GITHUB_TOKEN: "${{ github.token }}"
+        run:
+          |
+            set -euo pipefail
+            python3 .github/scripts/check_workflow_prerequisites.py
   repository:
     name: repository-contracts
     runs-on: ubuntu-latest
@@ -61,13 +76,16 @@ jobs:
           cache-dependency-glob: uv.lock
       - name: "Run repository checks"
         shell: bash
-        run: "set -euo pipefail make check-shared-bijux-py check-config-layout check-make-layout help "
+        run: "set -euo pipefail; make check-shared-bijux-py check-config-layout check-make-layout help "
       - name: "Confirm clean worktree after checks"
         shell: bash
         run: "set -euo pipefail; if [[ -n \"$(git status --short)\" ]]; then git status --short; exit 1; fi "
+    needs: policy_gate
   package:
     name: "${{ matrix.package_slug }}"
-    needs: repository
+    needs:
+      - policy_gate
+      - repository
     strategy:
       fail-fast: false
       matrix:
@@ -76,6 +94,10 @@ jobs:
             package_dir: packages/bijux-phylogenetics
             artifacts_dir: artifacts/bijux-phylogenetics
             check_targets: "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
+          - package_slug: phylogenetic
+            package_dir: packages/phylogenetic
+            artifacts_dir: artifacts/phylogenetic
+            check_targets: "[\"quality\", \"security\", \"build\", \"sbom\"]"
           - package_slug: bijux-phylogenetics-dev
             package_dir: packages/bijux-phylogenetics-dev
             artifacts_dir: artifacts/bijux-phylogenetics-dev
@@ -93,6 +115,7 @@ jobs:
     name: verification-ready
     if: "${{ always() }}"
     needs:
+      - policy_gate
       - repository
       - package
     runs-on: ubuntu-latest

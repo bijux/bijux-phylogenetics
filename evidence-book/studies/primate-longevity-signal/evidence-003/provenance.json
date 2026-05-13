@@ -1,0 +1,61 @@
+{
+  "authored_local_artifacts": [
+    {
+      "artifact_kind": "r-reference-program",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-003/reference.R",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "python-analysis-program",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-003/analysis.py",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "machine-check-contract",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-003/checks.json",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "human-report",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-003/report.md",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "provenance-record",
+      "artifact_path": "evidence-book/studies/primate-longevity-signal/evidence-003/provenance.json",
+      "generation_mode": "governed-bundle-template"
+    }
+  ],
+  "bundle_provenance_paths": [
+    "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json"
+  ],
+  "bundle_result_surfaces": [
+    {
+      "artifact_kind": "governed-result-surface",
+      "artifact_path": "results/README.md"
+    },
+    {
+      "artifact_kind": "governed-result-surface",
+      "artifact_path": "results/manifest.json"
+    }
+  ],
+  "evidence_id": "evidence-003",
+  "schema_version": 2,
+  "source_basis_locators": [
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json"
+  ],
+  "source_intake_policy": "read-only-external-source",
+  "study_dataset_registry_locator": "evidence-book/studies/primate-longevity-signal/datasets/registry.json",
+  "study_id": "primate-longevity-signal",
+  "study_provenance_locator": "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json",
+  "study_support_scripts": {
+    "build_script_path": null,
+    "reference_python_scripts": [
+      "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py"
+    ],
+    "reference_r_scripts": [
+      "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R"
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "workflow",
+    "reload-semantics"
+  ],
+  "claim_titles": [
+    "PCM2 reload semantics are represented explicitly"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-001",
+  "evidence_title": "Primate reload semantics bundle",
+  "limitations": [
+    "The raw lecture `primate.RData` file remains external; this bundle governs the object contract using repository-owned reference artifacts."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed representation of the lecture one-line primate workspace reload contract.",
+    "Comparison mode: direct_parity. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "workspace-reload-contract"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
+    "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json"
+  ],
+  "study_id": "primate-pgls-and-signal",
+  "study_title": "Primate PGLS And Signal"
+}

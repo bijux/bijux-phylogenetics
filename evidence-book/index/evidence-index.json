@@ -1,0 +1,683 @@
+{
+  "evidence": [
+    {
+      "claim_tags": [
+        "comparative-signal",
+        "teaching",
+        "parity"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-001",
+      "evidence_title": "Primate longevity signal parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-001",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Analytical and structural comparisons are tracked honestly, with numerical parity claims separated from plot-only surfaces."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "workbook-loading"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-002",
+      "evidence_title": "Primate workbook loading parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-002",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "type-repair"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-003",
+      "evidence_title": "Primate type repair parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-003",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "missing-data"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-004",
+      "evidence_title": "Primate missing-data accounting parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-004",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "duplicate-aggregation"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-005",
+      "evidence_title": "Primate duplicate-species aggregation parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-005",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "tree-operations",
+        "tree-import"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-006",
+      "evidence_title": "Primate tree import parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-006",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "tree-operations",
+        "tree-diagnostics"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-007",
+      "evidence_title": "Primate tree diagnostics parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-007",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "data-preparation",
+        "tree-data-correspondence"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-008",
+      "evidence_title": "Primate tree-data correspondence parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-008",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "artifact-provenance",
+        "processed-export"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-009",
+      "evidence_title": "Primate processed export parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-longevity-signal/evidence-009",
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "workflow",
+        "reload-semantics"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-001",
+      "evidence_title": "Primate reload semantics bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "baseline-regression",
+        "gls"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-002",
+      "evidence_title": "Primate baseline GLS parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-002",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "The non-phylogenetic regression slope, intercept, fit statistics, and coefficient decisions align before any phylogenetic covariance is introduced."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "phylogenetic-regression",
+        "pagel-lambda"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-003",
+      "evidence_title": "Primate Pagel-lambda regression parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-003",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "phylogenetic-signal",
+        "lambda-zero"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-004",
+      "evidence_title": "Primate phylogenetic signal parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-004",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "diagnostics",
+        "residuals"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-005",
+      "evidence_title": "Primate residual diagnostics parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-005",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "transformed-tree",
+        "evolutionary-modes"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-006",
+      "evidence_title": "Primate transformed tree parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched",
+      "verdict_summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "fitcontinuous",
+        "evolutionary-modes"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-007",
+      "evidence_title": "Primate evolutionary mode fit parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-007",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "likelihood-ratio",
+        "evolutionary-modes"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-008",
+      "evidence_title": "Primate likelihood-ratio parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-008",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "parity",
+        "ancestral-reconstruction",
+        "early-burst"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-009",
+      "evidence_title": "Primate ancestral mode parity bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-009",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "matched_with_tolerance",
+      "verdict_summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities."
+    },
+    {
+      "claim_tags": [
+        "teaching",
+        "coverage-gap",
+        "not-comparable"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-010",
+      "evidence_title": "Primate intercept sweep coverage boundary bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-pgls-and-signal/evidence-010",
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
+    }
+  ],
+  "evidence_count": 19,
+  "root": "evidence-book",
+  "schema_version": 1,
+  "studies": [
+    {
+      "bundle_count": 9,
+      "evidence": [
+        {
+          "claim_tags": [
+            "comparative-signal",
+            "teaching",
+            "parity"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate longevity signal parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Analytical and structural comparisons are tracked honestly, with numerical parity claims separated from plot-only surfaces."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "workbook-loading"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-002",
+          "evidence_title": "Primate workbook loading parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-002",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The lecture workbook boundary is represented explicitly and the resulting processed table contract matches the checked-in governed reference artifact."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "type-repair"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-003",
+          "evidence_title": "Primate type repair parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-003",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "missing-data"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-004",
+          "evidence_title": "Primate missing-data accounting parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-004",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Missing-value handling is surfaced explicitly at the preprocessing boundary instead of being hidden beneath later comparative analyses."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "duplicate-aggregation"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-005",
+          "evidence_title": "Primate duplicate-species aggregation parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-005",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "tree-operations",
+            "tree-import"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-006",
+          "evidence_title": "Primate tree import parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-006",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "tree-operations",
+            "tree-diagnostics"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-007",
+          "evidence_title": "Primate tree diagnostics parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-007",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "data-preparation",
+            "tree-data-correspondence"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-008",
+          "evidence_title": "Primate tree-data correspondence parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-008",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "Missing-tip handling, aligned species ordering, and joined node identity are isolated as prerequisite trust surfaces before downstream inference."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "artifact-provenance",
+            "processed-export"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-009",
+          "evidence_title": "Primate processed export parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-longevity-signal/evidence-009",
+          "study_id": "primate-longevity-signal",
+          "study_title": "Primate Longevity Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The processed CSV and trimmed tree exports are treated as first-class governed artifacts rather than hidden scaffolding for later parity claims."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "teaching-study",
+        "migration-study"
+      ],
+      "study_id": "primate-longevity-signal",
+      "study_title": "Primate Longevity Signal",
+      "summary": "This study holds reviewer-facing parity evidence for the Lund `PCM1_plots_signal` teaching workflow and the corresponding `bijux-phylogenetics` reproductions."
+    },
+    {
+      "bundle_count": 10,
+      "evidence": [
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "workflow",
+            "reload-semantics"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate reload semantics bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The lecture one-line workspace reload contract is reconstructed from governed repository artifacts instead of being left as an opaque external assumption."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "baseline-regression",
+            "gls"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-002",
+          "evidence_title": "Primate baseline GLS parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-002",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "The non-phylogenetic regression slope, intercept, fit statistics, and coefficient decisions align before any phylogenetic covariance is introduced."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "phylogenetic-regression",
+            "pagel-lambda"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-003",
+          "evidence_title": "Primate Pagel-lambda regression parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-003",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Estimated-lambda regression outputs keep the same analytical conclusion while allowing bounded numerical drift between R and Bijux implementations."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "phylogenetic-signal",
+            "lambda-zero"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-004",
+          "evidence_title": "Primate phylogenetic signal parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-004",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Lambda estimation and lambda-zero likelihood-ratio testing preserve the same signal conclusion while tolerating bounded numerical differences."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "diagnostics",
+            "residuals"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-005",
+          "evidence_title": "Primate residual diagnostics parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-005",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Residual diagnostics remain reviewer-visible as governed scalar summaries instead of being trapped in hand-inspected plots."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "transformed-tree",
+            "evolutionary-modes"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-006",
+          "evidence_title": "Primate transformed tree parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched",
+          "verdict_summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "fitcontinuous",
+            "evolutionary-modes"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-007",
+          "evidence_title": "Primate evolutionary mode fit parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-007",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Brownian, OU, and early-burst intercept fits preserve the same parameter and model-fit story while allowing bounded numerical drift from the R reference."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "likelihood-ratio",
+            "evolutionary-modes"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-008",
+          "evidence_title": "Primate likelihood-ratio parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-008",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "BM-versus-OU, BM-versus-early-burst, and OU-versus-early-burst test statistics stay aligned under explicit tolerance rules."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "parity",
+            "ancestral-reconstruction",
+            "early-burst"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-009",
+          "evidence_title": "Primate ancestral mode parity bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-009",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "matched_with_tolerance",
+          "verdict_summary": "Internal-node ancestral estimates stay comparable across the canonical runtime and governed R reference on named node identities."
+        },
+        {
+          "claim_tags": [
+            "teaching",
+            "coverage-gap",
+            "not-comparable"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-010",
+          "evidence_title": "Primate intercept sweep coverage boundary bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-010",
+          "study_id": "primate-pgls-and-signal",
+          "study_title": "Primate PGLS And Signal",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "teaching-study",
+        "migration-study"
+      ],
+      "study_id": "primate-pgls-and-signal",
+      "study_title": "Primate PGLS And Signal",
+      "summary": "This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed Evidence IDs backed by checked-in R reference outputs and canonical `bijux-phylogenetics` reproductions."
+    }
+  ],
+  "study_count": 2,
+  "verdict_counts": {
+    "matched": 11,
+    "matched_with_tolerance": 7,
+    "not_comparable": 1
+  }
+}

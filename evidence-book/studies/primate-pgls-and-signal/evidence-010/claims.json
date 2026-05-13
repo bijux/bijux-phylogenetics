@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-coverage-boundary-explicit",
+      "claim_title": "PCM2 remaining intercept-mode likelihood sweep boundary stays explicit",
+      "evidence_ids": [
+        "evidence-010"
+      ],
+      "source_fragments": [
+        "mode-linked-intercept-models"
+      ],
+      "summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-010",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

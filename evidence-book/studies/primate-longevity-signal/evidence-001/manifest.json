@@ -1,0 +1,90 @@
+{
+  "claim_ids": [
+    "pcm1-reproducibility-contract-tracked",
+    "pcm1-primate-data-preparation-parity",
+    "pcm1-tree-import-pruning-parity",
+    "pcm1-topology-operation-parity",
+    "pcm1-tree-data-join-parity",
+    "pcm1-random-lambda-fit-parity",
+    "pcm1-primate-lambda-fit-parity",
+    "pcm1-ancestral-state-parity",
+    "pcm1-visual-surface-tracking",
+    "pcm1-artifact-provenance-tracking"
+  ],
+  "claim_tags": [
+    "comparative-signal",
+    "teaching",
+    "parity"
+  ],
+  "comparison_mode": "direct_parity",
+  "coverage": {
+    "covered_executable_line_count": 185,
+    "executable_line_count": 185,
+    "uncovered_executable_lines": []
+  },
+  "evidence_id": "evidence-001",
+  "evidence_title": "Primate longevity signal parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics"
+    ],
+    "last_generated_on": "2026-05-13",
+    "source_basis_locators": [
+      "external:lund/pcm1-plots-signal/script",
+      "evidence-book/studies/primate-longevity-signal/reference"
+    ]
+  },
+  "honesty_contract": {
+    "agreement_rule": "mark verified or verified_with_tolerance only when the compared outputs align within stated tolerance",
+    "deviation_rule": "mark plot_only, artifact_only, seeded_input_only, or workflow_only when the block is tracked but not claimed as analytical equivalence",
+    "disclosure_rule": "report discrepancies directly rather than smoothing them away"
+  },
+  "limitations": [
+    "Rendered figure equivalence remains out of scope for plot-only blocks.",
+    "The checked-in bundle captures one governed PCM1 evidence family rather than the full lecture decomposition."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "comparative-signal",
+      "ancestral-reconstruction",
+      "tree-preprocessing"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_tools": [
+    "ape",
+    "geiger",
+    "phytools",
+    "treeio",
+    "tidytree"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "external-course-material",
+      "label": "lund pcm1 plots signal script",
+      "locator": "external:lund/pcm1-plots-signal/script"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "checked-in primate signal reference scripts",
+      "locator": "evidence-book/studies/primate-longevity-signal/reference"
+    }
+  ],
+  "source_script": "external:lund/pcm1-plots-signal/script",
+  "status_counts": {
+    "artifact_only": 2,
+    "plot_only": 10,
+    "seeded_input_only": 1,
+    "verified": 10,
+    "verified_with_tolerance": 6,
+    "workflow_only": 1
+  },
+  "study_id": "primate-longevity-signal",
+  "summary": "Checked-in parity evidence for the Lund primate longevity signal workflow and the bijux-phylogenetics reproductions.",
+  "verdict": {
+    "status": "matched_with_tolerance",
+    "summary": "Analytical and structural comparisons are tracked honestly, with numerical parity claims separated from plot-only surfaces."
+  }
+}

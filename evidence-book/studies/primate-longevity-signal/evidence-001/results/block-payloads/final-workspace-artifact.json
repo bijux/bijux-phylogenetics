@@ -1,0 +1,11 @@
+{
+  "block_id": "final-workspace-artifact",
+  "evidence": {
+    "r_save_target": "./Results/primate_results.RData",
+    "report_artifact_dir": "evidence-book/studies/primate-longevity-signal/evidence-001"
+  },
+  "note": "The lecture script saves an `.RData` workspace; this report saves explicit machine-readable evidence artifacts instead.",
+  "script_lines": "450-451",
+  "status": "artifact_only",
+  "title": "Save final analysis workspace"
+}

@@ -1,0 +1,2 @@
+dataset_id	sequence_count	sequence_type	selected_model	internal_node_count	supported_node_count	minimum_support	maximum_support	median_support	weakly_supported_clade_count
+influenza_a_ha_reference_panel	6	dna	TPM3u+F+R2	4	3	98	99	99	0

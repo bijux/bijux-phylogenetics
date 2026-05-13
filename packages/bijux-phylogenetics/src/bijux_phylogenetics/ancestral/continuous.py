@@ -11,7 +11,11 @@ from bijux_phylogenetics.ancestral.common import (
     node_descendant_taxa,
     node_signature,
     stable_value,
+    write_ancestral_rows,
 )
+from bijux_phylogenetics.core.tree import PhyloTree
+
+_NORMAL_95_CRITICAL = 1.959963984540054
 
 
 @dataclass(slots=True)
@@ -53,6 +57,37 @@ class ContinuousAncestralReport:
     estimates: list[ContinuousAncestralEstimate]
 
 
+@dataclass(slots=True)
+class ContinuousAncestralSummary:
+    """Reviewer-facing summary for one continuous ancestral reconstruction."""
+
+    trait: str
+    taxon_column: str
+    model: str
+    alpha: float
+    analyzed_taxon_count: int
+    excluded_taxon_count: int
+    missing_tip_taxon_count: int
+    non_numeric_tip_taxon_count: int
+    internal_node_count: int
+    unstable_node_count: int
+    weak_support_node_count: int
+    root_node: str
+    root_estimate: float
+    root_standard_error: float
+    root_lower_95_interval: float
+    root_upper_95_interval: float
+    warning_count: int
+
+
+@dataclass(slots=True)
+class ContinuousAncestralExclusion:
+    """One excluded tip from a continuous ancestral reconstruction."""
+
+    taxon: str
+    reason: str
+
+
 def reconstruct_continuous_ancestral_states(
     tree_path: Path,
     traits_path: Path,
@@ -75,6 +110,21 @@ def reconstruct_continuous_ancestral_states(
         trait=trait,
         taxon_column=taxon_column,
     )
+    return _reconstruct_continuous_from_dataset(
+        dataset,
+        working_tree=dataset.tree,
+        model=model,
+        alpha=alpha,
+    )
+
+
+def _reconstruct_continuous_from_dataset(
+    dataset: AncestralContinuousDataset,
+    *,
+    working_tree: PhyloTree,
+    model: str,
+    alpha: float,
+) -> ContinuousAncestralReport:
     global_mean = sum(dataset.values_by_taxon[taxon] for taxon in dataset.taxa) / len(
         dataset.taxa
     )
@@ -91,7 +141,6 @@ def reconstruct_continuous_ancestral_states(
     def visit(node) -> tuple[float, float]:
         if node.is_leaf():
             estimate = dataset.values_by_taxon[node.name]
-            standard_error = 0.0
             estimates.append(
                 ContinuousAncestralEstimate(
                     node=node_signature(node),
@@ -109,16 +158,38 @@ def reconstruct_continuous_ancestral_states(
                     downstream_risks=[],
                 )
             )
-            return estimate, standard_error**2
+            return estimate, float(node.branch_length or 0.0)
 
-        child_payloads: list[tuple[float, float]] = []
-        for child in node.children:
-            child_estimate, child_variance = visit(child)
-            branch_length = float(child.branch_length or 0.0)
-            if model == "brownian":
-                transformed_estimate = child_estimate
-                propagated_variance = child_variance + branch_length
-            else:
+        if len(node.children) != 2:
+            raise ValueError(
+                "continuous ancestral reconstruction requires a fully dichotomous rooted tree"
+            )
+
+        left_child, right_child = node.children
+        left_estimate, left_working_length = visit(left_child)
+        right_estimate, right_working_length = visit(right_child)
+
+        if model == "brownian":
+            sum_working_lengths = max(
+                left_working_length + right_working_length,
+                1e-12,
+            )
+            estimate = (
+                left_estimate * right_working_length
+                + right_estimate * left_working_length
+            ) / sum_working_lengths
+            variance = sum_working_lengths
+            returned_length = (
+                float(node.branch_length or 0.0)
+                + (left_working_length * right_working_length) / sum_working_lengths
+            )
+        else:
+            child_payloads: list[tuple[float, float]] = []
+            for child, child_estimate, child_variance in (
+                (left_child, left_estimate, left_working_length),
+                (right_child, right_estimate, right_working_length),
+            ):
+                branch_length = float(child.branch_length or 0.0)
                 shrink = math.exp(-alpha * branch_length)
                 transformed_estimate = (
                     shrink * child_estimate + (1.0 - shrink) * global_mean
@@ -129,18 +200,24 @@ def reconstruct_continuous_ancestral_states(
                 propagated_variance = (
                     child_variance * math.exp(-2.0 * alpha * branch_length)
                 ) + stationary_variance
-            child_payloads.append(
-                (transformed_estimate, max(propagated_variance, 1e-12))
+                child_payloads.append(
+                    (transformed_estimate, max(propagated_variance, 1e-12))
+                )
+            weight_sum = sum(
+                1.0 / child_variance for _, child_variance in child_payloads
             )
+            estimate = (
+                sum(
+                    (value / child_variance) for value, child_variance in child_payloads
+                )
+                / weight_sum
+            )
+            variance = 1.0 / weight_sum
+            returned_length = variance
 
-        weight_sum = sum(1.0 / variance for _, variance in child_payloads)
-        estimate = (
-            sum((value / variance) for value, variance in child_payloads) / weight_sum
-        )
-        variance = 1.0 / weight_sum
-        standard_error = math.sqrt(variance)
-        lower = estimate - 1.96 * standard_error
-        upper = estimate + 1.96 * standard_error
+        standard_error = math.sqrt(max(variance, 0.0))
+        lower = estimate - _NORMAL_95_CRITICAL * standard_error
+        upper = estimate + _NORMAL_95_CRITICAL * standard_error
         uncertainty_width = max(0.0, upper - lower)
         confidence, unstable = _continuous_confidence(uncertainty_width, trait_range)
         interpretation = _continuous_interpretation(
@@ -163,9 +240,9 @@ def reconstruct_continuous_ancestral_states(
                 downstream_risks=_continuous_downstream_risks(unstable),
             )
         )
-        return estimate, variance
+        return estimate, returned_length
 
-    visit(dataset.tree.root)
+    visit(working_tree.root)
     ordered_estimates = _ordered_estimates(dataset, estimates)
     unstable_nodes = [
         estimate.node
@@ -187,20 +264,188 @@ def reconstruct_continuous_ancestral_states(
             "low-confidence ancestral estimates should not be overinterpreted for evolutionary timing or trait polarity"
         )
     return ContinuousAncestralReport(
-        tree_path=tree_path,
-        traits_path=traits_path,
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
         taxon_column=dataset.taxon_column,
-        trait=trait,
+        trait=dataset.trait,
         model=model,
         alpha=stable_value(alpha),
         taxon_count=len(dataset.taxa),
-        analysis_tree_newick=dump_pruned_tree(dataset.tree),
+        analysis_tree_newick=dump_pruned_tree(working_tree),
         dropped_missing_taxa=dataset.dropped_missing_taxa,
         dropped_non_numeric_taxa=dataset.dropped_non_numeric_taxa,
         warnings=warnings,
         unstable_nodes=unstable_nodes,
         weak_support_nodes=weak_support_nodes,
         estimates=ordered_estimates,
+    )
+
+
+def summarize_continuous_ancestral_report(
+    report: ContinuousAncestralReport,
+) -> ContinuousAncestralSummary:
+    """Summarize the main review facts for one continuous ancestral report."""
+    internal_estimates = [
+        estimate for estimate in report.estimates if not estimate.is_tip
+    ]
+    if not internal_estimates:
+        raise ValueError(
+            "continuous ancestral summary requires at least one internal-node estimate"
+        )
+    root_estimate = max(
+        internal_estimates,
+        key=lambda estimate: (
+            len(estimate.descendant_taxa),
+            estimate.node,
+        ),
+    )
+    return ContinuousAncestralSummary(
+        trait=report.trait,
+        taxon_column=report.taxon_column,
+        model=report.model,
+        alpha=report.alpha,
+        analyzed_taxon_count=report.taxon_count,
+        excluded_taxon_count=len(report.dropped_missing_taxa)
+        + len(report.dropped_non_numeric_taxa),
+        missing_tip_taxon_count=len(report.dropped_missing_taxa),
+        non_numeric_tip_taxon_count=len(report.dropped_non_numeric_taxa),
+        internal_node_count=len(internal_estimates),
+        unstable_node_count=len(report.unstable_nodes),
+        weak_support_node_count=len(report.weak_support_nodes),
+        root_node=root_estimate.node,
+        root_estimate=root_estimate.estimate,
+        root_standard_error=root_estimate.standard_error,
+        root_lower_95_interval=root_estimate.lower_95_interval,
+        root_upper_95_interval=root_estimate.upper_95_interval,
+        warning_count=len(report.warnings),
+    )
+
+
+def continuous_ancestral_exclusions(
+    report: ContinuousAncestralReport,
+) -> list[ContinuousAncestralExclusion]:
+    """Return one explicit exclusion row per dropped tip taxon."""
+    rows = [
+        ContinuousAncestralExclusion(
+            taxon=taxon,
+            reason="missing_trait_value",
+        )
+        for taxon in report.dropped_missing_taxa
+    ]
+    rows.extend(
+        ContinuousAncestralExclusion(
+            taxon=taxon,
+            reason="non_numeric_trait_value",
+        )
+        for taxon in report.dropped_non_numeric_taxa
+    )
+    return rows
+
+
+def write_continuous_ancestral_summary_table(
+    path: Path, report: ContinuousAncestralReport
+) -> Path:
+    """Write one summary ledger for a continuous ancestral reconstruction."""
+    summary = summarize_continuous_ancestral_report(report)
+    return write_ancestral_rows(
+        path,
+        columns=[
+            "trait",
+            "taxon_column",
+            "model",
+            "alpha",
+            "analyzed_taxon_count",
+            "excluded_taxon_count",
+            "missing_tip_taxon_count",
+            "non_numeric_tip_taxon_count",
+            "internal_node_count",
+            "unstable_node_count",
+            "weak_support_node_count",
+            "root_node",
+            "root_estimate",
+            "root_standard_error",
+            "root_lower_95_interval",
+            "root_upper_95_interval",
+            "warning_count",
+        ],
+        rows=[
+            {
+                "trait": summary.trait,
+                "taxon_column": summary.taxon_column,
+                "model": summary.model,
+                "alpha": str(summary.alpha),
+                "analyzed_taxon_count": str(summary.analyzed_taxon_count),
+                "excluded_taxon_count": str(summary.excluded_taxon_count),
+                "missing_tip_taxon_count": str(summary.missing_tip_taxon_count),
+                "non_numeric_tip_taxon_count": str(summary.non_numeric_tip_taxon_count),
+                "internal_node_count": str(summary.internal_node_count),
+                "unstable_node_count": str(summary.unstable_node_count),
+                "weak_support_node_count": str(summary.weak_support_node_count),
+                "root_node": summary.root_node,
+                "root_estimate": str(summary.root_estimate),
+                "root_standard_error": str(summary.root_standard_error),
+                "root_lower_95_interval": str(summary.root_lower_95_interval),
+                "root_upper_95_interval": str(summary.root_upper_95_interval),
+                "warning_count": str(summary.warning_count),
+            }
+        ],
+    )
+
+
+def write_continuous_ancestral_uncertainty_table(
+    path: Path, report: ContinuousAncestralReport
+) -> Path:
+    """Write one internal-node uncertainty ledger for a continuous reconstruction."""
+    return write_ancestral_rows(
+        path,
+        columns=[
+            "node",
+            "node_name",
+            "descendant_taxa",
+            "estimate",
+            "standard_error",
+            "lower_95_interval",
+            "upper_95_interval",
+            "uncertainty_width",
+            "confidence",
+            "interpretation",
+            "unstable",
+        ],
+        rows=[
+            {
+                "node": estimate.node,
+                "node_name": estimate.node_name or "",
+                "descendant_taxa": ",".join(estimate.descendant_taxa),
+                "estimate": str(estimate.estimate),
+                "standard_error": str(estimate.standard_error),
+                "lower_95_interval": str(estimate.lower_95_interval),
+                "upper_95_interval": str(estimate.upper_95_interval),
+                "uncertainty_width": str(estimate.uncertainty_width),
+                "confidence": str(estimate.confidence),
+                "interpretation": estimate.interpretation,
+                "unstable": str(estimate.unstable).lower(),
+            }
+            for estimate in report.estimates
+            if not estimate.is_tip
+        ],
+    )
+
+
+def write_continuous_ancestral_exclusion_table(
+    path: Path, report: ContinuousAncestralReport
+) -> Path:
+    """Write one explicit excluded-tip ledger for a continuous reconstruction."""
+    exclusions = continuous_ancestral_exclusions(report)
+    return write_ancestral_rows(
+        path,
+        columns=["taxon", "reason"],
+        rows=[
+            {
+                "taxon": row.taxon,
+                "reason": row.reason,
+            }
+            for row in exclusions
+        ],
     )
 
 

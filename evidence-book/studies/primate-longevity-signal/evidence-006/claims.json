@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm1-tree-import-parity",
+      "claim_title": "PCM1 tree import behavior is governed explicitly",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "source_fragments": [
+        "tree-import-and-pruning"
+      ],
+      "summary": "Original and trimmed tree imports are surfaced as their own evidence boundary with explicit tip-count and branch-length expectations.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

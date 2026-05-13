@@ -1,0 +1,13 @@
+{
+  "block_id": "lambda-zero-covariance-and-lrt",
+  "evidence": {
+    "lambda0_vcv_top3_max_abs_diff": 9.99999993922529e-09,
+    "likelihood_ratio_abs_diff": 1.092107925160235e-05,
+    "p_value_abs_diff": 8.374938977420018e-16,
+    "real_vcv_top3_max_abs_diff": 0.0
+  },
+  "note": "The covariance surface and lambda-vs-zero test agree within numerical tolerance.",
+  "script_lines": "375-388",
+  "status": "verified_with_tolerance",
+  "title": "Lambda-zero covariance and likelihood-ratio test"
+}

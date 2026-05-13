@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm2-transformed-tree-parity",
+      "claim_title": "PCM2 transformed-tree workflows match on governed branch summaries",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "source_fragments": [
+        "transformed-tree-workflows"
+      ],
+      "summary": "OU, early-burst, and late-burst rescaling stay reviewable through deterministic branch and total-length comparisons before downstream comparative claims are made.",
+      "verdict": "matched"
+    }
+  ],
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "study_id": "primate-pgls-and-signal"
+}

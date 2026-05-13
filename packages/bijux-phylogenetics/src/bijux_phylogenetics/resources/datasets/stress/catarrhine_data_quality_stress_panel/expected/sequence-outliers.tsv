@@ -1,0 +1,2 @@
+taxon	deviation	robust_z_score	action
+macaca_mulatta	0.452060901558	-42.9314683585	drop_taxon_from_cleaned_alignment

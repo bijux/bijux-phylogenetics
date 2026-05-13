@@ -1,0 +1,35 @@
+{
+  "action_required_count": 0,
+  "schema_version": 1,
+  "surface_count": 4,
+  "surfaces": [
+    {
+      "matched_phrases": [],
+      "relative_path": "README.md",
+      "review_rule": "High-level public evidence surfaces must describe parity and trust boundaries honestly instead of implying broader validation than the evidence-book currently proves.",
+      "status": "clear",
+      "surface_id": "repository-readme"
+    },
+    {
+      "matched_phrases": [],
+      "relative_path": "evidence-book/README.md",
+      "review_rule": "High-level public evidence surfaces must describe parity and trust boundaries honestly instead of implying broader validation than the evidence-book currently proves.",
+      "status": "clear",
+      "surface_id": "evidence-book-readme"
+    },
+    {
+      "matched_phrases": [],
+      "relative_path": "evidence-book/studies/primate-longevity-signal/README.md",
+      "review_rule": "High-level public evidence surfaces must describe parity and trust boundaries honestly instead of implying broader validation than the evidence-book currently proves.",
+      "status": "clear",
+      "surface_id": "primate-longevity-readme"
+    },
+    {
+      "matched_phrases": [],
+      "relative_path": "evidence-book/studies/primate-pgls-and-signal/README.md",
+      "review_rule": "High-level public evidence surfaces must describe parity and trust boundaries honestly instead of implying broader validation than the evidence-book currently proves.",
+      "status": "clear",
+      "surface_id": "primate-pgls-readme"
+    }
+  ]
+}

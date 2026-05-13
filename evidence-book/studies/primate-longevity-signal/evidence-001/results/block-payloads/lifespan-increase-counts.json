@@ -1,0 +1,17 @@
+{
+  "block_id": "lifespan-increase-counts",
+  "evidence": {
+    "bijux": {
+      "increase_count": 72,
+      "increase_gt12_count": 55
+    },
+    "r": {
+      "increase_count": 72,
+      "increase_gt12_count": 55
+    }
+  },
+  "note": "The branch-wise increase counts match the direct R reference path.",
+  "script_lines": "431-448",
+  "status": "verified",
+  "title": "How many times lifespan increased across primates"
+}

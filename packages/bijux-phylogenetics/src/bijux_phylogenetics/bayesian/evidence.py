@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.evidence.bundles import bundle_file_paths, validate_bundle
+from bijux_phylogenetics.provenance.bundles import (
+    bundle_artifact_files,
+    validate_artifact_bundle,
+)
 
 
 @dataclass(slots=True)
@@ -53,7 +56,7 @@ def build_bayesian_evidence_package(
             "bayesian evidence package requires at least one rendered report artifact"
         )
 
-    bundle = bundle_file_paths(
+    bundle = bundle_artifact_files(
         input_paths=input_paths,
         output_paths=[
             *config_paths,
@@ -64,7 +67,7 @@ def build_bayesian_evidence_package(
         ],
         bundle_root=bundle_root,
     )
-    validation = validate_bundle(bundle_root)
+    validation = validate_artifact_bundle(bundle_root)
     return BayesianEvidencePackageReport(
         bundle_root=bundle_root,
         file_count=bundle.file_count,

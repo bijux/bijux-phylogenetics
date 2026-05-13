@@ -1,0 +1,40 @@
+{
+  "block_id": "bonobo-gibbon-mrca-estimate",
+  "evidence": {
+    "bijux": {
+      "mrca_descendant_taxa": [
+        "Hylobates_lar",
+        "Hylobates_pileatus",
+        "Nomascus_concolor",
+        "Pan_paniscus",
+        "Symphalangus_syndactylus"
+      ],
+      "mrca_estimate": 520.07842300776,
+      "mrca_signature": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Pan_paniscus|Symphalangus_syndactylus"
+    },
+    "r": {
+      "mrca_estimate": [
+        {
+          "descendant_taxa": [
+            "Hylobates_lar",
+            "Hylobates_pileatus",
+            "Nomascus_concolor",
+            "Pan_paniscus",
+            "Symphalangus_syndactylus"
+          ],
+          "estimate": 520.0784230077601,
+          "lower_95": 518.7152277621561,
+          "node": 107,
+          "signature": "Hylobates_lar|Hylobates_pileatus|Nomascus_concolor|Pan_paniscus|Symphalangus_syndactylus",
+          "species": "Node32",
+          "upper_95": 521.441618253364
+        }
+      ],
+      "mrca_node": 107
+    }
+  },
+  "note": "The MRCA clade and the ancestral point estimate match.",
+  "script_lines": "421-429",
+  "status": "verified_with_tolerance",
+  "title": "Bonobo/Gibbon MRCA estimate"
+}

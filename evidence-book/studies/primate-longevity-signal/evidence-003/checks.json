@@ -1,0 +1,51 @@
+{
+  "claim_ids": [
+    "pcm1-type-repair-parity"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-003",
+  "expected_verdict_status": "matched",
+  "local_artifact_purposes": {
+    "analysis.py": "python-analysis-program",
+    "checks.json": "machine-check-contract",
+    "provenance.json": "provenance-record",
+    "reference.R": "r-reference-program",
+    "report.md": "human-report"
+  },
+  "primary_output_paths": [],
+  "required_local_artifacts": [
+    "reference.R",
+    "analysis.py",
+    "checks.json",
+    "report.md",
+    "provenance.json"
+  ],
+  "required_result_artifacts": [
+    "results/README.md",
+    "results/manifest.json"
+  ],
+  "schema_version": 2,
+  "source_basis_locators": [
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json"
+  ],
+  "study_id": "primate-longevity-signal",
+  "validation_rules": [
+    {
+      "pass_when": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",
+      "rule_id": "bundle-local-artifacts-present"
+    },
+    {
+      "pass_when": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs",
+      "rule_id": "results-directory-governed"
+    },
+    {
+      "pass_when": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces",
+      "rule_id": "primary-outputs-present"
+    },
+    {
+      "pass_when": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries",
+      "rule_id": "verdict-still-explicit"
+    }
+  ]
+}

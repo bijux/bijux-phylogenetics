@@ -1,0 +1,7 @@
+taxon	presence	body_size	habitat
+A	0	1.0	forest
+B	0	2.0	forest
+C	0	3.0	forest
+D	1	4.0	tundra
+E	1	5.0	tundra
+F	1	6.0	tundra

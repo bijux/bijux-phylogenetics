@@ -1,0 +1,6 @@
+locus_name	data_type	segment_count	total_sites	start_site	end_site	coordinate_text
+mt-cox1	DNA	1	1569	1	1569	1-1569
+mt-cox2	DNA	1	684	1570	2253	1570-2253
+mt-cox3	DNA	1	784	2254	3037	2254-3037
+mt-cytb	DNA	1	1141	3038	4178	3038-4178
+mt-nd2	DNA	1	1044	4179	5222	4179-5222

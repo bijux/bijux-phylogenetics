@@ -1,0 +1,31 @@
+{
+  "checklist": [
+    {
+      "detail": "R and Python comparative scripts are checked in.",
+      "item": "checked_in_reference_scripts",
+      "pass": true
+    },
+    {
+      "detail": "185 / 185 executable lines are covered.",
+      "item": "full_executable_line_coverage",
+      "pass": true
+    },
+    {
+      "detail": "10 verified and 6 tolerance-validated blocks.",
+      "item": "analytical_blocks_validated",
+      "pass": true
+    },
+    {
+      "detail": "10 plot-only blocks are disclosed explicitly.",
+      "item": "unclaimed_visual_scope_disclosed",
+      "pass": true
+    },
+    {
+      "detail": "Tolerance-based and non-analytical blocks are separated rather than hidden.",
+      "item": "deviation_surface_present",
+      "pass": true
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "study_id": "primate-longevity-signal"
+}

@@ -1,0 +1,36 @@
+{
+  "bundle_verdict_status": "matched",
+  "bundle_verdict_summary": "The reference factor and numeric coercion rules are made explicit and the governed processed artifact satisfies the repaired column contract.",
+  "claim_count": 1,
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "data-preparation",
+    "type-repair"
+  ],
+  "claim_titles": [
+    "PCM1 type repair contract is explicit and reviewable"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-003",
+  "evidence_title": "Primate type repair parity bundle",
+  "limitations": [
+    "The Python-side review validates the repaired processed artifact rather than replaying the external workbook import directly."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed evidence for the factor and numeric coercion contract before grouped downstream analysis.",
+    "Comparison mode: direct_parity. Bundle verdict: matched.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "primate-data-preprocessing"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-longevity-signal/evidence-003/type-repair-parity.json"
+  ],
+  "study_id": "primate-longevity-signal",
+  "study_title": "Primate Longevity Signal"
+}

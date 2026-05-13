@@ -1,0 +1,18 @@
+{
+  "block_id": "environment-and-package-contract",
+  "evidence": {
+    "python_reference_script": "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py",
+    "r_packages": {
+      "ape": "5.8.1",
+      "geiger": "2.0.11",
+      "openxlsx": "4.2.8.1",
+      "phytools": "2.5.2",
+      "tidytree": "0.4.7",
+      "treeio": "1.35.0"
+    }
+  },
+  "note": "This setup block is documented for reproducibility, but it is not an analysis-equivalence target.",
+  "script_lines": "1-22",
+  "status": "workflow_only",
+  "title": "Environment, package loading, and citation workflow"
+}

@@ -5,6 +5,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from bijux_phylogenetics_dev.quality.config_ssot import check_config_ssot
+from bijux_phylogenetics_dev.quality.package_boundaries import check_package_boundaries
+from bijux_phylogenetics_dev.quality.package_bundles import check_package_bundles
+from bijux_phylogenetics_dev.quality.publish_readiness import check_publish_readiness
+
 from .version_resolver import resolve_version
 
 
@@ -28,6 +33,31 @@ def parse_args() -> argparse.Namespace:
         "--allow-local-version",
         action="store_true",
         help="Allow local version segments such as +dirty",
+    )
+    parser.add_argument(
+        "--repo-root",
+        default="",
+        help="Optional repository root for repo-level publish guards.",
+    )
+    parser.add_argument(
+        "--require-config-ssot",
+        action="store_true",
+        help="Require a clean repository config SSOT audit before publish checks pass.",
+    )
+    parser.add_argument(
+        "--require-package-bundles",
+        action="store_true",
+        help="Require a clean publish-artifact bundle audit before publish checks pass.",
+    )
+    parser.add_argument(
+        "--require-package-boundaries",
+        action="store_true",
+        help="Require a clean package boundary audit before publish checks pass.",
+    )
+    parser.add_argument(
+        "--require-publish-readiness",
+        action="store_true",
+        help="Require a clean repository publish-readiness report before publish checks pass.",
     )
     return parser.parse_args()
 
@@ -96,6 +126,36 @@ def assert_artifacts_match_version(dist_dir: Path, version: str) -> None:
         )
 
 
+def assert_publishable_repository(
+    *,
+    repo_root: Path | None = None,
+    require_config_ssot: bool = False,
+    require_package_boundaries: bool = False,
+    require_package_bundles: bool = False,
+    require_publish_readiness: bool = False,
+) -> None:
+    """Reject repository states that are not safe to publish."""
+    if (
+        not require_config_ssot
+        and not require_package_boundaries
+        and not require_package_bundles
+        and not require_publish_readiness
+    ):
+        return
+    if repo_root is None:
+        raise ValueError(
+            "repo_root is required when repository-level publish guards are enabled"
+        )
+    if require_config_ssot:
+        check_config_ssot(repo_root)
+    if require_package_boundaries:
+        check_package_boundaries(repo_root)
+    if require_package_bundles:
+        check_package_bundles(repo_root)
+    if require_publish_readiness:
+        check_publish_readiness(repo_root)
+
+
 def main() -> int:
     """Run the command-line entry point."""
     args = parse_args()
@@ -106,6 +166,14 @@ def main() -> int:
         version,
         allow_prerelease=args.allow_prerelease,
         allow_local_version=args.allow_local_version,
+    )
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else None
+    assert_publishable_repository(
+        repo_root=repo_root,
+        require_config_ssot=args.require_config_ssot,
+        require_package_boundaries=args.require_package_boundaries,
+        require_package_bundles=args.require_package_bundles,
+        require_publish_readiness=args.require_publish_readiness,
     )
     if args.dist_dir:
         assert_artifacts_match_version(Path(args.dist_dir), version)

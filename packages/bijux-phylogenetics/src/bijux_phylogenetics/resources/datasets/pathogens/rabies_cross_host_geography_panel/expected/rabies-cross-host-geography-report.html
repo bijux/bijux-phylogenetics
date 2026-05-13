@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bijux Rabies Host and Geography Workflow</title>
+  <style>
+    body { font-family: Georgia, 'Times New Roman', serif; margin: 0; background: linear-gradient(180deg, #f4f1ea 0%, #e7efe7 100%); color: #163222; }
+    main { max-width: 1360px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 8px; font-size: 34px; }
+    h2 { margin: 0 0 10px; font-size: 22px; }
+    p { line-height: 1.55; }
+    .cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 18px 0 24px; }
+    .card, .panel { background: rgba(255,255,255,0.86); border: 1px solid rgba(22,50,34,0.12); border-radius: 18px; padding: 18px; box-shadow: 0 16px 42px rgba(22,50,34,0.08); }
+    .label { color: #5b7466; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .card strong { display: block; font-size: 21px; margin-top: 6px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .full { grid-column: 1 / -1; }
+    .figure-shell { overflow: auto; }
+    .figure-shell img { width: 100%; height: auto; display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th, td { border-bottom: 1px solid rgba(22,50,34,0.10); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { color: #365443; }
+    ul { margin: 8px 0 0 18px; }
+    a { color: #16543a; }
+    iframe { width: 100%; min-height: 760px; border: 1px solid rgba(22,50,34,0.12); border-radius: 14px; background: white; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Bijux Rabies Host and Geography Workflow</h1>
+  <p>Complete end-to-end review for one real rabies nucleoprotein panel. The workflow starts from raw sequences plus combined host and geography metadata, infers a maximum-likelihood tree with bootstrap support, roots that tree on one explicit outgroup, then carries host-switching and biogeographic reconstruction into one reviewer-facing handoff.</p>
+  <section class="cards">
+    <div class="card"><span class="label">sequences</span><strong>9</strong></div>
+    <div class="card"><span class="label">selected model</span><strong>TPM2u+F+G4</strong></div>
+    <div class="card"><span class="label">support range</span><strong>84-100</strong></div>
+    <div class="card"><span class="label">root host</span><strong>bat</strong></div>
+    <div class="card"><span class="label">root region</span><strong>north_asia</strong></div>
+  </section>
+  <section class="panel">
+    <h2>Reviewer Summary</h2>
+<ul><li>The inferred rooted tree used substitution model TPM2u+F+G4 with bootstrap support spanning 84-100.</li><li>The outgroup root is anchored on bat_chile_rv108.</li><li>Host reconstruction over host_group inferred 2 host-switch branches, with 0 certain and 2 uncertain changes.</li><li>Geographic reconstruction over region_group inferred 4 migration events across 4 changed branches.</li><li>The workflow keeps the alignment, trimmed alignment, rooted tree, support table, host tables, geographic tables, tree figure, map, and integrated report together in one durable bundle.</li></ul>
+  </section>
+  <section class="grid" style="margin-top: 20px;">
+    <section class="panel">
+      <h2>Sequence-to-Tree Outputs</h2>
+<ul><li>alignment: rabies-cross-host-geography-panel.aln</li><li>trimmed alignment: rabies-cross-host-geography-panel.trimmed.aln</li><li>rooted tree: rabies-cross-host-geography-panel.rooted.tree</li><li>support table: rabies-cross-host-geography-panel.support.tsv</li><li>rooting report: rabies-cross-host-geography-panel.rooting.tsv</li></ul>
+<table><thead><tr><th>node</th><th>descendant_taxa</th><th>support</th><th>support_fraction</th></tr></thead><tbody><tr><td>cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, dog_pakistan_pdb011, raccoon_dog_poland_2021, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>100</td><td>1</td></tr><tr><td>cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, raccoon_dog_poland_2021, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>100</td><td>1</td></tr><tr><td>cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>99</td><td>0.99</td></tr><tr><td>raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025</td><td>raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>92</td><td>0.92</td></tr><tr><td>raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025</td><td>raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_20_2025</td><td>84</td><td>0.84</td></tr><tr><td>cattle_russia_4092_13_2025|cattle_russia_4092_15_2025</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025</td><td>100</td><td>1</td></tr></tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Host Switching</h2>
+<ul><li>workflow trait: host_group</li><li>root host confidence: 1</li><li>host-switch rows: 2</li><li>see host-switch-summary.tsv, host-state-nodes.tsv, host-switch-branches.tsv, and host-switch-counts.tsv</li></ul>
+<table><thead><tr><th>transition</th><th>certain_switch_count</th><th>uncertain_switch_count</th><th>total_switch_count</th></tr></thead><tbody><tr><td>bat-&gt;canid</td><td>0</td><td>1</td><td>1</td></tr><tr><td>canid-&gt;livestock</td><td>0</td><td>1</td><td>1</td></tr></tbody></table>
+    </section>
+    <section class="panel full">
+      <h2>Biogeography</h2>
+      <p>The bundle includes the detailed biogeography package at <a href="biogeography/biogeography-report.html">biogeography/biogeography-report.html</a> together with the ancestral-region tree SVG and the self-contained geographic map.</p>
+      <div class="grid">
+        <div class="panel">
+          <h2>Ancestral-Region Tree</h2>
+          <div class="figure-shell">
+            <img src="biogeography/ancestral-region-tree.svg" alt="Ancestral region tree">
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Geographic Map</h2>
+          <iframe src="biogeography/geographic-region-map.html" title="Geographic region map"></iframe>
+        </div>
+      </div>
+<table><thead><tr><th>branch_id</th><th>source_region</th><th>target_region</th><th>support</th><th>midpoint_depth</th></tr></thead><tbody><tr><td>bat_chile_rv108</td><td>north_asia</td><td>south_america</td><td>0.441176468813</td><td>0</td></tr><tr><td>bat_chile_rv50</td><td>north_asia</td><td>north_america</td><td>0.544642856174</td><td>0.0730227384</td></tr><tr><td>dog_pakistan_pdb011</td><td>north_asia</td><td>south_asia</td><td>0.608028820994</td><td>0.23829727355</td></tr><tr><td>raccoon_dog_poland_2021</td><td>north_asia</td><td>europe</td><td>0.646984011474</td><td>0.27017854725</td></tr></tbody></table>
+    </section>
+  </section>
+  <section class="panel" style="margin-top: 20px;">
+    <h2>Key Files</h2>
+<ul><li><a href="workflow-summary.tsv">workflow-summary.tsv</a></li><li><a href="host-switch-summary.tsv">host-switch-summary.tsv</a></li><li><a href="host-switch-counts.tsv">host-switch-counts.tsv</a></li><li><a href="biogeography/summary.tsv">biogeography/summary.tsv</a></li><li><a href="biogeography/event-table.tsv">biogeography/event-table.tsv</a></li><li><a href="rabies-cross-host-geography.manifest.json">rabies-cross-host-geography.manifest.json</a></li></ul>
+  </section>
+</main>
+</body>
+</html>

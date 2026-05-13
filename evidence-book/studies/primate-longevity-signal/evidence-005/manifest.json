@@ -1,0 +1,72 @@
+{
+  "claim_ids": [
+    "pcm1-duplicate-species-aggregation-parity"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "data-preparation",
+    "duplicate-aggregation"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-005",
+  "evidence_title": "Primate duplicate-species aggregation parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+    ],
+    "last_generated_on": "2026-05-11",
+    "source_basis_locators": [
+      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json"
+    ]
+  },
+  "limitations": [
+    "The raw workbook is external, so duplicate consolidation is demonstrated through the governed row-count and species-count contract."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "data-preparation"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_bundle_locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+  "reference_script_locators": [
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L41-L47"
+  ],
+  "report_keys": [
+    "duplicate_species_contract_count",
+    "duplicates_remaining_after_grouping",
+    "evidence_id",
+    "processed_row_count",
+    "processed_species_count",
+    "raw_row_count",
+    "raw_to_processed_row_delta",
+    "schema_version",
+    "study_id"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-reference",
+      "label": "governed processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate duplicate-species aggregation parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json"
+    }
+  ],
+  "source_fragments": [
+    "primate-data-preprocessing"
+  ],
+  "study_id": "primate-longevity-signal",
+  "summary": "Governed evidence for duplicate-species consolidation before processed trait analysis.",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json",
+  "verdict": {
+    "status": "matched",
+    "summary": "The raw-to-processed row contraction and the resulting unique-species contract are broken out as standalone evidence instead of being buried inside later model checks."
+  }
+}

@@ -21,9 +21,9 @@ from bijux_phylogenetics.core.alignment import (
 from bijux_phylogenetics.core.dataset import (
     DatasetAuditReport,
     DatasetCrosswalkReport,
+    DatasetExclusionTable,
     DatasetReadinessSummary,
     audit_dataset_inputs,
-    build_dataset_crosswalk,
     summarize_dataset_readiness,
 )
 from bijux_phylogenetics.core.metadata import (
@@ -32,8 +32,11 @@ from bijux_phylogenetics.core.metadata import (
     load_taxon_table,
 )
 from bijux_phylogenetics.core.taxon_workflows import (
+    TaxonStabilityReport,
     TaxonWorkflowLossReport,
+    build_taxon_stability_report,
     build_taxon_workflow_loss_report,
+    load_taxon_run_source,
 )
 from bijux_phylogenetics.core.taxonomy import TaxonAuditReport, build_taxon_audit_report
 from bijux_phylogenetics.core.traits import (
@@ -199,7 +202,9 @@ class TaxonReportBuildResult:
     tree_path: Path
     taxon_audit: TaxonAuditReport
     taxon_crosswalk: DatasetCrosswalkReport | None
+    taxon_exclusions: DatasetExclusionTable | None
     taxon_workflow_loss: TaxonWorkflowLossReport | None
+    taxon_stability: TaxonStabilityReport | None
     machine_manifest: dict[str, object]
 
 
@@ -241,12 +246,17 @@ def _sha256(path: Path) -> str:
 
 
 def _dataset_surface_taxa_count(path: Path, role: str) -> int:
-    if role == "tree":
+    if role in {"tree", "inference_tree"}:
         return _load_tree(path).tip_count
-    if role == "alignment":
+    if role in {"alignment", "filtered_alignment"}:
         return summarise_fasta(path).sequence_count
-    if role in {"metadata", "traits", "tip_dates"}:
+    if role in {"metadata", "traits", "tip_dates", "reported_taxa"}:
         return load_taxon_table(path).row_count
+    if role == "synonym_table":
+        delimiter = "," if path.suffix.lower() == ".csv" else "\t"
+        with path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, delimiter=delimiter)
+            return sum(1 for _ in reader)
     if role == "calibrations":
         delimiter = "," if path.suffix.lower() == ".csv" else "\t"
         with path.open(encoding="utf-8", newline="") as handle:
@@ -409,6 +419,11 @@ def _report_summary_and_limitations(
             if flag
         )
         summary.append(f"alignment safe-for flags passed: {safe_methods}/5")
+        summary.append(
+            "alignment suspicious diagnostics: flagged"
+            if alignment_forensic.quality.suspicious_alignment
+            else "alignment suspicious diagnostics: clear"
+        )
         limitations.extend(alignment_forensic.limitations)
     if inspection.mixed_support_scales:
         limitations.append(
@@ -856,6 +871,11 @@ def render_alignment_report(
     reviewer_summary = [
         f"alignment quality score: {alignment_quality.quality_score}",
         (
+            "alignment suspicious diagnostics: flagged"
+            if alignment_quality.suspicious_alignment
+            else "alignment suspicious diagnostics: clear"
+        ),
+        (
             "alignment remains suitable for at least one inference family"
             if any(
                 (
@@ -869,6 +889,11 @@ def render_alignment_report(
         ),
         f"reviewer-facing warnings: {len(alignment_forensic.warnings)}",
     ]
+    if alignment_quality.suspicious_alignment:
+        reviewer_summary.append(
+            "longest concentrated missing-data run: "
+            f"{alignment_quality.missing_data_concentration.longest_concentrated_run}"
+        )
     limitations = sorted(
         dict.fromkeys(
             [
@@ -966,16 +991,18 @@ def render_taxon_report(
     """Build a reviewer-facing taxon audit report."""
     tree = _load_tree(tree_path)
     audit = build_taxon_audit_report(tree, synonym_table_path=synonym_table_path)
-    taxon_crosswalk = (
+    dataset_audit = (
         None
         if metadata_path is None or traits_path is None
-        else build_dataset_crosswalk(
+        else audit_dataset_inputs(
             tree_path,
             metadata_path,
             traits_path,
             alignment_path=alignment_path,
         )
     )
+    taxon_crosswalk = None if dataset_audit is None else dataset_audit.crosswalk
+    taxon_exclusions = None if dataset_audit is None else dataset_audit.exclusion_table
     taxon_workflow_loss = (
         None
         if metadata_path is None or traits_path is None
@@ -989,12 +1016,70 @@ def render_taxon_report(
             reported_taxa_path=reported_taxa_path,
         )
     )
+    stability_sources = [
+        load_taxon_run_source(label="tree", path=tree_path),
+        *(
+            [load_taxon_run_source(label="metadata", path=metadata_path)]
+            if metadata_path is not None
+            else []
+        ),
+        *(
+            [load_taxon_run_source(label="traits", path=traits_path)]
+            if traits_path is not None
+            else []
+        ),
+        *(
+            [load_taxon_run_source(label="alignment", path=alignment_path)]
+            if alignment_path is not None
+            else []
+        ),
+        *(
+            [
+                load_taxon_run_source(
+                    label="filtered_alignment", path=filtered_alignment_path
+                )
+            ]
+            if filtered_alignment_path is not None
+            else []
+        ),
+        *(
+            [load_taxon_run_source(label="inference_tree", path=inference_tree_path)]
+            if inference_tree_path is not None
+            else []
+        ),
+        *(
+            [load_taxon_run_source(label="reported_taxa", path=reported_taxa_path)]
+            if reported_taxa_path is not None
+            else []
+        ),
+    ]
+    taxon_stability = (
+        build_taxon_stability_report(stability_sources)
+        if len(stability_sources) >= 2
+        else None
+    )
     title = "Bijux Taxon Audit Report"
     reviewer_summary = [
         f"taxon audit status: {audit.status}",
         f"tree tip count: {audit.tree_tip_count}",
         *audit.summary,
     ]
+    if taxon_crosswalk is not None:
+        reviewer_summary.append(
+            f"crosswalk rows: {len(taxon_crosswalk.rows)} across linked dataset surfaces"
+        )
+    if taxon_exclusions is not None:
+        reviewer_summary.append(
+            f"excluded taxa with explicit causes: {len(taxon_exclusions.rows)}"
+        )
+    if taxon_workflow_loss is not None:
+        reviewer_summary.append(
+            f"workflow loss stages observed: {len(taxon_workflow_loss.loss_stage_counts)}"
+        )
+    if taxon_stability is not None:
+        reviewer_summary.append(
+            f"unstable taxa across linked sources: {len(taxon_stability.unstable_taxa)}"
+        )
     limitations = sorted(dict.fromkeys(audit.warnings))
     sections = [
         _section("reviewer-summary", reviewer_summary),
@@ -1021,6 +1106,11 @@ def render_taxon_report(
             else []
         ),
         *(
+            [_section("taxon-exclusions", asdict(taxon_exclusions))]
+            if taxon_exclusions is not None
+            else []
+        ),
+        *(
             [_section("taxon-loss", asdict(taxon_workflow_loss))]
             if taxon_workflow_loss is not None
             else []
@@ -1028,7 +1118,7 @@ def render_taxon_report(
         *(
             [
                 _section(
-                    "taxon-exclusions",
+                    "taxon-loss-events",
                     [
                         {
                             "taxon": row.taxon,
@@ -1041,6 +1131,11 @@ def render_taxon_report(
                 )
             ]
             if taxon_workflow_loss is not None
+            else []
+        ),
+        *(
+            [_section("taxon-stability", asdict(taxon_stability))]
+            if taxon_stability is not None
             else []
         ),
         _section("limitations", limitations),
@@ -1065,10 +1160,87 @@ def render_taxon_report(
             "tree_tip_count": audit.tree_tip_count,
             "warning_count": len(audit.warnings),
             "conflict_count": len(audit.mapping_conflicts.rows),
+            "crosswalk_rows": 0
+            if taxon_crosswalk is None
+            else len(taxon_crosswalk.rows),
+            "excluded_taxa": 0
+            if taxon_exclusions is None
+            else len(taxon_exclusions.rows),
+            "loss_stage_count": 0
+            if taxon_workflow_loss is None
+            else len(taxon_workflow_loss.loss_stage_counts),
+            "unstable_taxa": 0
+            if taxon_stability is None
+            else len(taxon_stability.unstable_taxa),
         },
         "reviewer_summary": reviewer_summary,
         "limitations": limitations,
     }
+    input_ledger_entries: list[tuple[Path, str, list[str]]] = [
+        (tree_path, "tree", ["taxon_audit", "taxon_stability"]),
+        *(
+            [
+                (
+                    synonym_table_path,
+                    "synonym_table",
+                    ["taxon_synonyms", "accepted_name_export"],
+                )
+            ]
+            if synonym_table_path is not None
+            else []
+        ),
+        *(
+            [(metadata_path, "metadata", ["taxon_crosswalk", "taxon_exclusions"])]
+            if metadata_path is not None
+            else []
+        ),
+        *(
+            [(traits_path, "traits", ["taxon_crosswalk", "taxon_exclusions"])]
+            if traits_path is not None
+            else []
+        ),
+        *(
+            [(alignment_path, "alignment", ["taxon_crosswalk", "taxon_loss"])]
+            if alignment_path is not None
+            else []
+        ),
+        *(
+            [
+                (
+                    filtered_alignment_path,
+                    "filtered_alignment",
+                    ["taxon_loss", "taxon_stability"],
+                )
+            ]
+            if filtered_alignment_path is not None
+            else []
+        ),
+        *(
+            [
+                (
+                    inference_tree_path,
+                    "inference_tree",
+                    ["taxon_loss", "taxon_stability"],
+                )
+            ]
+            if inference_tree_path is not None
+            else []
+        ),
+        *(
+            [
+                (
+                    reported_taxa_path,
+                    "reported_taxa",
+                    ["taxon_loss", "taxon_stability"],
+                )
+            ]
+            if reported_taxa_path is not None
+            else []
+        ),
+    ]
+    machine_manifest["input_ledger"] = _serialize_input_ledger(
+        _build_input_ledger(input_ledger_entries)
+    )
     machine_manifest_path = _write_machine_manifest(
         _report_sidecar_path(out_path), machine_manifest
     )
@@ -1086,7 +1258,9 @@ def render_taxon_report(
         tree_path=tree_path,
         taxon_audit=audit,
         taxon_crosswalk=taxon_crosswalk,
+        taxon_exclusions=taxon_exclusions,
         taxon_workflow_loss=taxon_workflow_loss,
+        taxon_stability=taxon_stability,
         machine_manifest=machine_manifest,
     )
 

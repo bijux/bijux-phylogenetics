@@ -1,0 +1,30 @@
+{
+  "reference_tool": "phylolm::phyloglm",
+  "method": "logistic_MPLE",
+  "response": "presence",
+  "predictors": [
+    "body_size"
+  ],
+  "tree": "example_tree_six_taxa.nwk",
+  "table": "example_traits_phylogenetic_logistic.tsv",
+  "phyloglm": {
+    "alpha": 2.8916,
+    "log_likelihood": -3.9207,
+    "coefficients": {
+      "intercept": -0.8477,
+      "body_size": 0.2421
+    },
+    "standard_errors": {
+      "intercept": 1.9267,
+      "body_size": 0.4962
+    },
+    "fitted_probabilities": {
+      "A": 0.3531,
+      "B": 0.4101,
+      "C": 0.4697,
+      "D": 0.5302,
+      "E": 0.5898,
+      "F": 0.6468
+    }
+  }
+}

@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='utf-8'?>
+<beast version="2.7" namespace="beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.alignment:beast.base.evolution.tree:beast.base.evolution.tree.coalescent:beast.base.evolution.speciation:beast.base.evolution.branchratemodel:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood:beast.base.inference.parameter:beast.base.inference.distribution:beast.base.math:beast.base.math.distributions:beast.base.util:beast.evolution:beast.evolution.nuc">
+    <data id="alignment" dataType="nucleotide">
+        <sequence taxon="A">ACTGACTG</sequence>
+        <sequence taxon="B">ACTGACTA</sequence>
+        <sequence taxon="C">ACTGACGG</sequence>
+        <sequence taxon="D">ACTGACGA</sequence>
+    </data>
+    <input spec="HKY" id="hky">
+        <parameter name="kappa" idref="hky.kappa" />
+        <input id="freqs" name="frequencies" spec="Frequencies" frequencies="@hky.frequencies" />
+    </input>
+    <input spec="SiteModel" id="siteModel">
+        <substModel idref="hky" />
+    </input>
+    <parameter id="hky.kappa" value="2.0" lower="0.0" />
+    <parameter id="hky.frequencies" value="0.25" dimension="4" />
+    <input spec="beast.base.evolution.tree.ClusterTree" id="tree" clusterType="upgma">
+        <taxa idref="alignment" />
+    </input>
+    <input spec="beast.base.evolution.branchratemodel.StrictClockModel" id="branchRates">
+        <clock.rate idref="clockRate" />
+    </input>
+    <parameter id="clockRate" value="0.001" lower="0.0" upper="100.0" />
+    <input spec="beast.base.evolution.speciation.YuleModel" id="treePrior">
+        <birthDiffRate idref="birthRate" />
+        <tree idref="tree" />
+    </input>
+    <parameter id="birthRate" value="1.0" lower="0.0" upper="100.0" />
+    <distribution spec="TreeLikelihood" id="likelihood" data="@alignment" tree="@tree">
+        <siteModel idref="siteModel" />
+        <branchRateModel idref="branchRates" />
+    </distribution>
+    <run spec="MCMC" id="mcmc" chainLength="2000">
+        <state>
+            <stateNode idref="hky.kappa" />
+            <stateNode idref="hky.frequencies" />
+            <stateNode idref="clockRate" />
+            <stateNode idref="birthRate" />
+            <stateNode idref="tree" />
+        </state>
+        <distribution spec="CompoundDistribution" id="posterior">
+            <distribution spec="CompoundDistribution" id="prior">
+                <distribution id="hky.kappa.prior" spec="beast.base.inference.distribution.Prior" x="@hky.kappa">
+                    <distr id="hky.kappa.lognormal" M="1.0" S="1.25" meanInRealSpace="false" spec="beast.base.inference.distribution.LogNormalDistributionModel" />
+                </distribution>
+                <distribution id="hky.frequencies.prior" spec="beast.base.inference.distribution.Prior" x="@hky.frequencies">
+                    <distr id="hky.frequencies.uniform" lower="0.0" upper="1.0" spec="beast.base.inference.distribution.Uniform" />
+                </distribution>
+                <distribution id="clockRate.prior" spec="beast.base.inference.distribution.Prior" x="@clockRate">
+                    <distr id="clockRate.uniform" lower="0.0" upper="100.0" spec="beast.base.inference.distribution.Uniform" />
+                </distribution>
+                <distribution id="treePrior.distribution" idref="treePrior" />
+                <distribution id="birthRate.prior" spec="beast.base.inference.distribution.Prior" x="@birthRate">
+                    <distr id="birthRate.oneOnX" offset="0.0" spec="beast.base.inference.distribution.OneOnX" />
+                </distribution>
+            </distribution>
+            <distribution idref="likelihood" />
+        </distribution>
+        <operator id="kappaScaler" spec="ScaleOperator" scaleFactor="0.75" weight="0.1" parameter="@hky.kappa" />
+        <operator id="frequenciesDelta" spec="DeltaExchangeOperator" delta="0.01" weight="0.1" parameter="@hky.frequencies" />
+        <operator id="clockRateScaler" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@clockRate" />
+        <operator id="birthRateScaler" spec="ScaleOperator" scaleFactor="0.75" weight="1" parameter="@birthRate" />
+        <operator id="treeScaler" spec="ScaleOperator" scaleFactor="0.75" weight="3" tree="@tree" />
+        <operator spec="Uniform" weight="30" tree="@tree" />
+        <operator spec="SubtreeSlide" weight="15" gaussian="true" size="0.5" tree="@tree" />
+        <operator id="narrowExchange" spec="Exchange" isNarrow="true" weight="15" tree="@tree" />
+        <operator id="wideExchange" spec="Exchange" isNarrow="false" weight="3" tree="@tree" />
+        <operator id="wilsonBalding" spec="WilsonBalding" weight="3" tree="@tree" />
+        <logger logEvery="20" fileName="beast2_strict_yule_posterior.$(seed).log">
+            <model idref="posterior" />
+            <log idref="posterior" />
+            <log idref="prior" />
+            <log idref="likelihood" />
+            <log spec="beast.base.evolution.tree.TreeHeightLogger" tree="@tree" />
+            <log idref="treePrior" />
+            <log idref="birthRate" />
+            <log idref="hky.kappa" />
+            <log idref="hky.frequencies" />
+            <log idref="clockRate" />
+        </logger>
+        <logger logEvery="20" fileName="beast2_strict_yule_posterior.$(seed).trees">
+            <log idref="tree" />
+        </logger>
+        <logger logEvery="10000">
+            <model idref="posterior" />
+            <log idref="posterior" />
+            <log idref="prior" />
+            <log idref="likelihood" />
+            <log spec="beast.base.evolution.tree.TreeHeightLogger" tree="@tree" />
+            <log idref="treePrior" />
+            <log idref="birthRate" />
+            <log idref="hky.kappa" />
+            <log idref="hky.frequencies" />
+            <log idref="clockRate" />
+        </logger>
+    </run>
+</beast>

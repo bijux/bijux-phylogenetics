@@ -144,3 +144,120 @@ def stable_covariance(
     for index in range(len(stabilized)):
         stabilized[index][index] += epsilon
     return stabilized
+
+
+def _beta_continued_fraction(
+    a: float,
+    b: float,
+    x: float,
+    *,
+    max_iterations: int = 200,
+    tolerance: float = 3e-14,
+) -> float:
+    qab = a + b
+    qap = a + 1.0
+    qam = a - 1.0
+    c = 1.0
+    d = 1.0 - (qab * x / qap)
+    if abs(d) < 1e-30:
+        d = 1e-30
+    d = 1.0 / d
+    fraction = d
+    for iteration in range(1, max_iterations + 1):
+        even_step = 2 * iteration
+        numerator = (
+            iteration * (b - iteration) * x / ((qam + even_step) * (a + even_step))
+        )
+        d = 1.0 + numerator * d
+        if abs(d) < 1e-30:
+            d = 1e-30
+        c = 1.0 + numerator / c
+        if abs(c) < 1e-30:
+            c = 1e-30
+        d = 1.0 / d
+        fraction *= d * c
+
+        numerator = (
+            -(a + iteration)
+            * (qab + iteration)
+            * x
+            / ((a + even_step) * (qap + even_step))
+        )
+        d = 1.0 + numerator * d
+        if abs(d) < 1e-30:
+            d = 1e-30
+        c = 1.0 + numerator / c
+        if abs(c) < 1e-30:
+            c = 1e-30
+        d = 1.0 / d
+        delta = d * c
+        fraction *= delta
+        if abs(delta - 1.0) <= tolerance:
+            return fraction
+    raise ValueError("beta continued fraction did not converge")
+
+
+def regularized_incomplete_beta(a: float, b: float, x: float) -> float:
+    """Return the regularized incomplete beta function I_x(a, b)."""
+    if a <= 0.0 or b <= 0.0:
+        raise ValueError("incomplete beta parameters must be positive")
+    if x <= 0.0:
+        return 0.0
+    if x >= 1.0:
+        return 1.0
+    log_beta_term = (
+        math.lgamma(a + b)
+        - math.lgamma(a)
+        - math.lgamma(b)
+        + a * math.log(x)
+        + b * math.log1p(-x)
+    )
+    front = math.exp(log_beta_term)
+    if x < (a + 1.0) / (a + b + 2.0):
+        return front * _beta_continued_fraction(a, b, x) / a
+    return 1.0 - front * _beta_continued_fraction(b, a, 1.0 - x) / b
+
+
+def student_t_cdf(value: float, degrees_of_freedom: float) -> float:
+    """Return the Student-t cumulative distribution function."""
+    if degrees_of_freedom <= 0.0:
+        raise ValueError("degrees_of_freedom must be positive")
+    if math.isclose(value, 0.0, abs_tol=1e-15):
+        return 0.5
+    x = degrees_of_freedom / (degrees_of_freedom + value * value)
+    tail_mass = 0.5 * regularized_incomplete_beta(degrees_of_freedom / 2.0, 0.5, x)
+    if value > 0.0:
+        return 1.0 - tail_mass
+    return tail_mass
+
+
+def student_t_two_sided_p_value(
+    statistic: float,
+    degrees_of_freedom: float,
+) -> float:
+    """Return the two-sided Student-t p-value for a test statistic."""
+    tail_probability = 1.0 - student_t_cdf(abs(statistic), degrees_of_freedom)
+    return min(max(2.0 * tail_probability, 0.0), 1.0)
+
+
+def student_t_quantile(probability: float, degrees_of_freedom: float) -> float:
+    """Return the Student-t quantile for one cumulative probability."""
+    if degrees_of_freedom <= 0.0:
+        raise ValueError("degrees_of_freedom must be positive")
+    if not 0.0 < probability < 1.0:
+        raise ValueError("probability must fall strictly between 0 and 1")
+    if math.isclose(probability, 0.5, abs_tol=1e-15):
+        return 0.0
+    if probability < 0.5:
+        return -student_t_quantile(1.0 - probability, degrees_of_freedom)
+    lower = 0.0
+    upper = 1.0
+    while student_t_cdf(upper, degrees_of_freedom) < probability:
+        upper *= 2.0
+    for _ in range(100):
+        midpoint = (lower + upper) / 2.0
+        if student_t_cdf(midpoint, degrees_of_freedom) < probability:
+            lower = midpoint
+        else:
+            upper = midpoint
+    return (lower + upper) / 2.0

@@ -1,0 +1,8 @@
+{
+  "block_id": "ape-alternate-layouts",
+  "evidence": {},
+  "note": "These layout variants are tracked as visual surfaces only.",
+  "script_lines": "157-158,160",
+  "status": "plot_only",
+  "title": "APE alternate layouts: cladogram and fan"
+}

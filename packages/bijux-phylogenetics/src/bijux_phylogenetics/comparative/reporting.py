@@ -16,12 +16,14 @@ from bijux_phylogenetics.comparative.models import (
     ComparativeMethodMaturityReport,
     ComparativeModelComparisonReport,
     ComparativeSensitivityReport,
-    OUTraitModelReport,
     assess_comparative_method_maturity,
     compare_brownian_and_ou_models,
     fit_brownian_motion_model,
-    fit_ornstein_uhlenbeck_model,
     run_comparative_sensitivity_analysis,
+)
+from bijux_phylogenetics.comparative.ou_trait_evolution import (
+    OUTraitEvolutionSummaryReport,
+    summarize_ou_trait_evolution,
 )
 from bijux_phylogenetics.comparative.pgls import (
     ComparativeFormulaSpecification,
@@ -63,7 +65,7 @@ class ComparativePredictorInfluenceRow:
 
     term: str
     estimate: float
-    z_score: float
+    test_statistic: float
     p_value: float
     significant: bool
 
@@ -109,7 +111,7 @@ class ComparativeModelSnapshot:
     signal_lambda: PagelLambdaReport
     contrasts: IndependentContrastReport
     brownian: BrownianMotionFitReport
-    ou: OUTraitModelReport
+    ou: OUTraitEvolutionSummaryReport
     model_comparison: ComparativeModelComparisonReport
     pgls_inputs: PGLSInputReport
     pgls_model: PGLSResult
@@ -264,14 +266,14 @@ def build_trait_influence_report(
             ComparativePredictorInfluenceRow(
                 term=coefficient.name,
                 estimate=coefficient.estimate,
-                z_score=coefficient.z_score,
+                test_statistic=coefficient.test_statistic,
                 p_value=coefficient.p_value,
                 significant=coefficient.p_value <= 0.05,
             )
             for coefficient in snapshot.pgls_model.coefficients
             if coefficient.name != "intercept"
         ],
-        key=lambda row: (abs(row.z_score), abs(row.estimate), row.term),
+        key=lambda row: (abs(row.test_statistic), abs(row.estimate), row.term),
         reverse=True,
     )
     leverage_by_taxon = {
@@ -529,7 +531,7 @@ def _build_snapshot(
     brownian = fit_brownian_motion_model(
         tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
     )
-    ou = fit_ornstein_uhlenbeck_model(
+    ou = summarize_ou_trait_evolution(
         tree_path, traits_path, trait=pgls_inputs.response, taxon_column=taxon_column
     )
     model_comparison = compare_brownian_and_ou_models(
@@ -588,7 +590,7 @@ def _build_audit_rows(
     pgls_inputs: PGLSInputReport,
     pgls_model: PGLSResult,
     brownian: BrownianMotionFitReport,
-    ou: OUTraitModelReport,
+    ou: OUTraitEvolutionSummaryReport,
 ) -> list[ComparativeAuditRow]:
     excluded_taxa = sorted(
         set(readiness.missing_from_traits)
@@ -606,7 +608,7 @@ def _build_audit_rows(
         ),
         ComparativeAuditRow(
             analysis="ou",
-            taxa_used=ou.taxa,
+            taxa_used=ou.analyzed_taxa,
             traits_used=[ou.trait],
             excluded_taxa=excluded_taxa,
             assumptions=ou.assumptions,
@@ -635,7 +637,7 @@ def _build_limitations(
     pgls_inputs: PGLSInputReport,
     pgls_model: PGLSResult,
     brownian: BrownianMotionFitReport,
-    ou: OUTraitModelReport,
+    ou: OUTraitEvolutionSummaryReport,
 ) -> list[str]:
     limitations = [
         "comparative conclusions are conditioned on a single observed trait table and one supplied phylogeny",

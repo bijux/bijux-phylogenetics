@@ -1,0 +1,23 @@
+{
+  "boundary_note": "The raw workbook remains external; the governed processed reference table is the reproducible repository-side handoff.",
+  "checked_in_processed_matches_reference": true,
+  "evidence_id": "evidence-002",
+  "governed_processed_reference_locator": "evidence-book/studies/primate-longevity-signal/evidence-001/reference_primate.csv",
+  "processed_row_count": 75,
+  "processed_species_count": 75,
+  "raw_row_count": 76,
+  "raw_workbook_locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+  "reference_column_order": [
+    "family",
+    "species",
+    "body_mass",
+    "gestation",
+    "home_range",
+    "longevity",
+    "social_group_size",
+    "sex_dimorphism",
+    "mating_system"
+  ],
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

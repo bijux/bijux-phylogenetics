@@ -1,0 +1,16 @@
+{
+  "bijux_binary": true,
+  "bijux_rooted": true,
+  "binary": true,
+  "evidence_id": "evidence-007",
+  "node_label_contract": {
+    "bijux_matched_node_name": "Node2",
+    "r_source_node_label": "Node2",
+    "r_source_node_numeric": 77,
+    "same_taxa": true
+  },
+  "rooted": true,
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal",
+  "ultrametric": true
+}

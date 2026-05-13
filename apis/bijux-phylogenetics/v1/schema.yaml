@@ -1,0 +1,173 @@
+openapi: 3.1.0
+info:
+  title: Bijux Phylogenetics Public API
+  version: 1.0.0
+  summary: Freeze-only contract for runtime ownership and evidence-study summary surfaces.
+  description: |
+    This checked-in OpenAPI contract defines the stable public read surface that
+    future Bijux Phylogenetics HTTP delivery should preserve for repository
+    health, runtime package ownership, and governed PCM1/PCM2 evidence-study
+    summaries.
+servers:
+  - url: https://bijux.io/bijux-phylogenetics
+paths:
+  /v1/health:
+    get:
+      operationId: getHealth
+      summary: Report repository API readiness.
+      tags: [system]
+      responses:
+        "200":
+          description: API health details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /v1/runtime/package-map:
+    get:
+      operationId: getRuntimePackageMap
+      summary: Return the canonical runtime and compatibility alias package map.
+      tags: [runtime]
+      responses:
+        "200":
+          description: Runtime package ownership details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageMapResponse"
+  /v1/evidence/studies:
+    get:
+      operationId: listEvidenceStudies
+      summary: List governed PCM studies in the evidence-book.
+      tags: [evidence]
+      responses:
+        "200":
+          description: Evidence-study catalog.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceStudyListResponse"
+  /v1/evidence/studies/{studyId}:
+    get:
+      operationId: getEvidenceStudy
+      summary: Return one governed evidence-study summary.
+      tags: [evidence]
+      parameters:
+        - in: path
+          name: studyId
+          required: true
+          schema:
+            $ref: "#/components/schemas/EvidenceStudyId"
+      responses:
+        "200":
+          description: One evidence-study summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceStudyDetail"
+        "404":
+          description: Study is not available.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status, release, generated_on]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        release:
+          type: string
+        generated_on:
+          type: string
+          format: date-time
+    PackageSummary:
+      type: object
+      required: [package_name, role, docs_path]
+      properties:
+        package_name:
+          type: string
+        role:
+          type: string
+          enum: [runtime, compatibility-alias, maintainer]
+        docs_path:
+          type: string
+    PackageMapResponse:
+      type: object
+      required: [generated_on, packages]
+      properties:
+        generated_on:
+          type: string
+          format: date-time
+        packages:
+          type: array
+          items:
+            $ref: "#/components/schemas/PackageSummary"
+    EvidenceStudyId:
+      type: string
+      enum:
+        - primate-longevity-signal
+        - primate-pgls-and-signal
+    EvidenceStudySummary:
+      type: object
+      required:
+        [study_id, title, evidence_count, datasets_path, reference_path, overview_path]
+      properties:
+        study_id:
+          $ref: "#/components/schemas/EvidenceStudyId"
+        title:
+          type: string
+        evidence_count:
+          type: integer
+          minimum: 1
+        datasets_path:
+          type: string
+        reference_path:
+          type: string
+        overview_path:
+          type: string
+    EvidenceStudyListResponse:
+      type: object
+      required: [generated_on, studies]
+      properties:
+        generated_on:
+          type: string
+          format: date-time
+        studies:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceStudySummary"
+    EvidenceStudyBundleSummary:
+      type: object
+      required: [evidence_id, title, report_path, results_path]
+      properties:
+        evidence_id:
+          type: string
+        title:
+          type: string
+        report_path:
+          type: string
+        results_path:
+          type: string
+    EvidenceStudyDetail:
+      type: object
+      required: [study, evidence]
+      properties:
+        study:
+          $ref: "#/components/schemas/EvidenceStudySummary"
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceStudyBundleSummary"
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string

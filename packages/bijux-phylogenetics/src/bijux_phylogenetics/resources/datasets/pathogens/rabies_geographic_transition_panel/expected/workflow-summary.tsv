@@ -1,0 +1,2 @@
+dataset_id	taxon_count	workflow_trait	workflow_model	observed_region_group_count	root_region	root_region_probability	changed_branch_count	strongly_supported_transition_count	migration_event_count	strongly_supported_migration_event_count	warning_count
+rabies_geographic_transition_panel	9	region_group	ard	5	north_asia	0.555555553778	4	0	4	0	3

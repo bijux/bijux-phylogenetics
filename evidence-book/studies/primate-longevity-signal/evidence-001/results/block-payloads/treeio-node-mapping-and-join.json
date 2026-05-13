@@ -1,0 +1,22 @@
+{
+  "block_id": "treeio-node-mapping-and-join",
+  "evidence": {
+    "bijux_analysis_taxa_count": 75,
+    "nodeid_examples_bijux": {
+      "Hylobates_lar": 29,
+      "Node32": 107,
+      "Pan_paniscus": 33
+    },
+    "nodeid_examples_r": {
+      "Hylobates_lar": 29,
+      "Node32": 107,
+      "Pan_paniscus": 33
+    },
+    "r_joined_extra_rows": 149,
+    "r_joined_tip_count": 75
+  },
+  "note": "Representative node ids align and the joined object size is consistent with the 75-taxon dataset.",
+  "script_lines": "248-263",
+  "status": "verified",
+  "title": "Treeio node mapping and joined tree-data object"
+}

@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.evidence.bundles import (
-    EvidenceBundleReport,
-    EvidenceValidationReport,
-    bundle_file_paths,
-    validate_bundle,
+from bijux_phylogenetics.provenance.bundles import (
+    ArtifactBundleReport,
+    ArtifactBundleValidationReport,
+    bundle_artifact_files,
+    validate_artifact_bundle,
 )
 
 from .common import load_engine_manifest
@@ -20,8 +20,8 @@ class InferenceEvidenceBundleResult:
     input_file_count: int
     output_file_count: int
     manifest_file_count: int
-    bundle: EvidenceBundleReport
-    validation: EvidenceValidationReport
+    bundle: ArtifactBundleReport
+    validation: ArtifactBundleValidationReport
 
 
 def bundle_inference_workflow_evidence(
@@ -43,8 +43,8 @@ def bundle_inference_workflow_evidence(
         )
     unique_inputs = _deduplicate_existing_paths(input_paths)
     unique_outputs = _deduplicate_existing_paths([*output_paths, *normalized_manifests])
-    bundle = bundle_file_paths(unique_inputs, unique_outputs, bundle_root)
-    validation = validate_bundle(bundle_root)
+    bundle = bundle_artifact_files(unique_inputs, unique_outputs, bundle_root)
+    validation = validate_artifact_bundle(bundle_root)
     return InferenceEvidenceBundleResult(
         bundle_root=bundle_root,
         workflow_count=len(normalized_manifests),

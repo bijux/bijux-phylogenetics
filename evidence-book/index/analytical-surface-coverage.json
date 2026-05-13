@@ -1,0 +1,210 @@
+{
+  "coverage_status_counts": {
+    "bounded": 3,
+    "uncovered": 2
+  },
+  "schema_version": 1,
+  "surface_count": 5,
+  "surfaces": [
+    {
+      "coverage_status": "bounded",
+      "coverage_summary": "The evidence-book proves governed lecture-derived tree import, diagnostics, and tree-data correspondence behavior, but it does not yet close the broader generic tree validation surface.",
+      "known_gaps": [
+        "No dedicated governed evidence family yet covers generic malformed-tree fixtures outside the Lund-derived studies.",
+        "Topology and branch-length comparison workflows remain runtime-tested but not yet mapped into first-class evidence families."
+      ],
+      "linked_evidence": [
+        {
+          "evidence_id": "evidence-006",
+          "evidence_title": "Primate tree import parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-006",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-007",
+          "evidence_title": "Primate tree diagnostics parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-007",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-008",
+          "evidence_title": "Primate tree-data correspondence parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-008",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        }
+      ],
+      "linked_evidence_count": 3,
+      "runtime_surfaces": [
+        "validate",
+        "inspect",
+        "topology",
+        "dataset crosswalk"
+      ],
+      "surface_id": "tree-diagnostics",
+      "surface_title": "Tree diagnostics and tree-data correspondence"
+    },
+    {
+      "coverage_status": "uncovered",
+      "coverage_summary": "The runtime exposes a broad alignment surface, but the evidence-book does not yet contain governed parity or trust bundles for it.",
+      "known_gaps": [
+        "No evidence family yet covers trimming, coding-quality, translation, or identity-matrix behavior."
+      ],
+      "linked_evidence": [],
+      "linked_evidence_count": 0,
+      "runtime_surfaces": [
+        "alignment trim",
+        "alignment coding",
+        "alignment translate",
+        "alignment identity-matrix"
+      ],
+      "surface_id": "alignment-diagnostics",
+      "surface_title": "Alignment diagnostics and trimming"
+    },
+    {
+      "coverage_status": "bounded",
+      "coverage_summary": "Comparative workflows are the strongest evidence-grounded surface in the repository, but transformed-tree and ancestral parity still retain explicit coverage boundaries and the broader comparative surface is not yet closed.",
+      "known_gaps": [
+        "Transformed-tree EB parity is still explicit debt rather than closed evidence.",
+        "Ancestral-mode parity from the Lund PCM2 lecture is still intentionally unclaimed."
+      ],
+      "linked_evidence": [
+        {
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate longevity signal parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched_with_tolerance"
+        },
+        {
+          "evidence_id": "evidence-002",
+          "evidence_title": "Primate workbook loading parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-002",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-003",
+          "evidence_title": "Primate type repair parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-003",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-004",
+          "evidence_title": "Primate missing-data accounting parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-004",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-005",
+          "evidence_title": "Primate duplicate-species aggregation parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-005",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-009",
+          "evidence_title": "Primate processed export parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-009",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate reload semantics bundle",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-001",
+          "study_id": "primate-pgls-and-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-002",
+          "evidence_title": "Primate baseline GLS parity bundle",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-002",
+          "study_id": "primate-pgls-and-signal",
+          "verdict_status": "matched"
+        },
+        {
+          "evidence_id": "evidence-003",
+          "evidence_title": "Primate Pagel-lambda regression parity bundle",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-003",
+          "study_id": "primate-pgls-and-signal",
+          "verdict_status": "matched_with_tolerance"
+        },
+        {
+          "evidence_id": "evidence-004",
+          "evidence_title": "Primate phylogenetic signal parity bundle",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-004",
+          "study_id": "primate-pgls-and-signal",
+          "verdict_status": "matched_with_tolerance"
+        },
+        {
+          "evidence_id": "evidence-005",
+          "evidence_title": "Primate residual diagnostics parity bundle",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-005",
+          "study_id": "primate-pgls-and-signal",
+          "verdict_status": "matched_with_tolerance"
+        },
+        {
+          "evidence_id": "evidence-006",
+          "evidence_title": "Primate transformed tree parity bundle",
+          "relative_path": "studies/primate-pgls-and-signal/evidence-006",
+          "study_id": "primate-pgls-and-signal",
+          "verdict_status": "matched"
+        }
+      ],
+      "linked_evidence_count": 12,
+      "runtime_surfaces": [
+        "comparative readiness",
+        "comparative signal",
+        "comparative pgls",
+        "ancestral compare"
+      ],
+      "surface_id": "comparative-analysis",
+      "surface_title": "Comparative models, signal testing, and regression"
+    },
+    {
+      "coverage_status": "uncovered",
+      "coverage_summary": "Distance workflows have runtime and maturity tests, but they are not yet mapped into governed evidence-book families.",
+      "known_gaps": [
+        "No checked-in evidence bundle yet proves governed distance outputs or cross-tool parity."
+      ],
+      "linked_evidence": [],
+      "linked_evidence_count": 0,
+      "runtime_surfaces": [
+        "distance matrix workflows",
+        "distance maturity reports"
+      ],
+      "surface_id": "distance-analysis",
+      "surface_title": "Distance analysis and distance maturity"
+    },
+    {
+      "coverage_status": "bounded",
+      "coverage_summary": "Reviewer summaries, catalog indexes, and governed study reports are checked in and portable, but the broader runtime report families are not yet all represented by evidence families.",
+      "known_gaps": [
+        "Generic HTML reporting surfaces still depend more on runtime tests than on evidence-book-backed coverage."
+      ],
+      "linked_evidence": [
+        {
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate longevity signal parity bundle",
+          "relative_path": "studies/primate-longevity-signal/evidence-001",
+          "study_id": "primate-longevity-signal",
+          "verdict_status": "matched_with_tolerance"
+        }
+      ],
+      "linked_evidence_count": 1,
+      "runtime_surfaces": [
+        "report tree",
+        "report dataset",
+        "figure packaging",
+        "reviewer summaries"
+      ],
+      "surface_id": "reporting-surfaces",
+      "surface_title": "Reviewer-facing reporting and evidence rendering"
+    }
+  ]
+}

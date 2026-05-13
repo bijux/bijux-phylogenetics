@@ -1,0 +1,75 @@
+{
+  "claim_ids": [
+    "pcm1-tree-diagnostics-parity"
+  ],
+  "claim_tags": [
+    "teaching",
+    "parity",
+    "tree-operations",
+    "tree-diagnostics"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-007",
+  "evidence_title": "Primate tree diagnostics parity bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+    ],
+    "last_generated_on": "2026-05-11",
+    "source_basis_locators": [
+      "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
+      "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json"
+    ]
+  },
+  "limitations": [
+    "This bundle records the checked-in diagnostic contract; visual tree surfaces remain intentionally separate."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "tree-validation"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "reference_bundle_locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+  "reference_script_locators": [
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L80-L83",
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L87-L95",
+    "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R#L109"
+  ],
+  "report_keys": [
+    "bijux_binary",
+    "bijux_rooted",
+    "binary",
+    "evidence_id",
+    "node_label_contract",
+    "rooted",
+    "schema_version",
+    "study_id",
+    "ultrametric"
+  ],
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-reference",
+      "label": "governed tree-processing comparison payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Primate tree diagnostics parity bundle report payload",
+      "locator": "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json"
+    }
+  ],
+  "source_fragments": [
+    "tree-import-and-pruning",
+    "extract-clade-node-77"
+  ],
+  "study_id": "primate-longevity-signal",
+  "summary": "Governed evidence for rootedness, binary-tree status, ultrametricity, and node-label interpretation.",
+  "supporting_report_locator": "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json",
+  "verdict": {
+    "status": "matched",
+    "summary": "Tree rootedness, binary structure, ultrametricity, and node-label interpretation are recorded as standalone trust surfaces."
+  }
+}

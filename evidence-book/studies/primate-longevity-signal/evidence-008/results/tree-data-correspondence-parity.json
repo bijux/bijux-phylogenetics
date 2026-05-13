@@ -1,0 +1,23 @@
+{
+  "aligned_species_equals_tip_order": true,
+  "checked_in_trimmed_tip_order_matches_reference": true,
+  "checked_in_trimmed_tip_set_matches_reference": true,
+  "evidence_id": "evidence-008",
+  "first_six_species_match": true,
+  "missing_tips": [
+    "Lagothrix_lagotricha",
+    "Eulemur_fulvus"
+  ],
+  "nodeid_examples_bijux": {
+    "Hylobates_lar": 29,
+    "Node32": 107,
+    "Pan_paniscus": 33
+  },
+  "nodeid_examples_r": {
+    "Hylobates_lar": 29,
+    "Node32": 107,
+    "Pan_paniscus": 33
+  },
+  "schema_version": 1,
+  "study_id": "primate-longevity-signal"
+}

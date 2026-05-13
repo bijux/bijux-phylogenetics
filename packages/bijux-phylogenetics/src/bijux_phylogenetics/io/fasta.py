@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 from statistics import median
 
@@ -17,6 +18,7 @@ from bijux_phylogenetics.core.alignment import (
     AlignmentLinkageReport,
     AlignmentLowInformationReport,
     AlignmentMethodReadiness,
+    AlignmentMissingDataConcentration,
     AlignmentQualityReport,
     AlignmentReadinessReport,
     AlignmentRecord,
@@ -28,11 +30,23 @@ from bijux_phylogenetics.core.alignment import (
     AlignmentWindowSummary,
     AmbiguousAlignmentColumn,
     CodingAlignmentDiagnostics,
+    CodingSequenceExclusion,
+    CodingSequencePreparationReport,
     DuplicateSequenceGroup,
     DuplicateSequencePolicyAction,
     DuplicateSequencePolicyReport,
+    FastaDuplicateIdentifier,
+    FastaEmptySequence,
+    FastaIdentifierRepair,
+    FastaIllegalCharacter,
+    FastaInputSummary,
+    FastaInputValidationReport,
+    FastaRemovedRecord,
+    FastaRepairReport,
+    FastaSequenceTypeReport,
     FrameshiftLikeSequence,
     InvalidAlignmentCharacter,
+    InvalidCodonObservation,
     NearDuplicateSequencePair,
     PairwiseSequenceIdentity,
     PartialCodonSequence,
@@ -67,14 +81,21 @@ _NUCLEOTIDE_GC_CHARACTERS = {"G", "C", "g", "c"}
 _DNA_CANONICAL = ("A", "C", "G", "T")
 _RNA_CANONICAL = ("A", "C", "G", "U")
 _PROTEIN_CHARACTERS = set("ABCDEFGHIKLMNPQRSTVWXYZabcdefghiklmnpqrstvwxyz*")
+_DNA_CHARACTERS_UPPER = {character.upper() for character in _DNA_CHARACTERS}
+_RNA_CHARACTERS_UPPER = {character.upper() for character in _RNA_CHARACTERS}
+_PROTEIN_CHARACTERS_UPPER = {character.upper() for character in _PROTEIN_CHARACTERS}
+_SUPPORTED_SEQUENCE_CHARACTERS_UPPER = (
+    _DNA_CHARACTERS_UPPER | _RNA_CHARACTERS_UPPER | _PROTEIN_CHARACTERS_UPPER
+)
+_PROTEIN_EXCLUSIVE_CHARACTERS_UPPER = _PROTEIN_CHARACTERS_UPPER - (
+    _DNA_CHARACTERS_UPPER | _RNA_CHARACTERS_UPPER
+)
 _PROTEIN_CANONICAL = tuple("ACDEFGHIKLMNPQRSTVWY")
 _DNA_BASES = {"A", "C", "G", "T"}
 _DNA_AMBIGUITY_UPPER = {"N", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V"}
 _RNA_AMBIGUITY_UPPER = {"N", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V"}
 _PROTEIN_AMBIGUITY_UPPER = {"B", "J", "X", "Z"}
-_STANDARD_DNA_TABLE = CodonTable.unambiguous_dna_by_name["Standard"]
-_STANDARD_FORWARD_TABLE = _STANDARD_DNA_TABLE.forward_table
-_STANDARD_STOP_CODONS = set(_STANDARD_DNA_TABLE.stop_codons)
+_DEFAULT_GENETIC_CODE_ID = 1
 _LOW_INFORMATION_SITE_THRESHOLD = 1
 _LOW_INFORMATION_FRACTION_THRESHOLD = 0.0
 _ALIGNMENT_FILTER_PROFILES: dict[str, AlignmentFilterProfile] = {
@@ -124,6 +145,41 @@ _ALIGNMENT_FILTER_PROFILES: dict[str, AlignmentFilterProfile] = {
         note="favor taxon retention for large concatenated matrices while removing empty or highly degraded regions",
     ),
 }
+
+
+def _resolve_genetic_code_table(
+    genetic_code: int | str | None,
+) -> tuple[int, str, dict[str, str], set[str]]:
+    if genetic_code is None:
+        code_id = _DEFAULT_GENETIC_CODE_ID
+        table = CodonTable.unambiguous_dna_by_id[code_id]
+        return code_id, table.names[0], table.forward_table, set(table.stop_codons)
+    if isinstance(genetic_code, int):
+        code_id = genetic_code
+        try:
+            table = CodonTable.unambiguous_dna_by_id[code_id]
+        except KeyError as error:
+            raise InvalidAlignmentError(
+                f"unsupported genetic code id for coding analysis: {code_id}"
+            ) from error
+        return code_id, table.names[0], table.forward_table, set(table.stop_codons)
+    text = genetic_code.strip()
+    if not text:
+        raise InvalidAlignmentError("genetic code name must not be empty")
+    if text.isdigit():
+        return _resolve_genetic_code_table(int(text))
+    lowered = text.lower()
+    for table in CodonTable.unambiguous_dna_by_id.values():
+        if lowered in {name.lower() for name in table.names}:
+            return (
+                int(table.id),
+                table.names[0],
+                table.forward_table,
+                set(table.stop_codons),
+            )
+    raise InvalidAlignmentError(
+        f"unsupported genetic code for coding analysis: {genetic_code}"
+    )
 
 
 def _validate_fraction_threshold(threshold: float) -> None:
@@ -200,6 +256,198 @@ def _observed_residues(records: list[AlignmentRecord]) -> list[str]:
         for residue in record.sequence
         if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
     ]
+
+
+def _ordered_sequence_types(types: set[AlignmentAlphabet]) -> list[AlignmentAlphabet]:
+    return [alphabet for alphabet in ("dna", "rna", "protein") if alphabet in types]
+
+
+def _observed_raw_sequence_characters(record: AlignmentRecord) -> set[str]:
+    return {
+        residue.upper()
+        for residue in record.sequence
+        if residue not in _GAP_CHARACTERS and not _is_explicit_missing(residue)
+    }
+
+
+def _compatible_raw_sequence_types(record: AlignmentRecord) -> set[AlignmentAlphabet]:
+    observed = _observed_raw_sequence_characters(record)
+    if not observed:
+        return {"dna", "rna", "protein"}
+    if observed - _SUPPORTED_SEQUENCE_CHARACTERS_UPPER:
+        return set()
+
+    compatible: set[AlignmentAlphabet] = set()
+    if observed <= _DNA_CHARACTERS_UPPER:
+        compatible.add("dna")
+    if observed <= _RNA_CHARACTERS_UPPER:
+        compatible.add("rna")
+    if observed <= _PROTEIN_CHARACTERS_UPPER:
+        compatible.add("protein")
+    return compatible
+
+
+def detect_fasta_sequence_type(
+    path: Path,
+    *,
+    records: list[AlignmentRecord] | None = None,
+) -> FastaSequenceTypeReport:
+    """Classify raw FASTA records as DNA, RNA, protein, mixed, or invalid."""
+    rows = load_permissive_fasta_records(path) if records is None else records
+    shared_compatible: set[AlignmentAlphabet] | None = None
+    thymine_record_count = 0
+    uracil_record_count = 0
+    protein_signal_record_count = 0
+    invalid_record_count = 0
+
+    for record in rows:
+        observed = _observed_raw_sequence_characters(record)
+        compatible = _compatible_raw_sequence_types(record)
+        if compatible:
+            if shared_compatible is None:
+                shared_compatible = set(compatible)
+            else:
+                shared_compatible &= compatible
+        else:
+            invalid_record_count += 1
+        if "T" in observed:
+            thymine_record_count += 1
+        if "U" in observed:
+            uracil_record_count += 1
+        if observed & _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER:
+            protein_signal_record_count += 1
+
+    warnings: list[str] = []
+    compatible_types = (
+        [] if shared_compatible is None else _ordered_sequence_types(shared_compatible)
+    )
+    if invalid_record_count:
+        warnings.append("input contains unsupported sequence characters")
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="invalid",
+            selected_type=None,
+            compatible_types=[],
+            confidence="blocked",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=invalid_record_count,
+            note=(
+                "one or more records contain characters outside the supported DNA, "
+                "RNA, and protein alphabets"
+            ),
+            warnings=warnings,
+        )
+
+    if not compatible_types:
+        warnings.append("input contains conflicting sequence-type signals")
+        if thymine_record_count and uracil_record_count:
+            note = (
+                "records mix thymine-bearing and uracil-bearing sequences, so one "
+                "shared nucleotide workflow is not defensible"
+            )
+        else:
+            note = (
+                "records do not share one compatible DNA, RNA, or protein type "
+                "without an explicit caller override"
+            )
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="mixed",
+            selected_type=None,
+            compatible_types=[],
+            confidence="blocked",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note=note,
+            warnings=warnings,
+        )
+
+    if protein_signal_record_count:
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="protein",
+            selected_type="protein",
+            compatible_types=compatible_types,
+            confidence="high",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note="protein-exclusive residues were observed in the raw FASTA input",
+            warnings=warnings,
+        )
+
+    if uracil_record_count and not thymine_record_count:
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="rna",
+            selected_type="rna",
+            compatible_types=compatible_types,
+            confidence="high",
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note="uracil was observed without thymine, which strongly supports RNA",
+            warnings=warnings,
+        )
+
+    if "dna" in compatible_types:
+        confidence = "medium" if thymine_record_count else "low"
+        if confidence == "medium":
+            warnings.append(
+                "automatic sequence type defaults to dna from nucleotide-like characters that remain protein-compatible by alphabet alone"
+            )
+            note = (
+                "thymine was observed and no protein-exclusive residues were found, "
+                "so the raw input defaults to DNA"
+            )
+        else:
+            warnings.append(
+                "automatic sequence type defaults to dna from characters shared by DNA, RNA, and protein alphabets"
+            )
+            note = (
+                "the raw input uses only characters shared across multiple "
+                "alphabets, so DNA is chosen as the default but an explicit "
+                "sequence type remains safer when the biological context is unclear"
+            )
+        return FastaSequenceTypeReport(
+            path=path,
+            record_count=len(rows),
+            detected_type="dna",
+            selected_type="dna",
+            compatible_types=compatible_types,
+            confidence=confidence,
+            thymine_record_count=thymine_record_count,
+            uracil_record_count=uracil_record_count,
+            protein_signal_record_count=protein_signal_record_count,
+            invalid_record_count=0,
+            note=note,
+            warnings=warnings,
+        )
+
+    return FastaSequenceTypeReport(
+        path=path,
+        record_count=len(rows),
+        detected_type="unknown",
+        selected_type=None,
+        compatible_types=compatible_types,
+        confidence="blocked",
+        thymine_record_count=thymine_record_count,
+        uracil_record_count=uracil_record_count,
+        protein_signal_record_count=protein_signal_record_count,
+        invalid_record_count=0,
+        note="the raw input could not be resolved to a supported sequence type",
+        warnings=["input sequence type could not be inferred confidently"],
+    )
 
 
 def infer_alignment_alphabet(records: list[AlignmentRecord]) -> AlignmentAlphabet:
@@ -1034,9 +1282,9 @@ def _coding_residues(sequence: str) -> str:
     )
 
 
-def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]:
-    """Detect coding sequences whose comparable length is not divisible by three."""
-    records = load_fasta_alignment(path)
+def _detect_frameshift_like_records(
+    records: list[AlignmentRecord],
+) -> list[FrameshiftLikeSequence]:
     flagged: list[FrameshiftLikeSequence] = []
     for record in records:
         comparable_length = len(_coding_residues(record.sequence))
@@ -1052,6 +1300,12 @@ def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]
     return flagged
 
 
+def detect_frameshift_like_sequences(path: Path) -> list[FrameshiftLikeSequence]:
+    """Detect coding sequences whose comparable length is not divisible by three."""
+    records = load_fasta_alignment(path)
+    return _detect_frameshift_like_records(records)
+
+
 def _iter_codon_windows(sequence: str) -> list[tuple[int, str]]:
     return [
         (position, sequence[position - 1 : position + 2])
@@ -1060,53 +1314,128 @@ def _iter_codon_windows(sequence: str) -> list[tuple[int, str]]:
     ]
 
 
-def detect_stop_codons(path: Path) -> list[StopCodonObservation]:
-    """Detect stop codons in a coding alignment under the standard genetic code."""
-    records = load_fasta_alignment(path)
-    stop_codons: list[StopCodonObservation] = []
+def _invalid_codon_reason(codon: str) -> str | None:
+    normalized = codon.upper().replace("U", "T")
+    if set(normalized) <= _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS:
+        return None
+    if any(
+        base in _GAP_CHARACTERS or _is_explicit_missing(base) for base in normalized
+    ):
+        return "partial-missing-codon"
+    unsupported = sorted(
+        {base for base in normalized if base not in _DNA_CHARACTERS_UPPER}
+    )
+    if unsupported:
+        return f"unsupported-residue:{''.join(unsupported)}"
+    if any(base not in _DNA_BASES for base in normalized):
+        return "ambiguous-codon"
+    return None
+
+
+def _detect_invalid_codons_in_records(
+    records: list[AlignmentRecord],
+) -> list[InvalidCodonObservation]:
+    invalid_codons: list[InvalidCodonObservation] = []
+    for record in records:
+        coding_sequence = _coding_residues(record.sequence)
+        for codon_index, (start, codon) in enumerate(
+            _iter_codon_windows(coding_sequence),
+            start=1,
+        ):
+            reason = _invalid_codon_reason(codon)
+            if reason is None:
+                continue
+            invalid_codons.append(
+                InvalidCodonObservation(
+                    identifier=record.identifier,
+                    codon_index=codon_index,
+                    nucleotide_start=start,
+                    codon=codon.upper(),
+                    reason=reason,
+                )
+            )
+    return invalid_codons
+
+
+def _detect_stop_codons_in_records(
+    records: list[AlignmentRecord],
+    *,
+    genetic_code: int | str | None = None,
+) -> list[StopCodonObservation]:
+    _code_id, _code_name, _forward_table, stop_codon_set = _resolve_genetic_code_table(
+        genetic_code
+    )
+    stop_observations: list[StopCodonObservation] = []
     for record in records:
         coding_sequence = _coding_residues(record.sequence)
         codons = _iter_codon_windows(coding_sequence)
         for codon_index, (start, codon) in enumerate(codons, start=1):
-            if set(codon) <= _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS:
+            normalized = codon.upper().replace("U", "T")
+            if _invalid_codon_reason(normalized) is not None:
                 continue
-            if any(base not in _DNA_BASES for base in codon):
-                continue
-            if codon in _STANDARD_STOP_CODONS:
-                stop_codons.append(
+            if normalized in stop_codon_set:
+                stop_observations.append(
                     StopCodonObservation(
                         identifier=record.identifier,
                         codon_index=codon_index,
                         nucleotide_start=start,
-                        codon=codon,
+                        codon=normalized,
                         terminal=codon_index == len(codons),
                     )
                 )
-    return stop_codons
+    return stop_observations
 
 
-def classify_sequence_coding_behavior(path: Path) -> list[SequenceCodingBehavior]:
-    """Classify each sequence as coding-like or noncoding-like within a nucleotide alignment."""
+def detect_stop_codons(
+    path: Path,
+    *,
+    genetic_code: int | str | None = None,
+) -> list[StopCodonObservation]:
+    """Detect stop codons in a coding alignment under one chosen genetic code."""
     records = load_fasta_alignment(path)
-    stop_codons = detect_stop_codons(path)
+    return _detect_stop_codons_in_records(records, genetic_code=genetic_code)
+
+
+def _classify_sequence_coding_behavior_records(
+    records: list[AlignmentRecord],
+    *,
+    genetic_code: int | str | None = None,
+) -> list[SequenceCodingBehavior]:
+    stop_observations = _detect_stop_codons_in_records(
+        records, genetic_code=genetic_code
+    )
     stop_counts_by_identifier: dict[str, list[StopCodonObservation]] = {}
-    for stop in stop_codons:
+    for stop in stop_observations:
         stop_counts_by_identifier.setdefault(stop.identifier, []).append(stop)
+    invalid_observations = _detect_invalid_codons_in_records(records)
+    invalid_counts_by_identifier: dict[str, list[InvalidCodonObservation]] = {}
+    for invalid in invalid_observations:
+        invalid_counts_by_identifier.setdefault(invalid.identifier, []).append(invalid)
 
     behaviors: list[SequenceCodingBehavior] = []
     for record in records:
         comparable_length = len(_coding_residues(record.sequence))
         stops = stop_counts_by_identifier.get(record.identifier, [])
+        invalid_codons = invalid_counts_by_identifier.get(record.identifier, [])
         premature_stop_count = sum(1 for stop in stops if not stop.terminal)
         terminal_stop_count = sum(1 for stop in stops if stop.terminal)
+        invalid_codon_count = len(invalid_codons)
         divisible_by_three = comparable_length % 3 == 0
-        coding_like = divisible_by_three and premature_stop_count == 0
-        if coding_like and terminal_stop_count <= 1:
+        coding_like = (
+            divisible_by_three
+            and invalid_codon_count == 0
+            and premature_stop_count == 0
+        )
+        if not comparable_length:
+            note = "sequence contains no comparable coding residues after gaps and missing data are removed"
+        elif coding_like and terminal_stop_count <= 1:
             note = "sequence is consistent with a coding reading frame"
         elif not divisible_by_three:
             note = (
                 "sequence is not frame-consistent after removing gaps and missing data"
             )
+        elif invalid_codon_count:
+            note = "sequence contains ambiguous or invalid codons after normalization to coding triplets"
         elif premature_stop_count:
             note = "sequence contains one or more premature stop codons"
         else:
@@ -1117,6 +1446,7 @@ def classify_sequence_coding_behavior(path: Path) -> list[SequenceCodingBehavior
                 coding_like=coding_like,
                 comparable_length=comparable_length,
                 divisible_by_three=divisible_by_three,
+                invalid_codon_count=invalid_codon_count,
                 premature_stop_count=premature_stop_count,
                 terminal_stop_count=terminal_stop_count,
                 note=note,
@@ -1125,55 +1455,249 @@ def classify_sequence_coding_behavior(path: Path) -> list[SequenceCodingBehavior
     return sorted(behaviors, key=lambda item: item.identifier)
 
 
-def inspect_coding_alignment(path: Path) -> CodingAlignmentDiagnostics:
+def classify_sequence_coding_behavior(
+    path: Path,
+    *,
+    genetic_code: int | str | None = None,
+) -> list[SequenceCodingBehavior]:
+    """Classify each sequence as coding-like or noncoding-like within a nucleotide dataset."""
+    records = load_fasta_records(path)
+    return _classify_sequence_coding_behavior_records(
+        records,
+        genetic_code=genetic_code,
+    )
+
+
+def _sequence_type_for_coding_preparation(
+    path: Path,
+    *,
+    records: list[AlignmentRecord],
+    sequence_type: AlignmentAlphabet | None,
+) -> AlignmentAlphabet:
+    if sequence_type is not None and sequence_type not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            "codon-aware alignment requires dna or rna coding input"
+        )
+    detected = detect_fasta_sequence_type(path, records=records)
+    effective = sequence_type if sequence_type is not None else detected.selected_type
+    if effective not in {"dna", "rna"}:
+        raise InvalidAlignmentError(
+            f"codon-aware alignment requires nucleotide coding input: {detected.note}"
+        )
+    return effective
+
+
+def prepare_coding_sequences_for_alignment(
+    path: Path,
+    *,
+    sequence_type: AlignmentAlphabet | None = None,
+    genetic_code: int | str | None = None,
+) -> tuple[list[AlignmentRecord], CodingSequencePreparationReport]:
+    """Filter raw coding sequences into a translation-ready set for codon-aware alignment."""
+    records = load_fasta_records(path)
+    genetic_code_id, genetic_code_name, _forward_table, _stop_codons = (
+        _resolve_genetic_code_table(genetic_code)
+    )
+    effective_sequence_type = _sequence_type_for_coding_preparation(
+        path,
+        records=records,
+        sequence_type=sequence_type,
+    )
+    frameshifts = {
+        row.identifier: row for row in _detect_frameshift_like_records(records)
+    }
+    sequences_by_identifier = {record.identifier: record.sequence for record in records}
+
+    accepted_records: list[AlignmentRecord] = []
+    accepted_identifiers: list[str] = []
+    excluded_sequences: list[CodingSequenceExclusion] = []
+    invalid_codon_sequence_count = 0
+    terminal_stop_sequence_count = 0
+
+    for behavior in _classify_sequence_coding_behavior_records(
+        records,
+        genetic_code=genetic_code_id,
+    ):
+        normalized_sequence = _coding_residues(
+            sequences_by_identifier[behavior.identifier]
+        )
+        if not normalized_sequence:
+            excluded_sequences.append(
+                CodingSequenceExclusion(
+                    identifier=behavior.identifier,
+                    comparable_length=0,
+                    reason="empty-coding-sequence",
+                    invalid_codon_count=0,
+                    premature_stop_count=0,
+                    terminal_stop_count=0,
+                    trailing_bases=0,
+                    note="sequence contains no comparable coding residues after gaps and missing data are removed",
+                )
+            )
+            continue
+        if not behavior.divisible_by_three:
+            frameshift = frameshifts[behavior.identifier]
+            excluded_sequences.append(
+                CodingSequenceExclusion(
+                    identifier=behavior.identifier,
+                    comparable_length=behavior.comparable_length,
+                    reason="frame-error",
+                    invalid_codon_count=behavior.invalid_codon_count,
+                    premature_stop_count=behavior.premature_stop_count,
+                    terminal_stop_count=behavior.terminal_stop_count,
+                    trailing_bases=frameshift.remainder,
+                    note="sequence is not frame-consistent after gaps and missing data are removed",
+                )
+            )
+            continue
+        if behavior.invalid_codon_count:
+            invalid_codon_sequence_count += 1
+            excluded_sequences.append(
+                CodingSequenceExclusion(
+                    identifier=behavior.identifier,
+                    comparable_length=behavior.comparable_length,
+                    reason="invalid-codon",
+                    invalid_codon_count=behavior.invalid_codon_count,
+                    premature_stop_count=behavior.premature_stop_count,
+                    terminal_stop_count=behavior.terminal_stop_count,
+                    trailing_bases=0,
+                    note="sequence contains ambiguous or invalid codons after normalization to coding triplets",
+                )
+            )
+            continue
+        if behavior.premature_stop_count:
+            excluded_sequences.append(
+                CodingSequenceExclusion(
+                    identifier=behavior.identifier,
+                    comparable_length=behavior.comparable_length,
+                    reason="internal-stop-codon",
+                    invalid_codon_count=behavior.invalid_codon_count,
+                    premature_stop_count=behavior.premature_stop_count,
+                    terminal_stop_count=behavior.terminal_stop_count,
+                    trailing_bases=0,
+                    note="sequence contains one or more premature stop codons",
+                )
+            )
+            continue
+
+        if behavior.terminal_stop_count:
+            terminal_stop_sequence_count += 1
+        normalized = normalized_sequence
+        if effective_sequence_type == "rna":
+            normalized = normalized.replace("T", "U")
+        accepted_records.append(
+            AlignmentRecord(identifier=behavior.identifier, sequence=normalized)
+        )
+        accepted_identifiers.append(behavior.identifier)
+
+    if not accepted_records:
+        raise InvalidAlignmentError(
+            "codon-aware alignment excluded every sequence because of frame or stop-codon problems"
+        )
+
+    warnings: list[str] = []
+    if excluded_sequences:
+        warnings.append(
+            "one or more coding sequences were excluded before codon-aware alignment"
+        )
+    if invalid_codon_sequence_count:
+        warnings.append(
+            "one or more coding sequences were excluded because they contained ambiguous or invalid codons"
+        )
+    if terminal_stop_sequence_count:
+        warnings.append(
+            "terminal stop codons were retained in accepted coding sequences"
+        )
+    return accepted_records, CodingSequencePreparationReport(
+        source_path=path,
+        sequence_type=effective_sequence_type,
+        genetic_code_id=genetic_code_id,
+        genetic_code_name=genetic_code_name,
+        input_sequence_count=len(records),
+        accepted_sequence_count=len(accepted_records),
+        accepted_identifiers=accepted_identifiers,
+        excluded_sequences=excluded_sequences,
+        invalid_codon_sequence_count=invalid_codon_sequence_count,
+        terminal_stop_sequence_count=terminal_stop_sequence_count,
+        warnings=warnings,
+    )
+
+
+def inspect_coding_alignment(
+    path: Path,
+    *,
+    genetic_code: int | str | None = None,
+) -> CodingAlignmentDiagnostics:
     """Inspect one nucleotide alignment as a coding sequence dataset."""
+    genetic_code_id, genetic_code_name, _forward_table, _stop_codons = (
+        _resolve_genetic_code_table(genetic_code)
+    )
     summary = summarise_fasta(path)
     if summary.inferred_alphabet not in {"dna", "rna"}:
         raise InvalidAlignmentError(
             f"coding diagnostics require a nucleotide alignment, got alphabet '{summary.inferred_alphabet}'"
         )
-    coding_behaviors = classify_sequence_coding_behavior(path)
+    records = load_fasta_alignment(path)
+    coding_behaviors = _classify_sequence_coding_behavior_records(
+        records,
+        genetic_code=genetic_code_id,
+    )
+    invalid_codons = _detect_invalid_codons_in_records(records)
     partial_codon_sequences = [
         PartialCodonSequence(
             identifier=row.identifier,
             comparable_length=row.comparable_length,
             trailing_bases=row.remainder,
         )
-        for row in detect_frameshift_like_sequences(path)
+        for row in _detect_frameshift_like_records(records)
     ]
     return CodingAlignmentDiagnostics(
         path=path,
+        genetic_code_id=genetic_code_id,
+        genetic_code_name=genetic_code_name,
         sequence_count=summary.sequence_count,
         alignment_length=summary.alignment_length,
         alignment_length_multiple_of_three=summary.alignment_length % 3 == 0,
-        frameshift_like_sequences=detect_frameshift_like_sequences(path),
+        frameshift_like_sequences=_detect_frameshift_like_records(records),
         partial_codon_sequences=partial_codon_sequences,
         coding_behaviors=coding_behaviors,
         mixed_coding_signals=any(row.coding_like for row in coding_behaviors)
         and any(not row.coding_like for row in coding_behaviors),
-        stop_codons=detect_stop_codons(path),
+        invalid_codons=invalid_codons,
+        stop_codons=_detect_stop_codons_in_records(
+            records,
+            genetic_code=genetic_code_id,
+        ),
     )
 
 
-def _translate_codon(codon: str) -> str:
+def _translate_codon(
+    codon: str,
+    *,
+    genetic_code: int | str | None = None,
+) -> str:
+    _code_id, _code_name, forward_table, stop_codons = _resolve_genetic_code_table(
+        genetic_code
+    )
     normalized = codon.upper().replace("U", "T")
     if set(normalized) <= _GAP_CHARACTERS:
         return "-"
-    if any(
-        base in _GAP_CHARACTERS or _is_explicit_missing(base) for base in normalized
-    ):
+    if _invalid_codon_reason(normalized) is not None:
         return "X"
-    if any(base not in _DNA_BASES for base in normalized):
-        return "X"
-    if normalized in _STANDARD_STOP_CODONS:
+    if normalized in stop_codons:
         return "*"
-    return _STANDARD_FORWARD_TABLE.get(normalized, "X")
+    return forward_table.get(normalized, "X")
 
 
 def translate_coding_alignment(
     path: Path,
+    *,
+    genetic_code: int | str | None = None,
 ) -> tuple[list[AlignmentRecord], TranslationReport]:
     """Translate an aligned nucleotide coding sequence dataset to amino acids."""
+    genetic_code_id, genetic_code_name, _forward_table, _stop_codons = (
+        _resolve_genetic_code_table(genetic_code)
+    )
     summary = summarise_fasta(path)
     if summary.inferred_alphabet not in {"dna", "rna"}:
         raise InvalidAlignmentError(
@@ -1189,21 +1713,95 @@ def translate_coding_alignment(
         AlignmentRecord(
             identifier=record.identifier,
             sequence="".join(
-                _translate_codon(codon)
+                _translate_codon(codon, genetic_code=genetic_code_id)
                 for _, codon in _iter_codon_windows(record.sequence)
             ),
         )
         for record in records
     ]
-    diagnostics = inspect_coding_alignment(path)
+    diagnostics = inspect_coding_alignment(path, genetic_code=genetic_code_id)
     return translated_records, TranslationReport(
         source_path=path,
+        genetic_code_id=genetic_code_id,
+        genetic_code_name=genetic_code_name,
         translated_sequence_count=len(translated_records),
         source_alignment_length=summary.alignment_length,
         translated_alignment_length=summary.alignment_length // 3,
+        invalid_codon_count=len(diagnostics.invalid_codons),
         stop_codon_count=len(diagnostics.stop_codons),
         frameshift_like_sequence_count=len(diagnostics.frameshift_like_sequences),
     )
+
+
+def translate_prepared_coding_sequences(
+    records: list[AlignmentRecord],
+    *,
+    genetic_code: int | str | None = None,
+) -> list[AlignmentRecord]:
+    """Translate prepared coding sequences into an amino-acid guide alignment input."""
+    genetic_code_id, _genetic_code_name, _forward_table, _stop_codons = (
+        _resolve_genetic_code_table(genetic_code)
+    )
+    translated_records: list[AlignmentRecord] = []
+    for record in records:
+        if len(record.sequence) % 3 != 0:
+            raise InvalidAlignmentError(
+                "prepared coding sequences must remain divisible by three for translation"
+            )
+        translated_records.append(
+            AlignmentRecord(
+                identifier=record.identifier,
+                sequence="".join(
+                    "X" if amino_acid == "*" else amino_acid
+                    for amino_acid in (
+                        _translate_codon(codon, genetic_code=genetic_code_id)
+                        for _, codon in _iter_codon_windows(record.sequence)
+                    )
+                ),
+            )
+        )
+    return translated_records
+
+
+def back_translate_aligned_coding_sequences(
+    guide_alignment: list[AlignmentRecord],
+    *,
+    coding_records: list[AlignmentRecord],
+) -> list[AlignmentRecord]:
+    """Project an aligned amino-acid guide back onto nucleotide codon triplets."""
+    coding_by_identifier = {record.identifier: record for record in coding_records}
+    back_translated: list[AlignmentRecord] = []
+    for guide_record in guide_alignment:
+        try:
+            coding_record = coding_by_identifier[guide_record.identifier]
+        except KeyError as error:
+            raise InvalidAlignmentError(
+                f"codon back-translation is missing coding residues for {guide_record.identifier}"
+            ) from error
+        codons = [codon for _, codon in _iter_codon_windows(coding_record.sequence)]
+        codon_index = 0
+        aligned_codons: list[str] = []
+        for residue in guide_record.sequence:
+            if residue == "-":
+                aligned_codons.append("---")
+                continue
+            if codon_index >= len(codons):
+                raise InvalidAlignmentError(
+                    f"aligned amino-acid guide consumed more codons than available for {guide_record.identifier}"
+                )
+            aligned_codons.append(codons[codon_index])
+            codon_index += 1
+        if codon_index != len(codons):
+            raise InvalidAlignmentError(
+                f"aligned amino-acid guide left unused codons for {guide_record.identifier}"
+            )
+        back_translated.append(
+            AlignmentRecord(
+                identifier=guide_record.identifier,
+                sequence="".join(aligned_codons),
+            )
+        )
+    return back_translated
 
 
 def summarize_alignment_windows(
@@ -1833,6 +2431,87 @@ def _alignment_quality_score(components: dict[str, float]) -> float:
     return round(sum(components.values()) / max(len(components), 1) * 100.0, 3)
 
 
+def _summarize_missing_data_concentration(
+    summary: AlignmentSummary,
+    *,
+    threshold: float = 0.5,
+) -> AlignmentMissingDataConcentration:
+    concentrated_columns = [
+        row.position
+        for row in summary.per_site_missingness
+        if row.missing_fraction >= threshold
+    ]
+    longest_run = 0
+    longest_start: int | None = None
+    longest_end: int | None = None
+    current_run = 0
+    current_start: int | None = None
+    previous_position: int | None = None
+    for position in concentrated_columns:
+        if previous_position is None or position != previous_position + 1:
+            current_run = 1
+            current_start = position
+        else:
+            current_run += 1
+        if current_run > longest_run:
+            longest_run = current_run
+            longest_start = current_start
+            longest_end = position
+        previous_position = position
+    maximum_missing_fraction = max(
+        (row.missing_fraction for row in summary.per_site_missingness),
+        default=0.0,
+    )
+    maximum_missing_positions = [
+        row.position
+        for row in summary.per_site_missingness
+        if row.missing_fraction == maximum_missing_fraction
+    ]
+    return AlignmentMissingDataConcentration(
+        threshold=threshold,
+        concentrated_column_count=len(concentrated_columns),
+        concentrated_column_fraction=(
+            0.0
+            if summary.alignment_length == 0
+            else len(concentrated_columns) / summary.alignment_length
+        ),
+        longest_concentrated_run=longest_run,
+        longest_concentrated_run_start=longest_start,
+        longest_concentrated_run_end=longest_end,
+        maximum_missing_fraction=maximum_missing_fraction,
+        maximum_missing_positions=maximum_missing_positions,
+    )
+
+
+def _alignment_suspicion_reasons(
+    *,
+    low_information: AlignmentLowInformationReport,
+    missing_data_concentration: AlignmentMissingDataConcentration,
+    ambiguous_column_count: int,
+    over_aligned_count: int,
+    under_aligned_count: int,
+    invalid_character_count: int,
+) -> list[str]:
+    reasons: list[str] = []
+    if low_information.low_information:
+        reasons.append("alignment has low information content for defensible inference")
+    if missing_data_concentration.longest_concentrated_run >= 2:
+        reasons.append("alignment concentrates missing data into adjacent columns")
+    elif missing_data_concentration.concentrated_column_count > 0:
+        reasons.append("alignment contains one or more highly missing columns")
+    if ambiguous_column_count > 0:
+        reasons.append("alignment contains ambiguity-heavy columns")
+    if over_aligned_count > 0:
+        reasons.append("alignment contains suspiciously over-aligned windows")
+    if under_aligned_count > 0:
+        reasons.append("alignment contains suspiciously under-aligned windows")
+    if invalid_character_count > 0:
+        reasons.append(
+            "alignment contains invalid characters for the inferred alphabet"
+        )
+    return reasons
+
+
 def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
     """Generate a higher-level alignment quality report from composition and identity diagnostics."""
     summary = summarise_fasta(path)
@@ -1848,6 +2527,19 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
     near_duplicate_pairs = detect_near_duplicate_sequences(
         path, identity_threshold=0.95
     )
+    low_information = assess_alignment_low_information(path)
+    ambiguous_columns = build_ambiguous_alignment_column_report(path)
+    over_aligned = detect_over_aligned_regions(path)
+    under_aligned = detect_under_aligned_regions(path)
+    missing_data_concentration = _summarize_missing_data_concentration(summary)
+    suspicious_reasons = _alignment_suspicion_reasons(
+        low_information=low_information,
+        missing_data_concentration=missing_data_concentration,
+        ambiguous_column_count=len(ambiguous_columns.rows),
+        over_aligned_count=len(over_aligned),
+        under_aligned_count=len(under_aligned),
+        invalid_character_count=len(invalid_characters),
+    )
     quality_components = _alignment_quality_components(summary)
     warnings: list[str] = []
     if invalid_characters:
@@ -1862,21 +2554,28 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
         warnings.append("alignment contains identical duplicate sequences")
     if near_duplicate_pairs:
         warnings.append("alignment contains near-duplicate sequences")
+    warnings.extend(reason for reason in suspicious_reasons if reason not in warnings)
     return AlignmentQualityReport(
         path=path,
         sequence_count=summary.sequence_count,
         alignment_length=summary.alignment_length,
+        invariant_site_count=summary.constant_site_count,
         missing_data_fraction=summary.missing_data_fraction,
         gap_fraction=summary.gap_fraction,
         ambiguity_fraction=summary.ambiguity_fraction,
         variable_site_count=summary.variable_site_count,
         parsimony_informative_site_count=summary.parsimony_informative_site_count,
+        per_sequence_uncertainty=summary.per_sequence_uncertainty,
+        per_site_uncertainty=summary.per_site_uncertainty,
         inferred_alphabet=inferred_alphabet,
         invalid_characters=invalid_characters,
         composition_outliers=composition_outliers,
         sequence_length_outliers=sequence_length_outliers,
         duplicate_sequence_groups=duplicate_sequence_groups,
         near_duplicate_pairs=near_duplicate_pairs,
+        missing_data_concentration=missing_data_concentration,
+        suspicious_alignment=bool(suspicious_reasons),
+        suspicious_reasons=suspicious_reasons,
         quality_score=_alignment_quality_score(quality_components),
         quality_components=quality_components,
         warnings=warnings,
@@ -1932,7 +2631,11 @@ def build_alignment_forensic_report(path: Path) -> AlignmentForensicReport:
         safe_for_maximum_likelihood=method_by_name["maximum_likelihood"].ready,
         safe_for_bayesian_inference=method_by_name["bayesian"].ready,
         safe_for_coding_analysis=method_by_name["coding"].ready,
-        safe_for_publication=quality.quality_score >= 75.0 and not warnings,
+        safe_for_publication=(
+            quality.quality_score >= 75.0
+            and not quality.suspicious_alignment
+            and not warnings
+        ),
         warnings=warnings,
         limitations=limitations,
     )
@@ -1940,6 +2643,18 @@ def build_alignment_forensic_report(path: Path) -> AlignmentForensicReport:
 
 def load_fasta_records(path: Path) -> list[AlignmentRecord]:
     """Load FASTA records without imposing equal-length alignment requirements."""
+    records = load_permissive_fasta_records(path)
+    duplicate_rows = _detect_duplicate_identifiers(records)
+    if duplicate_rows:
+        raise InvalidAlignmentError(
+            "alignment contains duplicate sequence ids: "
+            + ", ".join(row.identifier for row in duplicate_rows)
+        )
+    return records
+
+
+def load_permissive_fasta_records(path: Path) -> list[AlignmentRecord]:
+    """Load FASTA records while preserving duplicates and empty sequences."""
     if not path.exists():
         raise FileNotFoundError(f"alignment file not found: {path}")
 
@@ -1979,21 +2694,12 @@ def load_fasta_records(path: Path) -> list[AlignmentRecord]:
     if not records:
         raise InvalidAlignmentError(f"alignment contains no FASTA records: {path}")
 
-    ids = [record.identifier for record in records]
-    duplicate_ids = sorted(
-        identifier for identifier in set(ids) if ids.count(identifier) > 1
-    )
-    if duplicate_ids:
-        raise InvalidAlignmentError(
-            f"alignment contains duplicate sequence ids: {', '.join(duplicate_ids)}"
-        )
-
     return records
 
 
 def classify_alignment_sequences(path: Path) -> AlignmentSequenceKindReport:
     """Classify whether a FASTA input already behaves like an aligned dataset."""
-    records = load_fasta_records(path)
+    records = load_permissive_fasta_records(path)
     lengths = [len(record.sequence) for record in records]
     min_length = min(lengths)
     max_length = max(lengths)
@@ -2025,7 +2731,7 @@ def classify_alignment_sequences(path: Path) -> AlignmentSequenceKindReport:
 
 def detect_sequence_length_outliers(path: Path) -> list[SequenceLengthOutlier]:
     """Detect unusually short or long raw sequences before alignment assumptions are imposed."""
-    records = load_fasta_records(path)
+    records = load_permissive_fasta_records(path)
     lengths = [len(record.sequence) for record in records]
     if len(lengths) < 3:
         return []
@@ -2055,6 +2761,273 @@ def detect_sequence_length_outliers(path: Path) -> list[SequenceLengthOutlier]:
                 )
             )
     return sorted(outliers, key=lambda item: (item.raw_length, item.identifier))
+
+
+def _allowed_characters_for_sequence_type(
+    alphabet: AlignmentAlphabet | None,
+) -> set[str] | None:
+    if alphabet == "dna":
+        return _DNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+    if alphabet == "rna":
+        return _RNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+    if alphabet == "protein":
+        return _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+    return None
+
+
+def summarize_fasta_input(
+    path: Path,
+    *,
+    records: list[AlignmentRecord] | None = None,
+    sequence_type: AlignmentAlphabet | None = None,
+) -> FastaInputSummary:
+    """Summarize a FASTA input without assuming aligned equal-length sequences."""
+    rows = load_permissive_fasta_records(path) if records is None else records
+    lengths = [len(record.sequence) for record in rows]
+    sequence_type_report = detect_fasta_sequence_type(path, records=list(rows))
+    inferred_alphabet = (
+        sequence_type
+        if sequence_type is not None
+        else (
+            "unknown"
+            if sequence_type_report.selected_type is None
+            else sequence_type_report.selected_type
+        )
+    )
+    return FastaInputSummary(
+        path=path,
+        sequence_count=len(rows),
+        unique_identifier_count=len({record.identifier for record in rows}),
+        empty_sequence_count=sum(1 for record in rows if not record.sequence),
+        min_sequence_length=min(lengths),
+        max_sequence_length=max(lengths),
+        median_sequence_length=float(median(lengths)),
+        total_residue_count=sum(lengths),
+        inferred_alphabet=inferred_alphabet,
+    )
+
+
+def _detect_duplicate_identifiers(
+    records: list[AlignmentRecord],
+) -> list[FastaDuplicateIdentifier]:
+    positions: dict[str, list[int]] = {}
+    for index, record in enumerate(records, start=1):
+        positions.setdefault(record.identifier, []).append(index)
+    return [
+        FastaDuplicateIdentifier(
+            identifier=identifier,
+            occurrences=len(record_indices),
+            record_indices=record_indices,
+        )
+        for identifier, record_indices in sorted(positions.items())
+        if len(record_indices) > 1
+    ]
+
+
+def _detect_empty_sequences(records: list[AlignmentRecord]) -> list[FastaEmptySequence]:
+    return [
+        FastaEmptySequence(identifier=record.identifier, record_index=index)
+        for index, record in enumerate(records, start=1)
+        if not record.sequence
+    ]
+
+
+def _detect_illegal_sequence_characters(
+    records: list[AlignmentRecord],
+    *,
+    alphabet: AlignmentAlphabet | None,
+) -> list[FastaIllegalCharacter]:
+    allowed = _allowed_characters_for_sequence_type(alphabet)
+    if allowed is None:
+        supported = (
+            _DNA_CHARACTERS
+            | _RNA_CHARACTERS
+            | _PROTEIN_CHARACTERS
+            | _GAP_CHARACTERS
+            | _EXPLICIT_MISSING_CHARACTERS
+        )
+        allowed = supported
+    return [
+        FastaIllegalCharacter(
+            identifier=record.identifier,
+            record_index=record_index,
+            position=position,
+            character=residue,
+        )
+        for record_index, record in enumerate(records, start=1)
+        for position, residue in enumerate(record.sequence, start=1)
+        if residue not in allowed
+    ]
+
+
+def validate_fasta_input(
+    path: Path,
+    *,
+    sequence_type: AlignmentAlphabet | None = None,
+) -> FastaInputValidationReport:
+    """Validate a FASTA input before alignment or engine execution."""
+    records = load_permissive_fasta_records(path)
+    sequence_type_report = detect_fasta_sequence_type(path, records=records)
+    summary = summarize_fasta_input(
+        path,
+        records=records,
+        sequence_type=sequence_type,
+    )
+    duplicate_identifiers = _detect_duplicate_identifiers(records)
+    illegal_characters = _detect_illegal_sequence_characters(
+        records,
+        alphabet=summary.inferred_alphabet if sequence_type is None else sequence_type,
+    )
+    empty_sequences = _detect_empty_sequences(records)
+    length_outliers = detect_sequence_length_outliers(path)
+    warnings: list[str] = []
+    if duplicate_identifiers:
+        warnings.append("input contains duplicate sequence identifiers")
+    if illegal_characters:
+        warnings.append("input contains unsupported sequence characters")
+    if empty_sequences:
+        warnings.append("input contains empty sequences")
+    if length_outliers:
+        warnings.append("input contains sequence length outliers")
+    warnings.extend(sequence_type_report.warnings)
+    if (
+        sequence_type is not None
+        and sequence_type_report.selected_type is not None
+        and sequence_type_report.selected_type != sequence_type
+    ):
+        warnings.append(
+            "declared sequence type overrides automatic raw sequence classification"
+        )
+    if summary.inferred_alphabet == "unknown":
+        warnings.append("input sequence type could not be inferred confidently")
+    return FastaInputValidationReport(
+        path=path,
+        summary=summary,
+        sequence_type_report=sequence_type_report,
+        duplicate_identifiers=duplicate_identifiers,
+        illegal_characters=illegal_characters,
+        empty_sequences=empty_sequences,
+        length_outliers=length_outliers,
+        warnings=list(dict.fromkeys(warnings)),
+    )
+
+
+def _normalize_fasta_identifier(identifier: str) -> str:
+    normalized = [
+        character if character.isalnum() or character in {".", "_", "-"} else "_"
+        for character in identifier.strip()
+    ]
+    collapsed = "".join(normalized)
+    while "__" in collapsed:
+        collapsed = collapsed.replace("__", "_")
+    collapsed = collapsed.strip("._-")
+    return collapsed or "sequence"
+
+
+def repair_fasta_input(
+    path: Path,
+    *,
+    sequence_type: AlignmentAlphabet | None = None,
+    normalize_identifiers: bool = False,
+    remove_invalid_records: bool = False,
+) -> tuple[list[AlignmentRecord], FastaRepairReport]:
+    """Repair a FASTA input through explicit identifier and record policies."""
+    records = load_permissive_fasta_records(path)
+    validation = validate_fasta_input(path, sequence_type=sequence_type)
+    if (
+        sequence_type is None
+        and validation.sequence_type_report.detected_type == "mixed"
+    ):
+        raise InvalidAlignmentError(
+            "FASTA repair requires an explicit sequence_type when raw records carry conflicting sequence-type signals"
+        )
+    illegal_record_indices = {row.record_index for row in validation.illegal_characters}
+    empty_record_indices = {row.record_index for row in validation.empty_sequences}
+    mismatched_record_indices: set[int] = set()
+    if remove_invalid_records and sequence_type is not None:
+        for record_index, record in enumerate(records, start=1):
+            compatible_types = _compatible_raw_sequence_types(record)
+            if compatible_types and sequence_type not in compatible_types:
+                mismatched_record_indices.add(record_index)
+    retained_records: list[AlignmentRecord] = []
+    normalized_identifiers: list[FastaIdentifierRepair] = []
+    removed_records: list[FastaRemovedRecord] = []
+    seen_identifiers: Counter[str] = Counter()
+
+    for record_index, record in enumerate(records, start=1):
+        removal_reasons: list[str] = []
+        if remove_invalid_records and record_index in empty_record_indices:
+            removal_reasons.append("empty-sequence")
+        if remove_invalid_records and record_index in illegal_record_indices:
+            removal_reasons.append("illegal-characters")
+        if remove_invalid_records and record_index in mismatched_record_indices:
+            removal_reasons.append("sequence-type-mismatch")
+        if removal_reasons:
+            removed_records.append(
+                FastaRemovedRecord(
+                    identifier=record.identifier,
+                    record_index=record_index,
+                    reason="+".join(removal_reasons),
+                )
+            )
+            continue
+
+        repaired_identifier = (
+            _normalize_fasta_identifier(record.identifier)
+            if normalize_identifiers
+            else record.identifier
+        )
+        seen_identifiers[repaired_identifier] += 1
+        duplicate_occurrence = seen_identifiers[repaired_identifier]
+        if normalize_identifiers and duplicate_occurrence > 1:
+            repaired_identifier = f"{repaired_identifier}_{duplicate_occurrence}"
+        if repaired_identifier != record.identifier:
+            note = "normalized identifier"
+            if duplicate_occurrence > 1:
+                note = "normalized identifier and resolved duplicate collision"
+            normalized_identifiers.append(
+                FastaIdentifierRepair(
+                    original_identifier=record.identifier,
+                    repaired_identifier=repaired_identifier,
+                    record_index=record_index,
+                    note=note,
+                )
+            )
+        retained_records.append(
+            AlignmentRecord(
+                identifier=repaired_identifier,
+                sequence=record.sequence,
+            )
+        )
+
+    if not retained_records:
+        raise InvalidAlignmentError(
+            f"FASTA repair removed every sequence record from {path}"
+        )
+
+    after_summary = summarize_fasta_input(
+        path,
+        records=retained_records,
+        sequence_type=sequence_type,
+    )
+    warnings = list(validation.warnings)
+    if remove_invalid_records and removed_records:
+        warnings.append("repair removed invalid sequence records")
+    if mismatched_record_indices:
+        warnings.append(
+            "repair removed records incompatible with the declared sequence type"
+        )
+    if normalize_identifiers and normalized_identifiers:
+        warnings.append("repair normalized FASTA identifiers")
+    return retained_records, FastaRepairReport(
+        source_path=path,
+        output_path=None,
+        before=validation.summary,
+        after=after_summary,
+        normalized_identifiers=normalized_identifiers,
+        removed_records=removed_records,
+        warnings=list(dict.fromkeys(warnings)),
+    )
 
 
 def load_fasta_alignment(path: Path) -> list[AlignmentRecord]:
