@@ -383,3 +383,45 @@ def test_biogeography_events_cli_can_export_tree_set_review(
         encoding="utf-8"
     )
     assert "reason" in exclusions_path.read_text(encoding="utf-8")
+
+
+def test_biogeography_report_cli_can_export_full_review_package(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "biogeography-report"
+
+    exit_code = main(
+        [
+            "biogeography",
+            "report",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            str(fixture("example_geographic_region_centroids.tsv")),
+            "--model",
+            "ard",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["report_kind"] == "biogeography-report-package"
+    assert payload["metrics"]["artifact_count"] == 12
+    assert payload["metrics"]["event_count"] == 2
+    assert (out_dir / "biogeography-report.html").exists()
+    assert (out_dir / "ancestral-region-tree.svg").exists()
+    assert (out_dir / "geographic-region-map.html").exists()
+    assert (out_dir / "summary.tsv").exists()
+    assert (out_dir / "region-counts.tsv").exists()
+    assert (out_dir / "ancestral-regions.tsv").exists()
+    assert (out_dir / "transition-matrix.tsv").exists()
+    assert (out_dir / "event-table.tsv").exists()
+    assert (out_dir / "map-markers.tsv").exists()
+    assert (out_dir / "map-lines.tsv").exists()
+    assert (out_dir / "exclusions.tsv").exists()
+    assert (out_dir / "biogeography-report.manifest.json").exists()

@@ -195,6 +195,9 @@ from bijux_phylogenetics.biogeography import (
     write_time_stratified_transition_matrix_table,
     write_time_stratified_transition_summary_table,
 )
+from bijux_phylogenetics.biogeography.report_package import (
+    build_biogeography_report_package,
+)
 from bijux_phylogenetics.biogeography.transition_chronology import (
     summarize_biogeographic_transition_chronology,
     write_dated_biogeography_event_table,
@@ -3737,6 +3740,40 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the biogeography review as JSON."
     )
     _add_manifest_argument(biogeography_events)
+    biogeography_report = biogeography_subparsers.add_parser(
+        "report",
+        help="Build a full biogeography report package with region counts, transition evidence, ancestral-region tree, and map output.",
+    )
+    biogeography_report.add_argument("tree", type=Path)
+    biogeography_report.add_argument("table", type=Path)
+    biogeography_report.add_argument("--trait", required=True)
+    biogeography_report.add_argument("centroids", type=Path)
+    biogeography_report.add_argument("--taxon-column")
+    biogeography_report.add_argument(
+        "--model",
+        choices=("er", "sym", "ard"),
+        default="er",
+    )
+    biogeography_report.add_argument(
+        "--region-column",
+        default="region",
+        help="Region key column in the centroid table.",
+    )
+    biogeography_report.add_argument(
+        "--latitude-column",
+        default="latitude",
+        help="Latitude column in the centroid table.",
+    )
+    biogeography_report.add_argument(
+        "--longitude-column",
+        default="longitude",
+        help="Longitude column in the centroid table.",
+    )
+    biogeography_report.add_argument("--out-dir", required=True, type=Path)
+    biogeography_report.add_argument(
+        "--json", action="store_true", help="Emit the biogeography package as JSON."
+    )
+    _add_manifest_argument(biogeography_report)
     host_association = subparsers.add_parser(
         get_command_spec("host-association").name,
         help=get_command_spec("host-association").summary,
@@ -11189,6 +11226,65 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                         },
                         data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.biogeography_command == "report":
+                result = build_biogeography_report_package(
+                    tree_path=args.tree,
+                    traits_path=args.table,
+                    centroids_path=args.centroids,
+                    trait=args.trait,
+                    out_dir=args.out_dir,
+                    taxon_column=args.taxon_column,
+                    model=args.model,
+                    region_column=args.region_column,
+                    latitude_column=args.latitude_column,
+                    longitude_column=args.longitude_column,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="biogeography",
+                    inputs=[args.tree, args.table, args.centroids],
+                    outputs=[
+                        result.report_path,
+                        result.tree_figure_path,
+                        result.map_path,
+                        result.summary_table_path,
+                        result.region_count_table_path,
+                        result.node_table_path,
+                        result.transition_matrix_path,
+                        result.event_table_path,
+                        result.map_marker_table_path,
+                        result.map_line_table_path,
+                        result.exclusion_table_path,
+                        result.manifest_path,
+                    ],
+                )
+                _print_result(
+                    build_command_result(
+                        command="biogeography",
+                        inputs=[args.tree, args.table, args.centroids],
+                        outputs=outputs,
+                        warnings=result.warnings,
+                        metrics={
+                            "report_kind": "biogeography-report-package",
+                            "model": result.state_report.model,
+                            "output_dir": str(result.output_dir),
+                            "artifact_count": 12,
+                            "observed_region_count": (
+                                result.state_report.summary.observed_region_count
+                            ),
+                            "transition_rate_row_count": (
+                                result.state_report.summary.transition_rate_row_count
+                            ),
+                            "event_count": result.event_report.summary.event_count,
+                            "visible_map_line_count": (
+                                result.map_report.summary.visible_line_count
+                            ),
+                        },
+                        data=result,
                     ),
                     json_output=args.json,
                 )
