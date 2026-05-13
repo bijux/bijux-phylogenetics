@@ -497,6 +497,73 @@ workflow trait:
 This command does not require external inference executables because the
 rooted rabies tree is packaged directly with the dataset.
 
+`demo rabies-cross-host-geography-panel` is the governed packaged integrated
+pathogen workflow surface. It materializes the shipped rabies nucleoprotein
+panel into one output directory and reruns the full owned sequence-to-tree,
+host-switching, and biogeography workflow from raw sequences plus one combined
+metadata table. Its JSON metrics report:
+
+- `artifact_count`
+- `sequence_count`
+- `host_trait`
+- `geography_trait`
+- `selected_model`
+- `minimum_support`
+- `maximum_support`
+- `root_host`
+- `root_region`
+- `host_switch_count`
+- `migration_event_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/sequences.fasta`
+- `dataset/metadata.csv`
+- `dataset/region-centroids.csv`
+- `dataset/expected/**`
+- `workflow/workflow-summary.tsv`
+- `workflow/rabies-cross-host-geography-panel.aln`
+- `workflow/rabies-cross-host-geography-panel.trimmed.aln`
+- `workflow/rabies-cross-host-geography-panel.rooted.tree`
+- `workflow/rabies-cross-host-geography-panel.rooting.tsv`
+- `workflow/rabies-cross-host-geography-panel.model.tsv`
+- `workflow/rabies-cross-host-geography-panel.support.tsv`
+- `workflow/host-switch-summary.tsv`
+- `workflow/host-state-nodes.tsv`
+- `workflow/host-switch-branches.tsv`
+- `workflow/host-switch-counts.tsv`
+- `workflow/host-switch-fits.tsv`
+- `workflow/host-switch-unsupported.tsv`
+- `workflow/host-switch-exclusions.tsv`
+- `workflow/biogeography/biogeography-report.html`
+- `workflow/biogeography/ancestral-region-tree.svg`
+- `workflow/biogeography/geographic-region-map.html`
+- `workflow/biogeography/summary.tsv`
+- `workflow/biogeography/region-counts.tsv`
+- `workflow/biogeography/ancestral-regions.tsv`
+- `workflow/biogeography/transition-matrix.tsv`
+- `workflow/biogeography/event-table.tsv`
+- `workflow/biogeography/map-markers.tsv`
+- `workflow/biogeography/map-lines.tsv`
+- `workflow/biogeography/exclusions.tsv`
+- `workflow/rabies-cross-host-geography-report.html`
+- `workflow/rabies-cross-host-geography.manifest.json`
+- `overview.md`
+
+The packaged dataset carries grouped workflow traits for both downstream
+biological surfaces:
+
+- host workflow trait `host_group`
+- geography workflow trait `region_group`
+- discrete ancestral model `ard` for both state-evolution analyses
+- explicit outgroup rooting on `bat_chile_rv108`
+
+This command does require external `mafft`, `trimal`, and `iqtree2`
+executables because it reruns the full raw-sequence inference path instead of
+starting from a packaged rooted tree.
+
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
 the selected continuous model, reports 95% uncertainty intervals, and prunes
