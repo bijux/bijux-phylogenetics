@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypeAlias
 
 from bijux_phylogenetics.errors import MetadataJoinError
 
@@ -171,16 +172,31 @@ def inspect_metadata_table(
     )
 
 
+TableValue: TypeAlias = str | int | float | bool | None
+
+
+def _stringify_table_value(value: TableValue) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return str(value).lower()
+    return str(value)
+
+
 def write_taxon_rows(
-    path: Path, *, columns: list[str], rows: list[dict[str, str]]
+    path: Path, *, columns: list[str], rows: list[dict[str, TableValue]]
 ) -> Path:
     """Write taxon-keyed rows as CSV or TSV based on the output suffix."""
     delimiter, _ = _detect_delimiter(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    stringified_rows = [
+        {column: _stringify_table_value(row.get(column)) for column in columns}
+        for row in rows
+    ]
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=columns, delimiter=delimiter)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(stringified_rows)
     return path
 
 

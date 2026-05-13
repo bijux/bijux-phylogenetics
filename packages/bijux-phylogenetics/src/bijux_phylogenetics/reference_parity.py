@@ -6,12 +6,12 @@ import json
 from pathlib import Path
 import tempfile
 
+from bijux_phylogenetics.comparative import validate_comparative_reference_examples
 from bijux_phylogenetics.compare.topology import (
     _unrooted_splits,
     compare_branch_score_distance,
     compare_robinson_foulds,
 )
-from bijux_phylogenetics.comparative import validate_comparative_reference_examples
 from bijux_phylogenetics.diagnostics.validation import _load_tree
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.tree_set import (
@@ -114,7 +114,9 @@ def _classify_comparative_mismatch(method: str) -> str:
     return "numerical_tolerance"
 
 
-def _build_comparative_observations() -> tuple[list[ReferenceParityObservation], dict[str, str]]:
+def _build_comparative_observations() -> tuple[
+    list[ReferenceParityObservation], dict[str, str]
+]:
     fixture = _load_fixture_document("reference_parity_core.json")
     comparative_cases = [
         entry
@@ -195,7 +197,7 @@ def _build_tree_observation(
 ) -> ReferenceParityObservation:
     input_paths = [_resolve_fixture_path(path) for path in entry["input_fixtures"]]
     method = str(entry["method"])
-    expected_output = dict(entry["expected_output"])
+    expected_output: dict[str, object] = dict(entry["expected_output"])
     tolerance = float(entry["tolerance"])
     mismatch_kind: str | None = None
 
@@ -205,7 +207,7 @@ def _build_tree_observation(
             input_paths[1],
             rf_mode=str(entry.get("rf_mode", "unrooted")),
         )
-        observed_output = {
+        observed_output: dict[str, object] = {
             "robinson_foulds_distance": report.robinson_foulds_distance,
             "normalized_robinson_foulds": report.normalized_robinson_foulds,
         }
@@ -228,9 +230,7 @@ def _build_tree_observation(
         mismatch_kind = None if passed else "branch_length"
     elif method == "posterior-clade-frequencies":
         report = compute_clade_frequency_table(input_paths[0])
-        observed_output = {
-            row.clade: row.frequency for row in report.clade_frequencies
-        }
+        observed_output = {row.clade: row.frequency for row in report.clade_frequencies}
         passed = _numeric_outputs_match(
             expected_output,
             observed_output,
@@ -319,7 +319,10 @@ def _build_summary_rows(
                 passed_case_count=sum(1 for item in selected if item.passed),
                 failed_case_count=sum(1 for item in selected if not item.passed),
                 reference_tools=sorted(
-                    {f"{item.reference_tool} {item.reference_version}" for item in selected}
+                    {
+                        f"{item.reference_tool} {item.reference_version}"
+                        for item in selected
+                    }
                 ),
             )
         )

@@ -21,7 +21,11 @@ from bijux_phylogenetics.engines import (
     run_bootstrap_support_estimation,
     run_model_selection,
 )
-from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input, write_fasta_alignment
+from bijux_phylogenetics.io.fasta import (
+    load_fasta_alignment,
+    validate_fasta_input,
+    write_fasta_alignment,
+)
 
 _DATASET_ID = "catarrhine_mitogenome_five_locus_panel"
 _DATASET_LABEL = "Catarrhine mitogenome five-locus panel"
@@ -123,8 +127,9 @@ class CatarrhineMitogenomeFiveLocusPanelDemoResult:
     overview_path: Path
 
 
-def load_catarrhine_mitogenome_five_locus_panel_dataset(
-) -> CatarrhineMitogenomeFiveLocusPanelDataset:
+def load_catarrhine_mitogenome_five_locus_panel_dataset() -> (
+    CatarrhineMitogenomeFiveLocusPanelDataset
+):
     """Expose the packaged catarrhine multi-locus panel as a first-class surface."""
     dataset_root = _resource_root()
     taxa_path = dataset_root / "taxa.csv"
@@ -166,7 +171,9 @@ def export_catarrhine_mitogenome_five_locus_panel_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
     taxa_path = shutil.copy2(dataset.taxa_path, destination / "taxa.csv")
     locus_alignment_root = destination / "loci"
     shutil.copytree(dataset.locus_alignment_root, locus_alignment_root)
@@ -197,10 +204,14 @@ def run_catarrhine_mitogenome_five_locus_panel_workflow(
     engine_root.mkdir(parents=True, exist_ok=True)
 
     alignment_paths = _locus_alignment_paths(dataset.locus_alignment_root)
-    supermatrix_records, partitions, concatenation_report = concatenate_locus_alignments(
-        alignment_paths,
-        concatenated_alignment_path=assembled_root / f"{dataset.workflow_prefix}.supermatrix.fasta",
-        concatenated_partition_path=assembled_root / f"{dataset.workflow_prefix}.partitions.txt",
+    supermatrix_records, partitions, concatenation_report = (
+        concatenate_locus_alignments(
+            alignment_paths,
+            concatenated_alignment_path=assembled_root
+            / f"{dataset.workflow_prefix}.supermatrix.fasta",
+            concatenated_partition_path=assembled_root
+            / f"{dataset.workflow_prefix}.partitions.txt",
+        )
     )
     supermatrix_path = write_fasta_alignment(
         assembled_root / f"{dataset.workflow_prefix}.supermatrix.fasta",
@@ -256,7 +267,9 @@ def write_catarrhine_mitogenome_five_locus_panel_workflow_bundle(
     occupancy = report.concatenation_report.occupancy_report
     support = report.partitioned_support.bootstrap_support_summary
     if support is None:
-        raise ValueError("partitioned support workflow did not expose bootstrap summary")
+        raise ValueError(
+            "partitioned support workflow did not expose bootstrap summary"
+        )
 
     workflow_summary_path = _write_workflow_summary_table(
         output_root / "workflow-summary.tsv",
@@ -337,7 +350,9 @@ def run_catarrhine_mitogenome_five_locus_panel_demo(
     dataset_export = export_catarrhine_mitogenome_five_locus_panel_dataset(
         output_root / "dataset"
     )
-    with TemporaryDirectory(prefix="catarrhine-mitogenome-five-locus-") as temporary_root:
+    with TemporaryDirectory(
+        prefix="catarrhine-mitogenome-five-locus-"
+    ) as temporary_root:
         workflow_report = run_catarrhine_mitogenome_five_locus_panel_workflow(
             Path(temporary_root),
             iqtree_executable=iqtree_executable,
@@ -349,7 +364,9 @@ def run_catarrhine_mitogenome_five_locus_panel_demo(
             output_root / "workflow",
             workflow_report,
         )
-    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", dataset, workflow_bundle
+    )
     return CatarrhineMitogenomeFiveLocusPanelDemoResult(
         output_root=output_root,
         dataset=dataset,
@@ -414,12 +431,10 @@ def _write_workflow_summary_table(
                 str(report.concatenation_report.locus_count),
                 str(report.concatenation_report.alignment_length),
                 str(len(report.partitions)),
-                report.model_selection.selected_model,
+                report.model_selection.selected_model or "",
                 _format_number(None if support is None else support.minimum_support),
                 _format_number(None if support is None else support.maximum_support),
-                str(
-                    0 if support is None else support.weakly_supported_clade_count
-                ),
+                str(0 if support is None else support.weakly_supported_clade_count),
                 str(len(occupancy.low_coverage_taxa)),
                 str(len(occupancy.low_coverage_loci)),
                 str(
@@ -510,7 +525,10 @@ def _write_occupancy_matrix_table(path: Path, report: LocusOccupancyReport) -> P
         rows=[
             {
                 "taxon": row.taxon,
-                **{locus_name: str(row.occupancies[locus_name]) for locus_name in locus_names},
+                **{
+                    locus_name: str(row.occupancies[locus_name])
+                    for locus_name in locus_names
+                },
                 "covered_locus_count": str(row.covered_locus_count),
                 "total_locus_count": str(row.total_locus_count),
                 "locus_coverage_fraction": str(row.locus_coverage_fraction),

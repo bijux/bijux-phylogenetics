@@ -5,13 +5,17 @@ from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.core.alignment import AlignmentSummary, AlignmentTrimReport
-from bijux_phylogenetics.core.alignment import AlignmentQualityReport
+from bijux_phylogenetics.core.alignment import (
+    AlignmentQualityReport,
+    AlignmentSummary,
+    AlignmentTrimReport,
+)
 from bijux_phylogenetics.engines.fasta_to_tree import (
     FastaToTreeWorkflowReport,
     run_fasta_to_tree_workflow,
 )
 from bijux_phylogenetics.io.fasta import (
+    AlignmentRecord,
     build_alignment_quality_report,
     load_fasta_records,
     summarise_fasta,
@@ -101,7 +105,7 @@ class PleistoceneBearCytbFragmentWorkflowReport:
     trimmed_quality: AlignmentQualityReport
     cleaned_quality: AlignmentQualityReport
     missingness_cleanup: AlignmentTrimReport
-    cleaned_records: list
+    cleaned_records: list[AlignmentRecord]
     missingness_rows: list[PleistoceneBearMissingnessEffectRow]
 
 
@@ -179,8 +183,12 @@ def export_pleistocene_bear_cytb_fragment_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
-    sequences_path = shutil.copy2(dataset.sequences_path, destination / "sequences.fasta")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
+    sequences_path = shutil.copy2(
+        dataset.sequences_path, destination / "sequences.fasta"
+    )
     expected_output_root = destination / "expected"
     shutil.copytree(dataset.reference_output_root, expected_output_root)
     return PleistoceneBearCytbFragmentDatasetExportResult(
@@ -239,7 +247,9 @@ def run_pleistocene_bear_cytb_fragment_workflow(
         aligned_summary=aligned_summary,
         trimmed_summary=trimmed_summary,
         cleaned_summary=cleaned_summary,
-        removed_sequence_ids={row.identifier for row in missingness_cleanup.removed_sequences},
+        removed_sequence_ids={
+            row.identifier for row in missingness_cleanup.removed_sequences
+        },
     )
     return PleistoceneBearCytbFragmentWorkflowReport(
         dataset=dataset,
@@ -266,7 +276,9 @@ def write_pleistocene_bear_cytb_fragment_workflow_bundle(
     output_root.mkdir(parents=True, exist_ok=True)
 
     workflow = report.workflow
-    summary_path = _write_workflow_summary_table(output_root / "workflow-summary.tsv", report)
+    summary_path = _write_workflow_summary_table(
+        output_root / "workflow-summary.tsv", report
+    )
     missingness_effects_path = _write_missingness_effect_table(
         output_root / "missingness-effects.tsv",
         report.missingness_rows,
@@ -303,7 +315,9 @@ def write_pleistocene_bear_cytb_fragment_workflow_bundle(
         workflow.manifest_path,
         output_root / f"{report.dataset.workflow_prefix}.manifest.json",
     )
-    engine_artifact_root = output_root / "engine-artifacts" / report.dataset.workflow_prefix
+    engine_artifact_root = (
+        output_root / "engine-artifacts" / report.dataset.workflow_prefix
+    )
     shutil.copytree(workflow.engine_artifact_dir, engine_artifact_root)
     return PleistoceneBearCytbFragmentWorkflowBundle(
         output_root=output_root,
@@ -344,7 +358,9 @@ def run_pleistocene_bear_cytb_fragment_demo(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
     dataset = load_pleistocene_bear_cytb_fragment_dataset()
-    dataset_export = export_pleistocene_bear_cytb_fragment_dataset(output_root / "dataset")
+    dataset_export = export_pleistocene_bear_cytb_fragment_dataset(
+        output_root / "dataset"
+    )
     with TemporaryDirectory(prefix="pleistocene-bear-workflow-") as temporary_root:
         workflow_report = run_pleistocene_bear_cytb_fragment_workflow(
             Path(temporary_root),
@@ -359,7 +375,9 @@ def run_pleistocene_bear_cytb_fragment_demo(
             output_root / "workflow",
             workflow_report,
         )
-    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", dataset, workflow_bundle
+    )
     return PleistoceneBearCytbFragmentDemoResult(
         output_root=output_root,
         dataset=dataset,

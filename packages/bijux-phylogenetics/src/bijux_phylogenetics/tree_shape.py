@@ -123,7 +123,8 @@ def _tree_height_branch_length(tree: PhyloTree) -> float | None:
     lengths = tree.root_to_tip_lengths()
     if not lengths or any(length is None for length in lengths):
         return None
-    return _round_float(max(lengths))
+    defined_lengths = [float(length) for length in lengths if length is not None]
+    return _round_float(max(defined_lengths))
 
 
 def _mean_root_to_tip_branch_length(tree: PhyloTree) -> float | None:
@@ -268,7 +269,9 @@ def _aggregate_tree_shapes(rows: list[TreeShapeRow]) -> TreeShapeAggregate:
         if row.tree_height_branch_length is not None
     ]
     return TreeShapeAggregate(
-        balanced_tree_count=sum(1 for row in rows if row.imbalance_summary == "balanced"),
+        balanced_tree_count=sum(
+            1 for row in rows if row.imbalance_summary == "balanced"
+        ),
         skewed_tree_count=sum(1 for row in rows if row.imbalance_summary == "skewed"),
         ladderized_tree_count=sum(1 for row in rows if row.ladderized),
         star_like_tree_count=sum(1 for row in rows if row.star_like),
@@ -292,7 +295,9 @@ def _aggregate_tree_shapes(rows: list[TreeShapeRow]) -> TreeShapeAggregate:
     )
 
 
-def summarize_tree_shape(path: Path, *, source_format: str | None = None) -> TreeShapeReport:
+def summarize_tree_shape(
+    path: Path, *, source_format: str | None = None
+) -> TreeShapeReport:
     tree = load_tree(path, source_format=source_format)
     row = summarize_tree_shape_from_tree(tree, source_path=path)
     return TreeShapeReport(
