@@ -2216,6 +2216,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_coding.add_argument("alignment", type=Path)
     alignment_coding.add_argument(
+        "--genetic-code",
+        default="1",
+        help="Use an NCBI genetic code id or codon-table name for coding diagnostics.",
+    )
+    alignment_coding.add_argument(
         "--json", action="store_true", help="Emit the report as JSON."
     )
     _add_manifest_argument(alignment_coding)
@@ -2225,6 +2230,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     alignment_translate.add_argument("alignment", type=Path)
     alignment_translate.add_argument("--out", required=True, type=Path)
+    alignment_translate.add_argument(
+        "--genetic-code",
+        default="1",
+        help="Use an NCBI genetic code id or codon-table name for coding translation.",
+    )
     alignment_translate.add_argument(
         "--json", action="store_true", help="Emit the translation report as JSON."
     )
@@ -5477,6 +5487,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Declare the coding nucleotide type for codon-aware alignment when explicit forcing is needed.",
     )
     adapter_align.add_argument(
+        "--genetic-code",
+        default="1",
+        help="Use an NCBI genetic code id or codon-table name for codon-aware validation and translation.",
+    )
+    adapter_align.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
     _add_external_adapter_execution_arguments(adapter_align)
@@ -7841,7 +7856,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.alignment_command == "coding":
-                report = inspect_coding_alignment(args.alignment)
+                report = inspect_coding_alignment(
+                    args.alignment,
+                    genetic_code=args.genetic_code,
+                )
                 outputs = _finalize_outputs(
                     args, command="alignment", inputs=[args.alignment]
                 )
@@ -7851,9 +7869,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.alignment],
                         outputs=outputs,
                         metrics={
+                            "genetic_code_id": report.genetic_code_id,
                             "frameshift_like_sequence_count": len(
                                 report.frameshift_like_sequences
                             ),
+                            "invalid_codon_count": len(report.invalid_codons),
                             "stop_codon_count": len(report.stop_codons),
                         },
                         data=report,
@@ -7862,7 +7882,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 return 0
             if args.alignment_command == "translate":
-                records, report = translate_coding_alignment(args.alignment)
+                records, report = translate_coding_alignment(
+                    args.alignment,
+                    genetic_code=args.genetic_code,
+                )
                 output_path = write_fasta_alignment(args.out, records)
                 outputs = _finalize_outputs(
                     args,
@@ -7876,8 +7899,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.alignment],
                         outputs=outputs,
                         metrics={
+                            "genetic_code_id": report.genetic_code_id,
                             "translated_sequence_count": report.translated_sequence_count,
                             "translated_alignment_length": report.translated_alignment_length,
+                            "invalid_codon_count": report.invalid_codon_count,
                             "stop_codon_count": report.stop_codon_count,
                         },
                         data=report,
@@ -15589,6 +15614,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         executable=args.executable or "mafft",
                         mode=args.mode,
                         sequence_type=args.sequence_type,
+                        genetic_code=args.genetic_code,
                         resume=args.resume,
                         timeout_seconds=args.timeout_seconds,
                         incomplete_run_policy=args.incomplete_run_policy,
@@ -15609,10 +15635,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "mode": args.mode,
                                 "codon_aware": True,
                                 "sequence_type": report.sequence_type,
+                                "genetic_code_id": report.genetic_code_id,
                                 "accepted_sequence_count": report.accepted_sequence_count,
                                 "excluded_sequence_count": len(
                                     report.excluded_sequences
                                 ),
+                                "invalid_codon_sequence_count": report.invalid_codon_sequence_count,
                                 "terminal_stop_sequence_count": report.terminal_stop_sequence_count,
                                 "resumed": report.resumed,
                                 "timeout_seconds": report.run.timeout_seconds,

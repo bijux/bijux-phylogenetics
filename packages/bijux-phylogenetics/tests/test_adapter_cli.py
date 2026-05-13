@@ -432,13 +432,16 @@ def test_adapter_align_cli_can_run_codon_aware_alignment(
     assert exit_code == 0
     assert payload["metrics"]["codon_aware"] is True
     assert payload["metrics"]["sequence_type"] == "dna"
+    assert payload["metrics"]["genetic_code_id"] == 1
     assert payload["metrics"]["accepted_sequence_count"] == 2
     assert payload["metrics"]["excluded_sequence_count"] == 2
+    assert payload["metrics"]["invalid_codon_sequence_count"] == 0
     assert output_path.read_text(encoding="utf-8") == (
         ">long_good\nATGGAATGGAAA\n>short_good\nATGGAATGG---\n"
     )
     assert Path(payload["data"]["output_paths"]["guide_input"]).exists()
     assert Path(payload["data"]["output_paths"]["excluded_sequences"]).exists()
+    assert Path(payload["data"]["output_paths"]["coding_summary"]).exists()
 
 
 def test_adapter_align_cli_reports_codon_aware_failures(tmp_path: Path, capsys) -> None:
@@ -468,6 +471,41 @@ def test_adapter_align_cli_reports_codon_aware_failures(tmp_path: Path, capsys) 
     assert exit_code == 2
     assert payload["status"] == "error"
     assert "excluded every sequence" in payload["errors"][0]["message"]
+
+
+def test_adapter_align_cli_honors_configurable_genetic_code(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "coding-mito.fasta"
+    input_path.write_text(
+        ">shared_good\nATGGAATGG\n"
+        ">mito_triplet\nATGTGAGGG\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "codon-aligned.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "align",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--codon-aware",
+            "--genetic-code",
+            "2",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["genetic_code_id"] == 2
+    assert payload["metrics"]["accepted_sequence_count"] == 2
+    assert payload["metrics"]["excluded_sequence_count"] == 0
 
 
 def test_adapter_align_cli_supports_resume_timeout_and_incomplete_policy(
