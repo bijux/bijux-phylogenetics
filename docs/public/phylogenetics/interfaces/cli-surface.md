@@ -3507,20 +3507,60 @@ complete-case taxon set. Its JSON metrics report:
 - `predictor_count`
 - `analysis_taxa`
 - `excluded_taxa`
+- `response_model_count`
+- `coefficient_row_count`
 - `residual_covariance_row_count`
+- `residual_correlation_row_count`
 - `residual_association_count`
+- `warning_count`
 
 The command preserves:
+- `missing_value_policy` with the governed shared complete-case rule
+- `numerical_tolerance` with the governed multivariate comparison tolerance
 - `response_models` with one fitted PGLS result per requested response
+- `response_model_rows` with one explicit fit-summary row per response
+- `coefficient_rows` with one explicit coefficient row per response-term pair
 - `covariance_rows` with one residual covariance row per ordered response pair
+- `correlation_rows` with one residual correlation row per ordered response pair
 - `association_rows` with one residual association row per unique response pair
 - `excluded_taxa` with one explicit complete-case exclusion row per dropped taxon
+- `warnings` with explicit weak-sample-size and singular-covariance warnings when present
 
 This surface is explicit about missing values. A taxon is analyzed only when
-every requested response and every requested predictor is present. Taxa that are
-missing from the trait table, missing from the tree, or missing one required
-value are preserved in the excluded-taxa report instead of disappearing into a
-generic row-count difference.
+every requested response and every requested predictor term can be evaluated.
+Predictor terms are interpreted with the comparative formula parser used by
+PGLS, so categorical predictors, transformed numeric predictors, and explicit
+interaction terms remain governed instead of being treated as raw columns.
+Taxa that are missing from the trait table, missing from the tree, or missing
+one required value are preserved in the excluded-taxa report instead of
+disappearing into a generic row-count difference.
+
+When `--response-models-out` is supplied, `comparative multivariate` writes one
+per-response model ledger as CSV or TSV. Each row preserves:
+- `response`
+- `formula`
+- `predictor_term_count`
+- `encoded_term_count`
+- `taxon_count`
+- `lambda_value`
+- `log_likelihood`
+- `residual_variance`
+- `r_squared`
+- `residual_degrees_of_freedom`
+
+When `--coefficients-out` is supplied, the command writes one per-response
+coefficient ledger as CSV or TSV. Each row preserves:
+- `response`
+- `formula`
+- `term`
+- `estimate`
+- `standard_error`
+- `test_statistic`
+- `p_value`
+- `lower_95_confidence_interval`
+- `upper_95_confidence_interval`
+- `degrees_of_freedom`
+- `inference_distribution`
 
 When `--covariance-out` is supplied, `comparative multivariate` writes one
 residual covariance ledger as CSV or TSV. Each row preserves:
@@ -3529,6 +3569,14 @@ residual covariance ledger as CSV or TSV. Each row preserves:
 - `pair_count`
 - `is_diagonal`
 - `covariance`
+- `correlation`
+
+When `--correlation-out` is supplied, the command writes one residual
+correlation ledger as CSV or TSV. Each row preserves:
+- `left_response`
+- `right_response`
+- `pair_count`
+- `is_diagonal`
 - `correlation`
 
 When `--associations-out` is supplied, the command also writes one residual
@@ -3548,6 +3596,8 @@ excluded-taxa ledger with:
 - `taxon`
 - `reason`
 - `missing_columns`
+- `blocking_responses`
+- `details`
 
 This surface exists so correlated-evolution review can inspect which traits
 still move together after the fitted predictors are accounted for, while also
