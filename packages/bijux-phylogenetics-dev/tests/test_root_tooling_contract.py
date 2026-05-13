@@ -119,6 +119,19 @@ def test_root_make_routes_test_all_plus_run_time_across_repository_packages() ->
     assert root_make.count("\ttest-all-plus-run-time\n") == 3
 
 
+def test_package_makefiles_defer_monorepo_root_dependent_paths() -> None:
+    package_makefiles = [
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics.mk",
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk",
+        REPO_ROOT / "makes" / "packages" / "phylogenetic.mk",
+    ]
+
+    for makefile in package_makefiles:
+        text = makefile.read_text(encoding="utf-8")
+        assert ":= $(MONOREPO_ROOT)" not in text
+        assert ':= "$(MONOREPO_ROOT)' not in text
+
+
 def test_root_apis_surface_has_no_placeholder_readme() -> None:
     apis_root = REPO_ROOT / "apis"
 

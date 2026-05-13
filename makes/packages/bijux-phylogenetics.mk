@@ -9,14 +9,14 @@ ENABLE_RADON := 0
 ENABLE_PYDOCSTYLE := 0
 TEST_PATHS := tests
 TEST_PATHS_UNIT := tests
-TEST_PATHS_EVALUATION := $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests
-TEST_REAL_LOCAL_PATH := $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests/real_local
+TEST_PATHS_EVALUATION = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests
+TEST_REAL_LOCAL_PATH = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests/real_local
 TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"
 TEST_UNIT_DIR_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_UNIT_FALLBACK_ARGS = -k "not e2e and not integration and not functional" -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_EVALUATION_ARGS = -m "evaluation and scientific_validation" -s -p no:cov
 TEST_REAL_LOCAL_ARGS = -m "real_local and engine_real and not scientific_validation" -s -p no:cov
-TEST_CLEAN_PATHS := "$(MONOREPO_ROOT)/.pytest_cache" "$(MONOREPO_ROOT)/.ruff_cache"
+TEST_CLEAN_PATHS = "$(MONOREPO_ROOT)/.pytest_cache" "$(MONOREPO_ROOT)/.ruff_cache"
 QUALITY_PATHS = src tests
 MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini
 QUALITY_MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini

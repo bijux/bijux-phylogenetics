@@ -275,6 +275,39 @@ def test_runtime_package_make_exposes_unfiltered_test_all_plus_run_time_surface(
     assert "test-all-plus-run-time: test" in runtime_make
 
 
+def test_dev_package_make_excludes_slow_tests_by_default() -> None:
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+
+    assert 'TEST_MAIN_ARGS = -m "not slow"' in dev_make
+
+
+def test_dev_package_make_exposes_unfiltered_test_all_surface() -> None:
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+
+    assert 'TEST_MAIN_ARGS = -m "not slow"' in dev_make
+    assert "test-all: TEST_MAIN_ARGS =" in dev_make
+    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
+    assert "test-all: test" in dev_make
+
+
+def test_dev_package_make_exposes_unfiltered_test_all_plus_run_time_surface() -> None:
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+
+    assert 'TEST_MAIN_ARGS = -m "not slow"' in dev_make
+    assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in dev_make
+    assert (
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        in dev_make
+    )
+    assert "test-all-plus-run-time: test" in dev_make
+
+
 def test_long_running_runtime_workflows_stay_slow_marked() -> None:
     expected_slow_functions_by_module = {
         REPO_ROOT
@@ -467,6 +500,7 @@ def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -
     )
 
     assert "PYTEST_ADDOPTS_EXTRA='-o timeout=0'" in root_make
+    assert "test-all: TEST_MAIN_ARGS =" in dev_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in alias_make
 
@@ -486,6 +520,7 @@ def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_
         "PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0'"
         in root_make
     )
+    assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in dev_make
     assert (
         "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
         in dev_make
