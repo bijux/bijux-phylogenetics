@@ -1,0 +1,2 @@
+trait	taxon_column	model	alpha	analyzed_taxon_count	excluded_taxon_count	missing_tip_taxon_count	non_numeric_tip_taxon_count	internal_node_count	unstable_node_count	weak_support_node_count	root_node	root_estimate	root_standard_error	root_lower_95_interval	root_upper_95_interval	warning_count
+value	taxon	brownian	1.0	8	0	0	0	7	6	6	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	0.984459152586866	0.673922271586268	-0.33640422810164	2.30532253327537	2

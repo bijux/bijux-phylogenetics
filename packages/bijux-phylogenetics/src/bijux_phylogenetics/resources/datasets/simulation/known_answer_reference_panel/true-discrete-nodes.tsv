@@ -1,0 +1,16 @@
+node	node_name	is_tip	descendant_taxa	true_state
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	state_a
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4		false	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	state_a
+SimTaxon1|SimTaxon2		false	SimTaxon1,SimTaxon2	state_a
+SimTaxon1	SimTaxon1	true	SimTaxon1	state_a
+SimTaxon2	SimTaxon2	true	SimTaxon2	state_a
+SimTaxon3|SimTaxon4		false	SimTaxon3,SimTaxon4	state_b
+SimTaxon3	SimTaxon3	true	SimTaxon3	state_b
+SimTaxon4	SimTaxon4	true	SimTaxon4	state_b
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	state_a
+SimTaxon5	SimTaxon5	true	SimTaxon5	state_a
+SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon6,SimTaxon7,SimTaxon8	state_a
+SimTaxon6|SimTaxon7		false	SimTaxon6,SimTaxon7	state_c
+SimTaxon6	SimTaxon6	true	SimTaxon6	state_c
+SimTaxon7	SimTaxon7	true	SimTaxon7	state_c
+SimTaxon8	SimTaxon8	true	SimTaxon8	state_a

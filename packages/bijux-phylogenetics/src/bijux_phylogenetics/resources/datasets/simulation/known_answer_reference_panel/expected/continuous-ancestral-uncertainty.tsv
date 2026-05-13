@@ -1,0 +1,8 @@
+node	node_name	descendant_taxa	estimate	standard_error	lower_95_interval	upper_95_interval	uncertainty_width	confidence	interpretation	unstable
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	0.984459152586866	0.673922271586268	-0.33640422810164	2.30532253327537	2.64172676137701	0.0	unstable node estimate	true
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4		SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	0.722710663093246	0.754616304505974	-0.756310115885174	2.20173144207167	2.95804155795684	0.0	unstable node estimate	true
+SimTaxon1|SimTaxon2		SimTaxon1,SimTaxon2	1.23395548775032	0.624779171091567	0.00941081412006	2.45850016138058	2.44908934726052	0.0	unstable node estimate	true
+SimTaxon3|SimTaxon4		SimTaxon3,SimTaxon4	0.0	1e-06	-1.959963985e-06	1.959963985e-06	3.919927969e-06	0.999987050789975	narrow uncertainty	false
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	1.23485831324969	0.676656359346491	-0.091363780979431	2.5610804074788	2.65244418845823	0.0	unstable node estimate	true
+SimTaxon6|SimTaxon7|SimTaxon8		SimTaxon6,SimTaxon7,SimTaxon8	1.14801685223681	0.772221760132425	-0.36550998570087	2.66154369017449	3.02705367587536	0.0	unstable node estimate	true
+SimTaxon6|SimTaxon7		SimTaxon6,SimTaxon7	1.18610068418109	0.224930678508406	0.745244655286451	1.62695671307572	0.881712057789267	0.0	unstable node estimate	true
