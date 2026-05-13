@@ -221,8 +221,11 @@ from bijux_phylogenetics.comparative import (
     ComparativeResidualCladeRow,
     ComparativeResidualTaxonRow,
     MultivariateComparativeRegressionReport,
+    MultivariateResidualCorrelationRow,
     MultivariateResidualAssociationRow,
     MultivariateResidualCovarianceRow,
+    MultivariateResponseCoefficientRow,
+    MultivariateResponseModelRow,
     MultivariateTaxonExclusion,
     PhylogeneticLogisticCoefficient,
     PhylogeneticLogisticFittedRow,
@@ -327,7 +330,10 @@ from bijux_phylogenetics.comparative import (
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
     write_multivariate_excluded_taxa_table,
+    write_multivariate_response_coefficient_table,
+    write_multivariate_response_model_table,
     write_multivariate_residual_association_table,
+    write_multivariate_residual_correlation_table,
     write_multivariate_residual_covariance_table,
     write_phylogenetic_logistic_coefficient_table,
     write_phylogenetic_logistic_excluded_taxa_table,
@@ -2265,12 +2271,24 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is MultivariateComparativeRegressionReport
     )
     assert (
+        bijux_phylogenetics.MultivariateResidualCorrelationRow
+        is MultivariateResidualCorrelationRow
+    )
+    assert (
         bijux_phylogenetics.MultivariateResidualAssociationRow
         is MultivariateResidualAssociationRow
     )
     assert (
         bijux_phylogenetics.MultivariateResidualCovarianceRow
         is MultivariateResidualCovarianceRow
+    )
+    assert (
+        bijux_phylogenetics.MultivariateResponseCoefficientRow
+        is MultivariateResponseCoefficientRow
+    )
+    assert (
+        bijux_phylogenetics.MultivariateResponseModelRow
+        is MultivariateResponseModelRow
     )
     assert (
         bijux_phylogenetics.MultivariateTaxonExclusion
@@ -2377,8 +2395,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is write_multivariate_residual_covariance_table
     )
     assert (
+        bijux_phylogenetics.write_multivariate_residual_correlation_table
+        is write_multivariate_residual_correlation_table
+    )
+    assert (
         bijux_phylogenetics.write_multivariate_residual_association_table
         is write_multivariate_residual_association_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_response_model_table
+        is write_multivariate_response_model_table
+    )
+    assert (
+        bijux_phylogenetics.write_multivariate_response_coefficient_table
+        is write_multivariate_response_coefficient_table
     )
     assert (
         bijux_phylogenetics.write_multivariate_excluded_taxa_table
@@ -9486,9 +9516,27 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     )
     assert (
         resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_residual_correlation_table"
+        ]
+        is write_multivariate_residual_correlation_table
+    )
+    assert (
+        resolved[
             "bijux_phylogenetics.comparative:write_multivariate_residual_association_table"
         ]
         is write_multivariate_residual_association_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_response_model_table"
+        ]
+        is write_multivariate_response_model_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_multivariate_response_coefficient_table"
+        ]
+        is write_multivariate_response_coefficient_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_multivariate_excluded_taxa_table"]
