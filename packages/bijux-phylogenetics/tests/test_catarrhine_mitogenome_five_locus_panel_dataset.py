@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.phylogenomics import (
     export_catarrhine_mitogenome_five_locus_panel_dataset,
     load_catarrhine_mitogenome_five_locus_panel_dataset,
@@ -89,3 +91,37 @@ def test_export_catarrhine_mitogenome_five_locus_panel_dataset_copies_expected_o
     assert len(locus_files) == 5
     assert len(expected_files) == 10
     assert "catarrhine-mitogenome-five-locus-panel.supported.tree" in expected_files
+
+
+def test_cli_demo_catarrhine_mitogenome_five_locus_panel_json_output_reports_multilocus_review(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "catarrhine-demo"
+    exit_code = main(
+        [
+            "demo",
+            "catarrhine-mitogenome-five-locus-panel",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["command"] == "demo"
+    assert payload["metrics"]["artifact_count"] == 18
+    assert payload["metrics"]["taxon_count"] == 6
+    assert payload["metrics"]["locus_count"] == 5
+    assert payload["metrics"]["alignment_length"] == 5222
+    assert payload["metrics"]["partition_count"] == 5
+    assert payload["metrics"]["selected_model"] == "TIM2+F+G4"
+    assert payload["metrics"]["minimum_support"] == 100.0
+    assert payload["metrics"]["maximum_support"] == 100.0
+    assert payload["metrics"]["weakly_supported_clade_count"] == 0
+    assert payload["metrics"]["reference_output_count"] == 10
+    assert payload["data"]["dataset"]["dataset_id"] == (
+        "catarrhine_mitogenome_five_locus_panel"
+    )
+    assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
+        output / "workflow" / "workflow-summary.tsv"
+    )

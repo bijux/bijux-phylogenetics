@@ -37,6 +37,18 @@ from .mammals import (
     run_primate_comparative_workflow,
     write_primate_comparative_workflow_bundle,
 )
+from .phylogenomics import (
+    CatarrhineMitogenomeFiveLocusPanelDataset,
+    CatarrhineMitogenomeFiveLocusPanelDemoResult,
+    CatarrhineMitogenomeFiveLocusPanelExportResult,
+    CatarrhineMitogenomeFiveLocusPanelWorkflowBundle,
+    CatarrhineMitogenomeFiveLocusPanelWorkflowReport,
+    export_catarrhine_mitogenome_five_locus_panel_dataset,
+    load_catarrhine_mitogenome_five_locus_panel_dataset,
+    run_catarrhine_mitogenome_five_locus_panel_demo,
+    run_catarrhine_mitogenome_five_locus_panel_workflow,
+    write_catarrhine_mitogenome_five_locus_panel_workflow_bundle,
+)
 from .rabies_geography import (
     RabiesGeographicTransitionPanelDataset,
     RabiesGeographicTransitionPanelDemoResult,
@@ -158,4 +170,14 @@ __all__ = [
     "run_primate_comparative_demo",
     "run_primate_comparative_workflow",
     "write_primate_comparative_workflow_bundle",
+    "CatarrhineMitogenomeFiveLocusPanelDataset",
+    "CatarrhineMitogenomeFiveLocusPanelDemoResult",
+    "CatarrhineMitogenomeFiveLocusPanelExportResult",
+    "CatarrhineMitogenomeFiveLocusPanelWorkflowBundle",
+    "CatarrhineMitogenomeFiveLocusPanelWorkflowReport",
+    "export_catarrhine_mitogenome_five_locus_panel_dataset",
+    "load_catarrhine_mitogenome_five_locus_panel_dataset",
+    "run_catarrhine_mitogenome_five_locus_panel_demo",
+    "run_catarrhine_mitogenome_five_locus_panel_workflow",
+    "write_catarrhine_mitogenome_five_locus_panel_workflow_bundle",
 ]

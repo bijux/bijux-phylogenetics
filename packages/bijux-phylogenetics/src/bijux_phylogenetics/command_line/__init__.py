@@ -423,6 +423,7 @@ from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.datasets import (
     run_pleistocene_bear_cytb_fragment_demo,
     run_avian_reproductive_trait_demo,
+    run_catarrhine_mitogenome_five_locus_panel_demo,
     run_central_european_seashore_flora_demo,
     run_influenza_a_ha_reference_demo,
     run_primate_comparative_demo,
@@ -5248,6 +5249,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_rabies_geography)
+    demo_catarrhine_mitogenome = demo_subparsers.add_parser(
+        "catarrhine-mitogenome-five-locus-panel",
+        help="Materialize the packaged catarrhine multi-locus dataset and rerun the governed concatenation and partitioned inference outputs.",
+    )
+    demo_catarrhine_mitogenome.add_argument("--out", required=True, type=Path)
+    demo_catarrhine_mitogenome.add_argument("--iqtree-executable", type=str)
+    demo_catarrhine_mitogenome.add_argument("--iqtree-seed", type=int, default=1)
+    demo_catarrhine_mitogenome.add_argument("--iqtree-threads", type=int, default=1)
+    demo_catarrhine_mitogenome.add_argument(
+        "--bootstrap-replicates", type=int, default=1000
+    )
+    demo_catarrhine_mitogenome.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_catarrhine_mitogenome)
 
     adapter = subparsers.add_parser(
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
@@ -14509,6 +14525,73 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "strongly_supported_migration_event_count": (
                                     result.workflow_bundle.strongly_supported_migration_event_count
+                                ),
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "catarrhine-mitogenome-five-locus-panel":
+                result = run_catarrhine_mitogenome_five_locus_panel_demo(
+                    args.out,
+                    iqtree_executable=args.iqtree_executable or "iqtree2",
+                    iqtree_seed=args.iqtree_seed,
+                    iqtree_threads=args.iqtree_threads,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.taxa_path,
+                        *sorted(result.dataset_export.locus_alignment_root.glob("*.fasta")),
+                        result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.supermatrix_path,
+                        result.workflow_bundle.partitions_path,
+                        result.workflow_bundle.occupancy_taxa_path,
+                        result.workflow_bundle.occupancy_loci_path,
+                        result.workflow_bundle.occupancy_matrix_path,
+                        result.workflow_bundle.partition_summary_path,
+                        result.workflow_bundle.model_candidates_path,
+                        result.workflow_bundle.support_tree_path,
+                        result.workflow_bundle.support_table_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "taxon_count": result.dataset.taxon_count,
+                                "locus_count": result.dataset.locus_count,
+                                "alignment_length": (
+                                    result.workflow_bundle.alignment_length
+                                ),
+                                "partition_count": (
+                                    result.workflow_bundle.partition_count
+                                ),
+                                "selected_model": result.workflow_bundle.selected_model,
+                                "minimum_support": (
+                                    result.workflow_bundle.minimum_support
+                                ),
+                                "maximum_support": (
+                                    result.workflow_bundle.maximum_support
+                                ),
+                                "weakly_supported_clade_count": (
+                                    result.workflow_bundle.weakly_supported_clade_count
                                 ),
                                 "reference_output_count": expected_output_count,
                             },
