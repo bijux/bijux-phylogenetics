@@ -1164,9 +1164,7 @@ def _append_tree_likelihood(root: XmlElement) -> None:
         },
     )
     ElementTree.SubElement(likelihood, "siteModel", {"idref": "siteModel"})
-    ElementTree.SubElement(
-        likelihood, "branchRateModel", {"idref": "branchRates"}
-    )
+    ElementTree.SubElement(likelihood, "branchRateModel", {"idref": "branchRates"})
 
 
 def _translate_calibration_distribution(

@@ -312,11 +312,7 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
             "test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples",
             "test_build_scientific_validation_report_separates_claim_statuses",
         },
-        REPO_ROOT
-        / "packages"
-        / "bijux-phylogenetics"
-        / "tests"
-        / "test_runtime.py": {
+        REPO_ROOT / "packages" / "bijux-phylogenetics" / "tests" / "test_runtime.py": {
             "test_cli_benchmark_tree_validation_reports_observations",
             "test_cli_evidence_book_validate_json_output",
             "test_cli_evidence_book_build_json_output",
@@ -409,7 +405,10 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         },
     }
 
-    for module_path, expected_slow_functions in expected_slow_functions_by_module.items():
+    for (
+        module_path,
+        expected_slow_functions,
+    ) in expected_slow_functions_by_module.items():
         assert expected_slow_functions <= _slow_marked_functions(module_path)
 
 
@@ -451,7 +450,10 @@ def test_long_running_maintainer_governance_surfaces_stay_slow_marked() -> None:
         },
     }
 
-    for module_path, expected_slow_functions in expected_slow_functions_by_module.items():
+    for (
+        module_path,
+        expected_slow_functions,
+    ) in expected_slow_functions_by_module.items():
         assert expected_slow_functions <= _slow_marked_functions(module_path)
 
 
