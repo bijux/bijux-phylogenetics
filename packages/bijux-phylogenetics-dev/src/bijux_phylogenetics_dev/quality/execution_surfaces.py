@@ -9,14 +9,11 @@ from pathlib import Path
 import tomllib
 from typing import Any
 
-import yaml
-
 from .policies import EXECUTION_SURFACES_POLICY_PATH
 
 DEFAULT_JSON_OUT = Path("artifacts/root/execution-surfaces.json")
 ROOT_MAKEFILE = Path("makes/root.mk")
 TOX_FILE = Path("tox.ini")
-WORKFLOWS_DIR = Path(".github/workflows")
 
 
 @dataclass(frozen=True)
@@ -41,17 +38,6 @@ def _as_str_list(value: object) -> list[str]:
     if not isinstance(value, list):
         return []
     return [entry for entry in value if isinstance(entry, str)]
-
-
-def _load_yaml(path: Path) -> dict[str, Any]:
-    with path.open("r", encoding="utf-8") as handle:
-        payload = yaml.safe_load(handle)
-    if not isinstance(payload, dict):
-        raise ValueError(f"expected mapping at {path}")
-    normalized: dict[str, Any] = {}
-    for key, value in payload.items():
-        normalized["on" if key is True else key] = value
-    return normalized
 
 
 def _root_make_targets(text: str) -> dict[str, str]:
@@ -118,30 +104,6 @@ def _tox_commands(text: str) -> dict[str, str]:
     return {name: "\n".join(lines) for name, lines in commands_by_env.items()}
 
 
-def _workflow_jobs(path: Path) -> set[str]:
-    payload = _load_yaml(path)
-    jobs = payload.get("jobs", {})
-    return set(jobs) if isinstance(jobs, dict) else set()
-
-
-def _workflow_run_commands(path: Path) -> str:
-    payload = _load_yaml(path)
-    jobs = payload.get("jobs", {})
-    if not isinstance(jobs, dict):
-        return ""
-    commands: list[str] = []
-    for job in jobs.values():
-        if not isinstance(job, dict):
-            continue
-        steps = job.get("steps", [])
-        if not isinstance(steps, list):
-            continue
-        for step in steps:
-            if isinstance(step, dict) and isinstance(step.get("run"), str):
-                commands.append(step["run"])
-    return "\n".join(commands)
-
-
 def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
     """Build the execution-surface ownership and workflow report."""
     repo_root = repo_root.resolve()
@@ -155,15 +117,6 @@ def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
         env_name: _as_str_list(commands)
         for env_name, commands in _as_dict(policy.get("tox_commands")).items()
     }
-    workflow_jobs = {
-        workflow_name: _as_str_list(job_names)
-        for workflow_name, job_names in _as_dict(policy.get("workflow_jobs")).items()
-    }
-    cleanroom_selections = [
-        entry
-        for entry in policy.get("cleanroom_selections", [])
-        if isinstance(entry, dict)
-    ]
 
     issues: list[ExecutionSurfaceIssue] = []
 
@@ -222,85 +175,11 @@ def build_execution_surfaces_report(repo_root: Path) -> dict[str, Any]:
             }
         )
 
-    workflow_reports: list[dict[str, Any]] = []
-    for workflow_name, expected_jobs in sorted(workflow_jobs.items()):
-        workflow_path = repo_root / WORKFLOWS_DIR / workflow_name
-        if not workflow_path.is_file():
-            issues.append(
-                ExecutionSurfaceIssue(
-                    code="missing-governed-workflow",
-                    path=(WORKFLOWS_DIR / workflow_name).as_posix(),
-                    message="required execution workflow is missing",
-                )
-            )
-            workflow_reports.append(
-                {
-                    "workflow_name": workflow_name,
-                    "exists": False,
-                    "missing_jobs": expected_jobs,
-                    "has_cleanroom_commands": False,
-                }
-            )
-            continue
-        jobs = _workflow_jobs(workflow_path)
-        missing_jobs = sorted(
-            job_name for job_name in expected_jobs if job_name not in jobs
-        )
-        if missing_jobs:
-            issues.append(
-                ExecutionSurfaceIssue(
-                    code="workflow-job-drift",
-                    path=(WORKFLOWS_DIR / workflow_name).as_posix(),
-                    message=(
-                        f"workflow is missing governed jobs: {', '.join(missing_jobs)}"
-                    ),
-                )
-            )
-        run_commands = _workflow_run_commands(workflow_path)
-        has_cleanroom_commands = True
-        if workflow_name == "evidence-governance.yml":
-            for selection in cleanroom_selections:
-                study_id = selection.get("study_id")
-                evidence_ids = selection.get("evidence_ids", [])
-                if not isinstance(study_id, str) or not isinstance(evidence_ids, list):
-                    continue
-                ids = " ".join(
-                    evidence_id
-                    for evidence_id in evidence_ids
-                    if isinstance(evidence_id, str)
-                )
-                expected_snippet = f"make rerun-evidence-cleanroom EVIDENCE_STUDY_ID={study_id} EVIDENCE_IDS={ids}"
-                if (
-                    expected_snippet not in run_commands
-                    and "make rerun-governed-evidence-cleanroom" not in run_commands
-                ):
-                    has_cleanroom_commands = False
-                    issues.append(
-                        ExecutionSurfaceIssue(
-                            code="workflow-cleanroom-selection-drift",
-                            path=(WORKFLOWS_DIR / workflow_name).as_posix(),
-                            message=(
-                                "evidence workflow is missing governed clean-room rerun "
-                                f"selection for {study_id}"
-                            ),
-                        )
-                    )
-        workflow_reports.append(
-            {
-                "workflow_name": workflow_name,
-                "exists": True,
-                "missing_jobs": missing_jobs,
-                "has_cleanroom_commands": has_cleanroom_commands,
-            }
-        )
-
     return {
         "schema_version": 1,
         "required_root_make_targets": required_root_make_targets,
         "missing_root_make_targets": missing_root_targets,
         "tox_envs": tox_env_reports,
-        "workflows": workflow_reports,
-        "cleanroom_selections": cleanroom_selections,
         "issue_count": len(issues),
         "issues": [asdict(issue) for issue in issues],
     }

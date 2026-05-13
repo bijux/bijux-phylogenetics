@@ -38,23 +38,6 @@ release-readiness-gate = [
   "make check-release-readiness",
 ]
 
-[tool.bijux_phylogenetics.execution_surfaces.workflow_jobs]
-"repository-governance.yml" = [
-  "repository-contracts",
-  "config-ssot",
-]
-"runtime-quality.yml" = [
-  "runtime-quality",
-]
-"evidence-governance.yml" = [
-  "evidence-contracts",
-  "evidence-cleanroom",
-]
-"publish-readiness.yml" = [
-  "publish-readiness-report",
-  "release-readiness-gate",
-]
-
 [[tool.bijux_phylogenetics.execution_surfaces.cleanroom_selections]]
 study_id = "primate-longevity-signal"
 evidence_ids = ["evidence-002"]

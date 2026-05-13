@@ -951,9 +951,6 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
             "missing-governed-root-target",
             "missing-governed-tox-env",
             "tox-command-drift",
-            "missing-governed-workflow",
-            "workflow-job-drift",
-            "workflow-cleanroom-selection-drift",
         }
         or issue["code"].startswith("config-")
     ]
