@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 from typing import Any, TypeAlias
-from xml.etree import ElementTree
+from xml.etree import ElementTree  # nosec B405
 
 from defusedxml import ElementTree as SafeXmlET
 from defusedxml.common import DefusedXmlException
@@ -61,6 +61,22 @@ _BEAST_TREE_PATTERN = re.compile(
 )
 _BEAST_TREE_STATE_PATTERN = re.compile(r"STATE_(\d+)$", flags=re.IGNORECASE)
 XmlElement: TypeAlias = Any
+
+
+def _xml_element(
+    tag: str,
+    attributes: dict[str, str] | None = None,
+    *,
+    text: str | None = None,
+    children: tuple[XmlElement, ...] = (),
+) -> XmlElement:
+    """Build one trusted XML element for BEAST output assembly."""
+    element = ElementTree.Element(tag, attributes or {})
+    if text is not None:
+        element.text = text
+    for child in children:
+        element.append(child)
+    return element
 
 
 @dataclass(slots=True)
@@ -644,34 +660,75 @@ def _append_substitution_and_site_model(
 
         prior_elements.extend(
             [
-                ElementTree.fromstring(
-                    "<distribution id='hky.kappa.prior' spec='beast.base.inference.distribution.Prior' x='@hky.kappa'>"
-                    "<distr id='hky.kappa.lognormal' M='1.0' S='1.25' meanInRealSpace='false' "
-                    "spec='beast.base.inference.distribution.LogNormalDistributionModel' />"
-                    "</distribution>"
+                _xml_element(
+                    "distribution",
+                    {
+                        "id": "hky.kappa.prior",
+                        "spec": "beast.base.inference.distribution.Prior",
+                        "x": "@hky.kappa",
+                    },
+                    children=(
+                        _xml_element(
+                            "distr",
+                            {
+                                "id": "hky.kappa.lognormal",
+                                "M": "1.0",
+                                "S": "1.25",
+                                "meanInRealSpace": "false",
+                                "spec": "beast.base.inference.distribution.LogNormalDistributionModel",
+                            },
+                        ),
+                    ),
                 ),
-                ElementTree.fromstring(
-                    "<distribution id='hky.frequencies.prior' spec='beast.base.inference.distribution.Prior' x='@hky.frequencies'>"
-                    "<distr id='hky.frequencies.uniform' lower='0.0' upper='1.0' "
-                    "spec='beast.base.inference.distribution.Uniform' />"
-                    "</distribution>"
+                _xml_element(
+                    "distribution",
+                    {
+                        "id": "hky.frequencies.prior",
+                        "spec": "beast.base.inference.distribution.Prior",
+                        "x": "@hky.frequencies",
+                    },
+                    children=(
+                        _xml_element(
+                            "distr",
+                            {
+                                "id": "hky.frequencies.uniform",
+                                "lower": "0.0",
+                                "upper": "1.0",
+                                "spec": "beast.base.inference.distribution.Uniform",
+                            },
+                        ),
+                    ),
                 ),
             ]
         )
         operator_elements.extend(
             [
-                ElementTree.fromstring(
-                    "<operator id='kappaScaler' spec='ScaleOperator' scaleFactor='0.75' weight='0.1' parameter='@hky.kappa' />"
+                _xml_element(
+                    "operator",
+                    {
+                        "id": "kappaScaler",
+                        "spec": "ScaleOperator",
+                        "scaleFactor": "0.75",
+                        "weight": "0.1",
+                        "parameter": "@hky.kappa",
+                    },
                 ),
-                ElementTree.fromstring(
-                    "<operator id='frequenciesDelta' spec='DeltaExchangeOperator' delta='0.01' weight='0.1' parameter='@hky.frequencies' />"
+                _xml_element(
+                    "operator",
+                    {
+                        "id": "frequenciesDelta",
+                        "spec": "DeltaExchangeOperator",
+                        "delta": "0.01",
+                        "weight": "0.1",
+                        "parameter": "@hky.frequencies",
+                    },
                 ),
             ]
         )
         logger_elements.extend(
             [
-                ElementTree.fromstring("<log idref='hky.kappa' />"),
-                ElementTree.fromstring("<log idref='hky.frequencies' />"),
+                _xml_element("log", {"idref": "hky.kappa"}),
+                _xml_element("log", {"idref": "hky.frequencies"}),
             ]
         )
         return state_node_ids, prior_elements, operator_elements, logger_elements
@@ -776,18 +833,39 @@ def _append_clock_model(
         )
         state_node_ids.append("clockRate")
         prior_elements.append(
-            ElementTree.fromstring(
-                "<distribution id='clockRate.prior' spec='beast.base.inference.distribution.Prior' x='@clockRate'>"
-                "<distr id='clockRate.uniform' lower='0.0' upper='100.0' spec='beast.base.inference.distribution.Uniform' />"
-                "</distribution>"
+            _xml_element(
+                "distribution",
+                {
+                    "id": "clockRate.prior",
+                    "spec": "beast.base.inference.distribution.Prior",
+                    "x": "@clockRate",
+                },
+                children=(
+                    _xml_element(
+                        "distr",
+                        {
+                            "id": "clockRate.uniform",
+                            "lower": "0.0",
+                            "upper": "100.0",
+                            "spec": "beast.base.inference.distribution.Uniform",
+                        },
+                    ),
+                ),
             )
         )
         operator_elements.append(
-            ElementTree.fromstring(
-                "<operator id='clockRateScaler' spec='ScaleOperator' scaleFactor='0.75' weight='3' parameter='@clockRate' />"
+            _xml_element(
+                "operator",
+                {
+                    "id": "clockRateScaler",
+                    "spec": "ScaleOperator",
+                    "scaleFactor": "0.75",
+                    "weight": "3",
+                    "parameter": "@clockRate",
+                },
             )
         )
-        logger_elements.append(ElementTree.fromstring("<log idref='clockRate' />"))
+        logger_elements.append(_xml_element("log", {"idref": "clockRate"}))
         return state_node_ids, prior_elements, operator_elements, logger_elements
     if normalized != "relaxed-lognormal":
         raise ValueError(
@@ -839,39 +917,92 @@ def _append_clock_model(
     ElementTree.SubElement(relaxed, "tree", {"idref": "tree"})
     state_node_ids.extend(["ucld.mean", "ucld.stdev", "rateCategories"])
     prior_elements.append(
-        ElementTree.fromstring(
-            "<distribution id='ucld.stdev.prior' spec='beast.base.inference.distribution.Prior' x='@ucld.stdev'>"
-            "<distr id='ucld.stdev.exponential' mean='0.3333333333333333' spec='beast.base.inference.distribution.Exponential' />"
-            "</distribution>"
+        _xml_element(
+            "distribution",
+            {
+                "id": "ucld.stdev.prior",
+                "spec": "beast.base.inference.distribution.Prior",
+                "x": "@ucld.stdev",
+            },
+            children=(
+                _xml_element(
+                    "distr",
+                    {
+                        "id": "ucld.stdev.exponential",
+                        "mean": "0.3333333333333333",
+                        "spec": "beast.base.inference.distribution.Exponential",
+                    },
+                ),
+            ),
         )
     )
     operator_elements.extend(
         [
-            ElementTree.fromstring(
-                "<operator id='ucldMeanScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@ucld.mean' />"
+            _xml_element(
+                "operator",
+                {
+                    "id": "ucldMeanScaler",
+                    "spec": "ScaleOperator",
+                    "scaleFactor": "0.75",
+                    "weight": "1",
+                    "parameter": "@ucld.mean",
+                },
             ),
-            ElementTree.fromstring(
-                "<operator id='ucldStdevScaler' spec='ScaleOperator' scaleFactor='0.75' weight='3' parameter='@ucld.stdev' />"
+            _xml_element(
+                "operator",
+                {
+                    "id": "ucldStdevScaler",
+                    "spec": "ScaleOperator",
+                    "scaleFactor": "0.75",
+                    "weight": "3",
+                    "parameter": "@ucld.stdev",
+                },
             ),
-            ElementTree.fromstring(
-                "<operator id='rateCategoriesRandomWalk' spec='IntRandomWalkOperator' windowSize='1' weight='10' parameter='@rateCategories' />"
+            _xml_element(
+                "operator",
+                {
+                    "id": "rateCategoriesRandomWalk",
+                    "spec": "IntRandomWalkOperator",
+                    "windowSize": "1",
+                    "weight": "10",
+                    "parameter": "@rateCategories",
+                },
             ),
-            ElementTree.fromstring(
-                "<operator id='rateCategoriesSwap' spec='SwapOperator' howMany='1' weight='10' intparameter='@rateCategories' />"
+            _xml_element(
+                "operator",
+                {
+                    "id": "rateCategoriesSwap",
+                    "spec": "SwapOperator",
+                    "howMany": "1",
+                    "weight": "10",
+                    "intparameter": "@rateCategories",
+                },
             ),
-            ElementTree.fromstring(
-                "<operator id='rateCategoriesUniform' spec='UniformOperator' weight='10' parameter='@rateCategories' />"
+            _xml_element(
+                "operator",
+                {
+                    "id": "rateCategoriesUniform",
+                    "spec": "UniformOperator",
+                    "weight": "10",
+                    "parameter": "@rateCategories",
+                },
             ),
         ]
     )
     logger_elements.extend(
         [
-            ElementTree.fromstring("<log idref='ucld.mean' />"),
-            ElementTree.fromstring("<log idref='ucld.stdev' />"),
-            ElementTree.fromstring(
-                "<log id='rateStatistic' spec='beast.base.evolution.RateStatistic' tree='@tree' branchratemodel='@branchRates' />"
+            _xml_element("log", {"idref": "ucld.mean"}),
+            _xml_element("log", {"idref": "ucld.stdev"}),
+            _xml_element(
+                "log",
+                {
+                    "id": "rateStatistic",
+                    "spec": "beast.base.evolution.RateStatistic",
+                    "tree": "@tree",
+                    "branchratemodel": "@branchRates",
+                },
             ),
-            ElementTree.fromstring("<log idref='rateCategories' />"),
+            _xml_element("log", {"idref": "rateCategories"}),
         ]
     )
     return state_node_ids, prior_elements, operator_elements, logger_elements
@@ -886,13 +1017,18 @@ def _append_tree_prior(
     state_node_ids: list[str] = ["birthRate"]
     prior_elements: list[XmlElement] = []
     operator_elements: list[XmlElement] = [
-        ElementTree.fromstring(
-            "<operator id='birthRateScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@birthRate' />"
+        _xml_element(
+            "operator",
+            {
+                "id": "birthRateScaler",
+                "spec": "ScaleOperator",
+                "scaleFactor": "0.75",
+                "weight": "1",
+                "parameter": "@birthRate",
+            },
         )
     ]
-    logger_elements: list[XmlElement] = [
-        ElementTree.fromstring("<log idref='birthRate' />")
-    ]
+    logger_elements: list[XmlElement] = [_xml_element("log", {"idref": "birthRate"})]
     if normalized == "yule":
         yule = ElementTree.SubElement(
             root,
@@ -908,17 +1044,31 @@ def _append_tree_prior(
         )
         prior_elements.extend(
             [
-                ElementTree.fromstring(
-                    "<distribution id='treePrior.distribution' idref='treePrior' />"
+                _xml_element(
+                    "distribution",
+                    {"id": "treePrior.distribution", "idref": "treePrior"},
                 ),
-                ElementTree.fromstring(
-                    "<distribution id='birthRate.prior' spec='beast.base.inference.distribution.Prior' x='@birthRate'>"
-                    "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.base.inference.distribution.OneOnX' />"
-                    "</distribution>"
+                _xml_element(
+                    "distribution",
+                    {
+                        "id": "birthRate.prior",
+                        "spec": "beast.base.inference.distribution.Prior",
+                        "x": "@birthRate",
+                    },
+                    children=(
+                        _xml_element(
+                            "distr",
+                            {
+                                "id": "birthRate.oneOnX",
+                                "offset": "0.0",
+                                "spec": "beast.base.inference.distribution.OneOnX",
+                            },
+                        ),
+                    ),
                 ),
             ]
         )
-        logger_elements.insert(0, ElementTree.fromstring("<log idref='treePrior' />"))
+        logger_elements.insert(0, _xml_element("log", {"idref": "treePrior"}))
         return state_node_ids, prior_elements, operator_elements, logger_elements
     if normalized != "birth-death":
         raise ValueError(
@@ -956,26 +1106,47 @@ def _append_tree_prior(
     state_node_ids.append("relativeDeathRate")
     prior_elements.extend(
         [
-            ElementTree.fromstring(
-                "<distribution id='treePrior.distribution' idref='treePrior' />"
+            _xml_element(
+                "distribution",
+                {"id": "treePrior.distribution", "idref": "treePrior"},
             ),
-            ElementTree.fromstring(
-                "<distribution id='birthRate.prior' spec='beast.base.inference.distribution.Prior' x='@birthRate'>"
-                "<distr id='birthRate.oneOnX' offset='0.0' spec='beast.base.inference.distribution.OneOnX' />"
-                "</distribution>"
+            _xml_element(
+                "distribution",
+                {
+                    "id": "birthRate.prior",
+                    "spec": "beast.base.inference.distribution.Prior",
+                    "x": "@birthRate",
+                },
+                children=(
+                    _xml_element(
+                        "distr",
+                        {
+                            "id": "birthRate.oneOnX",
+                            "offset": "0.0",
+                            "spec": "beast.base.inference.distribution.OneOnX",
+                        },
+                    ),
+                ),
             ),
         ]
     )
     logger_elements.extend(
         [
-            ElementTree.fromstring("<log idref='treePrior' />"),
-            ElementTree.fromstring("<log idref='relativeDeathRate' />"),
-            ElementTree.fromstring("<log idref='sampleProbability' />"),
+            _xml_element("log", {"idref": "treePrior"}),
+            _xml_element("log", {"idref": "relativeDeathRate"}),
+            _xml_element("log", {"idref": "sampleProbability"}),
         ]
     )
     operator_elements.append(
-        ElementTree.fromstring(
-            "<operator id='relativeDeathRateScaler' spec='ScaleOperator' scaleFactor='0.75' weight='1' parameter='@relativeDeathRate' />"
+        _xml_element(
+            "operator",
+            {
+                "id": "relativeDeathRateScaler",
+                "spec": "ScaleOperator",
+                "scaleFactor": "0.75",
+                "weight": "1",
+                "parameter": "@relativeDeathRate",
+            },
         )
     )
     return state_node_ids, prior_elements, operator_elements, logger_elements
@@ -1675,21 +1846,55 @@ def prepare_beast_time_tree_analysis(
     ElementTree.SubElement(posterior, "distribution", {"idref": "likelihood"})
 
     generic_tree_operators = [
-        ElementTree.fromstring(
-            "<operator id='treeScaler' spec='ScaleOperator' scaleFactor='0.75' weight='3' tree='@tree' />"
+        _xml_element(
+            "operator",
+            {
+                "id": "treeScaler",
+                "spec": "ScaleOperator",
+                "scaleFactor": "0.75",
+                "weight": "3",
+                "tree": "@tree",
+            },
         ),
-        ElementTree.fromstring("<operator spec='Uniform' weight='30' tree='@tree' />"),
-        ElementTree.fromstring(
-            "<operator spec='SubtreeSlide' weight='15' gaussian='true' size='0.5' tree='@tree' />"
+        _xml_element("operator", {"spec": "Uniform", "weight": "30", "tree": "@tree"}),
+        _xml_element(
+            "operator",
+            {
+                "spec": "SubtreeSlide",
+                "weight": "15",
+                "gaussian": "true",
+                "size": "0.5",
+                "tree": "@tree",
+            },
         ),
-        ElementTree.fromstring(
-            "<operator id='narrowExchange' spec='Exchange' isNarrow='true' weight='15' tree='@tree' />"
+        _xml_element(
+            "operator",
+            {
+                "id": "narrowExchange",
+                "spec": "Exchange",
+                "isNarrow": "true",
+                "weight": "15",
+                "tree": "@tree",
+            },
         ),
-        ElementTree.fromstring(
-            "<operator id='wideExchange' spec='Exchange' isNarrow='false' weight='3' tree='@tree' />"
+        _xml_element(
+            "operator",
+            {
+                "id": "wideExchange",
+                "spec": "Exchange",
+                "isNarrow": "false",
+                "weight": "3",
+                "tree": "@tree",
+            },
         ),
-        ElementTree.fromstring(
-            "<operator id='wilsonBalding' spec='WilsonBalding' weight='3' tree='@tree' />"
+        _xml_element(
+            "operator",
+            {
+                "id": "wilsonBalding",
+                "spec": "WilsonBalding",
+                "weight": "3",
+                "tree": "@tree",
+            },
         ),
     ]
     for operator in [
