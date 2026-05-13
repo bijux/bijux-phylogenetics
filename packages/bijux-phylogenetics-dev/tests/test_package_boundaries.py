@@ -169,12 +169,11 @@ def test_load_package_boundary_policy_reads_repo_owned_policy() -> None:
 def test_runtime_package_boundary_policy_allows_secured_xml_dependency() -> None:
     policy = load_package_boundary_policy(REPO_ROOT)
 
-    assert (
-        policy.package_roles["bijux-phylogenetics"].required_install_dependencies
-        == (
-            "biopython>=1.87,<2.0",
-            "defusedxml>=0.7.1,<1.0",
-        )
+    assert policy.package_roles[
+        "bijux-phylogenetics"
+    ].required_install_dependencies == (
+        "biopython>=1.87,<2.0",
+        "defusedxml>=0.7.1,<1.0",
     )
 
 
