@@ -430,6 +430,9 @@ from bijux_phylogenetics.datasets import (
     run_rabies_geographic_transition_panel_demo,
     run_rabies_cross_host_panel_demo,
 )
+from bijux_phylogenetics.datasets.known_answer_reference import (
+    run_known_answer_reference_demo,
+)
 from bijux_phylogenetics.datasets.data_quality_stress import (
     run_catarrhine_data_quality_stress_panel_demo,
 )
@@ -5276,6 +5279,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_catarrhine_stress)
+    demo_known_answer = demo_subparsers.add_parser(
+        "known-answer-reference-panel",
+        help="Materialize the packaged known-answer simulation dataset and rerun the governed recovery outputs.",
+    )
+    demo_known_answer.add_argument("--out", required=True, type=Path)
+    demo_known_answer.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_known_answer)
 
     adapter = subparsers.add_parser(
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
@@ -14672,6 +14684,73 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "repaired_branch_count": (
                                     result.workflow_bundle.repaired_branch_count
+                                ),
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "known-answer-reference-panel":
+                result = run_known_answer_reference_demo(args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.true_tree_path,
+                        result.dataset_export.alignment_path,
+                        result.dataset_export.continuous_traits_path,
+                        result.dataset_export.discrete_traits_path,
+                        result.dataset_export.true_parameters_path,
+                        result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.distance_tree_path,
+                        result.workflow_bundle.tree_recovery_path,
+                        result.workflow_bundle.parameter_recovery_path,
+                        result.workflow_bundle.brownian_fit_summary_path,
+                        result.workflow_bundle.continuous_ancestral_summary_path,
+                        result.workflow_bundle.continuous_node_recovery_path,
+                        result.workflow_bundle.discrete_ancestral_summary_path,
+                        result.workflow_bundle.discrete_node_recovery_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "taxon_count": result.dataset.taxon_count,
+                                "sequence_length": result.dataset.sequence_length,
+                                "distance_method": result.dataset.distance_method,
+                                "distance_model": result.dataset.distance_model,
+                                "rooted_topology_equal": (
+                                    result.workflow_bundle.rooted_topology_equal
+                                ),
+                                "same_unrooted_topology": (
+                                    result.workflow_bundle.same_unrooted_topology
+                                ),
+                                "same_taxa_different_rooting": (
+                                    result.workflow_bundle.same_taxa_different_rooting
+                                ),
+                                "robinson_foulds_distance": (
+                                    result.workflow_bundle.robinson_foulds_distance
+                                ),
+                                "continuous_internal_node_mean_absolute_error": (
+                                    result.workflow_bundle.continuous_internal_node_mean_absolute_error
+                                ),
+                                "discrete_internal_node_accuracy": (
+                                    result.workflow_bundle.discrete_internal_node_accuracy
                                 ),
                                 "reference_output_count": expected_output_count,
                             },

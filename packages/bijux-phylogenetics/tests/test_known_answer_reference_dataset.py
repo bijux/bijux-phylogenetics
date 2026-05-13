@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.known_answer_reference import (
     export_known_answer_reference_dataset,
     load_known_answer_reference_dataset,
@@ -96,3 +98,36 @@ def test_export_known_answer_reference_dataset_copies_expected_outputs(
     assert result.true_discrete_nodes_path.is_file()
     assert len(expected_files) == 11
     assert "workflow-summary.tsv" in expected_files
+
+
+def test_cli_demo_known_answer_reference_panel_json_output_reports_recovery_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "known-answer-demo"
+    exit_code = main(
+        [
+            "demo",
+            "known-answer-reference-panel",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["command"] == "demo"
+    assert payload["metrics"]["artifact_count"] == 16
+    assert payload["metrics"]["taxon_count"] == 8
+    assert payload["metrics"]["sequence_length"] == 5000
+    assert payload["metrics"]["distance_method"] == "neighbor-joining"
+    assert payload["metrics"]["distance_model"] == "p-distance"
+    assert payload["metrics"]["rooted_topology_equal"] is False
+    assert payload["metrics"]["same_unrooted_topology"] is True
+    assert payload["metrics"]["same_taxa_different_rooting"] is True
+    assert payload["metrics"]["robinson_foulds_distance"] == 3
+    assert payload["metrics"]["discrete_internal_node_accuracy"] == 1.0
+    assert payload["metrics"]["reference_output_count"] == 11
+    assert payload["data"]["dataset"]["dataset_id"] == "known_answer_reference_panel"
+    assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
+        output / "workflow" / "workflow-summary.tsv"
+    )
