@@ -341,6 +341,41 @@ and intentional: it keeps the compact rabies panel interpretable for geography
 review instead of overstating locality-level movement certainty from a tiny
 demo panel.
 
+When the goal is to prove one full sequence-to-result biological workflow on a
+real compact pathogen panel, use `demo rabies-cross-host-geography-panel`.
+This workflow starts from raw rabies nucleoprotein sequences plus one combined
+host-and-geography metadata table, reruns alignment, trimming,
+maximum-likelihood inference, bootstrap support estimation, explicit outgroup
+rooting, host-switching review, geographic transition review, migration-event
+extraction, and one final HTML handoff.
+
+```bash
+bijux-phylogenetics demo rabies-cross-host-geography-panel \
+  --out artifacts/rabies-cross-host-geography-panel \
+  --mafft-executable mafft \
+  --trimal-executable trimal \
+  --iqtree-executable iqtree2 \
+  --json
+```
+
+The packaged integrated workflow writes the same dataset/workflow split as the
+other demos, but it keeps the full scientific chain together:
+
+- aligned FASTA and trimmed FASTA
+- maximum-likelihood rooted tree with bootstrap support ledger
+- explicit rooting-evidence ledger
+- host-switch summary, node, branch, count, fit, unsupported-claim, and exclusion ledgers
+- full biogeography package with ancestral-region tree, transition matrix, migration events, and self-contained map
+- integrated HTML report and machine-readable manifest
+
+The packaged metadata carries both raw `host_species` and `country` provenance
+plus the grouped workflow traits `host_group` and `region_group`. Those grouped
+traits are explicit and intentional: they keep one small real rabies panel
+interpretable for end-to-end host and geography review without overstating
+species-level or locality-level resolution. This integrated workflow does
+depend on external `mafft`, `trimal`, and `iqtree2` executables because it
+reruns the real sequence-to-tree path instead of relying on a pre-rooted tree.
+
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
