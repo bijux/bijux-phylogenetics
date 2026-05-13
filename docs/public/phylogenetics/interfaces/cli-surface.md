@@ -4392,6 +4392,14 @@ outputs instead of re-parsing free text. The SH-aLRT command also exposes
 annotated-branch counts, SH-aLRT minima and maxima, and conflicting-signal
 counts for the combined SH-aLRT/UFBoot review surface.
 
+`adapter fasta-to-tree` is the governed raw-FASTA workflow surface above those
+direct IQ-TREE adapters. It keeps `.aln`, `.trimmed.aln`, `.tree`, `.log`,
+`.model.tsv`, `.support.tsv`, `.manifest.json`, and `.run.json` sidecars in
+one review bundle, while leaving the step-specific engine artifacts under
+`engine-artifacts/`. Its public validation corpus compares those reviewer-facing
+artifacts semantically rather than byte-for-byte so stable scientific results
+are not rejected because of harmless path or timestamp differences.
+
 `adapter infer-fast` is the governed FastTree surface for aligned matrices when
 speed matters more than fully optimized ML search. It keeps the inferred tree
 plus `.support.tsv`, `.low-support.tsv`, and `.support-histogram.tsv` sidecars,
