@@ -288,6 +288,50 @@ This command requires only IQ-TREE. The loci are already aligned, so the
 governed demo focuses on multi-locus assembly and partitioned inference rather
 than raw alignment generation.
 
+`demo catarrhine-data-quality-stress-panel` is the governed packaged dirty-data
+stress surface. It materializes the shipped catarrhine stress panel into one
+output directory and reruns the owned audit-and-cleanup workflow over its raw
+alignment, tree, and traits inputs. Its JSON metrics report:
+
+- `artifact_count`
+- `raw_taxon_count`
+- `cleaned_taxon_count`
+- `duplicate_trait_taxon_count`
+- `missing_trait_value_count`
+- `sequence_outlier_count`
+- `tree_zero_length_branch_count`
+- `tree_long_branch_outlier_count`
+- `dropped_taxon_count`
+- `repaired_branch_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/raw/alignment.fasta`
+- `dataset/raw/tree.nwk`
+- `dataset/raw/traits.csv`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/trait-duplicates.tsv`
+- `workflow/trait-missing-values.tsv`
+- `workflow/sequence-outliers.tsv`
+- `workflow/tree-issues.tsv`
+- `workflow/repair-actions.tsv`
+- `workflow/cleaned-traits.csv`
+- `workflow/cleaned-alignment.fasta`
+- `workflow/cleaned-tree.nwk`
+- `workflow/cleaned-linkage.tsv`
+- `workflow/cleaned-validation.tsv`
+- `overview.md`
+
+The packaged stress contract is explicit about scope:
+
+- the raw alignment is already aligned and is stress-tested through composition review, not alignment generation
+- the raw tree is intentionally dirty in branch lengths, not in syntax
+- the raw trait table is intentionally dirty in duplicates and missingness
+- the workflow resolves duplicates deterministically and writes one cleaned comparative subset instead of mutating the raw dataset in place
+
 `demo rabies-cross-host-panel` is the governed packaged pathogen
 host-switching surface. It materializes the shipped rabies nucleoprotein panel
 into one output directory and reruns the owned host-switching workflow over
