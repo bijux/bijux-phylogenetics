@@ -420,6 +420,7 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "test_known_answer_reference_dataset.py": {
             "test_write_known_answer_reference_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_known_answer_reference_demo_materializes_dataset_and_workflow",
+            "test_public_runtime_exports_include_known_answer_reference_surface",
             "test_cli_demo_known_answer_reference_panel_json_output_reports_recovery_metrics",
         },
         REPO_ROOT
