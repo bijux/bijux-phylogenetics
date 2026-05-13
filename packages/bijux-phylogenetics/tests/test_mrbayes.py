@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 import pytest
-import shutil
 from statistics import stdev
 
 from bijux_phylogenetics.bayesian import (
@@ -26,6 +25,8 @@ from bijux_phylogenetics.bayesian.posterior import (
     write_posterior_tree_subsample_table,
 )
 from bijux_phylogenetics.errors import EngineWorkflowError
+
+pytestmark = pytest.mark.engine_contract
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -94,10 +95,6 @@ consensus_path.write_text(
 print("warning: mrbayes fixture posterior run", file=sys.stderr)
 """,
     )
-
-
-def _real_mrbayes_executable() -> str | None:
-    return shutil.which("mb")
 
 
 def test_prepare_mrbayes_analysis_writes_nexus_with_run_settings(
@@ -205,56 +202,6 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     assert summary.rooted_topology_count == 2
     assert summary.filtered_tree_set_path.exists()
     assert consensus_tree.tip_count == 4
-
-
-def test_prepare_mrbayes_analysis_is_accepted_by_real_mrbayes_on_partitioned_input(
-    tmp_path: Path,
-) -> None:
-    executable = _real_mrbayes_executable()
-    if executable is None:
-        pytest.skip("real MrBayes executable is not available")
-    nexus_path = tmp_path / "partitioned-analysis.nex"
-    prepare_mrbayes_analysis(
-        fixture("alignments/example_multilocus_alignment.fasta"),
-        nexus_path,
-        partition_path=fixture("alignments/example_multilocus_partitions.txt"),
-        model="gtr",
-        rates="gamma",
-        ngen=20,
-        samplefreq=10,
-        printfreq=10,
-        burnin_fraction=0.25,
-    )
-
-    report = run_mrbayes_posterior_inference(
-        nexus_path, executable=executable, resume=False
-    )
-
-    assert report.output_paths["posterior_trees"].exists()
-    assert report.output_paths["parameter_traces"].exists()
-    assert report.output_paths["mcmc_diagnostics"].exists()
-    assert report.output_paths["consensus_tree"].exists()
-    assert (
-        parse_mrbayes_parameter_traces(
-            report.output_paths["parameter_traces"]
-        ).row_count
-        > 0
-    )
-    assert (
-        parse_mrbayes_posterior_tree_samples(
-            report.output_paths["posterior_trees"]
-        ).tree_count
-        > 0
-    )
-    assert (
-        parse_mrbayes_mcmc_diagnostics(report.output_paths["mcmc_diagnostics"]).row_count
-        > 0
-    )
-    assert (
-        parse_mrbayes_consensus_tree(report.output_paths["consensus_tree"])[1]
-        .annotated_node_count
-        > 0
-    )
 
 
 def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(

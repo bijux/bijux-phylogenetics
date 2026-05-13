@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets import (
@@ -12,7 +14,14 @@ from bijux_phylogenetics.datasets import (
     run_influenza_a_ha_reference_workflow,
     write_influenza_a_ha_reference_workflow_bundle,
 )
-from tests.support.external_engines import require_alignment_engine_executables
+from .support.external_engines import require_alignment_engine_executables
+
+pytestmark = [
+    pytest.mark.real_local,
+    pytest.mark.evaluation,
+    pytest.mark.scientific_validation,
+    pytest.mark.slow,
+]
 
 
 def test_load_influenza_a_ha_reference_dataset_exposes_packaged_viral_surface() -> None:

@@ -7,7 +7,14 @@ import pytest
 
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
-from tests.support.external_engines import require_alignment_engine_executables
+from .support.external_engines import require_alignment_engine_executables
+
+pytestmark = [
+    pytest.mark.real_local,
+    pytest.mark.evaluation,
+    pytest.mark.scientific_validation,
+    pytest.mark.slow,
+]
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 REAL_INPUT_ROOT = Path(

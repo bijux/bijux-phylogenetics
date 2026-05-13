@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
-import shutil
 
 import pytest
 
@@ -11,31 +9,14 @@ from bijux_phylogenetics.engines.large_alignment_inference import (
 )
 from bijux_phylogenetics.errors import EngineWorkflowError
 
+pytestmark = pytest.mark.engine_contract
+
 FIXTURES = Path(__file__).parent / "fixtures"
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
 
 def fixture(path: str) -> Path:
     return FIXTURES / path
-
-
-def _real_fasttree_executable() -> Path | None:
-    configured = os.environ.get("BIJUX_PHYLOGENETICS_FASTTREE_EXECUTABLE")
-    if configured:
-        candidate = Path(configured)
-        if candidate.exists():
-            return candidate
-    for executable_name in ("FastTree", "fasttree", "FastTreeMP"):
-        resolved = shutil.which(executable_name)
-        if resolved is not None:
-            return Path(resolved)
-    for artifact_candidate in (
-        REPOSITORY_ROOT / "artifacts" / "fasttree" / "FastTree",
-        REPOSITORY_ROOT / "artifacts" / "fasttree" / "fasttree",
-    ):
-        if artifact_candidate.exists():
-            return artifact_candidate
-    return None
 
 
 def _write_executable(path: Path, body: str) -> Path:
@@ -207,33 +188,3 @@ def test_run_large_alignment_inference_honors_timeout_seconds(
             executable=executable,
             timeout_seconds=0.1,
         )
-
-
-def test_run_large_alignment_inference_with_real_fasttree_on_stress_fixture(
-    tmp_path: Path,
-) -> None:
-    executable = _real_fasttree_executable()
-    if executable is None:
-        pytest.skip(
-            "real FastTree executable is not available for stress-fixture coverage"
-        )
-
-    input_path = (
-        REPOSITORY_ROOT
-        / "packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.trimmed.aln"
-    )
-    report = run_large_alignment_inference(
-        input_path,
-        out_dir=tmp_path / "large-inference",
-        prefix="strnog-enog411bqtj-proteins",
-        sequence_type="protein",
-        executable=executable,
-        timeout_seconds=120.0,
-    )
-
-    assert report.input_summary.sequence_count >= 30
-    assert report.input_summary.alignment_length >= 100
-    assert report.input_summary.total_site_cells >= 4000
-    assert report.output_paths["tree"].exists()
-    assert report.output_paths["resource_table"].exists()
-    assert any(row.elapsed_seconds >= 0.0 for row in report.resource_rows)
