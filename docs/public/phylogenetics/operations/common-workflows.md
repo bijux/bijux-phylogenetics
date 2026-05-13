@@ -18,6 +18,7 @@ Typical public workflows include:
 - assemble aligned loci into a concatenated supermatrix
 - audit a concatenated multi-locus matrix before inference
 - run a comparative model and capture JSON plus report artifacts
+- build a full comparative analysis review package from one tree and trait table
 - reconstruct ancestral regions and inspect transition evidence
 - generate a review-ready figure package for a tree
 
@@ -1612,6 +1613,44 @@ keeps one unique response-pair row with the same covariance and correlation
 plus a correlation test statistic, p-value, and Fisher-style interval. The
 excluded-taxa ledger makes the complete-case rule explicit by recording which
 taxa were dropped because a required response or predictor column was blank.
+
+When the goal is to hand a reviewer one durable comparative bundle rather than
+separate regression, signal, contrast, and diagnostics outputs, use
+`comparative report`. This workflow fits the integrated comparative surface and
+materializes one HTML report plus flat TSV ledgers for the model formula,
+coefficient table, residual summary, phylogenetic signal, model comparison,
+biological interpretation, audit trail, and independent contrasts.
+
+```bash
+bijux-phylogenetics comparative report \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --formula "longevity ~ brain_mass_g + habitat" \
+  --taxon-column species \
+  --lambda-value estimate \
+  --out-dir artifacts/primates.comparative-report \
+  --json
+```
+
+The package directory keeps the comparative decision chain reviewable in one
+place:
+
+- `comparative-report.html` with integrated reviewer-facing narrative and tables
+- `comparative-summary.tsv` with formula, selected model, signal, and fit summary
+- `coefficient-table.tsv` with one explicit PGLS coefficient row
+- `residual-summary.tsv` with one row per fitted residual-diagnostic surface
+- `signal-summary.tsv` with Blomberg's K, Pagel's lambda, and contrast counts
+- `model-comparison.tsv` with the Brownian-versus-OU fit comparison
+- `interpretation-table.tsv` with explicit claim, evidence, and caution rows
+- `audit-table.tsv` with taxa used, excluded taxa, assumptions, and warnings
+- `contrast-table.tsv` with one independent-contrast row per internal node
+- `comparative-report.manifest.json` with checksums and output inventory
+
+This surface is intentionally different from a generic HTML export. It keeps
+the regression formula, coefficient uncertainty, residual diagnostics,
+phylogenetic signal, and model comparison together so biological interpretation
+can be reviewed against the exact evidence rather than reconstructed later from
+separate commands.
 
 When the goal is to detect whether one fitted comparative model is leaving
 systematic residual structure inside particular subtrees, use
