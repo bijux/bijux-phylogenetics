@@ -10,6 +10,7 @@ from bijux_phylogenetics.bayesian.beast import (
     assess_beast_chain_mixing,
     assess_calibration_dominance,
     assess_time_tree_readiness,
+    summarize_beast_analysis_xml,
     validate_beast_posterior_log,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
@@ -304,6 +305,7 @@ def write_bayesian_methods_summary_text(
     posterior_tree_path: Path,
     primary_log_path: Path,
     additional_log_paths: list[Path] | None = None,
+    analysis_xml_path: Path | None = None,
     tree_prior: str = "unspecified",
     clock_model: str = "unspecified",
     burnin_fractions: tuple[float, ...] = DEFAULT_BURNIN_FRACTIONS,
@@ -338,6 +340,34 @@ def write_bayesian_methods_summary_text(
         min(summary.kept_tree_count for summary in burnin.slices),
         max(summary.kept_tree_count for summary in burnin.slices),
     )
+    resolved_analysis_xml_path = _resolve_beast_analysis_xml_path(
+        analysis_xml_path=analysis_xml_path,
+        primary_log_path=primary_log_path,
+    )
+    analysis_summary = (
+        None
+        if resolved_analysis_xml_path is None
+        else summarize_beast_analysis_xml(resolved_analysis_xml_path)
+    )
+    resolved_clock_model = clock_model
+    resolved_tree_prior = tree_prior
+    chain_settings_text = "Chain settings were not available because no analysis XML was supplied."
+    analysis_xml_text = "No analysis XML was supplied, so XML-derived BEAST assumptions were unavailable."
+    if analysis_summary is not None:
+        if analysis_summary.clock_model is not None:
+            resolved_clock_model = analysis_summary.clock_model
+        if analysis_summary.tree_prior is not None:
+            resolved_tree_prior = analysis_summary.tree_prior
+        chain_settings_text = (
+            f"The prepared BEAST XML `{resolved_analysis_xml_path.name}` declares chain length "
+            f"`{analysis_summary.chain_length}` with posterior log `{analysis_summary.posterior_log_path.name if analysis_summary.posterior_log_path is not None else 'unspecified'}` "
+            f"and posterior tree log `{analysis_summary.posterior_tree_path.name if analysis_summary.posterior_tree_path is not None else 'unspecified'}`."
+        )
+        analysis_xml_text = (
+            f"The prepared BEAST XML `{resolved_analysis_xml_path.name}` declares `{analysis_summary.starting_tree_source}` starting trees, "
+            f"`{analysis_summary.substitution_model}` substitution, `{resolved_clock_model}` clock, `{resolved_tree_prior}` tree prior, "
+            f"`{analysis_summary.calibration_count}` calibration prior(s), and `{analysis_summary.tip_date_count}` dated tip(s)."
+        )
     calibration_text = "No calibration table was provided."
     if calibration_path is not None:
         calibration_text = (
@@ -350,8 +380,9 @@ def write_bayesian_methods_summary_text(
     text = (
         "# Bayesian Analysis Methods Summary\n\n"
         f"We evaluated the posterior tree sample in `{posterior_tree_path.name}` against the primary log `{primary_log_path.name}`. "
-        f"The analysis is described here as using a `{clock_model}` clock model and a `{tree_prior}` tree prior. "
+        f"The analysis is described here as using a `{resolved_clock_model}` clock model and a `{resolved_tree_prior}` tree prior. "
         f"{calibration_text} {tip_date_text}\n\n"
+        f"{analysis_xml_text} {chain_settings_text}\n\n"
         f"The posterior log was checked for required columns `{', '.join(required_columns)}`, monotonic state progression, and numeric parameter values; "
         f"{len(validation.issues)} validation issue(s) were detected. "
         f"Burn-in sensitivity was reviewed across fractions `{', '.join(format(value, '.15g') for value in burnin_fractions)}`, retaining between "
@@ -368,6 +399,38 @@ def write_bayesian_methods_summary_text(
         warning_count=warning_count,
         text=text,
     )
+
+
+def _resolve_beast_analysis_xml_path(
+    *,
+    analysis_xml_path: Path | None,
+    primary_log_path: Path,
+) -> Path | None:
+    if analysis_xml_path is not None:
+        return analysis_xml_path
+    direct_candidate = primary_log_path.with_suffix(".xml")
+    if direct_candidate.exists():
+        return direct_candidate
+    seeded_candidate = primary_log_path.with_name(
+        _strip_beast_output_suffix(primary_log_path.name) + ".xml"
+    )
+    if seeded_candidate.exists():
+        return seeded_candidate
+    return None
+
+
+def _strip_beast_output_suffix(file_name: str) -> str:
+    for suffix in (".log", ".trees"):
+        if not file_name.endswith(suffix):
+            continue
+        stem = file_name[: -len(suffix)]
+        if stem.endswith(".$(seed)"):
+            return stem[: -len(".$(seed)")]
+        parts = stem.rsplit(".", 1)
+        if len(parts) == 2 and parts[1].isdigit():
+            return parts[0]
+        return stem
+    return file_name
 
 
 def write_bayesian_limitations_text(

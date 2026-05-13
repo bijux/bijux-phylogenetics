@@ -1845,6 +1845,21 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     assert prepare_payload["metrics"]["beast_data_type"] == "nucleotide"
     assert analysis_path.exists()
 
+    xml_exit = main(
+        [
+            "adapter",
+            "beast-xml",
+            str(analysis_path),
+            "--json",
+        ]
+    )
+    xml_payload = json.loads(capsys.readouterr().out)
+    assert xml_exit == 0
+    assert xml_payload["metrics"]["valid"] is True
+    assert xml_payload["metrics"]["chain_length"] == 1000000
+    assert xml_payload["metrics"]["calibration_count"] == 2
+    assert xml_payload["metrics"]["tip_date_count"] == 4
+
     calibrations_exit = main(
         [
             "adapter",
@@ -2165,6 +2180,8 @@ def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(
             str(fixture("metadata/example_beast.log")),
             "--additional-logs",
             str(second_chain),
+            "--analysis-xml",
+            str(fixture("metadata/beast2_strict_yule_posterior.xml")),
             "--out",
             str(methods_path),
             "--tree-prior",
@@ -2190,7 +2207,9 @@ def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(
     methods_payload = json.loads(capsys.readouterr().out)
     assert methods_exit == 0
     assert methods_payload["metrics"]["warning_count"] >= 0
-    assert "relaxed-lognormal" in methods_path.read_text(encoding="utf-8")
+    methods_text = methods_path.read_text(encoding="utf-8")
+    assert "strict" in methods_text
+    assert "beast2_strict_yule_posterior.xml" in methods_text
 
 
 def test_adapter_beast_log_cli_writes_summary_table_with_parameter_categories(

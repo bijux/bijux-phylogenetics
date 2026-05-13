@@ -9,6 +9,7 @@ from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
     assess_time_tree_readiness,
+    summarize_beast_analysis_xml,
     detect_impossible_calibration_constraints,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
@@ -362,6 +363,7 @@ def render_bayesian_diagnostics_report(
     primary_log_path: Path,
     out_path: Path,
     additional_log_paths: list[Path] | None = None,
+    analysis_xml_path: Path | None = None,
     tree_path: Path | None = None,
     calibration_path: Path | None = None,
     tip_dates_path: Path | None = None,
@@ -384,6 +386,15 @@ def render_bayesian_diagnostics_report(
         burnin_fractions=burnin_fractions,
     )
     log_paths = [primary_log_path, *(additional_log_paths or [])]
+    resolved_analysis_xml_path = _resolve_beast_analysis_xml_path(
+        analysis_xml_path=analysis_xml_path,
+        primary_log_path=primary_log_path,
+    )
+    analysis_summary = (
+        None
+        if resolved_analysis_xml_path is None
+        else summarize_beast_analysis_xml(resolved_analysis_xml_path)
+    )
     mixing = assess_beast_chain_mixing(
         log_paths,
         ess_threshold=ess_threshold,
@@ -430,6 +441,7 @@ def render_bayesian_diagnostics_report(
         posterior_tree_path=posterior_tree_path,
         primary_log_path=primary_log_path,
         additional_log_paths=additional_log_paths,
+        analysis_xml_path=resolved_analysis_xml_path,
         burnin_fractions=burnin_fractions,
         ess_threshold=ess_threshold,
         mean_shift_threshold=mean_shift_threshold,
@@ -456,6 +468,18 @@ def render_bayesian_diagnostics_report(
     )
     title = "Bijux Bayesian Diagnostics Report"
     sections = [
+        *(
+            [
+                (
+                    "analysis-assumptions",
+                    json.dumps(
+                        asdict(analysis_summary), default=str, indent=2, sort_keys=True
+                    ),
+                )
+            ]
+            if analysis_summary is not None
+            else []
+        ),
         (
             "posterior-log-validation",
             json.dumps(asdict(validation), default=str, indent=2, sort_keys=True),
@@ -476,6 +500,8 @@ def render_bayesian_diagnostics_report(
         ("limitations-text", limitations_summary.text),
     ]
     warning_count = len(validation.issues) + len(burnin.warnings) + len(mixing.issues)
+    if analysis_summary is not None:
+        warning_count += len(analysis_summary.issues)
     if calibration_report is not None:
         sections.append(
             (
@@ -511,6 +537,9 @@ def render_bayesian_diagnostics_report(
         "title": title,
         "posterior_tree_path": str(posterior_tree_path),
         "primary_log_path": str(primary_log_path),
+        "analysis_xml_path": None
+        if resolved_analysis_xml_path is None
+        else str(resolved_analysis_xml_path),
         "chain_count": len(log_paths),
         "warning_count": warning_count,
         "sections": [name for name, _ in sections],
@@ -534,6 +563,38 @@ def render_bayesian_diagnostics_report(
         warning_count=warning_count,
         machine_manifest=machine_manifest,
     )
+
+
+def _resolve_beast_analysis_xml_path(
+    *,
+    analysis_xml_path: Path | None,
+    primary_log_path: Path,
+) -> Path | None:
+    if analysis_xml_path is not None:
+        return analysis_xml_path
+    direct_candidate = primary_log_path.with_suffix(".xml")
+    if direct_candidate.exists():
+        return direct_candidate
+    seeded_candidate = primary_log_path.with_name(
+        _strip_beast_output_suffix(primary_log_path.name) + ".xml"
+    )
+    if seeded_candidate.exists():
+        return seeded_candidate
+    return None
+
+
+def _strip_beast_output_suffix(file_name: str) -> str:
+    for suffix in (".log", ".trees"):
+        if not file_name.endswith(suffix):
+            continue
+        stem = file_name[: -len(suffix)]
+        if stem.endswith(".$(seed)"):
+            return stem[: -len(".$(seed)")]
+        parts = stem.rsplit(".", 1)
+        if len(parts) == 2 and parts[1].isdigit():
+            return parts[0]
+        return stem
+    return file_name
 
 
 def render_ml_vs_bayesian_tree_report(

@@ -127,6 +127,7 @@ from bijux_phylogenetics.bayesian import (
     run_mrbayes_posterior_inference,
     subsample_beast_posterior_tree_set,
     subsample_mrbayes_posterior_tree_set,
+    summarize_beast_analysis_xml,
     summarize_beast_log,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
@@ -5951,6 +5952,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the preparation report as JSON."
     )
     _add_manifest_argument(adapter_beast_prepare)
+    adapter_beast_xml = adapter_subparsers.add_parser(
+        "beast-xml",
+        help="Summarize and validate one prepared BEAST analysis XML.",
+    )
+    adapter_beast_xml.add_argument("input_path", type=Path)
+    adapter_beast_xml.add_argument(
+        "--json", action="store_true", help="Emit the XML summary report as JSON."
+    )
+    _add_manifest_argument(adapter_beast_xml)
     adapter_beast_run = adapter_subparsers.add_parser(
         "beast-run",
         help="Run a prepared BEAST posterior inference workflow.",
@@ -6259,6 +6269,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_bayesian_methods.add_argument("posterior_trees", type=Path)
     adapter_bayesian_methods.add_argument("--log", required=True, type=Path)
     adapter_bayesian_methods.add_argument("--additional-logs", nargs="*", type=Path)
+    adapter_bayesian_methods.add_argument("--analysis-xml", type=Path)
     adapter_bayesian_methods.add_argument("--out", required=True, type=Path)
     adapter_bayesian_methods.add_argument("--tree-prior", default="unspecified")
     adapter_bayesian_methods.add_argument("--clock-model", default="unspecified")
@@ -16521,11 +16532,45 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "taxon_count": report.taxon_count,
+                            "character_count": report.character_count,
                             "calibration_count": report.calibration_count,
                             "tip_date_count": report.tip_date_count,
                             "warning_count": report.warning_count,
                             "starting_tree_source": report.starting_tree_source,
                             "beast_data_type": report.beast_data_type,
+                            "substitution_model": report.substitution_model,
+                            "clock_model": report.clock_model,
+                            "tree_prior": report.tree_prior,
+                            "chain_length": report.chain_length,
+                            "log_every": report.log_every,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-xml":
+                report = summarize_beast_analysis_xml(args.input_path)
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        metrics={
+                            "valid": report.valid,
+                            "issue_count": len(report.issues),
+                            "taxon_count": report.taxon_count,
+                            "character_count": report.character_count,
+                            "calibration_count": report.calibration_count,
+                            "tip_date_count": report.tip_date_count,
+                            "chain_length": report.chain_length,
+                            "logger_count": report.logger_count,
                         },
                         data=report,
                     ),
@@ -17065,6 +17110,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     posterior_tree_path=args.posterior_trees,
                     primary_log_path=args.log,
                     additional_log_paths=args.additional_logs,
+                    analysis_xml_path=args.analysis_xml,
                     tree_prior=args.tree_prior,
                     clock_model=args.clock_model,
                     calibration_path=args.calibration_path,
@@ -17074,7 +17120,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     mean_shift_threshold=args.mean_shift_threshold,
                     cross_chain_mean_shift_threshold=args.cross_chain_mean_shift_threshold,
                 )
-                inputs = [args.posterior_trees, args.log, *(args.additional_logs or [])]
+                inputs = [
+                    args.posterior_trees,
+                    args.log,
+                    *(args.additional_logs or []),
+                    *([args.analysis_xml] if args.analysis_xml is not None else []),
+                ]
                 outputs = _finalize_outputs(
                     args, command="adapter", inputs=inputs, outputs=[args.out]
                 )

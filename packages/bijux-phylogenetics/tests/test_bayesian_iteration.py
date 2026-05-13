@@ -429,6 +429,7 @@ def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnosti
         posterior_tree_path=fixture("trees/example_tree_set_left.nwk"),
         primary_log_path=fixture("metadata/example_beast.log"),
         additional_log_paths=[second_chain],
+        analysis_xml_path=fixture("metadata/beast2_strict_yule_posterior.xml"),
         tree_prior="birth-death",
         clock_model="relaxed-lognormal",
         calibration_path=fixture("metadata/example_calibrations.tsv"),
@@ -441,10 +442,12 @@ def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnosti
 
     text = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
-    assert "relaxed-lognormal" in text
-    assert "birth-death" in text
+    assert "strict" in text
+    assert "yule" in text
     assert "example_calibrations.tsv" in text
     assert "effective sample size" in text
+    assert "beast2_strict_yule_posterior.xml" in text
+    assert "chain length" in text.lower()
 
 
 def test_write_bayesian_limitations_text_includes_diagnostics_and_dating_risks(
