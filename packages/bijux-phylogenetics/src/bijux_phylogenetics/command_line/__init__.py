@@ -123,6 +123,7 @@ from bijux_phylogenetics.bayesian import (
     prepare_mrbayes_analysis,
     render_bayesian_posterior_report,
     render_calibration_audit_report,
+    run_beast_posterior_inference,
     run_mrbayes_posterior_inference,
     subsample_beast_posterior_tree_set,
     subsample_mrbayes_posterior_tree_set,
@@ -1023,6 +1024,30 @@ def _add_manifest_argument(parser: argparse.ArgumentParser) -> None:
         "--manifest",
         type=Path,
         help="Write a reproducibility manifest to this JSON path.",
+    )
+
+
+def _add_external_adapter_execution_arguments(
+    parser: argparse.ArgumentParser,
+    *,
+    include_resume: bool = True,
+) -> None:
+    if include_resume:
+        parser.add_argument(
+            "--resume",
+            action="store_true",
+            help="Reuse one completed governed engine run when the manifest, inputs, and outputs still match.",
+        )
+    parser.add_argument(
+        "--timeout-seconds",
+        type=float,
+        help="Stop the governed engine execution if it exceeds this wall-clock budget.",
+    )
+    parser.add_argument(
+        "--incomplete-run-policy",
+        choices=("reject", "clean"),
+        default="reject",
+        help="Reject or clean incomplete governed engine outputs before starting a new run.",
     )
 
 
@@ -5420,6 +5445,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_align.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_align)
     _add_manifest_argument(adapter_align)
     adapter_trim = adapter_subparsers.add_parser(
         "trim", help="Run external alignment trimming."
@@ -5437,6 +5463,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_trim.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_trim)
     _add_manifest_argument(adapter_trim)
     adapter_model = adapter_subparsers.add_parser(
         "model-select", help="Run external sequence-model selection."
@@ -5456,6 +5483,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_model.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_model)
     _add_manifest_argument(adapter_model)
     adapter_ml = adapter_subparsers.add_parser(
         "infer-ml", help="Run maximum-likelihood tree inference."
@@ -5476,6 +5504,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_ml.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_ml)
     _add_manifest_argument(adapter_ml)
     adapter_bootstrap = adapter_subparsers.add_parser(
         "bootstrap", help="Run bootstrap support estimation."
@@ -5497,6 +5526,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_bootstrap.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_bootstrap)
     _add_manifest_argument(adapter_bootstrap)
     adapter_sh_alrt = adapter_subparsers.add_parser(
         "sh-alrt",
@@ -5520,6 +5550,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_sh_alrt.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_sh_alrt)
     _add_manifest_argument(adapter_sh_alrt)
     adapter_fasta_to_tree = adapter_subparsers.add_parser(
         "fasta-to-tree", help="Run alignment-to-tree inference from raw FASTA."
@@ -5572,6 +5603,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_fasta_to_tree.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_fasta_to_tree)
     _add_manifest_argument(adapter_fasta_to_tree)
     adapter_consensus = adapter_subparsers.add_parser(
         "consensus", help="Build a consensus tree from bootstrap trees."
@@ -5584,6 +5616,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_consensus.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_consensus)
     _add_manifest_argument(adapter_consensus)
     adapter_fast = adapter_subparsers.add_parser(
         "infer-fast", help="Run fast approximate tree inference."
@@ -5597,6 +5630,7 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_fast.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_fast)
     _add_manifest_argument(adapter_fast)
     adapter_large = adapter_subparsers.add_parser(
         "infer-large",
@@ -5614,6 +5648,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--timeout-seconds",
         type=float,
         help="Stop the FastTree inference step if it exceeds this wall-clock budget.",
+    )
+    adapter_large.add_argument(
+        "--incomplete-run-policy",
+        choices=("reject", "clean"),
+        default="reject",
+        help="Reject or clean incomplete FastTree outputs before starting a new large-alignment run.",
     )
     adapter_large.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
@@ -5664,6 +5704,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Emit the comparison workflow report as JSON.",
     )
+    _add_external_adapter_execution_arguments(adapter_compare_engines)
     _add_manifest_argument(adapter_compare_engines)
     adapter_reproducibility = adapter_subparsers.add_parser(
         "reproducibility",
@@ -5732,10 +5773,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     adapter_mrbayes_run.add_argument("input_path", type=Path)
     adapter_mrbayes_run.add_argument("--executable", type=str)
-    adapter_mrbayes_run.add_argument("--resume", action="store_true")
     adapter_mrbayes_run.add_argument(
         "--json", action="store_true", help="Emit the workflow report as JSON."
     )
+    _add_external_adapter_execution_arguments(adapter_mrbayes_run)
     _add_manifest_argument(adapter_mrbayes_run)
     adapter_mrbayes_summarize = adapter_subparsers.add_parser(
         "mrbayes-summarize",
@@ -5910,6 +5951,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the preparation report as JSON."
     )
     _add_manifest_argument(adapter_beast_prepare)
+    adapter_beast_run = adapter_subparsers.add_parser(
+        "beast-run",
+        help="Run a prepared BEAST posterior inference workflow.",
+    )
+    adapter_beast_run.add_argument("input_path", type=Path)
+    adapter_beast_run.add_argument("--executable", type=str)
+    adapter_beast_run.add_argument("--threads", type=int, default=1)
+    adapter_beast_run.add_argument("--seed", type=int, default=1)
+    adapter_beast_run.add_argument(
+        "--no-overwrite",
+        action="store_true",
+        help="Keep any existing posterior outputs instead of passing the BEAST overwrite flag.",
+    )
+    adapter_beast_run.add_argument(
+        "--json", action="store_true", help="Emit the workflow report as JSON."
+    )
+    _add_external_adapter_execution_arguments(adapter_beast_run)
+    _add_manifest_argument(adapter_beast_run)
     adapter_beast_calibrations = adapter_subparsers.add_parser(
         "beast-calibrations",
         help="Validate a fossil calibration table against a tree.",
@@ -15462,6 +15521,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         executable=args.executable or "mafft",
                         mode=args.mode,
                         sequence_type=args.sequence_type,
+                        resume=args.resume,
+                        timeout_seconds=args.timeout_seconds,
+                        incomplete_run_policy=args.incomplete_run_policy,
                     )
                     outputs = _finalize_outputs(
                         args,
@@ -15484,6 +15546,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                     report.excluded_sequences
                                 ),
                                 "terminal_stop_sequence_count": report.terminal_stop_sequence_count,
+                                "resumed": report.resumed,
+                                "timeout_seconds": report.run.timeout_seconds,
                             },
                             data=report,
                         ),
@@ -15495,6 +15559,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.out,
                     executable=args.executable or "mafft",
                     mode=args.mode,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -15512,6 +15579,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "mode": args.mode,
                             "codon_aware": False,
                             "warning_count": len(report.run.warning_lines),
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -15525,6 +15594,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     executable=args.executable or "trimal",
                     mode=args.mode,
                     gap_threshold=args.gap_threshold,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -15561,6 +15633,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 if report.trimming_summary is None
                                 else report.trimming_summary.trimmed_gap_percentage
                             ),
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -15575,6 +15649,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     executable=args.executable or "iqtree2",
                     sequence_type=args.sequence_type,
                     partition_path=args.partitions,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 adapter_inputs = (
                     [args.input_path]
@@ -15622,6 +15699,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "log_likelihood": report.log_likelihood,
                             "partitioned": args.partitions is not None,
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -15637,6 +15716,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     executable=args.executable or "iqtree2",
                     sequence_type=args.sequence_type,
                     partition_path=args.partitions,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 adapter_inputs = (
                     [args.input_path]
@@ -15674,6 +15756,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 else report.iqtree_summary.support_value_count
                             ),
                             "partitioned": args.partitions is not None,
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -15690,6 +15774,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     executable=args.executable or "iqtree2",
                     sequence_type=args.sequence_type,
                     partition_path=args.partitions,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 adapter_inputs = (
                     [args.input_path]
@@ -15753,6 +15840,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 else report.bootstrap_support_summary.support_histogram
                             ),
                             "partitioned": args.partitions is not None,
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -15770,6 +15859,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     executable=args.executable or "iqtree2",
                     sequence_type=args.sequence_type,
                     partition_path=args.partitions,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 adapter_inputs = (
                     [args.input_path]
@@ -15829,6 +15921,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 else report.sh_alrt_support_summary.maximum_ufboot_support
                             ),
                             "partitioned": args.partitions is not None,
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -15852,6 +15946,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     bootstrap_replicates=args.bootstrap_replicates,
                     normalize_identifiers=args.normalize_identifiers,
                     remove_invalid_records=args.remove_invalid_records,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -15894,6 +15991,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "removed_record_count": 0
                             if report.input_repair is None
                             else len(report.input_repair.removed_records),
+                            "resumed": any(
+                                workflow.resumed
+                                for workflow in (
+                                    report.alignment_workflow,
+                                    report.trimming_workflow,
+                                    report.model_selection_workflow,
+                                    report.maximum_likelihood_workflow,
+                                    report.bootstrap_workflow,
+                                )
+                            ),
+                            "timeout_seconds": args.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -15907,6 +16015,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     prefix=args.prefix,
                     executable=args.executable or "iqtree2",
                     minimum_support=args.minimum_support,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -15920,7 +16031,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[args.input_path],
                         outputs=outputs,
                         warnings=report.run.warning_lines,
-                        metrics={"minimum_support": args.minimum_support},
+                        metrics={
+                            "minimum_support": args.minimum_support,
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
+                        },
                         data=report,
                     ),
                     json_output=args.json,
@@ -15932,6 +16047,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.out,
                     executable=args.executable or "FastTree",
                     sequence_type=args.sequence_type,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -15982,6 +16100,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 if report.fasttree_support_summary is None
                                 else report.fasttree_support_summary.weakly_supported_clade_count
                             ),
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -16029,6 +16149,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.input_path,
                     executable=args.executable or "mb",
                     resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -16045,6 +16167,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "warning_count": len(report.run.warning_lines),
                             "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -16403,6 +16526,42 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "warning_count": report.warning_count,
                             "starting_tree_source": report.starting_tree_source,
                             "beast_data_type": report.beast_data_type,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.adapter_command == "beast-run":
+                report = run_beast_posterior_inference(
+                    args.input_path,
+                    executable=args.executable or "beast",
+                    overwrite=not args.no_overwrite,
+                    threads=args.threads,
+                    seed=args.seed,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="adapter",
+                    inputs=[args.input_path],
+                    outputs=[*report.output_paths.values(), report.manifest_path],
+                )
+                _print_result(
+                    build_command_result(
+                        command="adapter",
+                        inputs=[args.input_path],
+                        outputs=outputs,
+                        warnings=report.run.warning_lines,
+                        metrics={
+                            "warning_count": len(report.run.warning_lines),
+                            "threads": args.threads,
+                            "seed": args.seed,
+                            "overwrite": not args.no_overwrite,
+                            "resumed": report.resumed,
+                            "timeout_seconds": report.run.timeout_seconds,
                         },
                         data=report,
                     ),
@@ -16939,6 +17098,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     executable=args.executable or "FastTree",
                     timeout_seconds=args.timeout_seconds,
                     resume=args.resume,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -17010,6 +17170,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     iqtree_seed=args.iqtree_seed,
                     iqtree_threads=args.iqtree_threads,
                     bootstrap_replicates=args.bootstrap_replicates,
+                    resume=args.resume,
+                    timeout_seconds=args.timeout_seconds,
+                    incomplete_run_policy=args.incomplete_run_policy,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -17038,6 +17201,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 for row in report.conflicting_clade_rows
                                 if row.conflict_kind == "support_disagreement"
                             ),
+                            "resumed": any(
+                                workflow.resumed
+                                for workflow in (
+                                    report.model_selection_workflow,
+                                    report.iqtree_support_workflow,
+                                    report.fasttree_workflow,
+                                )
+                            ),
+                            "timeout_seconds": args.timeout_seconds,
                         },
                         data=report,
                     ),

@@ -286,6 +286,41 @@ print("warning: mrbayes fixture posterior run", file=sys.stderr)
     )
 
 
+def _fake_beast(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree STATE_20 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+print("warning: beast fixture posterior run", file=sys.stderr)
+""",
+    )
+
+
 def test_adapter_inspect_cli_reports_engine_version(tmp_path: Path, capsys) -> None:
     executable = _fake_iqtree(tmp_path / "iqtree-fixture")
 
@@ -433,6 +468,59 @@ def test_adapter_align_cli_reports_codon_aware_failures(tmp_path: Path, capsys) 
     assert exit_code == 2
     assert payload["status"] == "error"
     assert "excluded every sequence" in payload["errors"][0]["message"]
+
+
+def test_adapter_align_cli_supports_resume_timeout_and_incomplete_policy(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "unaligned.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
+    output_path = tmp_path / "aligned.fasta"
+
+    first_exit = main(
+        [
+            "adapter",
+            "align",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    first_payload = json.loads(capsys.readouterr().out)
+    assert first_exit == 0
+    assert first_payload["metrics"]["resumed"] is False
+    assert first_payload["metrics"]["timeout_seconds"] == 30.0
+
+    second_exit = main(
+        [
+            "adapter",
+            "align",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--resume",
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    second_payload = json.loads(capsys.readouterr().out)
+    assert second_exit == 0
+    assert second_payload["metrics"]["resumed"] is True
+    assert second_payload["metrics"]["timeout_seconds"] == 30.0
+    assert Path(second_payload["data"]["manifest_path"]).exists()
 
 
 def test_adapter_trim_cli_reports_retained_and_removed_sites(
@@ -632,6 +720,10 @@ def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
             str(fasttree),
             "--bootstrap-replicates",
             "1000",
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
             "--json",
         ]
     )
@@ -642,6 +734,8 @@ def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
     assert payload["metrics"]["shared_clade_count"] == 2
     assert payload["metrics"]["conflicting_clade_count"] == 1
     assert payload["metrics"]["support_disagreement_count"] == 1
+    assert payload["metrics"]["resumed"] is False
+    assert payload["metrics"]["timeout_seconds"] == 30.0
     assert Path(payload["data"]["output_paths"]["comparison_report"]).exists()
     assert Path(payload["data"]["output_paths"]["comparison_table"]).exists()
     assert Path(payload["data"]["output_paths"]["shared_clades"]).exists()
@@ -650,6 +744,36 @@ def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
         "normalized to fractions only for side-by-side review" in note
         for note in payload["data"]["notes"]
     )
+
+    resumed_exit = main(
+        [
+            "adapter",
+            "compare-engines",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--sequence-type",
+            "dna",
+            "--iqtree-executable",
+            str(iqtree),
+            "--fasttree-executable",
+            str(fasttree),
+            "--bootstrap-replicates",
+            "1000",
+            "--resume",
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    resumed_payload = json.loads(capsys.readouterr().out)
+    assert resumed_exit == 0
+    assert resumed_payload["metrics"]["resumed"] is True
+    assert resumed_payload["metrics"]["timeout_seconds"] == 30.0
 
 
 def test_adapter_infer_large_cli_reports_streamed_size_and_resource_metrics(
@@ -674,6 +798,8 @@ def test_adapter_infer_large_cli_reports_streamed_size_and_resource_metrics(
             str(fasttree),
             "--timeout-seconds",
             "30",
+            "--incomplete-run-policy",
+            "clean",
             "--json",
         ]
     )
@@ -1355,6 +1481,10 @@ def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
             str(nexus_path),
             "--executable",
             str(executable),
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
             "--json",
         ]
     )
@@ -1366,6 +1496,8 @@ def test_adapter_mrbayes_cli_and_engine_report(tmp_path: Path, capsys) -> None:
     mcmc_path = Path(run_payload["data"]["output_paths"]["mcmc_diagnostics"])
     consensus_path = Path(run_payload["data"]["output_paths"]["consensus_tree"])
     assert run_payload["warnings"] == ["warning: mrbayes fixture posterior run"]
+    assert run_payload["metrics"]["resumed"] is False
+    assert run_payload["metrics"]["timeout_seconds"] == 30.0
 
     summarize_exit = main(
         [
@@ -1825,6 +1957,96 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     assert evidence_exit == 0
     assert evidence_payload["metrics"]["valid"] is True
     assert bundle_root.exists()
+
+
+def test_adapter_beast_run_cli_supports_resume_timeout_and_overwrite_controls(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_beast(tmp_path / "beast-fixture")
+    analysis_path = tmp_path / "analysis.xml"
+    analysis_path.write_text(
+        "<beast version=\"2.7\" namespace=\"beast.base.evolution.alignment:beast.base.evolution.tree\"/>\n",
+        encoding="utf-8",
+    )
+
+    first_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(executable),
+            "--threads",
+            "2",
+            "--seed",
+            "7",
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    first_payload = json.loads(capsys.readouterr().out)
+    assert first_exit == 0
+    assert first_payload["metrics"]["threads"] == 2
+    assert first_payload["metrics"]["seed"] == 7
+    assert first_payload["metrics"]["overwrite"] is True
+    assert first_payload["metrics"]["resumed"] is False
+    assert first_payload["metrics"]["timeout_seconds"] == 30.0
+    assert Path(first_payload["data"]["output_paths"]["posterior_log"]).exists()
+    assert Path(first_payload["data"]["output_paths"]["posterior_trees"]).exists()
+
+    second_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(executable),
+            "--threads",
+            "2",
+            "--seed",
+            "7",
+            "--resume",
+            "--no-overwrite",
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    second_payload = json.loads(capsys.readouterr().out)
+    assert second_exit == 0
+    assert second_payload["metrics"]["overwrite"] is False
+    assert second_payload["metrics"]["resumed"] is False
+
+    resumed_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(executable),
+            "--threads",
+            "2",
+            "--seed",
+            "7",
+            "--resume",
+            "--no-overwrite",
+            "--timeout-seconds",
+            "30",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    resumed_payload = json.loads(capsys.readouterr().out)
+    assert resumed_exit == 0
+    assert resumed_payload["metrics"]["overwrite"] is False
+    assert resumed_payload["metrics"]["resumed"] is True
+    assert resumed_payload["metrics"]["timeout_seconds"] == 30.0
 
 
 def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
