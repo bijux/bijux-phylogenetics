@@ -4163,6 +4163,18 @@ forcing users to stitch separate adapter steps together by hand. The workflow
 also exposes `--iqtree-seed` and `--iqtree-threads` so the checked inference
 bundle can be reproduced exactly when the same engine versions are available.
 
+The governed external execution adapters also share one explicit execution
+control contract. `adapter align`, `trim`, `model-select`, `infer-ml`,
+`bootstrap`, `sh-alrt`, `fasta-to-tree`, `consensus`, `infer-fast`,
+`infer-large`, `compare-engines`, `mrbayes-run`, and `beast-run` accept:
+
+- `--timeout-seconds` for a wall-clock execution budget
+- `--resume` to reuse only one verified completed run
+- `--incomplete-run-policy reject|clean` to stop on or remove partial outputs from a failed or timed-out earlier run
+
+The JSON payloads now expose the applied timeout budget and the resolved resume
+status, so automation can distinguish a fresh execution from a verified reuse.
+
 For coding nucleotide inputs, `adapter align --codon-aware` is the supported
 alignment entrypoint. It excludes frame-broken sequences and sequences with
 premature stop codons, aligns a translated amino-acid guide, and back-translates
@@ -4209,6 +4221,12 @@ The warning surface also carries one dated-tree limitation explicitly: if
 validates, but the JSON warnings mark that combination as exploratory because
 BEAST reports that the standard birth-death prior is not serial-sampling
 aware.
+
+`adapter beast-run` is the governed execution surface for one prepared BEAST
+XML analysis. It runs BEAST, validates the posterior log and posterior tree
+outputs, preserves the execution manifest beside the XML, and exposes
+`warning_count`, `threads`, `seed`, `overwrite`, `resumed`, and
+`timeout_seconds` in JSON metrics.
 
 `adapter beast-log` is the governed parser surface for one BEAST posterior log.
 It accepts BEAST's native `Sample` header as well as lowercase `state`
@@ -4310,7 +4328,8 @@ MrBayes NEXUS file. Its workflow manifest and JSON output now keep the native
 posterior tree file (`.run1.t`), parameter trace table (`.run1.p`), MCMC
 diagnostics table (`.mcmc`), and consensus tree (`.con.tre`) together so the
 downstream review surface can stay on durable engine outputs rather than on
-copied snippets.
+copied snippets. Its JSON metrics now also expose `resumed` and
+`timeout_seconds`, matching the shared execution-control contract.
 
 The matching parser commands expose those artifacts directly:
 
@@ -4390,7 +4409,10 @@ reporting, and resumable output checks. It keeps the inferred tree plus
 `.log`, and `.manifest.json` sidecars. Its JSON summary exposes sequence
 count, alignment length, total site cells, resolved sequence type, resumed
 status, timeout budget, and the maximum observed peak-memory measurement across
-the recorded workflow stages.
+the recorded workflow stages. It also honors the same
+`--incomplete-run-policy reject|clean` control as the smaller external adapter
+surfaces, so stale partial FastTree outputs can be rejected or cleaned before a
+fresh rerun.
 
 `adapter compare-engines` is the governed side-by-side inference mode for one
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
@@ -4399,7 +4421,8 @@ emits the two inferred trees, an HTML comparison report, a flat comparison
 table, a shared-clade ledger, a conflicting-clade ledger, and a manifest in
 one command. Its JSON summary exposes the selected model, shared-taxon count,
 Robinson-Foulds distance, shared-clade count, conflicting-clade count, and the
-count of support disagreements detected after fraction normalization.
+count of support disagreements detected after fraction normalization, plus the
+shared timeout budget and whether any governed engine step was resumed.
 
 The support-normalization rule is public and narrow by design: FastTree
 SH-like local support and IQ-TREE UFBoot support are both rendered as fractions
