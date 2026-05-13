@@ -4,6 +4,8 @@ from pathlib import Path
 import tarfile
 import zipfile
 
+import pytest
+
 from bijux_phylogenetics_dev.quality.package_bundles import (
     audit_package_bundle_directory,
     build_dependency_policy_report,
@@ -253,6 +255,7 @@ def test_audit_package_bundle_directory_accepts_compliant_archives(
     assert report["issue_count"] == 0
 
 
+@pytest.mark.slow
 def test_check_package_bundles_builds_and_audits_publishable_packages(
     tmp_path: Path,
 ) -> None:
@@ -264,6 +267,7 @@ def test_check_package_bundles_builds_and_audits_publishable_packages(
     assert report["package_count"] == 2
 
 
+@pytest.mark.slow
 def test_check_package_bundles_rebuilds_cleanly_into_staged_output_directories(
     tmp_path: Path,
 ) -> None:
@@ -277,6 +281,7 @@ def test_check_package_bundles_rebuilds_cleanly_into_staged_output_directories(
     assert second_report["package_count"] == 2
 
 
+@pytest.mark.slow
 def test_check_package_bundles_keeps_published_bundle_outputs_unchanged(
     tmp_path: Path,
 ) -> None:

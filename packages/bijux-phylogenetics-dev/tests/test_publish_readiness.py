@@ -701,6 +701,7 @@ jobs:
     return repo_root
 
 
+@pytest.mark.slow
 def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     report = build_publish_readiness_report(REPO_ROOT)
 
@@ -721,6 +722,7 @@ def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     assert report["release_gate"]["superficial_completion_refused"] is False
 
 
+@pytest.mark.slow
 def test_build_publish_readiness_report_accepts_secured_runtime_dependency_contract() -> (
     None
 ):

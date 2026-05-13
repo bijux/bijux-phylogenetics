@@ -690,6 +690,7 @@ def test_assert_publishable_repository_allows_clean_config_ssot_repo(
     )
 
 
+@pytest.mark.slow
 def test_assert_publishable_repository_allows_clean_package_bundle_repo() -> None:
     assert_publishable_repository(
         repo_root=REPO_ROOT,
@@ -698,6 +699,7 @@ def test_assert_publishable_repository_allows_clean_package_bundle_repo() -> Non
     )
 
 
+@pytest.mark.slow
 def test_assert_publishable_repository_allows_clean_publish_readiness_repo() -> None:
     assert_publishable_repository(
         repo_root=REPO_ROOT,
@@ -762,6 +764,7 @@ def test_assert_publishable_repository_rejects_publish_readiness_drift(
         )
 
 
+@pytest.mark.slow
 def test_publication_guard_module_runs_without_runpy_warning() -> None:
     completed = subprocess.run(
         [

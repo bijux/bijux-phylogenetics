@@ -12,6 +12,7 @@ from bijux_phylogenetics_dev.quality.evidence_cleanroom import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
+@pytest.mark.slow
 def test_repository_cleanroom_rerun_keeps_primate_longevity_selection_clean() -> None:
     report = build_evidence_cleanroom_report(
         REPO_ROOT,
@@ -34,6 +35,7 @@ def test_cleanroom_rerun_requires_an_explicit_evidence_selection() -> None:
         )
 
 
+@pytest.mark.slow
 def test_repository_selected_cleanroom_reruns_keep_governed_selections_clean() -> None:
     report = build_selected_evidence_cleanroom_reports(REPO_ROOT)
 
