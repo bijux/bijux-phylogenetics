@@ -32,7 +32,7 @@ DOCS_CHECK_PREPARE_TARGETS := bijux-docs-sync docs-prepare-source
 DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 
 .PHONY: \
-	help list list-all install lock lock-check lint quality security test test-all docs docs-check docs-serve api build sbom clean all \
+	help list list-all install lock lock-check lint quality security test test-all test-all-plus-run-time docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	install-external-engine-runtime test-external-engines test-scientific-validation-slow test-stress-small test-stress-heavy \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
@@ -68,6 +68,27 @@ test-all: root-check-env ## Run every repository test surface, including slow, e
 		$(ROOT_SHARED_CHECK_OVERRIDES) \
 		test-all
 .PHONY: test-all
+
+test-all-plus-run-time: root-check-env ## Run every repository test surface and report per-test durations
+	@$(MAKE) -C "packages/bijux-phylogenetics" -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" \
+		PROJECT_SLUG="bijux-phylogenetics" \
+		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
+		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics) \
+		$(ROOT_SHARED_CHECK_OVERRIDES) \
+		test-all-plus-run-time
+	@$(MAKE) -C "packages/bijux-phylogenetics-dev" -f "$(CURDIR)/makes/packages/bijux-phylogenetics-dev.mk" \
+		PROJECT_SLUG="bijux-phylogenetics-dev" \
+		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
+		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics-dev) \
+		$(ROOT_SHARED_CHECK_OVERRIDES) \
+		test-all-plus-run-time
+	@$(MAKE) -C "packages/phylogenetic" -f "$(CURDIR)/makes/packages/phylogenetic.mk" \
+		PROJECT_SLUG="phylogenetic" \
+		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
+		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,phylogenetic) \
+		$(ROOT_SHARED_CHECK_OVERRIDES) \
+		test-all-plus-run-time
+.PHONY: test-all-plus-run-time
 
 install-external-engine-runtime: ## Install the local external engine lane dependencies on macOS with Homebrew
 	@command -v brew >/dev/null || { echo "Homebrew is required for install-external-engine-runtime"; exit 2; }
