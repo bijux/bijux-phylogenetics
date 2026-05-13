@@ -95,4 +95,30 @@ scientific-validation-slow:
 	@echo "✔ slow scientific validation lane completed"
 .PHONY: scientific-validation-slow
 
+stress-small-lane:
+	@echo "→ Running governed small stress tier"
+	@$(PYTEST) $(PYTEST_INFO_FLAGS) --version
+	@mkdir -p "$(TEST_ARTIFACTS_DIR)" "$(HYPOTHESIS_DB_DIR)" "$(TMP_DIR)"
+	@( cd "$(PYTEST_ROOTDIR_ABS)" && \
+	  PYTHONPATH="$(TEST_SOURCE_PATH_ABS)$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	  PYTHONDONTWRITEBYTECODE=1 \
+	  HYPOTHESIS_DATABASE_DIRECTORY="$(HYPOTHESIS_DB_ABS)" \
+	  $(TEST_PYCACHE_ENV) \
+	  sh -c '$(PYTEST) --rootdir "$(PYTEST_ROOTDIR_ABS)" -c "$(PYTEST_INI_ABS)" "packages/bijux-phylogenetics/tests/test_large_dataset_stress.py" -m "evaluation and stress_small" -o addopts= -s -p no:cov' )
+	@echo "✔ small stress tier completed"
+.PHONY: stress-small-lane
+
+stress-heavy-lane:
+	@echo "→ Running governed heavy stress tier"
+	@$(PYTEST) $(PYTEST_INFO_FLAGS) --version
+	@mkdir -p "$(TEST_ARTIFACTS_DIR)" "$(HYPOTHESIS_DB_DIR)" "$(TMP_DIR)"
+	@( cd "$(PYTEST_ROOTDIR_ABS)" && \
+	  PYTHONPATH="$(TEST_SOURCE_PATH_ABS)$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	  PYTHONDONTWRITEBYTECODE=1 \
+	  HYPOTHESIS_DATABASE_DIRECTORY="$(HYPOTHESIS_DB_ABS)" \
+	  $(TEST_PYCACHE_ENV) \
+	  sh -c '$(PYTEST) --rootdir "$(PYTEST_ROOTDIR_ABS)" -c "$(PYTEST_INI_ABS)" "packages/bijux-phylogenetics/tests/test_large_dataset_stress.py" -m "evaluation and stress_heavy" -o addopts= -o timeout=600 -s -p no:cov' )
+	@echo "✔ heavy stress tier completed"
+.PHONY: stress-heavy-lane
+
 include $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../bijux-py/package.mk
