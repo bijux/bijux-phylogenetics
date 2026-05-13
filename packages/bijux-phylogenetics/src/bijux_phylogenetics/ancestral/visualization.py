@@ -15,6 +15,11 @@ from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
 from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
 
+try:
+    import cairosvg
+except Exception:  # pragma: no cover - optional renderer may miss native Cairo.
+    cairosvg = None
+
 _CATEGORICAL_PALETTE = (
     "#0f766e",
     "#1d4ed8",
@@ -231,11 +236,19 @@ def _build_render_kwargs(
 
 def _convert_svg_to_png(svg_path: Path, png_path: Path) -> None:
     png_path.parent.mkdir(parents=True, exist_ok=True)
+    failures: list[str] = []
+    if cairosvg is not None:
+        try:
+            cairosvg.svg2png(url=str(svg_path), write_to=str(png_path))
+        except Exception as exc:  # pragma: no cover - defensive error capture
+            failures.append(f"cairosvg: {exc}")
+        else:
+            if png_path.exists():
+                return
     candidates = (
         ["rsvg-convert", str(svg_path), "-o", str(png_path)],
         ["sips", "-s", "format", "png", str(svg_path), "--out", str(png_path)],
     )
-    failures: list[str] = []
     for command in candidates:
         executable = command[0]
         if shutil.which(executable) is None:
