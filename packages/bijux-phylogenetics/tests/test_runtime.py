@@ -5061,6 +5061,8 @@ def test_alignment_identity_matrix_reports_pairs_and_comparable_sites() -> None:
 
 def test_coding_alignment_reports_frameshift_like_sequences_and_stop_codons() -> None:
     diagnostics = inspect_coding_alignment(fixture("example_alignment_coding.fasta"))
+    assert diagnostics.genetic_code_id == 1
+    assert diagnostics.genetic_code_name == "Standard"
     assert diagnostics.sequence_count == 4
     assert diagnostics.alignment_length_multiple_of_three is True
     assert [
@@ -5078,6 +5080,7 @@ def test_coding_alignment_reports_frameshift_like_sequences_and_stop_codons() ->
         ("A", 3, 7, "TAA", True),
         ("D", 2, 4, "TAG", False),
     ]
+    assert diagnostics.invalid_codons == []
 
 
 def test_translate_coding_alignment_emits_amino_acid_records() -> None:
@@ -5090,9 +5093,12 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
         ("C", "MXW"),
         ("D", "M*W"),
     ]
+    assert report.genetic_code_id == 1
+    assert report.genetic_code_name == "Standard"
     assert report.translated_sequence_count == 4
     assert report.source_alignment_length == 9
     assert report.translated_alignment_length == 3
+    assert report.invalid_codon_count == 0
     assert report.stop_codon_count == 2
     assert report.frameshift_like_sequence_count == 1
 
@@ -5118,16 +5124,19 @@ def test_prepare_coding_sequences_for_alignment_excludes_frame_and_stop_failures
         ("terminal_stop", "ATGGAATAA"),
     ]
     assert report.sequence_type == "dna"
+    assert report.genetic_code_id == 1
+    assert report.genetic_code_name == "Standard"
     assert report.input_sequence_count == 4
     assert report.accepted_sequence_count == 2
     assert report.accepted_identifiers == ["good", "terminal_stop"]
+    assert report.invalid_codon_sequence_count == 0
     assert report.terminal_stop_sequence_count == 1
     assert [
-        (row.identifier, row.reason, row.trailing_bases)
+        (row.identifier, row.reason, row.invalid_codon_count, row.trailing_bases)
         for row in report.excluded_sequences
     ] == [
-        ("frameshift", "frame-error", 2),
-        ("internal_stop", "internal-stop-codon", 0),
+        ("frameshift", "frame-error", 0, 2),
+        ("internal_stop", "internal-stop-codon", 0, 0),
     ]
     assert (
         "one or more coding sequences were excluded before codon-aware alignment"
@@ -5158,6 +5167,106 @@ def test_prepare_coding_sequences_for_alignment_preserves_rna_residues(
         ("rna_b", "AUGGAAUAA"),
     ]
     assert report.sequence_type == "rna"
+
+
+def test_prepare_coding_sequences_for_alignment_excludes_invalid_codons(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-invalid-codon.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="good", sequence="ATGGAATGG"),
+            AlignmentRecord(identifier="ambiguous_one", sequence="ATGNNNTGG"),
+            AlignmentRecord(identifier="ambiguous_two", sequence="ATGRYATGG"),
+        ],
+    )
+
+    records, report = prepare_coding_sequences_for_alignment(input_path)
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("good", "ATGGAATGG"),
+    ]
+    assert report.invalid_codon_sequence_count == 2
+    assert [
+        (row.identifier, row.reason, row.invalid_codon_count)
+        for row in report.excluded_sequences
+    ] == [
+        ("ambiguous_one", "invalid-codon", 1),
+        ("ambiguous_two", "invalid-codon", 1),
+    ]
+    assert any("ambiguous or invalid codons" in warning for warning in report.warnings)
+
+
+def test_prepare_coding_sequences_for_alignment_honors_configurable_genetic_code(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-mito.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="standard_only", sequence="ATGTGAGGG"),
+            AlignmentRecord(identifier="shared_good", sequence="ATGGAATGG"),
+        ],
+    )
+
+    standard_records, standard_report = prepare_coding_sequences_for_alignment(
+        input_path,
+        genetic_code="1",
+    )
+    mitochondrial_records, mitochondrial_report = (
+        prepare_coding_sequences_for_alignment(
+            input_path,
+            genetic_code="2",
+        )
+    )
+
+    assert [record.identifier for record in standard_records] == ["shared_good"]
+    assert [
+        (row.identifier, row.reason, row.premature_stop_count)
+        for row in standard_report.excluded_sequences
+    ] == [("standard_only", "internal-stop-codon", 1)]
+    assert [record.identifier for record in mitochondrial_records] == [
+        "shared_good",
+        "standard_only",
+    ]
+    assert mitochondrial_report.excluded_sequences == []
+    assert mitochondrial_report.genetic_code_id == 2
+    assert mitochondrial_report.genetic_code_name == "Vertebrate Mitochondrial"
+
+
+def test_translate_coding_alignment_honors_configurable_genetic_code_and_invalid_codons(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "coding-translate.fasta"
+    write_fasta_alignment(
+        input_path,
+        [
+            AlignmentRecord(identifier="mito_triplet", sequence="ATGTGAGGG"),
+            AlignmentRecord(identifier="ambiguous_triplet", sequence="ATGNNNGGG"),
+        ],
+    )
+
+    standard_records, standard_report = translate_coding_alignment(
+        input_path,
+        genetic_code="1",
+    )
+    mitochondrial_records, mitochondrial_report = translate_coding_alignment(
+        input_path,
+        genetic_code="2",
+    )
+
+    assert [(record.identifier, record.sequence) for record in standard_records] == [
+        ("mito_triplet", "M*G"),
+        ("ambiguous_triplet", "MXG"),
+    ]
+    assert [(record.identifier, record.sequence) for record in mitochondrial_records] == [
+        ("mito_triplet", "MWG"),
+        ("ambiguous_triplet", "MXG"),
+    ]
+    assert standard_report.stop_codon_count == 1
+    assert mitochondrial_report.stop_codon_count == 0
+    assert mitochondrial_report.invalid_codon_count == 1
 
 
 def test_cli_alignment_trim_writes_trimmed_fasta_and_report(
