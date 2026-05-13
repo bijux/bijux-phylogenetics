@@ -1708,29 +1708,49 @@ was non-numeric or the row referred to a taxon absent from the tree.
 When the goal is to fit the same comparative regression across several response
 traits and then inspect how those fitted traits still co-vary, use
 `comparative multivariate`. This workflow keeps one shared complete-case taxon
-set across every requested response and predictor, fits one comparative
-regression per response on that exact taxon set, and then reports residual
-covariance and residual trait-trait association explicitly.
+set across every requested response and predictor term, fits one comparative
+regression per response on that exact taxon set, and then reports per-response
+coefficients, per-response model summaries, residual covariance, residual
+correlation, and residual trait-trait association explicitly. Predictor terms
+are interpreted with the same comparative formula parser used by PGLS, so
+categorical predictors, transformed numeric predictors such as `log(body_mass)`,
+and explicit interaction terms such as `body_mass:habitat` remain governed
+instead of falling back to raw-column guessing.
 
 ```bash
 bijux-phylogenetics comparative multivariate \
   artifacts/primates.nwk \
   artifacts/primates.csv \
   --responses longevity range_size \
-  --predictors brain_mass_g social_group_size \
+  --predictors brain_mass_g habitat brain_mass_g:habitat \
   --taxon-column species \
+  --response-models-out artifacts/primates.multivariate-models.tsv \
+  --coefficients-out artifacts/primates.multivariate-coefficients.tsv \
   --covariance-out artifacts/primates.multivariate-covariance.tsv \
+  --correlation-out artifacts/primates.multivariate-correlation.tsv \
   --associations-out artifacts/primates.multivariate-associations.tsv \
   --excluded-taxa-out artifacts/primates.multivariate-excluded.tsv \
   --json
 ```
 
-The covariance ledger keeps one response-pair row with residual covariance,
-residual correlation, pair count, and diagonal status. The association ledger
-keeps one unique response-pair row with the same covariance and correlation
-plus a correlation test statistic, p-value, and Fisher-style interval. The
-excluded-taxa ledger makes the complete-case rule explicit by recording which
-taxa were dropped because a required response or predictor column was blank.
+The missing-value policy is explicit: one taxon is retained only when every
+requested response and every predictor term can be evaluated on that taxon. The
+response-model ledger keeps one row per response with the fitted formula,
+encoded-term count, taxon count, lambda value, log-likelihood, residual
+variance, and residual degrees of freedom. The coefficient ledger keeps one row
+per response-term coefficient with standard errors, test statistics, p-values,
+and 95% intervals. The covariance ledger keeps one response-pair row with
+residual covariance, residual correlation, pair count, and diagonal status. The
+correlation ledger keeps the residual correlation matrix explicitly, separated
+from covariance magnitudes. The association ledger keeps one unique
+response-pair row with the same covariance and correlation plus a correlation
+test statistic, p-value, and Fisher-style interval. The excluded-taxa ledger
+makes the shared complete-case rule explicit by recording which taxa were
+dropped, which responses they blocked, and which columns or terms failed.
+
+The JSON report also preserves reviewer-facing warnings when the shared fit has
+weak residual degrees of freedom or when the residual covariance matrix is
+singular within the governed multivariate numerical tolerance.
 
 When the goal is to hand a reviewer one durable comparative bundle rather than
 separate regression, signal, contrast, and diagnostics outputs, use
