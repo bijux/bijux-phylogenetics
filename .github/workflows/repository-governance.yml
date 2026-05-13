@@ -26,14 +26,30 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  pull-requests: read
 
 concurrency:
   group: repository-governance-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  policy-gate:
+    name: policy-prerequisites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - name: wait for policy and standards prerequisites
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/check_workflow_prerequisites.py
+
   repository-contracts:
     name: repository-contracts
+    needs: policy-gate
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -53,6 +69,7 @@ jobs:
 
   config-ssot:
     name: config-ssot
+    needs: policy-gate
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
