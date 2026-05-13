@@ -30,7 +30,11 @@ from bijux_phylogenetics.engines import (
 from bijux_phylogenetics.engines.inference_reproducibility import (
     run_inference_reproducibility_check,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.errors import (
+    EngineUnavailableError,
+    EngineWorkflowError,
+    InvalidAlignmentError,
+)
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 pytestmark = pytest.mark.engine_contract
@@ -294,6 +298,48 @@ if "--version" in sys.argv[1:]:
 print("warning: fixture is about to fail", file=sys.stderr)
 print("fatal: inference failed", file=sys.stderr)
 raise SystemExit(3)
+""",
+    )
+
+
+def _fake_mafft_timeout(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+import time
+
+if "--version" in sys.argv:
+    print("mafft v7.999", file=sys.stderr)
+    raise SystemExit(0)
+
+time.sleep(1.0)
+print(">A")
+print("ACTG")
+""",
+    )
+
+
+def _fake_iqtree_partial(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model according to BIC: GTR+G\\nLog-likelihood of the tree: -123.456\\n",
+    encoding="utf-8",
+)
+print("warning: iqtree fixture produced partial outputs", file=sys.stderr)
+raise SystemExit(0)
 """,
     )
 
@@ -570,6 +616,124 @@ def test_run_multiple_sequence_alignment_supports_all_named_mafft_modes(
         assert report.run.command[1:-1] == expected_args
         assert report.notes[0] == f"mafft alignment mode: {mode}"
         assert load_fasta_alignment(output_path)
+
+
+def test_run_multiple_sequence_alignment_times_out_and_marks_incomplete_run(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft_timeout(tmp_path / "mafft-timeout")
+    input_path = tmp_path / "unaligned.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n", encoding="utf-8")
+    output_path = tmp_path / "aligned.fasta"
+
+    with pytest.raises(EngineWorkflowError, match="timed out"):
+        run_multiple_sequence_alignment(
+            input_path,
+            output_path,
+            executable=executable,
+            timeout_seconds=0.2,
+        )
+
+    marker_candidates = sorted(tmp_path.glob("*.incomplete.json"))
+    assert len(marker_candidates) == 1
+    marker_path = marker_candidates[0]
+    assert marker_path.exists()
+    marker_text = marker_path.read_text(encoding="utf-8")
+    assert '"timed_out": true' in marker_text
+    assert '"timeout_seconds": 0.2' in marker_text
+
+
+def test_run_multiple_sequence_alignment_resume_reuses_completed_output(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "unaligned.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
+    output_path = tmp_path / "aligned.fasta"
+
+    first = run_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+    )
+    second = run_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+        resume=True,
+    )
+
+    assert first.resumed is False
+    assert second.resumed is True
+    assert second.output_paths["alignment"] == output_path
+
+
+def test_run_alignment_trimming_resume_reuses_completed_output(tmp_path: Path) -> None:
+    executable = _fake_trimal(tmp_path / "trimal-fixture")
+    input_path = fixture("alignments/example_alignment_trim.fasta")
+    output_path = tmp_path / "trimmed.fasta"
+
+    run_alignment_trimming(input_path, output_path, executable=executable)
+    resumed = run_alignment_trimming(
+        input_path,
+        output_path,
+        executable=executable,
+        resume=True,
+    )
+
+    assert resumed.resumed is True
+    assert resumed.output_paths["trimmed_alignment"] == output_path
+
+
+def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
+    tmp_path: Path,
+) -> None:
+    partial_executable = _fake_iqtree_partial(tmp_path / "iqtree-partial")
+    input_path = fixture("alignments/example_alignment.fasta")
+    out_dir = tmp_path / "model-selection"
+
+    with pytest.raises(EngineWorkflowError, match="did not produce expected outputs"):
+        run_model_selection(
+            input_path,
+            out_dir=out_dir,
+            executable=partial_executable,
+            prefix="example",
+        )
+
+    manifest_path = out_dir / "example.manifest.json"
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+    assert marker_path.exists()
+
+    with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
+        run_model_selection(
+            input_path,
+            out_dir=out_dir,
+            executable=_fake_iqtree(tmp_path / "iqtree-fixture"),
+            prefix="example",
+            resume=True,
+            incomplete_run_policy="reject",
+        )
+
+    report = run_model_selection(
+        input_path,
+        out_dir=out_dir,
+        executable=_fake_iqtree(tmp_path / "iqtree-fixture-clean"),
+        prefix="example",
+        resume=True,
+        incomplete_run_policy="clean",
+    )
+
+    assert report.selected_model == "GTR+G"
+    assert marker_path.exists() is False
+
+
+def test_run_fast_tree_inference_reports_missing_executable(tmp_path: Path) -> None:
+    with pytest.raises(EngineUnavailableError, match="not available on PATH"):
+        run_fast_tree_inference(
+            fixture("alignments/example_alignment.fasta"),
+            tmp_path / "fasttree.nwk",
+            executable="missing-fasttree-executable",
+        )
 
 
 def test_run_bootstrap_support_estimation_exports_branch_ledgers_and_histogram(

@@ -295,6 +295,9 @@ def run_tree_inference_comparison(
     iqtree_seed: int = 1,
     iqtree_threads: int = 1,
     bootstrap_replicates: int = 1000,
+    resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> InferenceComparisonWorkflowReport:
     """Run IQ-TREE and FastTree on one alignment and compare the inferred trees."""
     workflow_prefix = prefix
@@ -318,8 +321,11 @@ def run_tree_inference_comparison(
         executable=iqtree_executable,
         prefix="model-selection",
         sequence_type=sequence_type,
+        resume=resume,
         seed=iqtree_seed,
         threads=iqtree_threads,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
     if model_selection_workflow.selected_model is None:
         raise ValueError("model-selection workflow did not expose a selected model")
@@ -331,14 +337,20 @@ def run_tree_inference_comparison(
         prefix="bootstrap-support",
         executable=iqtree_executable,
         sequence_type=sequence_type,
+        resume=resume,
         seed=iqtree_seed,
         threads=iqtree_threads,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
     fasttree_workflow = run_fast_tree_inference(
         input_path,
         _artifact_prefix(engine_artifact_dir, "fasttree").with_suffix(".nwk"),
         executable=fasttree_executable,
         sequence_type=sequence_type,
+        resume=resume,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
 
     _copy_output(fasttree_workflow.output_paths["tree"], final_outputs["fasttree_tree"])

@@ -42,11 +42,16 @@ from .common import (
     EngineRunReport,
     EngineVersionInfo,
     build_file_checksums,
+    cleanup_incomplete_engine_run,
+    clear_incomplete_engine_run,
+    engine_incomplete_marker_path,
     execute_engine_command,
+    load_incomplete_engine_run,
     load_engine_manifest,
     load_unaligned_fasta,
     read_engine_version,
     resolve_engine_executable,
+    validate_timeout_seconds,
     write_engine_manifest,
 )
 from .bootstrap_artifacts import (
@@ -105,6 +110,7 @@ _TRIMAL_TRIMMING_MODES: tuple[str, ...] = (
     "automated1",
 )
 _MINIMUM_UFBOOT_REPLICATES = 1000
+_INCOMPLETE_RUN_POLICIES = {"reject", "clean"}
 
 
 @dataclass(slots=True)
@@ -247,6 +253,36 @@ def _prefix_path(out_dir: Path, prefix: str) -> Path:
 
 def _manifest_path_from_output(path: Path) -> Path:
     return _sidecar(path, "manifest.json")
+
+
+def _validate_incomplete_run_policy(policy: str) -> str:
+    if policy not in _INCOMPLETE_RUN_POLICIES:
+        available = ", ".join(sorted(_INCOMPLETE_RUN_POLICIES))
+        raise ValueError(
+            f"incomplete_run_policy must be one of: {available}; got {policy}"
+        )
+    return policy
+
+
+def _resolve_incomplete_workflow_state(
+    *,
+    manifest_path: Path,
+    incomplete_run_policy: str,
+) -> list[str]:
+    _validate_incomplete_run_policy(incomplete_run_policy)
+    record = load_incomplete_engine_run(manifest_path)
+    if record is None:
+        return []
+    if incomplete_run_policy == "clean":
+        cleanup_incomplete_engine_run(manifest_path)
+        return [
+            "removed outputs from a previously incomplete engine run before restarting"
+        ]
+    marker_path = engine_incomplete_marker_path(manifest_path)
+    raise EngineWorkflowError(
+        "a previous engine run left incomplete outputs and resume could not safely "
+        f"reuse them; marker: {marker_path}"
+    )
 
 
 def _partition_support_path(prefix_path: Path, suffix: str) -> Path:
@@ -499,6 +535,14 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
             for key, value in dict(run_payload["output_paths"]).items()
         },
         warning_lines=[str(item) for item in run_payload["warning_lines"]],
+        started_at_utc=str(run_payload.get("started_at_utc", "")),
+        ended_at_utc=str(run_payload.get("ended_at_utc", "")),
+        timeout_seconds=(
+            None
+            if run_payload.get("timeout_seconds") is None
+            else float(run_payload["timeout_seconds"])
+        ),
+        timed_out=bool(run_payload.get("timed_out", False)),
     )
     return EngineWorkflowReport(
         workflow=str(payload["workflow"]),
@@ -1040,13 +1084,116 @@ def _resume_existing_workflow(
     current_output_checksums = build_file_checksums(list(report.output_paths.values()))
     if report.output_checksums != current_output_checksums:
         return None
+    clear_incomplete_engine_run(manifest_path)
     report.resumed = True
     return report
 
 
 def _persist_workflow_report(report: EngineWorkflowReport) -> EngineWorkflowReport:
     report.output_checksums = build_file_checksums(list(report.output_paths.values()))
+    clear_incomplete_engine_run(report.manifest_path)
     write_engine_manifest(report.manifest_path, report)
+    return report
+
+
+def _restore_codon_aware_alignment_report(
+    payload: dict[str, object],
+) -> CodonAwareAlignmentWorkflowReport:
+    run_payload = payload["run"]
+    if not isinstance(run_payload, dict):
+        raise EngineWorkflowError("engine manifest contains an invalid run payload")
+    version_payload = run_payload["version"]
+    if not isinstance(version_payload, dict):
+        raise EngineWorkflowError("engine manifest contains an invalid version payload")
+    version = EngineVersionInfo(
+        engine_name=str(version_payload["engine_name"]),
+        executable=str(version_payload["executable"]),
+        command=[str(item) for item in version_payload["command"]],
+        text=str(version_payload["text"]),
+    )
+    run = EngineRunReport(
+        engine_name=str(run_payload["engine_name"]),
+        workflow=str(run_payload["workflow"]),
+        executable=str(run_payload["executable"]),
+        working_directory=Path(run_payload["working_directory"]),
+        version=version,
+        command=[str(item) for item in run_payload["command"]],
+        exit_code=int(run_payload["exit_code"]),
+        stdout_path=Path(run_payload["stdout_path"]),
+        stderr_path=Path(run_payload["stderr_path"]),
+        output_paths={
+            str(key): Path(value)
+            for key, value in dict(run_payload["output_paths"]).items()
+        },
+        warning_lines=[str(item) for item in run_payload["warning_lines"]],
+        started_at_utc=str(run_payload.get("started_at_utc", "")),
+        ended_at_utc=str(run_payload.get("ended_at_utc", "")),
+        timeout_seconds=(
+            None
+            if run_payload.get("timeout_seconds") is None
+            else float(run_payload["timeout_seconds"])
+        ),
+        timed_out=bool(run_payload.get("timed_out", False)),
+    )
+    return CodonAwareAlignmentWorkflowReport(
+        workflow=str(payload["workflow"]),
+        engine_name=str(payload["engine_name"]),
+        input_path=Path(payload["input_path"]),
+        output_paths={
+            str(key): Path(value)
+            for key, value in dict(payload["output_paths"]).items()
+        },
+        run=run,
+        manifest_path=Path(payload["manifest_path"]),
+        input_checksums={
+            str(key): str(value)
+            for key, value in dict(payload.get("input_checksums", {})).items()
+        },
+        output_checksums={
+            str(key): str(value)
+            for key, value in dict(payload.get("output_checksums", {})).items()
+        },
+        sequence_type=str(payload["sequence_type"]),
+        accepted_sequence_count=int(payload["accepted_sequence_count"]),
+        excluded_sequences=[
+            CodingSequenceExclusion(
+                identifier=str(item["identifier"]),
+                comparable_length=int(item["comparable_length"]),
+                reason=str(item["reason"]),
+                premature_stop_count=int(item["premature_stop_count"]),
+                terminal_stop_count=int(item["terminal_stop_count"]),
+                trailing_bases=int(item["trailing_bases"]),
+                note=str(item["note"]),
+            )
+            for item in payload.get("excluded_sequences", [])
+        ],
+        terminal_stop_sequence_count=int(payload["terminal_stop_sequence_count"]),
+        notes=[str(item) for item in payload.get("notes", [])],
+        warnings=[str(item) for item in payload.get("warnings", [])],
+    )
+
+
+def _resume_existing_codon_aware_alignment(
+    *,
+    manifest_path: Path,
+    input_path: Path,
+    expected_command: list[str],
+) -> CodonAwareAlignmentWorkflowReport | None:
+    if not manifest_path.exists():
+        return None
+    payload = load_engine_manifest(manifest_path)
+    report = _restore_codon_aware_alignment_report(payload)
+    if report.run.command != expected_command:
+        return None
+    current_input_checksums = build_file_checksums([input_path])
+    if report.input_checksums != current_input_checksums:
+        return None
+    if any(not path.exists() for path in report.output_paths.values()):
+        return None
+    current_output_checksums = build_file_checksums(list(report.output_paths.values()))
+    if report.output_checksums != current_output_checksums:
+        return None
+    clear_incomplete_engine_run(manifest_path)
     return report
 
 
@@ -1228,26 +1375,50 @@ def run_multiple_sequence_alignment(
     executable: str | Path = "mafft",
     mode: str = "auto",
     extra_args: tuple[str, ...] = (),
+    resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run a multiple-sequence alignment engine against an unaligned FASTA file."""
     load_unaligned_fasta(input_path)
+    validate_timeout_seconds(timeout_seconds)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path = _manifest_path_from_output(out_path)
     mode_args = resolve_mafft_alignment_mode(mode)
-    version = read_engine_version("mafft", executable, version_args=("--version",))
+    version = read_engine_version(
+        "mafft",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
+    command = [resolved, *mode_args, *extra_args, str(input_path.resolve())]
+    if resume:
+        resumed = _resume_existing_workflow(
+            manifest_path=manifest_path,
+            input_paths=[input_path],
+            expected_command=command,
+        )
+        if resumed is not None:
+            return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="mafft",
         workflow="multiple-sequence-alignment",
         executable=resolved,
         version=version,
-        command_args=[*mode_args, *extra_args, str(input_path.resolve())],
+        command_args=command[1:],
         work_dir=out_path.parent,
         stdout_path=out_path,
         stderr_path=_sidecar(out_path, "stderr.log"),
         output_paths={"alignment": out_path},
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     _validate_alignment_output(out_path)
-    manifest_path = _manifest_path_from_output(out_path)
     report = EngineWorkflowReport(
         workflow="multiple-sequence-alignment",
         engine_name="mafft",
@@ -1260,6 +1431,7 @@ def run_multiple_sequence_alignment(
         notes=[
             f"mafft alignment mode: {mode}",
             "alignment output validated as deterministic equal-length FASTA",
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
@@ -1272,8 +1444,12 @@ def run_codon_aware_multiple_sequence_alignment(
     executable: str | Path = "mafft",
     mode: str = "auto",
     sequence_type: AlignmentAlphabet | None = None,
+    resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> CodonAwareAlignmentWorkflowReport:
     """Align coding nucleotide sequences through a translated amino-acid guide."""
+    validate_timeout_seconds(timeout_seconds)
     prepared_records, preparation = prepare_coding_sequences_for_alignment(
         input_path,
         sequence_type=sequence_type,
@@ -1282,21 +1458,42 @@ def run_codon_aware_multiple_sequence_alignment(
     guide_input_path = _sidecar(out_path, "guide-input.fasta")
     guide_alignment_path = _sidecar(out_path, "guide-alignment.fasta")
     exclusion_report_path = _sidecar(out_path, "excluded.tsv")
+    manifest_path = _manifest_path_from_output(out_path)
     guide_records = translate_prepared_coding_sequences(prepared_records)
     write_fasta_alignment(guide_input_path, guide_records)
     mode_args = resolve_mafft_alignment_mode(mode)
-    version = read_engine_version("mafft", executable, version_args=("--version",))
+    version = read_engine_version(
+        "mafft",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
+    command = [resolved, *mode_args, str(guide_input_path.resolve())]
+    if resume:
+        resumed = _resume_existing_codon_aware_alignment(
+            manifest_path=manifest_path,
+            input_path=input_path,
+            expected_command=command,
+        )
+        if resumed is not None:
+            return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="mafft",
         workflow="codon-aware-multiple-sequence-alignment",
         executable=resolved,
         version=version,
-        command_args=[*mode_args, str(guide_input_path.resolve())],
+        command_args=command[1:],
         work_dir=out_path.parent,
         stdout_path=guide_alignment_path,
         stderr_path=_sidecar(out_path, "stderr.log"),
         output_paths={"guide_alignment": guide_alignment_path},
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     aligned_guide = load_fasta_alignment(guide_alignment_path)
     codon_records = back_translate_aligned_coding_sequences(
@@ -1317,7 +1514,6 @@ def run_codon_aware_multiple_sequence_alignment(
         "guide_alignment": guide_alignment_path,
         "excluded_sequences": exclusion_report_path,
     }
-    manifest_path = _manifest_path_from_output(out_path)
     report = CodonAwareAlignmentWorkflowReport(
         workflow="codon-aware-multiple-sequence-alignment",
         engine_name="mafft",
@@ -1336,6 +1532,7 @@ def run_codon_aware_multiple_sequence_alignment(
             f"mafft alignment mode: {mode}",
             f"accepted coding sequences: {preparation.accepted_sequence_count} of {preparation.input_sequence_count}",
             f"retained nucleotide alignment length: {codon_summary.alignment_length}",
+            *incomplete_notes,
         ],
         warnings=list(dict.fromkeys(run.warning_lines + preparation.warnings)),
     )
@@ -1351,30 +1548,56 @@ def run_alignment_trimming(
     executable: str | Path = "trimal",
     mode: str = "gap-threshold",
     gap_threshold: float = 0.1,
+    resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run an external alignment trimming engine against an aligned FASTA file."""
     load_fasta_alignment(input_path)
+    validate_timeout_seconds(timeout_seconds)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     input_summary = summarise_fasta(input_path)
+    manifest_path = _manifest_path_from_output(out_path)
     mode_args = resolve_trimal_trimming_mode(mode, gap_threshold=gap_threshold)
-    version = read_engine_version("trimal", executable, version_args=("--version",))
+    version = read_engine_version(
+        "trimal",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
+    command = [
+        resolved,
+        "-in",
+        str(input_path.resolve()),
+        "-out",
+        str(out_path.resolve()),
+        *mode_args,
+    ]
+    if resume:
+        resumed = _resume_existing_workflow(
+            manifest_path=manifest_path,
+            input_paths=[input_path],
+            expected_command=command,
+        )
+        if resumed is not None:
+            return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="trimal",
         workflow="alignment-trimming",
         executable=resolved,
         version=version,
-        command_args=[
-            "-in",
-            str(input_path.resolve()),
-            "-out",
-            str(out_path.resolve()),
-            *mode_args,
-        ],
+        command_args=command[1:],
         work_dir=out_path.parent,
         stdout_path=_sidecar(out_path, "stdout.log"),
         stderr_path=_sidecar(out_path, "stderr.log"),
         output_paths={"trimmed_alignment": out_path},
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     _validate_alignment_output(out_path)
     trimmed_summary = summarise_fasta(out_path)
@@ -1384,7 +1607,6 @@ def run_alignment_trimming(
         input_summary=input_summary,
         trimmed_summary=trimmed_summary,
     )
-    manifest_path = _manifest_path_from_output(out_path)
     report = EngineWorkflowReport(
         workflow="alignment-trimming",
         engine_name="trimal",
@@ -1400,6 +1622,7 @@ def run_alignment_trimming(
             f"retained sites: {trimming_summary.retained_site_count} of {trimming_summary.input_alignment_length}",
             f"gap percentage: {trimming_summary.input_gap_percentage:.3f} -> {trimming_summary.trimmed_gap_percentage:.3f}",
             "trimmed alignment validated as nonempty equal-length FASTA",
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
@@ -1413,13 +1636,23 @@ def run_model_selection(
     executable: str | Path = "iqtree2",
     sequence_type: AlignmentAlphabet | None = None,
     partition_path: Path | None = None,
+    resume: bool = False,
     seed: int = 1,
     threads: int = 1,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run a model-selection workflow on an aligned FASTA file."""
     _ensure_inference_ready_alignment(input_path)
+    validate_timeout_seconds(timeout_seconds)
     prefix_path = _prefix_path(out_dir, prefix)
-    version = read_engine_version("iqtree", executable, version_args=("--version",))
+    manifest_path = prefix_path.with_suffix(".manifest.json")
+    version = read_engine_version(
+        "iqtree",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
     iqtree_report_path = prefix_path.with_suffix(".iqtree")
     iqtree_log_path = prefix_path.with_suffix(".log")
@@ -1432,28 +1665,44 @@ def run_model_selection(
             prefix_path=prefix_path,
         )
     )
+    command = [
+        resolved,
+        *(
+            prepared_partitions.command_args
+            if prepared_partitions is not None
+            else ["-s", str(input_path.resolve())]
+        ),
+        *(
+            []
+            if prepared_partitions is not None and prepared_partitions.mixed_data_types
+            else _iqtree_sequence_type_flag(input_path, sequence_type)
+        ),
+        *_iqtree_execution_controls(seed=seed, threads=threads),
+        "-m",
+        "MF",
+        "-pre",
+        str(prefix_path.resolve()),
+    ]
+    if resume:
+        resumed = _resume_existing_workflow(
+            manifest_path=manifest_path,
+            input_paths=(
+                [input_path] if partition_path is None else [input_path, partition_path]
+            ),
+            expected_command=command,
+        )
+        if resumed is not None:
+            return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="model-selection",
         executable=resolved,
         version=version,
-        command_args=[
-            *(
-                prepared_partitions.command_args
-                if prepared_partitions is not None
-                else ["-s", str(input_path.resolve())]
-            ),
-            *(
-                []
-                if prepared_partitions is not None and prepared_partitions.mixed_data_types
-                else _iqtree_sequence_type_flag(input_path, sequence_type)
-            ),
-            *_iqtree_execution_controls(seed=seed, threads=threads),
-            "-m",
-            "MF",
-            "-pre",
-            str(prefix_path.resolve()),
-        ],
+        command_args=command[1:],
         work_dir=out_dir,
         stdout_path=prefix_path.with_suffix(".stdout.log"),
         stderr_path=prefix_path.with_suffix(".stderr.log"),
@@ -1461,6 +1710,8 @@ def run_model_selection(
             "iqtree_report": iqtree_report_path,
             "iqtree_log": iqtree_log_path,
         },
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     iqtree_summary = _build_iqtree_summary(
         prefix_path,
@@ -1480,7 +1731,6 @@ def run_model_selection(
     selected_model_path.write_text(selected_model + "\n", encoding="utf-8")
     model_candidates_path = prefix_path.with_suffix(".model-candidates.tsv")
     write_iqtree_model_candidates_table(model_candidates_path, model_selection_summary)
-    manifest_path = prefix_path.with_suffix(".manifest.json")
     report = EngineWorkflowReport(
         workflow="model-selection",
         engine_name="iqtree",
@@ -1533,6 +1783,7 @@ def run_model_selection(
                     "model-selection workflow exposed a parsable log-likelihood score"
                 ]
             ),
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
@@ -1550,11 +1801,20 @@ def run_maximum_likelihood_tree_inference(
     resume: bool = False,
     seed: int = 1,
     threads: int = 1,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run an external maximum-likelihood tree inference workflow."""
     _ensure_inference_ready_alignment(input_path)
+    validate_timeout_seconds(timeout_seconds)
     prefix_path = _prefix_path(out_dir, prefix)
-    version = read_engine_version("iqtree", executable, version_args=("--version",))
+    manifest_path = prefix_path.with_suffix(".manifest.json")
+    version = read_engine_version(
+        "iqtree",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
     prepared_partitions = (
         None
@@ -1578,7 +1838,6 @@ def run_maximum_likelihood_tree_inference(
     tree_path = prefix_path.with_suffix(".treefile")
     report_path = prefix_path.with_suffix(".iqtree")
     log_path = prefix_path.with_suffix(".log")
-    manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [
         resolved,
         *(
@@ -1609,6 +1868,10 @@ def run_maximum_likelihood_tree_inference(
         )
         if resumed is not None:
             return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="maximum-likelihood-tree",
@@ -1623,6 +1886,8 @@ def run_maximum_likelihood_tree_inference(
             "iqtree_report": report_path,
             "iqtree_log": log_path,
         },
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     _validate_tree_output(tree_path)
     iqtree_summary = _build_iqtree_summary(
@@ -1678,6 +1943,7 @@ def run_maximum_likelihood_tree_inference(
                     "support values parsed from the inferred maximum-likelihood tree"
                 ]
             ),
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
@@ -1696,14 +1962,23 @@ def run_bootstrap_support_estimation(
     resume: bool = False,
     seed: int = 1,
     threads: int = 1,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run external bootstrap support estimation and retain bootstrap trees."""
     if replicates < 1:
         raise ValueError(f"replicates must be positive, got {replicates}")
     _validate_ufboot_replicates(replicates)
     _ensure_inference_ready_alignment(input_path)
+    validate_timeout_seconds(timeout_seconds)
     prefix_path = _prefix_path(out_dir, prefix)
-    version = read_engine_version("iqtree", executable, version_args=("--version",))
+    manifest_path = prefix_path.with_suffix(".manifest.json")
+    version = read_engine_version(
+        "iqtree",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
     prepared_partitions = (
         None
@@ -1731,7 +2006,6 @@ def run_bootstrap_support_estimation(
     support_histogram_path = prefix_path.with_suffix(".support-histogram.tsv")
     report_path = prefix_path.with_suffix(".iqtree")
     log_path = prefix_path.with_suffix(".log")
-    manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [
         resolved,
         *(
@@ -1766,6 +2040,10 @@ def run_bootstrap_support_estimation(
         if resumed is not None:
             if _resume_has_bootstrap_review_outputs(resumed):
                 return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="bootstrap-support",
@@ -1781,6 +2059,8 @@ def run_bootstrap_support_estimation(
             "iqtree_report": report_path,
             "iqtree_log": log_path,
         },
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     _validate_tree_output(support_tree_path)
     if not bootstrap_tree_path.read_text(encoding="utf-8").strip():
@@ -1868,6 +2148,7 @@ def run_bootstrap_support_estimation(
             "branch-level support table exported for bootstrap review",
             "low-support branch ledger exported for weak-clade review",
             "support histogram exported for reviewer-facing support distribution checks",
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
@@ -1887,13 +2168,22 @@ def run_sh_alrt_support_estimation(
     resume: bool = False,
     seed: int = 1,
     threads: int = 1,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run combined SH-aLRT and UFBoot branch-support estimation."""
     _validate_sh_alrt_replicates(sh_alrt_replicates)
     _validate_ufboot_replicates(bootstrap_replicates)
     _ensure_inference_ready_alignment(input_path)
+    validate_timeout_seconds(timeout_seconds)
     prefix_path = _prefix_path(out_dir, prefix)
-    version = read_engine_version("iqtree", executable, version_args=("--version",))
+    manifest_path = prefix_path.with_suffix(".manifest.json")
+    version = read_engine_version(
+        "iqtree",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
     prepared_partitions = (
         None
@@ -1922,7 +2212,6 @@ def run_sh_alrt_support_estimation(
     )
     report_path = prefix_path.with_suffix(".iqtree")
     log_path = prefix_path.with_suffix(".log")
-    manifest_path = prefix_path.with_suffix(".manifest.json")
     command = [
         resolved,
         *(
@@ -1958,6 +2247,10 @@ def run_sh_alrt_support_estimation(
         )
         if resumed is not None and _resume_has_sh_alrt_review_outputs(resumed):
             return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="sh-alrt-support",
@@ -1973,6 +2266,8 @@ def run_sh_alrt_support_estimation(
             "iqtree_report": report_path,
             "iqtree_log": log_path,
         },
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     _validate_tree_output(support_tree_path)
     if not bootstrap_tree_path.read_text(encoding="utf-8").strip():
@@ -2049,6 +2344,7 @@ def run_sh_alrt_support_estimation(
                     "combined sh-alrt and ufboot support values parsed from the supported tree artifact"
                 ]
             ),
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
@@ -2061,6 +2357,9 @@ def run_bootstrap_consensus_tree(
     prefix: str = "bootstrap-consensus",
     executable: str | Path = "iqtree2",
     minimum_support: float = 0.5,
+    resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Construct a consensus tree from bootstrap trees."""
     if not 0.0 <= minimum_support <= 1.0:
@@ -2069,25 +2368,46 @@ def run_bootstrap_consensus_tree(
         )
     if not bootstrap_trees_path.exists():
         raise FileNotFoundError(bootstrap_trees_path)
+    validate_timeout_seconds(timeout_seconds)
     prefix_path = _prefix_path(out_dir, prefix)
-    version = read_engine_version("iqtree", executable, version_args=("--version",))
+    manifest_path = prefix_path.with_suffix(".manifest.json")
+    version = read_engine_version(
+        "iqtree",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
     consensus_tree_path = prefix_path.with_suffix(".contree")
     log_path = prefix_path.with_suffix(".log")
+    command = [
+        resolved,
+        "-t",
+        str(bootstrap_trees_path.resolve()),
+        "-con",
+        "-minsup",
+        str(minimum_support),
+        "-pre",
+        str(prefix_path.resolve()),
+    ]
+    if resume:
+        resumed = _resume_existing_workflow(
+            manifest_path=manifest_path,
+            input_paths=[bootstrap_trees_path],
+            expected_command=command,
+        )
+        if resumed is not None:
+            return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="iqtree",
         workflow="bootstrap-consensus",
         executable=resolved,
         version=version,
-        command_args=[
-            "-t",
-            str(bootstrap_trees_path.resolve()),
-            "-con",
-            "-minsup",
-            str(minimum_support),
-            "-pre",
-            str(prefix_path.resolve()),
-        ],
+        command_args=command[1:],
         work_dir=out_dir,
         stdout_path=prefix_path.with_suffix(".stdout.log"),
         stderr_path=prefix_path.with_suffix(".stderr.log"),
@@ -2095,9 +2415,10 @@ def run_bootstrap_consensus_tree(
             "consensus_tree": consensus_tree_path,
             "iqtree_log": log_path,
         },
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     _validate_tree_output(consensus_tree_path)
-    manifest_path = prefix_path.with_suffix(".manifest.json")
     iqtree_summary = _build_iqtree_summary(
         prefix_path,
         default_selected_model=None,
@@ -2125,6 +2446,7 @@ def run_bootstrap_consensus_tree(
                 if iqtree_summary.support_value_count == 0
                 else ["support values parsed from the bootstrap consensus tree"]
             ),
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
@@ -2137,14 +2459,22 @@ def run_fast_tree_inference(
     executable: str | Path = "FastTree",
     sequence_type: AlignmentAlphabet | None = None,
     resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run a fast approximate tree inference engine against an aligned FASTA file."""
     _ensure_inference_ready_alignment(input_path)
+    validate_timeout_seconds(timeout_seconds)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     support_table_path = _sidecar(out_path, "support.tsv")
     low_support_branches_path = _sidecar(out_path, "low-support.tsv")
     support_histogram_path = _sidecar(out_path, "support-histogram.tsv")
-    version = read_engine_version("FastTree", executable, version_args=("-help",))
+    version = read_engine_version(
+        "FastTree",
+        executable,
+        version_args=("-help",),
+        timeout_seconds=timeout_seconds,
+    )
     resolved = resolve_engine_executable(executable)
     manifest_path = _manifest_path_from_output(out_path)
     command = [resolved, *_fasttree_args(input_path.resolve(), sequence_type)]
@@ -2156,6 +2486,10 @@ def run_fast_tree_inference(
         )
         if resumed is not None and _resume_has_fasttree_review_outputs(resumed):
             return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
     run = execute_engine_command(
         engine_name="FastTree",
         workflow="fast-approximate-tree",
@@ -2166,6 +2500,8 @@ def run_fast_tree_inference(
         stdout_path=out_path,
         stderr_path=_sidecar(out_path, "stderr.log"),
         output_paths={"tree": out_path},
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     _validate_tree_output(out_path)
     fasttree_support_summary = summarize_fasttree_support_distribution(out_path)
@@ -2203,6 +2539,7 @@ def run_fast_tree_inference(
             "branch-level FastTree local support table exported for review",
             "low-support FastTree branch ledger exported for weak-clade review",
             "FastTree local support histogram exported for reviewer-facing distribution checks",
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)

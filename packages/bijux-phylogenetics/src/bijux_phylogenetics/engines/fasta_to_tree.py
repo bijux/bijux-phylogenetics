@@ -385,6 +385,9 @@ def run_fasta_to_tree_workflow(
     bootstrap_replicates: int = 1000,
     normalize_identifiers: bool = False,
     remove_invalid_records: bool = False,
+    resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> FastaToTreeWorkflowReport:
     """Run alignment, trimming, model selection, ML inference, and bootstrap support in one workflow."""
     workflow_prefix = input_path.stem if prefix is None else prefix
@@ -453,6 +456,9 @@ def run_fasta_to_tree_workflow(
         _artifact_prefix(out_dir, workflow_prefix, "alignment").with_suffix(".aln"),
         executable=mafft_executable,
         mode=alignment_mode,
+        resume=resume,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
     trimming_workflow = run_alignment_trimming(
         alignment_workflow.output_paths["alignment"],
@@ -462,6 +468,9 @@ def run_fasta_to_tree_workflow(
         executable=trimal_executable,
         mode=trimming_mode,
         gap_threshold=trim_gap_threshold,
+        resume=resume,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
     model_selection_workflow = run_model_selection(
         trimming_workflow.output_paths["trimmed_alignment"],
@@ -469,8 +478,11 @@ def run_fasta_to_tree_workflow(
         prefix="model-selection",
         executable=iqtree_executable,
         sequence_type=inferred_sequence_type,
+        resume=resume,
         seed=iqtree_seed,
         threads=iqtree_threads,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
     if model_selection_workflow.selected_model is None:
         raise ValueError("model-selection workflow did not expose a selected model")
@@ -481,8 +493,11 @@ def run_fasta_to_tree_workflow(
         prefix="maximum-likelihood",
         executable=iqtree_executable,
         sequence_type=inferred_sequence_type,
+        resume=resume,
         seed=iqtree_seed,
         threads=iqtree_threads,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
     bootstrap_workflow = run_bootstrap_support_estimation(
         trimming_workflow.output_paths["trimmed_alignment"],
@@ -492,8 +507,11 @@ def run_fasta_to_tree_workflow(
         prefix="bootstrap-support",
         executable=iqtree_executable,
         sequence_type=inferred_sequence_type,
+        resume=resume,
         seed=iqtree_seed,
         threads=iqtree_threads,
+        timeout_seconds=timeout_seconds,
+        incomplete_run_policy=incomplete_run_policy,
     )
 
     model_validation = validate_model_selection_against_engine_outputs(

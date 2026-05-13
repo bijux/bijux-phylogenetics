@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -39,12 +40,35 @@ class EngineRunReport:
     stderr_path: Path
     output_paths: dict[str, Path]
     warning_lines: list[str]
+    started_at_utc: str
+    ended_at_utc: str
+    timeout_seconds: float | None
+    timed_out: bool
 
 
 @dataclass(slots=True)
 class EngineResumeCheck:
     resume_allowed: bool
     reason: str
+
+
+@dataclass(slots=True)
+class EngineIncompleteRunRecord:
+    engine_name: str
+    workflow: str
+    executable: str
+    working_directory: Path
+    manifest_path: Path
+    command: list[str]
+    stdout_path: Path
+    stderr_path: Path
+    output_paths: dict[str, Path]
+    started_at_utc: str
+    ended_at_utc: str | None
+    timeout_seconds: float | None
+    timed_out: bool
+    exit_code: int | None
+    failure_message: str | None
 
 
 def resolve_engine_executable(executable: str | Path) -> str:
@@ -84,16 +108,49 @@ def summarize_engine_warnings(*, stdout_text: str, stderr_text: str) -> list[str
     return warnings
 
 
+def validate_timeout_seconds(timeout_seconds: float | None) -> float | None:
+    """Validate one optional engine timeout setting."""
+    if timeout_seconds is not None and timeout_seconds <= 0:
+        raise ValueError(
+            f"timeout_seconds must be positive when provided, got {timeout_seconds}"
+        )
+    return timeout_seconds
+
+
+def utc_now_text() -> str:
+    """Return one stable UTC timestamp for engine manifests and ledgers."""
+    return (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+
+
 def read_engine_version(
     engine_name: str,
     executable: str | Path,
     *,
     version_args: tuple[str, ...],
+    timeout_seconds: float | None = None,
 ) -> EngineVersionInfo:
     """Run the engine-specific version command and capture its text."""
+    validate_timeout_seconds(timeout_seconds)
     resolved = resolve_engine_executable(executable)
     command = [resolved, *version_args]
-    result = subprocess.run(command, capture_output=True, text=True, check=False)  # nosec B603
+    try:
+        result = subprocess.run(  # nosec B603
+            command,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as error:
+        budget = "unspecified" if timeout_seconds is None else f"{timeout_seconds:.3f}"
+        raise EngineWorkflowError(
+            f"{engine_name} version command timed out after {budget} seconds: {' '.join(command)}"
+        ) from error
     fragments = [result.stdout.strip(), result.stderr.strip()]
     version_text = "\n".join(fragment for fragment in fragments if fragment).strip()
     if not version_text:
@@ -108,6 +165,89 @@ def read_engine_version(
     )
 
 
+def engine_incomplete_marker_path(manifest_path: Path) -> Path:
+    """Return the sidecar path used to mark one incomplete engine run."""
+    return manifest_path.with_suffix(".incomplete.json")
+
+
+def restore_incomplete_engine_run(
+    payload: dict[str, Any],
+) -> EngineIncompleteRunRecord:
+    """Restore one incomplete-run marker payload into a typed record."""
+    return EngineIncompleteRunRecord(
+        engine_name=str(payload["engine_name"]),
+        workflow=str(payload["workflow"]),
+        executable=str(payload["executable"]),
+        working_directory=Path(payload["working_directory"]),
+        manifest_path=Path(payload["manifest_path"]),
+        command=[str(item) for item in payload["command"]],
+        stdout_path=Path(payload["stdout_path"]),
+        stderr_path=Path(payload["stderr_path"]),
+        output_paths={
+            str(key): Path(value)
+            for key, value in dict(payload["output_paths"]).items()
+        },
+        started_at_utc=str(payload["started_at_utc"]),
+        ended_at_utc=(
+            None if payload.get("ended_at_utc") is None else str(payload["ended_at_utc"])
+        ),
+        timeout_seconds=(
+            None
+            if payload.get("timeout_seconds") is None
+            else float(payload["timeout_seconds"])
+        ),
+        timed_out=bool(payload.get("timed_out", False)),
+        exit_code=(
+            None if payload.get("exit_code") is None else int(payload["exit_code"])
+        ),
+        failure_message=(
+            None
+            if payload.get("failure_message") is None
+            else str(payload["failure_message"])
+        ),
+    )
+
+
+def load_incomplete_engine_run(
+    manifest_path: Path,
+) -> EngineIncompleteRunRecord | None:
+    """Load one incomplete-run marker when it exists."""
+    marker_path = engine_incomplete_marker_path(manifest_path)
+    if not marker_path.exists():
+        return None
+    return restore_incomplete_engine_run(load_engine_manifest(marker_path))
+
+
+def write_incomplete_engine_run(record: EngineIncompleteRunRecord) -> Path:
+    """Persist one incomplete-run marker."""
+    return write_engine_manifest(
+        engine_incomplete_marker_path(record.manifest_path),
+        record,
+    )
+
+
+def clear_incomplete_engine_run(manifest_path: Path) -> None:
+    """Remove one incomplete-run marker when a workflow completes cleanly."""
+    engine_incomplete_marker_path(manifest_path).unlink(missing_ok=True)
+
+
+def cleanup_incomplete_engine_run(manifest_path: Path) -> EngineIncompleteRunRecord | None:
+    """Delete one incomplete-run marker and the outputs it recorded."""
+    record = load_incomplete_engine_run(manifest_path)
+    if record is None:
+        return None
+    for path in {
+        record.manifest_path,
+        record.stdout_path,
+        record.stderr_path,
+        *record.output_paths.values(),
+    }:
+        if path.exists():
+            path.unlink()
+    clear_incomplete_engine_run(manifest_path)
+    return record
+
+
 def execute_engine_command(
     *,
     engine_name: str,
@@ -119,42 +259,102 @@ def execute_engine_command(
     stdout_path: Path,
     stderr_path: Path,
     output_paths: dict[str, Path],
+    manifest_path: Path,
+    timeout_seconds: float | None = None,
 ) -> EngineRunReport:
     """Execute an engine command, capture logs, and validate expected outputs."""
+    validate_timeout_seconds(timeout_seconds)
     work_dir.mkdir(parents=True, exist_ok=True)
     stdout_path.parent.mkdir(parents=True, exist_ok=True)
     stderr_path.parent.mkdir(parents=True, exist_ok=True)
     command = [executable, *command_args]
+    started_at_utc = utc_now_text()
+    incomplete_record = EngineIncompleteRunRecord(
+        engine_name=engine_name,
+        workflow=workflow,
+        executable=executable,
+        working_directory=work_dir,
+        manifest_path=manifest_path,
+        command=command,
+        stdout_path=stdout_path,
+        stderr_path=stderr_path,
+        output_paths=output_paths,
+        started_at_utc=started_at_utc,
+        ended_at_utc=None,
+        timeout_seconds=timeout_seconds,
+        timed_out=False,
+        exit_code=None,
+        failure_message=None,
+    )
+    write_incomplete_engine_run(incomplete_record)
     with (
         stdout_path.open("w", encoding="utf-8") as stdout_handle,
         stderr_path.open("w", encoding="utf-8") as stderr_handle,
     ):
-        result = subprocess.run(  # nosec B603
-            command,
-            cwd=work_dir,
-            stdout=stdout_handle,
-            stderr=stderr_handle,
-            text=True,
-            check=False,
-        )
+        try:
+            result = subprocess.run(  # nosec B603
+                command,
+                cwd=work_dir,
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                text=True,
+                check=False,
+                timeout=timeout_seconds,
+            )
+        except subprocess.TimeoutExpired as error:
+            stdout_text = (
+                stdout_path.read_text(encoding="utf-8") if stdout_path.exists() else ""
+            )
+            stderr_text = (
+                stderr_path.read_text(encoding="utf-8") if stderr_path.exists() else ""
+            )
+            budget = "unspecified" if timeout_seconds is None else f"{timeout_seconds:.3f}"
+            incomplete_record.ended_at_utc = utc_now_text()
+            incomplete_record.timed_out = True
+            incomplete_record.failure_message = (
+                f"{engine_name} {workflow} timed out after {budget} seconds"
+            )
+            write_incomplete_engine_run(incomplete_record)
+            warning_lines = summarize_engine_warnings(
+                stdout_text=stdout_text,
+                stderr_text=stderr_text,
+            )
+            raise EngineWorkflowError(
+                f"{engine_name} {workflow} timed out after {budget} seconds; "
+                f"stderr log: {stderr_path}; warnings: {len(warning_lines)}"
+            ) from error
     stdout_text = (
         stdout_path.read_text(encoding="utf-8") if stdout_path.exists() else ""
     )
     stderr_text = (
         stderr_path.read_text(encoding="utf-8") if stderr_path.exists() else ""
     )
+    ended_at_utc = utc_now_text()
     warning_lines = summarize_engine_warnings(
         stdout_text=stdout_text, stderr_text=stderr_text
     )
     if result.returncode != 0:
+        incomplete_record.ended_at_utc = ended_at_utc
+        incomplete_record.exit_code = result.returncode
+        incomplete_record.failure_message = (
+            f"{engine_name} {workflow} failed with exit code {result.returncode}"
+        )
+        write_incomplete_engine_run(incomplete_record)
         raise EngineWorkflowError(
             f"{engine_name} {workflow} failed with exit code {result.returncode}; stderr log: {stderr_path}"
         )
     missing_outputs = [str(path) for path in output_paths.values() if not path.exists()]
     if missing_outputs:
+        incomplete_record.ended_at_utc = ended_at_utc
+        incomplete_record.exit_code = result.returncode
+        incomplete_record.failure_message = (
+            f"{engine_name} {workflow} did not produce expected outputs"
+        )
+        write_incomplete_engine_run(incomplete_record)
         raise EngineWorkflowError(
             f"{engine_name} {workflow} did not produce expected outputs: {', '.join(missing_outputs)}"
         )
+    clear_incomplete_engine_run(manifest_path)
     return EngineRunReport(
         engine_name=engine_name,
         workflow=workflow,
@@ -167,6 +367,10 @@ def execute_engine_command(
         stderr_path=stderr_path,
         output_paths=output_paths,
         warning_lines=warning_lines,
+        started_at_utc=started_at_utc,
+        ended_at_utc=ended_at_utc,
+        timeout_seconds=timeout_seconds,
+        timed_out=False,
     )
 
 
