@@ -487,6 +487,9 @@ from bijux_phylogenetics.discrete_evolution import (
     write_transition_summary_table,
 )
 from bijux_phylogenetics.biogeography import (
+    BiogeographyRegionCountRow,
+    BiogeographyReportExclusionRow,
+    BiogeographyReportPackageResult,
     ConstrainedGeographicFitRow,
     ConstrainedGeographicReport,
     ConstrainedGeographicSummary,
@@ -515,6 +518,8 @@ from bijux_phylogenetics.biogeography import (
     TimeStratifiedTransitionReport,
     TimeStratifiedTransitionSummary,
     UnsupportedGeographicTransitionClaimRow,
+    build_biogeography_report_package,
+    summarize_biogeography_region_counts,
     summarize_biogeographic_transition_chronology,
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
@@ -527,6 +532,8 @@ from bijux_phylogenetics.biogeography import (
     write_constrained_geographic_fit_table,
     write_constrained_geographic_summary_table,
     write_constrained_geographic_transition_table,
+    write_biogeography_region_count_table,
+    write_biogeography_report_exclusion_table,
     write_dated_biogeography_event_table,
     write_dated_biogeography_exclusion_table,
     write_dated_biogeography_node_table,
@@ -1047,8 +1054,28 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is summarize_geographic_sampling_bias
     )
     assert (
+        bijux_phylogenetics.BiogeographyRegionCountRow
+        is BiogeographyRegionCountRow
+    )
+    assert (
+        bijux_phylogenetics.BiogeographyReportExclusionRow
+        is BiogeographyReportExclusionRow
+    )
+    assert (
+        bijux_phylogenetics.BiogeographyReportPackageResult
+        is BiogeographyReportPackageResult
+    )
+    assert (
+        bijux_phylogenetics.summarize_biogeography_region_counts
+        is summarize_biogeography_region_counts
+    )
+    assert (
         bijux_phylogenetics.summarize_geographic_state_model
         is summarize_geographic_state_model
+    )
+    assert (
+        bijux_phylogenetics.build_biogeography_report_package
+        is build_biogeography_report_package
     )
     assert (
         bijux_phylogenetics.summarize_geographic_migration_events
@@ -1073,6 +1100,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         bijux_phylogenetics.write_constrained_geographic_transition_table
         is write_constrained_geographic_transition_table
+    )
+    assert (
+        bijux_phylogenetics.write_biogeography_region_count_table
+        is write_biogeography_region_count_table
+    )
+    assert (
+        bijux_phylogenetics.write_biogeography_report_exclusion_table
+        is write_biogeography_report_exclusion_table
     )
     assert (
         bijux_phylogenetics.write_constrained_geographic_exclusion_table

@@ -86,6 +86,15 @@ from bijux_phylogenetics.biogeography.sampling_bias import (
     write_geographic_sampling_bias_transition_table,
     write_geographic_sampling_count_table,
 )
+from bijux_phylogenetics.biogeography.report_package import (
+    BiogeographyRegionCountRow,
+    BiogeographyReportExclusionRow,
+    BiogeographyReportPackageResult,
+    build_biogeography_report_package,
+    summarize_biogeography_region_counts,
+    write_biogeography_region_count_table,
+    write_biogeography_report_exclusion_table,
+)
 
 __all__ = [
     "GeographicExcludedTaxonRow",
@@ -118,6 +127,9 @@ __all__ = [
     "GeographicSamplingBiasSummary",
     "GeographicSamplingBiasTransitionRow",
     "GeographicSamplingCountRow",
+    "BiogeographyRegionCountRow",
+    "BiogeographyReportExclusionRow",
+    "BiogeographyReportPackageResult",
     "TimeStratifiedTransitionMatrixRow",
     "TimeStratifiedTransitionReport",
     "TimeStratifiedTransitionSummary",
@@ -125,6 +137,8 @@ __all__ = [
     "summarize_constrained_geographic_model",
     "summarize_constrained_geographic_report",
     "summarize_biogeographic_transition_chronology",
+    "summarize_biogeography_region_counts",
+    "build_biogeography_report_package",
     "summarize_geographic_sampling_bias",
     "summarize_geographic_migration_events",
     "summarize_geographic_migration_event_tree_set",
@@ -152,6 +166,8 @@ __all__ = [
     "write_geographic_sampling_bias_summary_table",
     "write_geographic_sampling_bias_transition_table",
     "write_geographic_sampling_count_table",
+    "write_biogeography_region_count_table",
+    "write_biogeography_report_exclusion_table",
     "write_geographic_exclusion_table",
     "write_geographic_region_probability_table",
     "write_geographic_state_summary_table",
