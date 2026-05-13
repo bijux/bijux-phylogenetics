@@ -36,10 +36,13 @@ def test_validate_reference_parity_examples_records_failure_modes_and_inputs() -
     report = validate_reference_parity_examples()
     pgls = next(item for item in report.observations if item.method == "pgls")
     rf = next(
-        item for item in report.observations if item.method == "robinson-foulds-distance"
+        item
+        for item in report.observations
+        if item.method == "robinson-foulds-distance"
     )
     consensus = next(
-        item for item in report.observations
+        item
+        for item in report.observations
         if item.method == "consensus-tree-generation"
     )
     assert pgls.input_fixtures[0].name == "example_tree.nwk"

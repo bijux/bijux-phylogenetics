@@ -45,7 +45,9 @@ def test_assess_tree_set_storage_risk_reports_low_risk_for_small_fixture() -> No
 def test_summarize_posterior_topology_diversity_reports_dispersion_metrics(
     tmp_path: Path,
 ) -> None:
-    report = summarize_posterior_topology_diversity(fixture("example_tree_set_left.nwk"))
+    report = summarize_posterior_topology_diversity(
+        fixture("example_tree_set_left.nwk")
+    )
     unstable_path = tmp_path / "unstable-clades.tsv"
     write_unstable_clade_table(
         unstable_path,

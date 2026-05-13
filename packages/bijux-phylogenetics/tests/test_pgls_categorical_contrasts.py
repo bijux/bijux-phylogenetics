@@ -4,11 +4,11 @@ import json
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix
 from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
     summarize_pgls_categorical_contrasts,
     write_pgls_categorical_contrast_table,
 )
-from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

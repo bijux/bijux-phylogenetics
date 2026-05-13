@@ -14,8 +14,9 @@ from bijux_phylogenetics.datasets.data_quality_stress import (
 )
 
 
-def test_load_catarrhine_data_quality_stress_panel_dataset_exposes_packaged_surface(
-) -> None:
+def test_load_catarrhine_data_quality_stress_panel_dataset_exposes_packaged_surface() -> (
+    None
+):
     dataset = load_catarrhine_data_quality_stress_panel_dataset()
     assert dataset.dataset_id == "catarrhine_data_quality_stress_panel"
     assert dataset.label == "Catarrhine data quality stress panel"
@@ -28,8 +29,9 @@ def test_load_catarrhine_data_quality_stress_panel_dataset_exposes_packaged_surf
     assert dataset.reference_output_root.is_dir()
 
 
-def test_public_runtime_exports_include_catarrhine_data_quality_stress_panel_surface(
-) -> None:
+def test_public_runtime_exports_include_catarrhine_data_quality_stress_panel_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_catarrhine_data_quality_stress_panel_dataset
         is load_catarrhine_data_quality_stress_panel_dataset

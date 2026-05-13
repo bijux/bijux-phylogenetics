@@ -11,8 +11,8 @@ from bijux_phylogenetics.engines.validation import (
     compare_inferred_trees_across_engines,
     compare_ml_trees_across_models,
     detect_weakly_supported_backbone,
-    summarize_sh_alrt_support_distribution,
     summarize_bootstrap_support_distribution,
+    summarize_sh_alrt_support_distribution,
     validate_bootstrap_tree_set,
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
@@ -549,7 +549,9 @@ def test_compare_inferred_trees_across_engines_accepts_support_tree_manifests(
         executable=fasttree_executable,
     )
 
-    report = compare_inferred_trees_across_engines(fast.manifest_path, iqtree.manifest_path)
+    report = compare_inferred_trees_across_engines(
+        fast.manifest_path, iqtree.manifest_path
+    )
 
     assert report.comparison_kind == "engine"
     assert report.left_label == "FastTree"
@@ -666,7 +668,10 @@ def test_validate_inference_engine_outputs_requires_bootstrap_review_artifacts(
     report = validate_inference_engine_outputs(workflow.manifest_path)
 
     assert report.valid is False
-    assert "bootstrap-support manifest is missing the support_table output" in report.issues
+    assert (
+        "bootstrap-support manifest is missing the support_table output"
+        in report.issues
+    )
     assert (
         "bootstrap-support manifest is missing the low_support_branches output"
         in report.issues
@@ -712,7 +717,9 @@ def test_validate_inference_engine_outputs_requires_sh_alrt_review_evidence(
     report = validate_inference_engine_outputs(workflow.manifest_path)
 
     assert report.valid is False
-    assert "sh-alrt-support manifest is missing the support_table output" in report.issues
+    assert (
+        "sh-alrt-support manifest is missing the support_table output" in report.issues
+    )
     assert (
         "sh-alrt-support manifest is missing the conflicting_support_branches output"
         in report.issues

@@ -71,14 +71,20 @@ def test_write_bootstrap_tree_set_artifacts_writes_governed_tables_and_consensus
         "unstable_branches",
         "unstable_clades",
     ]
-    assert report.output_paths["summary_table"].read_text(encoding="utf-8").startswith(
-        "tree_count\tshared_taxon_count\trooted_topology_count\t"
+    assert (
+        report.output_paths["summary_table"]
+        .read_text(encoding="utf-8")
+        .startswith("tree_count\tshared_taxon_count\trooted_topology_count\t")
     )
-    assert report.output_paths["consensus_tree"].read_text(encoding="utf-8").strip() == (
+    assert report.output_paths["consensus_tree"].read_text(
+        encoding="utf-8"
+    ).strip() == (
         "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);"
     )
-    assert report.output_paths["unstable_branches"].read_text(
-        encoding="utf-8"
-    ).startswith(
-        "clade\tbootstrap_tree_count\tbootstrap_frequency\tbootstrap_support_percent\t"
+    assert (
+        report.output_paths["unstable_branches"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "clade\tbootstrap_tree_count\tbootstrap_frequency\tbootstrap_support_percent\t"
+        )
     )

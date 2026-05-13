@@ -379,9 +379,7 @@ def test_biogeography_events_cli_can_export_tree_set_review(
     assert "event_summary_count" in summary_path.read_text(encoding="utf-8")
     assert "rooted_topology_id" in trees_path.read_text(encoding="utf-8")
     assert "midpoint_depth" in events_path.read_text(encoding="utf-8")
-    assert "tree_presence_fraction" in event_summaries_path.read_text(
-        encoding="utf-8"
-    )
+    assert "tree_presence_fraction" in event_summaries_path.read_text(encoding="utf-8")
     assert "reason" in exclusions_path.read_text(encoding="utf-8")
 
 

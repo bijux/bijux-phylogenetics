@@ -118,9 +118,10 @@ def test_reconstruct_continuous_ancestral_states_matches_primate_reference_fixtu
         for estimate in report.estimates
         if not estimate.is_tip
     }
-    assert len(observed_rows) == reference["r_ancestral_reconstruction"]["brownian"][
-        "node_count"
-    ]
+    assert (
+        len(observed_rows)
+        == reference["r_ancestral_reconstruction"]["brownian"]["node_count"]
+    )
     assert observed_rows.keys() == expected_rows.keys()
     for node, expected_estimate in expected_rows.items():
         assert math.isclose(
@@ -195,8 +196,7 @@ def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_when_availa
     if live_fit.returncode != 0:
         pytest.skip("live ape::ace execution failed in this environment")
     expected_rows = {
-        row["node"]: row["estimate"]
-        for row in json.loads(live_fit.stdout)
+        row["node"]: row["estimate"] for row in json.loads(live_fit.stdout)
     }
     report = reconstruct_continuous_ancestral_states(
         repository_root

@@ -83,7 +83,9 @@ def test_run_primate_comparative_demo_materializes_dataset_and_workflow(
     assert "workflow summary" in result.overview_path.read_text(encoding="utf-8")
 
 
-def test_export_primate_comparative_dataset_copies_expected_outputs(tmp_path: Path) -> None:
+def test_export_primate_comparative_dataset_copies_expected_outputs(
+    tmp_path: Path,
+) -> None:
     result = export_primate_comparative_dataset(tmp_path / "dataset")
     expected_files = {path.name for path in result.expected_output_root.glob("*.tsv")}
     assert result.readme_path.is_file()
@@ -111,8 +113,7 @@ def test_public_runtime_exports_include_primate_comparative_dataset_surface() ->
         is write_primate_comparative_workflow_bundle
     )
     assert (
-        bijux_phylogenetics.run_primate_comparative_demo
-        is run_primate_comparative_demo
+        bijux_phylogenetics.run_primate_comparative_demo is run_primate_comparative_demo
     )
 
 
@@ -120,9 +121,7 @@ def test_cli_demo_primate_comparative_json_output_reports_dataset_and_workflow(
     tmp_path: Path, capsys
 ) -> None:
     output = tmp_path / "primate-demo"
-    exit_code = main(
-        ["demo", "primate-comparative", "--out", str(output), "--json"]
-    )
+    exit_code = main(["demo", "primate-comparative", "--out", str(output), "--json"])
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"

@@ -14,8 +14,9 @@ from bijux_phylogenetics.datasets.rabies_geography import (
 )
 
 
-def test_load_rabies_geographic_transition_panel_dataset_exposes_packaged_surface(
-) -> None:
+def test_load_rabies_geographic_transition_panel_dataset_exposes_packaged_surface() -> (
+    None
+):
     dataset = load_rabies_geographic_transition_panel_dataset()
     assert dataset.dataset_id == "rabies_geographic_transition_panel"
     assert dataset.label == "Rabies geographic transition panel"
@@ -102,8 +103,9 @@ def test_export_rabies_geographic_transition_panel_dataset_copies_expected_outpu
     assert "geographic-migration-events.tsv" in expected_files
 
 
-def test_public_runtime_exports_include_rabies_geographic_transition_panel_surface(
-) -> None:
+def test_public_runtime_exports_include_rabies_geographic_transition_panel_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_rabies_geographic_transition_panel_dataset
         is load_rabies_geographic_transition_panel_dataset

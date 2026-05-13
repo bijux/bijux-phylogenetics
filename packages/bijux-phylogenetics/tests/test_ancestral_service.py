@@ -10,8 +10,8 @@ from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestra
 from bijux_phylogenetics.ancestral.service import (
     compare_continuous_ancestral_models,
     compare_continuous_ancestral_trees,
-    compare_discrete_ancestral_reconstructions,
     compare_discrete_ancestral_models,
+    compare_discrete_ancestral_reconstructions,
     compare_discrete_ancestral_trees,
     render_ancestral_state_report,
     render_ancestral_state_tree,

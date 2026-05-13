@@ -14,8 +14,9 @@ from bijux_phylogenetics.datasets import (
 )
 
 
-def test_load_central_european_seashore_flora_dataset_exposes_packaged_plant_surface(
-) -> None:
+def test_load_central_european_seashore_flora_dataset_exposes_packaged_plant_surface() -> (
+    None
+):
     dataset = load_central_european_seashore_flora_dataset()
     assert dataset.dataset_id == "central_european_seashore_flora"
     assert dataset.label == "Central European seashore flora dataset"
@@ -103,8 +104,9 @@ def test_export_central_european_seashore_flora_dataset_copies_expected_outputs(
     assert "clade-trait-summary.tsv" in expected_files
 
 
-def test_public_runtime_exports_include_central_european_seashore_flora_dataset_surface(
-) -> None:
+def test_public_runtime_exports_include_central_european_seashore_flora_dataset_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_central_european_seashore_flora_dataset
         is load_central_european_seashore_flora_dataset

@@ -25,7 +25,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_summarize_trait_imputation_predicts_missing_taxa_and_validates_holdout() -> None:
+def test_summarize_trait_imputation_predicts_missing_taxa_and_validates_holdout() -> (
+    None
+):
     report = summarize_trait_imputation(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_trait_imputation.tsv"),
@@ -55,7 +57,10 @@ def test_summarize_trait_imputation_predicts_missing_taxa_and_validates_holdout(
     top_holdout = report.holdout_rows[0]
     assert top_holdout.rank == 1
     assert top_holdout.absolute_error >= 0.0
-    assert top_holdout.lower_95_confidence_interval < top_holdout.upper_95_confidence_interval
+    assert (
+        top_holdout.lower_95_confidence_interval
+        < top_holdout.upper_95_confidence_interval
+    )
 
 
 def test_summarize_trait_imputation_tracks_excluded_taxa() -> None:
@@ -94,7 +99,11 @@ def test_trait_imputation_writers_emit_review_ledgers(tmp_path: Path) -> None:
     holdout_rows = holdout_out.read_text(encoding="utf-8").splitlines()
     excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("trait\ttaxon_column\tmodel")
-    assert imputation_rows[0].startswith("taxon\tmissing_reason\tobserved_support_taxon_count")
-    assert holdout_rows[0].startswith("taxon\tobserved_value\tpredicted_value\tresidual")
+    assert imputation_rows[0].startswith(
+        "taxon\tmissing_reason\tobserved_support_taxon_count"
+    )
+    assert holdout_rows[0].startswith(
+        "taxon\tobserved_value\tpredicted_value\tresidual"
+    )
     assert excluded_rows == ["taxon\treason"]
     assert imputation_rows[1].startswith("B\tmissing_trait_value\t5\t")

@@ -46,14 +46,7 @@ def real_trimal_executable() -> Path | None:
     if resolved is not None:
         return Path(resolved)
     return _existing_candidate(
-        [
-            REPOSITORY_ROOT
-            / "artifacts"
-            / "trimal"
-            / "trimal"
-            / "source"
-            / "trimal"
-        ]
+        [REPOSITORY_ROOT / "artifacts" / "trimal" / "trimal" / "source" / "trimal"]
     )
 
 
@@ -132,5 +125,7 @@ def require_alignment_engine_executables() -> dict[str, str]:
             + ", ".join(sorted(missing))
         )
     return {
-        name: str(resolved) for name, resolved in executables.items() if resolved is not None
+        name: str(resolved)
+        for name, resolved in executables.items()
+        if resolved is not None
     }

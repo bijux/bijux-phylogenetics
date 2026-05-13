@@ -104,10 +104,14 @@ def test_write_niche_transition_tables_emit_expected_ledgers(tmp_path: Path) -> 
         model="er",
     )
 
-    summary_path = write_niche_transition_summary_table(tmp_path / "summary.tsv", report)
+    summary_path = write_niche_transition_summary_table(
+        tmp_path / "summary.tsv", report
+    )
     nodes_path = write_niche_state_node_table(tmp_path / "nodes.tsv", report)
     rates_path = write_niche_transition_rate_table(tmp_path / "rates.tsv", report)
-    branches_path = write_niche_transition_branch_table(tmp_path / "branches.tsv", report)
+    branches_path = write_niche_transition_branch_table(
+        tmp_path / "branches.tsv", report
+    )
     counts_path = write_niche_transition_count_table(tmp_path / "counts.tsv", report)
     clades_path = write_niche_transition_clade_table(tmp_path / "clades.tsv", report)
     exclusions_path = write_niche_transition_exclusion_table(

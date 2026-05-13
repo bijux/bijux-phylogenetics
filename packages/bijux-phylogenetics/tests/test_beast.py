@@ -17,9 +17,9 @@ from bijux_phylogenetics.bayesian.beast import (
     prepare_beast_time_tree_analysis,
     run_beast_posterior_inference,
     summarize_beast_analysis_xml,
+    summarize_beast_log,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
-    summarize_beast_log,
     validate_beast_analysis_xml,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
@@ -214,10 +214,7 @@ def test_prepare_beast_time_tree_analysis_writes_clock_prior_calibrations_and_ti
         is not None
     )
     assert root.find("./tree[@id='tree']") is not None
-    assert (
-        root.find("./tree[@id='tree']/trait[@traitname='date-forward']")
-        is not None
-    )
+    assert root.find("./tree[@id='tree']/trait[@traitname='date-forward']") is not None
     assert root.find(".//distribution[@id='cal-mammals']") is not None
     assert (
         root.find(
@@ -231,11 +228,13 @@ def test_prepare_beast_time_tree_analysis_writes_clock_prior_calibrations_and_ti
         )
         is not None
     )
-    assert "template generator does not infer parametric lognormal shape parameters automatically" in " ".join(
-        report.warnings
+    assert (
+        "template generator does not infer parametric lognormal shape parameters automatically"
+        in " ".join(report.warnings)
     )
-    assert "translated a lower-bound-only uniform calibration into an offset exponential prior" in " ".join(
-        report.warnings
+    assert (
+        "translated a lower-bound-only uniform calibration into an offset exponential prior"
+        in " ".join(report.warnings)
     )
     assert "standard birth-death tree prior are exploratory" in " ".join(
         report.warnings
@@ -263,9 +262,7 @@ def test_prepare_beast_time_tree_analysis_supports_protein_alignments_without_st
     assert root.find("./data[@id='alignment'][@dataType='aminoacid']") is not None
     assert root.find("./input[@id='siteModel']/substModel[@spec='JTT']") is not None
     assert (
-        root.find(
-            "./input[@id='tree'][@spec='beast.base.evolution.tree.ClusterTree']"
-        )
+        root.find("./input[@id='tree'][@spec='beast.base.evolution.tree.ClusterTree']")
         is not None
     )
     assert (
@@ -415,7 +412,9 @@ def test_prepare_beast_time_tree_analysis_requires_tree_for_calibrations(
     except ValueError as error:
         assert "requires tree_path when calibration_path is provided" in str(error)
     else:
-        raise AssertionError("expected BEAST preparation to reject calibrations without a starting tree")
+        raise AssertionError(
+            "expected BEAST preparation to reject calibrations without a starting tree"
+        )
 
 
 def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> None:
@@ -526,11 +525,7 @@ def test_summarize_beast_log_reports_known_reference_ess(
 ) -> None:
     log_path = tmp_path / "known-ess.log"
     log_path.write_text(
-        "state\tposterior\n"
-        "0\t0\n"
-        "1\t0\n"
-        "2\t1\n"
-        "3\t1\n",
+        "state\tposterior\n0\t0\n1\t0\n2\t1\n3\t1\n",
         encoding="utf-8",
     )
 
@@ -631,7 +626,9 @@ def test_parse_beast_posterior_tree_samples_handles_translate_and_burnin(
 
     report = parse_beast_posterior_tree_samples(tree_path, burnin_fraction=0.25)
     output_path = write_beast_posterior_tree_set(normalized_path, report)
-    _tree, mcc_report = summarize_maximum_clade_credibility_tree(output_path, burnin_fraction=0.0)
+    _tree, mcc_report = summarize_maximum_clade_credibility_tree(
+        output_path, burnin_fraction=0.0
+    )
     _consensus_tree, consensus_report = compute_consensus_tree(output_path)
 
     assert report.total_tree_count == 3
@@ -776,7 +773,10 @@ def test_summarize_beast_posterior_trees_builds_majority_rule_consensus(
     assert report.minimum_posterior_probability == pytest.approx(2 / 3)
     assert report.maximum_posterior_probability == pytest.approx(2 / 3)
     assert report.clade_frequency_count == 4
-    assert report.consensus_newick == "((A:0.1,B:0.1)0.666666666666667:0.35,(C:0.1,D:0.1)0.666666666666667:0.35);"
+    assert (
+        report.consensus_newick
+        == "((A:0.1,B:0.1)0.666666666666667:0.35,(C:0.1,D:0.1)0.666666666666667:0.35);"
+    )
     assert report.retained_tree_set_path.read_text(encoding="utf-8").count("\n") == 3
     assert consensus_tree.tip_names == ["A", "B", "C", "D"]
 

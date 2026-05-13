@@ -37,12 +37,11 @@ def test_phylogenetic_signal_test_preserves_permutation_rows() -> None:
     assert report.permutations == 7
     assert len(report.permutation_rows) == 7
     assert report.permutation_rows[0].permutation_index == 1
-    assert all(
-        1 <= row.permutation_index <= 7 for row in report.permutation_rows
+    assert all(1 <= row.permutation_index <= 7 for row in report.permutation_rows)
+    assert (
+        sum(1 for row in report.permutation_rows if row.at_or_above_observed)
+        == report.permuted_k_at_or_above_observed
     )
-    assert sum(
-        1 for row in report.permutation_rows if row.at_or_above_observed
-    ) == report.permuted_k_at_or_above_observed
 
 
 def test_summarize_phylogenetic_signal_matches_reference_fixture_cases() -> None:

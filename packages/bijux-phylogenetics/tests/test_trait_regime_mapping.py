@@ -26,7 +26,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_summarize_trait_regime_mapping_reconstructs_branch_regimes_from_tip_states() -> None:
+def test_summarize_trait_regime_mapping_reconstructs_branch_regimes_from_tip_states() -> (
+    None
+):
     report = summarize_trait_regime_mapping(
         fixture("example_tree.nwk"),
         tip_states_path=fixture("example_traits_geography.tsv"),
@@ -51,7 +53,10 @@ def test_summarize_trait_regime_mapping_reconstructs_branch_regimes_from_tip_sta
     assert node_lookup["A|B|C|D"].candidate_regimes == ["island", "north", "south"]
     assert node_lookup["A|B|C|D"].ambiguous_assignment is True
     assert report.analysis_tree_newick is not None
-    assert "one or more discrete ancestral nodes remain unstable across candidate states" in report.warnings
+    assert (
+        "one or more discrete ancestral nodes remain unstable across candidate states"
+        in report.warnings
+    )
 
 
 def test_summarize_trait_regime_mapping_normalizes_user_map() -> None:
@@ -65,7 +70,9 @@ def test_summarize_trait_regime_mapping_normalizes_user_map() -> None:
     assert report.analyzed_taxon_count == 4
     assert report.node_rows == []
     assert report.ambiguous_branch_count == 0
-    assert [row.regime for row in report.branch_rows if row.branch_id in {"A|B", "C|D"}] == [
+    assert [
+        row.regime for row in report.branch_rows if row.branch_id in {"A|B", "C|D"}
+    ] == [
         "fast",
         "slow",
     ]
@@ -109,14 +116,20 @@ def test_trait_regime_mapping_writers_and_renderer_emit_review_outputs(
     write_trait_regime_exclusion_table(exclusion_out, reconstructed)
     render = render_trait_regime_map(normalized, out_path=svg_out, layout="circular")
 
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "source_kind\ttrait\ttaxon_column\treconstruction_model"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("source_kind\ttrait\ttaxon_column\treconstruction_model")
     )
-    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "branch_id\tchild_node_name\tis_tip_branch"
+    assert (
+        branch_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("branch_id\tchild_node_name\tis_tip_branch")
     )
-    assert node_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "node_id\tnode_name\tis_tip"
+    assert (
+        node_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("node_id\tnode_name\tis_tip")
     )
     assert exclusion_out.read_text(encoding="utf-8").splitlines() == ["taxon\treason"]
     svg = svg_out.read_text(encoding="utf-8")

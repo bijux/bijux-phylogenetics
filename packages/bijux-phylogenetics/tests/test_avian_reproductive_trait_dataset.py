@@ -35,7 +35,9 @@ def test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expecte
     tmp_path: Path,
 ) -> None:
     report = run_avian_reproductive_trait_workflow()
-    bundle = write_avian_reproductive_trait_workflow_bundle(tmp_path / "workflow", report)
+    bundle = write_avian_reproductive_trait_workflow_bundle(
+        tmp_path / "workflow", report
+    )
     expected_root = report.dataset.reference_output_root
     generated = {
         bundle.summary_path.name: bundle.summary_path,
@@ -100,7 +102,9 @@ def test_export_avian_reproductive_trait_dataset_copies_expected_outputs(
     assert "clade-trait-summary.tsv" in expected_files
 
 
-def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface() -> None:
+def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_avian_reproductive_trait_dataset
         is load_avian_reproductive_trait_dataset

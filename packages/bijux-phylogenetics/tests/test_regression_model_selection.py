@@ -49,21 +49,29 @@ def test_compare_comparative_regression_models_ranks_continuous_candidates() -> 
         (row.left_formula, row.right_formula): row.comparison_kind
         for row in report.pairwise_rows
     }
-    assert pairwise[
-        (
-            "response_growth ~ predictor_one",
-            "response_growth ~ predictor_one + predictor_two",
-        )
-    ] == "left_nested_in_right"
-    assert pairwise[
-        (
-            "response_growth ~ predictor_one",
-            "response_growth ~ predictor_two",
-        )
-    ] == "non_nested"
+    assert (
+        pairwise[
+            (
+                "response_growth ~ predictor_one",
+                "response_growth ~ predictor_one + predictor_two",
+            )
+        ]
+        == "left_nested_in_right"
+    )
+    assert (
+        pairwise[
+            (
+                "response_growth ~ predictor_one",
+                "response_growth ~ predictor_two",
+            )
+        ]
+        == "non_nested"
+    )
 
 
-def test_compare_comparative_regression_models_matches_logistic_reference_ranking() -> None:
+def test_compare_comparative_regression_models_matches_logistic_reference_ranking() -> (
+    None
+):
     reference = json.loads(
         fixture("comparative_regression_model_selection_reference.json").read_text(
             encoding="utf-8"
@@ -79,7 +87,9 @@ def test_compare_comparative_regression_models_matches_logistic_reference_rankin
         ],
         lambda_value=1.0,
     )
-    ranked_formulas = [row.formula for row in sorted(report.rows, key=lambda row: row.rank)]
+    ranked_formulas = [
+        row.formula for row in sorted(report.rows, key=lambda row: row.rank)
+    ]
     reference_ranked = [
         row["formula"]
         for row in sorted(reference["rows"], key=lambda row: (row["aic"], row["bic"]))

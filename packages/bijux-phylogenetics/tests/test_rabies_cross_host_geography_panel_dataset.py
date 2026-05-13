@@ -14,6 +14,7 @@ from bijux_phylogenetics.datasets import (
     run_rabies_cross_host_geography_panel_workflow,
     write_rabies_cross_host_geography_panel_workflow_bundle,
 )
+
 from .support.external_engines import require_alignment_engine_executables
 
 pytestmark = [
@@ -45,18 +46,28 @@ def _stable_generated_outputs(bundle: object) -> dict[str, Path]:
         "biogeography/biogeography-report.html": workflow_bundle.biogeography_report_path,
         "biogeography/ancestral-region-tree.svg": workflow_bundle.biogeography_tree_figure_path,
         "biogeography/geographic-region-map.html": workflow_bundle.biogeography_map_path,
-        "biogeography/summary.tsv": workflow_bundle.biogeography_output_root / "summary.tsv",
-        "biogeography/region-counts.tsv": workflow_bundle.biogeography_output_root / "region-counts.tsv",
-        "biogeography/ancestral-regions.tsv": workflow_bundle.biogeography_output_root / "ancestral-regions.tsv",
-        "biogeography/transition-matrix.tsv": workflow_bundle.biogeography_output_root / "transition-matrix.tsv",
-        "biogeography/event-table.tsv": workflow_bundle.biogeography_output_root / "event-table.tsv",
-        "biogeography/map-markers.tsv": workflow_bundle.biogeography_output_root / "map-markers.tsv",
-        "biogeography/map-lines.tsv": workflow_bundle.biogeography_output_root / "map-lines.tsv",
-        "biogeography/exclusions.tsv": workflow_bundle.biogeography_output_root / "exclusions.tsv",
+        "biogeography/summary.tsv": workflow_bundle.biogeography_output_root
+        / "summary.tsv",
+        "biogeography/region-counts.tsv": workflow_bundle.biogeography_output_root
+        / "region-counts.tsv",
+        "biogeography/ancestral-regions.tsv": workflow_bundle.biogeography_output_root
+        / "ancestral-regions.tsv",
+        "biogeography/transition-matrix.tsv": workflow_bundle.biogeography_output_root
+        / "transition-matrix.tsv",
+        "biogeography/event-table.tsv": workflow_bundle.biogeography_output_root
+        / "event-table.tsv",
+        "biogeography/map-markers.tsv": workflow_bundle.biogeography_output_root
+        / "map-markers.tsv",
+        "biogeography/map-lines.tsv": workflow_bundle.biogeography_output_root
+        / "map-lines.tsv",
+        "biogeography/exclusions.tsv": workflow_bundle.biogeography_output_root
+        / "exclusions.tsv",
     }
 
 
-def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface() -> None:
+def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface() -> (
+    None
+):
     dataset = load_rabies_cross_host_geography_panel_dataset()
     assert dataset.dataset_id == "rabies_cross_host_geography_panel"
     assert dataset.label == "Rabies cross-host geography panel"
@@ -148,7 +159,9 @@ def test_export_rabies_cross_host_geography_panel_dataset_copies_expected_output
     assert "biogeography/biogeography-report.html" in expected_files
 
 
-def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surface() -> None:
+def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_rabies_cross_host_geography_panel_dataset
         is load_rabies_cross_host_geography_panel_dataset

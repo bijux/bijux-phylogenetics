@@ -64,7 +64,9 @@ def test_summarize_early_burst_trait_evolution_reports_comparison_context() -> N
     assert report.confidence_intervals[0].upper_95 == 50.0
 
 
-def test_summarize_early_burst_trait_evolution_records_missing_and_invalid_taxa() -> None:
+def test_summarize_early_burst_trait_evolution_records_missing_and_invalid_taxa() -> (
+    None
+):
     report = summarize_early_burst_trait_evolution(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_continuous_evolution_missing.tsv"),
@@ -77,8 +79,14 @@ def test_summarize_early_burst_trait_evolution_records_missing_and_invalid_taxa(
         "C": "non_numeric_trait_value",
         "G": "absent_from_tree",
     }
-    assert "one or more overlapping taxa have missing trait values and will be pruned" in report.warnings
-    assert "one or more overlapping taxa have non-numeric trait values and will be pruned" in report.warnings
+    assert (
+        "one or more overlapping taxa have missing trait values and will be pruned"
+        in report.warnings
+    )
+    assert (
+        "one or more overlapping taxa have non-numeric trait values and will be pruned"
+        in report.warnings
+    )
     assert "trait table contains taxa absent from the tree" in report.warnings
 
 
@@ -135,11 +143,17 @@ def test_summarize_early_burst_trait_evolution_prefers_early_burst_on_simulated_
 
     assert report.better_model == "early-burst"
     assert report.rate_change > 0.0
-    assert 3.0 <= report.confidence_intervals[0].lower_95 <= report.confidence_intervals[0].upper_95
+    assert (
+        3.0
+        <= report.confidence_intervals[0].lower_95
+        <= report.confidence_intervals[0].upper_95
+    )
     assert [warning.kind for warning in report.identifiability_warnings] == [
         "flat_likelihood_profile"
     ]
-    assert next(row for row in report.comparison_rows if row.model == "early-burst").selected
+    assert next(
+        row for row in report.comparison_rows if row.model == "early-burst"
+    ).selected
 
 
 def _write_simulated_early_burst_dataset(tmp_path: Path) -> tuple[Path, Path]:
@@ -188,9 +202,13 @@ def _cholesky(matrix: list[list[float]]) -> list[list[float]]:
     lower = [[0.0] * size for _ in range(size)]
     for row in range(size):
         for column in range(row + 1):
-            partial = sum(lower[row][index] * lower[column][index] for index in range(column))
+            partial = sum(
+                lower[row][index] * lower[column][index] for index in range(column)
+            )
             if row == column:
                 lower[row][column] = math.sqrt(max(matrix[row][row] - partial, 1e-12))
             else:
-                lower[row][column] = (matrix[row][column] - partial) / lower[column][column]
+                lower[row][column] = (matrix[row][column] - partial) / lower[column][
+                    column
+                ]
     return lower

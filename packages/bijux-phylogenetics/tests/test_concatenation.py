@@ -95,7 +95,9 @@ def test_concatenate_locus_alignments_matches_expected_supermatrix_outputs(
     ).read_text(encoding="utf-8")
 
 
-def test_concatenate_locus_alignments_reports_missing_taxa_and_mixed_data_types() -> None:
+def test_concatenate_locus_alignments_reports_missing_taxa_and_mixed_data_types() -> (
+    None
+):
     input_dir = fixture("concatenation/mixed-locus-supermatrix/inputs")
     _, partitions, report = concatenate_locus_alignments(
         [
@@ -139,4 +141,6 @@ def test_concatenate_locus_alignments_rejects_duplicate_taxa_within_one_locus(
 
 
 def test_package_root_exports_concatenation_workflow() -> None:
-    assert bijux_phylogenetics.concatenate_locus_alignments is concatenate_locus_alignments
+    assert (
+        bijux_phylogenetics.concatenate_locus_alignments is concatenate_locus_alignments
+    )

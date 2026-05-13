@@ -26,8 +26,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_summarize_geographic_sampling_bias_reports_region_counts_and_flags_dominance(
-) -> None:
+def test_summarize_geographic_sampling_bias_reports_region_counts_and_flags_dominance() -> (
+    None
+):
     report = summarize_geographic_sampling_bias(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_geography_dominated.tsv"),
@@ -48,8 +49,7 @@ def test_summarize_geographic_sampling_bias_reports_region_counts_and_flags_domi
     assert north_row.weighted_sample_fraction == 0.5
 
 
-def test_summarize_geographic_sampling_bias_supports_explicit_region_weights(
-) -> None:
+def test_summarize_geographic_sampling_bias_supports_explicit_region_weights() -> None:
     report = summarize_geographic_sampling_bias(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_geography_biased.tsv"),

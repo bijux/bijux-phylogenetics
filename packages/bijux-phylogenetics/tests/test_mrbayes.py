@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
 from statistics import stdev
+
+import pytest
 
 from bijux_phylogenetics.bayesian import (
     assess_mrbayes_burnin_sensitivity,

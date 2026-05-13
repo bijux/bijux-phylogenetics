@@ -40,9 +40,7 @@ def test_summarize_continuous_ancestral_tree_set_reports_clade_distributions() -
     )
 
     summary = summarize_continuous_ancestral_tree_set_report(report)
-    root = next(
-        row for row in report.clade_summaries if row.clade_id == "A|B|C|D|E|F"
-    )
+    root = next(row for row in report.clade_summaries if row.clade_id == "A|B|C|D|E|F")
 
     assert report.total_tree_count == 5
     assert report.burnin_tree_count == 0
@@ -77,9 +75,7 @@ def test_summarize_discrete_ancestral_tree_set_reports_state_distributions() -> 
 
     summary = summarize_discrete_ancestral_tree_set_report(report)
     island_clade = next(row for row in report.clade_summaries if row.clade_id == "E|F")
-    root = next(
-        row for row in report.clade_summaries if row.clade_id == "A|B|C|D|E|F"
-    )
+    root = next(row for row in report.clade_summaries if row.clade_id == "A|B|C|D|E|F")
 
     assert report.total_tree_count == 5
     assert report.kept_tree_count == 5

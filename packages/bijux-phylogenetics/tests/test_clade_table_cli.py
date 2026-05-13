@@ -69,6 +69,8 @@ def test_cli_tree_set_clades_reports_per_tree_clade_rows(
     assert payload["metrics"]["clade_count"] == 21
     assert payload["metrics"]["metadata_column_count"] == 0
     assert payload["outputs"] == [str(output)]
-    assert output.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "source_path\ttree_index\tnode_kind\tclade_id\t"
+    assert (
+        output.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("source_path\ttree_index\tnode_kind\tclade_id\t")
     )

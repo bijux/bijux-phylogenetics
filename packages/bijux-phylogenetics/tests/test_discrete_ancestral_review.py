@@ -225,8 +225,7 @@ def test_reconstruct_discrete_ancestral_states_tracks_live_ape_ace_when_availabl
         if live_fit.returncode != 0:
             pytest.skip("live ape::ace execution failed in this environment")
         expected_rows = {
-            row["node"]: row["probabilities"]
-            for row in json.loads(live_fit.stdout)
+            row["node"]: row["probabilities"] for row in json.loads(live_fit.stdout)
         }
         report = reconstruct_discrete_ancestral_states(
             repository_root / case["tree"],

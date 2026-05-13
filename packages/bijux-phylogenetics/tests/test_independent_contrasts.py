@@ -56,7 +56,10 @@ def test_independent_contrast_regression_supports_origin_fit() -> None:
     assert len(report.rows) == 3
     assert math.isclose(report.slope, 0.9576271186440678, rel_tol=1e-12, abs_tol=1e-12)
     assert math.isclose(
-        report.r_squared_through_origin, 0.7869953775038521, rel_tol=1e-12, abs_tol=1e-12
+        report.r_squared_through_origin,
+        0.7869953775038521,
+        rel_tol=1e-12,
+        abs_tol=1e-12,
     )
     assert report.lower_95_confidence_interval < report.slope
     assert report.upper_95_confidence_interval > report.slope

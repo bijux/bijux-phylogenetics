@@ -34,7 +34,9 @@ def test_write_tree_shape_table_writes_single_tree_shape_row(tmp_path: Path) -> 
     )
 
 
-def test_write_tree_shape_table_writes_tree_set_rows_with_indices(tmp_path: Path) -> None:
+def test_write_tree_shape_table_writes_tree_set_rows_with_indices(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "tree-set-shape.tsv"
     report = summarize_tree_set_shapes(tree_fixture("example_tree_set_left.nwk"))
 

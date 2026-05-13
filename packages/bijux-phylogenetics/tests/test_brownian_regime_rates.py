@@ -55,7 +55,10 @@ def test_summarize_brownian_regime_rates_reports_branch_and_rate_ledgers() -> No
     ]
     assert [row.regime for row in report.regime_rows] == ["fast", "slow"]
     assert len(report.profile_rows) >= 162
-    assert {row.regime for row in report.profile_rows if row.selected} == {"fast", "slow"}
+    assert {row.regime for row in report.profile_rows if row.selected} == {
+        "fast",
+        "slow",
+    }
     assert [row.model for row in report.comparison_rows] == [
         "brownian",
         "brownian-regimes",
@@ -63,8 +66,14 @@ def test_summarize_brownian_regime_rates_reports_branch_and_rate_ledgers() -> No
     assert report.likelihood_ratio_degrees_of_freedom == 1
     assert 0.0 <= report.likelihood_ratio_p_value <= 1.0
     assert report.root_state_interval.name == "root_state"
-    assert report.root_state_interval.lower_95 < report.root_state < report.root_state_interval.upper_95
-    assert all(row.lower_95 <= row.sigma_squared <= row.upper_95 for row in report.regime_rows)
+    assert (
+        report.root_state_interval.lower_95
+        < report.root_state
+        < report.root_state_interval.upper_95
+    )
+    assert all(
+        row.lower_95 <= row.sigma_squared <= row.upper_95 for row in report.regime_rows
+    )
 
 
 def test_summarize_brownian_regime_rates_tracks_pruned_and_extra_taxa() -> None:
@@ -117,14 +126,20 @@ def test_brownian_regime_rate_writers_emit_review_ledgers(tmp_path: Path) -> Non
     write_brownian_regime_branch_table(branch_out, report)
     write_brownian_regime_exclusion_table(exclusion_out, report)
 
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "trait\ttaxon_column\tbranch_id_column\tregime_column"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("trait\ttaxon_column\tbranch_id_column\tregime_column")
     )
-    assert rates_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "regime\tbranch_count\tcontributing_branch_count"
+    assert (
+        rates_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("regime\tbranch_count\tcontributing_branch_count")
     )
-    assert profile_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "regime\tsigma_squared\tlog_likelihood"
+    assert (
+        profile_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("regime\tsigma_squared\tlog_likelihood")
     )
     comparison_rows = comparison_out.read_text(encoding="utf-8").splitlines()
     assert comparison_rows[0].startswith("row_kind\tmodel\tcomparison_id")
@@ -133,8 +148,10 @@ def test_brownian_regime_rate_writers_emit_review_ledgers(tmp_path: Path) -> Non
         row.startswith("likelihood_ratio_test\t\tbrownian-vs-brownian-regimes\t")
         for row in comparison_rows[1:]
     )
-    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "branch_id\tregime\tbranch_length"
+    assert (
+        branch_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("branch_id\tregime\tbranch_length")
     )
     assert exclusion_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason",
@@ -160,12 +177,8 @@ def test_summarize_brownian_regime_rates_recovers_known_rate_order_on_simulated_
     assert report.better_model == "brownian-regimes"
     assert report.likelihood_ratio_statistic > 0.0
     assert rates["fast"] > rates["background"] > rates["slow"]
-    assert any(
-        row.regime == "fast" and row.selected for row in report.profile_rows
-    )
-    assert any(
-        row.regime == "slow" and row.selected for row in report.profile_rows
-    )
+    assert any(row.regime == "fast" and row.selected for row in report.profile_rows)
+    assert any(row.regime == "slow" and row.selected for row in report.profile_rows)
 
 
 def _write_simulated_regime_dataset(tmp_path: Path) -> tuple[Path, Path, Path]:
@@ -185,8 +198,7 @@ def _write_simulated_regime_dataset(tmp_path: Path) -> tuple[Path, Path, Path]:
     regime_map_path.write_text(
         "branch_id\tregime\n"
         + "".join(
-            f"{branch_id}\t{regime}\n"
-            for branch_id, regime in regime_by_branch.items()
+            f"{branch_id}\t{regime}\n" for branch_id, regime in regime_by_branch.items()
         ),
         encoding="utf-8",
     )
@@ -203,7 +215,10 @@ def _write_simulated_regime_dataset(tmp_path: Path) -> tuple[Path, Path, Path]:
     rng = random.Random(1)
     standard_normal = [rng.gauss(0.0, 1.0) for _ in tree.tip_names]
     values = [
-        3.0 + sum(cholesky[row][column] * standard_normal[column] for column in range(row + 1))
+        3.0
+        + sum(
+            cholesky[row][column] * standard_normal[column] for column in range(row + 1)
+        )
         for row in range(len(tree.tip_names))
     ]
     traits_path.write_text(
@@ -264,7 +279,7 @@ def _cholesky(matrix: list[list[float]]) -> list[list[float]]:
             if row == column:
                 lower[row][column] = math.sqrt(max(matrix[row][row] - partial, 1e-12))
             else:
-                lower[row][column] = (
-                    matrix[row][column] - partial
-                ) / lower[column][column]
+                lower[row][column] = (matrix[row][column] - partial) / lower[column][
+                    column
+                ]
     return lower

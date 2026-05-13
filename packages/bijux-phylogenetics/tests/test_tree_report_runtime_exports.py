@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import bijux_phylogenetics
-
 from bijux_phylogenetics.reports import (
     TreeBranchStatisticsRow,
     TreeReportPackageResult,

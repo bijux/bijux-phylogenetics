@@ -575,8 +575,7 @@ def test_run_codon_aware_multiple_sequence_alignment_reuses_resume_only_when_gen
     executable = _fake_mafft(tmp_path / "mafft-fixture")
     input_path = tmp_path / "coding-mito.fasta"
     input_path.write_text(
-        ">shared_good\nATGGAATGG\n"
-        ">mito_triplet\nATGTGAGGG\n",
+        ">shared_good\nATGGAATGG\n>mito_triplet\nATGTGAGGG\n",
         encoding="utf-8",
     )
     output_path = tmp_path / "codon-aligned.fasta"

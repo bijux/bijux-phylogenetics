@@ -49,16 +49,18 @@ def test_cli_compare_prune_writes_review_bundle(tmp_path: Path, capsys) -> None:
     assert (output_dir / "right-shared.nwk").read_text(
         encoding="utf-8"
     ) == "((A:0.1,B:0.1):0.2,C:0.3);\n"
-    assert (output_dir / "shared-taxa-pruning.tsv").read_text(
-        encoding="utf-8"
-    ).startswith("tree_side\ttree_path\toriginal_tip_count\tretained_tip_count\t")
-    assert (output_dir / "shared-taxa-removed.tsv").read_text(
-        encoding="utf-8"
-    ) == (
+    assert (
+        (output_dir / "shared-taxa-pruning.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("tree_side\ttree_path\toriginal_tip_count\tretained_tip_count\t")
+    )
+    assert (output_dir / "shared-taxa-removed.tsv").read_text(encoding="utf-8") == (
         "tree_side\ttree_path\ttaxon\treason\n"
         f"left\t{fixture('example_tree.nwk')}\tD\tnot_requested\n"
         f"right\t{fixture('example_tree_overlap.nwk')}\tE\tnot_requested\n"
     )
-    assert (output_dir / "shared-taxa-comparison.tsv").read_text(
-        encoding="utf-8"
-    ).startswith("split_id\tcomparison_status\tshared_clade\tleft_support\t")
+    assert (
+        (output_dir / "shared-taxa-comparison.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("split_id\tcomparison_status\tshared_clade\tleft_support\t")
+    )

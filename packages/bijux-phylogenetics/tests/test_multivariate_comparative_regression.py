@@ -9,11 +9,11 @@ from bijux_phylogenetics.comparative.multivariate_regression import (
     MULTIVARIATE_NUMERICAL_TOLERANCE,
     run_multivariate_comparative_regression,
     write_multivariate_excluded_taxa_table,
-    write_multivariate_response_coefficient_table,
-    write_multivariate_response_model_table,
     write_multivariate_residual_association_table,
     write_multivariate_residual_correlation_table,
     write_multivariate_residual_covariance_table,
+    write_multivariate_response_coefficient_table,
+    write_multivariate_response_model_table,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -148,9 +148,7 @@ def test_run_multivariate_comparative_regression_supports_categorical_and_intera
     )
 
 
-def test_run_multivariate_comparative_regression_warns_on_singular_covariance() -> (
-    None
-):
+def test_run_multivariate_comparative_regression_warns_on_singular_covariance() -> None:
     report = run_multivariate_comparative_regression(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_comparative_multivariate_singular.tsv"),

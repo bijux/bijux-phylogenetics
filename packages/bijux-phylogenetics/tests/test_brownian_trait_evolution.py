@@ -73,8 +73,14 @@ def test_summarize_brownian_trait_evolution_records_missing_and_invalid_taxa() -
         "C": "non_numeric_trait_value",
         "G": "absent_from_tree",
     }
-    assert "one or more overlapping taxa have missing trait values and will be pruned" in report.warnings
-    assert "one or more overlapping taxa have non-numeric trait values and will be pruned" in report.warnings
+    assert (
+        "one or more overlapping taxa have missing trait values and will be pruned"
+        in report.warnings
+    )
+    assert (
+        "one or more overlapping taxa have non-numeric trait values and will be pruned"
+        in report.warnings
+    )
     assert "trait table contains taxa absent from the tree" in report.warnings
 
 
@@ -112,6 +118,5 @@ def _brownian_reference_observation() -> dict[str, float]:
         row for row in payload["observations"] if row["case"] == "brownian-example-tree"
     )
     return {
-        key: float(value)
-        for key, value in observation["expected_parameters"].items()
+        key: float(value) for key, value in observation["expected_parameters"].items()
     }

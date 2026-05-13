@@ -35,8 +35,7 @@ def test_cli_compare_support_reports_support_aware_conflicts_and_table_output(
     assert payload["metrics"]["moderate_support_disagreements"] == 0
     assert payload["outputs"] == [str(table_path)]
     assert [
-        row["conflict_classification"]
-        for row in payload["data"]["conflicting_clades"]
+        row["conflict_classification"] for row in payload["data"]["conflicting_clades"]
     ] == ["low_support_disagreement", "high_support_conflict"]
     assert table_path.read_text(encoding="utf-8").startswith(
         "split_id\trow_kind\tcomparison_status\tleft_present\tright_present\t"

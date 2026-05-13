@@ -39,4 +39,6 @@ def test_prune_trees_to_shared_taxa_preserves_pruning_audits_and_comparison() ->
     assert report.post_pruning_comparison.taxon_overlap_policy == "require-identical"
     assert report.post_pruning_comparison.robinson_foulds_distance == 0
     assert report.post_pruning_comparison.topology_equal is True
-    assert report.post_pruning_comparison.same_topology_different_branch_lengths is False
+    assert (
+        report.post_pruning_comparison.same_topology_different_branch_lengths is False
+    )

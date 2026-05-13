@@ -106,10 +106,16 @@ def test_render_coordinate_movement_visualization_and_ledgers(
         model="brownian",
     )
 
-    summary_path = write_coordinate_movement_summary_table(tmp_path / "summary.tsv", report)
+    summary_path = write_coordinate_movement_summary_table(
+        tmp_path / "summary.tsv", report
+    )
     estimates_path = write_coordinate_estimate_table(tmp_path / "estimates.tsv", report)
-    branches_path = write_coordinate_movement_branch_table(tmp_path / "branches.tsv", report)
-    outliers_path = write_coordinate_movement_outlier_table(tmp_path / "outliers.tsv", report)
+    branches_path = write_coordinate_movement_branch_table(
+        tmp_path / "branches.tsv", report
+    )
+    outliers_path = write_coordinate_movement_outlier_table(
+        tmp_path / "outliers.tsv", report
+    )
     exclusions_path = write_coordinate_movement_exclusion_table(
         tmp_path / "exclusions.tsv",
         report,

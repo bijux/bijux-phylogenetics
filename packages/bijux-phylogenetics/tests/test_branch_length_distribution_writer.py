@@ -15,7 +15,9 @@ def tree_fixture(name: str) -> Path:
 
 def test_write_branch_length_table_writes_single_tree_rows(tmp_path: Path) -> None:
     output = tmp_path / "branch-lengths.tsv"
-    report = analyze_branch_length_distribution(tree_fixture("example_tree_long_branch.nwk"))
+    report = analyze_branch_length_distribution(
+        tree_fixture("example_tree_long_branch.nwk")
+    )
 
     write_branch_length_table(output, report)
 

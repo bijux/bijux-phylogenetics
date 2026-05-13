@@ -45,7 +45,9 @@ def test_run_posterior_tree_pgls_summarizes_coefficient_stability() -> None:
     assert len(report.coefficient_rows) == 10
     assert len(report.coefficient_summaries) == 2
 
-    intercept = next(row for row in report.coefficient_summaries if row.term == "intercept")
+    intercept = next(
+        row for row in report.coefficient_summaries if row.term == "intercept"
+    )
     predictor = next(
         row for row in report.coefficient_summaries if row.term == "predictor_two"
     )
@@ -97,8 +99,12 @@ def test_write_posterior_tree_pgls_tables_write_expected_rows(tmp_path: Path) ->
     tree_rows = tree_out.read_text(encoding="utf-8").splitlines()
     coefficient_rows = coefficient_out.read_text(encoding="utf-8").splitlines()
     summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
-    assert tree_rows[0].startswith("source_tree_index\tpost_burnin_index\trooted_topology_id")
-    assert coefficient_rows[0].startswith("source_tree_index\tpost_burnin_index\trooted_topology_id\tterm")
+    assert tree_rows[0].startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id"
+    )
+    assert coefficient_rows[0].startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id\tterm"
+    )
     assert summary_rows[0].startswith("term\ttree_fit_count\tpositive_tree_count")
     assert len(tree_rows) == 6
     assert len(coefficient_rows) == 11

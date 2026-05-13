@@ -169,7 +169,10 @@ def test_validate_fasta_input_reports_real_input_problems() -> None:
     assert [(row.identifier, row.record_index) for row in report.empty_sequences] == [
         ("odd id", 3)
     ]
-    assert [row.identifier for row in report.length_outliers] == ["odd id", "rare taxon"]
+    assert [row.identifier for row in report.length_outliers] == [
+        "odd id",
+        "rare taxon",
+    ]
     assert report.warnings == [
         "input contains duplicate sequence identifiers",
         "input contains unsupported sequence characters",

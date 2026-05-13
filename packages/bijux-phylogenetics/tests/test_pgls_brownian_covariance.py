@@ -67,7 +67,9 @@ def test_summarize_brownian_covariance_pgls_matches_reference_fixture_case() -> 
     )
 
 
-def test_summarize_brownian_covariance_pgls_handles_rooted_non_ultrametric_tree() -> None:
+def test_summarize_brownian_covariance_pgls_handles_rooted_non_ultrametric_tree() -> (
+    None
+):
     report = summarize_brownian_covariance_pgls(
         fixture("example_tree_internal_long_branch.nwk"),
         fixture("example_traits_comparative.tsv"),
@@ -110,4 +112,6 @@ def test_write_brownian_covariance_table_writes_pairwise_rows(tmp_path: Path) ->
     written_rows = out_path.read_text(encoding="utf-8").splitlines()
     assert written_rows[0].startswith("left_taxon\tright_taxon\tis_diagonal")
     assert len(written_rows) == 17
-    assert any(row.startswith("A\tA\ttrue\t0.3\t0.3\t0.3\ttrue") for row in written_rows[1:])
+    assert any(
+        row.startswith("A\tA\ttrue\t0.3\t0.3\t0.3\ttrue") for row in written_rows[1:]
+    )

@@ -73,7 +73,11 @@ def test_summarize_ou_covariance_pgls_estimates_alpha_and_profile() -> None:
     assert len(report.alpha_profile_rows) == 8
     assert report.lower_95_confidence_interval is not None
     assert report.upper_95_confidence_interval is not None
-    assert report.lower_95_confidence_interval <= report.alpha <= report.upper_95_confidence_interval
+    assert (
+        report.lower_95_confidence_interval
+        <= report.alpha
+        <= report.upper_95_confidence_interval
+    )
     assert any(row.within_95_confidence_interval for row in report.alpha_profile_rows)
 
 

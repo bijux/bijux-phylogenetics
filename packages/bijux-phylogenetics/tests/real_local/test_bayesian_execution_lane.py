@@ -20,6 +20,7 @@ from bijux_phylogenetics.bayesian.mrbayes import (
     prepare_mrbayes_analysis,
     run_mrbayes_posterior_inference,
 )
+
 from ..support.external_engines import (
     real_beast_executable,
     real_mrbayes_executable,
@@ -82,12 +83,15 @@ def test_prepare_mrbayes_analysis_is_accepted_by_real_mrbayes_on_partitioned_inp
         > 0
     )
     assert (
-        parse_mrbayes_mcmc_diagnostics(report.output_paths["mcmc_diagnostics"]).row_count
+        parse_mrbayes_mcmc_diagnostics(
+            report.output_paths["mcmc_diagnostics"]
+        ).row_count
         > 0
     )
     assert (
-        parse_mrbayes_consensus_tree(report.output_paths["consensus_tree"])[1]
-        .annotated_node_count
+        parse_mrbayes_consensus_tree(report.output_paths["consensus_tree"])[
+            1
+        ].annotated_node_count
         > 0
     )
 

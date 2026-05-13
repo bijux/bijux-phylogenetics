@@ -9,8 +9,8 @@ from bijux_phylogenetics.core.partitions import (
     parse_locus_partitions,
     slice_partition_sequence,
     validate_locus_partitions,
-    write_partition_summary_table,
     write_locus_partitions,
+    write_partition_summary_table,
 )
 from bijux_phylogenetics.errors import InvalidPartitionError
 

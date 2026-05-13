@@ -62,6 +62,8 @@ def test_cli_tree_set_shape_reports_aggregate_counts(tmp_path: Path, capsys) -> 
     assert payload["metrics"]["comb_like_tree_count"] == 0
     assert payload["outputs"] == [str(output)]
     assert payload["data"]["aggregate"]["mean_cherry_count"] == 2.0
-    assert output.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "source_path\ttree_index\trooted\t"
+    assert (
+        output.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("source_path\ttree_index\trooted\t")
     )

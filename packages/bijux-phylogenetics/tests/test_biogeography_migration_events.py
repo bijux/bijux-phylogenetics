@@ -3,16 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.biogeography.migration_events import (
-    summarize_geographic_migration_events,
     summarize_geographic_migration_event_tree_set,
+    summarize_geographic_migration_events,
     write_geographic_migration_event_summary_table,
     write_geographic_migration_event_table,
     write_geographic_migration_exclusion_table,
+    write_geographic_migration_tree_set_event_summary_table,
+    write_geographic_migration_tree_set_event_table,
+    write_geographic_migration_tree_set_exclusion_table,
     write_geographic_migration_tree_set_summary_table,
     write_geographic_migration_tree_set_tree_table,
-    write_geographic_migration_tree_set_event_table,
-    write_geographic_migration_tree_set_event_summary_table,
-    write_geographic_migration_tree_set_exclusion_table,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -48,7 +48,9 @@ def test_summarize_geographic_migration_events_reports_branch_depths() -> None:
     assert report.event_rows[1].midpoint_depth == 0.2
 
 
-def test_summarize_geographic_migration_event_tree_set_reports_topology_sensitive_events() -> None:
+def test_summarize_geographic_migration_event_tree_set_reports_topology_sensitive_events() -> (
+    None
+):
     report = summarize_geographic_migration_event_tree_set(
         fixture("example_tree_set_left.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -61,8 +63,7 @@ def test_summarize_geographic_migration_event_tree_set_reports_topology_sensitiv
     assert report.summary.event_summary_count == len(report.event_summaries)
     assert report.summary.topology_sensitive_event_count >= 1
     assert any(
-        row.stability_class == "topology_sensitive"
-        for row in report.event_summaries
+        row.stability_class == "topology_sensitive" for row in report.event_summaries
     )
     assert any("topology-sensitive" in warning for warning in report.warnings)
 
@@ -144,7 +145,5 @@ def test_write_geographic_migration_tree_set_tables_emit_expected_ledgers(
     assert "event_summary_count" in summary_path.read_text(encoding="utf-8")
     assert "rooted_topology_id" in trees_path.read_text(encoding="utf-8")
     assert "midpoint_depth" in events_path.read_text(encoding="utf-8")
-    assert "tree_presence_fraction" in event_summaries_path.read_text(
-        encoding="utf-8"
-    )
+    assert "tree_presence_fraction" in event_summaries_path.read_text(encoding="utf-8")
     assert "reason" in exclusions_path.read_text(encoding="utf-8")

@@ -59,4 +59,6 @@ def test_build_ancestral_figure_package_uses_discrete_probability_ledger(
     uncertainty_rows = result.uncertainty_table_path.read_text(encoding="utf-8")
     assert "state_probabilities" in uncertainty_rows
     assert "most_likely_state" in uncertainty_rows
-    assert 'class="internal-pie-slice"' in result.figure_path.read_text(encoding="utf-8")
+    assert 'class="internal-pie-slice"' in result.figure_path.read_text(
+        encoding="utf-8"
+    )

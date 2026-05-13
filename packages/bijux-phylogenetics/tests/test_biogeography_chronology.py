@@ -29,7 +29,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_summarize_biogeographic_transition_chronology_reports_node_ages_and_bins() -> None:
+def test_summarize_biogeographic_transition_chronology_reports_node_ages_and_bins() -> (
+    None
+):
     report = summarize_biogeographic_transition_chronology(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -44,13 +46,17 @@ def test_summarize_biogeographic_transition_chronology_reports_node_ages_and_bin
     assert report.summary.time_bin_count == 3
     assert report.summary.empty_time_bin_count == 1
     assert len(report.node_rows) == 7
-    assert any(row.is_root and row.age_before_present == 0.3 for row in report.node_rows)
+    assert any(
+        row.is_root and row.age_before_present == 0.3 for row in report.node_rows
+    )
     assert any(row.is_tip and row.age_before_present == 0.0 for row in report.node_rows)
     assert {row.time_bin_label for row in report.event_rows} == {"0.1-0.2", "0.2-0.3"}
     assert any(row.uncertainty_class == "no_events" for row in report.time_bin_rows)
 
 
-def test_summarize_biogeographic_transition_chronology_rejects_non_ultrametric_tree() -> None:
+def test_summarize_biogeographic_transition_chronology_rejects_non_ultrametric_tree() -> (
+    None
+):
     with pytest.raises(AncestralReconstructionError) as error:
         summarize_biogeographic_transition_chronology(
             fixture("example_tree_long_branch.nwk"),

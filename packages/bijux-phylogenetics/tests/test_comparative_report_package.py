@@ -9,7 +9,6 @@ from bijux_phylogenetics.comparative.report_package import (
 )
 from bijux_phylogenetics.comparative.reporting import build_comparative_method_report
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 

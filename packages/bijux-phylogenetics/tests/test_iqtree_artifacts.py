@@ -23,8 +23,7 @@ def test_parse_selected_model_decision_text_supports_iqtree_variants() -> None:
 
 def test_parse_log_likelihood_text_supports_report_and_log_variants() -> None:
     assert (
-        parse_log_likelihood_text("Log-likelihood of the tree: -123.456\n")
-        == -123.456
+        parse_log_likelihood_text("Log-likelihood of the tree: -123.456\n") == -123.456
     )
     assert parse_log_likelihood_text("BEST SCORE FOUND : -21.104\n") == -21.104
 

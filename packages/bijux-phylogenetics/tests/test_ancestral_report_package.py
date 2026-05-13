@@ -5,7 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.ancestral.report_package import build_ancestral_report_package
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -112,9 +111,7 @@ def test_build_discrete_ancestral_report_package_writes_probabilities_and_transi
     )
     assert "state_probabilities" in uncertainty_rows[0]
     assert "confidence" in uncertainty_rows[0]
-    assert transition_count_rows[0].startswith(
-        "transition\tsource_state\ttarget_state"
-    )
+    assert transition_count_rows[0].startswith("transition\tsource_state\ttarget_state")
     assert transition_branch_rows[0].startswith(
         "parent_node\tchild_node\tchild_descendant_taxa"
     )

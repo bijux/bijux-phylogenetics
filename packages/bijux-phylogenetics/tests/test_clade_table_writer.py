@@ -17,7 +17,9 @@ def metadata_fixture(name: str) -> Path:
     return Path(__file__).parent / "fixtures" / "metadata" / name
 
 
-def test_write_clade_table_writes_tree_rows_with_metadata_columns(tmp_path: Path) -> None:
+def test_write_clade_table_writes_tree_rows_with_metadata_columns(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "clades.tsv"
     report = extract_tree_clades(
         tree_fixture("example_tree_support_conflict_left.nwk"),
@@ -39,7 +41,9 @@ def test_write_clade_table_writes_tree_rows_with_metadata_columns(tmp_path: Path
     )
 
 
-def test_write_clade_table_writes_tree_set_rows_with_tree_indices(tmp_path: Path) -> None:
+def test_write_clade_table_writes_tree_set_rows_with_tree_indices(
+    tmp_path: Path,
+) -> None:
     output = tmp_path / "tree-set-clades.tsv"
     report = extract_tree_set_clades(tree_fixture("example_tree_set_left.nwk"))
 

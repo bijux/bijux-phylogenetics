@@ -114,6 +114,8 @@ def test_write_correlated_trait_tables_write_review_ledgers(tmp_path: Path) -> N
     observation_rows = observation_out.read_text(encoding="utf-8").splitlines()
     exclusion_rows = exclusion_out.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("analysis_kind\tleft_trait\tright_trait")
-    assert comparison_rows[0].startswith("model_kind\tmodel_description\tparameter_count")
+    assert comparison_rows[0].startswith(
+        "model_kind\tmodel_description\tparameter_count"
+    )
     assert observation_rows[0].startswith("row_kind\tlabel\ttaxon\tleft_taxa")
     assert exclusion_rows == ["taxon\treason\tmissing_traits"]

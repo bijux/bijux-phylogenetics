@@ -182,7 +182,10 @@ def _write_simulated_trait_dataset(
     rng = random.Random(seed)
     standard_normal = [rng.gauss(0.0, 1.0) for _ in base_tree.tip_names]
     values = [
-        3.0 + sum(cholesky[row][column] * standard_normal[column] for column in range(row + 1))
+        3.0
+        + sum(
+            cholesky[row][column] * standard_normal[column] for column in range(row + 1)
+        )
         for row in range(len(base_tree.tip_names))
     ]
     traits_path.write_text(
@@ -202,13 +205,12 @@ def _cholesky(matrix: list[list[float]]) -> list[list[float]]:
     for row in range(size):
         for column in range(row + 1):
             partial = sum(
-                lower[row][index] * lower[column][index]
-                for index in range(column)
+                lower[row][index] * lower[column][index] for index in range(column)
             )
             if row == column:
                 lower[row][column] = math.sqrt(max(matrix[row][row] - partial, 1e-12))
             else:
-                lower[row][column] = (
-                    matrix[row][column] - partial
-                ) / lower[column][column]
+                lower[row][column] = (matrix[row][column] - partial) / lower[column][
+                    column
+                ]
     return lower

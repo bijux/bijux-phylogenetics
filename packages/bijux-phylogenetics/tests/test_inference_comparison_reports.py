@@ -19,8 +19,9 @@ def fixture(name: str) -> Path:
     return Path(__file__).parent / "fixtures" / "trees" / name
 
 
-def test_weighted_conflict_rows_rank_supported_conflicts_ahead_of_weak_disagreements(
-) -> None:
+def test_weighted_conflict_rows_rank_supported_conflicts_ahead_of_weak_disagreements() -> (
+    None
+):
     support_report = compare_support_values(
         fixture("example_tree_support_conflict_left.nwk"),
         fixture("example_tree_support_conflict_right.nwk"),
@@ -42,8 +43,12 @@ def test_conclusion_rows_separate_stable_and_unstable_shared_clades(
 ) -> None:
     left_path = tmp_path / "left.nwk"
     right_path = tmp_path / "right.nwk"
-    left_path.write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\n", encoding="utf-8")
-    right_path.write_text("((A:0.1,B:0.1)90:0.2,(C:0.1,D:0.1)60:0.2);\n", encoding="utf-8")
+    left_path.write_text(
+        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\n", encoding="utf-8"
+    )
+    right_path.write_text(
+        "((A:0.1,B:0.1)90:0.2,(C:0.1,D:0.1)60:0.2);\n", encoding="utf-8"
+    )
 
     support_report = compare_support_values(left_path, right_path)
 

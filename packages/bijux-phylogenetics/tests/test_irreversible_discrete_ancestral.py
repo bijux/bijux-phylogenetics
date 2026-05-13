@@ -134,7 +134,9 @@ def _write_simulated_irreversible_traits(path: Path) -> Path:
     raise AssertionError("failed to simulate both irreversible states")
 
 
-def _simulate_irreversible_node_states(node, rng: random.Random, state: str = "present"):
+def _simulate_irreversible_node_states(
+    node, rng: random.Random, state: str = "present"
+):
     states: dict[str, str] = {}
     current_state = state
     if node.is_leaf():

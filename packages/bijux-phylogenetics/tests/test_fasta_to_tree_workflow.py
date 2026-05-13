@@ -553,8 +553,14 @@ def test_write_fasta_to_tree_log_renders_workflow_outputs_relative_to_root(
     write_fasta_to_tree_log(log_path, report, root_dir=report.out_dir)
     log_text = log_path.read_text(encoding="utf-8")
 
-    assert "manifest: engine-artifacts/portable-log/model-selection/model-selection.manifest.json" in log_text
-    assert "output.alignment: engine-artifacts/portable-log/alignment/alignment.aln" in log_text
+    assert (
+        "manifest: engine-artifacts/portable-log/model-selection/model-selection.manifest.json"
+        in log_text
+    )
+    assert (
+        "output.alignment: engine-artifacts/portable-log/alignment/alignment.aln"
+        in log_text
+    )
     assert "run_manifest_path: portable-log.run.json" in log_text
     assert str(report.out_dir) not in log_text
 
@@ -655,10 +661,11 @@ def test_run_fasta_to_tree_workflow_repairs_invalid_raw_input_when_requested(
     assert report.repaired_input_validation is not None
     assert report.input_repair.output_path == report.prepared_input_path
     assert report.prepared_input_path.read_text(encoding="utf-8") == (
-        ">Alpha_sample\nACTGACTG\n"
-        ">rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
+        ">Alpha_sample\nACTGACTG\n>rare_taxon\nACTGACTGACTGACTGACTGACTG\n"
     )
-    assert any("duplicate sequence identifiers" in warning for warning in report.warnings)
+    assert any(
+        "duplicate sequence identifiers" in warning for warning in report.warnings
+    )
     assert "prepared_input_path:" in report.output_paths["log"].read_text(
         encoding="utf-8"
     )

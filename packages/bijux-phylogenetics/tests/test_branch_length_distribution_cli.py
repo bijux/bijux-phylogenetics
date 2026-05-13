@@ -66,6 +66,8 @@ def test_cli_tree_set_branch_lengths_reports_aggregate_counts(
     assert payload["metrics"]["long_outlier_count"] == 1
     assert payload["outputs"] == [str(output)]
     assert payload["data"]["aggregate"]["maximum_branch_length"] == 1.0
-    assert output.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "source_path\ttree_index\tnode\tbranch_type\t"
+    assert (
+        output.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("source_path\ttree_index\tnode\tbranch_type\t")
     )

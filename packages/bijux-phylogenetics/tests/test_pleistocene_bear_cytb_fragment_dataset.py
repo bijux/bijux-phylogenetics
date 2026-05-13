@@ -14,6 +14,7 @@ from bijux_phylogenetics.datasets import (
     run_pleistocene_bear_cytb_fragment_workflow,
     write_pleistocene_bear_cytb_fragment_workflow_bundle,
 )
+
 from .support.external_engines import require_alignment_engine_executables
 
 pytestmark = [
@@ -108,7 +109,9 @@ def test_export_pleistocene_bear_cytb_fragment_dataset_copies_expected_outputs(
     assert "pleistocene-bear-cytb-fragments.cleaned.aln" in expected_files
 
 
-def test_public_runtime_exports_include_pleistocene_bear_cytb_fragment_surface() -> None:
+def test_public_runtime_exports_include_pleistocene_bear_cytb_fragment_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_pleistocene_bear_cytb_fragment_dataset
         is load_pleistocene_bear_cytb_fragment_dataset

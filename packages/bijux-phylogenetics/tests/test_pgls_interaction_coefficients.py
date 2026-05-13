@@ -25,7 +25,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_summarize_pgls_interaction_coefficients_reports_continuous_by_categorical() -> None:
+def test_summarize_pgls_interaction_coefficients_reports_continuous_by_categorical() -> (
+    None
+):
     report = summarize_pgls_interaction_coefficients(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_comparative_interaction.tsv"),
@@ -43,7 +45,9 @@ def test_summarize_pgls_interaction_coefficients_reports_continuous_by_categoric
     assert math.isclose(row.estimate, 0.5, abs_tol=1e-12)
 
 
-def test_summarize_pgls_interaction_coefficients_supports_continuous_by_continuous() -> None:
+def test_summarize_pgls_interaction_coefficients_supports_continuous_by_continuous() -> (
+    None
+):
     report = summarize_pgls_interaction_coefficients(
         fixture("example_tree_six_taxa.nwk"),
         fixture("example_traits_comparative_continuous_interaction.tsv"),
@@ -57,7 +61,9 @@ def test_summarize_pgls_interaction_coefficients_supports_continuous_by_continuo
     assert row.omitted_reference_levels == []
 
 
-def test_summarize_pgls_interaction_coefficients_supports_categorical_by_categorical() -> None:
+def test_summarize_pgls_interaction_coefficients_supports_categorical_by_categorical() -> (
+    None
+):
     report = summarize_pgls_interaction_coefficients(
         fixture("example_tree_eight_taxa.nwk"),
         fixture("example_traits_comparative_categorical_interaction.tsv"),

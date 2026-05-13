@@ -39,9 +39,15 @@ def test_analyze_branch_length_distribution_reports_summary_and_rows() -> None:
     assert by_node["A|B"].root_depth == 0.2
 
 
-def test_analyze_branch_length_distribution_flags_zero_negative_and_long_outliers() -> None:
-    long_report = analyze_branch_length_distribution(tree_fixture("example_tree_long_branch.nwk"))
-    zero_report = analyze_branch_length_distribution(tree_fixture("example_tree_zero_lengths.nwk"))
+def test_analyze_branch_length_distribution_flags_zero_negative_and_long_outliers() -> (
+    None
+):
+    long_report = analyze_branch_length_distribution(
+        tree_fixture("example_tree_long_branch.nwk")
+    )
+    zero_report = analyze_branch_length_distribution(
+        tree_fixture("example_tree_zero_lengths.nwk")
+    )
     negative_report = analyze_branch_length_distribution(
         tree_fixture("example_tree_negative_length.nwk")
     )
@@ -50,7 +56,11 @@ def test_analyze_branch_length_distribution_flags_zero_negative_and_long_outlier
     assert [row.node for row in long_report.rows if row.long_outlier] == ["A"]
 
     assert zero_report.aggregate.zero_length_branch_count == 3
-    assert sorted(row.node for row in zero_report.rows if row.zero_length) == ["A", "A|B", "D"]
+    assert sorted(row.node for row in zero_report.rows if row.zero_length) == [
+        "A",
+        "A|B",
+        "D",
+    ]
     assert zero_report.aggregate.median_branch_length == 0.05
 
     assert negative_report.aggregate.negative_branch_count == 1

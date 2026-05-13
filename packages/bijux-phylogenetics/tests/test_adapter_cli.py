@@ -479,8 +479,7 @@ def test_adapter_align_cli_honors_configurable_genetic_code(
     executable = _fake_mafft(tmp_path / "mafft-fixture")
     input_path = tmp_path / "coding-mito.fasta"
     input_path.write_text(
-        ">shared_good\nATGGAATGG\n"
-        ">mito_triplet\nATGTGAGGG\n",
+        ">shared_good\nATGGAATGG\n>mito_triplet\nATGTGAGGG\n",
         encoding="utf-8",
     )
     output_path = tmp_path / "codon-aligned.fasta"
@@ -1801,7 +1800,9 @@ def test_adapter_mrbayes_burnin_sensitivity_cli_writes_shift_tables(
     assert payload["metrics"]["slice_count"] == 2
     assert payload["metrics"]["unstable_parameter_count"] >= 1
     assert payload["metrics"]["unstable_clade_count"] >= 1
-    assert "burnin_fraction\tburnin_tree_count" in slice_path.read_text(encoding="utf-8")
+    assert "burnin_fraction\tburnin_tree_count" in slice_path.read_text(
+        encoding="utf-8"
+    )
     assert "parameter\tminimum_mean" in parameter_path.read_text(encoding="utf-8")
     assert "crosses_majority_threshold" in clade_path.read_text(encoding="utf-8")
 
@@ -2028,7 +2029,7 @@ def test_adapter_beast_run_cli_supports_resume_timeout_and_overwrite_controls(
     executable = _fake_beast(tmp_path / "beast-fixture")
     analysis_path = tmp_path / "analysis.xml"
     analysis_path.write_text(
-        "<beast version=\"2.7\" namespace=\"beast.base.evolution.alignment:beast.base.evolution.tree\"/>\n",
+        '<beast version="2.7" namespace="beast.base.evolution.alignment:beast.base.evolution.tree"/>\n',
         encoding="utf-8",
     )
 

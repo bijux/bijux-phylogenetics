@@ -79,7 +79,9 @@ def test_analyze_comparative_clade_stability_auto_detects_logistic_family() -> N
     assert blocked_ids == {"A|B|C|D", "E|F|G|H"}
     for row in report.clade_rows:
         if row.fit_status == "blocked":
-            assert "requires at least one success and one failure" in (row.blocker or "")
+            assert "requires at least one success and one failure" in (
+                row.blocker or ""
+            )
 
 
 def test_write_comparative_clade_stability_tables_write_expected_rows(
@@ -100,6 +102,8 @@ def test_write_comparative_clade_stability_tables_write_expected_rows(
     summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
     coefficient_rows = coefficients_out.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("clade_id\tnode_label\tdropped_taxon_count")
-    assert coefficient_rows[0].startswith("clade_id\tnode_label\tterm\tbaseline_estimate")
+    assert coefficient_rows[0].startswith(
+        "clade_id\tnode_label\tterm\tbaseline_estimate"
+    )
     assert len(summary_rows) == 5
     assert len(coefficient_rows) == 7

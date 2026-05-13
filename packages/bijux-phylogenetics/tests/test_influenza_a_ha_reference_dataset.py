@@ -14,6 +14,7 @@ from bijux_phylogenetics.datasets import (
     run_influenza_a_ha_reference_workflow,
     write_influenza_a_ha_reference_workflow_bundle,
 )
+
 from .support.external_engines import require_alignment_engine_executables
 
 pytestmark = [
@@ -97,7 +98,9 @@ def test_export_influenza_a_ha_reference_dataset_copies_expected_outputs(
     assert "influenza-a-ha-reference-panel.tree" in expected_files
 
 
-def test_public_runtime_exports_include_influenza_a_ha_reference_dataset_surface() -> None:
+def test_public_runtime_exports_include_influenza_a_ha_reference_dataset_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_influenza_a_ha_reference_dataset
         is load_influenza_a_ha_reference_dataset

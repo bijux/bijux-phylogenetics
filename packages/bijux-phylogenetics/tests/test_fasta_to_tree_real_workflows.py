@@ -10,6 +10,7 @@ from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+
 from .support.external_engines import require_alignment_engine_executables
 
 pytestmark = [
@@ -23,7 +24,9 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 REAL_INPUT_ROOT = Path(
     "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs"
 )
-EXPECTED_ROOT = REPO_ROOT / "packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree"
+EXPECTED_ROOT = (
+    REPO_ROOT / "packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree"
+)
 USER_FACING_SUFFIXES = (
     ".aln",
     ".trimmed.aln",
@@ -169,8 +172,12 @@ def _assert_matches_expected_bundle(
     actual_run_manifest = actual_root / f"{slug}.run.json"
     expected_run_manifest = expected_root / f"{slug}.run.json"
 
-    assert _alignment_signature(actual_alignment) == _alignment_signature(expected_alignment)
-    assert _alignment_signature(actual_trimmed) == _alignment_signature(expected_trimmed)
+    assert _alignment_signature(actual_alignment) == _alignment_signature(
+        expected_alignment
+    )
+    assert _alignment_signature(actual_trimmed) == _alignment_signature(
+        expected_trimmed
+    )
     assert _tree_signature(actual_tree) == _tree_signature(expected_tree)
     assert _support_signature(actual_support) == _support_signature(expected_support)
 
@@ -221,9 +228,18 @@ def _assert_matches_expected_bundle(
     ):
         assert actual_manifest_payload[key] == expected_manifest_payload[key]
     assert actual_manifest_payload["sequence_type"] == sequence_type
-    assert actual_manifest_payload["commands"].keys() == expected_manifest_payload["commands"].keys()
-    assert actual_manifest_payload["engine_versions"].keys() == expected_manifest_payload["engine_versions"].keys()
-    assert actual_manifest_payload["step_manifests"].keys() == expected_manifest_payload["step_manifests"].keys()
+    assert (
+        actual_manifest_payload["commands"].keys()
+        == expected_manifest_payload["commands"].keys()
+    )
+    assert (
+        actual_manifest_payload["engine_versions"].keys()
+        == expected_manifest_payload["engine_versions"].keys()
+    )
+    assert (
+        actual_manifest_payload["step_manifests"].keys()
+        == expected_manifest_payload["step_manifests"].keys()
+    )
     assert _normalize_checksum_map(actual_manifest_payload["input_checksums"]) == (
         _normalize_checksum_map(expected_manifest_payload["input_checksums"])
     )
@@ -233,12 +249,22 @@ def _assert_matches_expected_bundle(
     assert _normalize_checksum_keys(actual_manifest_payload["output_checksums"]) == (
         _normalize_checksum_keys(expected_manifest_payload["output_checksums"])
     )
-    assert all(len(value) == 64 for value in actual_manifest_payload["input_checksums"].values())
-    assert all(len(value) == 64 for value in actual_manifest_payload["output_checksums"].values())
+    assert all(
+        len(value) == 64
+        for value in actual_manifest_payload["input_checksums"].values()
+    )
+    assert all(
+        len(value) == 64
+        for value in actual_manifest_payload["output_checksums"].values()
+    )
 
     actual_run_payload = _read_json(actual_run_manifest)
     expected_run_payload = _read_json(expected_run_manifest)
-    assert actual_run_payload["command"] == expected_run_payload["command"] == "run_fasta_to_tree_workflow"
+    assert (
+        actual_run_payload["command"]
+        == expected_run_payload["command"]
+        == "run_fasta_to_tree_workflow"
+    )
     actual_arguments = _parse_run_arguments(actual_run_payload["arguments"])
     expected_arguments = _parse_run_arguments(expected_run_payload["arguments"])
     for key in (
@@ -266,8 +292,12 @@ def _assert_matches_expected_bundle(
     assert _normalize_checksum_keys(actual_run_payload["output_checksums"]) == (
         _normalize_checksum_keys(expected_run_payload["output_checksums"])
     )
-    assert all(len(value) == 64 for value in actual_run_payload["input_checksums"].values())
-    assert all(len(value) == 64 for value in actual_run_payload["output_checksums"].values())
+    assert all(
+        len(value) == 64 for value in actual_run_payload["input_checksums"].values()
+    )
+    assert all(
+        len(value) == 64 for value in actual_run_payload["output_checksums"].values()
+    )
 
 
 @pytest.mark.parametrize(

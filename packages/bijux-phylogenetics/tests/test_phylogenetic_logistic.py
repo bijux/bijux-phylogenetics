@@ -90,7 +90,9 @@ def test_summarize_phylogenetic_logistic_approximates_reference_fixture() -> Non
         predictors=["body_size"],
     )
     coefficients = {row.name: row.estimate for row in report.coefficients}
-    fitted_probabilities = {row.taxon: row.fitted_probability for row in report.fitted_rows}
+    fitted_probabilities = {
+        row.taxon: row.fitted_probability for row in report.fitted_rows
+    }
     expected = reference["phyloglm"]
     assert abs(coefficients["intercept"] - expected["coefficients"]["intercept"]) < 0.5
     assert math.copysign(1.0, coefficients["intercept"]) == math.copysign(
@@ -158,9 +160,13 @@ def test_summarize_phylogenetic_logistic_tracks_live_phyloglm_when_available() -
     )
     if package_check.returncode != 0:
         pytest.skip("R package availability could not be checked")
-    package_flags = [line.strip() for line in package_check.stdout.splitlines() if line.strip()]
+    package_flags = [
+        line.strip() for line in package_check.stdout.splitlines() if line.strip()
+    ]
     if package_flags != ["TRUE", "TRUE", "TRUE"]:
-        pytest.skip("ape, phylolm, and jsonlite are required for live phyloglm validation")
+        pytest.skip(
+            "ape, phylolm, and jsonlite are required for live phyloglm validation"
+        )
     live_fit = subprocess.run(
         [
             rscript,
@@ -195,7 +201,9 @@ def test_summarize_phylogenetic_logistic_tracks_live_phyloglm_when_available() -
         predictors=["body_size"],
     )
     coefficients = {row.name: row.estimate for row in report.coefficients}
-    fitted_probabilities = {row.taxon: row.fitted_probability for row in report.fitted_rows}
+    fitted_probabilities = {
+        row.taxon: row.fitted_probability for row in report.fitted_rows
+    }
     assert abs(coefficients["intercept"] - payload["coefficients"]["(Intercept)"]) < 0.5
     assert abs(coefficients["body_size"] - payload["coefficients"]["body_size"]) < 0.2
     assert all(

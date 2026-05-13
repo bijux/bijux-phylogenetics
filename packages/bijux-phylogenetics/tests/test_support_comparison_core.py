@@ -13,8 +13,9 @@ def fixture(name: str) -> Path:
     return Path(__file__).parent / "fixtures" / "trees" / name
 
 
-def test_compare_support_values_classifies_conflicting_clades_by_support_strength(
-) -> None:
+def test_compare_support_values_classifies_conflicting_clades_by_support_strength() -> (
+    None
+):
     report = compare_support_values(
         fixture("example_tree_support_conflict_left.nwk"),
         fixture("example_tree_support_conflict_right.nwk"),
@@ -75,11 +76,9 @@ def test_write_tree_comparison_table_carries_support_conflict_columns(
     )
     assert (
         "C|D\tleft_only\tfalse\t40.0\t\t0.4\t\t\tfalse\t"
-        "low_support_disagreement\tlow\t\t\t\t\t\t\t"
-        in lines
+        "low_support_disagreement\tlow\t\t\t\t\t\t\t" in lines
     )
     assert (
         "A|B|C\tright_only\tfalse\t\t92.0\t\t0.92\t\tfalse\t"
-        "high_support_conflict\tstrong\t\t\t\t\t\t\t"
-        in lines
+        "high_support_conflict\tstrong\t\t\t\t\t\t\t" in lines
     )

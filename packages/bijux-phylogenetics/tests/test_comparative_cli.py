@@ -130,7 +130,9 @@ def test_comparative_correlated_traits_cli_reports_coupling_metrics(capsys) -> N
     assert payload["metrics"]["observation_row_count"] == 3
     assert payload["metrics"]["comparison_row_count"] == 2
     assert payload["metrics"]["association_measure_name"] == "evolutionary_correlation"
-    assert math.isclose(payload["metrics"]["association_measure_value"], 0.8871275993361114)
+    assert math.isclose(
+        payload["metrics"]["association_measure_value"], 0.8871275993361114
+    )
     assert payload["metrics"]["better_model"] == "correlated"
 
 
@@ -172,14 +174,20 @@ def test_comparative_correlated_traits_cli_writes_review_ledgers(
     assert comparison_out.exists()
     assert observations_out.exists()
     assert excluded_out.exists()
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "analysis_kind\tleft_trait\tright_trait"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("analysis_kind\tleft_trait\tright_trait")
     )
-    assert comparison_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "model_kind\tmodel_description\tparameter_count"
+    assert (
+        comparison_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("model_kind\tmodel_description\tparameter_count")
     )
-    assert observations_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "row_kind\tlabel\ttaxon\tleft_taxa"
+    assert (
+        observations_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("row_kind\tlabel\ttaxon\tleft_taxa")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason\tmissing_traits",
@@ -317,11 +325,15 @@ def test_comparative_brownian_regimes_cli_writes_review_ledgers(
     assert profile_out.exists()
     assert branch_out.exists()
     assert excluded_out.exists()
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "trait\ttaxon_column\tbranch_id_column\tregime_column"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("trait\ttaxon_column\tbranch_id_column\tregime_column")
     )
-    assert rates_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "regime\tbranch_count\tcontributing_branch_count"
+    assert (
+        rates_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("regime\tbranch_count\tcontributing_branch_count")
     )
     comparison_rows = comparison_out.read_text(encoding="utf-8").splitlines()
     assert comparison_rows[0].startswith("row_kind\tmodel\tcomparison_id")
@@ -329,11 +341,15 @@ def test_comparative_brownian_regimes_cli_writes_review_ledgers(
         row.startswith("likelihood_ratio_test\t\tbrownian-vs-brownian-regimes\t")
         for row in comparison_rows[1:]
     )
-    assert profile_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "regime\tsigma_squared\tlog_likelihood"
+    assert (
+        profile_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("regime\tsigma_squared\tlog_likelihood")
     )
-    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "branch_id\tregime\tbranch_length"
+    assert (
+        branch_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("branch_id\tregime\tbranch_length")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason",
@@ -385,14 +401,20 @@ def test_comparative_regime_map_cli_reconstructs_and_renders_regimes(
     assert payload["metrics"]["ambiguous_branch_count"] == 1
     assert payload["metrics"]["rendered_internal_annotation_count"] >= 2
     assert payload["metrics"]["rendered_categorical_trait_count"] == 4
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "source_kind\ttrait\ttaxon_column\treconstruction_model"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("source_kind\ttrait\ttaxon_column\treconstruction_model")
     )
-    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "branch_id\tchild_node_name\tis_tip_branch"
+    assert (
+        branch_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("branch_id\tchild_node_name\tis_tip_branch")
     )
-    assert node_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "node_id\tnode_name\tis_tip"
+    assert (
+        node_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("node_id\tnode_name\tis_tip")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == ["taxon\treason"]
     assert svg_out.exists()
@@ -426,8 +448,10 @@ def test_comparative_regime_map_cli_normalizes_user_map(tmp_path: Path, capsys) 
     assert payload["metrics"]["ambiguous_branch_count"] == 0
     assert payload["metrics"]["rendered_internal_annotation_count"] >= 2
     assert payload["metrics"]["rendered_categorical_trait_count"] == 4
-    assert branch_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "branch_id\tchild_node_name\tis_tip_branch"
+    assert (
+        branch_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("branch_id\tchild_node_name\tis_tip_branch")
     )
     assert svg_out.exists()
 
@@ -628,11 +652,15 @@ def test_comparative_rate_through_time_cli_writes_review_ledgers(
     assert summary_out.exists()
     assert intervals_out.exists()
     assert excluded_out.exists()
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "trait\ttaxon_column\ttree_taxon_count"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("trait\ttaxon_column\ttree_taxon_count")
     )
-    assert intervals_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "interval_index\tstart_depth\tend_depth"
+    assert (
+        intervals_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("interval_index\tstart_depth\tend_depth")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason",
@@ -699,11 +727,15 @@ def test_comparative_clade_traits_cli_writes_review_ledgers(
     assert summary_out.exists()
     assert clades_out.exists()
     assert excluded_out.exists()
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "trait\ttaxon_column\ttrait_kind"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("trait\ttaxon_column\ttrait_kind")
     )
-    assert clades_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "clade_id\tnode_label\ttrait_kind"
+    assert (
+        clades_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("clade_id\tnode_label\ttrait_kind")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason",
@@ -766,11 +798,15 @@ def test_comparative_trait_outliers_cli_writes_review_ledgers(
     assert summary_out.exists()
     assert outliers_out.exists()
     assert excluded_out.exists()
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "trait\ttaxon_column\ttree_taxon_count"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("trait\ttaxon_column\ttree_taxon_count")
     )
-    assert outliers_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "taxon\tobserved_value\tconditional_expected_value\tresidual"
+    assert (
+        outliers_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("taxon\tobserved_value\tconditional_expected_value\tresidual")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason",
@@ -839,14 +875,20 @@ def test_comparative_trait_imputation_cli_writes_review_ledgers(
     assert imputations_out.exists()
     assert holdout_out.exists()
     assert excluded_out.exists()
-    assert summary_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "trait\ttaxon_column\tmodel"
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("trait\ttaxon_column\tmodel")
     )
-    assert imputations_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "taxon\tmissing_reason\tobserved_support_taxon_count"
+    assert (
+        imputations_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("taxon\tmissing_reason\tobserved_support_taxon_count")
     )
-    assert holdout_out.read_text(encoding="utf-8").splitlines()[0].startswith(
-        "taxon\tobserved_value\tpredicted_value\tresidual"
+    assert (
+        holdout_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("taxon\tobserved_value\tpredicted_value\tresidual")
     )
     assert excluded_out.read_text(encoding="utf-8").splitlines() == [
         "taxon\treason",
@@ -1162,7 +1204,10 @@ def test_comparative_pgls_cli_writes_categorical_contrast_table(
     assert contrasts_out.exists()
     written_rows = contrasts_out.read_text(encoding="utf-8").splitlines()
     assert written_rows[0].startswith("predictor\tsource_column\tencoding_scheme")
-    assert any("habitat\thabitat\treference-level\tforest\tforest\ttrue" in row for row in written_rows[1:])
+    assert any(
+        "habitat\thabitat\treference-level\tforest\tforest\ttrue" in row
+        for row in written_rows[1:]
+    )
 
 
 def test_comparative_pgls_cli_writes_interaction_coefficient_table(
@@ -1316,9 +1361,7 @@ def test_comparative_ou_pgls_cli_reports_alpha_metrics(capsys) -> None:
     assert payload["metrics"]["covariance_row_count"] == 16
     assert payload["metrics"]["aic"] > 0.0
     assert math.isclose(coefficients["intercept"], 0.43120431282304317, abs_tol=1e-6)
-    assert math.isclose(
-        coefficients["predictor_one"], 0.9087628025668772, abs_tol=1e-6
-    )
+    assert math.isclose(coefficients["predictor_one"], 0.9087628025668772, abs_tol=1e-6)
 
 
 def test_comparative_ou_pgls_cli_writes_covariance_and_alpha_profile_tables(
@@ -1424,9 +1467,7 @@ def test_comparative_logistic_cli_reports_binary_metrics(capsys) -> None:
     assert coefficients["body_size"] > 0.0
 
 
-def test_comparative_logistic_cli_writes_review_ledgers(
-    tmp_path: Path, capsys
-) -> None:
+def test_comparative_logistic_cli_writes_review_ledgers(tmp_path: Path, capsys) -> None:
     coefficients_out = tmp_path / "phylogenetic-logistic-coefficients.tsv"
     fitted_out = tmp_path / "phylogenetic-logistic-fitted.tsv"
     excluded_out = tmp_path / "phylogenetic-logistic-excluded.tsv"
@@ -1736,8 +1777,12 @@ def test_comparative_posterior_pgls_cli_writes_review_ledgers(
     tree_rows = trees_out.read_text(encoding="utf-8").splitlines()
     coefficient_rows = coefficients_out.read_text(encoding="utf-8").splitlines()
     summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
-    assert tree_rows[0].startswith("source_tree_index\tpost_burnin_index\trooted_topology_id")
-    assert coefficient_rows[0].startswith("source_tree_index\tpost_burnin_index\trooted_topology_id\tterm")
+    assert tree_rows[0].startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id"
+    )
+    assert coefficient_rows[0].startswith(
+        "source_tree_index\tpost_burnin_index\trooted_topology_id\tterm"
+    )
     assert summary_rows[0].startswith("term\ttree_fit_count\tpositive_tree_count")
     assert len(tree_rows) == 6
     assert len(coefficient_rows) == 11
@@ -1916,9 +1961,9 @@ def test_comparative_report_cli_can_export_full_review_package(
     assert (out_dir / "audit-table.tsv").exists()
     assert (out_dir / "contrast-table.tsv").exists()
     assert (out_dir / "comparative-report.manifest.json").exists()
-    summary_rows = (out_dir / "comparative-summary.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
+    summary_rows = (
+        (out_dir / "comparative-summary.tsv").read_text(encoding="utf-8").splitlines()
+    )
     assert summary_rows[0].startswith("response\tformula\tpredictor_count")
 
 

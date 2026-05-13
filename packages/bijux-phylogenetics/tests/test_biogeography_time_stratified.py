@@ -28,7 +28,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_summarize_time_stratified_geographic_transitions_reports_interval_matrix() -> None:
+def test_summarize_time_stratified_geographic_transitions_reports_interval_matrix() -> (
+    None
+):
     report = summarize_time_stratified_geographic_transitions(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),
@@ -137,7 +139,9 @@ def test_write_time_stratified_geographic_tables_emit_expected_ledgers(
     assert "reason" in exclusions_path.read_text(encoding="utf-8")
 
 
-def test_summarize_time_stratified_geographic_transitions_rejects_overlapping_bins() -> None:
+def test_summarize_time_stratified_geographic_transitions_rejects_overlapping_bins() -> (
+    None
+):
     with pytest.raises(ValueError, match="must not overlap"):
         summarize_time_stratified_geographic_transitions(
             fixture("example_tree.nwk"),
@@ -151,7 +155,9 @@ def test_summarize_time_stratified_geographic_transitions_rejects_overlapping_bi
         )
 
 
-def test_summarize_time_stratified_geographic_transitions_warns_on_partial_coverage() -> None:
+def test_summarize_time_stratified_geographic_transitions_warns_on_partial_coverage() -> (
+    None
+):
     report = summarize_time_stratified_geographic_transitions(
         fixture("example_tree.nwk"),
         fixture("example_traits_geography.tsv"),

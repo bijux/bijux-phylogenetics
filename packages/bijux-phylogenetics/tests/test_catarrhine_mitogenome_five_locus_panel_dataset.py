@@ -14,8 +14,9 @@ from bijux_phylogenetics.datasets.phylogenomics import (
 )
 
 
-def test_load_catarrhine_mitogenome_five_locus_panel_dataset_exposes_packaged_surface(
-) -> None:
+def test_load_catarrhine_mitogenome_five_locus_panel_dataset_exposes_packaged_surface() -> (
+    None
+):
     dataset = load_catarrhine_mitogenome_five_locus_panel_dataset()
     assert dataset.dataset_id == "catarrhine_mitogenome_five_locus_panel"
     assert dataset.label == "Catarrhine mitogenome five-locus panel"
@@ -81,9 +82,7 @@ def test_run_catarrhine_mitogenome_five_locus_panel_demo_materializes_dataset_an
 def test_export_catarrhine_mitogenome_five_locus_panel_dataset_copies_expected_outputs(
     tmp_path: Path,
 ) -> None:
-    result = export_catarrhine_mitogenome_five_locus_panel_dataset(
-        tmp_path / "dataset"
-    )
+    result = export_catarrhine_mitogenome_five_locus_panel_dataset(tmp_path / "dataset")
     expected_files = {path.name for path in result.expected_output_root.glob("*")}
     locus_files = {path.name for path in result.locus_alignment_root.glob("*.fasta")}
     assert result.readme_path.is_file()
@@ -94,8 +93,9 @@ def test_export_catarrhine_mitogenome_five_locus_panel_dataset_copies_expected_o
     assert "catarrhine-mitogenome-five-locus-panel.supported.tree" in expected_files
 
 
-def test_public_runtime_exports_include_catarrhine_mitogenome_five_locus_panel_surface(
-) -> None:
+def test_public_runtime_exports_include_catarrhine_mitogenome_five_locus_panel_surface() -> (
+    None
+):
     assert (
         bijux_phylogenetics.load_catarrhine_mitogenome_five_locus_panel_dataset
         is load_catarrhine_mitogenome_five_locus_panel_dataset
