@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics
 import pytest
+
+import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets import (
     export_avian_reproductive_trait_dataset,

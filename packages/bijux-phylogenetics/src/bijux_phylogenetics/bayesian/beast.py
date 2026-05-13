@@ -671,7 +671,9 @@ def _append_substitution_and_site_model(
         )
         return state_node_ids, prior_elements, operator_elements, logger_elements
 
-    site_model = XmlET.SubElement(root, "input", {"spec": "SiteModel", "id": "siteModel"})
+    site_model = XmlET.SubElement(
+        root, "input", {"spec": "SiteModel", "id": "siteModel"}
+    )
     XmlET.SubElement(site_model, "substModel", {"spec": "JTT", "id": "jtt"})
     return state_node_ids, prior_elements, operator_elements, logger_elements
 
