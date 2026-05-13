@@ -41,6 +41,7 @@ def test_root_make_declares_shared_maintainer_commands() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
     assert "check:" in root_make
+    assert "test-all:" in root_make
     assert "sync-badges:" in root_make
     assert "check-badges:" in root_make
     assert "validate-evidence-book:" in root_make
@@ -187,3 +188,16 @@ def test_runtime_workflows_use_provenance_bundle_contracts_instead_of_evidence_m
     for path in runtime_paths:
         text = path.read_text(encoding="utf-8")
         assert "bijux_phylogenetics.evidence.bundles" not in text
+
+
+def test_runtime_package_make_exposes_unfiltered_test_all_surface() -> None:
+    runtime_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics.mk"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        'TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"'
+        in runtime_make
+    )
+    assert "test-all: TEST_MAIN_ARGS =" in runtime_make
+    assert "test-all: test" in runtime_make

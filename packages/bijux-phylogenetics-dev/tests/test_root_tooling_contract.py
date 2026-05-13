@@ -45,6 +45,7 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "check-publish-readiness:",
     "report-release-readiness:",
     "check-release-readiness:",
+    "test-all:",
     "check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom",
 }
 
@@ -88,6 +89,15 @@ def test_root_make_wires_config_ssot_into_repository_checks() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
     assert all(snippet in root_make for snippet in REQUIRED_ROOT_TARGET_SNIPPETS)
+
+
+def test_root_make_routes_test_all_across_repository_packages() -> None:
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+
+    assert "test-all: root-check-env" in root_make
+    assert "makes/packages/bijux-phylogenetics.mk" in root_make
+    assert "makes/packages/bijux-phylogenetics-dev.mk" in root_make
+    assert "makes/packages/phylogenetic.mk" in root_make
 
 
 def test_root_apis_surface_has_no_placeholder_readme() -> None:
