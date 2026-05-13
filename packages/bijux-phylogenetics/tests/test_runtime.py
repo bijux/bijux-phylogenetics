@@ -89,6 +89,7 @@ from bijux_phylogenetics.ancestral import (
     write_discrete_ancestral_tree_set_summary_table,
 )
 from bijux_phylogenetics.bayesian import (
+    BeastAnalysisXmlReport,
     BeastCalibration,
     BeastPosteriorConsensusReport,
     BeastPosteriorTopologyDiversityReport,
@@ -126,6 +127,7 @@ from bijux_phylogenetics.bayesian import (
     subsample_beast_posterior_tree_set,
     subsample_mrbayes_posterior_tree_set,
     subsample_posterior_tree_set,
+    summarize_beast_analysis_xml,
     summarize_beast_log,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
@@ -134,6 +136,7 @@ from bijux_phylogenetics.bayesian import (
     summarize_mrbayes_posterior_trees,
     summarize_posterior_node_ages,
     thin_posterior_tree_set,
+    validate_beast_analysis_xml,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
@@ -2903,6 +2906,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.run_beast_posterior_inference
         is run_beast_posterior_inference
     )
+    assert bijux_phylogenetics.BeastAnalysisXmlReport is BeastAnalysisXmlReport
     assert bijux_phylogenetics.BeastCalibration is BeastCalibration
     assert (
         bijux_phylogenetics.BeastPosteriorConsensusReport
@@ -2917,6 +2921,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.parse_beast_posterior_tree_samples
         is parse_beast_posterior_tree_samples
     )
+    assert bijux_phylogenetics.summarize_beast_analysis_xml is summarize_beast_analysis_xml
     assert bijux_phylogenetics.summarize_beast_log is summarize_beast_log
     assert (
         bijux_phylogenetics.summarize_beast_posterior_trees
@@ -2927,6 +2932,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_beast_posterior_topology_diversity
     )
     assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
+    assert (
+        bijux_phylogenetics.validate_beast_analysis_xml is validate_beast_analysis_xml
+    )
     assert (
         bijux_phylogenetics.validate_beast_posterior_log is validate_beast_posterior_log
     )
