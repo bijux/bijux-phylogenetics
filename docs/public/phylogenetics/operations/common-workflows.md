@@ -12,6 +12,7 @@ last_reviewed: 2026-05-13
 Typical public workflows include:
 
 - validate and inspect a tree before downstream use
+- validate core numerical outputs against established reference tools
 - build a full reviewer-facing tree report package from one supplied tree
 - trim and inspect an alignment before reporting
 - run one command from raw FASTA to a supported inference bundle
@@ -25,6 +26,41 @@ Typical public workflows include:
 
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
+
+When the goal is to prove that the repository's core numerical methods still
+match established external tools on small governed fixtures, use `parity`.
+This workflow keeps the fixtures CI-sized by default and writes reviewer-facing
+summary and observation ledgers when requested.
+
+```bash
+bijux-phylogenetics parity \
+  --summary-out artifacts/reference-parity-summary.tsv \
+  --observations-out artifacts/reference-parity-observations.tsv \
+  --json
+```
+
+The core suite covers:
+
+- Robinson-Foulds distance
+- branch-score distance
+- PGLS
+- Pagel's lambda
+- Brownian trait evolution
+- OU trait evolution
+- phylogenetic independent contrasts
+- Blomberg's K
+- posterior clade frequencies
+- consensus tree generation
+
+Each observation records the input fixtures, reference tool and version,
+expected output, tolerance, tolerance rationale, observed output, and the
+governed mismatch class. Parity failures are intentionally explicit about
+whether the disagreement belongs to topology, branch length, numerical
+tolerance, or model assumption.
+
+Use `--extended` to add the larger optional posterior-tree validation inputs.
+That extended suite is intended for slower scientific-validation lanes rather
+than the routine CI-sized core surface.
 
 When the goal is to check resource behavior across the repository's largest
 owned workload families, use `benchmark stress-suite`. This workflow does not

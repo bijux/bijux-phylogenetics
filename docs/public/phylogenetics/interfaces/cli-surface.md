@@ -30,6 +30,43 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+`parity` is the governed reference-parity validation surface. It checks the
+repository's core numerical methods against checked-in outputs from
+established external tools on small fixtures by default, with one optional
+extended suite for larger posterior-tree validation. Its JSON metrics report:
+
+- `all_passed`
+- `case_count`
+- `method_count`
+- `failed_case_count`
+- `extended`
+
+The command can write:
+
+- `reference-parity-summary.tsv`
+- `reference-parity-observations.tsv`
+
+The summary ledger contains one row per method with suite, case counts, pass
+counts, fail counts, and contributing reference tools. The observation ledger
+contains one row per checked case with:
+
+- `input_fixtures`
+- `reference_tool`
+- `reference_version`
+- `reference_source`
+- `tolerance`
+- `tolerance_reason`
+- `passed`
+- `mismatch_kind`
+- `expected_output`
+- `observed_output`
+
+The core suite covers RF distance, branch-score distance, PGLS, Pagel's
+lambda, Brownian and OU trait models, PIC, Blomberg's K, posterior clade
+frequencies, and consensus tree generation. `mismatch_kind` is intentionally a
+scientific review surface, not a generic failure flag. It distinguishes
+topology, branch length, numerical tolerance, and model-assumption mismatches.
+
 `benchmark stress-suite` is the governed large-dataset resource review surface.
 It executes five owned workload families on one selected tier:
 
