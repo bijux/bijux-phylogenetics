@@ -698,6 +698,14 @@ def test_assert_publishable_repository_allows_clean_package_bundle_repo() -> Non
     )
 
 
+def test_assert_publishable_repository_allows_clean_publish_readiness_repo() -> None:
+    assert_publishable_repository(
+        repo_root=REPO_ROOT,
+        require_package_boundaries=True,
+        require_publish_readiness=True,
+    )
+
+
 def test_assert_publishable_repository_rejects_config_ssot_drift(
     tmp_path: Path,
 ) -> None:
