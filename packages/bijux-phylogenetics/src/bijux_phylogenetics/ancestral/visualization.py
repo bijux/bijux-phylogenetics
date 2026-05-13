@@ -16,7 +16,7 @@ from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
 from bijux_phylogenetics.render.svg import TreeRenderResult, render_tree_svg
 
 try:
-    import cairosvg
+    import cairosvg  # type: ignore[import-untyped]
 except Exception:  # pragma: no cover - optional renderer may miss native Cairo.
     cairosvg = None
 
@@ -86,16 +86,13 @@ def render_ancestral_state_visualization(
         analysis_tree_path.write_text(
             f"{report.analysis_tree_newick}\n", encoding="utf-8"
         )
-        render_kwargs = _build_render_kwargs(
-            report,
+        tree_render = _render_ancestral_tree_svg(
+            analysis_tree_path=analysis_tree_path,
+            report=report,
+            svg_path=svg_path,
+            layout=layout,
             discrete_node_style=discrete_node_style,
             branch_coloring=branch_coloring,
-        )
-        tree_render = render_tree_svg(
-            analysis_tree_path,
-            out_path=svg_path,
-            layout=layout,
-            **render_kwargs,
         )
 
     if output_format == "png":
@@ -143,44 +140,135 @@ def _continuous_color(value: float, minimum: float, maximum: float) -> str:
     return f"#{red:02x}{green:02x}{blue:02x}"
 
 
-def _build_render_kwargs(
+def _render_ancestral_tree_svg(
+    *,
+    analysis_tree_path: Path,
     report: ContinuousAncestralReport | DiscreteAncestralReport,
+    svg_path: Path,
+    layout: str,
+    discrete_node_style: str,
+    branch_coloring: str,
+) -> TreeRenderResult:
+    if isinstance(report, ContinuousAncestralReport):
+        return _render_continuous_ancestral_tree_svg(
+            analysis_tree_path=analysis_tree_path,
+            report=report,
+            svg_path=svg_path,
+            layout=layout,
+            branch_coloring=branch_coloring,
+        )
+
+    return _render_discrete_ancestral_tree_svg(
+        analysis_tree_path=analysis_tree_path,
+        report=report,
+        svg_path=svg_path,
+        layout=layout,
+        discrete_node_style=discrete_node_style,
+        branch_coloring=branch_coloring,
+    )
+
+
+def _render_continuous_ancestral_tree_svg(
+    *,
+    analysis_tree_path: Path,
+    report: ContinuousAncestralReport,
+    svg_path: Path,
+    layout: str,
+    branch_coloring: str,
+) -> TreeRenderResult:
+    continuous_traits, internal_annotations, internal_annotation_colors, branch_colors = (
+        _build_continuous_render_data(report, branch_coloring=branch_coloring)
+    )
+    return render_tree_svg(
+        analysis_tree_path,
+        out_path=svg_path,
+        layout=layout,
+        continuous_traits=continuous_traits,
+        internal_annotations=internal_annotations,
+        internal_annotation_colors=internal_annotation_colors,
+        branch_colors=branch_colors,
+    )
+
+
+def _build_continuous_render_data(
+    report: ContinuousAncestralReport,
+    *,
+    branch_coloring: str,
+) -> tuple[dict[str, float], dict[str, str], dict[str, str], dict[str, str]]:
+    value_by_node = {estimate.node: estimate.estimate for estimate in report.estimates}
+    minimum = min(value_by_node.values()) if value_by_node else 0.0
+    maximum = max(value_by_node.values()) if value_by_node else 0.0
+    continuous_traits = {
+        estimate.node_name: estimate.estimate
+        for estimate in report.estimates
+        if estimate.is_tip and estimate.node_name is not None
+    }
+    internal_annotations = {
+        estimate.node: format(estimate.estimate, ".3g")
+        for estimate in report.estimates
+        if not estimate.is_tip
+    }
+    internal_annotation_colors = {
+        estimate.node: _continuous_color(estimate.estimate, minimum, maximum)
+        for estimate in report.estimates
+        if not estimate.is_tip
+    }
+    branch_colors = (
+        {
+            node: _continuous_color(value, minimum, maximum)
+            for node, value in value_by_node.items()
+        }
+        if branch_coloring == "regime"
+        else {}
+    )
+    return (
+        continuous_traits,
+        internal_annotations,
+        internal_annotation_colors,
+        branch_colors,
+    )
+
+
+def _render_discrete_ancestral_tree_svg(
+    *,
+    analysis_tree_path: Path,
+    report: ContinuousAncestralReport | DiscreteAncestralReport,
+    svg_path: Path,
+    layout: str,
+    discrete_node_style: str,
+    branch_coloring: str,
+) -> TreeRenderResult:
+    categorical_traits, internal_annotations, internal_annotation_colors, internal_pies, internal_pie_colors, branch_colors = _build_discrete_render_data(
+        report,
+        discrete_node_style=discrete_node_style,
+        branch_coloring=branch_coloring,
+    )
+    return render_tree_svg(
+        analysis_tree_path,
+        out_path=svg_path,
+        layout=layout,
+        categorical_traits=categorical_traits,
+        internal_annotations=internal_annotations,
+        internal_annotation_colors=internal_annotation_colors,
+        branch_colors=branch_colors,
+        internal_pies=internal_pies,
+        internal_pie_colors=internal_pie_colors,
+    )
+
+
+def _build_discrete_render_data(
+    report: DiscreteAncestralReport,
     *,
     discrete_node_style: str,
     branch_coloring: str,
-) -> dict[str, object]:
-    if isinstance(report, ContinuousAncestralReport):
-        value_by_node = {
-            estimate.node: estimate.estimate for estimate in report.estimates
-        }
-        minimum = min(value_by_node.values()) if value_by_node else 0.0
-        maximum = max(value_by_node.values()) if value_by_node else 0.0
-        return {
-            "continuous_traits": {
-                estimate.node_name: estimate.estimate
-                for estimate in report.estimates
-                if estimate.is_tip and estimate.node_name is not None
-            },
-            "internal_annotations": {
-                estimate.node: format(estimate.estimate, ".3g")
-                for estimate in report.estimates
-                if not estimate.is_tip
-            },
-            "internal_annotation_colors": {
-                estimate.node: _continuous_color(estimate.estimate, minimum, maximum)
-                for estimate in report.estimates
-                if not estimate.is_tip
-            },
-            "branch_colors": (
-                {
-                    node: _continuous_color(value, minimum, maximum)
-                    for node, value in value_by_node.items()
-                }
-                if branch_coloring == "regime"
-                else {}
-            ),
-        }
-
+) -> tuple[
+    dict[str, str],
+    dict[str, str],
+    dict[str, str],
+    dict[str, dict[str, float]],
+    dict[str, str],
+    dict[str, str],
+]:
     palette = _categorical_palette(report.observed_states)
     internal_annotations = (
         {
@@ -208,30 +296,33 @@ def _build_render_kwargs(
         if discrete_node_style == "pies"
         else {}
     )
-    return {
-        "categorical_traits": {
-            estimate.node_name: estimate.most_likely_state
-            for estimate in report.estimates
-            if estimate.is_tip and estimate.node_name is not None
-        },
-        "internal_annotations": internal_annotations,
-        "internal_annotation_colors": {
+    categorical_traits = {
+        estimate.node_name: estimate.most_likely_state
+        for estimate in report.estimates
+        if estimate.is_tip and estimate.node_name is not None
+    }
+    internal_annotation_colors = {
+        estimate.node: palette.get(estimate.most_likely_state, "#6d28d9")
+        for estimate in report.estimates
+        if not estimate.is_tip
+    }
+    branch_colors = (
+        {
             estimate.node: palette.get(estimate.most_likely_state, "#6d28d9")
             for estimate in report.estimates
-            if not estimate.is_tip
-        },
-        "internal_pies": internal_pies,
-        "internal_pie_colors": palette,
-        "branch_colors": (
-            {
-                estimate.node: palette.get(estimate.most_likely_state, "#6d28d9")
-                for estimate in report.estimates
-                if estimate.node
-            }
-            if branch_coloring == "state"
-            else {}
-        ),
-    }
+            if estimate.node
+        }
+        if branch_coloring == "state"
+        else {}
+    )
+    return (
+        categorical_traits,
+        internal_annotations,
+        internal_annotation_colors,
+        internal_pies,
+        palette,
+        branch_colors,
+    )
 
 
 def _convert_svg_to_png(svg_path: Path, png_path: Path) -> None:
