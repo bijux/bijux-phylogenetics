@@ -668,12 +668,15 @@ from bijux_phylogenetics.diversification import (
 )
 from bijux_phylogenetics.engines import (
     audit_alignment_inference_readiness,
+    build_inference_comparison_conclusion_rows,
+    build_inference_comparison_weighted_conflict_rows,
     classify_inference_workflow_failure,
     build_inference_comparison_shared_clade_rows,
     compare_fast_and_ml_trees,
     compare_inferred_tree_to_taxon_metadata,
     infer_unaligned_sequence_type,
     render_inference_workflow_report,
+    rewrite_inference_comparison_report_html,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -692,6 +695,9 @@ from bijux_phylogenetics.engines import (
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
     write_inference_comparison_clade_table,
+    write_inference_comparison_conclusion_table,
+    write_inference_comparison_summary_table,
+    write_inference_comparison_weighted_conflict_table,
 )
 from bijux_phylogenetics.errors import (
     AlignmentTaxonMismatchError,
@@ -2835,8 +2841,32 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_inference_comparison_shared_clade_rows
     )
     assert (
+        bijux_phylogenetics.build_inference_comparison_weighted_conflict_rows
+        is build_inference_comparison_weighted_conflict_rows
+    )
+    assert (
+        bijux_phylogenetics.build_inference_comparison_conclusion_rows
+        is build_inference_comparison_conclusion_rows
+    )
+    assert (
         bijux_phylogenetics.write_inference_comparison_clade_table
         is write_inference_comparison_clade_table
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_weighted_conflict_table
+        is write_inference_comparison_weighted_conflict_table
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_conclusion_table
+        is write_inference_comparison_conclusion_table
+    )
+    assert (
+        bijux_phylogenetics.write_inference_comparison_summary_table
+        is write_inference_comparison_summary_table
+    )
+    assert (
+        bijux_phylogenetics.rewrite_inference_comparison_report_html
+        is rewrite_inference_comparison_report_html
     )
     assert (
         bijux_phylogenetics.compare_inferred_tree_to_taxon_metadata
