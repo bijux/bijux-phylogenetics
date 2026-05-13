@@ -173,6 +173,7 @@ def test_runtime_package_boundary_policy_allows_secured_xml_dependency() -> None
         "bijux-phylogenetics"
     ].required_install_dependencies == (
         "biopython>=1.87,<2.0",
+        "cairosvg>=2.9.0,<3.0",
         "defusedxml>=0.7.1,<1.0",
     )
 
