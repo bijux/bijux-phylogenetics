@@ -68,12 +68,19 @@ def _current_head_sha(event: dict) -> str:
 
 
 def _required_workflows(event_name: str) -> list[RequiredWorkflow]:
+    override = os.environ.get("BIJUX_REQUIRED_WORKFLOWS", "").strip()
+    if override:
+        names = [name.strip() for name in override.split(",") if name.strip()]
+        return [RequiredWorkflow(name) for name in names]
+
     if event_name in {"workflow_call", "workflow_dispatch"}:
         return []
     if event_name in {"pull_request", "pull_request_target", "pull_request_review"}:
         return [
             RequiredWorkflow("bijux-std"),
-            RequiredWorkflow("policy / pr approval", fail_on_non_success=False),
+            # Approval failures should stop downstream work immediately.
+            # A later label or review update creates a new event and a new run.
+            RequiredWorkflow("policy / pr approval"),
         ]
     if event_name in {"merge_group", "push"}:
         return [RequiredWorkflow("bijux-std")]
