@@ -1,0 +1,7 @@
+taxon	response_growth	response_range	predictor_one	habitat
+A	2.0	1.1	1.0	forest
+B	3.0	1.6	2.0	forest
+C	7.5	5.2	3.0	tundra
+D	9.0	6.1	4.0	tundra
+E	4.0	2.7	3.0	forest
+F	10.5	7.3	5.0	tundra
