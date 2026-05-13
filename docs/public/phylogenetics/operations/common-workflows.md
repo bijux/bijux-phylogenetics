@@ -3030,6 +3030,7 @@ bijux-phylogenetics adapter align coding-cds.fasta \
   --out artifacts/coding.aligned.fasta \
   --mode linsi \
   --codon-aware \
+  --genetic-code 1 \
   --json
 bijux-phylogenetics adapter model-select artifacts/coding.aligned.fasta \
   --out-dir artifacts/coding-model \
@@ -3044,12 +3045,22 @@ bijux-phylogenetics adapter infer-ml artifacts/coding.aligned.fasta \
   --json
 ```
 
-The codon-aware alignment workflow excludes frame-broken sequences and
-sequences with premature stop codons before MAFFT runs. It then aligns a
-translated amino-acid guide and projects guide gaps back as nucleotide triplets,
-so the final alignment length stays divisible by three and codon boundaries are
-retained. The workflow also writes the translated guide input, the aligned
-guide, and a TSV ledger of excluded sequences for review.
+The codon-aware alignment workflow validates each coding sequence under one
+explicit genetic code before MAFFT runs. It excludes frame-broken sequences,
+sequences with ambiguous or invalid codons, and sequences with premature stop
+codons. It then aligns a translated amino-acid guide and projects guide gaps
+back as nucleotide triplets, so the final alignment length stays divisible by
+three and codon boundaries are retained. The workflow also writes:
+
+- the translated amino-acid guide input
+- the aligned amino-acid guide
+- a TSV exclusion ledger with invalid-codon and stop-codon counts
+- a TSV codon summary ledger covering every input sequence
+
+Use `alignment coding --genetic-code ...` to inspect one nucleotide dataset
+under the same codon table before alignment, and use
+`alignment translate --genetic-code ...` when you need the amino-acid
+translation itself as a reviewable artifact.
 
 ## Raw FASTA To Tree
 
