@@ -249,3 +249,14 @@ def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -
     assert "PYTEST_ADDOPTS_EXTRA='-o timeout=0'" in root_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in alias_make
+
+
+def test_root_conftest_registers_markers_from_repository_pytest_config() -> None:
+    conftest_path = (
+        REPO_ROOT / "packages" / "bijux-phylogenetics" / "conftest.py"
+    )
+    conftest_text = conftest_path.read_text(encoding="utf-8")
+
+    assert 'PYTEST_CONFIG_PATH = REPO_ROOT / "configs" / "pytest.ini"' in conftest_text
+    assert 'config.getini("markers")' in conftest_text
+    assert 'config.addinivalue_line("markers", marker)' in conftest_text
