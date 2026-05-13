@@ -15,6 +15,7 @@ from bijux_phylogenetics.bayesian.beast import (
     parse_beast_log,
     parse_beast_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
+    run_beast_posterior_inference,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
     summarize_beast_log,
@@ -35,6 +36,7 @@ from bijux_phylogenetics.bayesian.reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
 )
+from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.tree_set import compute_consensus_tree
 
 pytestmark = pytest.mark.engine_contract
@@ -53,6 +55,63 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def _write_executable(path: Path, body: str) -> Path:
+    path.write_text(body, encoding="utf-8")
+    path.chmod(0o755)
+    return path
+
+
+def _fake_beast(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree STATE_20 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+print("warning: beast fixture posterior run", file=sys.stderr)
+""",
+    )
+
+
+def _fake_beast_timeout(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+import time
+
+if "-version" in sys.argv[1:]:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+time.sleep(1.0)
+""",
+    )
 
 
 def test_validate_fossil_calibration_table_accepts_named_and_taxon_targets() -> None:
@@ -213,6 +272,73 @@ def test_prepare_beast_time_tree_analysis_supports_protein_alignments_without_st
         )
         is not None
     )
+
+
+def test_run_beast_posterior_inference_writes_outputs_and_resumes(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast(tmp_path / "beast-fixture")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    first = run_beast_posterior_inference(
+        xml_path,
+        executable=executable,
+        seed=1,
+    )
+    resumed = run_beast_posterior_inference(
+        xml_path,
+        executable=executable,
+        seed=1,
+        resume=True,
+    )
+
+    assert first.output_paths["posterior_log"].exists()
+    assert first.output_paths["posterior_trees"].exists()
+    assert resumed.resumed is True
+    assert parse_beast_log(first.output_paths["posterior_log"]).row_count == 2
+    assert (
+        parse_beast_posterior_tree_samples(
+            first.output_paths["posterior_trees"],
+            burnin_fraction=0.0,
+        ).kept_tree_count
+        == 2
+    )
+
+
+def test_run_beast_posterior_inference_times_out_and_marks_incomplete_run(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast_timeout(tmp_path / "beast-timeout")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError, match="timed out"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=executable,
+            seed=1,
+            timeout_seconds=0.5,
+        )
+
+    marker_candidates = sorted(tmp_path.glob("*.incomplete.json"))
+    assert len(marker_candidates) == 1
+    marker_text = marker_candidates[0].read_text(encoding="utf-8")
+    assert '"timed_out": true' in marker_text
 
 
 def test_prepare_beast_time_tree_analysis_requires_tree_for_calibrations(

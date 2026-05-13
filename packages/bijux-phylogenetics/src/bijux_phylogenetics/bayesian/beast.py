@@ -25,6 +25,19 @@ from bijux_phylogenetics.comparative.common import descendant_taxa
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.tree import PhyloTree
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.engines.common import (
+    build_file_checksums,
+    execute_engine_command,
+    read_engine_version,
+    resolve_engine_executable,
+    validate_timeout_seconds,
+)
+from bijux_phylogenetics.engines.workflows import (
+    EngineWorkflowReport,
+    _persist_workflow_report,
+    _resolve_incomplete_workflow_state,
+    _resume_existing_workflow,
+)
 from bijux_phylogenetics.engines.workflows import _ensure_inference_ready_alignment
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import loads_biophylo
@@ -351,6 +364,10 @@ class BeastBurninSensitivityReport:
     unstable_parameter_count: int
     unstable_clade_count: int
     warnings: list[str]
+
+
+def _beast_output_path(xml_path: Path, *, seed: int, suffix: str) -> Path:
+    return xml_path.with_name(f"{xml_path.stem}.{seed}.{suffix}")
 
 
 @dataclass(slots=True)
@@ -1675,6 +1692,103 @@ def prepare_beast_time_tree_analysis(
         tree_log_path=tree_log_path,
         calibrations=beast_calibrations,
     )
+
+
+def run_beast_posterior_inference(
+    xml_path: Path,
+    *,
+    executable: str | Path = "beast",
+    overwrite: bool = True,
+    threads: int = 1,
+    seed: int = 1,
+    resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
+) -> EngineWorkflowReport:
+    """Run a prepared BEAST XML analysis and validate the primary posterior outputs."""
+    if not xml_path.exists():
+        raise FileNotFoundError(xml_path)
+    validate_timeout_seconds(timeout_seconds)
+    if threads < 1:
+        raise ValueError(f"threads must be positive, got {threads}")
+    if seed < 1:
+        raise ValueError(f"seed must be positive, got {seed}")
+    resolved = resolve_engine_executable(executable)
+    manifest_path = xml_path.with_suffix(".manifest.json")
+    stdout_path = xml_path.with_suffix(".stdout.log")
+    stderr_path = xml_path.with_suffix(".stderr.log")
+    posterior_log_path = _beast_output_path(xml_path, seed=seed, suffix="log")
+    posterior_trees_path = _beast_output_path(xml_path, seed=seed, suffix="trees")
+    command = [
+        resolved,
+        *(["-overwrite"] if overwrite else []),
+        "-threads",
+        str(threads),
+        "-seed",
+        str(seed),
+        xml_path.name,
+    ]
+    if resume:
+        resumed = _resume_existing_workflow(
+            manifest_path=manifest_path,
+            input_paths=[xml_path],
+            expected_command=command,
+        )
+        if resumed is not None:
+            return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
+    version = read_engine_version(
+        "BEAST",
+        executable,
+        version_args=("-version",),
+        timeout_seconds=timeout_seconds,
+    )
+    run = execute_engine_command(
+        engine_name="BEAST",
+        workflow="posterior-tree-inference",
+        executable=resolved,
+        version=version,
+        command_args=command[1:],
+        work_dir=xml_path.parent,
+        stdout_path=stdout_path,
+        stderr_path=stderr_path,
+        output_paths={
+            "posterior_log": posterior_log_path,
+            "posterior_trees": posterior_trees_path,
+        },
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
+    )
+    parse_beast_log(posterior_log_path)
+    parse_beast_posterior_tree_samples(posterior_trees_path, burnin_fraction=0.0)
+    report = EngineWorkflowReport(
+        workflow="posterior-tree-inference",
+        engine_name="BEAST",
+        input_paths=[xml_path],
+        output_paths={
+            "posterior_log": posterior_log_path,
+            "posterior_trees": posterior_trees_path,
+        },
+        run=run,
+        manifest_path=manifest_path,
+        input_checksums=build_file_checksums([xml_path]),
+        output_checksums={},
+        notes=[
+            "BEAST posterior log and posterior tree set validated after engine execution",
+            f"beast threads: {threads}",
+            f"beast random seed: {seed}",
+            *(
+                ["existing posterior outputs are overwritten before engine execution"]
+                if overwrite
+                else []
+            ),
+            *incomplete_notes,
+        ],
+    )
+    return _persist_workflow_report(report)
 
 
 def parse_beast_log(path: Path) -> BeastLogReport:

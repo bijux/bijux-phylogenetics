@@ -97,6 +97,22 @@ print("warning: mrbayes fixture posterior run", file=sys.stderr)
     )
 
 
+def _fake_mrbayes_timeout(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+import time
+
+if "--version" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+time.sleep(1.0)
+""",
+    )
+
+
 def test_prepare_mrbayes_analysis_writes_nexus_with_run_settings(
     tmp_path: Path,
 ) -> None:
@@ -202,6 +218,26 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     assert summary.rooted_topology_count == 2
     assert summary.filtered_tree_set_path.exists()
     assert consensus_tree.tip_count == 4
+
+
+def test_run_mrbayes_posterior_inference_times_out_and_marks_incomplete_run(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mrbayes_timeout(tmp_path / "mb-timeout")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+
+    with pytest.raises(EngineWorkflowError, match="timed out"):
+        run_mrbayes_posterior_inference(
+            nexus_path,
+            executable=executable,
+            timeout_seconds=0.5,
+        )
+
+    marker_candidates = sorted(tmp_path.glob("*.incomplete.json"))
+    assert len(marker_candidates) == 1
+    marker_text = marker_candidates[0].read_text(encoding="utf-8")
+    assert '"timed_out": true' in marker_text
 
 
 def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(

@@ -33,9 +33,11 @@ from bijux_phylogenetics.engines.common import (
     execute_engine_command,
     read_engine_version,
     resolve_engine_executable,
+    validate_timeout_seconds,
 )
 from bijux_phylogenetics.engines.workflows import (
     EngineWorkflowReport,
+    _resolve_incomplete_workflow_state,
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
     _resume_existing_workflow,
@@ -547,11 +549,13 @@ def run_mrbayes_posterior_inference(
     *,
     executable: str | Path = "mb",
     resume: bool = False,
+    timeout_seconds: float | None = None,
+    incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run a MrBayes posterior tree inference workflow from a prepared NEXUS file."""
     if not nexus_path.exists():
         raise FileNotFoundError(nexus_path)
-    version = read_engine_version("MrBayes", executable, version_args=("--version",))
+    validate_timeout_seconds(timeout_seconds)
     resolved = resolve_engine_executable(executable)
     prefix_path = nexus_path.with_suffix("")
     trace_path = Path(f"{nexus_path}.run1.p")
@@ -568,6 +572,16 @@ def run_mrbayes_posterior_inference(
         )
         if resumed is not None:
             return resumed
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
+    )
+    version = read_engine_version(
+        "MrBayes",
+        executable,
+        version_args=("--version",),
+        timeout_seconds=timeout_seconds,
+    )
     run = execute_engine_command(
         engine_name="MrBayes",
         workflow="posterior-tree-inference",
@@ -583,6 +597,8 @@ def run_mrbayes_posterior_inference(
             "mcmc_diagnostics": mcmc_path,
             "consensus_tree": consensus_path,
         },
+        manifest_path=manifest_path,
+        timeout_seconds=timeout_seconds,
     )
     parse_mrbayes_parameter_traces(trace_path)
     parse_mrbayes_mcmc_diagnostics(mcmc_path)
@@ -603,7 +619,8 @@ def run_mrbayes_posterior_inference(
         input_checksums=build_file_checksums([nexus_path]),
         output_checksums={},
         notes=[
-            "MrBayes posterior trees, parameter traces, consensus tree, and MCMC diagnostics validated after engine execution"
+            "MrBayes posterior trees, parameter traces, consensus tree, and MCMC diagnostics validated after engine execution",
+            *incomplete_notes,
         ],
     )
     return _persist_workflow_report(report)
