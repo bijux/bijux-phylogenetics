@@ -3012,6 +3012,7 @@ user-facing outputs:
 - `mammals.model.tsv`
 - `mammals.support.tsv`
 - `mammals.manifest.json`
+- `mammals.run.json`
 
 It also retains step-specific engine artifacts under
 `artifacts/fasta-to-tree/engine-artifacts/mammals/` for auditability.
@@ -3056,6 +3057,11 @@ The checked real-dataset workflow corpus now lives under:
 
 - `packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/`
 - `packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/`
+
+That governed corpus now covers at least three real DNA inputs and three real
+protein inputs. The validation surface compares alignment, tree, support,
+model, manifest, and run artifacts semantically instead of byte-for-byte so
+harmless path and timestamp variation does not masquerade as scientific drift.
 
 Those checks pin reviewer-facing output bundles for:
 
