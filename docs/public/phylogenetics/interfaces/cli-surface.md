@@ -1072,6 +1072,53 @@ This movement-event surface is intentionally explicit about temporal precision.
 Its `midpoint_depth` value is a deterministic branch-midpoint estimate for
 review, not a claim of exact stochastic event time inference.
 
+`biogeography report` is the governed full geographic-evolution package surface
+for one rooted tree, one taxon-region table, and one explicit centroid table.
+It composes the owned ancestral-region model, the owned migration-event
+surface, the owned ancestral-region tree renderer, and the owned region-map
+surface into one durable handoff. Its JSON metrics report:
+- `report_kind`
+- `model`
+- `output_dir`
+- `artifact_count`
+- `observed_region_count`
+- `transition_rate_row_count`
+- `event_count`
+- `visible_map_line_count`
+
+The command requires one centroid table positional input after the trait
+arguments. `--region-column`, `--latitude-column`, and `--longitude-column`
+resolve that centroid table. It supports `er`, `sym`, and `ard`.
+
+When `--out-dir` is supplied, `biogeography report` writes this fixed package:
+- `biogeography-report.html`
+- `ancestral-region-tree.svg`
+- `geographic-region-map.html`
+- `summary.tsv`
+- `region-counts.tsv`
+- `ancestral-regions.tsv`
+- `transition-matrix.tsv`
+- `event-table.tsv`
+- `map-markers.tsv`
+- `map-lines.tsv`
+- `exclusions.tsv`
+- `biogeography-report.manifest.json`
+
+`summary.tsv` keeps the owned ancestral-region model summary row.
+`region-counts.tsv` keeps one observed region count row per analyzed region at
+the tip surface after tree overlap and exclusion auditing.
+`ancestral-regions.tsv` keeps one internal-node ancestral region probability
+row. `transition-matrix.tsv` keeps the directed geographic transition-rate
+ledger. `event-table.tsv` keeps the branchwise migration-event ledger.
+
+`ancestral-region-tree.svg` is the governed tree figure with tip and internal
+region calls rendered directly on the tree. `geographic-region-map.html` is the
+self-contained region-transition map companion artifact. `map-markers.tsv` and
+`map-lines.tsv` expose the marker and line ledgers that drive that map. The
+combined `exclusions.tsv` ledger keeps both state-model and map-placement
+exclusions in one durable review surface instead of forcing reviewers to merge
+separate omission tables by hand.
+
 `biogeography time-stratified` is the governed interval-specific geographic
 transition review surface for one taxon-region table on one rooted tree with
 positive branch lengths. It accepts ER, SYM, and ARD model aliases plus one or
