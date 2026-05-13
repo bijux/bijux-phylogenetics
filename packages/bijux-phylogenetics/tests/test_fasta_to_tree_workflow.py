@@ -444,6 +444,7 @@ def test_write_fasta_to_tree_model_table_can_render_paths_relative_to_root(
     )
 
 
+@pytest.mark.slow
 def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_datasets(
     tmp_path: Path,
 ) -> None:

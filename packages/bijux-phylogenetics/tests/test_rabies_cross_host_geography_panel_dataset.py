@@ -91,6 +91,7 @@ def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface
     assert "MG458305" in dataset.source_accessions
 
 
+@pytest.mark.slow
 def test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
@@ -119,6 +120,7 @@ def test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_package
         ).read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -183,6 +185,7 @@ def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surfac
     )
 
 
+@pytest.mark.slow
 def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrated_workflow(
     tmp_path: Path, capsys
 ) -> None:

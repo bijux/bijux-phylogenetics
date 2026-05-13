@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.phylogenomics import (
@@ -36,6 +38,7 @@ def test_load_catarrhine_mitogenome_five_locus_panel_dataset_exposes_packaged_su
     assert "NC_012920.1" in dataset.source_accessions
 
 
+@pytest.mark.slow
 def test_write_catarrhine_mitogenome_five_locus_panel_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
@@ -64,6 +67,7 @@ def test_write_catarrhine_mitogenome_five_locus_panel_workflow_bundle_matches_pa
         ).read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_run_catarrhine_mitogenome_five_locus_panel_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -117,6 +121,7 @@ def test_public_runtime_exports_include_catarrhine_mitogenome_five_locus_panel_s
     )
 
 
+@pytest.mark.slow
 def test_cli_demo_catarrhine_mitogenome_five_locus_panel_json_output_reports_multilocus_review(
     tmp_path: Path, capsys
 ) -> None:

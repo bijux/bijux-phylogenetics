@@ -45,6 +45,7 @@ def test_load_pleistocene_bear_cytb_fragment_dataset_exposes_packaged_surface() 
     assert "KX641337.1" in dataset.source_accessions
 
 
+@pytest.mark.slow
 def test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
@@ -76,6 +77,7 @@ def test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_e
         ).read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_run_pleistocene_bear_cytb_fragment_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -133,6 +135,7 @@ def test_public_runtime_exports_include_pleistocene_bear_cytb_fragment_surface()
     )
 
 
+@pytest.mark.slow
 def test_cli_demo_pleistocene_bear_cytb_fragments_json_output_reports_missingness_review(
     tmp_path: Path, capsys
 ) -> None:

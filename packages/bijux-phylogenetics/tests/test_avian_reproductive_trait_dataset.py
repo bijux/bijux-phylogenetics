@@ -107,6 +107,7 @@ def test_export_avian_reproductive_trait_dataset_copies_expected_outputs(
     assert "clade-trait-summary.tsv" in expected_files
 
 
+@pytest.mark.slow
 def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface() -> (
     None
 ):
@@ -131,6 +132,7 @@ def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface
     )
 
 
+@pytest.mark.slow
 def test_cli_demo_avian_reproductive_traits_json_output_reports_dataset_and_workflow(
     tmp_path: Path, capsys
 ) -> None:

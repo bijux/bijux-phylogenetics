@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets import (
@@ -30,6 +32,7 @@ def test_load_primate_comparative_dataset_exposes_packaged_mammal_surface() -> N
     assert "mating_system" in dataset.categorical_traits
 
 
+@pytest.mark.slow
 def test_write_primate_comparative_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
@@ -71,6 +74,7 @@ def test_write_primate_comparative_workflow_bundle_matches_packaged_expected_out
         ).read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_run_primate_comparative_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -117,6 +121,7 @@ def test_public_runtime_exports_include_primate_comparative_dataset_surface() ->
     )
 
 
+@pytest.mark.slow
 def test_cli_demo_primate_comparative_json_output_reports_dataset_and_workflow(
     tmp_path: Path, capsys
 ) -> None:

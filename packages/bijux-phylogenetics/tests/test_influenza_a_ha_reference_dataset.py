@@ -39,6 +39,7 @@ def test_load_influenza_a_ha_reference_dataset_exposes_packaged_viral_surface() 
     assert "NC_002017.1" in dataset.source_accessions
 
 
+@pytest.mark.slow
 def test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
@@ -68,6 +69,7 @@ def test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expecte
         ).read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_run_influenza_a_ha_reference_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
@@ -122,6 +124,7 @@ def test_public_runtime_exports_include_influenza_a_ha_reference_dataset_surface
     )
 
 
+@pytest.mark.slow
 def test_cli_demo_influenza_a_ha_reference_panel_json_output_reports_dataset_and_workflow(
     tmp_path: Path, capsys
 ) -> None:

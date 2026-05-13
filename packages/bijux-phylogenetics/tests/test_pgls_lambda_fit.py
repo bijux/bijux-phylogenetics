@@ -4,6 +4,8 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.comparative.pgls_lambda_fit import (
     summarize_pgls_lambda_fit,
@@ -41,6 +43,7 @@ def test_run_pgls_reports_fixed_lambda_fit_surface() -> None:
     assert report.lambda_fit.profile_rows[0].lambda_value == 0.0
 
 
+@pytest.mark.slow
 def test_run_pgls_estimated_lambda_matches_primate_reference_bundle() -> None:
     repository_root = Path(__file__).resolve().parents[3]
     parity_fixture = (

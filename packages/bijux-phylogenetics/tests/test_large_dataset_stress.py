@@ -15,6 +15,7 @@ def _observations_by_workload(report):
 
 @pytest.mark.evaluation
 @pytest.mark.stress_small
+@pytest.mark.slow
 @pytest.mark.timeout(120)
 def test_benchmark_large_dataset_stress_suite_small_tier_reports_all_workloads() -> (
     None
@@ -67,6 +68,7 @@ def test_benchmark_large_dataset_stress_suite_small_tier_reports_all_workloads()
 
 @pytest.mark.evaluation
 @pytest.mark.stress_small
+@pytest.mark.slow
 @pytest.mark.timeout(120)
 def test_cli_benchmark_stress_suite_reports_tier_and_observation_count(
     capsys: pytest.CaptureFixture[str],

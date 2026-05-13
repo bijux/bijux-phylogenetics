@@ -4,6 +4,8 @@ import csv
 import json
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics
 from bijux_phylogenetics.ancestral import (
     build_ancestral_figure_package,
@@ -5889,6 +5891,7 @@ def test_cli_simulate_dna_alignment_writes_fasta(tmp_path: Path, capsys) -> None
     assert ">A\nACTAACGA\n" in output_path.read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_cli_benchmark_tree_validation_reports_observations(capsys) -> None:
     exit_code = main(["benchmark", "tree-validation", "--replicates", "1", "--json"])
     captured = capsys.readouterr()
@@ -9790,6 +9793,7 @@ def test_cli_evidence_book_studies_json_output(capsys, monkeypatch) -> None:
     assert payload["data"]["studies"][0]["study_id"] == "primate-longevity-signal"
 
 
+@pytest.mark.slow
 def test_cli_evidence_book_validate_json_output(capsys, monkeypatch) -> None:
     monkeypatch.chdir(REPO_ROOT)
 
@@ -9808,6 +9812,7 @@ def test_cli_evidence_book_validate_json_output(capsys, monkeypatch) -> None:
     assert payload["metrics"]["completion_not_ready_count"] == 2
 
 
+@pytest.mark.slow
 def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
     monkeypatch.chdir(REPO_ROOT)
 
@@ -9823,6 +9828,7 @@ def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
     assert payload["metrics"]["reviewer_readiness_status"] == "bounded"
 
 
+@pytest.mark.slow
 def test_cli_evidence_book_build_selected_evidence_json_output(
     capsys, monkeypatch
 ) -> None:
@@ -9850,6 +9856,7 @@ def test_cli_evidence_book_build_selected_evidence_json_output(
     assert payload["data"]["selected_evidence_ids"] == ["evidence-002"]
 
 
+@pytest.mark.slow
 def test_cli_evidence_book_rerun_json_output(capsys, monkeypatch) -> None:
     monkeypatch.chdir(REPO_ROOT)
 
