@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics
+import pytest
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets import (
     export_avian_reproductive_trait_dataset,
@@ -31,6 +32,7 @@ def test_load_avian_reproductive_trait_dataset_exposes_packaged_bird_surface() -
     assert "development_mode" in dataset.categorical_traits
 
 
+@pytest.mark.slow
 def test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
@@ -77,6 +79,7 @@ def test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expecte
         ).read_text(encoding="utf-8")
 
 
+@pytest.mark.slow
 def test_run_avian_reproductive_trait_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
