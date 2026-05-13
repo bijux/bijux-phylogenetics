@@ -157,6 +157,7 @@ from bijux_phylogenetics.branch_lengths import (
 )
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
+    benchmark_large_dataset_stress_suite,
     benchmark_tree_comparison,
     benchmark_tree_validation,
 )
@@ -4773,6 +4774,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_alignment)
+    benchmark_stress = benchmark_subparsers.add_parser(
+        "stress-suite",
+        help="Benchmark large-dataset stress workloads across governed tiers.",
+    )
+    benchmark_stress.add_argument(
+        "--tier",
+        choices=("small", "heavy"),
+        default="small",
+        help="Select the governed stress tier to execute.",
+    )
+    benchmark_stress.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_stress)
 
     validate = subparsers.add_parser(
         get_command_spec("validate").name, help=get_command_spec("validate").summary
@@ -13169,21 +13184,27 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 report = benchmark_tree_validation(replicates=args.replicates)
             elif args.benchmark_command == "tree-comparison":
                 report = benchmark_tree_comparison(replicates=args.replicates)
+            elif args.benchmark_command == "stress-suite":
+                report = benchmark_large_dataset_stress_suite(tier=args.tier)
             else:
                 report = benchmark_alignment_diagnostics(
                     replicates=args.replicates,
                     sequence_length=args.sequence_length,
                 )
             outputs = _finalize_outputs(args, command="benchmark", inputs=[])
+            metrics = {
+                "observation_count": len(report.observations),
+            }
+            if hasattr(report, "replicates"):
+                metrics["replicates"] = report.replicates
+            if hasattr(report, "tier"):
+                metrics["tier"] = report.tier
             _print_result(
                 build_command_result(
                     command="benchmark",
                     inputs=[],
                     outputs=outputs,
-                    metrics={
-                        "observation_count": len(report.observations),
-                        "replicates": report.replicates,
-                    },
+                    metrics=metrics,
                     data=report,
                 ),
                 json_output=args.json,
