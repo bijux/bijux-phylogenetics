@@ -30,6 +30,38 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+`benchmark stress-suite` is the governed large-dataset resource review surface.
+It executes five owned workload families on one selected tier:
+
+- large alignment inference
+- multi-locus supermatrix assembly
+- posterior or bootstrap tree-set consensus
+- comparative independent contrasts
+- tree-annotation table generation
+
+Its JSON metrics report:
+
+- `observation_count`
+- `tier`
+
+Each observation records:
+
+- `input_size_bytes`
+- `sequence_count` when applicable
+- `alignment_length` when applicable
+- `tree_count` when applicable
+- `taxon_count` when applicable
+- `locus_count` when applicable
+- `runtime_seconds`
+- `peak_memory_bytes`
+- `memory_observation_kind`
+- `output_row_count`
+
+Use `--tier small` for the routine stress lane and `--tier heavy` for the
+optional `1,000+` sequence and `1,000+` tree pressure check. The surface is
+explicit about scope: it measures the repository's owned workflows, not a
+synthetic micro-benchmark disconnected from user-facing outputs.
+
 `report tree-package` is the governed full tree review surface. It takes one
 tree and materializes a richer review directory than the older `report tree`
 diagnostic. Its JSON metrics report:
