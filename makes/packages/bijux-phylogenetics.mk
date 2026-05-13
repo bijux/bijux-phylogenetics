@@ -9,7 +9,13 @@ ENABLE_RADON := 0
 ENABLE_PYDOCSTYLE := 0
 TEST_PATHS := tests
 TEST_PATHS_UNIT := tests
-TEST_MAIN_ARGS = -m "not slow"
+TEST_PATHS_EVALUATION := $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests
+TEST_REAL_LOCAL_PATH := $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests/real_local
+TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"
+TEST_UNIT_DIR_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
+TEST_UNIT_FALLBACK_ARGS = -k "not e2e and not integration and not functional" -m "not slow and not real_local and not evaluation" --maxfail=1 -q
+TEST_EVALUATION_ARGS = -m "evaluation and scientific_validation" -s -p no:cov
+TEST_REAL_LOCAL_ARGS = -m "real_local and engine_real and not scientific_validation" -s -p no:cov
 TEST_CLEAN_PATHS := "$(MONOREPO_ROOT)/.pytest_cache" "$(MONOREPO_ROOT)/.ruff_cache"
 QUALITY_PATHS = src tests
 MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini
@@ -56,5 +62,37 @@ build-install-smoke:
 	"$$tmp_root/smoke/bin/bijux-phylogenetics" --version; \
 	"$$tmp_root/smoke/bin/bijux-phylogenetics" --help >/dev/null
 .PHONY: build-install-smoke
+
+external-engine-lane:
+	@$(SELF_MAKE) real-local
+	@$(SELF_MAKE) scientific-validation-lane
+	@echo "✔ external engine execution lanes completed"
+.PHONY: external-engine-lane
+
+scientific-validation-lane:
+	@echo "→ Running scientific validation tests (manual only)"
+	@$(PYTEST) $(PYTEST_INFO_FLAGS) --version
+	@mkdir -p "$(TEST_ARTIFACTS_DIR)" "$(HYPOTHESIS_DB_DIR)" "$(TMP_DIR)"
+	@( cd "$(PYTEST_ROOTDIR_ABS)" && \
+	  PYTHONPATH="$(TEST_SOURCE_PATH_ABS)$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	  PYTHONDONTWRITEBYTECODE=1 \
+	  HYPOTHESIS_DATABASE_DIRECTORY="$(HYPOTHESIS_DB_ABS)" \
+	  $(TEST_PYCACHE_ENV) \
+	  sh -c '$(PYTEST) --rootdir "$(PYTEST_ROOTDIR_ABS)" -c "$(PYTEST_INI_ABS)" "packages/bijux-phylogenetics/tests" -m "evaluation and scientific_validation and not slow" -o addopts= -s -p no:cov' )
+	@echo "✔ scientific validation lane completed"
+.PHONY: scientific-validation-lane
+
+scientific-validation-slow:
+	@echo "→ Running slow scientific validation tests (manual only)"
+	@$(PYTEST) $(PYTEST_INFO_FLAGS) --version
+	@mkdir -p "$(TEST_ARTIFACTS_DIR)" "$(HYPOTHESIS_DB_DIR)" "$(TMP_DIR)"
+	@( cd "$(PYTEST_ROOTDIR_ABS)" && \
+	  PYTHONPATH="$(TEST_SOURCE_PATH_ABS)$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	  PYTHONDONTWRITEBYTECODE=1 \
+	  HYPOTHESIS_DATABASE_DIRECTORY="$(HYPOTHESIS_DB_ABS)" \
+	  $(TEST_PYCACHE_ENV) \
+	  sh -c '$(PYTEST) --rootdir "$(PYTEST_ROOTDIR_ABS)" -c "$(PYTEST_INI_ABS)" "packages/bijux-phylogenetics/tests" -m "evaluation and scientific_validation and slow" -o addopts= -o timeout=600 -s -p no:cov' )
+	@echo "✔ slow scientific validation lane completed"
+.PHONY: scientific-validation-slow
 
 include $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../bijux-py/package.mk

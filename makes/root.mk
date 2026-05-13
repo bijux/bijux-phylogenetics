@@ -34,6 +34,7 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 .PHONY: \
 	help list list-all install lock lock-check lint quality security test docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
+	install-external-engine-runtime test-external-engines test-scientific-validation-slow \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
 	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book rerun-evidence-cleanroom rerun-governed-evidence-cleanroom \
 	sync-evidence-artifacts sync-evidence-unit-artifacts check-evidence-artifacts check-evidence-unit-artifacts sync-evidence-unit-inputs check-evidence-unit-inputs report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
@@ -46,6 +47,20 @@ EVIDENCE_ID ?=
 EVIDENCE_IDS ?=
 
 check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
+
+install-external-engine-runtime: ## Install the local external engine lane dependencies on macOS with Homebrew
+	@command -v brew >/dev/null || { echo "Homebrew is required for install-external-engine-runtime"; exit 2; }
+	@brew install mafft trimal mrbayes brewsci/bio/fasttree brewsci/bio/iqtree2
+	@brew install --cask beast2
+.PHONY: install-external-engine-runtime
+
+test-external-engines: root-check-env ## Run real external engine integration and scientific validation lanes
+	@$(MAKE) -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" -C "$(CURDIR)/packages/bijux-phylogenetics" external-engine-lane
+.PHONY: test-external-engines
+
+test-scientific-validation-slow: root-check-env ## Run the slow governed external-engine validation lane
+	@$(MAKE) -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" -C "$(CURDIR)/packages/bijux-phylogenetics" scientific-validation-slow
+.PHONY: test-scientific-validation-slow
 
 sync-badges: root-check-env ## Render shared badge blocks into managed README surfaces
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.docs.badge_sync sync

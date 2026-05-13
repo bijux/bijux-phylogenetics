@@ -20,7 +20,6 @@ pytestmark = [
     pytest.mark.real_local,
     pytest.mark.evaluation,
     pytest.mark.scientific_validation,
-    pytest.mark.slow,
 ]
 
 
