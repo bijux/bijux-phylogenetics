@@ -4259,9 +4259,27 @@ status, so automation can distinguish a fresh execution from a verified reuse.
 
 For coding nucleotide inputs, `adapter align --codon-aware` is the supported
 alignment entrypoint. It excludes frame-broken sequences and sequences with
-premature stop codons, aligns a translated amino-acid guide, and back-translates
-guide gaps as nucleotide triplets so the resulting alignment stays codon-safe
-for downstream inference steps.
+ambiguous or invalid codons plus sequences with premature stop codons, aligns a
+translated amino-acid guide, and back-translates guide gaps as nucleotide
+triplets so the resulting alignment stays codon-safe for downstream inference
+steps.
+
+This surface accepts:
+
+- `--sequence-type dna|rna` when the nucleotide alphabet must be forced
+- `--genetic-code` with an NCBI code id or codon-table name
+
+The codon-aware workflow writes reviewer-facing sidecars in addition to the
+final codon alignment:
+
+- one translated amino-acid guide input FASTA
+- one aligned amino-acid guide FASTA
+- one exclusion ledger
+- one codon summary ledger
+
+`alignment coding` and `alignment translate` also accept `--genetic-code`, so
+the standalone coding diagnostics and amino-acid translation surfaces can use
+the same explicit codon table as the codon-aware alignment workflow.
 
 For aligned multi-locus matrices, `adapter model-select`, `adapter infer-ml`,
 and `adapter bootstrap` now accept `--partitions`. On single-datatype matrices
