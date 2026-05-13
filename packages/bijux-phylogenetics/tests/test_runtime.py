@@ -779,6 +779,11 @@ from bijux_phylogenetics.reference_validation import (
     validate_taxon_naming_reference_fixtures,
     validate_tree_reference_fixtures,
 )
+from bijux_phylogenetics.reference_parity import (
+    validate_reference_parity_examples,
+    write_reference_parity_observation_table,
+    write_reference_parity_summary_table,
+)
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
@@ -1757,6 +1762,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         bijux_phylogenetics.build_level_one_release_gate_report
         is build_level_one_release_gate_report
     )
+    assert (
+        bijux_phylogenetics.validate_reference_parity_examples
+        is validate_reference_parity_examples
+    )
+    assert (
+        bijux_phylogenetics.write_reference_parity_summary_table
+        is write_reference_parity_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_reference_parity_observation_table
+        is write_reference_parity_observation_table
+    )
     assert bijux_phylogenetics.render_tree_report is render_tree_report
     assert (
         bijux_phylogenetics.render_workflow_validation_report
@@ -1808,6 +1825,13 @@ def test_command_registry_exposes_phylogeography_surface() -> None:
 
     assert spec.domain == "geographic-reconstruction"
     assert spec.outputs == ("geographic-reconstruction-report",)
+
+
+def test_command_registry_exposes_reference_parity_surface() -> None:
+    spec = get_command_spec("parity")
+
+    assert spec.domain == "reference-validation"
+    assert spec.outputs == ("reference-parity-report",)
 
 
 def test_command_registry_exposes_diversification_surface() -> None:
@@ -9269,12 +9293,17 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
         "alignment",
         "comparative",
         "ancestral",
+        "biogeography",
+        "host-association",
+        "ecological-niche",
+        "phylogeography",
         "discrete-evolution",
         "diversification",
         "distance",
         "tree-set",
         "simulate",
         "benchmark",
+        "parity",
         "inspect",
         "validate",
         "normalize",
