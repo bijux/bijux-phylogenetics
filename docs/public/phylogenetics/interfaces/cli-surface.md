@@ -30,6 +30,31 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
+`report tree-package` is the governed full tree review surface. It takes one
+tree and materializes a richer review directory than the older `report tree`
+diagnostic. Its JSON metrics report:
+
+- `tip_count`
+- `supported_branch_count`
+- `rendered_support_count`
+- `long_outlier_count`
+
+The command writes:
+
+- `tree-report.html`
+- `tree-image.svg`
+- `support-table.tsv`
+- `clade-table.tsv`
+- `branch-stats.tsv`
+- `tree-report.manifest.json`
+
+The HTML report embeds the owned SVG tree image directly and includes reviewer
+summary, support, clade, and branch-stat sections. The TSV ledgers remain the
+durable flat review contract for downstream inspection and automation. Use
+`report tree` when only the lightweight structural and forensic HTML audit is
+needed; use `report tree-package` when the image and tabular review outputs are
+required together.
+
 `demo primate-comparative` is the governed packaged mammal dataset surface. It
 materializes the shipped primate comparative dataset into one output directory
 and reruns the owned comparative workflow bundle over those packaged inputs.
