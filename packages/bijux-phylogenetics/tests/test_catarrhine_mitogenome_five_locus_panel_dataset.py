@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.phylogenomics import (
     export_catarrhine_mitogenome_five_locus_panel_dataset,
@@ -91,6 +92,29 @@ def test_export_catarrhine_mitogenome_five_locus_panel_dataset_copies_expected_o
     assert len(locus_files) == 5
     assert len(expected_files) == 10
     assert "catarrhine-mitogenome-five-locus-panel.supported.tree" in expected_files
+
+
+def test_public_runtime_exports_include_catarrhine_mitogenome_five_locus_panel_surface(
+) -> None:
+    assert (
+        bijux_phylogenetics.load_catarrhine_mitogenome_five_locus_panel_dataset
+        is load_catarrhine_mitogenome_five_locus_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.export_catarrhine_mitogenome_five_locus_panel_dataset
+        is export_catarrhine_mitogenome_five_locus_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.run_catarrhine_mitogenome_five_locus_panel_workflow
+        is run_catarrhine_mitogenome_five_locus_panel_workflow
+    )
+    assert (
+        bijux_phylogenetics.write_catarrhine_mitogenome_five_locus_panel_workflow_bundle
+        is write_catarrhine_mitogenome_five_locus_panel_workflow_bundle
+    )
+    assert bijux_phylogenetics.run_catarrhine_mitogenome_five_locus_panel_demo is (
+        run_catarrhine_mitogenome_five_locus_panel_demo
+    )
 
 
 def test_cli_demo_catarrhine_mitogenome_five_locus_panel_json_output_reports_multilocus_review(
