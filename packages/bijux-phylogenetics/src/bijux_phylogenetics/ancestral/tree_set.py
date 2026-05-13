@@ -21,7 +21,10 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
 from bijux_phylogenetics.core.tree import PhyloTree
-from bijux_phylogenetics.errors import AncestralReconstructionError, InvalidAlignmentError
+from bijux_phylogenetics.errors import (
+    AncestralReconstructionError,
+    InvalidAlignmentError,
+)
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
@@ -264,16 +267,14 @@ def summarize_continuous_ancestral_tree_set(
         exclusions,
         dataset_warnings,
         resolved_taxon_column,
-    ) = (
-        _prepare_analysis_tree_set(
-            tree_set_path=tree_set_path,
-            traits_path=traits_path,
-            taxon_column=taxon_column,
-            trait=trait,
-            kept_tree_entries=kept_tree_entries,
-            shared_tree_taxa=shared_tree_taxa,
-            dataset_kind="continuous",
-        )
+    ) = _prepare_analysis_tree_set(
+        tree_set_path=tree_set_path,
+        traits_path=traits_path,
+        taxon_column=taxon_column,
+        trait=trait,
+        kept_tree_entries=kept_tree_entries,
+        shared_tree_taxa=shared_tree_taxa,
+        dataset_kind="continuous",
     )
     warnings.extend(dataset_warnings)
     tree_rows = [
@@ -329,7 +330,9 @@ def summarize_continuous_ancestral_tree_set(
                         unstable=estimate.unstable,
                     )
                 )
-    clade_summaries = _summarize_continuous_clades(node_rows, kept_tree_count=len(tree_rows))
+    clade_summaries = _summarize_continuous_clades(
+        node_rows, kept_tree_count=len(tree_rows)
+    )
     if any(row.tree_presence_fraction < 1.0 for row in clade_summaries):
         warnings.append(
             "one or more comparable ancestral clades are absent from some retained trees"
@@ -407,16 +410,14 @@ def summarize_discrete_ancestral_tree_set(
         exclusions,
         dataset_warnings,
         resolved_taxon_column,
-    ) = (
-        _prepare_analysis_tree_set(
-            tree_set_path=tree_set_path,
-            traits_path=traits_path,
-            taxon_column=taxon_column,
-            trait=trait,
-            kept_tree_entries=kept_tree_entries,
-            shared_tree_taxa=shared_tree_taxa,
-            dataset_kind="discrete",
-        )
+    ) = _prepare_analysis_tree_set(
+        tree_set_path=tree_set_path,
+        traits_path=traits_path,
+        taxon_column=taxon_column,
+        trait=trait,
+        kept_tree_entries=kept_tree_entries,
+        shared_tree_taxa=shared_tree_taxa,
+        dataset_kind="discrete",
     )
     warnings.extend(dataset_warnings)
     tree_rows = [
@@ -472,7 +473,9 @@ def summarize_discrete_ancestral_tree_set(
                         unstable=estimate.unstable,
                     )
                 )
-    clade_summaries = _summarize_discrete_clades(node_rows, kept_tree_count=len(tree_rows))
+    clade_summaries = _summarize_discrete_clades(
+        node_rows, kept_tree_count=len(tree_rows)
+    )
     if any(row.tree_presence_fraction < 1.0 for row in clade_summaries):
         warnings.append(
             "one or more comparable ancestral clades are absent from some retained trees"
@@ -509,7 +512,9 @@ def summarize_continuous_ancestral_tree_set_report(
     report: ContinuousAncestralTreeSetReport,
 ) -> ContinuousAncestralTreeSetSummary:
     """Summarize the main review facts for one continuous ancestral tree-set report."""
-    unstable_clades = [row for row in report.clade_summaries if row.stability_class != "stable"]
+    unstable_clades = [
+        row for row in report.clade_summaries if row.stability_class != "stable"
+    ]
     top_unstable = (
         max(
             unstable_clades,
@@ -541,7 +546,9 @@ def summarize_discrete_ancestral_tree_set_report(
     report: DiscreteAncestralTreeSetReport,
 ) -> DiscreteAncestralTreeSetSummary:
     """Summarize the main review facts for one discrete ancestral tree-set report."""
-    unstable_clades = [row for row in report.clade_summaries if row.stability_class != "stable"]
+    unstable_clades = [
+        row for row in report.clade_summaries if row.stability_class != "stable"
+    ]
     top_unstable = (
         max(
             unstable_clades,
@@ -972,9 +979,7 @@ def _prepare_analysis_tree_set(
             for source_tree_index, tree in kept_tree_entries
         ]
         analysis_tree_set_path.write_text(
-            "".join(
-                dumps_newick(tree) + "\n" for _, tree in analysis_trees
-            ),
+            "".join(dumps_newick(tree) + "\n" for _, tree in analysis_trees),
             encoding="utf-8",
         )
         topology_summary = load_tree_set(analysis_tree_set_path)
@@ -998,9 +1003,7 @@ def _summarize_continuous_clades(
         grouped.setdefault(row.clade_id, []).append(row)
     all_estimates = [row.estimate for row in rows]
     global_range = (
-        max(all_estimates) - min(all_estimates)
-        if len(all_estimates) > 1
-        else 0.0
+        max(all_estimates) - min(all_estimates) if len(all_estimates) > 1 else 0.0
     )
     scale = global_range if global_range > 0 else 1.0
     summaries: list[ContinuousAncestralTreeSetCladeSummaryRow] = []
@@ -1016,9 +1019,7 @@ def _summarize_continuous_clades(
         mean_standard_error = stable_value(statistics.fmean(standard_errors))
         normalized_dispersion = empirical_width / scale
         instability_score = stable_value(
-            (1.0 - presence_fraction)
-            + unstable_tree_fraction
-            + normalized_dispersion
+            (1.0 - presence_fraction) + unstable_tree_fraction + normalized_dispersion
         )
         if presence_fraction < 1.0:
             stability_class = "topology_sensitive"
@@ -1065,7 +1066,9 @@ def _summarize_discrete_clades(
         presence_fraction = stable_value(len(clade_rows) / kept_tree_count)
         state_counts: dict[str, int] = {}
         for row in clade_rows:
-            state_counts[row.most_likely_state] = state_counts.get(row.most_likely_state, 0) + 1
+            state_counts[row.most_likely_state] = (
+                state_counts.get(row.most_likely_state, 0) + 1
+            )
         dominant_state = max(
             sorted(state_counts),
             key=lambda state: (state_counts[state], state),
@@ -1161,9 +1164,7 @@ def _empirical_quantile(values: list[float], probability: float) -> float:
     if lower == upper:
         return stable_value(ordered[lower])
     fraction = index - lower
-    return stable_value(
-        ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
-    )
+    return stable_value(ordered[lower] + (ordered[upper] - ordered[lower]) * fraction)
 
 
 def _sample_standard_deviation(values: list[float]) -> float:

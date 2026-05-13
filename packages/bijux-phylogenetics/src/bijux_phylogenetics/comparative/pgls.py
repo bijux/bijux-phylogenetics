@@ -621,9 +621,7 @@ def run_pgls(
         standard_error = math.sqrt(
             max(covariance_of_betas[index][index] * residual_variance, 0.0)
         )
-        test_statistic = (
-            coefficients[index] / standard_error if standard_error else 0.0
-        )
+        test_statistic = coefficients[index] / standard_error if standard_error else 0.0
         p_value = student_t_two_sided_p_value(test_statistic, degrees_of_freedom)
         interval_radius = critical_value * standard_error
         coefficient_reports.append(
@@ -1288,9 +1286,7 @@ def _estimate_lambda_for_pgls(
     fine_step: float = 0.005,
 ) -> PGLSLambdaFitReport:
     coarse_values = _grid_values(0.0, 1.0, coarse_step)
-    coarse_best_lambda = max(
-        coarse_values, key=log_likelihood_at_lambda
-    )
+    coarse_best_lambda = max(coarse_values, key=log_likelihood_at_lambda)
     fine_values = _grid_values(
         max(0.0, coarse_best_lambda - coarse_step),
         min(1.0, coarse_best_lambda + coarse_step),
@@ -1311,9 +1307,7 @@ def _estimate_lambda_for_pgls(
         )
         for candidate in _grid_values(0.0, 1.0, profile_step)
     ]
-    supported_rows = [
-        row for row in profile_rows if row.within_95_confidence_interval
-    ]
+    supported_rows = [row for row in profile_rows if row.within_95_confidence_interval]
     lower_bound = supported_rows[0].lambda_value if supported_rows else None
     upper_bound = supported_rows[-1].lambda_value if supported_rows else None
     return PGLSLambdaFitReport(

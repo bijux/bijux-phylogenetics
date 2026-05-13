@@ -17,8 +17,8 @@ from bijux_phylogenetics.core.alignment import (
     AlignmentGroupRetention,
     AlignmentLinkageReport,
     AlignmentLowInformationReport,
-    AlignmentMissingDataConcentration,
     AlignmentMethodReadiness,
+    AlignmentMissingDataConcentration,
     AlignmentQualityReport,
     AlignmentReadinessReport,
     AlignmentRecord,
@@ -40,13 +40,13 @@ from bijux_phylogenetics.core.alignment import (
     FastaIdentifierRepair,
     FastaIllegalCharacter,
     FastaInputSummary,
-    FastaSequenceTypeReport,
     FastaInputValidationReport,
     FastaRemovedRecord,
     FastaRepairReport,
+    FastaSequenceTypeReport,
     FrameshiftLikeSequence,
-    InvalidCodonObservation,
     InvalidAlignmentCharacter,
+    InvalidCodonObservation,
     NearDuplicateSequencePair,
     PairwiseSequenceIdentity,
     PartialCodonSequence,
@@ -319,9 +319,7 @@ def detect_fasta_sequence_type(
 
     warnings: list[str] = []
     compatible_types = (
-        []
-        if shared_compatible is None
-        else _ordered_sequence_types(shared_compatible)
+        [] if shared_compatible is None else _ordered_sequence_types(shared_compatible)
     )
     if invalid_record_count:
         warnings.append("input contains unsupported sequence characters")
@@ -1320,9 +1318,13 @@ def _invalid_codon_reason(codon: str) -> str | None:
     normalized = codon.upper().replace("U", "T")
     if set(normalized) <= _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS:
         return None
-    if any(base in _GAP_CHARACTERS or _is_explicit_missing(base) for base in normalized):
+    if any(
+        base in _GAP_CHARACTERS or _is_explicit_missing(base) for base in normalized
+    ):
         return "partial-missing-codon"
-    unsupported = sorted({base for base in normalized if base not in _DNA_CHARACTERS_UPPER})
+    unsupported = sorted(
+        {base for base in normalized if base not in _DNA_CHARACTERS_UPPER}
+    )
     if unsupported:
         return f"unsupported-residue:{''.join(unsupported)}"
     if any(base not in _DNA_BASES for base in normalized):
@@ -1399,7 +1401,9 @@ def _classify_sequence_coding_behavior_records(
     *,
     genetic_code: int | str | None = None,
 ) -> list[SequenceCodingBehavior]:
-    stop_observations = _detect_stop_codons_in_records(records, genetic_code=genetic_code)
+    stop_observations = _detect_stop_codons_in_records(
+        records, genetic_code=genetic_code
+    )
     stop_counts_by_identifier: dict[str, list[StopCodonObservation]] = {}
     for stop in stop_observations:
         stop_counts_by_identifier.setdefault(stop.identifier, []).append(stop)
@@ -1478,8 +1482,7 @@ def _sequence_type_for_coding_preparation(
     effective = sequence_type if sequence_type is not None else detected.selected_type
     if effective not in {"dna", "rna"}:
         raise InvalidAlignmentError(
-            "codon-aware alignment requires nucleotide coding input: "
-            f"{detected.note}"
+            f"codon-aware alignment requires nucleotide coding input: {detected.note}"
         )
     return effective
 
@@ -1503,9 +1506,7 @@ def prepare_coding_sequences_for_alignment(
     frameshifts = {
         row.identifier: row for row in _detect_frameshift_like_records(records)
     }
-    sequences_by_identifier = {
-        record.identifier: record.sequence for record in records
-    }
+    sequences_by_identifier = {record.identifier: record.sequence for record in records}
 
     accepted_records: list[AlignmentRecord] = []
     accepted_identifiers: list[str] = []
@@ -1777,9 +1778,7 @@ def back_translate_aligned_coding_sequences(
             raise InvalidAlignmentError(
                 f"codon back-translation is missing coding residues for {guide_record.identifier}"
             ) from error
-        codons = [
-            codon for _, codon in _iter_codon_windows(coding_record.sequence)
-        ]
+        codons = [codon for _, codon in _iter_codon_windows(coding_record.sequence)]
         codon_index = 0
         aligned_codons: list[str] = []
         for residue in guide_record.sequence:
@@ -2497,9 +2496,7 @@ def _alignment_suspicion_reasons(
     if low_information.low_information:
         reasons.append("alignment has low information content for defensible inference")
     if missing_data_concentration.longest_concentrated_run >= 2:
-        reasons.append(
-            "alignment concentrates missing data into adjacent columns"
-        )
+        reasons.append("alignment concentrates missing data into adjacent columns")
     elif missing_data_concentration.concentrated_column_count > 0:
         reasons.append("alignment contains one or more highly missing columns")
     if ambiguous_column_count > 0:
@@ -2509,7 +2506,9 @@ def _alignment_suspicion_reasons(
     if under_aligned_count > 0:
         reasons.append("alignment contains suspiciously under-aligned windows")
     if invalid_character_count > 0:
-        reasons.append("alignment contains invalid characters for the inferred alphabet")
+        reasons.append(
+            "alignment contains invalid characters for the inferred alphabet"
+        )
     return reasons
 
 
@@ -2915,9 +2914,7 @@ def validate_fasta_input(
 
 def _normalize_fasta_identifier(identifier: str) -> str:
     normalized = [
-        character
-        if character.isalnum() or character in {".", "_", "-"}
-        else "_"
+        character if character.isalnum() or character in {".", "_", "-"} else "_"
         for character in identifier.strip()
     ]
     collapsed = "".join(normalized)
@@ -2937,13 +2934,14 @@ def repair_fasta_input(
     """Repair a FASTA input through explicit identifier and record policies."""
     records = load_permissive_fasta_records(path)
     validation = validate_fasta_input(path, sequence_type=sequence_type)
-    if sequence_type is None and validation.sequence_type_report.detected_type == "mixed":
+    if (
+        sequence_type is None
+        and validation.sequence_type_report.detected_type == "mixed"
+    ):
         raise InvalidAlignmentError(
             "FASTA repair requires an explicit sequence_type when raw records carry conflicting sequence-type signals"
         )
-    illegal_record_indices = {
-        row.record_index for row in validation.illegal_characters
-    }
+    illegal_record_indices = {row.record_index for row in validation.illegal_characters}
     empty_record_indices = {row.record_index for row in validation.empty_sequences}
     mismatched_record_indices: set[int] = set()
     if remove_invalid_records and sequence_type is not None:
@@ -3016,7 +3014,9 @@ def repair_fasta_input(
     if remove_invalid_records and removed_records:
         warnings.append("repair removed invalid sequence records")
     if mismatched_record_indices:
-        warnings.append("repair removed records incompatible with the declared sequence type")
+        warnings.append(
+            "repair removed records incompatible with the declared sequence type"
+        )
     if normalize_identifiers and normalized_identifiers:
         warnings.append("repair normalized FASTA identifiers")
     return retained_records, FastaRepairReport(

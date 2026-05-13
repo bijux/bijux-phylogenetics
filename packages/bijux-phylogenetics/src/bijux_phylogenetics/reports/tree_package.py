@@ -11,7 +11,11 @@ from bijux_phylogenetics.branch_lengths import (
     BranchLengthDistributionReport,
     analyze_branch_length_distribution,
 )
-from bijux_phylogenetics.clades import CladeTableReport, CladeTableRow, extract_tree_clades
+from bijux_phylogenetics.clades import (
+    CladeTableReport,
+    CladeTableRow,
+    extract_tree_clades,
+)
 from bijux_phylogenetics.diagnostics.validation import (
     TreeForensicReport,
     TreeInspectionReport,
@@ -257,9 +261,7 @@ def _render_support_table(rows: list[TreeSupportRow]) -> str:
         "<table><thead><tr>"
         "<th>node kind</th><th>node</th><th>support</th><th>support fraction</th>"
         "<th>support class</th><th>descendant taxa</th>"
-        "</tr></thead><tbody>"
-        + "".join(table_rows)
-        + "</tbody></table>"
+        "</tr></thead><tbody>" + "".join(table_rows) + "</tbody></table>"
     )
 
 
@@ -281,9 +283,7 @@ def _render_clade_table(rows: list[CladeTableRow]) -> str:
         "<table><thead><tr>"
         "<th>node kind</th><th>clade</th><th>taxa</th><th>support</th>"
         "<th>branch length</th><th>root depth</th>"
-        "</tr></thead><tbody>"
-        + "".join(table_rows)
-        + "</tbody></table>"
+        "</tr></thead><tbody>" + "".join(table_rows) + "</tbody></table>"
     )
 
 

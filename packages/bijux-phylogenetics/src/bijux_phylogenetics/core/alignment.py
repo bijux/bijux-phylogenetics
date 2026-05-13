@@ -119,7 +119,7 @@ class FastaInputValidationReport:
     duplicate_identifiers: list[FastaDuplicateIdentifier]
     illegal_characters: list[FastaIllegalCharacter]
     empty_sequences: list[FastaEmptySequence]
-    length_outliers: list["SequenceLengthOutlier"]
+    length_outliers: list[SequenceLengthOutlier]
     warnings: list[str]
 
 

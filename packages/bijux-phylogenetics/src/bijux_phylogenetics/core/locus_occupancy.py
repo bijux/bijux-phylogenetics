@@ -10,6 +10,8 @@ from bijux_phylogenetics.core.partitions import (
     parse_locus_partitions,
     slice_partition_sequence,
     validate_locus_partitions,
+)
+from bijux_phylogenetics.core.partitions import (
     write_locus_partitions as _write_locus_partitions,
 )
 from bijux_phylogenetics.errors import InvalidAlignmentError, InvalidPartitionError
@@ -504,7 +506,9 @@ def filter_locus_occupancy(
                 low_coverage_loci=filtered_taxa_report.low_coverage_loci,
                 retained_loci=retained_locus_names,
                 removed_loci=[
-                    locus for locus in current_loci if locus not in set(retained_locus_names)
+                    locus
+                    for locus in current_loci
+                    if locus not in set(retained_locus_names)
                 ],
             )
         )

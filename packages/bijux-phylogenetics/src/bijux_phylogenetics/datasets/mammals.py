@@ -31,9 +31,9 @@ from bijux_phylogenetics.comparative import (
     write_brownian_trait_evolution_summary_table,
     write_ou_trait_evolution_exclusion_table,
     write_ou_trait_evolution_summary_table,
+    write_pgls_lambda_profile_table,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
-    write_pgls_lambda_profile_table,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 
@@ -163,7 +163,9 @@ def export_primate_comparative_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
     tree_path = shutil.copy2(dataset.tree_path, destination / "tree.nwk")
     traits_path = shutil.copy2(dataset.traits_path, destination / "traits.csv")
     expected_output_root = destination / "expected"
@@ -241,7 +243,9 @@ def write_primate_comparative_workflow_bundle(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
 
-    summary_path = _write_workflow_summary_table(output_root / "workflow-summary.tsv", report)
+    summary_path = _write_workflow_summary_table(
+        output_root / "workflow-summary.tsv", report
+    )
     pgls_lambda_profile_path = write_pgls_lambda_profile_table(
         output_root / "pgls-lambda-profile.tsv",
         report.pgls.lambda_fit,
@@ -274,9 +278,11 @@ def write_primate_comparative_workflow_bundle(
         output_root / "continuous-ancestral-summary.tsv",
         report.continuous_ancestral,
     )
-    continuous_ancestral_uncertainty_path = write_continuous_ancestral_uncertainty_table(
-        output_root / "continuous-ancestral-uncertainty.tsv",
-        report.continuous_ancestral,
+    continuous_ancestral_uncertainty_path = (
+        write_continuous_ancestral_uncertainty_table(
+            output_root / "continuous-ancestral-uncertainty.tsv",
+            report.continuous_ancestral,
+        )
     )
     continuous_ancestral_exclusion_path = write_continuous_ancestral_exclusion_table(
         output_root / "continuous-ancestral-excluded.tsv",

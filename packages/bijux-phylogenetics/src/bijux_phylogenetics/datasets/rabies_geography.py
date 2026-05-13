@@ -113,8 +113,9 @@ class RabiesGeographicTransitionPanelDemoResult:
     overview_path: Path
 
 
-def load_rabies_geographic_transition_panel_dataset(
-    ) -> RabiesGeographicTransitionPanelDataset:
+def load_rabies_geographic_transition_panel_dataset() -> (
+    RabiesGeographicTransitionPanelDataset
+):
     """Expose the packaged rabies geography panel as a first-class surface."""
     dataset_root = _resource_root()
     sequences_path = dataset_root / "sequences.fasta"
@@ -153,8 +154,12 @@ def export_rabies_geographic_transition_panel_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
-    sequences_path = shutil.copy2(dataset.sequences_path, destination / "sequences.fasta")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
+    sequences_path = shutil.copy2(
+        dataset.sequences_path, destination / "sequences.fasta"
+    )
     tree_path = shutil.copy2(dataset.tree_path, destination / "tree.nwk")
     regions_path = shutil.copy2(dataset.regions_path, destination / "regions.csv")
     expected_output_root = destination / "expected"
@@ -169,8 +174,9 @@ def export_rabies_geographic_transition_panel_dataset(
     )
 
 
-def run_rabies_geographic_transition_panel_workflow(
-) -> RabiesGeographicTransitionPanelWorkflowReport:
+def run_rabies_geographic_transition_panel_workflow() -> (
+    RabiesGeographicTransitionPanelWorkflowReport
+):
     """Run the owned biogeography workflow over the packaged rabies panel."""
     dataset = load_rabies_geographic_transition_panel_dataset()
     geographic_state_model = summarize_geographic_state_model(
@@ -280,7 +286,9 @@ def run_rabies_geographic_transition_panel_demo(
         output_root / "workflow",
         report,
     )
-    overview_path = _write_overview(output_root / "overview.md", report, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", report, workflow_bundle
+    )
     return RabiesGeographicTransitionPanelDemoResult(
         output_root=output_root,
         dataset=report.dataset,

@@ -120,7 +120,9 @@ def write_ou_trait_evolution_summary_table(
     path: Path, report: OUTraitEvolutionSummaryReport
 ) -> Path:
     """Write one summary ledger for an OU trait-evolution fit."""
-    interval_by_name = {interval.name: interval for interval in report.confidence_intervals}
+    interval_by_name = {
+        interval.name: interval for interval in report.confidence_intervals
+    }
     alpha_interval = interval_by_name.get("alpha")
     theta_interval = interval_by_name.get("theta")
     sigma_interval = interval_by_name.get("sigma_squared")
@@ -196,7 +198,9 @@ def write_ou_trait_evolution_exclusion_table(
     return write_taxon_rows(
         path,
         columns=["taxon", "reason"],
-        rows=[{"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa],
+        rows=[
+            {"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa
+        ],
     )
 
 

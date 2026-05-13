@@ -85,7 +85,9 @@ def summarize_brownian_covariance_pgls(
     taxa = list(input_report.analysis_taxa)
     raw_covariance = build_brownian_covariance_matrix(dataset.tree, taxa)
     root_depths = tip_root_depths(dataset.tree, taxa)
-    minimum_branch_length, maximum_branch_length = _branch_length_range(dataset.tree_path)
+    minimum_branch_length, maximum_branch_length = _branch_length_range(
+        dataset.tree_path
+    )
     raw_log_determinant = _validate_raw_brownian_covariance(
         tree_path=tree_path,
         taxa=taxa,
@@ -206,9 +208,7 @@ def _validate_raw_brownian_covariance(
         )
     diagonal = [covariance_matrix[index][index] for index in range(len(taxa))]
     non_positive_taxa = [
-        taxon
-        for taxon, value in zip(taxa, diagonal, strict=True)
-        if value <= 0.0
+        taxon for taxon, value in zip(taxa, diagonal, strict=True) if value <= 0.0
     ]
     if non_positive_taxa:
         raise ComparativeMethodError(

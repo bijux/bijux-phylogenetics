@@ -5,7 +5,10 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.common import load_discrete_dataset, write_ancestral_rows
+from bijux_phylogenetics.ancestral.common import (
+    load_discrete_dataset,
+    write_ancestral_rows,
+)
 from bijux_phylogenetics.ancestral.discrete import (
     DiscreteAncestralReport,
     _resolve_root_prior,
@@ -116,7 +119,9 @@ def summarize_ancestral_root_sensitivity(
     ]
     if fixed_root_state is not None:
         assumption_specs.append(("fixed_root_state", "fixed", fixed_root_state))
-    assumption_reports: list[tuple[RootSensitivityAssumptionRow, DiscreteAncestralReport]] = []
+    assumption_reports: list[
+        tuple[RootSensitivityAssumptionRow, DiscreteAncestralReport]
+    ] = []
     warnings = list(dataset.warnings)
     if fixed_root_state is not None:
         warnings.append(
@@ -346,7 +351,9 @@ def _build_root_sensitivity_node_rows(
         for estimate in report.estimates:
             if estimate.is_tip:
                 continue
-            node_to_estimates.setdefault(estimate.node, {})[assumption_row.assumption_id] = estimate
+            node_to_estimates.setdefault(estimate.node, {})[
+                assumption_row.assumption_id
+            ] = estimate
             descendant_taxa[estimate.node] = estimate.descendant_taxa
     rows: list[RootSensitivityNodeRow] = []
     for node, estimates_by_assumption in sorted(node_to_estimates.items()):
@@ -369,9 +376,7 @@ def _build_root_sensitivity_node_rows(
         max_confidence_delta = max(confidence_values) - min(confidence_values)
         max_entropy_delta = max(entropy_values) - min(entropy_values)
         sensitivity_score = (
-            float(state_changed)
-            + max_confidence_delta
-            + max_entropy_delta
+            float(state_changed) + max_confidence_delta + max_entropy_delta
         )
         if state_changed:
             stability_class = "root_sensitive_state"
@@ -406,7 +411,9 @@ def _build_root_sensitivity_node_rows(
 
 
 def _root_estimate(report: DiscreteAncestralReport):
-    internal_estimates = [estimate for estimate in report.estimates if not estimate.is_tip]
+    internal_estimates = [
+        estimate for estimate in report.estimates if not estimate.is_tip
+    ]
     return max(
         internal_estimates,
         key=lambda estimate: (len(estimate.descendant_taxa), estimate.node),
@@ -426,21 +433,18 @@ def _root_prior_distribution(
         mode=root_prior_mode,
         fixed_root_state=fixed_root_state,
     )
-    return {
-        state: float(root_prior[index])
-        for index, state in enumerate(state_order)
-    }
+    return {state: float(root_prior[index]) for index, state in enumerate(state_order)}
 
 
 def _estimate_entropy(state_probabilities: dict[str, float]) -> float:
     positive_probabilities = [
-        probability
-        for probability in state_probabilities.values()
-        if probability > 0.0
+        probability for probability in state_probabilities.values() if probability > 0.0
     ]
     if len(positive_probabilities) <= 1:
         return 0.0
-    return -sum(probability * math.log2(probability) for probability in positive_probabilities)
+    return -sum(
+        probability * math.log2(probability) for probability in positive_probabilities
+    )
 
 
 def _format_optional_float(value: float | None) -> str:

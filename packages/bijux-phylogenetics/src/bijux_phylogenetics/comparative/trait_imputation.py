@@ -423,14 +423,17 @@ def _build_imputation_rows(
         if target is None:
             continue
         target_index = model_taxa.index(taxon)
-        cross_covariance = [covariance[target_index][index] for index in observed_indices]
+        cross_covariance = [
+            covariance[target_index][index] for index in observed_indices
+        ]
         predicted_value = root_state + dot(cross_covariance, weighted_observed)
         weighted_cross = matrix_vector_multiply(
             inverse_observed_covariance,
             cross_covariance,
         )
         conditional_variance = max(
-            covariance[target_index][target_index] - dot(cross_covariance, weighted_cross),
+            covariance[target_index][target_index]
+            - dot(cross_covariance, weighted_cross),
             0.0,
         )
         conditional_standard_error = math.sqrt(max(conditional_variance, 1e-12))

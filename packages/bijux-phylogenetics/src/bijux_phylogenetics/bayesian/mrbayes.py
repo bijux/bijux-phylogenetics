@@ -15,8 +15,8 @@ from bijux_phylogenetics.bayesian.burnin import (
 )
 from bijux_phylogenetics.bayesian.diagnostics import (
     TraceConvergenceReport,
-    summarize_trace_parameters,
     summarize_trace_convergence,
+    summarize_trace_parameters,
 )
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.core.metadata import write_taxon_rows
@@ -37,9 +37,9 @@ from bijux_phylogenetics.engines.common import (
 )
 from bijux_phylogenetics.engines.workflows import (
     EngineWorkflowReport,
-    _resolve_incomplete_workflow_state,
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
+    _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
 )
 from bijux_phylogenetics.errors import EngineWorkflowError
@@ -57,9 +57,7 @@ _MRBAYES_TREE_PATTERN = re.compile(
 )
 _MRBAYES_TREE_GENERATION_PATTERN = re.compile(r"(\d+)$")
 _MRBAYES_PROBABILITY_PATTERN = re.compile(r"prob=([0-9.eE+-]+)")
-_MRBAYES_PROBABILITY_PERCENT_PATTERN = re.compile(
-    r'prob\(percent\)="([0-9.eE+-]+)"'
-)
+_MRBAYES_PROBABILITY_PERCENT_PATTERN = re.compile(r'prob\(percent\)="([0-9.eE+-]+)"')
 
 
 @dataclass(slots=True)
@@ -278,7 +276,9 @@ def _parse_nexus_translate_map(text: str) -> dict[str, str]:
     remainder = text[start + len(marker) :]
     end = remainder.find(";")
     if end == -1:
-        raise EngineWorkflowError("MrBayes tree file has an unterminated translate block")
+        raise EngineWorkflowError(
+            "MrBayes tree file has an unterminated translate block"
+        )
     block = remainder[:end]
     mapping: dict[str, str] = {}
     for entry in _split_nexus_translate_entries(block):
@@ -750,7 +750,9 @@ def parse_mrbayes_posterior_tree_samples(path: Path) -> MrBayesPosteriorTreeSetR
     )
 
 
-def parse_mrbayes_consensus_tree(path: Path) -> tuple[PhyloTree, MrBayesConsensusTreeReport]:
+def parse_mrbayes_consensus_tree(
+    path: Path,
+) -> tuple[PhyloTree, MrBayesConsensusTreeReport]:
     """Parse a MrBayes consensus tree with posterior-probability annotations."""
     text = path.read_text(encoding="utf-8")
     translation = _parse_nexus_translate_map(text)
@@ -764,7 +766,8 @@ def parse_mrbayes_consensus_tree(path: Path) -> tuple[PhyloTree, MrBayesConsensu
         tree_text, translation=translation
     )
     posterior_probabilities = [
-        float(match.group(1)) for match in _MRBAYES_PROBABILITY_PATTERN.finditer(tree_text)
+        float(match.group(1))
+        for match in _MRBAYES_PROBABILITY_PATTERN.finditer(tree_text)
     ]
     posterior_probability_percents = [
         float(match.group(1))
@@ -894,9 +897,7 @@ def write_mrbayes_parameter_summary_table(
             {
                 "parameter": summary.parameter,
                 "sample_count": str(summary.sample_count),
-                "effective_sample_size": format(
-                    summary.effective_sample_size, ".15g"
-                ),
+                "effective_sample_size": format(summary.effective_sample_size, ".15g"),
                 "mean": format(summary.mean, ".15g"),
                 "median": format(summary.median, ".15g"),
                 "standard_deviation": format(summary.standard_deviation, ".15g"),
@@ -1065,7 +1066,9 @@ def assess_mrbayes_burnin_sensitivity(
                 trace_path,
                 burnin_fraction=fraction,
             )
-            parameter_summaries_by_fraction[fraction] = trace_summary.parameter_summaries
+            parameter_summaries_by_fraction[fraction] = (
+                trace_summary.parameter_summaries
+            )
             kept_row_count = trace_summary.kept_row_count
             first_kept_generation = trace_summary.first_kept_generation
             last_kept_generation = trace_summary.last_kept_generation
@@ -1095,7 +1098,9 @@ def assess_mrbayes_burnin_sensitivity(
         ):
             changed_consensus_count += 1
         previous_consensus = posterior_summary.consensus_newick
-    parameter_shifts = summarize_burnin_parameter_shifts(parameter_summaries_by_fraction)
+    parameter_shifts = summarize_burnin_parameter_shifts(
+        parameter_summaries_by_fraction
+    )
     clade_shifts = summarize_burnin_clade_shifts(clade_frequencies_by_fraction)
     warnings: list[str] = []
     if changed_consensus_count:

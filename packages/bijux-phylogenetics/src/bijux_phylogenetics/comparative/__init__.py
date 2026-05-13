@@ -1,43 +1,5 @@
 """Comparative-analysis methods and helpers."""
 
-from .common import (
-    ComparativeDataset,
-    ComparativeReadinessReport,
-    NumericTraitSummary,
-    summarize_numeric_trait,
-    summarize_numeric_trait_readiness,
-)
-from .independent_contrasts import (
-    IndependentContrastRegressionReport,
-    IndependentContrastRegressionRow,
-    summarize_independent_contrast_regression,
-    write_independent_contrast_regression_table,
-    write_independent_contrast_table,
-)
-from .phylogenetic_signal import (
-    PhylogeneticSignalSummaryReport,
-    summarize_phylogenetic_signal,
-    write_phylogenetic_signal_permutation_table,
-    write_phylogenetic_signal_summary_table,
-)
-from .correlated_trait_evolution import (
-    CorrelatedTraitComparisonRow,
-    CorrelatedTraitEvolutionReport,
-    CorrelatedTraitExclusion,
-    CorrelatedTraitObservationRow,
-    summarize_correlated_trait_evolution,
-    write_correlated_trait_comparison_table,
-    write_correlated_trait_exclusion_table,
-    write_correlated_trait_observation_table,
-    write_correlated_trait_summary_table,
-)
-from .brownian_trait_evolution import (
-    BrownianTraitEvolutionExclusion,
-    BrownianTraitEvolutionSummaryReport,
-    summarize_brownian_trait_evolution,
-    write_brownian_trait_evolution_exclusion_table,
-    write_brownian_trait_evolution_summary_table,
-)
 from .brownian_regime_rates import (
     BrownianRegimeBranchRow,
     BrownianRegimeExclusion,
@@ -53,20 +15,56 @@ from .brownian_regime_rates import (
     write_brownian_regime_rate_table,
     write_brownian_regime_summary_table,
 )
-from .trait_regime_mapping import (
-    BranchIdentityMetadata,
-    TraitRegimeBranchRow,
-    TraitRegimeExclusion,
-    TraitRegimeMappingReport,
-    TraitRegimeNodeRow,
-    build_branch_identity_lookup,
-    render_trait_regime_map,
-    resolve_branch_regime_id_column,
-    summarize_trait_regime_mapping,
-    write_trait_regime_branch_table,
-    write_trait_regime_exclusion_table,
-    write_trait_regime_node_table,
-    write_trait_regime_summary_table,
+from .brownian_trait_evolution import (
+    BrownianTraitEvolutionExclusion,
+    BrownianTraitEvolutionSummaryReport,
+    summarize_brownian_trait_evolution,
+    write_brownian_trait_evolution_exclusion_table,
+    write_brownian_trait_evolution_summary_table,
+)
+from .clade_residuals import (
+    ComparativeCladeResidualReport,
+    ComparativeResidualCladeRow,
+    ComparativeResidualTaxonRow,
+    analyze_comparative_residual_clades,
+    write_comparative_residual_clade_table,
+    write_comparative_residual_taxon_table,
+)
+from .clade_stability import (
+    ComparativeCladeCoefficientChangeRow,
+    ComparativeCladeStabilityReport,
+    ComparativeCladeStabilityRow,
+    analyze_comparative_clade_stability,
+    write_comparative_clade_coefficient_change_table,
+    write_comparative_clade_stability_table,
+)
+from .clade_traits import (
+    CladeTraitExclusion,
+    CladeTraitRow,
+    CladeTraitStateCount,
+    CladeTraitSummaryReport,
+    summarize_clade_traits,
+    write_clade_trait_clade_table,
+    write_clade_trait_exclusion_table,
+    write_clade_trait_summary_table,
+)
+from .common import (
+    ComparativeDataset,
+    ComparativeReadinessReport,
+    NumericTraitSummary,
+    summarize_numeric_trait,
+    summarize_numeric_trait_readiness,
+)
+from .correlated_trait_evolution import (
+    CorrelatedTraitComparisonRow,
+    CorrelatedTraitEvolutionReport,
+    CorrelatedTraitExclusion,
+    CorrelatedTraitObservationRow,
+    summarize_correlated_trait_evolution,
+    write_correlated_trait_comparison_table,
+    write_correlated_trait_exclusion_table,
+    write_correlated_trait_observation_table,
+    write_correlated_trait_summary_table,
 )
 from .early_burst_trait_evolution import (
     EarlyBurstIdentifiabilityWarning,
@@ -79,52 +77,6 @@ from .early_burst_trait_evolution import (
     write_early_burst_trait_evolution_exclusion_table,
     write_early_burst_trait_evolution_summary_table,
 )
-from .trait_rate_through_time import (
-    TraitRateThroughTimeExclusion,
-    TraitRateThroughTimeIntervalRow,
-    TraitRateThroughTimeSummaryReport,
-    summarize_trait_rate_through_time,
-    write_trait_rate_through_time_exclusion_table,
-    write_trait_rate_through_time_interval_table,
-    write_trait_rate_through_time_summary_table,
-)
-from .clade_traits import (
-    CladeTraitExclusion,
-    CladeTraitRow,
-    CladeTraitStateCount,
-    CladeTraitSummaryReport,
-    summarize_clade_traits,
-    write_clade_trait_clade_table,
-    write_clade_trait_exclusion_table,
-    write_clade_trait_summary_table,
-)
-from .trait_outliers import (
-    TraitOutlierExclusion,
-    TraitOutlierSummaryReport,
-    TraitOutlierTaxonRow,
-    summarize_trait_outliers,
-    write_trait_outlier_exclusion_table,
-    write_trait_outlier_summary_table,
-    write_trait_outlier_taxon_table,
-)
-from .trait_imputation import (
-    TraitImputationExclusion,
-    TraitImputationHoldoutRow,
-    TraitImputationRow,
-    TraitImputationSummaryReport,
-    summarize_trait_imputation,
-    write_trait_imputation_exclusion_table,
-    write_trait_imputation_holdout_table,
-    write_trait_imputation_summary_table,
-    write_trait_imputation_table,
-)
-from .ou_trait_evolution import (
-    OUTraitEvolutionExclusion,
-    OUTraitEvolutionSummaryReport,
-    summarize_ou_trait_evolution,
-    write_ou_trait_evolution_exclusion_table,
-    write_ou_trait_evolution_summary_table,
-)
 from .evolutionary_modes import (
     ComparativeTreeRescalingReport,
     ContinuousEvolutionaryModeComparisonReport,
@@ -136,6 +88,13 @@ from .evolutionary_modes import (
     rescale_tree_early_burst,
     rescale_tree_ornstein_uhlenbeck,
     transform_tree_for_evolutionary_mode,
+)
+from .independent_contrasts import (
+    IndependentContrastRegressionReport,
+    IndependentContrastRegressionRow,
+    summarize_independent_contrast_regression,
+    write_independent_contrast_regression_table,
+    write_independent_contrast_table,
 )
 from .models import (
     BrownianMotionFitReport,
@@ -168,35 +127,98 @@ from .models import (
 )
 from .multivariate_regression import (
     MultivariateComparativeRegressionReport,
-    MultivariateResidualCorrelationRow,
     MultivariateResidualAssociationRow,
+    MultivariateResidualCorrelationRow,
     MultivariateResidualCovarianceRow,
     MultivariateResponseCoefficientRow,
     MultivariateResponseModelRow,
     MultivariateTaxonExclusion,
     run_multivariate_comparative_regression,
     write_multivariate_excluded_taxa_table,
-    write_multivariate_response_coefficient_table,
-    write_multivariate_response_model_table,
     write_multivariate_residual_association_table,
     write_multivariate_residual_correlation_table,
     write_multivariate_residual_covariance_table,
+    write_multivariate_response_coefficient_table,
+    write_multivariate_response_model_table,
 )
-from .clade_residuals import (
-    ComparativeCladeResidualReport,
-    ComparativeResidualCladeRow,
-    ComparativeResidualTaxonRow,
-    analyze_comparative_residual_clades,
-    write_comparative_residual_clade_table,
-    write_comparative_residual_taxon_table,
+from .ou_trait_evolution import (
+    OUTraitEvolutionExclusion,
+    OUTraitEvolutionSummaryReport,
+    summarize_ou_trait_evolution,
+    write_ou_trait_evolution_exclusion_table,
+    write_ou_trait_evolution_summary_table,
 )
-from .clade_stability import (
-    ComparativeCladeCoefficientChangeRow,
-    ComparativeCladeStabilityReport,
-    ComparativeCladeStabilityRow,
-    analyze_comparative_clade_stability,
-    write_comparative_clade_coefficient_change_table,
-    write_comparative_clade_stability_table,
+from .pgls import (
+    ComparativeFormulaSpecification,
+    ComparativeHypothesisTestRow,
+    ComparativeMultipleTestingReport,
+    PGLSCoefficient,
+    PGLSDiagnosticsReport,
+    PGLSFittedObservation,
+    PGLSFormulaAudit,
+    PGLSInputReport,
+    PGLSInteractionAudit,
+    PGLSLambdaFitReport,
+    PGLSLambdaProfileRow,
+    PGLSLeverageRow,
+    PGLSModelMatrixReport,
+    PGLSModelMatrixRow,
+    PGLSPredictorClassification,
+    PGLSResidualOutlier,
+    PGLSResult,
+    PGLSTaxonExclusion,
+    build_pgls_model_matrix,
+    inspect_pgls_inputs,
+    run_pgls,
+    run_pgls_multiple_testing,
+    write_pgls_model_matrix_table,
+)
+from .pgls_brownian_covariance import (
+    BrownianCovariancePGLSReport,
+    BrownianCovarianceRow,
+    summarize_brownian_covariance_pgls,
+    write_brownian_covariance_table,
+)
+from .pgls_categorical_contrasts import (
+    PGLSCategoricalContrastReport,
+    PGLSCategoricalContrastRow,
+    summarize_pgls_categorical_contrasts,
+    write_pgls_categorical_contrast_table,
+)
+from .pgls_interaction_coefficients import (
+    PGLSInteractionCoefficientReport,
+    PGLSInteractionCoefficientRow,
+    summarize_pgls_interaction_coefficients,
+    write_pgls_interaction_coefficient_table,
+)
+from .pgls_lambda_fit import (
+    summarize_pgls_lambda_fit,
+    write_pgls_lambda_profile_table,
+)
+from .pgls_ou_covariance import (
+    OUCovarianceModelFit,
+    OUCovariancePGLSReport,
+    OUCovarianceRow,
+    OUPGLSAlphaProfileRow,
+    summarize_ou_covariance_pgls,
+    write_ou_alpha_profile_table,
+    write_ou_covariance_table,
+)
+from .phylogenetic_logistic import (
+    PhylogeneticLogisticCoefficient,
+    PhylogeneticLogisticFittedRow,
+    PhylogeneticLogisticReport,
+    PhylogeneticLogisticWarning,
+    summarize_phylogenetic_logistic,
+    write_phylogenetic_logistic_coefficient_table,
+    write_phylogenetic_logistic_excluded_taxa_table,
+    write_phylogenetic_logistic_fitted_table,
+)
+from .phylogenetic_signal import (
+    PhylogeneticSignalSummaryReport,
+    summarize_phylogenetic_signal,
+    write_phylogenetic_signal_permutation_table,
+    write_phylogenetic_signal_summary_table,
 )
 from .posterior_tree_pgls import (
     PosteriorTreePGLSCoefficientRow,
@@ -217,88 +239,6 @@ from .regression_model_selection import (
     write_comparative_regression_excluded_taxa_table,
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
-)
-from .phylogenetic_logistic import (
-    PhylogeneticLogisticCoefficient,
-    PhylogeneticLogisticFittedRow,
-    PhylogeneticLogisticReport,
-    PhylogeneticLogisticWarning,
-    summarize_phylogenetic_logistic,
-    write_phylogenetic_logistic_coefficient_table,
-    write_phylogenetic_logistic_excluded_taxa_table,
-    write_phylogenetic_logistic_fitted_table,
-)
-from .pgls import (
-    ComparativeFormulaSpecification,
-    ComparativeHypothesisTestRow,
-    ComparativeMultipleTestingReport,
-    PGLSLambdaFitReport,
-    PGLSLambdaProfileRow,
-    PGLSModelMatrixReport,
-    PGLSModelMatrixRow,
-    PGLSCoefficient,
-    PGLSDiagnosticsReport,
-    PGLSFittedObservation,
-    PGLSFormulaAudit,
-    PGLSInputReport,
-    PGLSInteractionAudit,
-    PGLSLeverageRow,
-    PGLSPredictorClassification,
-    PGLSResidualOutlier,
-    PGLSResult,
-    PGLSTaxonExclusion,
-    build_pgls_model_matrix,
-    inspect_pgls_inputs,
-    run_pgls,
-    run_pgls_multiple_testing,
-    write_pgls_model_matrix_table,
-)
-from .pgls_lambda_fit import (
-    summarize_pgls_lambda_fit,
-    write_pgls_lambda_profile_table,
-)
-from .pgls_brownian_covariance import (
-    BrownianCovariancePGLSReport,
-    BrownianCovarianceRow,
-    summarize_brownian_covariance_pgls,
-    write_brownian_covariance_table,
-)
-from .pgls_ou_covariance import (
-    OUCovarianceModelFit,
-    OUCovariancePGLSReport,
-    OUCovarianceRow,
-    OUPGLSAlphaProfileRow,
-    summarize_ou_covariance_pgls,
-    write_ou_alpha_profile_table,
-    write_ou_covariance_table,
-)
-from .pgls_categorical_contrasts import (
-    PGLSCategoricalContrastReport,
-    PGLSCategoricalContrastRow,
-    summarize_pgls_categorical_contrasts,
-    write_pgls_categorical_contrast_table,
-)
-from .pgls_interaction_coefficients import (
-    PGLSInteractionCoefficientReport,
-    PGLSInteractionCoefficientRow,
-    summarize_pgls_interaction_coefficients,
-    write_pgls_interaction_coefficient_table,
-)
-from .reporting import (
-    ComparativeAuditRow,
-    ComparativeCoefficientDeltaRow,
-    ComparativeInfluenceReport,
-    ComparativeMethodReport,
-    ComparativeModelSnapshot,
-    ComparativePredictorInfluenceRow,
-    ComparativePruningComparisonReport,
-    ComparativeTaxonInfluenceRow,
-    ComparativeTreeComparisonReport,
-    build_comparative_method_report,
-    build_trait_influence_report,
-    compare_comparative_results_across_pruning,
-    compare_comparative_results_across_trees,
-    write_comparative_method_report,
 )
 from .report_package import (
     ComparativeAnalysisSummaryRow,
@@ -324,6 +264,22 @@ from .report_package import (
     write_comparative_signal_table,
     write_comparative_summary_table,
 )
+from .reporting import (
+    ComparativeAuditRow,
+    ComparativeCoefficientDeltaRow,
+    ComparativeInfluenceReport,
+    ComparativeMethodReport,
+    ComparativeModelSnapshot,
+    ComparativePredictorInfluenceRow,
+    ComparativePruningComparisonReport,
+    ComparativeTaxonInfluenceRow,
+    ComparativeTreeComparisonReport,
+    build_comparative_method_report,
+    build_trait_influence_report,
+    compare_comparative_results_across_pruning,
+    compare_comparative_results_across_trees,
+    write_comparative_method_report,
+)
 from .signal import (
     BlombergKReport,
     IndependentContrast,
@@ -335,6 +291,50 @@ from .signal import (
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
+)
+from .trait_imputation import (
+    TraitImputationExclusion,
+    TraitImputationHoldoutRow,
+    TraitImputationRow,
+    TraitImputationSummaryReport,
+    summarize_trait_imputation,
+    write_trait_imputation_exclusion_table,
+    write_trait_imputation_holdout_table,
+    write_trait_imputation_summary_table,
+    write_trait_imputation_table,
+)
+from .trait_outliers import (
+    TraitOutlierExclusion,
+    TraitOutlierSummaryReport,
+    TraitOutlierTaxonRow,
+    summarize_trait_outliers,
+    write_trait_outlier_exclusion_table,
+    write_trait_outlier_summary_table,
+    write_trait_outlier_taxon_table,
+)
+from .trait_rate_through_time import (
+    TraitRateThroughTimeExclusion,
+    TraitRateThroughTimeIntervalRow,
+    TraitRateThroughTimeSummaryReport,
+    summarize_trait_rate_through_time,
+    write_trait_rate_through_time_exclusion_table,
+    write_trait_rate_through_time_interval_table,
+    write_trait_rate_through_time_summary_table,
+)
+from .trait_regime_mapping import (
+    BranchIdentityMetadata,
+    TraitRegimeBranchRow,
+    TraitRegimeExclusion,
+    TraitRegimeMappingReport,
+    TraitRegimeNodeRow,
+    build_branch_identity_lookup,
+    render_trait_regime_map,
+    resolve_branch_regime_id_column,
+    summarize_trait_regime_mapping,
+    write_trait_regime_branch_table,
+    write_trait_regime_exclusion_table,
+    write_trait_regime_node_table,
+    write_trait_regime_summary_table,
 )
 
 __all__ = [

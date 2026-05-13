@@ -82,10 +82,15 @@ def summarize_independent_contrast_regression(
         raise ComparativeMethodError(
             "independent contrast regression requires non-zero predictor contrasts"
         )
-    slope = sum(
-        predictor * response
-        for predictor, response in zip(predictor_values, response_values, strict=True)
-    ) / sum_xx
+    slope = (
+        sum(
+            predictor * response
+            for predictor, response in zip(
+                predictor_values, response_values, strict=True
+            )
+        )
+        / sum_xx
+    )
     fitted_values = [slope * value for value in predictor_values]
     residuals = [
         response - fitted

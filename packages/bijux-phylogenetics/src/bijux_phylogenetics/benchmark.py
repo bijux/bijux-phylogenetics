@@ -8,15 +8,17 @@ import tracemalloc
 
 from bijux_phylogenetics.branch_lengths import analyze_branch_length_distribution
 from bijux_phylogenetics.clades import extract_tree_clades
-from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.compare.topology import compare_tree_paths
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.engines.large_alignment_inference import run_large_alignment_inference
+from bijux_phylogenetics.engines.large_alignment_inference import (
+    run_large_alignment_inference,
+)
 from bijux_phylogenetics.io.fasta import build_alignment_quality_report
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.simulation import (
@@ -596,11 +598,19 @@ def benchmark_large_dataset_stress_suite(
     with tempfile.TemporaryDirectory(prefix=f"bijux-stress-{config.tier}-") as tmpdir:
         root = Path(tmpdir)
         workloads = [
-            lambda: _large_alignment_stress_payload(root=root / "alignment", config=config),
-            lambda: _supermatrix_stress_payload(root=root / "supermatrix", config=config),
+            lambda: _large_alignment_stress_payload(
+                root=root / "alignment", config=config
+            ),
+            lambda: _supermatrix_stress_payload(
+                root=root / "supermatrix", config=config
+            ),
             lambda: _tree_set_stress_payload(root=root / "tree-set", config=config),
-            lambda: _comparative_stress_payload(root=root / "comparative", config=config),
-            lambda: _table_generation_stress_payload(root=root / "tables", config=config),
+            lambda: _comparative_stress_payload(
+                root=root / "comparative", config=config
+            ),
+            lambda: _table_generation_stress_payload(
+                root=root / "tables", config=config
+            ),
         ]
         for workload in workloads:
             payload, runtime_seconds, peak_memory_bytes, memory_observation_kind = (

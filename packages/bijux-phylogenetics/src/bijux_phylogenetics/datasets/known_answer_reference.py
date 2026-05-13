@@ -23,7 +23,10 @@ from bijux_phylogenetics.comparative.brownian_trait_evolution import (
     summarize_brownian_trait_evolution,
     write_brownian_trait_evolution_summary_table,
 )
-from bijux_phylogenetics.compare.topology import TreeComparisonReport, compare_tree_paths
+from bijux_phylogenetics.compare.topology import (
+    TreeComparisonReport,
+    compare_tree_paths,
+)
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.distance import DistanceTreeBuildReport, build_distance_tree
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
@@ -240,7 +243,9 @@ def export_known_answer_reference_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
     true_tree_path = shutil.copy2(dataset.true_tree_path, destination / "true-tree.nwk")
     alignment_path = shutil.copy2(
         dataset.alignment_path,
@@ -390,9 +395,11 @@ def write_known_answer_reference_workflow_bundle(
         output_root / "continuous-ancestral-summary.tsv",
         report.continuous_ancestral,
     )
-    continuous_ancestral_uncertainty_path = write_continuous_ancestral_uncertainty_table(
-        output_root / "continuous-ancestral-uncertainty.tsv",
-        report.continuous_ancestral,
+    continuous_ancestral_uncertainty_path = (
+        write_continuous_ancestral_uncertainty_table(
+            output_root / "continuous-ancestral-uncertainty.tsv",
+            report.continuous_ancestral,
+        )
     )
     continuous_node_recovery_path = _write_continuous_node_recovery_table(
         output_root / "continuous-node-recovery.tsv",
@@ -433,7 +440,9 @@ def write_known_answer_reference_workflow_bundle(
     )
 
 
-def run_known_answer_reference_demo(output_root: Path) -> KnownAnswerReferenceDemoResult:
+def run_known_answer_reference_demo(
+    output_root: Path,
+) -> KnownAnswerReferenceDemoResult:
     """Materialize the packaged simulation dataset and rerun the recovery outputs."""
     if output_root.exists():
         shutil.rmtree(output_root)
@@ -444,7 +453,9 @@ def run_known_answer_reference_demo(output_root: Path) -> KnownAnswerReferenceDe
         output_root / "workflow",
         report,
     )
-    overview_path = _write_overview(output_root / "overview.md", report, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", report, workflow_bundle
+    )
     return KnownAnswerReferenceDemoResult(
         output_root=output_root,
         dataset=report.dataset,
@@ -502,11 +513,7 @@ def _build_continuous_node_recovery_rows(
     true_nodes: list[KnownAnswerContinuousNodeTruth],
     report: ContinuousAncestralReport,
 ) -> list[KnownAnswerContinuousNodeRecoveryRow]:
-    truth_by_node = {
-        row.node: row
-        for row in true_nodes
-        if not row.is_tip
-    }
+    truth_by_node = {row.node: row for row in true_nodes if not row.is_tip}
     return [
         KnownAnswerContinuousNodeRecoveryRow(
             node=estimate.node,
@@ -531,11 +538,7 @@ def _build_discrete_node_recovery_rows(
     true_nodes: list[KnownAnswerDiscreteNodeTruth],
     report: DiscreteAncestralReport,
 ) -> list[KnownAnswerDiscreteNodeRecoveryRow]:
-    truth_by_node = {
-        row.node: row
-        for row in true_nodes
-        if not row.is_tip
-    }
+    truth_by_node = {row.node: row for row in true_nodes if not row.is_tip}
     return [
         KnownAnswerDiscreteNodeRecoveryRow(
             node=estimate.node,
@@ -547,7 +550,8 @@ def _build_discrete_node_recovery_rows(
                 0.0,
             ),
             confidence=estimate.confidence,
-            correct=estimate.most_likely_state == truth_by_node[estimate.node].true_state,
+            correct=estimate.most_likely_state
+            == truth_by_node[estimate.node].true_state,
             ambiguous=estimate.ambiguous,
         )
         for estimate in report.estimates
@@ -640,9 +644,7 @@ def _write_tree_recovery_table(
                 "taxon_count": str(build.taxon_count),
                 "pair_count": str(build.pair_count),
                 "rooted_topology_equal": str(topology.topology_equal).lower(),
-                "same_unrooted_topology": str(
-                    topology.same_unrooted_topology
-                ).lower(),
+                "same_unrooted_topology": str(topology.same_unrooted_topology).lower(),
                 "same_taxa_different_rooting": str(
                     topology.same_taxa_different_rooting
                 ).lower(),
@@ -751,9 +753,7 @@ def _write_discrete_node_recovery_table(
                 "descendant_taxa": ",".join(row.descendant_taxa),
                 "true_state": row.true_state,
                 "estimated_state": row.estimated_state,
-                "true_state_probability": _format_number(
-                    row.true_state_probability
-                ),
+                "true_state_probability": _format_number(row.true_state_probability),
                 "confidence": _format_number(row.confidence),
                 "correct": str(row.correct).lower(),
                 "ambiguous": str(row.ambiguous).lower(),
@@ -795,10 +795,7 @@ def _write_overview(
 def _load_true_parameter_map(path: Path) -> dict[str, str]:
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
-        return {
-            row["parameter"]: row["value"]
-            for row in reader
-        }
+        return {row["parameter"]: row["value"] for row in reader}
 
 
 def _load_true_continuous_nodes(path: Path) -> list[KnownAnswerContinuousNodeTruth]:

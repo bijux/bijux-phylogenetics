@@ -178,7 +178,9 @@ def _beta_continued_fraction(
         fraction *= d * c
 
         numerator = (
-            -(a + iteration) * (qab + iteration) * x
+            -(a + iteration)
+            * (qab + iteration)
+            * x
             / ((a + even_step) * (qap + even_step))
         )
         d = 1.0 + numerator * d

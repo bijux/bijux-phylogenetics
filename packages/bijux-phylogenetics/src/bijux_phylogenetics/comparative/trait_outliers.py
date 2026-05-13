@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 import math
+from pathlib import Path
 
 from bijux_phylogenetics.comparative._math import (
     dot,
@@ -228,9 +228,7 @@ def write_trait_outlier_summary_table(
                 "selected_mean_parameter": report.selected_mean_parameter,
                 "selected_mean_value": format(report.selected_mean_value, ".15g"),
                 "selected_alpha": _format_optional(report.selected_alpha),
-                "selected_sigma_squared": format(
-                    report.selected_sigma_squared, ".15g"
-                ),
+                "selected_sigma_squared": format(report.selected_sigma_squared, ".15g"),
                 "brownian_aicc": _format_optional(aicc_by_model.get("brownian")),
                 "ou_aicc": _format_optional(aicc_by_model.get("ou")),
                 "outlier_threshold": format(report.outlier_threshold, ".15g"),
@@ -401,12 +399,7 @@ def _scaled_selected_covariance(
         base = build_ou_covariance_matrix(tree, taxa, alpha=alpha)
     else:
         raise ValueError(f"unsupported covariance model: {model}")
-    return stable_covariance(
-        [
-            [value * sigma_squared for value in row]
-            for row in base
-        ]
-    )
+    return stable_covariance([[value * sigma_squared for value in row] for row in base])
 
 
 def _build_taxon_rows(
@@ -474,13 +467,12 @@ def _conditional_prediction(
     *,
     index: int,
 ) -> tuple[float, float]:
-    other_indices = [candidate for candidate in range(len(values)) if candidate != index]
+    other_indices = [
+        candidate for candidate in range(len(values)) if candidate != index
+    ]
     cross_covariance = [covariance[index][candidate] for candidate in other_indices]
     other_covariance = stable_covariance(
-        [
-            [covariance[row][column] for column in other_indices]
-            for row in other_indices
-        ]
+        [[covariance[row][column] for column in other_indices] for row in other_indices]
     )
     centered_other = [values[candidate] - mean_value for candidate in other_indices]
     inverse_other = invert_matrix(other_covariance)

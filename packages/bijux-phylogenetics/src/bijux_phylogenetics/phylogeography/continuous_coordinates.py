@@ -242,13 +242,17 @@ def render_coordinate_movement_visualization(
     if output_format == "svg":
         out_path.write_text(svg_markup, encoding="utf-8")
     else:
-        out_path.write_text(_build_coordinate_html(report, svg_markup), encoding="utf-8")
+        out_path.write_text(
+            _build_coordinate_html(report, svg_markup), encoding="utf-8"
+        )
     return CoordinateMovementVisualization(
         output_path=out_path,
         format=output_format,
         width=width,
         height=height,
-        highlighted_branch_count=sum(row.outlier_jump or row.impossible_jump for row in report.branch_rows),
+        highlighted_branch_count=sum(
+            row.outlier_jump or row.impossible_jump for row in report.branch_rows
+        ),
     )
 
 
@@ -602,7 +606,9 @@ def _build_estimate_rows(
     latitude_report: ContinuousAncestralReport,
     longitude_report: ContinuousAncestralReport,
 ) -> list[CoordinateEstimateRow]:
-    longitude_by_node = {estimate.node: estimate for estimate in longitude_report.estimates}
+    longitude_by_node = {
+        estimate.node: estimate for estimate in longitude_report.estimates
+    }
     root_node = latitude_report.estimates[0].node
     rows: list[CoordinateEstimateRow] = []
     for latitude_estimate in latitude_report.estimates:
@@ -619,9 +625,7 @@ def _build_estimate_rows(
                 descendant_taxa=list(latitude_estimate.descendant_taxa),
                 latitude=_stable_float(latitude_estimate.estimate),
                 longitude=_stable_float(longitude_estimate.estimate),
-                latitude_standard_error=_stable_float(
-                    latitude_estimate.standard_error
-                ),
+                latitude_standard_error=_stable_float(latitude_estimate.standard_error),
                 longitude_standard_error=_stable_float(
                     longitude_estimate.standard_error
                 ),
@@ -668,7 +672,9 @@ def _build_branch_rows(
                     child_estimate.longitude,
                 )
             )
-            branch_length = None if child.branch_length is None else float(child.branch_length)
+            branch_length = (
+                None if child.branch_length is None else float(child.branch_length)
+            )
             branch_rate_km_per_unit = (
                 _stable_float(great_circle_km / branch_length)
                 if branch_length is not None and branch_length > 0.0
@@ -766,7 +772,9 @@ def _review_branch_outliers(
                         None if median_rate is None else _stable_float(median_rate)
                     ),
                     rate_threshold_km=(
-                        None if rate_threshold is None else _stable_float(rate_threshold)
+                        None
+                        if rate_threshold is None
+                        else _stable_float(rate_threshold)
                     ),
                     impossible_jump=reviewed_row.impossible_jump,
                     outlier_jump=reviewed_row.outlier_jump,
@@ -899,7 +907,13 @@ def _build_coordinate_svg(
         child = estimate_by_node[row.child_node]
         left_x, left_y = project(parent.longitude, parent.latitude)
         right_x, right_y = project(child.longitude, child.latitude)
-        stroke = "#b91c1c" if row.impossible_jump else "#c2410c" if row.outlier_jump else "#334155"
+        stroke = (
+            "#b91c1c"
+            if row.impossible_jump
+            else "#c2410c"
+            if row.outlier_jump
+            else "#334155"
+        )
         width_px = 3 if row.impossible_jump or row.outlier_jump else 1.75
         branch_lines.append(
             f'<line x1="{left_x:.1f}" y1="{left_y:.1f}" x2="{right_x:.1f}" y2="{right_y:.1f}" stroke="{stroke}" stroke-width="{width_px}" stroke-linecap="round" />'
@@ -948,9 +962,9 @@ def _build_coordinate_html(
     return "\n".join(
         [
             "<!doctype html>",
-            "<html lang=\"en\">",
+            '<html lang="en">',
             "<head>",
-            "<meta charset=\"utf-8\">",
+            '<meta charset="utf-8">',
             "<title>Continuous phylogeography review</title>",
             "<style>",
             "body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 24px; color: #0f172a; background: #f8fafc; }",
@@ -963,7 +977,7 @@ def _build_coordinate_html(
             "</head>",
             "<body>",
             "<h1>Continuous Phylogeography Review</h1>",
-            "<div class=\"metrics\">",
+            '<div class="metrics">',
             f'<div class="card"><div class="label">Model</div><div class="value">{escape(summary.model)}</div></div>',
             f'<div class="card"><div class="label">Analyzed Taxa</div><div class="value">{summary.analyzed_taxon_count}</div></div>',
             f'<div class="card"><div class="label">Flagged Branches</div><div class="value">{summary.flagged_branch_count}</div></div>',

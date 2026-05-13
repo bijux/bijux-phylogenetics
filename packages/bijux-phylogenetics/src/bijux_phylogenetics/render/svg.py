@@ -644,7 +644,9 @@ def render_tree_svg(
             annotation = internal_annotations.get(_node_signature(node))
             pie_segments = internal_pies.get(_node_signature(node))
             if pie_segments and not node.is_leaf():
-                node_point = _polar_point(center_x, center_y, radial, angle_cache[id(node)])
+                node_point = _polar_point(
+                    center_x, center_y, radial, angle_cache[id(node)]
+                )
                 overlays.extend(
                     _svg_pie_slices(
                         node_point.x,

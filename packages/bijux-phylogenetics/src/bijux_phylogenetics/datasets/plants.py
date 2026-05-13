@@ -36,9 +36,9 @@ from bijux_phylogenetics.comparative import (
     write_clade_trait_summary_table,
     write_ou_trait_evolution_exclusion_table,
     write_ou_trait_evolution_summary_table,
+    write_pgls_lambda_profile_table,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
-    write_pgls_lambda_profile_table,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 
@@ -134,7 +134,9 @@ class CentralEuropeanSeashoreFloraDemoResult:
     overview_path: Path
 
 
-def load_central_european_seashore_flora_dataset() -> CentralEuropeanSeashoreFloraDataset:
+def load_central_european_seashore_flora_dataset() -> (
+    CentralEuropeanSeashoreFloraDataset
+):
     """Expose the packaged plant dataset as a first-class runtime surface."""
     dataset_root = _resource_root()
     traits_path = dataset_root / "traits.csv"
@@ -178,7 +180,9 @@ def export_central_european_seashore_flora_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
     tree_path = shutil.copy2(dataset.tree_path, destination / "tree.nwk")
     traits_path = shutil.copy2(dataset.traits_path, destination / "traits.csv")
     expected_output_root = destination / "expected"
@@ -192,8 +196,9 @@ def export_central_european_seashore_flora_dataset(
     )
 
 
-def run_central_european_seashore_flora_workflow(
-) -> CentralEuropeanSeashoreFloraWorkflowReport:
+def run_central_european_seashore_flora_workflow() -> (
+    CentralEuropeanSeashoreFloraWorkflowReport
+):
     """Run the owned comparative workflow over the packaged plant dataset."""
     dataset = load_central_european_seashore_flora_dataset()
     pgls = run_pgls(
@@ -265,7 +270,9 @@ def write_central_european_seashore_flora_workflow_bundle(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
 
-    summary_path = _write_workflow_summary_table(output_root / "workflow-summary.tsv", report)
+    summary_path = _write_workflow_summary_table(
+        output_root / "workflow-summary.tsv", report
+    )
     pgls_lambda_profile_path = write_pgls_lambda_profile_table(
         output_root / "pgls-lambda-profile.tsv",
         report.pgls.lambda_fit,
@@ -298,9 +305,11 @@ def write_central_european_seashore_flora_workflow_bundle(
         output_root / "continuous-ancestral-summary.tsv",
         report.continuous_ancestral,
     )
-    continuous_ancestral_uncertainty_path = write_continuous_ancestral_uncertainty_table(
-        output_root / "continuous-ancestral-uncertainty.tsv",
-        report.continuous_ancestral,
+    continuous_ancestral_uncertainty_path = (
+        write_continuous_ancestral_uncertainty_table(
+            output_root / "continuous-ancestral-uncertainty.tsv",
+            report.continuous_ancestral,
+        )
     )
     continuous_ancestral_exclusion_path = write_continuous_ancestral_exclusion_table(
         output_root / "continuous-ancestral-excluded.tsv",
@@ -470,7 +479,8 @@ def _write_workflow_summary_table(
                 "discrete_root_state": discrete_root.most_likely_state,
                 "discrete_root_confidence": format(discrete_root.confidence, ".15g"),
                 "clade_trait": report.dataset.workflow_clade_trait,
-                "top_exceptional_clade": report.clade_traits.top_exceptional_clade or "",
+                "top_exceptional_clade": report.clade_traits.top_exceptional_clade
+                or "",
                 "top_exceptionality_score": format(
                     report.clade_traits.top_exceptionality_score or 0.0,
                     ".15g",

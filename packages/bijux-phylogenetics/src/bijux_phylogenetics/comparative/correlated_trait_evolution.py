@@ -557,24 +557,26 @@ def _summarize_continuous_trait_coupling(
         )
     left_lookup = {row.node: row for row in left_report.contrasts}
     right_lookup = {row.node: row for row in right_report.contrasts}
-    paired_nodes = [
-        node
-        for node in left_lookup
-        if node in right_lookup
-    ]
+    paired_nodes = [node for node in left_lookup if node in right_lookup]
     left_values = [left_lookup[node].contrast for node in paired_nodes]
     right_values = [right_lookup[node].contrast for node in paired_nodes]
     covariance_matrix = _estimate_trait_covariance(left_values, right_values)
     stabilized = False
     try:
         correlated_log_likelihood = _multivariate_normal_log_likelihood(
-            observations=[[left, right] for left, right in zip(left_values, right_values, strict=True)],
+            observations=[
+                [left, right]
+                for left, right in zip(left_values, right_values, strict=True)
+            ],
             covariance_matrix=covariance_matrix,
         )
     except ValueError:
         covariance_matrix = stable_covariance(covariance_matrix)
         correlated_log_likelihood = _multivariate_normal_log_likelihood(
-            observations=[[left, right] for left, right in zip(left_values, right_values, strict=True)],
+            observations=[
+                [left, right]
+                for left, right in zip(left_values, right_values, strict=True)
+            ],
             covariance_matrix=covariance_matrix,
         )
         stabilized = True
@@ -583,7 +585,9 @@ def _summarize_continuous_trait_coupling(
         [0.0, covariance_matrix[1][1]],
     ]
     independent_log_likelihood = _multivariate_normal_log_likelihood(
-        observations=[[left, right] for left, right in zip(left_values, right_values, strict=True)],
+        observations=[
+            [left, right] for left, right in zip(left_values, right_values, strict=True)
+        ],
         covariance_matrix=independent_covariance,
     )
     evolutionary_covariance = covariance_matrix[0][1]
@@ -771,9 +775,7 @@ def _summarize_binary_trait_coupling(
         left_report.transition_model.parameter_count
         + right_report.transition_model.parameter_count
     )
-    correlated_log_likelihood = (
-        correlated_report.transition_model.pseudo_log_likelihood
-    )
+    correlated_log_likelihood = correlated_report.transition_model.pseudo_log_likelihood
     correlated_parameter_count = correlated_report.transition_model.parameter_count
     comparison_rows = _comparison_rows(
         independent_log_likelihood=independent_log_likelihood,
@@ -853,10 +855,7 @@ def _estimate_trait_covariance(
     left_variance = sum(value * value for value in left_values) / count
     right_variance = sum(value * value for value in right_values) / count
     covariance = (
-        sum(
-            left * right
-            for left, right in zip(left_values, right_values, strict=True)
-        )
+        sum(left * right for left, right in zip(left_values, right_values, strict=True))
         / count
     )
     return [
@@ -928,10 +927,13 @@ def _sample_covariance_and_correlation(
     count = len(left_values)
     left_mean = sum(left_values) / count
     right_mean = sum(right_values) / count
-    covariance = sum(
-        (left - left_mean) * (right - right_mean)
-        for left, right in zip(left_values, right_values, strict=True)
-    ) / count
+    covariance = (
+        sum(
+            (left - left_mean) * (right - right_mean)
+            for left, right in zip(left_values, right_values, strict=True)
+        )
+        / count
+    )
     left_variance = sum((value - left_mean) ** 2 for value in left_values) / count
     right_variance = sum((value - right_mean) ** 2 for value in right_values) / count
     return covariance, _correlation(left_variance, right_variance, covariance)

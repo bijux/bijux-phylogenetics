@@ -4,7 +4,6 @@ from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
 from bijux_phylogenetics.bayesian.beast import (
     assess_beast_burnin_sensitivity,
     assess_beast_chain_mixing,
@@ -13,6 +12,7 @@ from bijux_phylogenetics.bayesian.beast import (
     summarize_beast_analysis_xml,
     validate_beast_posterior_log,
 )
+from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import render_tree_svg
@@ -351,7 +351,9 @@ def write_bayesian_methods_summary_text(
     )
     resolved_clock_model = clock_model
     resolved_tree_prior = tree_prior
-    chain_settings_text = "Chain settings were not available because no analysis XML was supplied."
+    chain_settings_text = (
+        "Chain settings were not available because no analysis XML was supplied."
+    )
     analysis_xml_text = "No analysis XML was supplied, so XML-derived BEAST assumptions were unavailable."
     if analysis_summary is not None:
         if analysis_summary.clock_model is not None:

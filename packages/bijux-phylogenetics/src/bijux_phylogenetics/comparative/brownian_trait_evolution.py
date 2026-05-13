@@ -71,7 +71,9 @@ def summarize_brownian_trait_evolution(
         taxon_column=taxon_column,
     )
     excluded_taxa = _build_excluded_taxa(readiness)
-    warnings = list(dict.fromkeys([*readiness.warnings, *fit.residual_diagnostics.warnings]))
+    warnings = list(
+        dict.fromkeys([*readiness.warnings, *fit.residual_diagnostics.warnings])
+    )
     return BrownianTraitEvolutionSummaryReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -98,7 +100,9 @@ def write_brownian_trait_evolution_summary_table(
     path: Path, report: BrownianTraitEvolutionSummaryReport
 ) -> Path:
     """Write one summary ledger for a Brownian trait-evolution fit."""
-    interval_by_name = {interval.name: interval for interval in report.confidence_intervals}
+    interval_by_name = {
+        interval.name: interval for interval in report.confidence_intervals
+    }
     root_state_interval = interval_by_name.get("root_state")
     sigma_interval = interval_by_name.get("rate")
     return write_taxon_rows(

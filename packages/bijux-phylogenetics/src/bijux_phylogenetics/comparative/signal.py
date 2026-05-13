@@ -83,7 +83,7 @@ class PhylogeneticSignalTestReport:
     p_value: float
     permutations: int
     permuted_k_at_or_above_observed: int
-    permutation_rows: list["PhylogeneticSignalPermutation"]
+    permutation_rows: list[PhylogeneticSignalPermutation]
 
 
 @dataclass(slots=True)

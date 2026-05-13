@@ -5,6 +5,10 @@ import json
 from pathlib import Path
 import shutil
 
+from bijux_phylogenetics.compare.reports import (
+    ComparisonReportBuildResult,
+    build_tree_comparison_report,
+)
 from bijux_phylogenetics.compare.taxon_influence import (
     TaxonInfluenceReport,
     analyze_taxon_influence,
@@ -15,16 +19,15 @@ from bijux_phylogenetics.compare.topology import (
     TreeComparisonReport,
     write_tree_comparison_table,
 )
-from bijux_phylogenetics.compare.reports import (
-    ComparisonReportBuildResult,
-    build_tree_comparison_report,
-)
 from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.io.iqtree_support import support_fraction
 from bijux_phylogenetics.render.html import write_html_report
 
 from .common import build_file_checksums, write_engine_manifest
-from .validation import InferenceTreeComparisonReport, compare_inferred_trees_across_engines
+from .validation import (
+    InferenceTreeComparisonReport,
+    compare_inferred_trees_across_engines,
+)
 from .workflows import (
     EngineWorkflowReport,
     run_bootstrap_support_estimation,
@@ -248,7 +251,11 @@ def _shared_disagreement_severity(
         weakest_support = min(values)
     if strongest_support is None:
         return "support_unavailable"
-    if strongest_support >= 0.9 and weakest_support is not None and weakest_support >= 0.7:
+    if (
+        strongest_support >= 0.9
+        and weakest_support is not None
+        and weakest_support >= 0.7
+    ):
         return "high_support_disagreement"
     if strongest_support >= 0.7:
         return "moderate_support_disagreement"
@@ -475,7 +482,9 @@ def build_inference_comparison_conclusion_rows(
                 conclusion_class="engine_specific_clade",
                 evidence_class=row.conflict_classification,
                 comparison_status=(
-                    "fasttree_only" if row.comparison_status == "left_only" else "iqtree_only"
+                    "fasttree_only"
+                    if row.comparison_status == "left_only"
+                    else "iqtree_only"
                 ),
                 fasttree_present=row.left_present,
                 iqtree_present=row.right_present,
@@ -786,7 +795,9 @@ def rewrite_inference_comparison_report_html(
         (
             "taxon-influence",
             json.dumps(
-                None if taxon_influence_report is None else asdict(taxon_influence_report),
+                None
+                if taxon_influence_report is None
+                else asdict(taxon_influence_report),
                 indent=2,
                 sort_keys=True,
                 default=str,
@@ -794,15 +805,21 @@ def rewrite_inference_comparison_report_html(
         ),
         (
             "topology-metrics",
-            json.dumps(asdict(base_report.topology), indent=2, sort_keys=True, default=str),
+            json.dumps(
+                asdict(base_report.topology), indent=2, sort_keys=True, default=str
+            ),
         ),
         (
             "clade-comparison",
-            json.dumps(asdict(base_report.clades), indent=2, sort_keys=True, default=str),
+            json.dumps(
+                asdict(base_report.clades), indent=2, sort_keys=True, default=str
+            ),
         ),
         (
             "support-comparison",
-            json.dumps(asdict(base_report.support), indent=2, sort_keys=True, default=str),
+            json.dumps(
+                asdict(base_report.support), indent=2, sort_keys=True, default=str
+            ),
         ),
         (
             "branch-length-comparison",

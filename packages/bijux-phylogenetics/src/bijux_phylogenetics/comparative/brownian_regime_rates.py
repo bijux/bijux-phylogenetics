@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -180,7 +181,9 @@ def summarize_brownian_regime_rates(
         baseline_rate=baseline.rate,
     )
     comparison_rows = _build_comparison_rows(
-        taxon_count=dataset.taxon_count if hasattr(dataset, "taxon_count") else len(dataset.taxa),
+        taxon_count=dataset.taxon_count
+        if hasattr(dataset, "taxon_count")
+        else len(dataset.taxa),
         baseline_log_likelihood=baseline.log_likelihood,
         multirate_log_likelihood=fit.log_likelihood,
         regime_count=len(regime_matrices),
@@ -240,7 +243,9 @@ def summarize_brownian_regime_rates(
         root_state_interval=fit.root_state_interval,
         log_likelihood=fit.log_likelihood,
         aic=next(row.aic for row in comparison_rows if row.model == "brownian-regimes"),
-        aicc=next(row.aicc for row in comparison_rows if row.model == "brownian-regimes"),
+        aicc=next(
+            row.aicc for row in comparison_rows if row.model == "brownian-regimes"
+        ),
         comparison_rows=comparison_rows,
         better_model=better_model,
         likelihood_ratio_statistic=likelihood_ratio_statistic,
@@ -279,8 +284,8 @@ def _fit_multirate_brownian_model(
     lower = max(baseline_rate * 0.02, 1e-6)
     upper = max(baseline_rate * 50.0, lower * 10.0)
     regimes = sorted(regime_matrices)
-    bounds = {regime: (lower, upper) for regime in regimes}
-    regime_rates = {regime: baseline_rate for regime in regimes}
+    bounds = dict.fromkeys(regimes, (lower, upper))
+    regime_rates = dict.fromkeys(regimes, baseline_rate)
     for _ in range(6):
         for regime in regimes:
             search = _logspace(bounds[regime][0], bounds[regime][1], 41)
@@ -369,7 +374,9 @@ def _combine_regime_covariance(
         rate = regime_rates[regime]
         for row_index in range(size):
             for column_index in range(size):
-                combined[row_index][column_index] += rate * matrix[row_index][column_index]
+                combined[row_index][column_index] += (
+                    rate * matrix[row_index][column_index]
+                )
     return combined
 
 
@@ -514,7 +521,9 @@ def _build_identifiability_warnings(
         profile = profile_by_regime.get(row.regime, [])
         if not profile:
             continue
-        supported_count = sum(1 for candidate in profile if candidate.in_support_interval)
+        supported_count = sum(
+            1 for candidate in profile if candidate.in_support_interval
+        )
         if supported_count >= math.ceil(len(profile) / 2.0):
             warnings.append(
                 BrownianRegimeIdentifiabilityWarning(
@@ -526,7 +535,12 @@ def _build_identifiability_warnings(
                     ),
                 )
             )
-        if math.isclose(row.lower_95, min(candidate.sigma_squared for candidate in profile), rel_tol=0.0, abs_tol=1e-12) or math.isclose(
+        if math.isclose(
+            row.lower_95,
+            min(candidate.sigma_squared for candidate in profile),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ) or math.isclose(
             row.upper_95,
             max(candidate.sigma_squared for candidate in profile),
             rel_tol=0.0,
@@ -683,7 +697,9 @@ def _load_branch_regime_rows(
             )
         )
     contributing_regimes = {
-        row.regime for row in rows if row.contributes_to_analysis and row.branch_length > 0.0
+        row.regime
+        for row in rows
+        if row.contributes_to_analysis and row.branch_length > 0.0
     }
     if len(contributing_regimes) < 2:
         raise ComparativeMethodError(
@@ -776,8 +792,12 @@ def write_brownian_regime_summary_table(
                 "excluded_taxon_count": len(report.excluded_taxa),
                 "regime_count": len(report.regime_rows),
                 "root_state": format(report.root_state, ".15g"),
-                "root_state_lower_95": format(report.root_state_interval.lower_95, ".15g"),
-                "root_state_upper_95": format(report.root_state_interval.upper_95, ".15g"),
+                "root_state_lower_95": format(
+                    report.root_state_interval.lower_95, ".15g"
+                ),
+                "root_state_upper_95": format(
+                    report.root_state_interval.upper_95, ".15g"
+                ),
                 "log_likelihood": format(report.log_likelihood, ".15g"),
                 "aic": format(report.aic, ".15g"),
                 "aicc": format(report.aicc, ".15g"),
@@ -981,7 +1001,9 @@ def write_brownian_regime_exclusion_table(
     return write_taxon_rows(
         path,
         columns=["taxon", "reason"],
-        rows=[{"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa],
+        rows=[
+            {"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa
+        ],
     )
 
 

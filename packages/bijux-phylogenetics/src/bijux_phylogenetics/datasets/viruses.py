@@ -131,8 +131,12 @@ def export_influenza_a_ha_reference_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
-    sequences_path = shutil.copy2(dataset.sequences_path, destination / "sequences.fasta")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
+    sequences_path = shutil.copy2(
+        dataset.sequences_path, destination / "sequences.fasta"
+    )
     expected_output_root = destination / "expected"
     shutil.copytree(dataset.reference_output_root, expected_output_root)
     return InfluenzaAHAReferenceDatasetExportResult(
@@ -180,13 +184,21 @@ def write_influenza_a_ha_reference_workflow_bundle(
     output_root.mkdir(parents=True, exist_ok=True)
 
     workflow = report.workflow
-    summary_path = _write_workflow_summary_table(output_root / "workflow-summary.tsv", report)
-    alignment_path = _copy_output(workflow.output_paths["alignment"], output_root / f"{report.dataset.workflow_prefix}.aln")
+    summary_path = _write_workflow_summary_table(
+        output_root / "workflow-summary.tsv", report
+    )
+    alignment_path = _copy_output(
+        workflow.output_paths["alignment"],
+        output_root / f"{report.dataset.workflow_prefix}.aln",
+    )
     trimmed_alignment_path = _copy_output(
         workflow.output_paths["trimmed_alignment"],
         output_root / f"{report.dataset.workflow_prefix}.trimmed.aln",
     )
-    tree_path = _copy_output(workflow.output_paths["tree"], output_root / f"{report.dataset.workflow_prefix}.tree")
+    tree_path = _copy_output(
+        workflow.output_paths["tree"],
+        output_root / f"{report.dataset.workflow_prefix}.tree",
+    )
     model_table_path = _copy_output(
         workflow.output_paths["model_table"],
         output_root / f"{report.dataset.workflow_prefix}.model.tsv",
@@ -195,12 +207,17 @@ def write_influenza_a_ha_reference_workflow_bundle(
         workflow.output_paths["support_table"],
         output_root / f"{report.dataset.workflow_prefix}.support.tsv",
     )
-    log_path = _copy_output(workflow.output_paths["log"], output_root / f"{report.dataset.workflow_prefix}.log")
+    log_path = _copy_output(
+        workflow.output_paths["log"],
+        output_root / f"{report.dataset.workflow_prefix}.log",
+    )
     manifest_path = _copy_output(
         workflow.manifest_path,
         output_root / f"{report.dataset.workflow_prefix}.manifest.json",
     )
-    engine_artifact_root = output_root / "engine-artifacts" / report.dataset.workflow_prefix
+    engine_artifact_root = (
+        output_root / "engine-artifacts" / report.dataset.workflow_prefix
+    )
     shutil.copytree(workflow.engine_artifact_dir, engine_artifact_root)
     return InfluenzaAHAReferenceWorkflowBundle(
         output_root=output_root,
@@ -251,7 +268,9 @@ def run_influenza_a_ha_reference_demo(
             output_root / "workflow",
             workflow_report,
         )
-    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", dataset, workflow_bundle
+    )
     return InfluenzaAHAReferenceDemoResult(
         output_root=output_root,
         dataset=dataset,

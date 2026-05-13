@@ -144,7 +144,9 @@ def _rows_from_tree(
         if node is tree.root:
             continue
         branch_length = (
-            None if node.branch_length is None else _round_float(float(node.branch_length))
+            None
+            if node.branch_length is None
+            else _round_float(float(node.branch_length))
         )
         long_outlier, short_outlier, outlier_class = _classify_outlier(
             branch_length,
@@ -162,7 +164,9 @@ def _rows_from_tree(
                 root_depth=root_depths.get(id(node)),
                 tree_positive_branch_median=positive_branch_median,
                 zero_length=branch_length == 0 if branch_length is not None else False,
-                negative_length=branch_length < 0 if branch_length is not None else False,
+                negative_length=branch_length < 0
+                if branch_length is not None
+                else False,
                 missing_length=branch_length is None,
                 long_outlier=long_outlier,
                 short_outlier=short_outlier,
@@ -174,7 +178,11 @@ def _rows_from_tree(
 
 def _aggregate_rows(rows: list[BranchLengthRow]) -> BranchLengthAggregate:
     defined = [row.branch_length for row in rows if row.branch_length is not None]
-    positive = [row.branch_length for row in rows if row.branch_length is not None and row.branch_length > 0]
+    positive = [
+        row.branch_length
+        for row in rows
+        if row.branch_length is not None and row.branch_length > 0
+    ]
     return BranchLengthAggregate(
         branch_count=len(rows),
         defined_branch_count=len(defined),
@@ -188,7 +196,9 @@ def _aggregate_rows(rows: list[BranchLengthRow]) -> BranchLengthAggregate:
         maximum_branch_length=max(defined) if defined else None,
         mean_branch_length=_mean(defined) if defined else None,
         median_branch_length=_round_float(float(median(defined))) if defined else None,
-        positive_branch_median=_round_float(float(median(positive))) if positive else None,
+        positive_branch_median=_round_float(float(median(positive)))
+        if positive
+        else None,
     )
 
 
@@ -235,7 +245,9 @@ def analyze_tree_set_branch_lengths(path: Path) -> BranchLengthDistributionRepor
     )
 
 
-def write_branch_length_table(path: Path, report: BranchLengthDistributionReport) -> Path:
+def write_branch_length_table(
+    path: Path, report: BranchLengthDistributionReport
+) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
         fieldnames = list(asdict(report.rows[0]).keys())

@@ -176,9 +176,7 @@ def summarize_irreversible_discrete_report(
         delta_aic=delta_aic,
         preferred_constraint=preferred_constraint,
         differing_node_count=sum(row.differs for row in report.node_rows),
-        ambiguity_change_count=sum(
-            row.ambiguity_changed for row in report.node_rows
-        ),
+        ambiguity_change_count=sum(row.ambiguity_changed for row in report.node_rows),
         forbidden_transition_count=sum(
             not row.constrained_transition_allowed for row in report.transition_rows
         ),
@@ -219,16 +217,12 @@ def write_irreversible_discrete_summary_table(
                 "taxon_column": summary.taxon_column,
                 "model": summary.model,
                 "analyzed_taxon_count": str(summary.analyzed_taxon_count),
-                "constrained_log_likelihood": str(
-                    summary.constrained_log_likelihood
-                ),
+                "constrained_log_likelihood": str(summary.constrained_log_likelihood),
                 "unconstrained_log_likelihood": str(
                     summary.unconstrained_log_likelihood
                 ),
                 "likelihood_difference": str(summary.likelihood_difference),
-                "constrained_parameter_count": str(
-                    summary.constrained_parameter_count
-                ),
+                "constrained_parameter_count": str(summary.constrained_parameter_count),
                 "unconstrained_parameter_count": str(
                     summary.unconstrained_parameter_count
                 ),
@@ -374,7 +368,10 @@ def _build_node_rows(
     }
     rows: list[IrreversibleDiscreteNodeComparisonRow] = []
     for constrained_estimate in constrained_report.estimates:
-        if constrained_estimate.is_tip or constrained_estimate.node not in unconstrained_by_node:
+        if (
+            constrained_estimate.is_tip
+            or constrained_estimate.node not in unconstrained_by_node
+        ):
             continue
         unconstrained_estimate = unconstrained_by_node[constrained_estimate.node]
         rows.append(
@@ -417,9 +414,7 @@ def _build_transition_rows(
                 source_state=constrained_row.source_state,
                 target_state=constrained_row.target_state,
                 constrained_transition_allowed=constrained_row.transition_allowed,
-                unconstrained_transition_allowed=(
-                    unconstrained_row.transition_allowed
-                ),
+                unconstrained_transition_allowed=(unconstrained_row.transition_allowed),
                 constrained_rate=constrained_row.rate,
                 unconstrained_rate=unconstrained_row.rate,
             )

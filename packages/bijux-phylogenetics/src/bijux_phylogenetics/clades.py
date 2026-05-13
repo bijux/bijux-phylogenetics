@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from Bio import Phylo
-from Bio.Phylo.BaseTree import Clade, Tree as BioTree
+from Bio.Phylo.BaseTree import Clade
+from Bio.Phylo.BaseTree import Tree as BioTree
 
 from bijux_phylogenetics.core.metadata import load_taxon_table
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
@@ -79,7 +80,9 @@ def _resolve_metadata_context(
     ]
     for column in columns:
         if column not in table.columns:
-            raise ValueError(f"metadata column '{column}' was not found in {metadata_path}")
+            raise ValueError(
+                f"metadata column '{column}' was not found in {metadata_path}"
+            )
         if column == table.taxon_column:
             raise ValueError(
                 f"metadata column '{column}' is the taxon key and cannot be summarized as a trait column"
@@ -151,7 +154,9 @@ def _metadata_observations(
     return observations
 
 
-def _ultrametric_crown_height(tree: PhyloTree, *, tolerance: float = 1e-9) -> float | None:
+def _ultrametric_crown_height(
+    tree: PhyloTree, *, tolerance: float = 1e-9
+) -> float | None:
     lengths = tree.root_to_tip_lengths()
     if not lengths or any(length is None for length in lengths):
         return None
@@ -234,7 +239,9 @@ def _extract_clade_rows(
         node_kind = "root" if is_root else ("tip" if node.is_leaf() else "internal")
         support = None
         if clade.clades:
-            support = _parse_support(clade.confidence if clade.confidence is not None else clade.name)
+            support = _parse_support(
+                clade.confidence if clade.confidence is not None else clade.name
+            )
         rows.append(
             CladeTableRow(
                 source_path=source_path,
@@ -267,7 +274,11 @@ def _extract_clade_rows(
 def _load_tree_with_biophylo(path: Path) -> tuple[str, BioTree, PhyloTree]:
     source_format = detect_tree_format(path)
     bio_tree = Phylo.read(path, source_format)
-    return source_format, bio_tree, tree_from_biophylo(bio_tree, source_format=source_format)
+    return (
+        source_format,
+        bio_tree,
+        tree_from_biophylo(bio_tree, source_format=source_format),
+    )
 
 
 def extract_tree_clades(
@@ -289,7 +300,9 @@ def extract_tree_clades(
         source_format=source_format,
         tree_count=1,
         metadata_path=None if metadata_context is None else metadata_context.path,
-        taxon_column=None if metadata_context is None else metadata_context.taxon_column,
+        taxon_column=None
+        if metadata_context is None
+        else metadata_context.taxon_column,
         metadata_columns=selected_columns,
         rows=_extract_clade_rows(
             path,
@@ -328,7 +341,9 @@ def extract_tree_set_clades(
                 "clade extraction across a tree set requires identical taxon sets for every tree"
             )
     rows: list[CladeTableRow] = []
-    for index, (bio_tree, tree) in enumerate(zip(bio_trees, trees, strict=True), start=1):
+    for index, (bio_tree, tree) in enumerate(
+        zip(bio_trees, trees, strict=True), start=1
+    ):
         rows.extend(
             _extract_clade_rows(
                 path,
@@ -343,7 +358,9 @@ def extract_tree_set_clades(
         source_format=source_format,
         tree_count=len(trees),
         metadata_path=None if metadata_context is None else metadata_context.path,
-        taxon_column=None if metadata_context is None else metadata_context.taxon_column,
+        taxon_column=None
+        if metadata_context is None
+        else metadata_context.taxon_column,
         metadata_columns=selected_columns,
         rows=rows,
     )

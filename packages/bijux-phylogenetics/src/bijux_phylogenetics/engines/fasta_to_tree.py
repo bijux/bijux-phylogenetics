@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from bijux_phylogenetics.core.alignment import (
@@ -422,9 +422,7 @@ def run_fasta_to_tree_workflow(
     prepared_input_path = input_path
     repaired_input_validation: FastaInputValidationReport | None = None
     input_repair: FastaRepairReport | None = None
-    if has_input_blockers and not (
-        normalize_identifiers or remove_invalid_records
-    ):
+    if has_input_blockers and not (normalize_identifiers or remove_invalid_records):
         raise InvalidAlignmentError(
             "fasta-to-tree input contains duplicate identifiers, empty sequences, "
             "or illegal characters; use normalize_identifiers or "
@@ -689,8 +687,8 @@ def run_fasta_to_tree_workflow(
         notes=notes,
     )
     ended_at = datetime.now(UTC)
-    report.ended_at_utc = ended_at.replace(microsecond=0).isoformat().replace(
-        "+00:00", "Z"
+    report.ended_at_utc = (
+        ended_at.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     )
     report.runtime_seconds = max(
         0.0,

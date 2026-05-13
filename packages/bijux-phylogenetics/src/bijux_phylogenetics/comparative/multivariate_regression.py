@@ -185,10 +185,14 @@ def run_multivariate_comparative_regression(
 
     overlap_tree, _ = prune_tree_to_requested_taxa(tree_path, overlap_taxa)
     overlap_rows = [rows_by_taxon[taxon] for taxon in overlap_taxa]
-    with tempfile.TemporaryDirectory(prefix="bijux-phylogenetics-multivariate-") as tmp_dir:
+    with tempfile.TemporaryDirectory(
+        prefix="bijux-phylogenetics-multivariate-"
+    ) as tmp_dir:
         overlap_tree_path = Path(tmp_dir) / "multivariate-overlap-tree.nwk"
         overlap_table_path = Path(tmp_dir) / "multivariate-overlap-traits.tsv"
-        overlap_tree_path.write_text(dumps_newick(overlap_tree) + "\n", encoding="utf-8")
+        overlap_tree_path.write_text(
+            dumps_newick(overlap_tree) + "\n", encoding="utf-8"
+        )
         write_taxon_rows(
             overlap_table_path,
             columns=table.columns,
@@ -224,7 +228,9 @@ def run_multivariate_comparative_regression(
         reduced_rows = [rows_by_taxon[taxon] for taxon in shared_taxa]
         reduced_tree_path = Path(tmp_dir) / "multivariate-tree.nwk"
         reduced_table_path = Path(tmp_dir) / "multivariate-traits.tsv"
-        reduced_tree_path.write_text(dumps_newick(reduced_tree) + "\n", encoding="utf-8")
+        reduced_tree_path.write_text(
+            dumps_newick(reduced_tree) + "\n", encoding="utf-8"
+        )
         write_taxon_rows(
             reduced_table_path,
             columns=table.columns,
@@ -727,8 +733,7 @@ def _build_multivariate_warnings(
             "shared multivariate regression retains weak residual degrees of freedom, so response-specific coefficients and residual covariance estimates may be unstable"
         )
     if any(
-        row.is_diagonal
-        and abs(row.covariance) <= MULTIVARIATE_NUMERICAL_TOLERANCE
+        row.is_diagonal and abs(row.covariance) <= MULTIVARIATE_NUMERICAL_TOLERANCE
         for row in covariance_rows
     ):
         warnings.append(
@@ -748,7 +753,9 @@ def _deduplicate_preserving_order(values: list[str]) -> list[str]:
     return ordered
 
 
-def _covariance_and_correlation(left: list[float], right: list[float]) -> tuple[float, float]:
+def _covariance_and_correlation(
+    left: list[float], right: list[float]
+) -> tuple[float, float]:
     pair_count = len(left)
     if pair_count != len(right):
         raise ComparativeMethodError(
@@ -794,7 +801,8 @@ def _correlation_test(correlation: float, pair_count: int) -> tuple[float, float
         return math.inf if abs(correlation) >= 1.0 else 0.0, 0.0
     degrees_of_freedom = pair_count - 2
     test_statistic = correlation * math.sqrt(
-        degrees_of_freedom / max(MULTIVARIATE_NUMERICAL_TOLERANCE, 1.0 - (correlation * correlation))
+        degrees_of_freedom
+        / max(MULTIVARIATE_NUMERICAL_TOLERANCE, 1.0 - (correlation * correlation))
     )
     return test_statistic, student_t_two_sided_p_value(
         test_statistic, degrees_of_freedom

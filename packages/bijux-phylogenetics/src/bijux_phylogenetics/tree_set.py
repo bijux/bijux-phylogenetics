@@ -842,7 +842,9 @@ def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> 
     return path
 
 
-def summarize_posterior_topology_diversity(path: Path) -> PosteriorTopologyDiversityReport:
+def summarize_posterior_topology_diversity(
+    path: Path,
+) -> PosteriorTopologyDiversityReport:
     """Summarize topology dispersion and instability across one posterior tree set."""
     summary = load_tree_set(path)
     clusters = cluster_trees_by_topology(path)
@@ -1065,14 +1067,13 @@ def summarize_bootstrap_tree_set(
         frequency = frequencies_by_clade[clade_id]
         unstable_row = unstable_by_clade.get(clade_id)
         conflict_count = 0 if unstable_row is None else unstable_row.conflict_count
-        instability_score = 0.0 if unstable_row is None else unstable_row.instability_score
+        instability_score = (
+            0.0 if unstable_row is None else unstable_row.instability_score
+        )
         support_classification = _support_classification(
             frequency.frequency, conflict_count
         )
-        if (
-            frequency.frequency >= robust_support_threshold
-            and conflict_count == 0
-        ):
+        if frequency.frequency >= robust_support_threshold and conflict_count == 0:
             continue
         unstable_branches.append(
             BootstrapUnstableBranch(
@@ -1098,9 +1099,7 @@ def summarize_bootstrap_tree_set(
     )
     warnings: list[str] = []
     if diversity.rooted_topology_count > 1:
-        warnings.append(
-            "bootstrap replicate trees contain multiple rooted topologies"
-        )
+        warnings.append("bootstrap replicate trees contain multiple rooted topologies")
     if unstable_branches:
         warnings.append(
             "consensus tree contains branches below the robust bootstrap threshold or with conflicting alternatives"

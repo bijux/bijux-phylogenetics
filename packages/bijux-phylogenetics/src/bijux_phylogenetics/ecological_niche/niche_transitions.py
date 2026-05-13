@@ -480,9 +480,7 @@ def write_niche_transition_clade_table(
                 "dominant_transition": row.dominant_transition,
                 "dominant_transition_count": str(row.dominant_transition_count),
                 "shift_burden_score": str(row.shift_burden_score),
-                "contains_repeated_shifts": str(
-                    row.contains_repeated_shifts
-                ).lower(),
+                "contains_repeated_shifts": str(row.contains_repeated_shifts).lower(),
                 "rank": str(row.rank),
             }
             for row in report.clade_rows
@@ -548,7 +546,9 @@ def _build_rate_rows(report: DiscreteAncestralReport) -> list[NicheTransitionRat
     ]
 
 
-def _build_branch_rows(report: DiscreteAncestralReport) -> list[NicheTransitionBranchRow]:
+def _build_branch_rows(
+    report: DiscreteAncestralReport,
+) -> list[NicheTransitionBranchRow]:
     tree = loads_newick(report.analysis_tree_newick)
     estimate_by_node = {estimate.node: estimate for estimate in report.estimates}
     branch_rows: list[NicheTransitionBranchRow] = []
@@ -561,8 +561,7 @@ def _build_branch_rows(report: DiscreteAncestralReport) -> list[NicheTransitionB
                 set(parent_estimate.state_set) & set(child_estimate.state_set)
             )
             changed = (
-                parent_estimate.most_likely_state
-                != child_estimate.most_likely_state
+                parent_estimate.most_likely_state != child_estimate.most_likely_state
             )
             support = _stable_float(
                 min(parent_estimate.confidence, child_estimate.confidence)
@@ -651,7 +650,9 @@ def _build_clade_rows(
         changed_rows = [row for row in clade_branch_rows if row.changed]
         transition_counts: dict[str, int] = {}
         for row in changed_rows:
-            transition_counts[row.transition] = transition_counts.get(row.transition, 0) + 1
+            transition_counts[row.transition] = (
+                transition_counts.get(row.transition, 0) + 1
+            )
         dominant_transition = ""
         dominant_transition_count = 0
         if transition_counts:

@@ -227,7 +227,7 @@ def _format_optional_float(value: float | None) -> str:
 
 
 def _biophylo_clade_taxa(clade: object) -> list[str]:
-    get_terminals = getattr(clade, "get_terminals")
+    get_terminals = clade.get_terminals
     return sorted(
         terminal.name
         for terminal in get_terminals()
@@ -825,7 +825,7 @@ def reroot_tree_by_midpoint(tree_path: Path) -> tuple[PhyloTree, TreeRootingRepo
         midpoint_position_kind,
     ) = _analyze_midpoint_path(tree)
     midpoint_root_partitions = sorted(
-        (_descendant_taxa(child) for child in rerooted_tree.root.children)
+        _descendant_taxa(child) for child in rerooted_tree.root.children
     )
     midpoint_anchor_side_taxa: list[str] = []
     midpoint_opposite_side_taxa: list[str] = []

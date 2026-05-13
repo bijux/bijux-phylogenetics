@@ -113,7 +113,9 @@ def summarize_phylogenetic_logistic(
         raise ComparativeMethodError("; ".join(input_report.blockers))
 
     taxa = list(input_report.analysis_taxa)
-    response_values = [int(round(row.response_value)) for row in input_report.model_matrix.rows]
+    response_values = [
+        int(round(row.response_value)) for row in input_report.model_matrix.rows
+    ]
     if any(value not in {0, 1} for value in response_values):
         raise ComparativeMethodError(
             "phylogenetic logistic regression requires a binary response encoded as 0 and 1"
@@ -147,7 +149,9 @@ def summarize_phylogenetic_logistic(
         trait=dataset.trait,
         taxa=taxa,
         trait_values=[float(value) for value in response_values],
-        covariance_matrix=_subset_covariance(dataset.covariance_matrix, dataset.taxa, taxa),
+        covariance_matrix=_subset_covariance(
+            dataset.covariance_matrix, dataset.taxa, taxa
+        ),
         readiness=dataset.readiness,
     )
     correlation = _covariance_to_correlation(
@@ -161,7 +165,9 @@ def summarize_phylogenetic_logistic(
         max_iterations=max_iterations,
         tolerance=tolerance,
     )
-    coefficients = _build_coefficient_rows(encoded_columns, fit.beta, fit.covariance_matrix)
+    coefficients = _build_coefficient_rows(
+        encoded_columns, fit.beta, fit.covariance_matrix
+    )
     fitted_rows = [
         PhylogeneticLogisticFittedRow(
             taxon=taxon,
@@ -484,8 +490,13 @@ def _build_coefficient_rows(
     return rows
 
 
-def _covariance_to_correlation(covariance_matrix: list[list[float]]) -> list[list[float]]:
-    diagonal = [max(covariance_matrix[index][index], 1e-12) for index in range(len(covariance_matrix))]
+def _covariance_to_correlation(
+    covariance_matrix: list[list[float]],
+) -> list[list[float]]:
+    diagonal = [
+        max(covariance_matrix[index][index], 1e-12)
+        for index in range(len(covariance_matrix))
+    ]
     return [
         [
             (
@@ -552,8 +563,7 @@ def _binomial_log_likelihood(
     response_values: list[int], fitted_probabilities: list[float]
 ) -> float:
     return sum(
-        observed * math.log(probability)
-        + (1 - observed) * math.log1p(-probability)
+        observed * math.log(probability) + (1 - observed) * math.log1p(-probability)
         for observed, probability in zip(
             response_values, fitted_probabilities, strict=True
         )

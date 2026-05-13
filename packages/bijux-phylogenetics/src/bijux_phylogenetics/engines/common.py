@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import hashlib
 import json
 from pathlib import Path
@@ -119,12 +119,7 @@ def validate_timeout_seconds(timeout_seconds: float | None) -> float | None:
 
 def utc_now_text() -> str:
     """Return one stable UTC timestamp for engine manifests and ledgers."""
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def read_engine_version(
@@ -189,7 +184,9 @@ def restore_incomplete_engine_run(
         },
         started_at_utc=str(payload["started_at_utc"]),
         ended_at_utc=(
-            None if payload.get("ended_at_utc") is None else str(payload["ended_at_utc"])
+            None
+            if payload.get("ended_at_utc") is None
+            else str(payload["ended_at_utc"])
         ),
         timeout_seconds=(
             None
@@ -231,7 +228,9 @@ def clear_incomplete_engine_run(manifest_path: Path) -> None:
     engine_incomplete_marker_path(manifest_path).unlink(missing_ok=True)
 
 
-def cleanup_incomplete_engine_run(manifest_path: Path) -> EngineIncompleteRunRecord | None:
+def cleanup_incomplete_engine_run(
+    manifest_path: Path,
+) -> EngineIncompleteRunRecord | None:
     """Delete one incomplete-run marker and the outputs it recorded."""
     record = load_incomplete_engine_run(manifest_path)
     if record is None:
@@ -308,7 +307,9 @@ def execute_engine_command(
             stderr_text = (
                 stderr_path.read_text(encoding="utf-8") if stderr_path.exists() else ""
             )
-            budget = "unspecified" if timeout_seconds is None else f"{timeout_seconds:.3f}"
+            budget = (
+                "unspecified" if timeout_seconds is None else f"{timeout_seconds:.3f}"
+            )
             incomplete_record.ended_at_utc = utc_now_text()
             incomplete_record.timed_out = True
             incomplete_record.failure_message = (

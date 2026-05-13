@@ -184,11 +184,7 @@ def summarize_continuous_phylogeography_map(
             marker_id=row.node,
             label=row.node_name or row.node,
             marker_kind=(
-                "root"
-                if row.is_root
-                else "tip"
-                if row.is_tip
-                else "ancestral"
+                "root" if row.is_root else "tip" if row.is_tip else "ancestral"
             ),
             latitude=row.latitude,
             longitude=row.longitude,
@@ -219,7 +215,9 @@ def summarize_continuous_phylogeography_map(
             "map output applies a midpoint-depth line filter; branch lines outside the selected depth window remain excluded from the visible map layer"
         )
     if not any(row.visible for row in line_rows):
-        warnings.append("no geographic movement lines remain visible after depth filtering")
+        warnings.append(
+            "no geographic movement lines remain visible after depth filtering"
+        )
     summary = _build_map_summary(
         mode="continuous",
         model=coordinate_report.model,
@@ -340,7 +338,9 @@ def summarize_discrete_region_map(
             "map output applies a midpoint-depth event filter; geographic transition lines outside the selected depth window remain excluded from the visible map layer"
         )
     if not any(row.visible for row in line_rows):
-        warnings.append("no geographic transition lines remain visible after depth filtering")
+        warnings.append(
+            "no geographic transition lines remain visible after depth filtering"
+        )
     summary = _build_map_summary(
         mode="regions",
         model=state_report.model,
@@ -910,9 +910,7 @@ def _great_circle_km(
     delta_lambda = math.radians(right_longitude - left_longitude)
     a = (
         math.sin(delta_phi / 2.0) ** 2
-        + math.cos(left_phi)
-        * math.cos(right_phi)
-        * math.sin(delta_lambda / 2.0) ** 2
+        + math.cos(left_phi) * math.cos(right_phi) * math.sin(delta_lambda / 2.0) ** 2
     )
     return stable_value(2.0 * _EARTH_RADIUS_KM * math.asin(math.sqrt(a)))
 
@@ -942,9 +940,9 @@ def _build_map_html(
     return "\n".join(
         [
             "<!DOCTYPE html>",
-            "<html lang=\"en\">",
+            '<html lang="en">',
             "<head>",
-            "  <meta charset=\"utf-8\">",
+            '  <meta charset="utf-8">',
             f"  <title>{escape(title)}</title>",
             "  <style>",
             "    body { font-family: Georgia, 'Times New Roman', serif; margin: 0; background: linear-gradient(180deg, #f4f7f3 0%, #e4ece8 100%); color: #163127; }",
@@ -965,43 +963,43 @@ def _build_map_html(
             "<main>",
             f"<h1>{escape(title)}</h1>",
             "<p>Self-contained HTML map review over owned phylogenetic geography outputs. The world view uses a fixed latitude/longitude extent so spatial interpretation remains map-based rather than coordinate-space-only.</p>",
-            "<div class=\"grid\">",
-            "<section class=\"panel\">",
-            "<div class=\"metric\"><span class=\"label\">mode</span><strong>"
+            '<div class="grid">',
+            '<section class="panel">',
+            '<div class="metric"><span class="label">mode</span><strong>'
             + escape(summary.mode)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">model</span><strong>"
+            '<div class="metric"><span class="label">model</span><strong>'
             + escape(summary.model)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">tip markers</span><strong>"
+            '<div class="metric"><span class="label">tip markers</span><strong>'
             + str(summary.tip_marker_count)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">ancestral markers</span><strong>"
+            '<div class="metric"><span class="label">ancestral markers</span><strong>'
             + str(summary.internal_marker_count + summary.root_marker_count)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">visible lines</span><strong>"
+            '<div class="metric"><span class="label">visible lines</span><strong>'
             + str(summary.visible_line_count)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">all lines</span><strong>"
+            '<div class="metric"><span class="label">all lines</span><strong>'
             + str(summary.line_count)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">tree depth</span><strong>"
+            '<div class="metric"><span class="label">tree depth</span><strong>'
             + str(summary.tree_depth)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">midpoint-depth filter</span><strong>"
+            '<div class="metric"><span class="label">midpoint-depth filter</span><strong>'
             + escape(filter_note)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">excluded records</span><strong>"
+            '<div class="metric"><span class="label">excluded records</span><strong>'
             + str(summary.excluded_record_count)
             + "</strong></div>",
-            "<div class=\"metric\"><span class=\"label\">warnings</span><strong>"
+            '<div class="metric"><span class="label">warnings</span><strong>'
             + str(summary.warning_count)
             + "</strong></div>",
             "<p><strong>Legend.</strong> Blue points are tips. Gold points are ancestral nodes. Red points are roots. Dark lines are visible map lines. Pale dashed lines are retained for context but excluded by the current depth filter.</p>",
             "<p><strong>Time filtering.</strong> When branch lengths represent dated depth, midpoint-depth filters can restrict the visible transition layer without refitting the reconstruction.</p>",
             "<ul>" + warnings_markup + "</ul>",
             "</section>",
-            "<section class=\"panel map-shell\">",
+            '<section class="panel map-shell">',
             svg,
             "</section>",
             "</div>",
@@ -1034,18 +1032,18 @@ def _build_map_svg(
     for longitude in range(-180, 181, 30):
         x, _ = project(float(longitude), 0.0)
         grid_lines.append(
-            f"<line x1=\"{x}\" y1=\"{margin_top}\" x2=\"{x}\" y2=\"{margin_top + inner_height}\" stroke=\"#b9cfc6\" stroke-width=\"1\" stroke-dasharray=\"4 6\" />"
+            f'<line x1="{x}" y1="{margin_top}" x2="{x}" y2="{margin_top + inner_height}" stroke="#b9cfc6" stroke-width="1" stroke-dasharray="4 6" />'
         )
         grid_lines.append(
-            f"<text x=\"{x}\" y=\"{height - 16}\" font-size=\"11\" text-anchor=\"middle\" fill=\"#557567\">{longitude}</text>"
+            f'<text x="{x}" y="{height - 16}" font-size="11" text-anchor="middle" fill="#557567">{longitude}</text>'
         )
     for latitude in range(-60, 91, 30):
         _, y = project(0.0, float(latitude))
         grid_lines.append(
-            f"<line x1=\"{margin_left}\" y1=\"{y}\" x2=\"{margin_left + inner_width}\" y2=\"{y}\" stroke=\"#b9cfc6\" stroke-width=\"1\" stroke-dasharray=\"4 6\" />"
+            f'<line x1="{margin_left}" y1="{y}" x2="{margin_left + inner_width}" y2="{y}" stroke="#b9cfc6" stroke-width="1" stroke-dasharray="4 6" />'
         )
         grid_lines.append(
-            f"<text x=\"18\" y=\"{y + 4}\" font-size=\"11\" fill=\"#557567\">{latitude}</text>"
+            f'<text x="18" y="{y + 4}" font-size="11" fill="#557567">{latitude}</text>'
         )
 
     line_elements: list[str] = []
@@ -1058,8 +1056,8 @@ def _build_map_svg(
         line_elements.append(
             "\n".join(
                 [
-                    f"<line x1=\"{left_x}\" y1=\"{left_y}\" x2=\"{right_x}\" y2=\"{right_y}\" stroke=\"{stroke}\" stroke-width=\"{3.6 if row.visible else 2.0}\" opacity=\"{opacity}\""
-                    + (f" stroke-dasharray=\"{dasharray}\"" if dasharray else "")
+                    f'<line x1="{left_x}" y1="{left_y}" x2="{right_x}" y2="{right_y}" stroke="{stroke}" stroke-width="{3.6 if row.visible else 2.0}" opacity="{opacity}"'
+                    + (f' stroke-dasharray="{dasharray}"' if dasharray else "")
                     + " >",
                     "<title>"
                     + escape(
@@ -1083,7 +1081,7 @@ def _build_map_svg(
         marker_elements.append(
             "\n".join(
                 [
-                    f"<circle cx=\"{x}\" cy=\"{y}\" r=\"{radius}\" fill=\"{fill}\" stroke=\"#ffffff\" stroke-width=\"1.4\" opacity=\"{opacity}\">",
+                    f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{fill}" stroke="#ffffff" stroke-width="1.4" opacity="{opacity}">',
                     "<title>"
                     + escape(
                         f"{row.label}; lat={row.latitude}; lon={row.longitude}; state={row.state_label or 'continuous'}; confidence={row.confidence}; uncertainty_km={_format_optional_float(row.uncertainty_km)}"
@@ -1095,12 +1093,12 @@ def _build_map_svg(
         )
     return "\n".join(
         [
-            f"<svg viewBox=\"0 0 {width} {height}\" role=\"img\" aria-label=\"Geographic reconstruction map\">",
-            f"<rect x=\"{margin_left}\" y=\"{margin_top}\" width=\"{inner_width}\" height=\"{inner_height}\" rx=\"24\" fill=\"#edf5f2\" stroke=\"#7aa28f\" stroke-width=\"1.5\" />",
+            f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="Geographic reconstruction map">',
+            f'<rect x="{margin_left}" y="{margin_top}" width="{inner_width}" height="{inner_height}" rx="24" fill="#edf5f2" stroke="#7aa28f" stroke-width="1.5" />',
             *grid_lines,
             *line_elements,
             *marker_elements,
-            f"<text x=\"{margin_left}\" y=\"18\" font-size=\"13\" fill=\"#355648\">longitude / latitude map extent</text>",
+            f'<text x="{margin_left}" y="18" font-size="13" fill="#355648">longitude / latitude map extent</text>',
             "</svg>",
         ]
     )

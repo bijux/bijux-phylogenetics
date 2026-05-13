@@ -312,6 +312,7 @@ def audit_alignment_inference_readiness(path: Path) -> InferenceReadinessAuditRe
         warnings=generic_warnings,
     )
 
+
 def validate_model_selection_against_engine_outputs(
     manifest_path: Path,
 ) -> ModelSelectionValidationReport:
@@ -328,7 +329,9 @@ def validate_model_selection_against_engine_outputs(
         if iqtree_report is None
         else parse_iqtree_model_selection_summary(
             iqtree_report_path=iqtree_report,
-            model_sidecar_path=resolve_iqtree_model_sidecar(iqtree_report.with_suffix("")),
+            model_sidecar_path=resolve_iqtree_model_sidecar(
+                iqtree_report.with_suffix("")
+            ),
         )
     )
     report_selected_model = (
@@ -430,10 +433,18 @@ def validate_model_selection_against_engine_outputs(
         report_selected_model=report_selected_model,
         report_selected_criterion=report_selected_criterion,
         artifact_selected_model=artifact_selected_model,
-        candidate_model_count=0 if report_summary is None else report_summary.candidate_count,
-        best_model_aic=None if report_summary is None else report_summary.best_model_aic,
-        best_model_aicc=None if report_summary is None else report_summary.best_model_aicc,
-        best_model_bic=None if report_summary is None else report_summary.best_model_bic,
+        candidate_model_count=0
+        if report_summary is None
+        else report_summary.candidate_count,
+        best_model_aic=None
+        if report_summary is None
+        else report_summary.best_model_aic,
+        best_model_aicc=None
+        if report_summary is None
+        else report_summary.best_model_aicc,
+        best_model_bic=None
+        if report_summary is None
+        else report_summary.best_model_bic,
         valid=not issues,
         issues=issues,
     )
@@ -856,21 +867,15 @@ def summarize_sh_alrt_support_distribution(
             "one or more internal clades show conflicting sh-alrt and ufboot support signals"
         )
     if any(
-        not node.sh_alrt_strong
-        for node in nodes
-        if node.sh_alrt_support is not None
+        not node.sh_alrt_strong for node in nodes if node.sh_alrt_support is not None
     ):
-        warnings.append("one or more internal clades remain weakly supported by sh-alrt")
-    if any(
-        not node.ufboot_strong
-        for node in nodes
-        if node.ufboot_support is not None
-    ):
+        warnings.append(
+            "one or more internal clades remain weakly supported by sh-alrt"
+        )
+    if any(not node.ufboot_strong for node in nodes if node.ufboot_support is not None):
         warnings.append("one or more internal clades remain weakly supported by ufboot")
     sh_alrt_values = sorted(
-        node.sh_alrt_support
-        for node in nodes
-        if node.sh_alrt_support is not None
+        node.sh_alrt_support for node in nodes if node.sh_alrt_support is not None
     )
     ufboot_values = sorted(
         node.ufboot_support for node in nodes if node.ufboot_support is not None
@@ -1099,11 +1104,11 @@ def validate_inference_engine_outputs(
         tree_validation = validate_ml_tree_contains_expected_taxa(manifest_path)
         issues.extend(tree_validation.issues)
         if output_paths.get("iqtree_log") is None:
-            issues.append("maximum-likelihood manifest is missing the iqtree_log output")
-        if manifest.get("selected_model") is None:
             issues.append(
-                "maximum-likelihood manifest is missing the selected model"
+                "maximum-likelihood manifest is missing the iqtree_log output"
             )
+        if manifest.get("selected_model") is None:
+            issues.append("maximum-likelihood manifest is missing the selected model")
         if manifest.get("log_likelihood") is None:
             issues.append(
                 "maximum-likelihood manifest is missing the log_likelihood field"
@@ -1151,10 +1156,7 @@ def validate_inference_engine_outputs(
                 issues.append(
                     "fast-approximate-tree manifest does not record the FastTree support label kind"
                 )
-            if (
-                fasttree_support_summary.get("support_scale")
-                != "proportion-0-to-1"
-            ):
+            if fasttree_support_summary.get("support_scale") != "proportion-0-to-1":
                 issues.append(
                     "fast-approximate-tree manifest does not record the FastTree support scale"
                 )
@@ -1168,9 +1170,13 @@ def validate_inference_engine_outputs(
             bootstrap_validation = validate_bootstrap_tree_set(bootstrap_path)
             issues.extend(bootstrap_validation.issues)
         if output_paths.get("support_tree") is None:
-            issues.append("bootstrap-support manifest is missing the support_tree output")
+            issues.append(
+                "bootstrap-support manifest is missing the support_tree output"
+            )
         if output_paths.get("support_table") is None:
-            issues.append("bootstrap-support manifest is missing the support_table output")
+            issues.append(
+                "bootstrap-support manifest is missing the support_table output"
+            )
         if output_paths.get("low_support_branches") is None:
             issues.append(
                 "bootstrap-support manifest is missing the low_support_branches output"
@@ -1184,7 +1190,9 @@ def validate_inference_engine_outputs(
         if manifest.get("selected_model") is None:
             issues.append("bootstrap-support manifest is missing the selected model")
         if manifest.get("log_likelihood") is None:
-            issues.append("bootstrap-support manifest is missing the log_likelihood field")
+            issues.append(
+                "bootstrap-support manifest is missing the log_likelihood field"
+            )
         iqtree_summary = manifest.get("iqtree_summary")
         if not isinstance(iqtree_summary, dict):
             issues.append("bootstrap-support manifest is missing the iqtree_summary")
@@ -1244,7 +1252,9 @@ def validate_inference_engine_outputs(
         if output_paths.get("support_tree") is None:
             issues.append("sh-alrt-support manifest is missing the support_tree output")
         if output_paths.get("support_table") is None:
-            issues.append("sh-alrt-support manifest is missing the support_table output")
+            issues.append(
+                "sh-alrt-support manifest is missing the support_table output"
+            )
         if output_paths.get("conflicting_support_branches") is None:
             issues.append(
                 "sh-alrt-support manifest is missing the conflicting_support_branches output"
@@ -1254,7 +1264,9 @@ def validate_inference_engine_outputs(
         if manifest.get("selected_model") is None:
             issues.append("sh-alrt-support manifest is missing the selected model")
         if manifest.get("log_likelihood") is None:
-            issues.append("sh-alrt-support manifest is missing the log_likelihood field")
+            issues.append(
+                "sh-alrt-support manifest is missing the log_likelihood field"
+            )
         iqtree_summary = manifest.get("iqtree_summary")
         if not isinstance(iqtree_summary, dict):
             issues.append("sh-alrt-support manifest is missing the iqtree_summary")

@@ -222,7 +222,9 @@ def summarize_geographic_migration_events(
         strongly_supported_event_count=sum(
             row.strongly_supported for row in event_rows
         ),
-        mean_event_support=stable_value(statistics.fmean(supports)) if supports else 0.0,
+        mean_event_support=stable_value(statistics.fmean(supports))
+        if supports
+        else 0.0,
         earliest_midpoint_depth=(
             stable_value(min(row.midpoint_depth for row in event_rows))
             if event_rows
@@ -381,12 +383,8 @@ def summarize_geographic_migration_event_tree_set(
         kept_tree_count=len(analysis_trees),
         shared_tree_taxon_count=len(shared_tree_taxa),
         analysis_taxon_count=len(analysis_taxa),
-        rooted_topology_count=len(
-            {row.rooted_topology_id for row in tree_rows}
-        ),
-        unrooted_topology_count=len(
-            {row.unrooted_topology_id for row in tree_rows}
-        ),
+        rooted_topology_count=len({row.rooted_topology_id for row in tree_rows}),
+        unrooted_topology_count=len({row.unrooted_topology_id for row in tree_rows}),
         event_row_count=len(event_rows),
         event_summary_count=len(event_summaries),
         topology_sensitive_event_count=sum(
@@ -690,9 +688,7 @@ def write_geographic_migration_tree_set_event_summary_table(
                 "target_region": row.target_region,
                 "tree_presence_count": str(row.tree_presence_count),
                 "tree_presence_fraction": str(row.tree_presence_fraction),
-                "strongly_supported_tree_count": str(
-                    row.strongly_supported_tree_count
-                ),
+                "strongly_supported_tree_count": str(row.strongly_supported_tree_count),
                 "strongly_supported_tree_fraction": str(
                     row.strongly_supported_tree_fraction
                 ),
@@ -720,10 +716,7 @@ def _build_migration_event_rows(
     base_report: GeographicStateModelReport,
     tree: PhyloTree,
 ) -> list[GeographicMigrationEventRow]:
-    node_by_signature = {
-        node_signature(node): node
-        for node in tree.iter_nodes()
-    }
+    node_by_signature = {node_signature(node): node for node in tree.iter_nodes()}
     depth_by_node = _node_depths(tree)
     rows: list[GeographicMigrationEventRow] = []
     for event in base_report.transition_event_rows:
@@ -777,10 +770,7 @@ def _node_depths(tree: PhyloTree) -> dict[str, float]:
 
 def _tree_depth(tree: PhyloTree) -> float:
     return stable_value(
-        max(
-            (distance or 0.0)
-            for distance in tree.root_to_tip_lengths()
-        )
+        max((distance or 0.0) for distance in tree.root_to_tip_lengths())
     )
 
 
@@ -804,7 +794,9 @@ def _summarize_tree_set_events(
             [],
         ).append(row)
     summaries: list[GeographicMigrationTreeSetEventSummaryRow] = []
-    for (branch_id, source_region, target_region), event_rows in sorted(grouped.items()):
+    for (branch_id, source_region, target_region), event_rows in sorted(
+        grouped.items()
+    ):
         presence_fraction = stable_value(len(event_rows) / kept_tree_count)
         strongly_supported_tree_count = sum(
             row.strongly_supported for row in event_rows
@@ -813,9 +805,7 @@ def _summarize_tree_set_events(
             strongly_supported_tree_count / len(event_rows)
         )
         midpoint_depths = [row.midpoint_depth for row in event_rows]
-        mean_support = stable_value(
-            statistics.fmean(row.support for row in event_rows)
-        )
+        mean_support = stable_value(statistics.fmean(row.support for row in event_rows))
         if presence_fraction < 1.0:
             stability_class = "topology_sensitive"
         elif strongly_supported_tree_fraction < 0.5 or mean_support < 0.5:

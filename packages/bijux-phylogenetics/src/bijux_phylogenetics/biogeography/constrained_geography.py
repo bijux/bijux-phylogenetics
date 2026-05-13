@@ -237,14 +237,8 @@ def summarize_constrained_geographic_report(
     else:
         preferred_constraint = "unconstrained"
     observed_regions = sorted(
-        {
-            row.source_region
-            for row in report.transition_rows
-        }
-        | {
-            row.target_region
-            for row in report.transition_rows
-        }
+        {row.source_region for row in report.transition_rows}
+        | {row.target_region for row in report.transition_rows}
     )
     total_directed_pairs = len(observed_regions) * max(len(observed_regions) - 1, 0)
     return ConstrainedGeographicSummary(
@@ -256,7 +250,8 @@ def summarize_constrained_geographic_report(
         excluded_taxon_count=len(report.exclusion_rows),
         observed_region_count=len(observed_regions),
         allowed_transition_count=len(report.allowed_transition_pairs),
-        forbidden_transition_count=total_directed_pairs - len(report.allowed_transition_pairs),
+        forbidden_transition_count=total_directed_pairs
+        - len(report.allowed_transition_pairs),
         constrained_log_likelihood=constrained_fit.log_likelihood,
         unconstrained_log_likelihood=unconstrained_fit.log_likelihood,
         likelihood_difference=stable_value(
@@ -319,9 +314,7 @@ def write_constrained_geographic_summary_table(
                     summary.unconstrained_log_likelihood
                 ),
                 "likelihood_difference": str(summary.likelihood_difference),
-                "constrained_parameter_count": str(
-                    summary.constrained_parameter_count
-                ),
+                "constrained_parameter_count": str(summary.constrained_parameter_count),
                 "unconstrained_parameter_count": str(
                     summary.unconstrained_parameter_count
                 ),
@@ -604,7 +597,9 @@ def _load_geographic_adjacency_matrix(path: Path) -> _GeographicAdjacencyMatrix:
         )
     region_order = header[1:]
     if len(set(region_order)) != len(region_order):
-        raise ValueError("geographic adjacency matrix contains duplicate region columns")
+        raise ValueError(
+            "geographic adjacency matrix contains duplicate region columns"
+        )
     row_lookup: dict[str, list[str]] = {}
     for row in rows[1:]:
         normalized = [cell.strip() for cell in row]
@@ -719,10 +714,7 @@ def _validate_in_tree_region_labels(
     if not invalid_rows:
         return
     invalid_labels = sorted(
-        {
-            row.normalized_state or row.raw_state
-            for row in invalid_rows
-        }
+        {row.normalized_state or row.raw_state for row in invalid_rows}
     )
     raise AncestralReconstructionError(
         "geographic adjacency matrix does not define one or more analyzed region labels: "

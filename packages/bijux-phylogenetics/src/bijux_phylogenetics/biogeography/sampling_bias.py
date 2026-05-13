@@ -11,22 +11,24 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     stable_value,
 )
-from bijux_phylogenetics.biogeography.geographic_states import GeographicExcludedTaxonRow
+from bijux_phylogenetics.biogeography.geographic_states import (
+    GeographicExcludedTaxonRow,
+)
+from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.discrete_evolution import (
     NodeStateEstimate,
     TransitionEvent,
     TransitionSupportRow,
     _estimate_node_states,
     _estimate_transition_support_rows,
-    _fitch_candidate_sets,
     _fit_transition_matrix,
+    _fitch_candidate_sets,
     _resolve_state_order,
     _root_prior,
     _stationary_frequencies,
     _transition_events,
     audit_discrete_state_coding,
 )
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.errors import AncestralReconstructionError
 
 _MODEL_ALIAS_TO_INTERNAL = {
@@ -290,7 +292,9 @@ def write_geographic_sampling_bias_summary_table(
                 "root_region_unweighted": summary.root_region_unweighted,
                 "root_region_weighted": summary.root_region_weighted,
                 "root_region_changed": str(summary.root_region_changed).lower(),
-                "compared_internal_node_count": str(summary.compared_internal_node_count),
+                "compared_internal_node_count": str(
+                    summary.compared_internal_node_count
+                ),
                 "changed_internal_node_count": str(summary.changed_internal_node_count),
                 "compared_transition_count": str(summary.compared_transition_count),
                 "changed_transition_count": str(summary.changed_transition_count),
@@ -510,11 +514,14 @@ def _build_count_rows(
 ) -> list[GeographicSamplingCountRow]:
     total = sum(counts.values())
     weighted_counts = {
-        region: stable_value(count * weights[region]) for region, count in counts.items()
+        region: stable_value(count * weights[region])
+        for region, count in counts.items()
     }
     weighted_total = sum(weighted_counts.values())
     dominant_fraction = max(counts.values()) / max(total, 1)
-    weighted_dominant_fraction = max(weighted_counts.values()) / max(weighted_total, 1.0)
+    weighted_dominant_fraction = max(weighted_counts.values()) / max(
+        weighted_total, 1.0
+    )
     return [
         GeographicSamplingCountRow(
             region=region,
@@ -541,7 +548,9 @@ def _build_node_rows(
     weighted: _SamplingBiasModelSurface,
 ) -> list[GeographicSamplingBiasNodeRow]:
     weighted_by_node = {estimate.node: estimate for estimate in weighted.estimates}
-    internal_estimates = [estimate for estimate in baseline.estimates if not estimate.is_tip]
+    internal_estimates = [
+        estimate for estimate in baseline.estimates if not estimate.is_tip
+    ]
     root_node = max(
         internal_estimates,
         key=lambda estimate: (len(estimate.descendant_taxa), estimate.node),
@@ -566,10 +575,14 @@ def _build_node_rows(
                 weighted_region=weighted_region,
                 unweighted_confidence=unweighted_confidence,
                 weighted_confidence=weighted_confidence,
-                confidence_delta=stable_value(weighted_confidence - unweighted_confidence),
+                confidence_delta=stable_value(
+                    weighted_confidence - unweighted_confidence
+                ),
                 changed=weighted_region != estimate.most_likely_state,
                 unweighted_region_probabilities=dict(estimate.state_probabilities),
-                weighted_region_probabilities=dict(weighted_estimate.state_probabilities),
+                weighted_region_probabilities=dict(
+                    weighted_estimate.state_probabilities
+                ),
             )
         )
     return rows
@@ -713,9 +726,7 @@ def _normalize_probabilities(probabilities: dict[str, float]) -> dict[str, float
     total = sum(probabilities.values())
     if total <= 0.0:
         uniform = 1.0 / max(len(probabilities), 1)
-        return {
-            region: stable_value(uniform) for region in sorted(probabilities)
-        }
+        return {region: stable_value(uniform) for region in sorted(probabilities)}
     return {
         region: stable_value(probability / total)
         for region, probability in sorted(probabilities.items())
@@ -774,14 +785,16 @@ def _run_sampling_bias_model(
     )
     candidate_sets = _fitch_candidate_sets(dataset.tree, dataset.states_by_taxon)
     stationary = (
-        _weighted_stationary_frequencies(dataset.states_by_taxon, state_order, region_weights)
+        _weighted_stationary_frequencies(
+            dataset.states_by_taxon, state_order, region_weights
+        )
         if region_weights is not None
         else _stationary_frequencies(dataset.states_by_taxon, state_order)
     )
     priority_weights = (
         {state: region_weights.get(state, 1.0) for state in state_order}
         if region_weights is not None
-        else {state: 1.0 for state in state_order}
+        else dict.fromkeys(state_order, 1.0)
     )
     er_resolved = _resolve_biased_er_states(
         dataset.tree,

@@ -111,7 +111,9 @@ def write_pgls_interaction_coefficient_table(
                 "component_source_columns": ";".join(row.component_source_columns),
                 "component_kinds": ";".join(row.component_kinds),
                 "component_columns": ";".join(row.component_columns),
-                "component_levels": ";".join(level or "" for level in row.component_levels),
+                "component_levels": ";".join(
+                    level or "" for level in row.component_levels
+                ),
                 "omitted_reference_levels": ";".join(row.omitted_reference_levels),
                 "estimate": format(row.estimate, ".15g"),
                 "standard_error": format(row.standard_error, ".15g"),
@@ -165,10 +167,12 @@ def _build_interaction_report(
                     coefficient_name=coefficient.name,
                     component_terms=list(interaction_audit.component_terms),
                     component_source_columns=[
-                        report.source_column or report.name for report in component_reports
+                        report.source_column or report.name
+                        for report in component_reports
                     ],
                     component_kinds=[
-                        _interaction_component_kind(report) for report in component_reports
+                        _interaction_component_kind(report)
+                        for report in component_reports
                     ],
                     component_columns=component_columns,
                     component_levels=[

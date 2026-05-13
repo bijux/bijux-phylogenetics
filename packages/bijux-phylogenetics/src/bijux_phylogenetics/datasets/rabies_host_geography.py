@@ -170,8 +170,9 @@ class RabiesCrossHostGeographyPanelDemoResult:
     overview_path: Path
 
 
-def load_rabies_cross_host_geography_panel_dataset(
-) -> RabiesCrossHostGeographyPanelDataset:
+def load_rabies_cross_host_geography_panel_dataset() -> (
+    RabiesCrossHostGeographyPanelDataset
+):
     """Expose the packaged rabies host-and-geography panel as one owned surface."""
     dataset_root = _resource_root()
     sequences_path = dataset_root / "sequences.fasta"
@@ -218,8 +219,12 @@ def export_rabies_cross_host_geography_panel_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
-    sequences_path = shutil.copy2(dataset.sequences_path, destination / "sequences.fasta")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
+    sequences_path = shutil.copy2(
+        dataset.sequences_path, destination / "sequences.fasta"
+    )
     metadata_path = shutil.copy2(dataset.metadata_path, destination / "metadata.csv")
     centroids_path = shutil.copy2(
         dataset.centroids_path, destination / "region-centroids.csv"
@@ -325,7 +330,9 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         report.rooted_tree_path,
         output_root / report.rooted_tree_path.name,
     )
-    stable_rooting_report = replace(report.rooting_report, tree_path=Path(tree_path.name))
+    stable_rooting_report = replace(
+        report.rooting_report, tree_path=Path(tree_path.name)
+    )
     rooting_report_path = write_tree_rooting_report(
         output_root / f"{report.dataset.workflow_prefix}.rooting.tsv",
         stable_rooting_report,
@@ -346,7 +353,9 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         workflow.manifest_path,
         output_root / workflow.manifest_path.name,
     )
-    engine_artifact_root = output_root / "engine-artifacts" / report.dataset.workflow_prefix
+    engine_artifact_root = (
+        output_root / "engine-artifacts" / report.dataset.workflow_prefix
+    )
     shutil.copytree(workflow.engine_artifact_dir, engine_artifact_root)
 
     host_switch_summary_path = write_host_switch_summary_table(
@@ -381,7 +390,9 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
     biogeography_output_root = output_root / "biogeography"
     shutil.copytree(report.biogeography_report.output_dir, biogeography_output_root)
     biogeography_report_path = biogeography_output_root / "biogeography-report.html"
-    biogeography_tree_figure_path = biogeography_output_root / "ancestral-region-tree.svg"
+    biogeography_tree_figure_path = (
+        biogeography_output_root / "ancestral-region-tree.svg"
+    )
     biogeography_map_path = biogeography_output_root / "geographic-region-map.html"
 
     final_report_path = _write_integrated_report(
@@ -472,7 +483,9 @@ def run_rabies_cross_host_geography_panel_demo(
         shutil.rmtree(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
     dataset = load_rabies_cross_host_geography_panel_dataset()
-    dataset_export = export_rabies_cross_host_geography_panel_dataset(output_root / "dataset")
+    dataset_export = export_rabies_cross_host_geography_panel_dataset(
+        output_root / "dataset"
+    )
     with TemporaryDirectory(prefix="rabies-cross-host-geography-") as temporary_root:
         workflow_report = run_rabies_cross_host_geography_panel_workflow(
             Path(temporary_root),
@@ -487,7 +500,9 @@ def run_rabies_cross_host_geography_panel_demo(
             output_root / "workflow",
             workflow_report,
         )
-    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", dataset, workflow_bundle
+    )
     return RabiesCrossHostGeographyPanelDemoResult(
         output_root=output_root,
         dataset=dataset,
@@ -611,8 +626,7 @@ def _write_manifest(
             "region-centroids.csv": _checksum(report.dataset.centroids_path),
         },
         "output_checksums": {
-            key: _checksum(value)
-            for key, value in bundle_paths.items()
+            key: _checksum(value) for key, value in bundle_paths.items()
         },
         "metrics": {
             "sequence_count": report.dataset.sequence_count,
@@ -625,7 +639,9 @@ def _write_manifest(
             "root_region": report.biogeography_report.state_report.summary.root_region,
         },
     }
-    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -640,7 +656,7 @@ def _write_integrated_report(
     html = "\n".join(
         [
             "<!DOCTYPE html>",
-            "<html lang=\"en\">",
+            '<html lang="en">',
             "<head>",
             '  <meta charset="utf-8">',
             "  <title>Bijux Rabies Host and Geography Workflow</title>",
@@ -670,14 +686,14 @@ def _write_integrated_report(
             "<main>",
             "  <h1>Bijux Rabies Host and Geography Workflow</h1>",
             "  <p>Complete end-to-end review for one real rabies nucleoprotein panel. The workflow starts from raw sequences plus combined host and geography metadata, infers a maximum-likelihood tree with bootstrap support, roots that tree on one explicit outgroup, then carries host-switching and biogeographic reconstruction into one reviewer-facing handoff.</p>",
-            "  <section class=\"cards\">",
-            f"    <div class=\"card\"><span class=\"label\">sequences</span><strong>{report.dataset.sequence_count}</strong></div>",
-            f"    <div class=\"card\"><span class=\"label\">selected model</span><strong>{escape(report.fasta_to_tree.selected_model)}</strong></div>",
-            f"    <div class=\"card\"><span class=\"label\">support range</span><strong>{_support_range_text(support_summary.minimum_support, support_summary.maximum_support)}</strong></div>",
-            f"    <div class=\"card\"><span class=\"label\">root host</span><strong>{escape(host_summary.root_host)}</strong></div>",
-            f"    <div class=\"card\"><span class=\"label\">root region</span><strong>{escape(geography_summary.root_region)}</strong></div>",
+            '  <section class="cards">',
+            f'    <div class="card"><span class="label">sequences</span><strong>{report.dataset.sequence_count}</strong></div>',
+            f'    <div class="card"><span class="label">selected model</span><strong>{escape(report.fasta_to_tree.selected_model)}</strong></div>',
+            f'    <div class="card"><span class="label">support range</span><strong>{_support_range_text(support_summary.minimum_support, support_summary.maximum_support)}</strong></div>',
+            f'    <div class="card"><span class="label">root host</span><strong>{escape(host_summary.root_host)}</strong></div>',
+            f'    <div class="card"><span class="label">root region</span><strong>{escape(geography_summary.root_region)}</strong></div>',
             "  </section>",
-            "  <section class=\"panel\">",
+            '  <section class="panel">',
             "    <h2>Reviewer Summary</h2>",
             _html_list(
                 [
@@ -689,8 +705,8 @@ def _write_integrated_report(
                 ]
             ),
             "  </section>",
-            "  <section class=\"grid\" style=\"margin-top: 20px;\">",
-            "    <section class=\"panel\">",
+            '  <section class="grid" style="margin-top: 20px;">',
+            '    <section class="panel">',
             "      <h2>Sequence-to-Tree Outputs</h2>",
             _html_list(
                 [
@@ -703,7 +719,7 @@ def _write_integrated_report(
             ),
             _support_table(report.fasta_to_tree),
             "    </section>",
-            "    <section class=\"panel\">",
+            '    <section class="panel">',
             "      <h2>Host Switching</h2>",
             _html_list(
                 [
@@ -715,25 +731,25 @@ def _write_integrated_report(
             ),
             _host_count_table(report.host_switching),
             "    </section>",
-            "    <section class=\"panel full\">",
+            '    <section class="panel full">',
             "      <h2>Biogeography</h2>",
-            "      <p>The bundle includes the detailed biogeography package at <a href=\"biogeography/biogeography-report.html\">biogeography/biogeography-report.html</a> together with the ancestral-region tree SVG and the self-contained geographic map.</p>",
-            "      <div class=\"grid\">",
-            "        <div class=\"panel\">",
+            '      <p>The bundle includes the detailed biogeography package at <a href="biogeography/biogeography-report.html">biogeography/biogeography-report.html</a> together with the ancestral-region tree SVG and the self-contained geographic map.</p>',
+            '      <div class="grid">',
+            '        <div class="panel">',
             "          <h2>Ancestral-Region Tree</h2>",
-            "          <div class=\"figure-shell\">",
-            "            <img src=\"biogeography/ancestral-region-tree.svg\" alt=\"Ancestral region tree\">",
+            '          <div class="figure-shell">',
+            '            <img src="biogeography/ancestral-region-tree.svg" alt="Ancestral region tree">',
             "          </div>",
             "        </div>",
-            "        <div class=\"panel\">",
+            '        <div class="panel">',
             "          <h2>Geographic Map</h2>",
-            "          <iframe src=\"biogeography/geographic-region-map.html\" title=\"Geographic region map\"></iframe>",
+            '          <iframe src="biogeography/geographic-region-map.html" title="Geographic region map"></iframe>',
             "        </div>",
             "      </div>",
             _migration_event_table(report.biogeography_report),
             "    </section>",
             "  </section>",
-            "  <section class=\"panel\" style=\"margin-top: 20px;\">",
+            '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Key Files</h2>",
             _html_list(
                 [

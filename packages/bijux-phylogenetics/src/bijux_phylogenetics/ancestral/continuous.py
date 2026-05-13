@@ -279,11 +279,15 @@ def _reconstruct_continuous_from_dataset(
         weak_support_nodes=weak_support_nodes,
         estimates=ordered_estimates,
     )
+
+
 def summarize_continuous_ancestral_report(
     report: ContinuousAncestralReport,
 ) -> ContinuousAncestralSummary:
     """Summarize the main review facts for one continuous ancestral report."""
-    internal_estimates = [estimate for estimate in report.estimates if not estimate.is_tip]
+    internal_estimates = [
+        estimate for estimate in report.estimates if not estimate.is_tip
+    ]
     if not internal_estimates:
         raise ValueError(
             "continuous ancestral summary requires at least one internal-node estimate"
@@ -373,9 +377,7 @@ def write_continuous_ancestral_summary_table(
                 "analyzed_taxon_count": str(summary.analyzed_taxon_count),
                 "excluded_taxon_count": str(summary.excluded_taxon_count),
                 "missing_tip_taxon_count": str(summary.missing_tip_taxon_count),
-                "non_numeric_tip_taxon_count": str(
-                    summary.non_numeric_tip_taxon_count
-                ),
+                "non_numeric_tip_taxon_count": str(summary.non_numeric_tip_taxon_count),
                 "internal_node_count": str(summary.internal_node_count),
                 "unstable_node_count": str(summary.unstable_node_count),
                 "weak_support_node_count": str(summary.weak_support_node_count),

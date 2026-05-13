@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import csv
-import json
 from dataclasses import dataclass
+import json
 from pathlib import Path
 import tempfile
 
@@ -313,7 +313,9 @@ def _summarize_trait_regime_mapping_from_tip_states(
             analyzed_descendant_taxa=list(
                 branch_lookup[estimate.node].analyzed_descendant_taxa
             ),
-            contributes_to_analysis=branch_lookup[estimate.node].contributes_to_analysis,
+            contributes_to_analysis=branch_lookup[
+                estimate.node
+            ].contributes_to_analysis,
         )
         for estimate in reconstruction.estimates
         if estimate.node in branch_lookup
@@ -353,7 +355,9 @@ def _summarize_trait_regime_mapping_from_tip_states(
         observed_regimes=list(reconstruction.observed_states),
         branch_rows=sorted(branch_rows, key=lambda row: row.branch_id),
         node_rows=sorted(node_rows, key=lambda row: row.node_id),
-        ambiguous_branch_count=sum(1 for row in branch_rows if row.ambiguous_assignment),
+        ambiguous_branch_count=sum(
+            1 for row in branch_rows if row.ambiguous_assignment
+        ),
         warnings=warnings,
         analysis_tree_newick=reconstruction.analysis_tree_newick,
     )
@@ -447,7 +451,9 @@ def _build_tip_state_exclusions(
     rows: list[TraitRegimeExclusion] = []
     rows.extend(
         TraitRegimeExclusion(taxon=taxon, reason="missing_from_state_table")
-        for taxon in sorted(set(source_tree.tip_names) - {row[table.taxon_column] for row in table.rows})
+        for taxon in sorted(
+            set(source_tree.tip_names) - {row[table.taxon_column] for row in table.rows}
+        )
     )
     rows.extend(
         TraitRegimeExclusion(taxon=taxon, reason="missing_state_value")
@@ -593,5 +599,7 @@ def write_trait_regime_exclusion_table(
     return write_taxon_rows(
         path,
         columns=["taxon", "reason"],
-        rows=[{"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa],
+        rows=[
+            {"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa
+        ],
     )

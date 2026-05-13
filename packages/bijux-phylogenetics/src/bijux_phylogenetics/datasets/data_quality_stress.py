@@ -172,8 +172,9 @@ class CatarrhineDataQualityStressPanelDemoResult:
     overview_path: Path
 
 
-def load_catarrhine_data_quality_stress_panel_dataset(
-) -> CatarrhineDataQualityStressPanelDataset:
+def load_catarrhine_data_quality_stress_panel_dataset() -> (
+    CatarrhineDataQualityStressPanelDataset
+):
     """Expose the packaged catarrhine stress panel as a first-class dataset surface."""
     dataset_root = _resource_root()
     raw_root = dataset_root / "raw"
@@ -271,7 +272,8 @@ def run_catarrhine_data_quality_stress_panel_workflow(
         {
             row.taxon
             for row in missing_traits
-            if row.required_for_analysis and row.action == "drop_taxon_from_cleaned_traits"
+            if row.required_for_analysis
+            and row.action == "drop_taxon_from_cleaned_traits"
         }
     )
     excluded_taxa = sorted(
@@ -413,7 +415,9 @@ def write_catarrhine_data_quality_stress_panel_workflow_bundle(
         missing_trait_value_count=len(report.missing_traits),
         sequence_outlier_count=len(report.sequence_outliers),
         tree_zero_length_branch_count=report.raw_tree_validation.zero_length_branches,
-        tree_long_branch_outlier_count=len(report.raw_tree_inspection.long_branch_outliers),
+        tree_long_branch_outlier_count=len(
+            report.raw_tree_inspection.long_branch_outliers
+        ),
         dropped_taxon_count=len(report.dropped_taxa),
         repaired_branch_count=len(report.repaired_branch_nodes),
         workflow_summary_path=workflow_summary_path,
@@ -449,7 +453,9 @@ def run_catarrhine_data_quality_stress_panel_demo(
             output_root / "workflow",
             workflow_report,
         )
-    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", dataset, workflow_bundle
+    )
     return CatarrhineDataQualityStressPanelDemoResult(
         output_root=output_root,
         dataset=dataset,
@@ -782,7 +788,9 @@ def _write_tree_issues_table(
             {
                 "issue_code": "long_branch_outlier",
                 "severity": "warning",
-                "affected_taxa": outlier.node if outlier.branch_type == "terminal" else "",
+                "affected_taxa": outlier.node
+                if outlier.branch_type == "terminal"
+                else "",
                 "affected_nodes": outlier.node,
                 "raw_value": _format_number(outlier.branch_length),
                 "action": (
@@ -836,7 +844,12 @@ def _write_cleaned_linkage_table(
     taxa = sorted(alignment_taxa | tree_taxa | trait_taxa)
     return write_taxon_rows(
         path,
-        columns=["taxon", "present_in_tree", "present_in_alignment", "present_in_traits"],
+        columns=[
+            "taxon",
+            "present_in_tree",
+            "present_in_alignment",
+            "present_in_traits",
+        ],
         rows=[
             {
                 "taxon": taxon,
@@ -868,7 +881,9 @@ def _write_cleaned_validation_table(
         },
         {
             "surface": "tree",
-            "status": "pass" if report.cleaned_tree_validation.biologically_safe else "warning",
+            "status": "pass"
+            if report.cleaned_tree_validation.biologically_safe
+            else "warning",
             "warning_count": str(len(report.cleaned_tree_validation.warnings)),
             "detail": report.cleaned_tree_validation.validity_decision,
         },

@@ -176,9 +176,7 @@ def summarize_ordered_discrete_report(
         delta_aic=delta_aic,
         preferred_ordering=preferred_ordering,
         differing_node_count=sum(row.differs for row in report.node_rows),
-        ambiguity_change_count=sum(
-            row.ambiguity_changed for row in report.node_rows
-        ),
+        ambiguity_change_count=sum(row.ambiguity_changed for row in report.node_rows),
         restricted_transition_count=sum(
             not row.ordered_transition_allowed for row in report.transition_rows
         ),
@@ -230,9 +228,7 @@ def write_ordered_discrete_summary_table(
                 "preferred_ordering": summary.preferred_ordering,
                 "differing_node_count": str(summary.differing_node_count),
                 "ambiguity_change_count": str(summary.ambiguity_change_count),
-                "restricted_transition_count": str(
-                    summary.restricted_transition_count
-                ),
+                "restricted_transition_count": str(summary.restricted_transition_count),
                 "warning_count": str(summary.warning_count),
             }
         ],
@@ -365,9 +361,13 @@ def _build_fit_row(report, *, ordering_mode: str) -> OrderedDiscreteFitRow:
     )
 
 
-def _build_node_rows(ordered_report, unordered_report) -> list[OrderedDiscreteNodeComparisonRow]:
+def _build_node_rows(
+    ordered_report, unordered_report
+) -> list[OrderedDiscreteNodeComparisonRow]:
     unordered_by_node = {
-        estimate.node: estimate for estimate in unordered_report.estimates if not estimate.is_tip
+        estimate.node: estimate
+        for estimate in unordered_report.estimates
+        if not estimate.is_tip
     }
     rows: list[OrderedDiscreteNodeComparisonRow] = []
     for ordered_estimate in ordered_report.estimates:
@@ -425,11 +425,15 @@ def _build_transition_rows(
 
 def _required_fit_value(value: float | None) -> float:
     if value is None:
-        raise ValueError("ordered discrete reconstruction requires likelihood fit details")
+        raise ValueError(
+            "ordered discrete reconstruction requires likelihood fit details"
+        )
     return value
 
 
 def _required_parameter_count(value: int | None) -> int:
     if value is None:
-        raise ValueError("ordered discrete reconstruction requires likelihood fit details")
+        raise ValueError(
+            "ordered discrete reconstruction requires likelihood fit details"
+        )
     return value

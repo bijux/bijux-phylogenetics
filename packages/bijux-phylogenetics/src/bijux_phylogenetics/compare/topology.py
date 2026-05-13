@@ -20,7 +20,6 @@ from bijux_phylogenetics.io.iqtree_support import (
 )
 from bijux_phylogenetics.io.trees import detect_tree_format
 
-
 RobinsonFouldsMode = str
 TaxonOverlapPolicy = str
 BranchScoreStatus = str
@@ -399,9 +398,8 @@ def _resolve_shared_taxa(
     right_only_taxa = sorted(right_taxa - left_taxa)
     if len(shared_taxa) < 2:
         raise ValueError("tree comparison requires at least two shared taxa")
-    if (
-        taxon_overlap_policy == "require-identical"
-        and (left_only_taxa or right_only_taxa)
+    if taxon_overlap_policy == "require-identical" and (
+        left_only_taxa or right_only_taxa
     ):
         raise ValueError(
             "tree comparison requires identical taxon sets when "
@@ -517,7 +515,9 @@ def _unrooted_branch_score_lengths(
             descendant_taxa: set[str] = set()
             for child in node.children:
                 descendant_taxa.update(
-                    visit(child, parent_is_root=node is tree.root and suppress_binary_root)
+                    visit(
+                        child, parent_is_root=node is tree.root and suppress_binary_root
+                    )
                 )
         if not descendant_taxa:
             return set()
@@ -529,7 +529,10 @@ def _unrooted_branch_score_lengths(
             )
         return descendant_taxa
 
-    child_taxa = [visit(child, parent_is_root=suppress_binary_root) for child in tree.root.children]
+    child_taxa = [
+        visit(child, parent_is_root=suppress_binary_root)
+        for child in tree.root.children
+    ]
     if not suppress_binary_root:
         return split_lengths
 
@@ -600,7 +603,9 @@ def _build_branch_score_report(
         right_length = right_lengths.get(signature)
         branch_score_difference: float | None
         squared_difference: float | None
-        if (left_present and left_length is None) or (right_present and right_length is None):
+        if (left_present and left_length is None) or (
+            right_present and right_length is None
+        ):
             branch_score_difference = None
             squared_difference = None
             missing_length_split_count += 1
@@ -791,10 +796,7 @@ def compare_clade_sets(left_path: Path, right_path: Path) -> CladeSetComparisonR
 def compare_clade_overlap(tree_paths: list[Path]) -> CladeOverlapComparisonReport:
     """Compare rooted clade overlap across two or more trees."""
     trees, shared_taxa, excluded_taxa = _resolve_shared_taxa_for_many_trees(tree_paths)
-    clade_maps = [
-        _informative_clades(tree, shared_taxa)
-        for tree in trees
-    ]
+    clade_maps = [_informative_clades(tree, shared_taxa) for tree in trees]
     biophylo_clade_maps = [
         _informative_biophylo_clades(_load_biophylo_tree(path), shared_taxa)
         for path in tree_paths
@@ -1230,7 +1232,9 @@ def _build_support_comparison_report(
         if left_present and right_present:
             continue
         left_support = (
-            _parse_support(left_clades[clade_id].confidence or left_clades[clade_id].name)
+            _parse_support(
+                left_clades[clade_id].confidence or left_clades[clade_id].name
+            )
             if left_present
             else None
         )
@@ -1243,11 +1247,11 @@ def _build_support_comparison_report(
         )
         left_fraction = support_fraction(left_support)
         right_fraction = support_fraction(right_support)
-        strongest_support_fraction = max(
-            value
-            for value in (left_fraction, right_fraction)
-            if value is not None
-        ) if left_fraction is not None or right_fraction is not None else None
+        strongest_support_fraction = (
+            max(value for value in (left_fraction, right_fraction) if value is not None)
+            if left_fraction is not None or right_fraction is not None
+            else None
+        )
         support_strength = _support_strength(
             left_support if left_present else right_support,
             strong_support_threshold=strong_support_threshold,
@@ -1258,19 +1262,13 @@ def _build_support_comparison_report(
             detail = "clade conflict could not be ranked because no branch support was available"
         elif strongest_support_fraction >= strong_support_threshold:
             conflict_classification = "high_support_conflict"
-            detail = (
-                "conflicting clade carried strong branch support in the tree where it was present"
-            )
+            detail = "conflicting clade carried strong branch support in the tree where it was present"
         elif strongest_support_fraction >= weak_support_threshold:
             conflict_classification = "moderate_support_disagreement"
-            detail = (
-                "conflicting clade carried moderate branch support in the tree where it was present"
-            )
+            detail = "conflicting clade carried moderate branch support in the tree where it was present"
         else:
             conflict_classification = "low_support_disagreement"
-            detail = (
-                "conflicting clade was only weakly supported in the tree where it was present"
-            )
+            detail = "conflicting clade was only weakly supported in the tree where it was present"
         conflicting_clades.append(
             SupportConflictRow(
                 split_id=_split_id(clade_id),
@@ -1390,7 +1388,9 @@ def write_clade_overlap_table(path: Path, tree_paths: list[Path]) -> Path:
     return path
 
 
-def write_support_comparison_table(path: Path, left_path: Path, right_path: Path) -> Path:
+def write_support_comparison_table(
+    path: Path, left_path: Path, right_path: Path
+) -> Path:
     """Write a flat TSV ledger for support-aware clade comparison."""
     report = compare_support_values(left_path, right_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -1425,16 +1425,26 @@ def write_support_comparison_table(path: Path, left_path: Path, right_path: Path
                     "comparison_status": "shared",
                     "left_present": "true",
                     "right_present": "true",
-                    "left_support": "" if row.left_support is None else row.left_support,
-                    "right_support": "" if row.right_support is None else row.right_support,
+                    "left_support": ""
+                    if row.left_support is None
+                    else row.left_support,
+                    "right_support": ""
+                    if row.right_support is None
+                    else row.right_support,
                     "left_support_fraction": (
-                        "" if row.left_support_fraction is None else row.left_support_fraction
+                        ""
+                        if row.left_support_fraction is None
+                        else row.left_support_fraction
                     ),
                     "right_support_fraction": (
-                        "" if row.right_support_fraction is None else row.right_support_fraction
+                        ""
+                        if row.right_support_fraction is None
+                        else row.right_support_fraction
                     ),
                     "support_fraction_delta": (
-                        "" if row.support_fraction_delta is None else row.support_fraction_delta
+                        ""
+                        if row.support_fraction_delta is None
+                        else row.support_fraction_delta
                     ),
                     "support_disagreement": str(row.support_disagreement).lower(),
                     "strongest_support_fraction": "",
@@ -1455,13 +1465,21 @@ def write_support_comparison_table(path: Path, left_path: Path, right_path: Path
                     "comparison_status": row.comparison_status,
                     "left_present": str(row.left_present).lower(),
                     "right_present": str(row.right_present).lower(),
-                    "left_support": "" if row.left_support is None else row.left_support,
-                    "right_support": "" if row.right_support is None else row.right_support,
+                    "left_support": ""
+                    if row.left_support is None
+                    else row.left_support,
+                    "right_support": ""
+                    if row.right_support is None
+                    else row.right_support,
                     "left_support_fraction": (
-                        "" if row.left_support_fraction is None else row.left_support_fraction
+                        ""
+                        if row.left_support_fraction is None
+                        else row.left_support_fraction
                     ),
                     "right_support_fraction": (
-                        "" if row.right_support_fraction is None else row.right_support_fraction
+                        ""
+                        if row.right_support_fraction is None
+                        else row.right_support_fraction
                     ),
                     "support_fraction_delta": "",
                     "support_disagreement": "false",
@@ -1484,9 +1502,7 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
     support = compare_support_values(left_path, right_path)
     branch_lengths = compare_branch_lengths(left_path, right_path)
     support_by_id = {row.split_id: row for row in support.shared_clades}
-    support_conflict_by_id = {
-        row.split_id: row for row in support.conflicting_clades
-    }
+    support_conflict_by_id = {row.split_id: row for row in support.conflicting_clades}
     branch_by_id = {row.split_id: row for row in branch_lengths.shared_splits}
     branch_score_by_id = {
         row.split_id: row for row in branch_lengths.branch_score.splits
@@ -1572,7 +1588,10 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
                     ),
                     "left_support_fraction": ""
                     if (
-                        (support_row is None or support_row.left_support_fraction is None)
+                        (
+                            support_row is None
+                            or support_row.left_support_fraction is None
+                        )
                         and (
                             support_conflict_row is None
                             or support_conflict_row.left_support_fraction is None
@@ -1585,7 +1604,10 @@ def write_tree_comparison_table(path: Path, left_path: Path, right_path: Path) -
                     ),
                     "right_support_fraction": ""
                     if (
-                        (support_row is None or support_row.right_support_fraction is None)
+                        (
+                            support_row is None
+                            or support_row.right_support_fraction is None
+                        )
                         and (
                             support_conflict_row is None
                             or support_conflict_row.right_support_fraction is None

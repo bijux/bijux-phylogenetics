@@ -11,8 +11,8 @@ from bijux_phylogenetics.ancestral.continuous import (
 from bijux_phylogenetics.comparative.common import (
     ComparativeReadinessReport,
     node_signature,
-    tip_root_depths,
     summarize_numeric_trait_readiness,
+    tip_root_depths,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
@@ -171,12 +171,16 @@ def summarize_trait_rate_through_time(
         nonempty_interval_count=len(nonempty_rows),
     )
     peak_interval_index = (
-        max(nonempty_rows, key=lambda row: row.estimated_rate or -math.inf).interval_index
+        max(
+            nonempty_rows, key=lambda row: row.estimated_rate or -math.inf
+        ).interval_index
         if nonempty_rows
         else None
     )
     trough_interval_index = (
-        min(nonempty_rows, key=lambda row: row.estimated_rate or math.inf).interval_index
+        min(
+            nonempty_rows, key=lambda row: row.estimated_rate or math.inf
+        ).interval_index
         if nonempty_rows
         else None
     )
@@ -264,12 +268,12 @@ def write_trait_rate_through_time_summary_table(
                     report.latest_to_earliest_rate_ratio
                 ),
                 "weighted_rate_slope": _format_optional(report.weighted_rate_slope),
-                "normalized_rate_slope": _format_optional(
-                    report.normalized_rate_slope
-                ),
+                "normalized_rate_slope": _format_optional(report.normalized_rate_slope),
                 "trend_direction": report.trend_direction,
                 "peak_interval_index": (
-                    "" if report.peak_interval_index is None else report.peak_interval_index
+                    ""
+                    if report.peak_interval_index is None
+                    else report.peak_interval_index
                 ),
                 "trough_interval_index": (
                     ""
@@ -330,8 +334,7 @@ def write_trait_rate_through_time_exclusion_table(
         path,
         columns=["taxon", "reason"],
         rows=[
-            {"taxon": row.taxon, "reason": row.reason}
-            for row in report.excluded_taxa
+            {"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa
         ],
     )
 
@@ -360,8 +363,14 @@ def _build_interval_rows(
         _IntervalAccumulator(
             interval_index=index + 1,
             start_depth=index * width,
-            end_depth=tree_depth if index == interval_count - 1 else (index + 1) * width,
-            midpoint_depth=((index * width) + (tree_depth if index == interval_count - 1 else (index + 1) * width)) / 2.0,
+            end_depth=tree_depth
+            if index == interval_count - 1
+            else (index + 1) * width,
+            midpoint_depth=(
+                (index * width)
+                + (tree_depth if index == interval_count - 1 else (index + 1) * width)
+            )
+            / 2.0,
             overlapping_branch_ids=set(),
             segment_count=0,
             total_segment_length=0.0,
@@ -398,9 +407,7 @@ def _build_interval_rows(
     for child in pruned_tree.root.children:
         visit(child, parent_depth=0.0, parent_estimate=root_estimate)
 
-    total_squared_change = sum(
-        interval.total_squared_change for interval in intervals
-    )
+    total_squared_change = sum(interval.total_squared_change for interval in intervals)
     return [
         TraitRateThroughTimeIntervalRow(
             interval_index=interval.interval_index,
@@ -498,13 +505,20 @@ def _weighted_rate_slope(
     total_weight = sum(weights)
     if total_weight <= 0.0:
         return None
-    mean_x = sum(
-        weight * row.midpoint_depth for weight, row in zip(weights, rows, strict=True)
-    ) / total_weight
-    mean_y = sum(
-        weight * (row.estimated_rate or 0.0)
-        for weight, row in zip(weights, rows, strict=True)
-    ) / total_weight
+    mean_x = (
+        sum(
+            weight * row.midpoint_depth
+            for weight, row in zip(weights, rows, strict=True)
+        )
+        / total_weight
+    )
+    mean_y = (
+        sum(
+            weight * (row.estimated_rate or 0.0)
+            for weight, row in zip(weights, rows, strict=True)
+        )
+        / total_weight
+    )
     denominator = sum(
         weight * (row.midpoint_depth - mean_x) ** 2
         for weight, row in zip(weights, rows, strict=True)
@@ -512,9 +526,7 @@ def _weighted_rate_slope(
     if denominator <= 1e-12:
         return 0.0
     numerator = sum(
-        weight
-        * (row.midpoint_depth - mean_x)
-        * ((row.estimated_rate or 0.0) - mean_y)
+        weight * (row.midpoint_depth - mean_x) * ((row.estimated_rate or 0.0) - mean_y)
         for weight, row in zip(weights, rows, strict=True)
     )
     return numerator / denominator

@@ -4,7 +4,11 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_signature, stable_value
+from bijux_phylogenetics.ancestral.common import (
+    node_descendant_taxa,
+    node_signature,
+    stable_value,
+)
 from bijux_phylogenetics.biogeography.geographic_states import (
     GeographicExcludedTaxonRow,
     GeographicStateModelReport,
@@ -206,7 +210,10 @@ def summarize_biogeographic_transition_chronology(
         warnings.append(
             "one or more dated biogeography age bins contain no inferred geographic transitions"
         )
-    if any(row.uncertainty_class in {"low_support", "mixed_support"} for row in time_bin_rows):
+    if any(
+        row.uncertainty_class in {"low_support", "mixed_support"}
+        for row in time_bin_rows
+    ):
         warnings.append(
             "one or more dated biogeography age bins contain weakly supported or mixed-support transitions"
         )
@@ -547,7 +554,9 @@ def _build_node_rows(
                 is_tip=node.is_leaf(),
                 descendant_taxa=node_descendant_taxa(node),
                 branch_length=(
-                    None if node is tree.root else stable_value(node.branch_length or 0.0)
+                    None
+                    if node is tree.root
+                    else stable_value(node.branch_length or 0.0)
                 ),
                 depth_from_root=depth,
                 age_before_present=age,
@@ -572,7 +581,9 @@ def _build_age_bins(*, root_age: float, time_bin_count: int) -> list[_AgeBin]:
     bins: list[_AgeBin] = []
     for index in range(time_bin_count):
         start_age = stable_value(index * width)
-        end_age = stable_value(root_age if index == time_bin_count - 1 else (index + 1) * width)
+        end_age = stable_value(
+            root_age if index == time_bin_count - 1 else (index + 1) * width
+        )
         bins.append(
             _AgeBin(
                 label=f"{start_age:g}-{end_age:g}",
@@ -643,16 +654,18 @@ def _build_time_bin_rows(
         transitions = Counter(
             f"{row.source_region}->{row.target_region}" for row in members
         )
-        mean_support = (
-            stable_value(sum(supports) / len(supports)) if supports else None
-        )
+        mean_support = stable_value(sum(supports) / len(supports)) if supports else None
         support_uncertainty = (
             stable_value(1.0 - mean_support) if mean_support is not None else None
         )
         low_support_event_count = sum(row.support < 0.75 for row in members)
         if not members:
             uncertainty_class = "no_events"
-        elif mean_support is not None and mean_support >= 0.9 and low_support_event_count == 0:
+        elif (
+            mean_support is not None
+            and mean_support >= 0.9
+            and low_support_event_count == 0
+        ):
             uncertainty_class = "stable"
         elif mean_support is not None and mean_support >= 0.75:
             uncertainty_class = "mixed_support"
@@ -678,12 +691,16 @@ def _build_time_bin_rows(
                 mean_support=mean_support,
                 support_uncertainty=support_uncertainty,
                 earliest_event_age_before_present=(
-                    stable_value(max(row.midpoint_age_before_present for row in members))
+                    stable_value(
+                        max(row.midpoint_age_before_present for row in members)
+                    )
                     if members
                     else None
                 ),
                 latest_event_age_before_present=(
-                    stable_value(min(row.midpoint_age_before_present for row in members))
+                    stable_value(
+                        min(row.midpoint_age_before_present for row in members)
+                    )
                     if members
                     else None
                 ),

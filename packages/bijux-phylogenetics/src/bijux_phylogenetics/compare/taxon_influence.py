@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import csv
 from copy import deepcopy
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -81,7 +81,11 @@ def _prune_biophylo_tree_to_taxa(tree: Tree, keep_taxa: set[str]) -> Tree:
     pruned = deepcopy(tree)
     while True:
         removable = next(
-            (terminal for terminal in pruned.get_terminals() if terminal.name not in keep_taxa),
+            (
+                terminal
+                for terminal in pruned.get_terminals()
+                if terminal.name not in keep_taxa
+            ),
             None,
         )
         if removable is None:
@@ -221,7 +225,9 @@ def _build_taxon_influence_row(
     )
 
 
-def _rank_taxon_influence_rows(rows: list[TaxonInfluenceRow]) -> list[TaxonInfluenceRow]:
+def _rank_taxon_influence_rows(
+    rows: list[TaxonInfluenceRow],
+) -> list[TaxonInfluenceRow]:
     ranked = sorted(
         rows,
         key=lambda row: (
@@ -310,9 +316,7 @@ def analyze_taxon_influence(
     )
 
 
-def _prune_tree_against_shared_taxa(
-    tree, keep_taxa: set[str]
-):
+def _prune_tree_against_shared_taxa(tree, keep_taxa: set[str]):
     from bijux_phylogenetics.core.pruning import _prune_tree_against_taxa
 
     return _prune_tree_against_taxa(tree, keep_taxa)

@@ -62,7 +62,9 @@ def normalize_burnin_fractions(
     """Validate, deduplicate, and sort requested burn-in fractions."""
     if not burnin_fractions:
         raise ValueError("burnin_fractions must contain at least one value")
-    normalized = tuple(sorted(dict.fromkeys(float(value) for value in burnin_fractions)))
+    normalized = tuple(
+        sorted(dict.fromkeys(float(value) for value in burnin_fractions))
+    )
     for value in normalized:
         if not 0.0 <= value < 1.0:
             raise ValueError(f"burnin_fraction must be between 0 and 1, got {value}")
@@ -102,7 +104,9 @@ def summarize_burnin_parameter_shifts(
         hpd_upper = min(estimate.hpd_95_upper for estimate in estimates)
         instability_reasons: list[str] = []
         if hpd_lower > hpd_upper:
-            instability_reasons.append("95% HPD intervals do not share a common overlap")
+            instability_reasons.append(
+                "95% HPD intervals do not share a common overlap"
+            )
         shifts.append(
             BurninSensitivityParameterShift(
                 parameter=parameter,
@@ -121,8 +125,12 @@ def summarize_burnin_parameter_shifts(
                     - min(estimate.median for estimate in estimates),
                     6,
                 ),
-                common_hpd_95_lower=None if hpd_lower > hpd_upper else round(hpd_lower, 6),
-                common_hpd_95_upper=None if hpd_lower > hpd_upper else round(hpd_upper, 6),
+                common_hpd_95_lower=None
+                if hpd_lower > hpd_upper
+                else round(hpd_lower, 6),
+                common_hpd_95_upper=None
+                if hpd_lower > hpd_upper
+                else round(hpd_upper, 6),
                 minimum_effective_sample_size=min(
                     estimate.effective_sample_size for estimate in estimates
                 ),

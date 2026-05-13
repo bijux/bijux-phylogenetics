@@ -263,7 +263,9 @@ def summarize_comparative_interpretation(
         if row.term == "intercept":
             continue
         direction = "positive" if row.estimate > 0.0 else "negative"
-        strength = "nominally supported" if row.significant else "not nominally supported"
+        strength = (
+            "nominally supported" if row.significant else "not nominally supported"
+        )
         rows.append(
             ComparativeInterpretationRow(
                 topic="coefficient",
@@ -308,7 +310,9 @@ def summarize_comparative_audit(
     ]
 
 
-def _write_rows(path: Path, fieldnames: list[str], rows: list[dict[str, object]]) -> Path:
+def _write_rows(
+    path: Path, fieldnames: list[str], rows: list[dict[str, object]]
+) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
@@ -329,7 +333,9 @@ def write_comparative_summary_table(
 def write_comparative_coefficient_table(
     path: Path, rows: list[ComparativeCoefficientTableRow]
 ) -> Path:
-    return _write_rows(path, list(asdict(rows[0]).keys()), [asdict(row) for row in rows])
+    return _write_rows(
+        path, list(asdict(rows[0]).keys()), [asdict(row) for row in rows]
+    )
 
 
 def write_comparative_residual_table(
@@ -345,9 +351,7 @@ def write_comparative_residual_table(
     return _write_rows(path, list(rendered[0].keys()), rendered)
 
 
-def write_comparative_signal_table(
-    path: Path, row: ComparativeSignalTableRow
-) -> Path:
+def write_comparative_signal_table(path: Path, row: ComparativeSignalTableRow) -> Path:
     return _write_rows(path, list(asdict(row).keys()), [asdict(row)])
 
 
@@ -361,7 +365,9 @@ def write_comparative_model_comparison_table(
 def write_comparative_interpretation_table(
     path: Path, rows: list[ComparativeInterpretationRow]
 ) -> Path:
-    return _write_rows(path, list(asdict(rows[0]).keys()), [asdict(row) for row in rows])
+    return _write_rows(
+        path, list(asdict(rows[0]).keys()), [asdict(row) for row in rows]
+    )
 
 
 def write_comparative_audit_table(
@@ -379,7 +385,9 @@ def write_comparative_audit_table(
     return _write_rows(path, list(rendered[0].keys()), rendered)
 
 
-def write_comparative_contrast_table(path: Path, report: ComparativeMethodReport) -> Path:
+def write_comparative_contrast_table(
+    path: Path, report: ComparativeMethodReport
+) -> Path:
     rows = [
         {
             "node": row.node,
@@ -568,10 +576,17 @@ def _write_comparative_report_html(
       <p class="lead">Integrated reviewer-facing output for comparative regression, phylogenetic signal, contrasts, residual diagnostics, and process-model comparison.</p>
       {_json_script(manifest)}
       <div class="cards">
-        <div class="card"><div class="label">Formula</div><div class="value">{escape(summary_row.formula)}</div></div>
-        <div class="card"><div class="label">Analysis Taxa</div><div class="value">{summary_row.analysis_taxa}</div></div>
-        <div class="card"><div class="label">Selected Model</div><div class="value">{escape(summary_row.selected_model)}</div></div>
-        <div class="card"><div class="label">PGLS R²</div><div class="value">{summary_row.pgls_r_squared:.3f}</div></div>
+        <div class="card"><div class="label">Formula</div><div class="value">{
+        escape(summary_row.formula)
+    }</div></div>
+        <div class="card"><div class="label">Analysis Taxa</div><div class="value">{
+        summary_row.analysis_taxa
+    }</div></div>
+        <div class="card"><div class="label">Selected Model</div><div class="value">{
+        escape(summary_row.selected_model)
+    }</div></div>
+        <div class="card"><div class="label">PGLS R²</div><div class="value">{
+        summary_row.pgls_r_squared:.3f}</div></div>
       </div>
       <section>
         <h2>Reviewer Summary</h2>
@@ -582,8 +597,17 @@ def _write_comparative_report_html(
       </section>
       <section>
         <h2>Coefficient Table</h2>
-        {_table(
-            ["term", "estimate", "standard error", "test statistic", "p value", "95% CI", "significant"],
+        {
+        _table(
+            [
+                "term",
+                "estimate",
+                "standard error",
+                "test statistic",
+                "p value",
+                "95% CI",
+                "significant",
+            ],
             [
                 [
                     row.term,
@@ -596,41 +620,64 @@ def _write_comparative_report_html(
                 ]
                 for row in coefficient_rows
             ],
-        )}
+        )
+    }
       </section>
       <section>
         <h2>Residual Summary</h2>
-        {_table(
-            ["analysis", "residual variance", "max |standardized residual|", "residual lambda", "max leverage", "outlier taxa"],
+        {
+        _table(
+            [
+                "analysis",
+                "residual variance",
+                "max |standardized residual|",
+                "residual lambda",
+                "max leverage",
+                "outlier taxa",
+            ],
             [
                 [
                     row.analysis,
                     f"{row.residual_variance:.6f}",
                     f"{row.max_abs_standardized_residual:.6f}",
-                    "" if row.phylogenetic_residual_lambda is None else f"{row.phylogenetic_residual_lambda:.6f}",
+                    ""
+                    if row.phylogenetic_residual_lambda is None
+                    else f"{row.phylogenetic_residual_lambda:.6f}",
                     "" if row.max_leverage is None else f"{row.max_leverage:.6f}",
                     ", ".join(row.outlier_taxa),
                 ]
                 for row in residual_rows
             ],
-        )}
+        )
+    }
       </section>
       <section>
         <h2>Phylogenetic Signal</h2>
-        {_table(
-            ["trait", "blomberg's k", "pagel's lambda", "contrast count", "root estimate"],
-            [[
-                signal_row.trait,
-                f"{signal_row.blombergs_k:.6f}",
-                f"{signal_row.pagels_lambda:.6f}",
-                str(signal_row.independent_contrast_count),
-                f"{signal_row.independent_contrast_root_estimate:.6f}",
-            ]],
-        )}
+        {
+        _table(
+            [
+                "trait",
+                "blomberg's k",
+                "pagel's lambda",
+                "contrast count",
+                "root estimate",
+            ],
+            [
+                [
+                    signal_row.trait,
+                    f"{signal_row.blombergs_k:.6f}",
+                    f"{signal_row.pagels_lambda:.6f}",
+                    str(signal_row.independent_contrast_count),
+                    f"{signal_row.independent_contrast_root_estimate:.6f}",
+                ]
+            ],
+        )
+    }
       </section>
       <section>
         <h2>Model Comparison</h2>
-        {_table(
+        {
+        _table(
             ["model", "parameter count", "log likelihood", "AIC", "AICc", "selected"],
             [
                 [
@@ -643,28 +690,56 @@ def _write_comparative_report_html(
                 ]
                 for row in report.snapshot.model_comparison.rows
             ],
-        )}
+        )
+    }
       </section>
       <section>
         <h2>Biological Interpretation</h2>
-        {_table(
+        {
+        _table(
             ["topic", "claim", "evidence", "caution"],
-            [[row.topic, row.claim, row.evidence, row.caution] for row in interpretation_rows],
-        )}
+            [
+                [row.topic, row.claim, row.evidence, row.caution]
+                for row in interpretation_rows
+            ],
+        )
+    }
       </section>
       <section>
         <h2>Diagnostics</h2>
         <details open>
           <summary>PGLS inputs</summary>
-          <pre>{escape(json.dumps(asdict(report.snapshot.pgls_inputs), default=str, indent=2, sort_keys=True))}</pre>
+          <pre>{
+        escape(
+            json.dumps(
+                asdict(report.snapshot.pgls_inputs),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    }</pre>
         </details>
         <details>
           <summary>PGLS model</summary>
-          <pre>{escape(json.dumps(asdict(report.snapshot.pgls_model), default=str, indent=2, sort_keys=True))}</pre>
+          <pre>{
+        escape(
+            json.dumps(
+                asdict(report.snapshot.pgls_model),
+                default=str,
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    }</pre>
         </details>
         <details>
           <summary>Influence</summary>
-          <pre>{escape(json.dumps(asdict(report.influence), default=str, indent=2, sort_keys=True))}</pre>
+          <pre>{
+        escape(
+            json.dumps(asdict(report.influence), default=str, indent=2, sort_keys=True)
+        )
+    }</pre>
         </details>
       </section>
     </div>

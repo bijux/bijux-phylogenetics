@@ -746,12 +746,8 @@ def write_ancestral_transition_tree_set_count_table(
                 "mean_total_change_count": str(row.mean_total_change_count),
                 "minimum_total_change_count": str(row.minimum_total_change_count),
                 "maximum_total_change_count": str(row.maximum_total_change_count),
-                "lower_95_total_change_count": str(
-                    row.lower_95_total_change_count
-                ),
-                "upper_95_total_change_count": str(
-                    row.upper_95_total_change_count
-                ),
+                "lower_95_total_change_count": str(row.lower_95_total_change_count),
+                "upper_95_total_change_count": str(row.upper_95_total_change_count),
                 "stability_class": row.stability_class,
             }
             for row in report.transition_rows
@@ -774,8 +770,7 @@ def _build_transition_branch_rows(
                 set(parent_estimate.state_set) & set(child_estimate.state_set)
             )
             changed = (
-                parent_estimate.most_likely_state
-                != child_estimate.most_likely_state
+                parent_estimate.most_likely_state != child_estimate.most_likely_state
             )
             branch_rows.append(
                 AncestralTransitionBranchRow(
@@ -823,8 +818,7 @@ def _summarize_transition_rows(
             row.certainty_class == "certain_change" for row in transition_branch_rows
         )
         uncertain_change_count = sum(
-            row.certainty_class == "uncertain_change"
-            for row in transition_branch_rows
+            row.certainty_class == "uncertain_change" for row in transition_branch_rows
         )
         transition_rows.append(
             AncestralTransitionCountRow(
@@ -862,9 +856,7 @@ def _summarize_transition_rows_across_trees(
         uncertain_counts = [
             float(row.uncertain_change_count) for row in present_rows.values()
         ]
-        total_counts = [
-            float(row.total_change_count) for row in present_rows.values()
-        ]
+        total_counts = [float(row.total_change_count) for row in present_rows.values()]
         tree_presence_fraction = len(present_rows) / tree_count
         mean_uncertain_change_count = statistics.fmean(uncertain_counts)
         if tree_presence_fraction < 1.0:

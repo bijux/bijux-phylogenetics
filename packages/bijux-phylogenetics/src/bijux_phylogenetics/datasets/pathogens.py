@@ -146,8 +146,12 @@ def export_rabies_cross_host_panel_dataset(
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    readme_path = shutil.copy2(dataset.dataset_root / "README.md", destination / "README.md")
-    sequences_path = shutil.copy2(dataset.sequences_path, destination / "sequences.fasta")
+    readme_path = shutil.copy2(
+        dataset.dataset_root / "README.md", destination / "README.md"
+    )
+    sequences_path = shutil.copy2(
+        dataset.sequences_path, destination / "sequences.fasta"
+    )
     tree_path = shutil.copy2(dataset.tree_path, destination / "tree.nwk")
     hosts_path = shutil.copy2(dataset.hosts_path, destination / "hosts.csv")
     expected_output_root = destination / "expected"
@@ -239,7 +243,9 @@ def write_rabies_cross_host_panel_workflow_bundle(
     )
 
 
-def run_rabies_cross_host_panel_demo(output_root: Path) -> RabiesCrossHostPanelDemoResult:
+def run_rabies_cross_host_panel_demo(
+    output_root: Path,
+) -> RabiesCrossHostPanelDemoResult:
     """Materialize the packaged pathogen dataset and rerun host-switching review."""
     if output_root.exists():
         shutil.rmtree(output_root)
@@ -250,7 +256,9 @@ def run_rabies_cross_host_panel_demo(output_root: Path) -> RabiesCrossHostPanelD
         output_root / "workflow",
         report,
     )
-    overview_path = _write_overview(output_root / "overview.md", report, workflow_bundle)
+    overview_path = _write_overview(
+        output_root / "overview.md", report, workflow_bundle
+    )
     return RabiesCrossHostPanelDemoResult(
         output_root=output_root,
         dataset=report.dataset,

@@ -65,9 +65,7 @@ def summarize_phylogenetic_signal(
         0.0,
         2.0 * (lambda_report.log_likelihood - lambda_report.null_log_likelihood),
     )
-    likelihood_ratio_p_value = math.erfc(
-        math.sqrt(likelihood_ratio_statistic / 2.0)
-    )
+    likelihood_ratio_p_value = math.erfc(math.sqrt(likelihood_ratio_statistic / 2.0))
     return PhylogeneticSignalSummaryReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -173,9 +171,7 @@ def write_phylogenetic_signal_permutation_table(
             {
                 "trait": report.trait,
                 "observed_k": format(report.signal_test.observed_k, ".15g"),
-                "estimated_lambda": format(
-                    report.signal_test.estimated_lambda, ".15g"
-                ),
+                "estimated_lambda": format(report.signal_test.estimated_lambda, ".15g"),
                 "permutations": report.signal_test.permutations,
                 "signal_permutation_p_value": format(
                     report.signal_test.p_value, ".15g"

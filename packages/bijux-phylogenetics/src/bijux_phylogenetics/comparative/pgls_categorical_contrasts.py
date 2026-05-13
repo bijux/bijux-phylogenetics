@@ -121,10 +121,9 @@ def summarize_pgls_categorical_contrasts(
                 )
             )
         for coefficient_name in predictor_report.encoded_columns or []:
-            level = (
-                coefficient_name.removeprefix(f"{predictor_report.name}[")
-                .removesuffix("]")
-            )
+            level = coefficient_name.removeprefix(
+                f"{predictor_report.name}["
+            ).removesuffix("]")
             coefficient = coefficient_by_name[coefficient_name]
             rows.append(
                 _build_contrast_row(
@@ -183,7 +182,9 @@ def write_pgls_categorical_contrast_table(
                 "baseline_level": row.baseline_level or "",
                 "is_reference_level": "true" if row.is_reference_level else "false",
                 "coefficient_name": row.coefficient_name or "",
-                "coefficient_estimate": _format_optional_float(row.coefficient_estimate),
+                "coefficient_estimate": _format_optional_float(
+                    row.coefficient_estimate
+                ),
                 "standard_error": _format_optional_float(row.standard_error),
                 "test_statistic": _format_optional_float(row.test_statistic),
                 "p_value": _format_optional_float(row.p_value),

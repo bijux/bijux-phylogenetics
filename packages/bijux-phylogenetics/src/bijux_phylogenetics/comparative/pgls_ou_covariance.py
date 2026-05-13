@@ -135,7 +135,10 @@ def summarize_ou_covariance_pgls(
     )
     taxa = list(input_report.analysis_taxa)
     design_matrix = [
-        [row.encoded_values[column] for column in input_report.model_matrix.encoded_columns]
+        [
+            row.encoded_values[column]
+            for column in input_report.model_matrix.encoded_columns
+        ]
         for row in input_report.model_matrix.rows
     ]
     response_values = [row.response_value for row in input_report.model_matrix.rows]
@@ -146,7 +149,9 @@ def summarize_ou_covariance_pgls(
         response_values=response_values,
         alpha=alpha,
     )
-    raw_covariance = build_ou_covariance_matrix(dataset.tree, taxa, alpha=resolved_alpha)
+    raw_covariance = build_ou_covariance_matrix(
+        dataset.tree, taxa, alpha=resolved_alpha
+    )
     root_depths = tip_root_depths(dataset.tree, taxa)
     shared_paths = build_brownian_covariance_matrix(dataset.tree, taxa)
     minimum_branch_length, maximum_branch_length = _branch_length_range(tree_path)
@@ -366,7 +371,9 @@ def _ou_gls_log_likelihood(
     response_values: list[float],
     alpha: float,
 ) -> float:
-    covariance = stable_covariance(build_ou_covariance_matrix(dataset.tree, taxa, alpha=alpha))
+    covariance = stable_covariance(
+        build_ou_covariance_matrix(dataset.tree, taxa, alpha=alpha)
+    )
     inverse_covariance = invert_matrix(covariance)
     _, _, fitted_values = _fit_gls(design_matrix, response_values, inverse_covariance)
     residuals = [
@@ -404,7 +411,9 @@ def _fit_ou_covariance_model(
         for observed, fitted in zip(response_values, fitted_values, strict=True)
     ]
     degrees_of_freedom = len(response_values) - len(coefficients)
-    residual_variance = _quadratic_form(residuals, inverse_covariance) / degrees_of_freedom
+    residual_variance = (
+        _quadratic_form(residuals, inverse_covariance) / degrees_of_freedom
+    )
     critical_value = student_t_quantile(0.975, degrees_of_freedom)
     coefficient_rows: list[PGLSCoefficient] = []
     for index, name in enumerate(encoded_columns):
@@ -428,7 +437,9 @@ def _fit_ou_covariance_model(
             )
         )
     mean_response = sum(response_values) / len(response_values)
-    total_sum_of_squares = sum((value - mean_response) ** 2 for value in response_values)
+    total_sum_of_squares = sum(
+        (value - mean_response) ** 2 for value in response_values
+    )
     residual_sum_of_squares = sum(value * value for value in residuals)
     r_squared = (
         1.0 - (residual_sum_of_squares / total_sum_of_squares)
@@ -484,9 +495,7 @@ def _validate_raw_ou_covariance(
         )
     diagonal = [covariance_matrix[index][index] for index in range(len(taxa))]
     non_positive_taxa = [
-        taxon
-        for taxon, value in zip(taxa, diagonal, strict=True)
-        if value <= 0.0
+        taxon for taxon, value in zip(taxa, diagonal, strict=True) if value <= 0.0
     ]
     if non_positive_taxa:
         raise ComparativeMethodError(
@@ -498,8 +507,7 @@ def _validate_raw_ou_covariance(
         return log_determinant(covariance_matrix)
     except ValueError as error:
         raise ComparativeMethodError(
-            "OU covariance is invalid before stabilization: "
-            f"{tree_path.name}: {error}"
+            f"OU covariance is invalid before stabilization: {tree_path.name}: {error}"
         ) from error
 
 

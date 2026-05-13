@@ -138,7 +138,9 @@ def summarize_time_stratified_geographic_transitions(
         tree_depth=tree_depth,
         time_bin_count=len(resolved_bins),
         matrix_row_count=len(matrix_rows),
-        changed_branch_count=sum(row.changed for row in base_report.transition_event_rows),
+        changed_branch_count=sum(
+            row.changed for row in base_report.transition_event_rows
+        ),
         allocated_transition_weight_total=stable_value(
             sum(row.allocated_transition_weight for row in branch_rows)
         ),
@@ -315,8 +317,12 @@ def write_time_stratified_exclusion_table(
 
 def _normalize_time_bins(time_bins: list[TimeBinDefinition]) -> list[TimeBinDefinition]:
     if not time_bins:
-        raise ValueError("time-stratified geographic transitions require at least one time bin")
-    normalized = sorted(time_bins, key=lambda row: (row.start_depth, row.end_depth, row.label))
+        raise ValueError(
+            "time-stratified geographic transitions require at least one time bin"
+        )
+    normalized = sorted(
+        time_bins, key=lambda row: (row.start_depth, row.end_depth, row.label)
+    )
     seen_labels: set[str] = set()
     previous_end = 0.0
     for index, row in enumerate(normalized):
@@ -328,9 +334,7 @@ def _normalize_time_bins(time_bins: list[TimeBinDefinition]) -> list[TimeBinDefi
         if row.start_depth < 0.0:
             raise ValueError(f"time bin {row.label} starts before the root")
         if row.end_depth <= row.start_depth:
-            raise ValueError(
-                f"time bin {row.label} must end after it starts"
-            )
+            raise ValueError(f"time bin {row.label} must end after it starts")
         if index and row.start_depth < previous_end:
             raise ValueError("time bins must not overlap")
         previous_end = row.end_depth
@@ -464,7 +468,9 @@ def _build_matrix_rows(
     allocated_change: dict[tuple[str, str, str], float] = {}
     for row in branch_rows:
         source_key = (row.time_bin_label, row.source_region)
-        source_exposure[source_key] = source_exposure.get(source_key, 0.0) + row.overlap_length
+        source_exposure[source_key] = (
+            source_exposure.get(source_key, 0.0) + row.overlap_length
+        )
         change_key = (row.time_bin_label, row.source_region, row.target_region)
         allocated_change[change_key] = (
             allocated_change.get(change_key, 0.0) + row.allocated_transition_weight
@@ -476,7 +482,9 @@ def _build_matrix_rows(
                 source_exposure.get((time_bin.label, source_region), 0.0)
             )
             change_weight = stable_value(
-                allocated_change.get((time_bin.label, source_region, target_region), 0.0)
+                allocated_change.get(
+                    (time_bin.label, source_region, target_region), 0.0
+                )
             )
             rate = 0.0 if exposure == 0.0 else stable_value(change_weight / exposure)
             rows.append(
@@ -489,7 +497,9 @@ def _build_matrix_rows(
                     source_exposure_length=exposure,
                     allocated_transition_weight=change_weight,
                     time_stratified_rate=rate,
-                    global_rate=stable_value(global_rate_by_pair[(source_region, target_region)]),
+                    global_rate=stable_value(
+                        global_rate_by_pair[(source_region, target_region)]
+                    ),
                 )
             )
     return rows

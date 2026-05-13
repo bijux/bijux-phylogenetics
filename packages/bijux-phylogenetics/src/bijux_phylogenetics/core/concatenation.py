@@ -83,7 +83,9 @@ def _validated_locus_names(
             raise ValueError("locus names must match the number of input alignments")
         names = [name.strip() for name in locus_names]
     if not all(names):
-        raise InvalidPartitionError("every concatenated locus must have a non-empty name")
+        raise InvalidPartitionError(
+            "every concatenated locus must have a non-empty name"
+        )
     duplicate_names = sorted({name for name in names if names.count(name) > 1})
     if duplicate_names:
         raise InvalidPartitionError(
@@ -141,8 +143,7 @@ def _load_locus(
 
     inferred_alphabet = infer_alignment_alphabet(records)
     occupancy_by_taxon = {
-        record.identifier: (len(record.sequence), 1.0)
-        for record in records
+        record.identifier: (len(record.sequence), 1.0) for record in records
     }
     return _LoadedLocus(
         name=locus_name,
@@ -207,7 +208,7 @@ def concatenate_locus_alignments(
     presence_by_taxon: dict[str, dict[str, bool]] = {
         taxon: {} for taxon in ordered_taxa
     }
-    taxon_site_totals: dict[str, int] = {taxon: 0 for taxon in ordered_taxa}
+    taxon_site_totals: dict[str, int] = dict.fromkeys(ordered_taxa, 0)
     locus_rows: list[LocusCoverageRow] = []
     locus_summaries: list[ConcatenatedAlignmentLocusRow] = []
     warnings: list[str] = []
