@@ -9,8 +9,8 @@ import tempfile
 from Bio import Phylo
 
 from bijux_phylogenetics.compare.topology import _informative_clades, compare_tree_paths
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
@@ -333,7 +333,9 @@ def subsample_mrbayes_posterior_tree_set(
     random_seed: int | None = None,
 ) -> PosteriorTreeSubsamplingReport:
     """Subsample native MrBayes posterior trees while preserving generation metadata."""
-    from bijux_phylogenetics.bayesian.mrbayes import parse_mrbayes_posterior_tree_samples
+    from bijux_phylogenetics.bayesian.mrbayes import (
+        parse_mrbayes_posterior_tree_samples,
+    )
 
     _validate_burnin_fraction(burnin_fraction)
     parsed = parse_mrbayes_posterior_tree_samples(tree_set_path)
@@ -479,7 +481,9 @@ def _subsample_posterior_tree_source(
         burnin_tree_count=source.burnin_tree_count,
         pre_subsampling_tree_count=len(source.trees),
         selection_method=normalized_method,
-        thinning_interval=thinning_interval if normalized_method == "evenly-spaced" else None,
+        thinning_interval=thinning_interval
+        if normalized_method == "evenly-spaced"
+        else None,
         requested_tree_count=sample_count if normalized_method == "random" else None,
         random_seed=random_seed if normalized_method == "random" else None,
         retained_tree_count=len(retained_trees),
@@ -498,8 +502,7 @@ def _select_posterior_tree_inputs(
 ) -> tuple[list[_PosteriorTreeSelectionInput], str]:
     if method not in {"evenly-spaced", "random"}:
         raise ValueError(
-            "method must be one of {'evenly-spaced', 'random'}, "
-            f"got {method!r}"
+            f"method must be one of {{'evenly-spaced', 'random'}}, got {method!r}"
         )
     if method == "evenly-spaced":
         if thinning_interval is None:
@@ -523,7 +526,9 @@ def _select_posterior_tree_inputs(
             raise EngineWorkflowError("posterior thinning removed every tree")
         return retained, method
     if thinning_interval is not None:
-        raise ValueError("thinning_interval is only valid for evenly-spaced subsampling")
+        raise ValueError(
+            "thinning_interval is only valid for evenly-spaced subsampling"
+        )
     if sample_count is None:
         raise ValueError("sample_count is required for random posterior subsampling")
     if sample_count < 1:
@@ -533,7 +538,13 @@ def _select_posterior_tree_inputs(
             "sample_count cannot exceed the number of post-burn-in trees: "
             f"{sample_count} > {len(trees)}"
         )
-    retained_positions = sorted(random.Random(random_seed).sample(range(len(trees)), sample_count))
+    retained_positions = sorted(
+        # Deterministic posterior subsampling is required for reproducible review.
+        random.Random(random_seed).sample(  # nosec B311
+            range(len(trees)),
+            sample_count,
+        )
+    )
     return [trees[position] for position in retained_positions], method
 
 

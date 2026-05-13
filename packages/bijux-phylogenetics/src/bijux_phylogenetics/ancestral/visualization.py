@@ -5,7 +5,9 @@ from html import escape
 import json
 from pathlib import Path
 import shutil
-import subprocess
+
+# Controlled local renderer execution only.
+import subprocess  # nosec B404
 import tempfile
 
 from bijux_phylogenetics.ancestral.common import reconstruction_manifest
@@ -72,9 +74,13 @@ def render_ancestral_state_visualization(
 
     svg_path = out_path if output_format == "svg" else out_path.with_suffix(".svg")
     svg_path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="bijux-ancestral-visualization-") as temp_dir:
+    with tempfile.TemporaryDirectory(
+        prefix="bijux-ancestral-visualization-"
+    ) as temp_dir:
         analysis_tree_path = Path(temp_dir) / "analysis-tree.nwk"
-        analysis_tree_path.write_text(f"{report.analysis_tree_newick}\n", encoding="utf-8")
+        analysis_tree_path.write_text(
+            f"{report.analysis_tree_newick}\n", encoding="utf-8"
+        )
         render_kwargs = _build_render_kwargs(
             report,
             discrete_node_style=discrete_node_style,
@@ -139,7 +145,9 @@ def _build_render_kwargs(
     branch_coloring: str,
 ) -> dict[str, object]:
     if isinstance(report, ContinuousAncestralReport):
-        value_by_node = {estimate.node: estimate.estimate for estimate in report.estimates}
+        value_by_node = {
+            estimate.node: estimate.estimate for estimate in report.estimates
+        }
         minimum = min(value_by_node.values()) if value_by_node else 0.0
         maximum = max(value_by_node.values()) if value_by_node else 0.0
         return {
@@ -232,7 +240,8 @@ def _convert_svg_to_png(svg_path: Path, png_path: Path) -> None:
         executable = command[0]
         if shutil.which(executable) is None:
             continue
-        completed = subprocess.run(
+        # The executable is checked with shutil.which before invocation.
+        completed = subprocess.run(  # nosec B603
             command,
             check=False,
             capture_output=True,

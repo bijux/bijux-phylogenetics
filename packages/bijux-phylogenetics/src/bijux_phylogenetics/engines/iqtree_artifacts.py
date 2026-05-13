@@ -5,7 +5,8 @@ import gzip
 from pathlib import Path
 import re
 
-_MODEL_TOKEN_PATTERN = r"[A-Za-z0-9+._-]+"
+# Model-name regex, not a credential.
+_MODEL_TOKEN_PATTERN = r"[A-Za-z0-9+._-]+"  # nosec B105
 _BEST_MODEL_PATTERNS = (
     re.compile(
         rf"best-fit model\s*:\s*(?P<model>{_MODEL_TOKEN_PATTERN})\s+chosen according to\s+(?P<criterion>[A-Z0-9]+)",
@@ -137,9 +138,7 @@ def parse_best_model_file(path: Path) -> str | None:
 def parse_log_likelihood_file(path: Path) -> float | None:
     if not path.exists():
         return None
-    return parse_log_likelihood_text(
-        path.read_text(encoding="utf-8", errors="replace")
-    )
+    return parse_log_likelihood_text(path.read_text(encoding="utf-8", errors="replace"))
 
 
 def resolve_iqtree_model_sidecar(prefix_path: Path) -> Path | None:
@@ -199,9 +198,7 @@ def parse_iqtree_model_selection_summary(
         _merge_model_sidecar(summary, sidecar_text)
     if summary.selected_model is None:
         summary.selected_model = (
-            summary.best_model_bic
-            or summary.best_model_aicc
-            or summary.best_model_aic
+            summary.best_model_bic or summary.best_model_aicc or summary.best_model_aic
         )
     if not summary.candidates and sidecar_candidates:
         summary.candidates = [

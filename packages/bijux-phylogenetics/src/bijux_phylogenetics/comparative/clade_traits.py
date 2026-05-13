@@ -131,9 +131,7 @@ def summarize_clade_traits(
 
     tree = load_tree(tree_path)
     if len(tree.root.children) != 2:
-        raise ComparativeMethodError(
-            "clade trait summaries require a rooted tree"
-        )
+        raise ComparativeMethodError("clade trait summaries require a rooted tree")
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     validation = validate_traits_table(traits_path, taxon_column=taxon_column)
     column_summary = next(
@@ -284,7 +282,9 @@ def summarize_clade_traits(
             None if continuous_baseline is None else continuous_baseline.range_width
         ),
         baseline_dominant_state=(
-            None if categorical_baseline is None else categorical_baseline.dominant_state
+            None
+            if categorical_baseline is None
+            else categorical_baseline.dominant_state
         ),
         baseline_dominant_state_fraction=(
             None
@@ -407,7 +407,9 @@ def write_clade_trait_clade_table(
                 ),
                 "dominant_state": row.dominant_state or "",
                 "dominant_state_count": (
-                    "" if row.dominant_state_count is None else str(row.dominant_state_count)
+                    ""
+                    if row.dominant_state_count is None
+                    else str(row.dominant_state_count)
                 ),
                 "dominant_state_fraction": _format_optional_float(
                     row.dominant_state_fraction
@@ -416,7 +418,9 @@ def write_clade_trait_clade_table(
                     row.dominant_state_enrichment
                 ),
                 "distinct_state_count": (
-                    "" if row.distinct_state_count is None else str(row.distinct_state_count)
+                    ""
+                    if row.distinct_state_count is None
+                    else str(row.distinct_state_count)
                 ),
                 "state_counts": _format_state_counts(row.state_counts),
                 "distribution_shift": _format_optional_float(row.distribution_shift),
@@ -438,8 +442,7 @@ def write_clade_trait_exclusion_table(
         path,
         columns=["taxon", "reason"],
         rows=[
-            {"taxon": row.taxon, "reason": row.reason}
-            for row in report.excluded_taxa
+            {"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa
         ],
     )
 
@@ -466,7 +469,10 @@ def _collect_clade_rows(
         ordered_taxa = sorted(taxa)
         if not is_root and len(ordered_taxa) >= minimum_clade_size:
             if trait_kind == "continuous":
-                assert continuous_baseline is not None
+                if continuous_baseline is None:
+                    raise RuntimeError(
+                        "continuous clade trait traversal requires a continuous baseline"
+                    )
                 rows.append(
                     _continuous_clade_row(
                         clade_id="|".join(ordered_taxa),
@@ -478,7 +484,10 @@ def _collect_clade_rows(
                     )
                 )
             else:
-                assert categorical_baseline is not None
+                if categorical_baseline is None:
+                    raise RuntimeError(
+                        "categorical clade trait traversal requires a categorical baseline"
+                    )
                 rows.append(
                     _categorical_clade_row(
                         clade_id="|".join(ordered_taxa),
@@ -492,7 +501,9 @@ def _collect_clade_rows(
         return ordered_taxa
 
     visit(root, is_root=True)
-    rows.sort(key=lambda row: (-row.exceptionality_score, -row.taxon_count, row.clade_id))
+    rows.sort(
+        key=lambda row: (-row.exceptionality_score, -row.taxon_count, row.clade_id)
+    )
     for rank, row in enumerate(rows, start=1):
         row.rank = rank
     return rows

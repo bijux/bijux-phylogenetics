@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import math
 from pathlib import Path
-import json
+
+import numpy
 
 from bijux_phylogenetics.ancestral.common import (
     dump_pruned_tree,
@@ -12,7 +14,6 @@ from bijux_phylogenetics.ancestral.common import (
     node_signature,
     write_ancestral_rows,
 )
-import numpy
 
 
 @dataclass(slots=True)
@@ -311,7 +312,9 @@ def summarize_discrete_ancestral_report(
     report: DiscreteAncestralReport,
 ) -> DiscreteAncestralSummary:
     """Summarize the main review facts for one discrete ancestral report."""
-    internal_estimates = [estimate for estimate in report.estimates if not estimate.is_tip]
+    internal_estimates = [
+        estimate for estimate in report.estimates if not estimate.is_tip
+    ]
     if not internal_estimates:
         raise ValueError(
             "discrete ancestral summary requires at least one internal-node estimate"
@@ -648,7 +651,10 @@ def _fit_discrete_mk_model(
         if candidate_score > best_log_likelihood:
             best_log_parameters = candidate
             best_log_likelihood = candidate_score
-    assert best_log_parameters is not None
+    if best_log_parameters is None:
+        raise RuntimeError(
+            "discrete ancestral optimization did not produce rate parameters"
+        )
     rate_matrix = _rate_matrix_from_log_parameters(
         best_log_parameters,
         state_order=state_order,
@@ -1015,9 +1021,7 @@ def _resolve_allowed_transition_pairs(
         (left_index, right_index)
         for left_index, right_index in pairs
         if left_index != right_index
-        and (
-            state_ordering == "unordered" or abs(left_index - right_index) == 1
-        )
+        and (state_ordering == "unordered" or abs(left_index - right_index) == 1)
     }
     if not filtered_pairs:
         raise ValueError(
@@ -1243,23 +1247,17 @@ def _resolve_root_prior(
 ) -> numpy.ndarray:
     if mode == "equal":
         if fixed_root_state is not None:
-            raise ValueError(
-                "fixed_root_state requires root_prior_mode 'fixed'"
-            )
+            raise ValueError("fixed_root_state requires root_prior_mode 'fixed'")
         if default_root_prior is not None:
             return default_root_prior
         return _uniform_root_prior(len(state_order))
     if mode == "empirical":
         if fixed_root_state is not None:
-            raise ValueError(
-                "fixed_root_state requires root_prior_mode 'fixed'"
-            )
+            raise ValueError("fixed_root_state requires root_prior_mode 'fixed'")
         return _empirical_root_prior(state_order, state_counts)
     if mode == "fixed":
         if fixed_root_state is None:
-            raise ValueError(
-                "root_prior_mode 'fixed' requires a fixed_root_state"
-            )
+            raise ValueError("root_prior_mode 'fixed' requires a fixed_root_state")
         return _fixed_root_prior(state_order, fixed_root_state)
     raise ValueError(f"unsupported discrete ancestral root prior mode: {mode}")
 

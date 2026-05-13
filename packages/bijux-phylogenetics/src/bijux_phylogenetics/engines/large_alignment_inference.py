@@ -15,12 +15,12 @@ from .common import (
     build_file_checksums,
     clear_incomplete_engine_run,
     load_engine_manifest,
-    write_incomplete_engine_run,
     read_engine_version,
     resolve_engine_executable,
     utc_now_text,
     validate_timeout_seconds,
     write_engine_manifest,
+    write_incomplete_engine_run,
 )
 from .fasttree_artifacts import (
     build_fasttree_low_support_rows,
@@ -229,10 +229,11 @@ def _manifest_path(root: Path) -> Path:
 
 
 def _sample_process_peak_rss_bytes(pid: int) -> int | None:
-    if shutil.which("ps") is None:
+    ps_executable = shutil.which("ps")
+    if ps_executable is None:
         return None
     result = subprocess.run(  # nosec B603
-        ["ps", "-o", "rss=", "-p", str(pid)],
+        [ps_executable, "-o", "rss=", "-p", str(pid)],
         capture_output=True,
         text=True,
         check=False,

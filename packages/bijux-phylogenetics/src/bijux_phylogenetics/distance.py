@@ -1974,7 +1974,8 @@ def bootstrap_distance_trees(
             + "; ".join(quality.method_assessment.reasons)
         )
     records, _ = _load_alignment_for_model(path, model=model)
-    rng = random.Random(seed)
+    # Deterministic scientific resampling is required for reproducible bootstrap review.
+    rng = random.Random(seed)  # nosec B311
     temp_dir = Path(tempfile.mkdtemp(prefix="bijux-distance-bootstrap-"))
     trees: list[PhyloTree] = []
     for index in range(replicates):

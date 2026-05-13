@@ -117,10 +117,7 @@ def summarize_continuous_change_branches(
     report: ContinuousAncestralReport,
 ) -> list[AncestralContinuousChangeBranchRow]:
     tree = loads_newick(report.analysis_tree_newick)
-    estimates_by_node = {
-        estimate.node: estimate
-        for estimate in report.estimates
-    }
+    estimates_by_node = {estimate.node: estimate for estimate in report.estimates}
     traversed_pairs: list[tuple[object, object]] = []
 
     def collect_pairs(parent_node) -> None:
@@ -230,7 +227,9 @@ def write_continuous_change_branch_table(
         for row in rows:
             payload = asdict(row)
             payload["child_descendant_taxa"] = "|".join(row.child_descendant_taxa)
-            payload["branch_length"] = "" if row.branch_length is None else row.branch_length
+            payload["branch_length"] = (
+                "" if row.branch_length is None else row.branch_length
+            )
             writer.writerow(payload)
     return path
 
@@ -394,10 +393,18 @@ def _write_package_html(
       <p class="lead">Reviewer-facing ancestral reconstruction bundle with node estimates, uncertainty, branchwise change evidence, and visualization in one package.</p>
       {_json_script(manifest)}
       <div class="cards">
-        <div class="card"><div class="label">Kind</div><div class="value">{escape(reconstruction_kind)}</div></div>
-        <div class="card"><div class="label">Model</div><div class="value">{escape(model)}</div></div>
-        <div class="card"><div class="label">Analyzed Taxa</div><div class="value">{summary.analyzed_taxon_count}</div></div>
-        <div class="card"><div class="label">Warnings</div><div class="value">{summary.warning_count}</div></div>
+        <div class="card"><div class="label">Kind</div><div class="value">{
+        escape(reconstruction_kind)
+    }</div></div>
+        <div class="card"><div class="label">Model</div><div class="value">{
+        escape(model)
+    }</div></div>
+        <div class="card"><div class="label">Analyzed Taxa</div><div class="value">{
+        summary.analyzed_taxon_count
+    }</div></div>
+        <div class="card"><div class="label">Warnings</div><div class="value">{
+        summary.warning_count
+    }</div></div>
       </div>
       <section>
         <h2>Reviewer Summary</h2>
@@ -412,28 +419,43 @@ def _write_package_html(
       </section>
       <section>
         <h2>Node Table</h2>
-        {_table(
-            ["node", "node name", "tip", "descendant taxa", "value or state", "uncertainty"],
+        {
+        _table(
+            [
+                "node",
+                "node name",
+                "tip",
+                "descendant taxa",
+                "value or state",
+                "uncertainty",
+            ],
             node_table_rows,
-        )}
+        )
+    }
       </section>
       <section>
         <h2>Uncertainty Review</h2>
-        {_table(
+        {
+        _table(
             ["node", "descendant taxa", "uncertainty evidence", "interpretation"],
             uncertainty_table_rows,
-        )}
+        )
+    }
       </section>
       <section>
         <h2>Transition Review</h2>
-        {_table(
+        {
+        _table(
             ["label", "count", "fraction or certainty", "detail"],
             transition_count_rows,
-        )}
-        {_table(
+        )
+    }
+        {
+        _table(
             ["parent", "child", "descendant taxa", "branch length", "change", "detail"],
             transition_branch_rows,
-        )}
+        )
+    }
       </section>
       <section>
         <h2>Limitations</h2>
@@ -514,14 +536,18 @@ def _uncertainty_rows(
 def _transition_count_rows(
     reconstruction_kind: str,
     *,
-    count_rows: list[AncestralContinuousChangeCountRow] | list[AncestralTransitionCountRow],
+    count_rows: list[AncestralContinuousChangeCountRow]
+    | list[AncestralTransitionCountRow],
 ) -> list[list[str]]:
     if reconstruction_kind == "continuous":
         continuous_rows = count_rows
-        assert all(
+        if not all(
             isinstance(row, AncestralContinuousChangeCountRow)
             for row in continuous_rows
-        )
+        ):
+            raise RuntimeError(
+                "continuous ancestral report package received non-continuous change counts"
+            )
         return [
             [
                 row.direction,
@@ -535,7 +561,10 @@ def _transition_count_rows(
             for row in continuous_rows
         ]
     discrete_rows = count_rows
-    assert all(isinstance(row, AncestralTransitionCountRow) for row in discrete_rows)
+    if not all(isinstance(row, AncestralTransitionCountRow) for row in discrete_rows):
+        raise RuntimeError(
+            "discrete ancestral report package received non-discrete transition counts"
+        )
     return [
         [
             row.transition,
@@ -559,14 +588,18 @@ def _transition_count_rows(
 def _transition_branch_rows(
     reconstruction_kind: str,
     *,
-    branch_rows: list[AncestralContinuousChangeBranchRow] | list[AncestralTransitionBranchRow],
+    branch_rows: list[AncestralContinuousChangeBranchRow]
+    | list[AncestralTransitionBranchRow],
 ) -> list[list[str]]:
     if reconstruction_kind == "continuous":
         continuous_rows = branch_rows
-        assert all(
+        if not all(
             isinstance(row, AncestralContinuousChangeBranchRow)
             for row in continuous_rows
-        )
+        ):
+            raise RuntimeError(
+                "continuous ancestral report package received non-continuous branch rows"
+            )
         return [
             [
                 row.parent_node,
@@ -583,7 +616,10 @@ def _transition_branch_rows(
             for row in continuous_rows
         ]
     discrete_rows = branch_rows
-    assert all(isinstance(row, AncestralTransitionBranchRow) for row in discrete_rows)
+    if not all(isinstance(row, AncestralTransitionBranchRow) for row in discrete_rows):
+        raise RuntimeError(
+            "discrete ancestral report package received non-discrete branch rows"
+        )
     return [
         [
             row.parent_node,
@@ -741,9 +777,7 @@ def build_ancestral_report_package(
         out_path=figure_path,
         layout="phylogram",
         discrete_node_style="pies",
-        branch_coloring="regime"
-        if reconstruction_kind == "continuous"
-        else "state",
+        branch_coloring="regime" if reconstruction_kind == "continuous" else "state",
     )
     figure_png = render_ancestral_state_visualization(
         tree_path,
@@ -751,9 +785,7 @@ def build_ancestral_report_package(
         out_path=figure_png_path,
         layout="phylogram",
         discrete_node_style="pies",
-        branch_coloring="regime"
-        if reconstruction_kind == "continuous"
-        else "state",
+        branch_coloring="regime" if reconstruction_kind == "continuous" else "state",
     )
     figure_html = render_ancestral_state_visualization(
         tree_path,
@@ -761,9 +793,7 @@ def build_ancestral_report_package(
         out_path=figure_html_path,
         layout="phylogram",
         discrete_node_style="pies",
-        branch_coloring="regime"
-        if reconstruction_kind == "continuous"
-        else "state",
+        branch_coloring="regime" if reconstruction_kind == "continuous" else "state",
     )
     if reconstruction_kind == "continuous":
         count_payload = _transition_count_rows(
@@ -775,7 +805,10 @@ def build_ancestral_report_package(
             branch_rows=transition_branch_rows,
         )
     else:
-        assert transition_report is not None
+        if transition_report is None:
+            raise RuntimeError(
+                "discrete ancestral report package requires transition diagnostics"
+            )
         count_payload = _transition_count_rows(
             reconstruction_kind,
             count_rows=transition_report.transition_rows,
