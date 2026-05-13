@@ -672,6 +672,11 @@ from bijux_phylogenetics.reports.service import (
     write_annotation_report,
 )
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
+from bijux_phylogenetics.reference_parity import (
+    validate_reference_parity_examples,
+    write_reference_parity_observation_table,
+    write_reference_parity_summary_table,
+)
 from bijux_phylogenetics.results import build_command_result, build_error_result
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
@@ -1203,6 +1208,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.tree, args.out]
         return [args.out]
     if args.command == "benchmark":
+        return []
+    if args.command == "parity":
         return []
     if args.command in {"validate", "inspect"}:
         return [args.tree]
@@ -4798,6 +4805,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the benchmark report as JSON."
     )
     _add_manifest_argument(benchmark_stress)
+
+    parity = subparsers.add_parser(
+        get_command_spec("parity").name, help=get_command_spec("parity").summary
+    )
+    parity.add_argument(
+        "--extended",
+        action="store_true",
+        help="Include the optional larger posterior tree-set parity fixtures.",
+    )
+    parity.add_argument("--summary-out", type=Path)
+    parity.add_argument("--observations-out", type=Path)
+    parity.add_argument(
+        "--json", action="store_true", help="Emit the parity report as JSON."
+    )
+    _add_manifest_argument(parity)
 
     validate = subparsers.add_parser(
         get_command_spec("validate").name, help=get_command_spec("validate").summary
@@ -13231,6 +13253,50 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     outputs=outputs,
                     metrics=metrics,
                     data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "parity":
+            report = validate_reference_parity_examples(include_extended=args.extended)
+            output_paths: list[Path | str] = []
+            summary_path = None
+            observation_path = None
+            if args.summary_out is not None:
+                summary_path = write_reference_parity_summary_table(
+                    args.summary_out,
+                    report,
+                )
+                output_paths.append(summary_path)
+            if args.observations_out is not None:
+                observation_path = write_reference_parity_observation_table(
+                    args.observations_out,
+                    report,
+                )
+                output_paths.append(observation_path)
+            outputs = _finalize_outputs(
+                args,
+                command="parity",
+                inputs=[],
+                outputs=output_paths,
+            )
+            _print_result(
+                build_command_result(
+                    command="parity",
+                    inputs=[],
+                    outputs=outputs,
+                    metrics={
+                        "all_passed": report.all_passed,
+                        "case_count": report.case_count,
+                        "method_count": len(report.covered_methods),
+                        "failed_case_count": report.failed_case_count,
+                        "extended": args.extended,
+                    },
+                    data={
+                        "report": report,
+                        "summary_table": summary_path,
+                        "observation_table": observation_path,
+                    },
                 ),
                 json_output=args.json,
             )

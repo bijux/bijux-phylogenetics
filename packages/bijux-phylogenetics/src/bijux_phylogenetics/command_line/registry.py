@@ -135,6 +135,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("benchmark-report",),
     ),
     CommandSpec(
+        name="parity",
+        domain="reference-validation",
+        summary="Validate core numerical phylogenetics methods against checked-in external reference outputs.",
+        inputs=(),
+        outputs=("reference-parity-report",),
+    ),
+    CommandSpec(
         name="inspect",
         domain="tree-io",
         summary="Inspect a tree and report high-level summary metrics.",
