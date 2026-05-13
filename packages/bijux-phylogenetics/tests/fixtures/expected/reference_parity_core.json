@@ -1,0 +1,212 @@
+{
+  "generated_on": "2026-05-13",
+  "source_packages": {
+    "DendroPy": "5.0.8",
+    "ape": "5.8.1",
+    "geiger": "2.0.11",
+    "nlme": "3.1.168",
+    "phytools": "2.5.2"
+  },
+  "observations": [
+    {
+      "case": "robinson-foulds-unrooted-topology-difference",
+      "method": "robinson-foulds-distance",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/trees/example_tree_topology_diff.nwk"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "dendropy.calculate.treecompare.symmetric_difference",
+      "tolerance": 0.0,
+      "tolerance_reason": "The unrooted Robinson-Foulds distance is an exact integer bipartition count on a four-taxon fixture.",
+      "failure_mode": "topology",
+      "rf_mode": "unrooted",
+      "expected_output": {
+        "normalized_robinson_foulds": 1.0,
+        "robinson_foulds_distance": 2
+      }
+    },
+    {
+      "case": "branch-score-distance-branch-length-shift",
+      "method": "branch-score-distance",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/trees/example_tree_branch_lengths_right.nwk"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "dendropy.calculate.treecompare.euclidean_distance",
+      "tolerance": 1e-12,
+      "tolerance_reason": "The branch-score distance is a floating-point square-root summary over branch lengths, so the tolerance only absorbs double-precision rounding.",
+      "failure_mode": "branch_length",
+      "expected_output": {
+        "branch_score_distance": 0.33166247903554
+      }
+    },
+    {
+      "case": "pgls-example-tree-brownian",
+      "method": "pgls",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/metadata/example_traits_comparative.tsv"
+      ],
+      "reference_tool": "ape+nlme",
+      "reference_version": "ape=5.8.1;nlme=3.1.168",
+      "reference_source": "ape::corBrownian fixed covariance via nlme::gls",
+      "tolerance": 1e-06,
+      "tolerance_reason": "This Brownian-covariance GLS example is deterministic; the tolerance only absorbs floating-point linear algebra differences.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "intercept": 0.305084745762712,
+        "log_likelihood": -2.948637910520331,
+        "predictor_one": 0.957627118644068,
+        "residual_A": 0.23728813559322,
+        "residual_B": 0.779661016949153,
+        "residual_C": -0.677966101694915,
+        "residual_D": -0.135593220338983
+      }
+    },
+    {
+      "case": "pagel-lambda-example-tree",
+      "method": "pagels-lambda",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/metadata/example_traits_comparative.tsv"
+      ],
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='lambda')",
+      "tolerance": 0.0001,
+      "tolerance_reason": "Pagel's lambda is fit by likelihood search near the lower boundary at zero, so the tolerance absorbs implementation-specific profile rounding.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "lambda_value": 6.796558e-05,
+        "log_likelihood": -5.260501868278937
+      }
+    },
+    {
+      "case": "brownian-example-tree",
+      "method": "brownian-trait-model",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/metadata/example_traits_comparative.tsv"
+      ],
+      "reference_tool": "geiger",
+      "reference_version": "2.0.11",
+      "reference_source": "geiger::fitContinuous(model='BM')",
+      "tolerance": 1e-06,
+      "tolerance_reason": "The Brownian example is a deterministic likelihood surface on a four-taxon fixture, so the tolerance only absorbs floating-point matrix inversion differences.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "log_likelihood": -6.04152073381702,
+        "rate": 4.774305542457443,
+        "root_state": 2.805555555555556
+      }
+    },
+    {
+      "case": "ou-example-tree-grid",
+      "method": "ornstein-uhlenbeck-trait-model",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/metadata/example_traits_comparative.tsv"
+      ],
+      "reference_tool": "ape+nlme",
+      "reference_version": "ape=5.8.1;nlme=3.1.168",
+      "reference_source": "ape::corMartins fixed-alpha grid via nlme::gls",
+      "tolerance": 1e-06,
+      "tolerance_reason": "The OU reference uses a fixed external alpha grid and GLS evaluation, so the tolerance absorbs floating-point search-grid rounding rather than broader model drift.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "alpha": 33.333333,
+        "log_likelihood": -5.260966005446836,
+        "theta": 2.750317551253208
+      }
+    },
+    {
+      "case": "pic-example-tree",
+      "method": "phylogenetic-independent-contrasts",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/metadata/example_traits_comparative.tsv"
+      ],
+      "reference_tool": "ape",
+      "reference_version": "5.8.1",
+      "reference_source": "ape::pic",
+      "tolerance": 1e-06,
+      "tolerance_reason": "The PIC example is algebraically deterministic on one small rooted tree, so the tolerance only absorbs double-precision rounding.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "A|B": -3.354101966249685,
+        "A|B|C|D": -1.49071198499986,
+        "C|D": -2.371708245126285
+      }
+    },
+    {
+      "case": "blomberg-k-example-tree",
+      "method": "blombergs-k",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/metadata/example_traits_comparative.tsv"
+      ],
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='K')",
+      "tolerance": 1e-06,
+      "tolerance_reason": "Blomberg's K is a deterministic scalar summary on a fixed small tree, so the tolerance only absorbs floating-point linear algebra rounding.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "k": 0.678288770053476
+      }
+    },
+    {
+      "case": "posterior-clade-frequencies-six-taxa",
+      "method": "posterior-clade-frequencies",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_posterior_tree_set_six_taxa.nwk"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "DendroPy TreeList internal-node clade counting over rooted tree samples",
+      "tolerance": 1e-12,
+      "tolerance_reason": "Posterior clade frequencies are exact rational counts over five checked-in trees; the tolerance only absorbs float serialization.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "A|B": 0.4,
+        "A|B|C|D": 0.4,
+        "A|B|D|E": 0.2,
+        "A|B|E|F": 0.4,
+        "A|C": 0.2,
+        "A|D": 0.2,
+        "A|E": 0.2,
+        "B|D": 0.2,
+        "B|E": 0.2,
+        "B|F": 0.2,
+        "C|D": 0.6,
+        "C|F": 0.2,
+        "E|F": 0.6
+      }
+    },
+    {
+      "case": "consensus-tree-six-taxa",
+      "method": "consensus-tree-generation",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_posterior_tree_set_six_taxa.nwk"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "DendroPy TreeList.consensus(min_freq=0.5)",
+      "tolerance": 0.0,
+      "tolerance_reason": "Consensus parity is evaluated as exact unrooted majority-rule topology against a fixed DendroPy reference tree.",
+      "failure_mode": "topology",
+      "expected_output": {
+        "consensus_splits": [
+          "C|D||A|B|E|F",
+          "E|F||A|B|C|D"
+        ],
+        "reference_consensus_newick": "[&U] (A,B,(E,F),(C,D));",
+        "unrooted_robinson_foulds": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "generated_on": "2026-05-13",
+  "source_packages": {
+    "DendroPy": "5.0.8"
+  },
+  "observations": [
+    {
+      "case": "posterior-clade-frequencies-beast-posterior",
+      "method": "posterior-clade-frequencies",
+      "input_fixtures": [
+        "tests/fixtures/metadata/beast2_strict_yule_posterior.trees"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "DendroPy TreeList internal-node clade counting over rooted posterior trees",
+      "tolerance": 1e-12,
+      "tolerance_reason": "Posterior clade frequencies are exact rational counts over 101 checked-in BEAST trees; the tolerance only absorbs float serialization.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "A|B": 0.5247524752475248,
+        "A|B|C": 0.12871287128712872,
+        "A|B|D": 0.13861386138613863,
+        "A|C": 0.22772277227722773,
+        "A|C|D": 0.07920792079207921,
+        "B|C|D": 0.1188118811881188,
+        "B|D": 0.2871287128712871,
+        "C|D": 0.49504950495049505
+      }
+    },
+    {
+      "case": "consensus-tree-beast-posterior",
+      "method": "consensus-tree-generation",
+      "input_fixtures": [
+        "tests/fixtures/metadata/beast2_strict_yule_posterior.trees"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "DendroPy TreeList.consensus(min_freq=0.5)",
+      "tolerance": 0.0,
+      "tolerance_reason": "Consensus parity is evaluated as exact unrooted majority-rule topology against a checked-in BEAST posterior reference tree.",
+      "failure_mode": "topology",
+      "expected_output": {
+        "consensus_splits": [
+          "A|B||C|D"
+        ],
+        "reference_consensus_newick": "[&U] (A,B,(C,D));",
+        "unrooted_robinson_foulds": 0
+      }
+    }
+  ]
+}

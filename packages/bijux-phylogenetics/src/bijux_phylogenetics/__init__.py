@@ -1261,6 +1261,14 @@ from .reference_validation import (
     write_core_workflow_validation_json,
     write_level_one_release_gate_json,
 )
+from .reference_parity import (
+    ReferenceParityObservation,
+    ReferenceParityReport,
+    ReferenceParitySummaryRow,
+    validate_reference_parity_examples,
+    write_reference_parity_observation_table,
+    write_reference_parity_summary_table,
+)
 from .render import (
     AnnotationStrip,
     TreeFigurePackageResult,
@@ -2187,6 +2195,9 @@ __all__ = [
     "subsample_posterior_tree_set",
     "summarize_beast_analysis_xml",
     "ReferenceFixtureCheck",
+    "ReferenceParityObservation",
+    "ReferenceParityReport",
+    "ReferenceParitySummaryRow",
     "ReferenceValidationSuiteReport",
     "RegressionDatasetCaseResult",
     "RegressionDatasetCorpusReport",
@@ -2490,6 +2501,7 @@ __all__ = [
     "validate_figure_reference_fixtures",
     "validate_distance_reference_examples",
     "validate_imported_distance_matrix",
+    "validate_reference_parity_examples",
     "validate_report_regression_fixtures",
     "validate_simulation_reproducibility",
     "validate_taxon_naming_reference_fixtures",
@@ -2641,6 +2653,8 @@ __all__ = [
     "write_shared_taxa_removed_taxa_table",
     "write_support_comparison_table",
     "write_taxon_influence_table",
+    "write_reference_parity_observation_table",
+    "write_reference_parity_summary_table",
     "write_mrbayes_burnin_sensitivity_slice_table",
     "write_mrbayes_parameter_summary_table",
     "write_posterior_tree_subsample",
