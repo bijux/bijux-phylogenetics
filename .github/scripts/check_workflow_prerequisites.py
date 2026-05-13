@@ -18,6 +18,7 @@ POLL_TIMEOUT_SECONDS = 45 * 60
 @dataclass(frozen=True)
 class RequiredWorkflow:
     name: str
+    fail_on_non_success: bool = True
 
 
 def _event_payload() -> dict:
@@ -72,7 +73,7 @@ def _required_workflows(event_name: str) -> list[RequiredWorkflow]:
     if event_name in {"pull_request", "pull_request_target", "pull_request_review"}:
         return [
             RequiredWorkflow("bijux-std"),
-            RequiredWorkflow("policy / pr approval"),
+            RequiredWorkflow("policy / pr approval", fail_on_non_success=False),
         ]
     if event_name in {"merge_group", "push"}:
         return [RequiredWorkflow("bijux-std")]
@@ -128,9 +129,12 @@ def _all_prerequisites_ready(
         if status != "completed":
             return (False, states)
         if conclusion != "success":
-            raise RuntimeError(
-                f"Required workflow '{workflow.name}' completed with conclusion '{conclusion}'."
-            )
+            if workflow.fail_on_non_success:
+                raise RuntimeError(
+                    f"Required workflow '{workflow.name}' completed with conclusion "
+                    f"'{conclusion}'."
+                )
+            return (False, states)
     return (True, states)
 
 
