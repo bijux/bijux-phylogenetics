@@ -61,6 +61,9 @@ output.iqtree_log: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-supp
 output.bootstrap_trees: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot
 output.consensus_tree: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree
 output.support_tree: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile
+output.support_table: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv
+output.low_support_branches: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv
+output.support_histogram: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv
 
 [support-summary]
 - one or more internal nodes did not expose numeric support labels
