@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import shutil
-
-import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
@@ -15,21 +12,7 @@ from bijux_phylogenetics.datasets import (
     run_rabies_cross_host_geography_panel_workflow,
     write_rabies_cross_host_geography_panel_workflow_bundle,
 )
-
-
-def _real_engine_executables() -> dict[str, str]:
-    executables = {
-        "mafft": shutil.which("mafft"),
-        "trimal": shutil.which("trimal"),
-        "iqtree2": shutil.which("iqtree2"),
-    }
-    missing = [name for name, resolved in executables.items() if resolved is None]
-    if missing:
-        pytest.skip(
-            "integrated rabies workflow coverage requires installed executables: "
-            + ", ".join(sorted(missing))
-        )
-    return {name: resolved for name, resolved in executables.items() if resolved}
+from tests.support.external_engines import require_alignment_engine_executables
 
 
 def _stable_generated_outputs(bundle: object) -> dict[str, Path]:
@@ -92,7 +75,7 @@ def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface
 def test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     report = run_rabies_cross_host_geography_panel_workflow(
         tmp_path / "workflow-run",
         mafft_executable=executables["mafft"],
@@ -120,7 +103,7 @@ def test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_package
 def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     result = run_rabies_cross_host_geography_panel_demo(
         tmp_path / "demo",
         mafft_executable=executables["mafft"],
@@ -182,7 +165,7 @@ def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surfac
 def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrated_workflow(
     tmp_path: Path, capsys
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     output = tmp_path / "rabies-integrated-demo"
     exit_code = main(
         [

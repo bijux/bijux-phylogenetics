@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import shutil
-
-import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
@@ -15,21 +12,7 @@ from bijux_phylogenetics.datasets import (
     run_pleistocene_bear_cytb_fragment_workflow,
     write_pleistocene_bear_cytb_fragment_workflow_bundle,
 )
-
-
-def _real_engine_executables() -> dict[str, str]:
-    executables = {
-        "mafft": shutil.which("mafft"),
-        "trimal": shutil.which("trimal"),
-        "iqtree2": shutil.which("iqtree2"),
-    }
-    missing = [name for name, resolved in executables.items() if resolved is None]
-    if missing:
-        pytest.skip(
-            "ancient DNA dataset workflow coverage requires installed executables: "
-            + ", ".join(sorted(missing))
-        )
-    return {name: resolved for name, resolved in executables.items() if resolved}
+from tests.support.external_engines import require_alignment_engine_executables
 
 
 def test_load_pleistocene_bear_cytb_fragment_dataset_exposes_packaged_surface() -> None:
@@ -56,7 +39,7 @@ def test_load_pleistocene_bear_cytb_fragment_dataset_exposes_packaged_surface() 
 def test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     report = run_pleistocene_bear_cytb_fragment_workflow(
         tmp_path / "workflow-run",
         mafft_executable=executables["mafft"],
@@ -87,7 +70,7 @@ def test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_e
 def test_run_pleistocene_bear_cytb_fragment_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     result = run_pleistocene_bear_cytb_fragment_demo(
         tmp_path / "demo",
         mafft_executable=executables["mafft"],
@@ -142,7 +125,7 @@ def test_public_runtime_exports_include_pleistocene_bear_cytb_fragment_surface()
 def test_cli_demo_pleistocene_bear_cytb_fragments_json_output_reports_missingness_review(
     tmp_path: Path, capsys
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     output = tmp_path / "ancient-dna-demo"
     exit_code = main(
         [

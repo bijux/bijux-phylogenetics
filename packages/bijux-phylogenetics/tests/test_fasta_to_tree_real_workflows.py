@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import shutil
 
 import pytest
 
 from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.engines.fasta_to_tree import run_fasta_to_tree_workflow
+from tests.support.external_engines import require_alignment_engine_executables
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 REAL_INPUT_ROOT = Path(
@@ -22,22 +22,6 @@ USER_FACING_SUFFIXES = (
     ".model.tsv",
     ".support.tsv",
 )
-
-
-def _real_engine_executables() -> dict[str, str]:
-    executables = {
-        "mafft": shutil.which("mafft"),
-        "trimal": shutil.which("trimal"),
-        "iqtree2": shutil.which("iqtree2"),
-    }
-    missing = [name for name, resolved in executables.items() if resolved is None]
-    if missing:
-        pytest.skip(
-            "real workflow golden coverage requires installed executables: "
-            + ", ".join(sorted(missing))
-        )
-    return {name: resolved for name, resolved in executables.items() if resolved}
-
 
 def _assert_matches_expected_bundle(actual_root: Path, slug: str) -> None:
     expected_root = EXPECTED_ROOT / slug
@@ -62,7 +46,7 @@ def test_run_fasta_to_tree_workflow_matches_real_output_golden(
     slug: str,
     sequence_type: str,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     monkeypatch.chdir(REPO_ROOT)
     input_path = REAL_INPUT_ROOT / f"{slug}.fasta"
     out_dir = tmp_path / slug
@@ -88,7 +72,7 @@ def test_adapter_fasta_to_tree_cli_matches_real_output_golden(
     capsys,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     monkeypatch.chdir(REPO_ROOT)
     slug = "gnathostome-ortholog-proteins"
     input_path = REAL_INPUT_ROOT / f"{slug}.fasta"

@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import shutil
-
-import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.cli import main
@@ -15,21 +12,7 @@ from bijux_phylogenetics.datasets import (
     run_influenza_a_ha_reference_workflow,
     write_influenza_a_ha_reference_workflow_bundle,
 )
-
-
-def _real_engine_executables() -> dict[str, str]:
-    executables = {
-        "mafft": shutil.which("mafft"),
-        "trimal": shutil.which("trimal"),
-        "iqtree2": shutil.which("iqtree2"),
-    }
-    missing = [name for name, resolved in executables.items() if resolved is None]
-    if missing:
-        pytest.skip(
-            "viral dataset workflow coverage requires installed executables: "
-            + ", ".join(sorted(missing))
-        )
-    return {name: resolved for name, resolved in executables.items() if resolved}
+from tests.support.external_engines import require_alignment_engine_executables
 
 
 def test_load_influenza_a_ha_reference_dataset_exposes_packaged_viral_surface() -> None:
@@ -50,7 +33,7 @@ def test_load_influenza_a_ha_reference_dataset_exposes_packaged_viral_surface() 
 def test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     report = run_influenza_a_ha_reference_workflow(
         tmp_path / "workflow-run",
         mafft_executable=executables["mafft"],
@@ -79,7 +62,7 @@ def test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expecte
 def test_run_influenza_a_ha_reference_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     result = run_influenza_a_ha_reference_demo(
         tmp_path / "demo",
         mafft_executable=executables["mafft"],
@@ -131,7 +114,7 @@ def test_public_runtime_exports_include_influenza_a_ha_reference_dataset_surface
 def test_cli_demo_influenza_a_ha_reference_panel_json_output_reports_dataset_and_workflow(
     tmp_path: Path, capsys
 ) -> None:
-    executables = _real_engine_executables()
+    executables = require_alignment_engine_executables()
     output = tmp_path / "viral-demo"
     exit_code = main(
         [
