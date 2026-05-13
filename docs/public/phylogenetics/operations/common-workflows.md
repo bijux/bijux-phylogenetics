@@ -221,6 +221,40 @@ This gives users a governed dirty-data review surface that proves how
 `bijux-phylogenetics` identifies and handles realistic pathologies without
 pretending the raw inputs were already analysis-ready.
 
+When the goal is to check recovery behavior against stored truth instead of
+against only other inferred outputs, use `demo known-answer-reference-panel`.
+This workflow materializes the packaged deterministic simulation panel and
+reruns the owned recovery surfaces over its true tree, simulated alignment,
+and simulated traits.
+
+```bash
+bijux-phylogenetics demo known-answer-reference-panel \
+  --out artifacts/known-answer-reference-panel \
+  --json
+```
+
+The packaged known-answer workflow keeps the truth contract explicit:
+
+- one true birth-death tree
+- one simulated DNA alignment generated on that tree
+- one simulated Brownian continuous trait
+- one simulated three-state discrete trait
+- one true-parameter ledger with the exact simulation seeds and values
+- one true continuous-node ledger and one true discrete-node ledger
+
+The governed recovery bundle then exposes how well the owned runtime recovers
+those known answers:
+
+- neighbor-joining distance-tree recovery against the true tree
+- Brownian parameter recovery on the true tree
+- continuous ancestral reconstruction against stored node truth
+- discrete ancestral reconstruction against stored node truth
+- explicit parameter and node recovery ledgers instead of a narrative claim
+
+This gives users one durable internal reference surface for checking that
+topology and ancestral-state recovery remain interpretable when the answers are
+actually known in advance.
+
 When the goal is to review host-state evolution on a real pathogen panel, use
 `demo rabies-cross-host-panel`. This workflow materializes the packaged rabies
 dataset, which ships with a rooted nucleoprotein tree, raw sequences, and host
