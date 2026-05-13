@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.data_quality_stress import (
     export_catarrhine_data_quality_stress_panel_dataset,
     load_catarrhine_data_quality_stress_panel_dataset,
@@ -98,4 +100,39 @@ def test_demo_and_export_materialize_packaged_dataset_and_workflow(
     assert demo_result.overview_path.is_file()
     assert "repaired branch count" in demo_result.overview_path.read_text(
         encoding="utf-8"
+    )
+
+
+def test_cli_demo_catarrhine_data_quality_stress_panel_json_output_reports_cleanup_review(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "stress-demo"
+    exit_code = main(
+        [
+            "demo",
+            "catarrhine-data-quality-stress-panel",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["command"] == "demo"
+    assert payload["metrics"]["artifact_count"] == 16
+    assert payload["metrics"]["raw_taxon_count"] == 6
+    assert payload["metrics"]["cleaned_taxon_count"] == 4
+    assert payload["metrics"]["duplicate_trait_taxon_count"] == 1
+    assert payload["metrics"]["missing_trait_value_count"] == 3
+    assert payload["metrics"]["sequence_outlier_count"] == 1
+    assert payload["metrics"]["tree_zero_length_branch_count"] == 1
+    assert payload["metrics"]["tree_long_branch_outlier_count"] == 1
+    assert payload["metrics"]["dropped_taxon_count"] == 2
+    assert payload["metrics"]["repaired_branch_count"] == 1
+    assert payload["metrics"]["reference_output_count"] == 11
+    assert payload["data"]["dataset"]["dataset_id"] == (
+        "catarrhine_data_quality_stress_panel"
+    )
+    assert payload["data"]["workflow_bundle"]["cleaned_tree_path"] == str(
+        output / "workflow" / "cleaned-tree.nwk"
     )

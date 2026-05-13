@@ -430,6 +430,9 @@ from bijux_phylogenetics.datasets import (
     run_rabies_geographic_transition_panel_demo,
     run_rabies_cross_host_panel_demo,
 )
+from bijux_phylogenetics.datasets.data_quality_stress import (
+    run_catarrhine_data_quality_stress_panel_demo,
+)
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.locus_occupancy import (
     build_locus_occupancy_report,
@@ -5264,6 +5267,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_catarrhine_mitogenome)
+    demo_catarrhine_stress = demo_subparsers.add_parser(
+        "catarrhine-data-quality-stress-panel",
+        help="Materialize the packaged catarrhine dirty-data stress dataset and rerun the governed audit and cleanup outputs.",
+    )
+    demo_catarrhine_stress.add_argument("--out", required=True, type=Path)
+    demo_catarrhine_stress.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_catarrhine_stress)
 
     adapter = subparsers.add_parser(
         get_command_spec("adapter").name, help=get_command_spec("adapter").summary
@@ -14592,6 +14604,74 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "weakly_supported_clade_count": (
                                     result.workflow_bundle.weakly_supported_clade_count
+                                ),
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "catarrhine-data-quality-stress-panel":
+                result = run_catarrhine_data_quality_stress_panel_demo(args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.raw_alignment_path,
+                        result.dataset_export.raw_tree_path,
+                        result.dataset_export.raw_traits_path,
+                        result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.trait_duplicates_path,
+                        result.workflow_bundle.trait_missing_values_path,
+                        result.workflow_bundle.sequence_outliers_path,
+                        result.workflow_bundle.tree_issues_path,
+                        result.workflow_bundle.repair_actions_path,
+                        result.workflow_bundle.cleaned_traits_path,
+                        result.workflow_bundle.cleaned_alignment_path,
+                        result.workflow_bundle.cleaned_tree_path,
+                        result.workflow_bundle.cleaned_linkage_path,
+                        result.workflow_bundle.cleaned_validation_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "raw_taxon_count": result.workflow_bundle.raw_taxon_count,
+                                "cleaned_taxon_count": result.workflow_bundle.cleaned_taxon_count,
+                                "duplicate_trait_taxon_count": (
+                                    result.workflow_bundle.duplicate_trait_taxon_count
+                                ),
+                                "missing_trait_value_count": (
+                                    result.workflow_bundle.missing_trait_value_count
+                                ),
+                                "sequence_outlier_count": (
+                                    result.workflow_bundle.sequence_outlier_count
+                                ),
+                                "tree_zero_length_branch_count": (
+                                    result.workflow_bundle.tree_zero_length_branch_count
+                                ),
+                                "tree_long_branch_outlier_count": (
+                                    result.workflow_bundle.tree_long_branch_outlier_count
+                                ),
+                                "dropped_taxon_count": (
+                                    result.workflow_bundle.dropped_taxon_count
+                                ),
+                                "repaired_branch_count": (
+                                    result.workflow_bundle.repaired_branch_count
                                 ),
                                 "reference_output_count": expected_output_count,
                             },
