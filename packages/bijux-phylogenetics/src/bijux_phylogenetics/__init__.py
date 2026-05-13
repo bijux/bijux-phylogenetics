@@ -1218,6 +1218,16 @@ from .reports.service import (
     render_tree_uncertainty_report,
     render_workflow_validation_report,
 )
+from .reports.tree_package import (
+    TreeBranchStatisticsRow,
+    TreeReportPackageResult,
+    TreeSupportRow,
+    build_tree_report_package,
+    summarize_tree_branch_statistics,
+    summarize_tree_support,
+    write_tree_branch_statistics_table,
+    write_tree_support_table,
+)
 from .simulation import (
     AlignmentSimulationReport,
     ContinuousTraitSimulationReport,
@@ -2139,6 +2149,7 @@ __all__ = [
     "render_phylo_inputs_report",
     "render_phylogenetics_report",
     "render_tree_report",
+    "build_tree_report_package",
     "render_tree_set_comparison_report",
     "render_tree_uncertainty_report",
     "render_tree_with_geographic_states",
@@ -2158,6 +2169,13 @@ __all__ = [
     "ContinuousEvolutionaryModeFitReport",
     "ContinuousEvolutionaryModeComparisonReport",
     "ComparativeTreeRescalingReport",
+    "TreeBranchStatisticsRow",
+    "TreeReportPackageResult",
+    "TreeSupportRow",
+    "summarize_tree_branch_statistics",
+    "summarize_tree_support",
+    "write_tree_branch_statistics_table",
+    "write_tree_support_table",
     "EarlyBurstIdentifiabilityWarning",
     "EarlyBurstRateChangeProfileRow",
     "EarlyBurstTraitEvolutionExclusion",
