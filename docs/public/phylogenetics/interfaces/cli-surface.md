@@ -4205,8 +4205,10 @@ alignment block, a provided-tree or UPGMA starting tree, an HKY or JTT site
 model chosen from the inferred sequence alphabet, a strict or uncorrelated
 lognormal clock, a Yule or birth-death tree prior, explicit MCMC loggers, and
 one MRCA prior per validated calibration target. Its JSON metrics expose
-`taxon_count`, `calibration_count`, `tip_date_count`, `warning_count`,
-`starting_tree_source`, and `beast_data_type`.
+`taxon_count`, `character_count`, `calibration_count`, `tip_date_count`,
+`warning_count`, `starting_tree_source`, `beast_data_type`,
+`substitution_model`, `clock_model`, `tree_prior`, `chain_length`, and
+`log_every`.
 
 When `--calibrations` or `--tip-dates` are supplied, `--tree` is required.
 That rule keeps the dated template anchored to the same guide topology and
@@ -4221,6 +4223,13 @@ The warning surface also carries one dated-tree limitation explicitly: if
 validates, but the JSON warnings mark that combination as exploratory because
 BEAST reports that the standard birth-death prior is not serial-sampling
 aware.
+
+`adapter beast-xml` is the governed XML evidence surface for one prepared BEAST
+analysis file. It parses and validates the written XML directly, then reports
+the assumed substitution model, clock model, tree prior, starting-tree source,
+chain length, calibration count, tip-date count, and logger outputs. Its JSON
+metrics expose `valid`, `issue_count`, `taxon_count`, `character_count`,
+`calibration_count`, `tip_date_count`, `chain_length`, and `logger_count`.
 
 `adapter beast-run` is the governed execution surface for one prepared BEAST
 XML analysis. It runs BEAST, validates the posterior log and posterior tree
@@ -4238,6 +4247,10 @@ When `--summary-out` is provided, the command also writes a TSV table with one
 row per retained parameter containing effective sample size, mean, median,
 sample standard deviation, 95% HPD interval, min/max, first-half mean,
 second-half mean, standardized mean shift, and the retained state window.
+
+When a sibling BEAST XML is present, downstream Bayesian reviewer-text
+surfaces reuse that XML so model assumptions and chain settings are stated
+from the prepared analysis itself instead of from placeholder CLI defaults.
 
 `adapter beast-parameters` is the governed posterior-parameter diagnostics
 surface for one BEAST posterior log. It applies the same burn-in handling as
