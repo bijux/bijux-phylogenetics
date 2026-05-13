@@ -108,6 +108,30 @@ def test_evidence_governance_workflow_separates_contracts_and_cleanroom_jobs() -
     assert "tox -e evidence-governance,evidence-completeness" in contract_text
     assert "make rerun-governed-evidence-cleanroom" in cleanroom_text
 
+    contract_checkout = next(
+        (
+            step
+            for step in evidence_contracts.get("steps", [])
+            if isinstance(step, dict)
+            and step.get("uses")
+            == "actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8"
+        ),
+        None,
+    )
+    cleanroom_checkout = next(
+        (
+            step
+            for step in evidence_cleanroom.get("steps", [])
+            if isinstance(step, dict)
+            and step.get("uses")
+            == "actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8"
+        ),
+        None,
+    )
+
+    assert _as_dict(contract_checkout).get("with", {}).get("fetch-depth") == 0
+    assert _as_dict(cleanroom_checkout).get("with", {}).get("fetch-depth") == 0
+
 
 def test_publish_readiness_workflow_keeps_report_and_gate_jobs_separate() -> None:
     workflow = _workflow(WORKFLOWS_DIR / "publish-readiness.yml")
