@@ -149,37 +149,34 @@ def build_inference_comparison_conflict_rows(
     support_disagreement_threshold: float = _SUPPORT_DISAGREEMENT_THRESHOLD,
 ) -> list[InferenceComparisonConflictRow]:
     """Build one combined topology-plus-support conflict ledger."""
+    del comparison_report
     rows: list[InferenceComparisonConflictRow] = []
     shared_rows = build_inference_comparison_shared_clade_rows(
         comparison,
         support_disagreement_threshold=support_disagreement_threshold,
     )
-    for split_id in comparison_report.clades.left_only_clades:
+    for support_conflict in comparison.support.conflicting_clades:
+        if support_conflict.comparison_status == "left_only":
+            conflict_kind = "fasttree_only"
+            fasttree_present = True
+            iqtree_present = False
+        elif support_conflict.comparison_status == "right_only":
+            conflict_kind = "iqtree_only"
+            fasttree_present = False
+            iqtree_present = True
+        else:
+            continue
         rows.append(
             InferenceComparisonConflictRow(
-                split_id=split_id,
-                conflict_kind="fasttree_only",
-                fasttree_present=True,
-                iqtree_present=False,
-                fasttree_support=None,
-                fasttree_support_fraction=None,
-                iqtree_support=None,
-                iqtree_support_fraction=None,
-                detail="clade was inferred only by FastTree",
-            )
-        )
-    for split_id in comparison_report.clades.right_only_clades:
-        rows.append(
-            InferenceComparisonConflictRow(
-                split_id=split_id,
-                conflict_kind="iqtree_only",
-                fasttree_present=False,
-                iqtree_present=True,
-                fasttree_support=None,
-                fasttree_support_fraction=None,
-                iqtree_support=None,
-                iqtree_support_fraction=None,
-                detail="clade was inferred only by IQ-TREE",
+                split_id=support_conflict.split_id,
+                conflict_kind=conflict_kind,
+                fasttree_present=fasttree_present,
+                iqtree_present=iqtree_present,
+                fasttree_support=support_conflict.left_support,
+                fasttree_support_fraction=support_conflict.left_support_fraction,
+                iqtree_support=support_conflict.right_support,
+                iqtree_support_fraction=support_conflict.right_support_fraction,
+                detail=support_conflict.detail,
             )
         )
     for row in shared_rows:

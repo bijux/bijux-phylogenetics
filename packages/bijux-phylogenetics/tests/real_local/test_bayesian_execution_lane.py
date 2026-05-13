@@ -28,10 +28,18 @@ from ..support.external_engines import (
 pytestmark = [pytest.mark.real_local, pytest.mark.engine_real]
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
+FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
 
 def fixture(name: str) -> Path:
-    return FIXTURES / name
+    direct = FIXTURES / name
+    if direct.exists():
+        return direct
+    for group in FIXTURE_GROUPS:
+        candidate = FIXTURES / group / name
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(name)
 
 
 def test_prepare_mrbayes_analysis_is_accepted_by_real_mrbayes_on_partitioned_input(
