@@ -2277,6 +2277,57 @@ bundles render marginal-state pies and color branches by inferred descendant
 state, so the publication bundle preserves the richer visual evidence surface
 without needing a separate styling step.
 
+`ancestral report` is the governed full reconstruction-review surface for one
+continuous or discrete ancestral analysis. It can still write one standalone
+HTML report through `--out`, but `--out-dir` activates the complete package
+surface that keeps the report, visualization files, node ledger, uncertainty
+ledger, transition or branch-change ledgers, exclusion ledger, and manifest in
+one directory. Its JSON metrics report:
+- `report_kind`
+- `reconstruction_kind`
+- `output_dir`
+- `artifact_count`
+- `transition_count_row_count`
+
+The command requires `--kind continuous` or `--kind discrete`. Continuous mode
+supports `brownian` and `ou`. Discrete mode supports `fitch`, `equal-rates`,
+`symmetric`, and `all-rates-different`. The same `--state-ordering`,
+`--ordered-states`, `--compare-model`, `--compare-tree`, `--drop-taxa`, and
+`--coding-map` surfaces remain available on the standalone and packaged paths.
+
+When `--out-dir` is supplied, `ancestral report` writes this fixed package:
+- `ancestral-report.html`
+- `ancestral-figure.svg`
+- `ancestral-figure.png`
+- `ancestral-figure.html`
+- `summary.tsv`
+- `node-table.tsv`
+- `uncertainty-table.tsv`
+- `transition-counts.tsv`
+- `transition-branches.tsv`
+- `exclusions.tsv`
+- `ancestral-report.manifest.json`
+
+The HTML report embeds the governed SVG figure directly and turns the core
+ancestral review surfaces into one durable handoff. `summary.tsv` keeps the
+owned continuous or discrete summary row. `node-table.tsv` keeps the flattened
+node-state ledger from the owned ancestral report surface.
+`uncertainty-table.tsv` keeps either the continuous uncertainty ledger or the
+discrete marginal-state probability ledger.
+
+`transition-counts.tsv` and `transition-branches.tsv` preserve different but
+explicit evidence depending on the reconstruction kind. For discrete traits,
+they reuse the owned ancestral transition workflow, so each row is a directed
+state-change count or branch record. For continuous traits, the same filenames
+stay stable across the report package, but the rows become branch-delta review
+ledgers with `increase`, `decrease`, and `stable` directions rather than
+pretending that continuous values imply categorical state transitions.
+
+When `--out` is supplied together with `--out-dir`, the command also writes one
+copy of the packaged HTML report to the requested `--out` path and one sibling
+SVG beside it. This keeps the complete package surface while still supporting
+one explicitly named review artifact path.
+
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
