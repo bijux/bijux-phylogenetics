@@ -1,0 +1,60 @@
+{
+  "arguments": [
+    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta",
+    "--out-dir",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins",
+    "--prefix",
+    "strnog-enog411bqtj-proteins",
+    "--sequence-type",
+    "protein",
+    "--alignment-mode",
+    "auto",
+    "--trimming-mode",
+    "gap-threshold",
+    "--trim-gap-threshold",
+    "0.1",
+    "--iqtree-seed",
+    "1",
+    "--iqtree-threads",
+    "1",
+    "--bootstrap-replicates",
+    "1000",
+    "--resume",
+    "false",
+    "--incomplete-run-policy",
+    "reject"
+  ],
+  "command": "run_fasta_to_tree_workflow",
+  "dependency_versions": {
+    "bijux-phylogenetics": "0.1.1.dev706+dirty",
+    "biopython": "1.87"
+  },
+  "host_platform": "macOS-26.4.1-arm64-arm-64bit",
+  "input_checksums": {
+    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta": "636378461b11e26fa0c9b8f6ee792e7f99887ae0fc4d3259cc2103389d50ba66"
+  },
+  "input_paths": [
+    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.aln": "930b51ded3819e435911dcdc9f3521f4ac08679511dcac65e348da088fa5b7a2",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.log": "0fc13d3899709eaffb7bfa41904418d56ca17b099dc4d96f92f587516ed5c11c",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.manifest.json": "045b2c3fc6d2988b9915416d66409f7bc9d57f5f3034e7017a063a9e92c71eea",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.model.tsv": "b58a53be46312ffe2d28d60aaceceeed31db2b2706533c3f1819debe5bf54cc0",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.support.tsv": "2ecc876a0ed2046c370333ef3c82f77955ccd7f62427bd2c79c188204ce5f981",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.tree": "45f65b80551a81d470b8d4721649037be01afa1b7a9c89d47d59b3974ee002b1",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.trimmed.aln": "ab275efd30c082adc4b777e59fe6c92589425c544b74e7ea661ab066d6e75c7b"
+  },
+  "output_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.trimmed.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.tree",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.log",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.model.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.support.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/strnog-enog411bqtj-proteins/strnog-enog411bqtj-proteins.manifest.json"
+  ],
+  "package_version": "0.1.1.dev706+dirty",
+  "python_version": "3.11.9",
+  "timestamp_utc": "2026-05-13T04:26:25.847016+00:00"
+}

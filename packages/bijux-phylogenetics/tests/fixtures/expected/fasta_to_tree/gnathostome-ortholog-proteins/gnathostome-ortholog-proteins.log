@@ -3,6 +3,10 @@ input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/input
 prepared_input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
 sequence_type: protein
 selected_model: Q.insect+I
+started_at_utc: 2026-05-13T04:22:47Z
+ended_at_utc: 2026-05-13T04:23:06Z
+runtime_seconds: 18.087
+run_manifest_path: gnathostome-ortholog-proteins.run.json
 
 [input-validation]
 sequence_count: 9

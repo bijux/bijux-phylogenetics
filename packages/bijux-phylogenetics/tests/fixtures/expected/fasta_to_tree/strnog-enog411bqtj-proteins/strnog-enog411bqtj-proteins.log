@@ -3,6 +3,10 @@ input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/input
 prepared_input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta
 sequence_type: protein
 selected_model: JTTDCMut+G4
+started_at_utc: 2026-05-13T04:23:08Z
+ended_at_utc: 2026-05-13T04:26:25Z
+runtime_seconds: 196.845
+run_manifest_path: strnog-enog411bqtj-proteins.run.json
 
 [input-validation]
 sequence_count: 31

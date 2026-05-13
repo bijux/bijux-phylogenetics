@@ -28,5 +28,35 @@
     "description": "Thirty-one strNOG ENOG411BQTJ ortholog proteins derived from the local trimAl reference corpus after removing alignment gap characters.",
     "minimum_sequence_length": 79,
     "maximum_sequence_length": 220
+  },
+  {
+    "fixture_name": "vertebrate-homolog-proteins.fasta",
+    "sequence_type": "protein",
+    "source_path": "artifacts/trimal/trimal/dataset/example.010.AA.fasta",
+    "source_record_count": 9,
+    "transformation": "Removed alignment gap characters and placeholder missing-data marks from the source aligned FASTA to recover the raw sequence inputs used for end-to-end workflow regression.",
+    "description": "Nine vertebrate homolog proteins derived from the local trimAl reference corpus after removing alignment gap characters.",
+    "minimum_sequence_length": 142,
+    "maximum_sequence_length": 183
+  },
+  {
+    "fixture_name": "influenza-a-ha-reference-panel.fasta",
+    "sequence_type": "dna",
+    "source_path": "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
+    "source_record_count": 6,
+    "transformation": "Used the packaged real influenza A hemagglutinin reference sequences verbatim as one end-to-end DNA workflow input.",
+    "description": "Six real influenza A hemagglutinin coding sequences from the packaged reference panel.",
+    "minimum_sequence_length": 1734,
+    "maximum_sequence_length": 1779
+  },
+  {
+    "fixture_name": "pleistocene-bear-cytb-fragments.fasta",
+    "sequence_type": "dna",
+    "source_path": "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta",
+    "source_record_count": 5,
+    "transformation": "Used the packaged real Pleistocene and modern bear cytochrome-b fragment sequences verbatim as one end-to-end DNA workflow input.",
+    "description": "Five real bear cytochrome-b fragment sequences from the packaged ancient-DNA-style reference panel.",
+    "minimum_sequence_length": 480,
+    "maximum_sequence_length": 1140
   }
 ]

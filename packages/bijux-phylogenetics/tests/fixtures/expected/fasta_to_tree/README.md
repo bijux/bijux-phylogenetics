@@ -10,5 +10,10 @@ The checked files are limited to the durable outputs promised by the workflow co
 - `.log`
 - `.model.tsv`
 - `.support.tsv`
+- `.manifest.json`
+- `.run.json`
 
-Engine-specific intermediates remain runtime artifacts and are not tracked in this golden corpus.
+Engine-specific intermediates remain runtime artifacts and are not tracked in this governed corpus.
+
+Real-engine validation compares these bundles semantically rather than byte-for-byte.
+That keeps the scientific checks stable across harmless path and timestamp variation while still verifying the reviewer-facing workflow contract.

@@ -1,0 +1,60 @@
+{
+  "arguments": [
+    "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta",
+    "--out-dir",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments",
+    "--prefix",
+    "pleistocene-bear-cytb-fragments",
+    "--sequence-type",
+    "dna",
+    "--alignment-mode",
+    "auto",
+    "--trimming-mode",
+    "gap-threshold",
+    "--trim-gap-threshold",
+    "0.1",
+    "--iqtree-seed",
+    "1",
+    "--iqtree-threads",
+    "1",
+    "--bootstrap-replicates",
+    "1000",
+    "--resume",
+    "false",
+    "--incomplete-run-policy",
+    "reject"
+  ],
+  "command": "run_fasta_to_tree_workflow",
+  "dependency_versions": {
+    "bijux-phylogenetics": "0.1.1.dev706+dirty",
+    "biopython": "1.87"
+  },
+  "host_platform": "macOS-26.4.1-arm64-arm-64bit",
+  "input_checksums": {
+    "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta": "699e5048b6f1a17de5e3a331184cc4e4ca381c948d56d903f07f75955051ceef"
+  },
+  "input_paths": [
+    "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.aln": "90374ceb63d11789868e1f349c3768670e36a510a4450349d2b743745a1aff00",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.log": "820b850664c0de904188891efe0f5f4bfc89b0981a02a93f369771432091364f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.manifest.json": "130ace849ae71a56ae1cd25c0901f6587f2edb025673be729423b6e6de471e8c",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.model.tsv": "f9b85fd2e455d02b4f7bc71fd8221d93a9aa3dd151dde82480e110251ae21738",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.support.tsv": "b5a434276488f2006fed96190dc6219cfde683e2adb34418e0717c881a7de09e",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.tree": "53c8648a66a7daba2f9e4ed4d3c0dc1354a8c78ab3dd9fa9e149ee624a72dae8",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.trimmed.aln": "90374ceb63d11789868e1f349c3768670e36a510a4450349d2b743745a1aff00"
+  },
+  "output_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.trimmed.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.tree",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.log",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.model.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.support.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.manifest.json"
+  ],
+  "package_version": "0.1.1.dev706+dirty",
+  "python_version": "3.11.9",
+  "timestamp_utc": "2026-05-13T04:26:48.236009+00:00"
+}

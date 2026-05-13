@@ -3,6 +3,10 @@ input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/input
 prepared_input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta
 sequence_type: dna
 selected_model: TNe+G4
+started_at_utc: 2026-05-13T04:23:06Z
+ended_at_utc: 2026-05-13T04:23:08Z
+runtime_seconds: 2.926
+run_manifest_path: gnathostome-ortholog-coding-sequences.run.json
 
 [input-validation]
 sequence_count: 9

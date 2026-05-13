@@ -1,0 +1,89 @@
+workflow: fasta-to-tree
+input_path: packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
+prepared_input_path: packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
+sequence_type: dna
+selected_model: HKY+F
+started_at_utc: 2026-05-13T04:26:47Z
+ended_at_utc: 2026-05-13T04:26:48Z
+runtime_seconds: 1.009
+run_manifest_path: pleistocene-bear-cytb-fragments.run.json
+
+[input-validation]
+sequence_count: 5
+warnings:
+- input contains sequence length outliers
+- automatic sequence type defaults to dna from nucleotide-like characters that remain protein-compatible by alphabet alone
+
+[alignment]
+engine: mafft
+command: /opt/homebrew/bin/mafft --auto packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
+version: v7.526 (2024/Apr/26)
+manifest: engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln.manifest.json
+output.alignment: engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln
+
+[trimming]
+engine: trimal
+command: /opt/homebrew/bin/trimal -in engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln -out engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln -gt 0.100000
+version: trimAl v1.5.rev0 build[2024-05-27]
+manifest: engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.manifest.json
+output.trimmed_alignment: engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln
+
+[model_selection]
+engine: iqtree
+command: /opt/homebrew/bin/iqtree2 -s engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m MF -pre engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection
+version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+manifest: engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.manifest.json
+output.iqtree_report: engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.iqtree
+output.iqtree_log: engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.log
+output.model_selection_sidecar: engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.model.gz
+output.selected_model: engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.selected-model.txt
+output.model_candidates: engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.model-candidates.tsv
+warnings:
+- WARNING: 1 sequences contain more than 50% gaps/ambiguity
+- Warning! Some parameters hit the boundaries
+
+[maximum_likelihood]
+engine: iqtree
+command: /opt/homebrew/bin/iqtree2 -s engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m HKY+F -pre engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood
+version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+manifest: engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.manifest.json
+output.iqtree_report: engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.iqtree
+output.iqtree_log: engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.log
+output.tree: engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.treefile
+warnings:
+- WARNING: 1 sequences contain more than 50% gaps/ambiguity
+
+[bootstrap_support]
+engine: iqtree
+command: /opt/homebrew/bin/iqtree2 -s engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m HKY+F -bb 1000 -wbt -pre engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support
+version: IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+manifest: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.manifest.json
+output.iqtree_report: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.iqtree
+output.iqtree_log: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.log
+output.bootstrap_trees: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot
+output.consensus_tree: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.contree
+output.support_tree: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.treefile
+output.support_table: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.support.tsv
+output.low_support_branches: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.low-support.tsv
+output.support_histogram: engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.support-histogram.tsv
+warnings:
+- WARNING: 1 sequences contain more than 50% gaps/ambiguity
+
+[support-summary]
+- one or more internal nodes did not expose numeric support labels
+
+[notes]
+- final tree path contains the bootstrap-supported inference tree
+- engine-specific intermediate artifacts remain under engine-artifacts/
+- mafft alignment mode: auto
+- trimal trimming mode: gap-threshold
+- iqtree random seed: 1
+- iqtree threads: 1
+- raw sequence type detection: dna (medium)
+- thymine was observed and no protein-exclusive residues were found, so the raw input defaults to DNA

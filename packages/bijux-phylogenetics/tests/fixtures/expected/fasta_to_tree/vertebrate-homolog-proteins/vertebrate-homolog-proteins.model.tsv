@@ -1,0 +1,2 @@
+workflow	engine_name	sequence_type	selected_model	report_selected_model	artifact_selected_model	model_consistent	alignment_path	trimmed_alignment_path	manifest_path
+model-selection	iqtree	protein	Q.insect+I	Q.insect+I	Q.insect+I	true	vertebrate-homolog-proteins.aln	vertebrate-homolog-proteins.trimmed.aln	engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json
