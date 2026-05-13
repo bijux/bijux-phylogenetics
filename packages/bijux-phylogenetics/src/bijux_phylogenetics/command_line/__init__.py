@@ -17332,11 +17332,17 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "conflicting_clade_count": len(
                                 report.conflicting_clade_rows
                             ),
+                            "stable_clade_count": report.conclusion_summary.stable_clade_count,
+                            "unstable_clade_count": report.conclusion_summary.unstable_clade_count,
+                            "engine_specific_clade_count": report.conclusion_summary.engine_specific_clade_count,
                             "support_disagreement_count": sum(
                                 1
                                 for row in report.conflicting_clade_rows
                                 if row.conflict_kind == "support_disagreement"
                             ),
+                            "high_support_conflict_count": report.conclusion_summary.high_support_conflict_count,
+                            "low_support_disagreement_count": report.conclusion_summary.low_support_disagreement_count,
+                            "serious_conflict_count": report.conclusion_summary.serious_conflict_count,
                             "resumed": any(
                                 workflow.resumed
                                 for workflow in (

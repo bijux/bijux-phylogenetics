@@ -771,10 +771,20 @@ def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
     assert payload["metrics"]["selected_model"] == "GTR+G"
     assert payload["metrics"]["shared_clade_count"] == 2
     assert payload["metrics"]["conflicting_clade_count"] == 1
+    assert payload["metrics"]["stable_clade_count"] == 1
+    assert payload["metrics"]["unstable_clade_count"] == 1
+    assert payload["metrics"]["engine_specific_clade_count"] == 0
     assert payload["metrics"]["support_disagreement_count"] == 1
+    assert payload["metrics"]["high_support_conflict_count"] == 0
+    assert payload["metrics"]["low_support_disagreement_count"] == 0
+    assert payload["metrics"]["serious_conflict_count"] == 0
     assert payload["metrics"]["resumed"] is False
     assert payload["metrics"]["timeout_seconds"] == 30.0
     assert Path(payload["data"]["output_paths"]["comparison_report"]).exists()
+    assert Path(payload["data"]["output_paths"]["stability_summary"]).exists()
+    assert Path(payload["data"]["output_paths"]["conclusion_table"]).exists()
+    assert Path(payload["data"]["output_paths"]["support_weighted_conflicts"]).exists()
+    assert Path(payload["data"]["output_paths"]["taxon_influence"]).exists()
     assert Path(payload["data"]["output_paths"]["comparison_table"]).exists()
     assert Path(payload["data"]["output_paths"]["shared_clades"]).exists()
     assert Path(payload["data"]["output_paths"]["conflicting_clades"]).exists()
