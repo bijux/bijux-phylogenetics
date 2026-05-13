@@ -2462,6 +2462,20 @@ parsed `selected_model`, `selected_criterion`, `candidate_model_count`,
 support-value counts so reviewers can verify the ML result against structured
 fields instead of manually scraping engine text files.
 
+The governed external execution adapters now share one explicit restart and
+failure-control contract. `adapter align`, `trim`, `model-select`, `infer-ml`,
+`bootstrap`, `sh-alrt`, `fasta-to-tree`, `consensus`, `infer-fast`,
+`infer-large`, `compare-engines`, `mrbayes-run`, and `beast-run` all accept:
+
+- `--timeout-seconds` to stop one engine execution after a wall-clock budget
+- `--resume` to reuse one completed manifest only when the recorded command, input checksums, and output checksums still match
+- `--incomplete-run-policy reject|clean` to either stop on stale incomplete outputs or remove them before a fresh rerun
+
+That contract is intentionally strict. A resume is allowed only for verified
+completed runs. Failed or timed-out runs leave an explicit incomplete-run
+marker, and `--incomplete-run-policy clean` is the governed way to discard that
+partial state before rerunning.
+
 Use `adapter beast-prepare` when you need a real BEAST2 XML template from one
 aligned matrix plus optional dating metadata. The command writes a BEAST2-style
 XML file with an explicit alignment block, a starting tree, a strict or
@@ -2503,6 +2517,26 @@ ask for the standard `birth-death` prior together with tip dates, the template
 still writes valid XML, but the JSON warnings mark that combination as
 exploratory because BEAST's own validator reports that the standard birth-death
 prior is not serial-sampling aware.
+
+Use `adapter beast-run` after preparation when you want governed BEAST
+execution with explicit timeout, resume, and incomplete-run handling.
+
+```bash
+bijux-phylogenetics adapter beast-run \
+  artifacts/multilocus-beast.xml \
+  --threads 1 \
+  --seed 7 \
+  --timeout-seconds 1800 \
+  --resume \
+  --incomplete-run-policy clean \
+  --json
+```
+
+That workflow writes the posterior log and posterior tree file beside the XML
+using the governed `STEM.SEED.log` and `STEM.SEED.trees` names. The JSON
+summary reports the thread count, seed, overwrite mode, resume status, timeout
+budget, and warning count so BEAST execution can be reviewed as a structured
+run instead of as an opaque shell invocation.
 
 Use `adapter beast-log` once a BEAST run has produced a posterior log and you
 need a governed review surface instead of manual spreadsheet work. The command
@@ -2673,6 +2707,9 @@ inspection instead of leaving the engine outputs implicit.
 ```bash
 bijux-phylogenetics adapter mrbayes-run \
   artifacts/multilocus-bayesian.nex \
+  --timeout-seconds 1800 \
+  --resume \
+  --incomplete-run-policy clean \
   --json
 ```
 
@@ -2796,6 +2833,7 @@ bijux-phylogenetics adapter infer-large \
   --sequence-type protein \
   --timeout-seconds 600 \
   --resume \
+  --incomplete-run-policy clean \
   --json
 ```
 
@@ -2828,6 +2866,9 @@ bijux-phylogenetics adapter compare-engines \
   --prefix mammals \
   --sequence-type dna \
   --bootstrap-replicates 1000 \
+  --timeout-seconds 1800 \
+  --resume \
+  --incomplete-run-policy clean \
   --json
 ```
 
@@ -2952,6 +2993,9 @@ bijux-phylogenetics adapter fasta-to-tree raw-sequences.fasta \
   --prefix mammals \
   --iqtree-seed 1 \
   --iqtree-threads 1 \
+  --timeout-seconds 1800 \
+  --resume \
+  --incomplete-run-policy clean \
   --normalize-identifiers \
   --remove-invalid-records \
   --bootstrap-replicates 1000 \
