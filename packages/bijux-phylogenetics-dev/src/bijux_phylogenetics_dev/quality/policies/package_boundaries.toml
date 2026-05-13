@@ -28,6 +28,7 @@ allowed_repo_import_roots = ["bijux_phylogenetics"]
 owned_module_prefixes = ["bijux_phylogenetics"]
 required_install_dependencies = [
   "biopython>=1.87,<2.0",
+  "cairosvg>=2.9.0,<3.0",
   "defusedxml>=0.7.1,<1.0",
 ]
 

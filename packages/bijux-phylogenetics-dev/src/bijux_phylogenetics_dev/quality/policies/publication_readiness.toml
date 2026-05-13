@@ -59,6 +59,7 @@ package_dir = "packages/bijux-phylogenetics"
 wheel_module_root = "bijux_phylogenetics"
 allowed_dependencies = [
     "biopython>=1.87,<2.0",
+    "cairosvg>=2.9.0,<3.0",
     "defusedxml>=0.7.1,<1.0",
 ]
 required_sdist_entries = [
