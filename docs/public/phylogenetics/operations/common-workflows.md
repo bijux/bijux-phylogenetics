@@ -193,6 +193,34 @@ mitochondrial coding genes extracted from stable RefSeq mitochondrial genomes.
 That keeps the surface honest about scale while still exercising the full
 multi-locus workflow contract.
 
+When the goal is to inspect how the package handles messy comparative inputs
+instead of assuming clean data, use
+`demo catarrhine-data-quality-stress-panel`. This workflow materializes the
+packaged catarrhine stress panel and reruns the owned audit-and-cleanup
+workflow over its raw alignment, tree, and traits surface.
+
+```bash
+bijux-phylogenetics demo catarrhine-data-quality-stress-panel \
+  --out artifacts/catarrhine-data-quality-stress-panel \
+  --json
+```
+
+The packaged stress workflow keeps the messiness explicit rather than hiding
+it in preprocessing:
+
+- one raw aligned FASTA with a deliberate sequence composition outlier
+- one raw tree with a zero-length branch and one extreme terminal branch
+- one raw trait table with a duplicate taxon row and missing values
+- duplicate-trait and missing-trait ledgers
+- sequence-outlier and tree-issue ledgers
+- explicit repair-actions ledger
+- one cleaned alignment, cleaned tree, and cleaned trait table
+- cleaned linkage and cleaned validation ledgers for the resolved subset
+
+This gives users a governed dirty-data review surface that proves how
+`bijux-phylogenetics` identifies and handles realistic pathologies without
+pretending the raw inputs were already analysis-ready.
+
 When the goal is to review host-state evolution on a real pathogen panel, use
 `demo rabies-cross-host-panel`. This workflow materializes the packaged rabies
 dataset, which ships with a rooted nucleoprotein tree, raw sequences, and host
