@@ -3388,6 +3388,54 @@ This surface exists so correlated-evolution review can inspect which traits
 still move together after the fitted predictors are accounted for, while also
 making the shared complete-case taxon policy auditable.
 
+`comparative report` is the governed integrated comparative-analysis review
+surface. It fits one comparative regression and then preserves the formula,
+coefficient evidence, residual diagnostics, phylogenetic signal, model
+comparison, audit trail, and independent contrasts in one reviewer-facing
+package. Its JSON metrics report:
+- `taxon_count`
+- `selected_model`
+- `audit_row_count`
+- `excluded_taxa`
+- `limitation_count`
+- `coefficient_count`
+- `package_output_count`
+
+The command preserves:
+- `snapshot` with the integrated comparative fit, signal, contrasts, and model comparison
+- `influence` with taxon and predictor influence review
+- `limitations` as explicit reviewer-facing cautions
+
+When `--out` is supplied, `comparative report` writes one standalone HTML
+report on the existing comparative-method surface.
+
+When `--out-dir` is supplied, the command writes one full review package
+directory with:
+- `comparative-report.html`
+- `comparative-summary.tsv`
+- `coefficient-table.tsv`
+- `residual-summary.tsv`
+- `signal-summary.tsv`
+- `model-comparison.tsv`
+- `interpretation-table.tsv`
+- `audit-table.tsv`
+- `contrast-table.tsv`
+- `comparative-report.manifest.json`
+
+The package tables preserve these reviewer-facing contracts:
+- `comparative-summary.tsv`: `response`, `formula`, `predictor_count`, `analysis_taxa`, `selected_model`, and fit/signal summary
+- `coefficient-table.tsv`: one row per coefficient with estimate, standard error, test statistic, p-value, and 95% interval
+- `residual-summary.tsv`: one row per residual-diagnostic surface with variance, leverage, outlier taxa, and warnings
+- `signal-summary.tsv`: one row with Blomberg's K, Pagel's lambda, likelihood values, and contrast count
+- `model-comparison.tsv`: one row per Brownian or OU candidate fit with AIC and AICc evidence
+- `interpretation-table.tsv`: one row per reviewer-facing claim with supporting evidence and caution text
+- `audit-table.tsv`: one row per audit surface with taxa used, excluded taxa, assumptions, and warnings
+- `contrast-table.tsv`: one row per internal node with the standardized contrast and ancestral value
+
+This surface exists so comparative conclusions can be reviewed from one durable
+artifact bundle instead of being reassembled manually from separate regression,
+signal, contrast, and diagnostics commands.
+
 `comparative clade-residuals` is the governed review surface for asking whether
 one fitted comparative model leaves concentrated residual burden in particular
 subtrees. Its JSON metrics report:
