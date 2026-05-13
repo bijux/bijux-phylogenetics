@@ -11,10 +11,15 @@ from bijux_phylogenetics.core.alignment import AlignmentAlphabet
 from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
 
 from .common import (
+    EngineIncompleteRunRecord,
     build_file_checksums,
+    clear_incomplete_engine_run,
     load_engine_manifest,
+    write_incomplete_engine_run,
     read_engine_version,
     resolve_engine_executable,
+    utc_now_text,
+    validate_timeout_seconds,
     write_engine_manifest,
 )
 from .fasttree_artifacts import (
@@ -29,7 +34,7 @@ from .validation import (
     FastTreeSupportSummaryReport,
     summarize_fasttree_support_distribution,
 )
-from .workflows import _validate_tree_output
+from .workflows import _resolve_incomplete_workflow_state, _validate_tree_output
 
 __all__ = [
     "LargeAlignmentInputSummary",
@@ -534,6 +539,7 @@ def _resume_existing_large_alignment_report(
     current_checksums = build_file_checksums(required_outputs)
     if report.output_checksums != current_checksums:
         return None
+    clear_incomplete_engine_run(manifest_path)
     report.resumed = True
     return report
 
@@ -547,12 +553,10 @@ def run_large_alignment_inference(
     executable: str | Path = "FastTree",
     timeout_seconds: float | None = None,
     resume: bool = False,
+    incomplete_run_policy: str = "reject",
 ) -> LargeAlignmentInferenceWorkflowReport:
     """Run governed large-alignment inference with streaming preflight and resource reporting."""
-    if timeout_seconds is not None and timeout_seconds <= 0:
-        raise ValueError(
-            f"timeout_seconds must be positive when provided, got {timeout_seconds}"
-        )
+    validate_timeout_seconds(timeout_seconds)
     out_dir.mkdir(parents=True, exist_ok=True)
     root = out_dir / prefix
     tree_path = _tree_path(root)
@@ -580,15 +584,52 @@ def run_large_alignment_inference(
         )
         if resumed is not None:
             return resumed
-
-    warning_lines, inference_resource = _execute_large_fasttree_command(
-        executable=resolved,
-        command_args=command[1:],
-        out_path=tree_path,
-        stderr_path=stderr_log_path,
-        timeout_seconds=timeout_seconds,
+    incomplete_notes = _resolve_incomplete_workflow_state(
+        manifest_path=manifest_path,
+        incomplete_run_policy=incomplete_run_policy,
     )
-    _validate_tree_output(tree_path)
+
+    incomplete_record = EngineIncompleteRunRecord(
+        engine_name="FastTree",
+        workflow="large-alignment-inference",
+        executable=resolved,
+        working_directory=out_dir,
+        manifest_path=manifest_path,
+        command=command,
+        stdout_path=tree_path,
+        stderr_path=stderr_log_path,
+        output_paths={
+            "tree": tree_path,
+            "support_table": support_table_path,
+            "low_support_branches": low_support_branches_path,
+            "support_histogram": support_histogram_path,
+            "resource_table": resource_table_path,
+            "log": plain_log_path,
+        },
+        started_at_utc=utc_now_text(),
+        ended_at_utc=None,
+        timeout_seconds=timeout_seconds,
+        timed_out=False,
+        exit_code=None,
+        failure_message=None,
+    )
+    write_incomplete_engine_run(incomplete_record)
+
+    try:
+        warning_lines, inference_resource = _execute_large_fasttree_command(
+            executable=resolved,
+            command_args=command[1:],
+            out_path=tree_path,
+            stderr_path=stderr_log_path,
+            timeout_seconds=timeout_seconds,
+        )
+        _validate_tree_output(tree_path)
+    except EngineWorkflowError as error:
+        incomplete_record.ended_at_utc = utc_now_text()
+        incomplete_record.timed_out = "timed out after" in str(error)
+        incomplete_record.failure_message = str(error)
+        write_incomplete_engine_run(incomplete_record)
+        raise
     support_summary = summarize_fasttree_support_distribution(tree_path)
     write_fasttree_support_table(
         support_table_path,
@@ -612,6 +653,7 @@ def run_large_alignment_inference(
         "resource ledger records streamed preflight allocations and sampled FastTree process RSS during inference",
         "FastTree is an approximately maximum-likelihood engine and should be reviewed as exploratory or large-alignment evidence",
         "timeout control applies only to the FastTree inference step and a completed manifest can be resumed when outputs still match the recorded checksums",
+        *incomplete_notes,
     ]
     report = LargeAlignmentInferenceWorkflowReport(
         input_path=input_path,
@@ -655,5 +697,6 @@ def run_large_alignment_inference(
             plain_log_path,
         ]
     )
+    clear_incomplete_engine_run(manifest_path)
     write_engine_manifest(manifest_path, report)
     return report

@@ -188,3 +188,38 @@ def test_run_large_alignment_inference_honors_timeout_seconds(
             executable=executable,
             timeout_seconds=0.1,
         )
+
+
+def test_run_large_alignment_inference_can_clean_incomplete_outputs(
+    tmp_path: Path,
+) -> None:
+    slow_executable = _fake_fasttree_slow(tmp_path / "FastTree-slow-fixture")
+    out_dir = tmp_path / "large-inference"
+    prefix = "timeout"
+
+    with pytest.raises(EngineWorkflowError, match="timed out after 0.100 seconds"):
+        run_large_alignment_inference(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=out_dir,
+            prefix=prefix,
+            sequence_type="dna",
+            executable=slow_executable,
+            timeout_seconds=0.1,
+        )
+
+    marker_path = out_dir / f"{prefix}.manifest.incomplete.json"
+    assert marker_path.exists()
+
+    executable = _fake_fasttree(tmp_path / "FastTree-fixture")
+    report = run_large_alignment_inference(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=out_dir,
+        prefix=prefix,
+        sequence_type="dna",
+        executable=executable,
+        timeout_seconds=0.1,
+        incomplete_run_policy="clean",
+    )
+
+    assert report.output_paths["tree"].exists()
+    assert marker_path.exists() is False

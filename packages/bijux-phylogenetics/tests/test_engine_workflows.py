@@ -631,7 +631,7 @@ def test_run_multiple_sequence_alignment_times_out_and_marks_incomplete_run(
             input_path,
             output_path,
             executable=executable,
-            timeout_seconds=0.2,
+            timeout_seconds=0.5,
         )
 
     marker_candidates = sorted(tmp_path.glob("*.incomplete.json"))
@@ -640,7 +640,7 @@ def test_run_multiple_sequence_alignment_times_out_and_marks_incomplete_run(
     assert marker_path.exists()
     marker_text = marker_path.read_text(encoding="utf-8")
     assert '"timed_out": true' in marker_text
-    assert '"timeout_seconds": 0.2' in marker_text
+    assert '"timeout_seconds": 0.5' in marker_text
 
 
 def test_run_multiple_sequence_alignment_resume_reuses_completed_output(
