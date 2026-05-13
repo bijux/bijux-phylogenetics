@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from pathlib import Path
 
 
-PACKAGE_ROOT = Path(__file__).resolve().parent
+PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = PACKAGE_ROOT.parents[1]
 PYTEST_CONFIG_PATH = REPO_ROOT / "configs" / "pytest.ini"
 
