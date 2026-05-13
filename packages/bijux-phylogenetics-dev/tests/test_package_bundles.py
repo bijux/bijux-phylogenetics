@@ -159,6 +159,15 @@ def test_load_package_bundle_policies_reads_repo_owned_policy() -> None:
     assert policies["bijux-phylogenetics"].wheel_module_root == "bijux_phylogenetics"
 
 
+def test_runtime_publication_policy_allows_secured_xml_dependency() -> None:
+    runtime_policy = load_package_bundle_policies(REPO_ROOT)["bijux-phylogenetics"]
+
+    assert runtime_policy.allowed_dependencies == (
+        "biopython>=1.87,<2.0",
+        "defusedxml>=0.7.1,<1.0",
+    )
+
+
 def test_check_package_bundles_reports_target_package_policy_coverage(
     tmp_path: Path,
 ) -> None:
