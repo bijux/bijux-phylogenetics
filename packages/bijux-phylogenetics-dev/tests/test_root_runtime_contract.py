@@ -533,7 +533,9 @@ def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_
 
 
 def test_root_conftest_registers_markers_from_repository_pytest_config() -> None:
-    conftest_path = REPO_ROOT / "packages" / "bijux-phylogenetics" / "conftest.py"
+    conftest_path = (
+        REPO_ROOT / "packages" / "bijux-phylogenetics" / "tests" / "conftest.py"
+    )
     conftest_text = conftest_path.read_text(encoding="utf-8")
 
     assert 'PYTEST_CONFIG_PATH = REPO_ROOT / "configs" / "pytest.ini"' in conftest_text
