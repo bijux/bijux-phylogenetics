@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bijux Biogeography Report</title>
+  <style>
+    body { font-family: Georgia, 'Times New Roman', serif; margin: 0; background: linear-gradient(180deg, #f5f7f3 0%, #e7ede7 100%); color: #193426; }
+    main { max-width: 1320px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 8px; font-size: 32px; }
+    h2 { margin: 0 0 10px; font-size: 22px; }
+    p { line-height: 1.5; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 18px 0 24px; }
+    .card, .panel { background: rgba(255,255,255,0.82); border: 1px solid rgba(25,52,38,0.14); border-radius: 18px; padding: 18px; box-shadow: 0 16px 42px rgba(25,52,38,0.08); }
+    .card strong { display: block; font-size: 22px; margin-top: 6px; }
+    .label { color: #587363; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 20px; }
+    .figure-shell { overflow: auto; }
+    .figure-shell svg { width: 100%; height: auto; display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th, td { border-bottom: 1px solid rgba(25,52,38,0.10); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { color: #365443; }
+    ul { margin: 8px 0 0 18px; }
+    a { color: #16543a; }
+    iframe { width: 100%; min-height: 780px; border: 1px solid rgba(25,52,38,0.14); border-radius: 14px; background: white; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Bijux Biogeography Report</h1>
+  <p>Complete geographic evolution review for one rooted tree, one region table, and one explicit centroid table. The bundle keeps the ancestral-region tree, transition matrix, migration-event ledger, and geographic map together.</p>
+  <section class="cards">
+    <div class="card"><span class="label">model</span><strong>ard</strong></div>
+    <div class="card"><span class="label">root region</span><strong>north_asia</strong></div>
+    <div class="card"><span class="label">transition rows</span><strong>25</strong></div>
+    <div class="card"><span class="label">event rows</span><strong>4</strong></div>
+  </section>
+  <section class="panel">
+    <h2>Reviewer Summary</h2>
+<ul><li>root region: north_asia (0.556)</li><li>observed regions: 5, analyzed taxa: 9</li><li>changed branches: 4, strongly supported transitions: 0</li><li>migration events: 4, visible map lines: 4</li><li>most sampled region: europe</li></ul>
+  </section>
+  <section class="grid" style="margin-top: 20px;">
+    <section class="panel">
+      <h2>Ancestral-Region Tree</h2>
+      <p>The tree figure shows tip regions and internal ancestral region calls from the owned geographic-state reconstruction.</p>
+      <div class="figure-shell">
+<svg xmlns="http://www.w3.org/2000/svg" width="1128" height="616" viewBox="0 0 1128 616" role="img" aria-label="phylogenetic tree">
+  <style>
+    .panel { fill: #f7fbfa; stroke: #d7e3e1; stroke-width: 1; rx: 18; ry: 18; }
+    .branch { stroke: #0f172a; stroke-width: 2.2; stroke-linecap: round; fill: none; }
+    .branch-colored { stroke-width: 2.8; }
+    .scale-bar { stroke: #0f172a; stroke-width: 2; stroke-linecap: round; }
+    .collapsed-clade { fill-opacity: 0.95; }
+    .metadata-strip-cell { stroke: #f8fafc; stroke-width: 1; }
+    .heatmap-cell { stroke: #f8fafc; stroke-width: 1; }
+    .internal-pie-slice { stroke: #f8fafc; stroke-width: 0.9; }
+    .tip-label { fill: #0f172a; font: 16px "Avenir Next", "Segoe UI", sans-serif; }
+    .support-label { fill: #0f766e; font: 12px "Avenir Next", "Segoe UI", sans-serif; }
+    .internal-annotation-label { fill: #6d28d9; font: 12px "Avenir Next", "Segoe UI", sans-serif; }
+    .legend-title { fill: #334155; font: 12px "Avenir Next", "Segoe UI", sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
+    .legend-label { fill: #334155; font: 13px "Avenir Next", "Segoe UI", sans-serif; }
+    .scale-label { fill: #334155; text-anchor: middle; font: 13px "Avenir Next", "Segoe UI", sans-serif; }
+    .strip-header { fill: #475569; font: 11px "Avenir Next", "Segoe UI", sans-serif; }
+  </style>
+  <rect x="1" y="1" width="1126" height="614" class="panel" />
+  <line x1="564.8" y1="180.0" x2="564.8" y2="236.0" class="branch"/><line x1="564.8" y1="180.0" x2="567.4" y2="180.0" class="branch"/><line x1="564.8" y1="236.0" x2="564.8" y2="236.0" class="branch"/><line x1="553.1" y1="292.0" x2="553.1" y2="348.0" class="branch"/><line x1="553.1" y1="292.0" x2="568.0" y2="292.0" class="branch"/><line x1="553.1" y1="348.0" x2="559.3" y2="348.0" class="branch"/><line x1="548.8" y1="320.0" x2="548.8" y2="404.0" class="branch"/><line x1="548.8" y1="320.0" x2="553.1" y2="320.0" class="branch"/><line x1="548.8" y1="404.0" x2="562.7" y2="404.0" class="branch"/><line x1="534.9" y1="208.0" x2="534.9" y2="362.0" class="branch"/><line x1="534.9" y1="208.0" x2="564.8" y2="208.0" class="branch"/><line x1="534.9" y1="362.0" x2="548.8" y2="362.0" class="branch"/><line x1="495.1" y1="285.0" x2="495.1" y2="460.0" class="branch"/><line x1="495.1" y1="285.0" x2="534.9" y2="285.0" class="branch"/><line x1="495.1" y1="460.0" x2="551.4" y2="460.0" class="branch"/><line x1="384.1" y1="372.5" x2="384.1" y2="516.0" class="branch"/><line x1="384.1" y1="372.5" x2="495.1" y2="372.5" class="branch"/><line x1="384.1" y1="516.0" x2="550.3" y2="516.0" class="branch"/><line x1="144.8" y1="124.0" x2="144.8" y2="444.2" class="branch"/><line x1="144.8" y1="124.0" x2="208.1" y2="124.0" class="branch"/><line x1="144.8" y1="444.2" x2="384.1" y2="444.2" class="branch"/><line x1="48.0" y1="68.0" x2="48.0" y2="284.1" class="branch"/><line x1="48.0" y1="68.0" x2="48.0" y2="68.0" class="branch"/><line x1="48.0" y1="284.1" x2="144.8" y2="284.1" class="branch"/>
+  <text x="66.0" y="73.0" class="tip-label">bat_chile_rv108</text><text x="226.1" y="129.0" class="tip-label">bat_chile_rv50</text><text x="585.4" y="185.0" class="tip-label">cattle_russia_4092_13_2025</text><text x="582.8" y="241.0" class="tip-label">cattle_russia_4092_15_2025</text><text x="574.8" y="212.0" class="internal-annotation-label">north_asia</text><text x="586.0" y="297.0" class="tip-label">raccoon_dog_russia_4092_26_2025</text><text x="577.3" y="353.0" class="tip-label">red_fox_russia_4092_20_2025</text><text x="563.1" y="324.0" class="internal-annotation-label">north_asia</text><text x="580.7" y="409.0" class="tip-label">red_fox_russia_4092_18_2025</text><text x="558.8" y="366.0" class="internal-annotation-label">north_asia</text><text x="544.9" y="289.0" class="internal-annotation-label">north_asia</text><text x="569.4" y="465.0" class="tip-label">raccoon_dog_poland_2021</text><text x="505.1" y="376.5" class="internal-annotation-label">north_asia</text><text x="568.3" y="521.0" class="tip-label">dog_pakistan_pdb011</text><text x="394.1" y="448.2" class="internal-annotation-label">north_asia</text><text x="154.8" y="288.1" class="internal-annotation-label">north_asia</text><text x="58.0" y="180.1" class="internal-annotation-label">north_asia</text>
+  <circle cx="758.0" cy="64.0" r="7" fill="#7c3aed" class="trait-marker"/><circle cx="758.0" cy="120.0" r="7" fill="#1d4ed8" class="trait-marker"/><circle cx="758.0" cy="176.0" r="7" fill="#c2410c" class="trait-marker"/><circle cx="758.0" cy="232.0" r="7" fill="#c2410c" class="trait-marker"/><circle cx="564.8" cy="208.0" r="4.5" fill="#c2410c" class="internal-annotation-dot"/><circle cx="758.0" cy="288.0" r="7" fill="#c2410c" class="trait-marker"/><circle cx="758.0" cy="344.0" r="7" fill="#c2410c" class="trait-marker"/><circle cx="553.1" cy="320.0" r="4.5" fill="#c2410c" class="internal-annotation-dot"/><circle cx="758.0" cy="400.0" r="7" fill="#c2410c" class="trait-marker"/><circle cx="548.8" cy="362.0" r="4.5" fill="#c2410c" class="internal-annotation-dot"/><circle cx="534.9" cy="285.0" r="4.5" fill="#c2410c" class="internal-annotation-dot"/><circle cx="758.0" cy="456.0" r="7" fill="#0f766e" class="trait-marker"/><circle cx="495.1" cy="372.5" r="4.5" fill="#c2410c" class="internal-annotation-dot"/><circle cx="758.0" cy="512.0" r="7" fill="#b91c1c" class="trait-marker"/><circle cx="384.1" cy="444.2" r="4.5" fill="#c2410c" class="internal-annotation-dot"/><circle cx="144.8" cy="284.1" r="4.5" fill="#c2410c" class="internal-annotation-dot"/><circle cx="48.0" cy="176.1" r="4.5" fill="#c2410c" class="internal-annotation-dot"/>
+  <line x1="48.0" y1="588.0" x2="136.0" y2="588.0" class="scale-bar"/><line x1="48.0" y1="582.0" x2="48.0" y2="594.0" class="scale-bar"/><line x1="136.0" y1="582.0" x2="136.0" y2="594.0" class="scale-bar"/><text x="92.0" y="578.0" class="scale-label">0.05</text>
+  <text x="906.0" y="44.0" class="legend-title">categorical trait</text><circle cx="908.0" cy="64.0" r="6" fill="#0f766e" class="trait-marker"/><text x="924.0" y="68.0" class="legend-label">europe</text><circle cx="908.0" cy="86.0" r="6" fill="#1d4ed8" class="trait-marker"/><text x="924.0" y="90.0" class="legend-label">north_america</text><circle cx="908.0" cy="108.0" r="6" fill="#c2410c" class="trait-marker"/><text x="924.0" y="112.0" class="legend-label">north_asia</text><circle cx="908.0" cy="130.0" r="6" fill="#7c3aed" class="trait-marker"/><text x="924.0" y="134.0" class="legend-label">south_america</text><circle cx="908.0" cy="152.0" r="6" fill="#b91c1c" class="trait-marker"/><text x="924.0" y="156.0" class="legend-label">south_asia</text>
+  
+  
+  
+</svg>
+
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Geographic Map</h2>
+      <p>The package includes the self-contained map artifact <a href="geographic-region-map.html">geographic-region-map.html</a>.</p>
+      <iframe src="geographic-region-map.html" title="Geographic map review"></iframe>
+    </section>
+  </section>
+  <section class="grid" style="margin-top: 20px;">
+    <section class="panel">
+      <h2>Observed Region Counts</h2>
+<table><thead><tr><th>region</th><th>tip_taxon_count</th><th>analyzed_taxon_fraction</th></tr></thead><tbody><tr><td>europe</td><td>1</td><td>0.111</td></tr><tr><td>north_america</td><td>1</td><td>0.111</td></tr><tr><td>north_asia</td><td>5</td><td>0.556</td></tr><tr><td>south_america</td><td>1</td><td>0.111</td></tr><tr><td>south_asia</td><td>1</td><td>0.111</td></tr></tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Transition Matrix Summary</h2>
+<table><thead><tr><th>source_region</th><th>target_region</th><th>rate</th><th>lower_95_interval</th><th>upper_95_interval</th></tr></thead><tbody><tr><td>europe</td><td>europe</td><td>0.800000</td><td>0.800000</td><td>0.800000</td></tr><tr><td>europe</td><td>north_america</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>europe</td><td>north_asia</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>europe</td><td>south_america</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>europe</td><td>south_asia</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>north_america</td><td>europe</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>north_america</td><td>north_america</td><td>0.800000</td><td>0.800000</td><td>0.800000</td></tr><tr><td>north_america</td><td>north_asia</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>north_america</td><td>south_america</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>north_america</td><td>south_asia</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>north_asia</td><td>europe</td><td>0.050000</td><td>0.000000</td><td>0.110012</td></tr><tr><td>north_asia</td><td>north_america</td><td>0.050000</td><td>0.000000</td><td>0.110012</td></tr><tr><td>north_asia</td><td>north_asia</td><td>0.800000</td><td>0.800000</td><td>0.800000</td></tr><tr><td>north_asia</td><td>south_america</td><td>0.050000</td><td>0.000000</td><td>0.110012</td></tr><tr><td>north_asia</td><td>south_asia</td><td>0.050000</td><td>0.000000</td><td>0.110012</td></tr><tr><td>south_america</td><td>europe</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_america</td><td>north_america</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_america</td><td>north_asia</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_america</td><td>south_america</td><td>0.800000</td><td>0.800000</td><td>0.800000</td></tr><tr><td>south_america</td><td>south_asia</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_asia</td><td>europe</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_asia</td><td>north_america</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_asia</td><td>north_asia</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_asia</td><td>south_america</td><td>0.050000</td><td>0.000000</td><td>0.134870</td></tr><tr><td>south_asia</td><td>south_asia</td><td>0.800000</td><td>0.800000</td><td>0.800000</td></tr></tbody></table>
+    </section>
+  </section>
+  <section class="grid" style="margin-top: 20px;">
+    <section class="panel">
+      <h2>Ancestral Region Nodes</h2>
+<table><thead><tr><th>node</th><th>descendant_taxa</th><th>most_likely_region</th><th>confidence</th></tr></thead><tbody><tr><td>bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025</td><td>bat_chile_rv108, bat_chile_rv50, cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, dog_pakistan_pdb011, raccoon_dog_poland_2021, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>north_asia</td><td>0.789</td></tr><tr><td>bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025</td><td>bat_chile_rv50, cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, dog_pakistan_pdb011, raccoon_dog_poland_2021, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>north_asia</td><td>0.878</td></tr><tr><td>100</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, dog_pakistan_pdb011, raccoon_dog_poland_2021, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>north_asia</td><td>0.930</td></tr><tr><td>100</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, raccoon_dog_poland_2021, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>north_asia</td><td>0.967</td></tr><tr><td>99</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025, raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>north_asia</td><td>1.000</td></tr><tr><td>100</td><td>cattle_russia_4092_13_2025, cattle_russia_4092_15_2025</td><td>north_asia</td><td>1.000</td></tr><tr><td>92</td><td>raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_18_2025, red_fox_russia_4092_20_2025</td><td>north_asia</td><td>1.000</td></tr><tr><td>84</td><td>raccoon_dog_russia_4092_26_2025, red_fox_russia_4092_20_2025</td><td>north_asia</td><td>1.000</td></tr></tbody></table>
+    </section>
+    <section class="panel">
+      <h2>Migration Events</h2>
+<table><thead><tr><th>branch_id</th><th>source_region</th><th>target_region</th><th>support</th><th>midpoint_depth</th></tr></thead><tbody><tr><td>bat_chile_rv108</td><td>north_asia</td><td>south_america</td><td>0.441</td><td>0.000000</td></tr><tr><td>bat_chile_rv50</td><td>north_asia</td><td>north_america</td><td>0.545</td><td>0.073023</td></tr><tr><td>dog_pakistan_pdb011</td><td>north_asia</td><td>south_asia</td><td>0.608</td><td>0.238297</td></tr><tr><td>raccoon_dog_poland_2021</td><td>north_asia</td><td>europe</td><td>0.647</td><td>0.270179</td></tr></tbody></table>
+    </section>
+  </section>
+  <section class="panel" style="margin-top: 20px;">
+    <h2>Limitations</h2>
+<ul><li>some ancestral regions remain ambiguous and should be reviewed through the node probability ledger</li><li>one or more discrete states are represented by fewer than two taxa and should be interpreted cautiously</li><li>one or more states are represented by fewer than two taxa</li><li>sparse-state transition estimates may be unstable for one or more source-target paths</li></ul>
+  </section>
+</main>
+</body>
+</html>

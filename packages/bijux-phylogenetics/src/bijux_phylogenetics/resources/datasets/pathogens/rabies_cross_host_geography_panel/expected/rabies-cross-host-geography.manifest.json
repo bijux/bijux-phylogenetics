@@ -1,0 +1,39 @@
+{
+  "dataset_id": "rabies_cross_host_geography_panel",
+  "input_checksums": {
+    "metadata.csv": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
+    "region-centroids.csv": "dc036bacfd7aca41e981b772285c1d960ea3a4a96347d6245ebe928bda53981f",
+    "sequences.fasta": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236"
+  },
+  "metrics": {
+    "host_switch_count": 2,
+    "maximum_support": 100.0,
+    "migration_event_count": 4,
+    "minimum_support": 84.0,
+    "root_host": "bat",
+    "root_region": "north_asia",
+    "selected_model": "TPM2u+F+G4",
+    "sequence_count": 9
+  },
+  "output_checksums": {
+    "alignment": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8",
+    "biogeography_map": "2e5f2033651b5324077cfe37b859ae68dfb2ae90c50aa151aaa098805ebab55b",
+    "biogeography_report": "4b9e19a833f8178f3e9539946fe4e637dae6d13123e530ef9babe9c911396379",
+    "biogeography_tree_figure": "065b0a6802ac7d5ac4f36e9e03c771d9c014f7250dbe1f92636ea35388d31250",
+    "final_report": "2181f55fd6aa91ec226405c1f08a7a54b918a944371e8e46fa18c8dd60975594",
+    "host_state_nodes": "37efe531d0dc5abc26cf5ef1498e5d151002654a264010dd771cfd73bcaa89e8",
+    "host_switch_branches": "cd6cf8e8f625c9bc716f2e67e621a4aa7292b14ec00987a722102044a553d341",
+    "host_switch_counts": "a1132517ce8e9b9fbd4fb815d7032dfdb37cc186be7768782acb279fb161bff2",
+    "host_switch_exclusions": "e88bf75cd013f7577478ec61759d68dfe1d692300ba7a8209f35d16a3228c576",
+    "host_switch_fits": "2b5bf63749bab7c2a331fc35f833d2ef807a1bf8d022f81b89bba69658a95929",
+    "host_switch_summary": "f06bcce4fa643c40be1ee50210853aaadcca11d22b1dca36c2b75117bb643daa",
+    "host_switch_unsupported": "7a587480679fe044763f8d3b1478a141b095bd53123585efdb77723c669bfff9",
+    "model_table": "b678f464d028baede120eb69225889a0d43117ef5ec0949f5393b5616f073bce",
+    "rooted_tree": "42433d0fe28a86106c4a3bb963fb88f54c8dcdeaff0b92b8a3d10ca9da253196",
+    "rooting_report": "30391ed47f15b8ece801c33aa8aea1a73e00d2f7e2d75289d3edced6463c4221",
+    "support_table": "e792fa73158c7562ce756486c2825abae6aeef5ef3af3d3d82cd3c486c6ad20a",
+    "trimmed_alignment": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8",
+    "workflow_summary": "6c23389bfe0a0ba836f57b01a6cc50bb83689ef06601a0dc37b5b8a5c4d85e10"
+  },
+  "report_kind": "rabies_cross_host_geography_workflow_bundle"
+}

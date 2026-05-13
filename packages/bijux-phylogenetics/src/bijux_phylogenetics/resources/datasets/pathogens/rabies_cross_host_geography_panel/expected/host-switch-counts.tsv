@@ -1,0 +1,3 @@
+transition	source_host	target_host	transition_allowed	certain_switch_count	uncertain_switch_count	total_switch_count
+bat->canid	bat	canid	true	0	1	1
+canid->livestock	canid	livestock	true	0	1	1
