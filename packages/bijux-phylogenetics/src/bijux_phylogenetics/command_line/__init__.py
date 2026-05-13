@@ -655,6 +655,7 @@ from bijux_phylogenetics.reports.service import (
     render_workflow_validation_report,
     write_annotation_report,
 )
+from bijux_phylogenetics.reports.tree_package import build_tree_report_package
 from bijux_phylogenetics.results import build_command_result, build_error_result
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
@@ -5097,6 +5098,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
     _add_manifest_argument(report_tree)
+    report_tree_package = report_subparsers.add_parser(
+        "tree-package",
+        help="Build a full tree report package with figure and TSV ledgers.",
+    )
+    report_tree_package.add_argument("tree", type=Path)
+    report_tree_package.add_argument("--out-dir", required=True, type=Path)
+    report_tree_package.add_argument(
+        "--json", action="store_true", help="Emit the package build result as JSON."
+    )
+    _add_manifest_argument(report_tree_package)
     report_alignment = report_subparsers.add_parser(
         "alignment", help="Render an alignment-only HTML diagnostic report."
     )
@@ -14786,6 +14797,50 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     )
                     return 0
                 print(result.output_path)
+                return 0
+            if args.report_command == "tree-package":
+                result = build_tree_report_package(args.tree, out_dir=args.out_dir)
+                outputs = _finalize_outputs(
+                    args,
+                    command="report",
+                    inputs=[args.tree],
+                    outputs=[
+                        result.report_path,
+                        result.figure_path,
+                        result.support_table_path,
+                        result.clade_table_path,
+                        result.branch_stats_path,
+                        result.manifest_path,
+                    ],
+                )
+                if args.json:
+                    _print_result(
+                        build_command_result(
+                            command="report",
+                            inputs=[args.tree],
+                            outputs=outputs,
+                            warnings=result.validation.warnings
+                            + result.inspection.warnings,
+                            metrics={
+                                "tip_count": result.inspection.tip_count,
+                                "supported_branch_count": sum(
+                                    1
+                                    for row in result.support_rows
+                                    if row.support is not None
+                                ),
+                                "rendered_support_count": (
+                                    result.figure.rendered_support_count
+                                ),
+                                "long_outlier_count": (
+                                    result.branch_stats.long_outlier_count
+                                ),
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_dir)
                 return 0
             if args.report_command == "alignment":
                 result = render_alignment_report(
