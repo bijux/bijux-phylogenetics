@@ -21,9 +21,42 @@ Typical public workflows include:
 - build a full comparative analysis review package from one tree and trait table
 - reconstruct ancestral regions and inspect transition evidence
 - generate a review-ready figure package for a tree
+- benchmark large owned workloads under governed stress tiers
 
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
+
+When the goal is to check resource behavior across the repository's largest
+owned workload families, use `benchmark stress-suite`. This workflow does not
+invent a separate benchmark harness. It drives the owned large-alignment,
+supermatrix, tree-set, comparative, and table-generation surfaces and records
+their runtime, peak memory, input size, and output row counts in one JSON
+report.
+
+```bash
+bijux-phylogenetics benchmark stress-suite \
+  --tier small \
+  --json
+```
+
+The `small` tier is intended for routine checks. The `heavy` tier raises the
+same workload families to `1,000+` sequences, `1,000+` sampled trees, and
+large reviewer-facing table sizes. Each observation reports:
+
+- input size in bytes
+- sequence count when applicable
+- alignment length when applicable
+- tree count when applicable
+- taxon count when applicable
+- locus count when applicable
+- runtime
+- peak memory
+- memory observation kind
+- output row count
+
+This benchmark surface is intentionally reviewer-facing rather than a hidden CI
+only lane. Users can run it directly and inspect the same governed workload
+classes that back the repository stress tiers.
 
 When the goal is to turn one supplied or inferred tree into a review-ready
 artifact bundle instead of only a diagnostic HTML page, use
