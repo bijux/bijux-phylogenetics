@@ -57,7 +57,10 @@ evidence_bundle_contract_module = "bijux_phylogenetics.evidence.bundles"
 [tool.bijux_phylogenetics.publication_readiness.package_policy."bijux-phylogenetics"]
 package_dir = "packages/bijux-phylogenetics"
 wheel_module_root = "bijux_phylogenetics"
-allowed_dependencies = ["biopython>=1.87,<2.0"]
+allowed_dependencies = [
+    "biopython>=1.87,<2.0",
+    "defusedxml>=0.7.1,<1.0",
+]
 required_sdist_entries = [
     "README.md",
     "CHANGELOG.md",
