@@ -2958,15 +2958,25 @@ It then writes these user-facing outputs:
 - `mammals.comparison.tsv`
 - `mammals.shared-clades.tsv`
 - `mammals.conflicting-clades.tsv`
+- `mammals.support-weighted-conflicts.tsv`
+- `mammals.conclusions.tsv`
+- `mammals.stability-summary.tsv`
+- `mammals.taxon-influence.tsv`
 - `mammals.manifest.json`
 
 The shared-clade ledger preserves both engines' support values for clades that
 appear in both trees. The conflicting-clade ledger separates clades that appear
 in only one tree from shared clades whose normalized support fractions diverge
-enough to merit review. The normalization rule is explicit and limited:
-FastTree SH-like local support and IQ-TREE UFBoot support are shown together as
-fractions only for side-by-side review, not as proof that the two support
-methods are interchangeable.
+enough to merit review. The support-weighted conflict ledger ranks disagreements
+by normalized support burden so weak disagreements stay distinct from serious
+high-support conflicts. The conclusion ledger classifies each reviewed clade as
+stable, unstable, or engine-specific, and the stability summary reduces that
+evidence to reviewer-facing counts plus the top conflict-driver taxa when they
+can be detected by shared-taxon pruning.
+
+The normalization rule is explicit and limited: FastTree SH-like local support
+and IQ-TREE UFBoot support are shown together as fractions only for side-by-side
+review, not as proof that the two support methods are interchangeable.
 
 Use `adapter reproducibility` when you need to test whether repeated
 bootstrap-supported IQ-TREE inference stays deterministic under fixed settings.
