@@ -63,6 +63,11 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      - name: install tox runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv tool install tox --with tox-gh-actions
       - name: run runtime quality surfaces
         shell: bash
         run: |
