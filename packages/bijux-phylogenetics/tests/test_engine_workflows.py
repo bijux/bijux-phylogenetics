@@ -510,8 +510,15 @@ def test_run_codon_aware_multiple_sequence_alignment_preserves_triplet_gaps(
         ("long_good", "ATGGAATGGAAA"),
         ("short_good", "ATGGAATGG---"),
     ]
+    assert output_path.read_text(encoding="utf-8") == fixture(
+        "expected/codon_aware/reference_codon_alignment.fasta"
+    ).read_text(encoding="utf-8")
     assert report.sequence_type == "dna"
+    assert report.genetic_code_id == 1
+    assert report.genetic_code_name == "Standard"
+    assert report.input_sequence_count == 4
     assert report.accepted_sequence_count == 2
+    assert report.invalid_codon_sequence_count == 0
     assert [row.identifier for row in report.excluded_sequences] == [
         "frameshift",
         "internal_stop",
@@ -519,12 +526,19 @@ def test_run_codon_aware_multiple_sequence_alignment_preserves_triplet_gaps(
     assert report.output_paths["guide_input"].read_text(encoding="utf-8") == (
         ">long_good\nMEWK\n>short_good\nMEW\n"
     )
+    assert report.output_paths["coding_summary"].read_text(encoding="utf-8") == (
+        "identifier\tstatus\tcomparable_length\tdivisible_by_three\tinvalid_codon_count\tpremature_stop_count\tterminal_stop_count\texclusion_reason\tnote\n"
+        "frameshift\texcluded\t8\tno\t0\t0\t0\tframe-error\tsequence is not frame-consistent after removing gaps and missing data\n"
+        "internal_stop\texcluded\t9\tyes\t0\t1\t0\tinternal-stop-codon\tsequence contains one or more premature stop codons\n"
+        "long_good\taccepted\t12\tyes\t0\t0\t0\t\tsequence is consistent with a coding reading frame\n"
+        "short_good\taccepted\t9\tyes\t0\t0\t0\t\tsequence is consistent with a coding reading frame\n"
+    )
     assert report.output_paths["excluded_sequences"].read_text(encoding="utf-8") == (
-        "identifier\tcomparable_length\treason\tpremature_stop_count\t"
+        "identifier\tcomparable_length\treason\tinvalid_codon_count\tpremature_stop_count\t"
         "terminal_stop_count\ttrailing_bases\tnote\n"
-        "frameshift\t8\tframe-error\t0\t0\t2\t"
+        "frameshift\t8\tframe-error\t0\t0\t0\t2\t"
         "sequence is not frame-consistent after gaps and missing data are removed\n"
-        "internal_stop\t9\tinternal-stop-codon\t1\t0\t0\t"
+        "internal_stop\t9\tinternal-stop-codon\t0\t1\t0\t0\t"
         "sequence contains one or more premature stop codons\n"
     )
     assert report.run.command[1:-1] == ["--localpair", "--maxiterate", "1000"]
@@ -553,6 +567,49 @@ def test_run_codon_aware_multiple_sequence_alignment_fails_when_every_sequence_i
         )
 
     assert "excluded every sequence" in str(error_info.value)
+
+
+def test_run_codon_aware_multiple_sequence_alignment_reuses_resume_only_when_genetic_code_matches(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    input_path = tmp_path / "coding-mito.fasta"
+    input_path.write_text(
+        ">shared_good\nATGGAATGG\n"
+        ">mito_triplet\nATGTGAGGG\n",
+        encoding="utf-8",
+    )
+    output_path = tmp_path / "codon-aligned.fasta"
+
+    first_report = run_codon_aware_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+        genetic_code="2",
+    )
+    resumed_report = run_codon_aware_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+        genetic_code="2",
+        resume=True,
+    )
+    standard_report = run_codon_aware_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+        genetic_code="1",
+        resume=True,
+    )
+
+    assert first_report.resumed is False
+    assert resumed_report.resumed is True
+    assert standard_report.resumed is False
+    assert standard_report.genetic_code_id == 1
+    assert standard_report.accepted_sequence_count == 1
+    assert [record.identifier for record in load_fasta_alignment(output_path)] == [
+        "shared_good"
+    ]
 
 
 def test_mafft_alignment_modes_resolve_to_explicit_documented_arguments() -> None:

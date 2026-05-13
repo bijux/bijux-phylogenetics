@@ -29,6 +29,7 @@ from bijux_phylogenetics.diagnostics.validation import validate_tree_path
 from bijux_phylogenetics.errors import EngineWorkflowError
 from bijux_phylogenetics.io.fasta import (
     back_translate_aligned_coding_sequences,
+    classify_sequence_coding_behavior,
     infer_alignment_alphabet,
     load_fasta_alignment,
     prepare_coding_sequences_for_alignment,
@@ -189,11 +190,16 @@ class CodonAwareAlignmentWorkflowReport:
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
     sequence_type: AlignmentAlphabet
+    genetic_code_id: int
+    genetic_code_name: str
+    input_sequence_count: int
     accepted_sequence_count: int
+    invalid_codon_sequence_count: int
     excluded_sequences: list[CodingSequenceExclusion]
     terminal_stop_sequence_count: int
     notes: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    resumed: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -308,6 +314,7 @@ def _write_coding_exclusion_table(
                 "identifier",
                 "comparable_length",
                 "reason",
+                "invalid_codon_count",
                 "premature_stop_count",
                 "terminal_stop_count",
                 "trailing_bases",
@@ -321,6 +328,7 @@ def _write_coding_exclusion_table(
                 row.identifier,
                 str(row.comparable_length),
                 row.reason,
+                str(row.invalid_codon_count),
                 str(row.premature_stop_count),
                 str(row.terminal_stop_count),
                 str(row.trailing_bases),
@@ -330,6 +338,55 @@ def _write_coding_exclusion_table(
         for row in exclusions
     )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_coding_summary_table(
+    path: Path,
+    *,
+    input_path: Path,
+    genetic_code: int,
+    exclusions: list[CodingSequenceExclusion],
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    exclusion_by_identifier = {row.identifier: row for row in exclusions}
+    behaviors = classify_sequence_coding_behavior(
+        input_path,
+        genetic_code=genetic_code,
+    )
+    header = "\t".join(
+        [
+            "identifier",
+            "status",
+            "comparable_length",
+            "divisible_by_three",
+            "invalid_codon_count",
+            "premature_stop_count",
+            "terminal_stop_count",
+            "exclusion_reason",
+            "note",
+        ]
+    )
+    rows = [header]
+    for behavior in behaviors:
+        exclusion = exclusion_by_identifier.get(behavior.identifier)
+        rows.append(
+            "\t".join(
+                [
+                    behavior.identifier,
+                    "excluded" if exclusion is not None else "accepted",
+                    str(behavior.comparable_length),
+                    "yes" if behavior.divisible_by_three else "no",
+                    str(behavior.invalid_codon_count),
+                    str(behavior.premature_stop_count),
+                    str(behavior.terminal_stop_count),
+                    "" if exclusion is None else exclusion.reason,
+                    behavior.note,
+                ]
+            )
+        )
+    ordered_rows = [rows[0], *sorted(rows[1:])]
+    path.write_text("\n".join(ordered_rows) + "\n", encoding="utf-8")
     return path
 
 
@@ -1159,12 +1216,19 @@ def _restore_codon_aware_alignment_report(
             for key, value in dict(payload.get("output_checksums", {})).items()
         },
         sequence_type=str(payload["sequence_type"]),
+        genetic_code_id=int(payload.get("genetic_code_id", 1)),
+        genetic_code_name=str(payload.get("genetic_code_name", "Standard")),
+        input_sequence_count=int(payload.get("input_sequence_count", 0)),
         accepted_sequence_count=int(payload["accepted_sequence_count"]),
+        invalid_codon_sequence_count=int(
+            payload.get("invalid_codon_sequence_count", 0)
+        ),
         excluded_sequences=[
             CodingSequenceExclusion(
                 identifier=str(item["identifier"]),
                 comparable_length=int(item["comparable_length"]),
                 reason=str(item["reason"]),
+                invalid_codon_count=int(item.get("invalid_codon_count", 0)),
                 premature_stop_count=int(item["premature_stop_count"]),
                 terminal_stop_count=int(item["terminal_stop_count"]),
                 trailing_bases=int(item["trailing_bases"]),
@@ -1175,6 +1239,7 @@ def _restore_codon_aware_alignment_report(
         terminal_stop_sequence_count=int(payload["terminal_stop_sequence_count"]),
         notes=[str(item) for item in payload.get("notes", [])],
         warnings=[str(item) for item in payload.get("warnings", [])],
+        resumed=bool(payload.get("resumed", False)),
     )
 
 
@@ -1183,12 +1248,18 @@ def _resume_existing_codon_aware_alignment(
     manifest_path: Path,
     input_path: Path,
     expected_command: list[str],
+    expected_sequence_type: AlignmentAlphabet,
+    expected_genetic_code_id: int,
 ) -> CodonAwareAlignmentWorkflowReport | None:
     if not manifest_path.exists():
         return None
     payload = load_engine_manifest(manifest_path)
     report = _restore_codon_aware_alignment_report(payload)
     if report.run.command != expected_command:
+        return None
+    if report.sequence_type != expected_sequence_type:
+        return None
+    if report.genetic_code_id != expected_genetic_code_id:
         return None
     current_input_checksums = build_file_checksums([input_path])
     if report.input_checksums != current_input_checksums:
@@ -1199,6 +1270,7 @@ def _resume_existing_codon_aware_alignment(
     if report.output_checksums != current_output_checksums:
         return None
     clear_incomplete_engine_run(manifest_path)
+    report.resumed = True
     return report
 
 
@@ -1449,6 +1521,7 @@ def run_codon_aware_multiple_sequence_alignment(
     executable: str | Path = "mafft",
     mode: str = "auto",
     sequence_type: AlignmentAlphabet | None = None,
+    genetic_code: int | str | None = None,
     resume: bool = False,
     timeout_seconds: float | None = None,
     incomplete_run_policy: str = "reject",
@@ -1458,13 +1531,18 @@ def run_codon_aware_multiple_sequence_alignment(
     prepared_records, preparation = prepare_coding_sequences_for_alignment(
         input_path,
         sequence_type=sequence_type,
+        genetic_code=genetic_code,
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     guide_input_path = _sidecar(out_path, "guide-input.fasta")
     guide_alignment_path = _sidecar(out_path, "guide-alignment.fasta")
     exclusion_report_path = _sidecar(out_path, "excluded.tsv")
+    coding_summary_path = _sidecar(out_path, "coding-summary.tsv")
     manifest_path = _manifest_path_from_output(out_path)
-    guide_records = translate_prepared_coding_sequences(prepared_records)
+    guide_records = translate_prepared_coding_sequences(
+        prepared_records,
+        genetic_code=preparation.genetic_code_id,
+    )
     write_fasta_alignment(guide_input_path, guide_records)
     mode_args = resolve_mafft_alignment_mode(mode)
     version = read_engine_version(
@@ -1480,6 +1558,8 @@ def run_codon_aware_multiple_sequence_alignment(
             manifest_path=manifest_path,
             input_path=input_path,
             expected_command=command,
+            expected_sequence_type=preparation.sequence_type,
+            expected_genetic_code_id=preparation.genetic_code_id,
         )
         if resumed is not None:
             return resumed
@@ -1513,11 +1593,18 @@ def run_codon_aware_multiple_sequence_alignment(
             "codon-aware alignment produced an alignment length that is not divisible by three"
         )
     _write_coding_exclusion_table(exclusion_report_path, preparation.excluded_sequences)
+    _write_coding_summary_table(
+        coding_summary_path,
+        input_path=input_path,
+        genetic_code=preparation.genetic_code_id,
+        exclusions=preparation.excluded_sequences,
+    )
     output_paths = {
         "alignment": out_path,
         "guide_input": guide_input_path,
         "guide_alignment": guide_alignment_path,
         "excluded_sequences": exclusion_report_path,
+        "coding_summary": coding_summary_path,
     }
     report = CodonAwareAlignmentWorkflowReport(
         workflow="codon-aware-multiple-sequence-alignment",
@@ -1529,17 +1616,23 @@ def run_codon_aware_multiple_sequence_alignment(
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
         sequence_type=preparation.sequence_type,
+        genetic_code_id=preparation.genetic_code_id,
+        genetic_code_name=preparation.genetic_code_name,
+        input_sequence_count=preparation.input_sequence_count,
         accepted_sequence_count=preparation.accepted_sequence_count,
+        invalid_codon_sequence_count=preparation.invalid_codon_sequence_count,
         excluded_sequences=preparation.excluded_sequences,
         terminal_stop_sequence_count=preparation.terminal_stop_sequence_count,
         notes=[
             "codon-aware alignment preserved nucleotide codon triplets through amino-acid guide alignment",
             f"mafft alignment mode: {mode}",
+            f"genetic code: {preparation.genetic_code_name} ({preparation.genetic_code_id})",
             f"accepted coding sequences: {preparation.accepted_sequence_count} of {preparation.input_sequence_count}",
             f"retained nucleotide alignment length: {codon_summary.alignment_length}",
             *incomplete_notes,
         ],
         warnings=list(dict.fromkeys(run.warning_lines + preparation.warnings)),
+        resumed=False,
     )
     report.output_checksums = build_file_checksums(list(output_paths.values()))
     write_engine_manifest(manifest_path, report)
