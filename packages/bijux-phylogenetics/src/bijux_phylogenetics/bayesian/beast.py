@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import csv
 from dataclasses import dataclass
 from pathlib import Path
 import re
 from typing import Any, TypeAlias
-import xml.etree.ElementTree as XmlET
 
-from defusedxml import ElementTree as SafeET
+from defusedxml import ElementTree as XmlET
 from defusedxml.common import DefusedXmlException
 
 from bijux_phylogenetics.bayesian.burnin import (
@@ -1736,7 +1736,7 @@ def prepare_beast_time_tree_analysis(
         *site_logger_elements,
         *clock_logger_elements,
     ]:
-        cloned = XmlET.fromstring(XmlET.tostring(element, encoding="unicode"))
+        cloned = deepcopy(element)
         if cloned.get("id") == "rateStatistic":
             cloned.set("id", "rateStatistic.screen")
         screen_logger.append(cloned)
@@ -1788,7 +1788,7 @@ def summarize_beast_analysis_xml(path: Path) -> BeastAnalysisXmlReport:
     """Summarize one prepared BEAST analysis XML into reviewer-facing assumptions."""
     issues: list[BeastAnalysisXmlIssue] = []
     try:
-        root = SafeET.parse(path).getroot()
+        root = XmlET.parse(path).getroot()
     except (XmlET.ParseError, DefusedXmlException) as error:
         issues.append(
             BeastAnalysisXmlIssue(
