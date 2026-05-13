@@ -39,6 +39,13 @@ from bijux_phylogenetics.io.fasta import (
 )
 from bijux_phylogenetics.io.newick import loads_newick
 
+from .bootstrap_artifacts import (
+    build_bootstrap_support_histogram_rows,
+    build_bootstrap_support_rows,
+    build_low_support_bootstrap_rows,
+    write_bootstrap_support_histogram,
+    write_bootstrap_support_table,
+)
 from .common import (
     EngineRunReport,
     EngineVersionInfo,
@@ -47,20 +54,13 @@ from .common import (
     clear_incomplete_engine_run,
     engine_incomplete_marker_path,
     execute_engine_command,
-    load_incomplete_engine_run,
     load_engine_manifest,
+    load_incomplete_engine_run,
     load_unaligned_fasta,
     read_engine_version,
     resolve_engine_executable,
     validate_timeout_seconds,
     write_engine_manifest,
-)
-from .bootstrap_artifacts import (
-    build_bootstrap_support_histogram_rows,
-    build_bootstrap_support_rows,
-    build_low_support_bootstrap_rows,
-    write_bootstrap_support_histogram,
-    write_bootstrap_support_table,
 )
 from .fasttree_artifacts import (
     build_fasttree_low_support_rows,
@@ -92,10 +92,11 @@ from .validation import (
     ShAlrtSupportSummaryReport,
     WeakBackboneReport,
     detect_weakly_supported_backbone,
+    summarize_bootstrap_support_distribution,
     summarize_fasttree_support_distribution,
     summarize_sh_alrt_support_distribution,
-    summarize_bootstrap_support_distribution,
 )
+
 _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {
     "auto": ("--auto",),
     "linsi": ("--localpair", "--maxiterate", "1000"),
@@ -402,7 +403,9 @@ def _build_alignment_trimming_summary(
             "trimmed alignment is longer than the input alignment, which is not a valid trimAl result"
         )
     retained_site_count = trimmed_summary.alignment_length
-    removed_site_count = input_summary.alignment_length - trimmed_summary.alignment_length
+    removed_site_count = (
+        input_summary.alignment_length - trimmed_summary.alignment_length
+    )
     retained_site_fraction = retained_site_count / input_summary.alignment_length
     removed_site_fraction = removed_site_count / input_summary.alignment_length
     return AlignmentTrimmingSummary(
@@ -501,7 +504,9 @@ def _prepare_iqtree_partitions(
         )
         write_locus_partitions(normalized_partition_path, partitions)
         output_paths["partition_scheme"] = normalized_partition_path
-        notes.append("prepared a normalized partition scheme for single-alignment IQ-TREE analysis")
+        notes.append(
+            "prepared a normalized partition scheme for single-alignment IQ-TREE analysis"
+        )
         return _PreparedIqtreePartitions(
             command_args=[
                 "-s",
@@ -523,7 +528,7 @@ def _prepare_iqtree_partitions(
         {
             data_type
             for data_type in declared_types
-            if data_type not in {"DNA", "RNA", "PROTEIN"}
+            if data_type is not None and data_type not in {"DNA", "RNA", "PROTEIN"}
         }
     )
     if unsupported_types:
@@ -532,7 +537,9 @@ def _prepare_iqtree_partitions(
             f"got: {', '.join(unsupported_types)}"
         )
 
-    partition_alignment_dir = _partition_support_path(prefix_path, "partition-alignments")
+    partition_alignment_dir = _partition_support_path(
+        prefix_path, "partition-alignments"
+    )
     partition_alignment_dir.mkdir(parents=True, exist_ok=True)
     lines = ["#nexus", "begin sets;"]
     for partition in partitions:
@@ -663,8 +670,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     IqtreeSupportValue(
                         node=str(dict(item)["node"]),
                         descendant_taxa=[
-                            str(taxon)
-                            for taxon in list(dict(item)["descendant_taxa"])
+                            str(taxon) for taxon in list(dict(item)["descendant_taxa"])
                         ],
                         support=float(dict(item)["support"]),
                         support_fraction=float(dict(item)["support_fraction"]),
@@ -682,9 +688,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     None
                     if dict(payload["model_selection_summary"]).get("selected_model")
                     is None
-                    else str(
-                        dict(payload["model_selection_summary"])["selected_model"]
-                    )
+                    else str(dict(payload["model_selection_summary"])["selected_model"])
                 ),
                 selected_criterion=(
                     None
@@ -693,18 +697,14 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     )
                     is None
                     else str(
-                        dict(payload["model_selection_summary"])[
-                            "selected_criterion"
-                        ]
+                        dict(payload["model_selection_summary"])["selected_criterion"]
                     )
                 ),
                 best_model_aic=(
                     None
                     if dict(payload["model_selection_summary"]).get("best_model_aic")
                     is None
-                    else str(
-                        dict(payload["model_selection_summary"])["best_model_aic"]
-                    )
+                    else str(dict(payload["model_selection_summary"])["best_model_aic"])
                 ),
                 best_model_aicc=(
                     None
@@ -718,9 +718,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     None
                     if dict(payload["model_selection_summary"]).get("best_model_bic")
                     is None
-                    else str(
-                        dict(payload["model_selection_summary"])["best_model_bic"]
-                    )
+                    else str(dict(payload["model_selection_summary"])["best_model_bic"])
                 ),
                 best_score_aic=(
                     None
@@ -763,7 +761,9 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                         aicc=float(dict(item)["aicc"]),
                         bic=float(dict(item)["bic"]),
                     )
-                    for item in list(dict(payload["model_selection_summary"])["candidates"])
+                    for item in list(
+                        dict(payload["model_selection_summary"])["candidates"]
+                    )
                 ],
                 bic_near_best_models=[
                     str(item)
@@ -786,9 +786,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ),
                 minimum_support=(
                     None
-                    if dict(payload["bootstrap_support_summary"]).get(
-                        "minimum_support"
-                    )
+                    if dict(payload["bootstrap_support_summary"]).get("minimum_support")
                     is None
                     else float(
                         dict(payload["bootstrap_support_summary"])["minimum_support"]
@@ -796,9 +794,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ),
                 maximum_support=(
                     None
-                    if dict(payload["bootstrap_support_summary"]).get(
-                        "maximum_support"
-                    )
+                    if dict(payload["bootstrap_support_summary"]).get("maximum_support")
                     is None
                     else float(
                         dict(payload["bootstrap_support_summary"])["maximum_support"]
@@ -827,18 +823,21 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     BootstrapSupportNode(
                         node=str(dict(item)["node"]),
                         descendant_taxa=[
-                            str(taxon)
-                            for taxon in list(dict(item)["descendant_taxa"])
+                            str(taxon) for taxon in list(dict(item)["descendant_taxa"])
                         ],
                         support=float(dict(item)["support"]),
                         support_fraction=float(dict(item)["support_fraction"]),
                         is_backbone=bool(dict(item)["is_backbone"]),
                     )
-                    for item in list(dict(payload["bootstrap_support_summary"])["nodes"])
+                    for item in list(
+                        dict(payload["bootstrap_support_summary"])["nodes"]
+                    )
                 ],
                 warnings=[
                     str(item)
-                    for item in list(dict(payload["bootstrap_support_summary"])["warnings"])
+                    for item in list(
+                        dict(payload["bootstrap_support_summary"])["warnings"]
+                    )
                 ],
             )
         ),
@@ -913,8 +912,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     FastTreeSupportNode(
                         node=str(dict(item)["node"]),
                         descendant_taxa=[
-                            str(taxon)
-                            for taxon in list(dict(item)["descendant_taxa"])
+                            str(taxon) for taxon in list(dict(item)["descendant_taxa"])
                         ],
                         local_support=float(dict(item)["local_support"]),
                         support_fraction=float(dict(item)["support_fraction"]),
@@ -924,7 +922,9 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ],
                 warnings=[
                     str(item)
-                    for item in list(dict(payload["fasttree_support_summary"])["warnings"])
+                    for item in list(
+                        dict(payload["fasttree_support_summary"])["warnings"]
+                    )
                 ],
             )
         ),
@@ -991,14 +991,10 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     )
                 ),
                 weak_sh_alrt_clade_count=int(
-                    dict(payload["sh_alrt_support_summary"])[
-                        "weak_sh_alrt_clade_count"
-                    ]
+                    dict(payload["sh_alrt_support_summary"])["weak_sh_alrt_clade_count"]
                 ),
                 weak_ufboot_clade_count=int(
-                    dict(payload["sh_alrt_support_summary"])[
-                        "weak_ufboot_clade_count"
-                    ]
+                    dict(payload["sh_alrt_support_summary"])["weak_ufboot_clade_count"]
                 ),
                 conflicting_support_signal_count=int(
                     dict(payload["sh_alrt_support_summary"])[
@@ -1009,8 +1005,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     ShAlrtSupportNode(
                         node=str(dict(item)["node"]),
                         descendant_taxa=[
-                            str(taxon)
-                            for taxon in list(dict(item)["descendant_taxa"])
+                            str(taxon) for taxon in list(dict(item)["descendant_taxa"])
                         ],
                         sh_alrt_support=(
                             None
@@ -1044,7 +1039,9 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                 ],
                 warnings=[
                     str(item)
-                    for item in list(dict(payload["sh_alrt_support_summary"])["warnings"])
+                    for item in list(
+                        dict(payload["sh_alrt_support_summary"])["warnings"]
+                    )
                 ],
             )
         ),
@@ -1066,14 +1063,15 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
                     BootstrapSupportNode(
                         node=str(dict(item)["node"]),
                         descendant_taxa=[
-                            str(taxon)
-                            for taxon in list(dict(item)["descendant_taxa"])
+                            str(taxon) for taxon in list(dict(item)["descendant_taxa"])
                         ],
                         support=float(dict(item)["support"]),
                         support_fraction=float(dict(item)["support_fraction"]),
                         is_backbone=bool(dict(item)["is_backbone"]),
                     )
-                    for item in list(dict(payload["weak_backbone_report"])["weak_nodes"])
+                    for item in list(
+                        dict(payload["weak_backbone_report"])["weak_nodes"]
+                    )
                 ],
                 warnings=[
                     str(item)
@@ -1833,16 +1831,10 @@ def run_model_selection(
         workflow="model-selection",
         engine_name="iqtree",
         input_paths=(
-            [input_path]
-            if partition_path is None
-            else [input_path, partition_path]
+            [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_paths={
-            **(
-                {}
-            if prepared_partitions is None
-            else prepared_partitions.output_paths
-        ),
+            **({} if prepared_partitions is None else prepared_partitions.output_paths),
             **_existing_iqtree_outputs(prefix_path),
             "selected_model": selected_model_path,
             "model_candidates": model_candidates_path,
@@ -1858,11 +1850,7 @@ def run_model_selection(
         iqtree_summary=iqtree_summary,
         model_selection_summary=model_selection_summary,
         notes=[
-            *(
-                []
-                if prepared_partitions is None
-                else prepared_partitions.notes
-            ),
+            *([] if prepared_partitions is None else prepared_partitions.notes),
             f"iqtree random seed: {seed}",
             f"iqtree threads: {threads}",
             "best-fit substitution model parsed from engine output",
@@ -1923,12 +1911,9 @@ def run_maximum_likelihood_tree_inference(
             prefix_path=prefix_path,
         )
     )
-    if (
-        prepared_partitions is not None
-        and not _iqtree_partition_supports_fixed_model(
-            model=model,
-            mixed_data_types=prepared_partitions.mixed_data_types,
-        )
+    if prepared_partitions is not None and not _iqtree_partition_supports_fixed_model(
+        model=model,
+        mixed_data_types=prepared_partitions.mixed_data_types,
     ):
         raise EngineWorkflowError(
             "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
@@ -1958,9 +1943,7 @@ def run_maximum_likelihood_tree_inference(
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,
             input_paths=(
-                [input_path]
-                if partition_path is None
-                else [input_path, partition_path]
+                [input_path] if partition_path is None else [input_path, partition_path]
             ),
             expected_command=command,
         )
@@ -1998,16 +1981,10 @@ def run_maximum_likelihood_tree_inference(
         workflow="maximum-likelihood-tree",
         engine_name="iqtree",
         input_paths=(
-            [input_path]
-            if partition_path is None
-            else [input_path, partition_path]
+            [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_paths={
-            **(
-                {}
-            if prepared_partitions is None
-            else prepared_partitions.output_paths
-        ),
+            **({} if prepared_partitions is None else prepared_partitions.output_paths),
             **_existing_iqtree_outputs(prefix_path, include_tree=True),
         },
         run=run,
@@ -2021,11 +1998,7 @@ def run_maximum_likelihood_tree_inference(
         iqtree_summary=iqtree_summary,
         model_selection_summary=model_selection_summary,
         notes=[
-            *(
-                []
-                if prepared_partitions is None
-                else prepared_partitions.notes
-            ),
+            *([] if prepared_partitions is None else prepared_partitions.notes),
             f"iqtree random seed: {seed}",
             f"iqtree threads: {threads}",
             "maximum-likelihood tree validated as parseable Newick output",
@@ -2037,9 +2010,7 @@ def run_maximum_likelihood_tree_inference(
             *(
                 []
                 if iqtree_summary.support_value_count == 0
-                else [
-                    "support values parsed from the inferred maximum-likelihood tree"
-                ]
+                else ["support values parsed from the inferred maximum-likelihood tree"]
             ),
             *incomplete_notes,
         ],
@@ -2087,12 +2058,9 @@ def run_bootstrap_support_estimation(
             prefix_path=prefix_path,
         )
     )
-    if (
-        prepared_partitions is not None
-        and not _iqtree_partition_supports_fixed_model(
-            model=model,
-            mixed_data_types=prepared_partitions.mixed_data_types,
-        )
+    if prepared_partitions is not None and not _iqtree_partition_supports_fixed_model(
+        model=model,
+        mixed_data_types=prepared_partitions.mixed_data_types,
     ):
         raise EngineWorkflowError(
             "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
@@ -2129,15 +2097,12 @@ def run_bootstrap_support_estimation(
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,
             input_paths=(
-                [input_path]
-                if partition_path is None
-                else [input_path, partition_path]
+                [input_path] if partition_path is None else [input_path, partition_path]
             ),
             expected_command=command,
         )
-        if resumed is not None:
-            if _resume_has_bootstrap_review_outputs(resumed):
-                return resumed
+        if resumed is not None and _resume_has_bootstrap_review_outputs(resumed):
+            return resumed
     incomplete_notes = _resolve_incomplete_workflow_state(
         manifest_path=manifest_path,
         incomplete_run_policy=incomplete_run_policy,
@@ -2189,16 +2154,10 @@ def run_bootstrap_support_estimation(
         workflow="bootstrap-support",
         engine_name="iqtree",
         input_paths=(
-            [input_path]
-            if partition_path is None
-            else [input_path, partition_path]
+            [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_paths={
-            **(
-                {}
-            if prepared_partitions is None
-            else prepared_partitions.output_paths
-        ),
+            **({} if prepared_partitions is None else prepared_partitions.output_paths),
             **_existing_iqtree_outputs(
                 prefix_path,
                 include_tree=False,
@@ -2223,11 +2182,7 @@ def run_bootstrap_support_estimation(
         bootstrap_support_summary=bootstrap_support_summary,
         weak_backbone_report=weak_backbone_report,
         notes=[
-            *(
-                []
-                if prepared_partitions is None
-                else prepared_partitions.notes
-            ),
+            *([] if prepared_partitions is None else prepared_partitions.notes),
             f"iqtree random seed: {seed}",
             f"iqtree threads: {threads}",
             "bootstrap tree set retained for downstream consensus construction",
@@ -2292,12 +2247,9 @@ def run_sh_alrt_support_estimation(
             prefix_path=prefix_path,
         )
     )
-    if (
-        prepared_partitions is not None
-        and not _iqtree_partition_supports_fixed_model(
-            model=model,
-            mixed_data_types=prepared_partitions.mixed_data_types,
-        )
+    if prepared_partitions is not None and not _iqtree_partition_supports_fixed_model(
+        model=model,
+        mixed_data_types=prepared_partitions.mixed_data_types,
     ):
         raise EngineWorkflowError(
             "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
@@ -2337,9 +2289,7 @@ def run_sh_alrt_support_estimation(
         resumed = _resume_existing_workflow(
             manifest_path=manifest_path,
             input_paths=(
-                [input_path]
-                if partition_path is None
-                else [input_path, partition_path]
+                [input_path] if partition_path is None else [input_path, partition_path]
             ),
             expected_command=command,
         )
@@ -2378,9 +2328,7 @@ def run_sh_alrt_support_estimation(
     bootstrap_support_summary = summarize_bootstrap_support_distribution(
         support_tree_path
     )
-    sh_alrt_support_summary = summarize_sh_alrt_support_distribution(
-        support_tree_path
-    )
+    sh_alrt_support_summary = summarize_sh_alrt_support_distribution(support_tree_path)
     write_sh_alrt_support_table(
         support_table_path,
         build_sh_alrt_support_rows(sh_alrt_support_summary),
@@ -2394,9 +2342,7 @@ def run_sh_alrt_support_estimation(
         workflow="sh-alrt-support",
         engine_name="iqtree",
         input_paths=(
-            [input_path]
-            if partition_path is None
-            else [input_path, partition_path]
+            [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_paths={
             **({} if prepared_partitions is None else prepared_partitions.output_paths),
@@ -2527,9 +2473,7 @@ def run_bootstrap_consensus_tree(
         workflow="bootstrap-consensus",
         engine_name="iqtree",
         input_paths=[bootstrap_trees_path],
-        output_paths=_existing_iqtree_outputs(
-            prefix_path, include_consensus=True
-        ),
+        output_paths=_existing_iqtree_outputs(prefix_path, include_consensus=True),
         run=run,
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([bootstrap_trees_path]),

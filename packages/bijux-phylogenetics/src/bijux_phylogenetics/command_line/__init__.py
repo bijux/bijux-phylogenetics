@@ -8,14 +8,6 @@ import sys
 from typing import Any
 
 from bijux_phylogenetics import __version__
-from bijux_phylogenetics.ancestral.continuous import (
-    continuous_ancestral_exclusions,
-    reconstruct_continuous_ancestral_states,
-    summarize_continuous_ancestral_report,
-    write_continuous_ancestral_exclusion_table,
-    write_continuous_ancestral_summary_table,
-    write_continuous_ancestral_uncertainty_table,
-)
 from bijux_phylogenetics.ancestral.confidence import (
     build_continuous_ancestral_confidence_rows,
     build_continuous_ancestral_tree_set_confidence_rows,
@@ -31,6 +23,14 @@ from bijux_phylogenetics.ancestral.confidence import (
     write_discrete_ancestral_confidence_table,
     write_discrete_ancestral_tree_set_confidence_table,
 )
+from bijux_phylogenetics.ancestral.continuous import (
+    continuous_ancestral_exclusions,
+    reconstruct_continuous_ancestral_states,
+    summarize_continuous_ancestral_report,
+    write_continuous_ancestral_exclusion_table,
+    write_continuous_ancestral_summary_table,
+    write_continuous_ancestral_uncertainty_table,
+)
 from bijux_phylogenetics.ancestral.discrete import (
     discrete_ancestral_exclusions,
     reconstruct_discrete_ancestral_states,
@@ -38,21 +38,6 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_exclusion_table,
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
-)
-from bijux_phylogenetics.ancestral.root_sensitivity import (
-    summarize_ancestral_root_sensitivity,
-    summarize_ancestral_root_sensitivity_report,
-    write_ancestral_root_assumption_table,
-    write_ancestral_root_sensitivity_node_table,
-    write_ancestral_root_sensitivity_summary_table,
-)
-from bijux_phylogenetics.ancestral.ordered_discrete import (
-    summarize_ordered_discrete_reconstruction,
-    summarize_ordered_discrete_report,
-    write_ordered_discrete_fit_table,
-    write_ordered_discrete_node_table,
-    write_ordered_discrete_summary_table,
-    write_ordered_discrete_transition_table,
 )
 from bijux_phylogenetics.ancestral.irreversible_discrete import (
     summarize_irreversible_discrete_reconstruction,
@@ -62,19 +47,32 @@ from bijux_phylogenetics.ancestral.irreversible_discrete import (
     write_irreversible_discrete_summary_table,
     write_irreversible_discrete_transition_table,
 )
-from bijux_phylogenetics.ancestral.tree_set import (
-    summarize_continuous_ancestral_tree_set,
-    summarize_continuous_ancestral_tree_set_report,
-    summarize_discrete_ancestral_tree_set,
-    summarize_discrete_ancestral_tree_set_report,
-    write_ancestral_tree_set_exclusion_table,
-    write_ancestral_tree_set_tree_table,
-    write_continuous_ancestral_tree_set_clade_table,
-    write_continuous_ancestral_tree_set_node_table,
-    write_continuous_ancestral_tree_set_summary_table,
-    write_discrete_ancestral_tree_set_clade_table,
-    write_discrete_ancestral_tree_set_node_table,
-    write_discrete_ancestral_tree_set_summary_table,
+from bijux_phylogenetics.ancestral.ordered_discrete import (
+    summarize_ordered_discrete_reconstruction,
+    summarize_ordered_discrete_report,
+    write_ordered_discrete_fit_table,
+    write_ordered_discrete_node_table,
+    write_ordered_discrete_summary_table,
+    write_ordered_discrete_transition_table,
+)
+from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
+from bijux_phylogenetics.ancestral.report_package import (
+    build_ancestral_report_package,
+)
+from bijux_phylogenetics.ancestral.root_sensitivity import (
+    summarize_ancestral_root_sensitivity,
+    summarize_ancestral_root_sensitivity_report,
+    write_ancestral_root_assumption_table,
+    write_ancestral_root_sensitivity_node_table,
+    write_ancestral_root_sensitivity_summary_table,
+)
+from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
+from bijux_phylogenetics.ancestral.service import (
+    compare_continuous_ancestral_models,
+    compare_discrete_ancestral_reconstructions,
+    render_ancestral_state_report,
+    write_ancestral_state_table,
+    write_discrete_ancestral_comparison_table,
 )
 from bijux_phylogenetics.ancestral.transitions import (
     summarize_ancestral_transition_report,
@@ -90,17 +88,19 @@ from bijux_phylogenetics.ancestral.transitions import (
     write_ancestral_transition_tree_set_summary_table,
     write_ancestral_transition_tree_set_tree_table,
 )
-from bijux_phylogenetics.ancestral.package import build_ancestral_figure_package
-from bijux_phylogenetics.ancestral.report_package import (
-    build_ancestral_report_package,
-)
-from bijux_phylogenetics.ancestral.sensitivity import build_ancestral_sensitivity_report
-from bijux_phylogenetics.ancestral.service import (
-    compare_continuous_ancestral_models,
-    compare_discrete_ancestral_reconstructions,
-    render_ancestral_state_report,
-    write_ancestral_state_table,
-    write_discrete_ancestral_comparison_table,
+from bijux_phylogenetics.ancestral.tree_set import (
+    summarize_continuous_ancestral_tree_set,
+    summarize_continuous_ancestral_tree_set_report,
+    summarize_discrete_ancestral_tree_set,
+    summarize_discrete_ancestral_tree_set_report,
+    write_ancestral_tree_set_exclusion_table,
+    write_ancestral_tree_set_tree_table,
+    write_continuous_ancestral_tree_set_clade_table,
+    write_continuous_ancestral_tree_set_node_table,
+    write_continuous_ancestral_tree_set_summary_table,
+    write_discrete_ancestral_tree_set_clade_table,
+    write_discrete_ancestral_tree_set_node_table,
+    write_discrete_ancestral_tree_set_summary_table,
 )
 from bijux_phylogenetics.ancestral.visualization import (
     render_ancestral_state_visualization,
@@ -150,11 +150,6 @@ from bijux_phylogenetics.bayesian.burnin import (
     write_burnin_clade_shift_table,
     write_burnin_parameter_shift_table,
 )
-from bijux_phylogenetics.branch_lengths import (
-    analyze_branch_length_distribution,
-    analyze_tree_set_branch_lengths,
-    write_branch_length_table,
-)
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_diagnostics,
     benchmark_large_dataset_stress_suite,
@@ -162,11 +157,11 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_validation,
 )
 from bijux_phylogenetics.biogeography import (
-    summarize_geographic_migration_events,
-    summarize_geographic_migration_event_tree_set,
     TimeBinDefinition,
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
+    summarize_geographic_migration_event_tree_set,
+    summarize_geographic_migration_events,
     summarize_geographic_sampling_bias,
     summarize_geographic_state_model,
     summarize_time_stratified_geographic_transitions,
@@ -174,29 +169,29 @@ from bijux_phylogenetics.biogeography import (
     write_constrained_geographic_fit_table,
     write_constrained_geographic_summary_table,
     write_constrained_geographic_transition_table,
+    write_geographic_exclusion_table,
+    write_geographic_migration_event_summary_table,
+    write_geographic_migration_event_table,
+    write_geographic_migration_exclusion_table,
+    write_geographic_migration_tree_set_event_summary_table,
+    write_geographic_migration_tree_set_event_table,
+    write_geographic_migration_tree_set_exclusion_table,
+    write_geographic_migration_tree_set_summary_table,
+    write_geographic_migration_tree_set_tree_table,
+    write_geographic_region_probability_table,
     write_geographic_sampling_bias_exclusion_table,
     write_geographic_sampling_bias_node_table,
     write_geographic_sampling_bias_summary_table,
     write_geographic_sampling_bias_transition_table,
     write_geographic_sampling_count_table,
-    write_geographic_migration_event_summary_table,
-    write_geographic_migration_event_table,
-    write_geographic_migration_exclusion_table,
-    write_geographic_migration_tree_set_summary_table,
-    write_geographic_migration_tree_set_tree_table,
-    write_geographic_migration_tree_set_event_table,
-    write_geographic_migration_tree_set_event_summary_table,
-    write_geographic_migration_tree_set_exclusion_table,
-    write_geographic_exclusion_table,
-    write_geographic_region_probability_table,
     write_geographic_state_summary_table,
     write_geographic_transition_event_table,
     write_geographic_transition_rate_table,
-    write_unsupported_geographic_transition_claim_table,
     write_time_stratified_branch_table,
     write_time_stratified_exclusion_table,
     write_time_stratified_transition_matrix_table,
     write_time_stratified_transition_summary_table,
+    write_unsupported_geographic_transition_claim_table,
 )
 from bijux_phylogenetics.biogeography.report_package import (
     build_biogeography_report_package,
@@ -209,64 +204,17 @@ from bijux_phylogenetics.biogeography.transition_chronology import (
     write_dated_biogeography_summary_table,
     write_dated_biogeography_time_bin_table,
 )
-from bijux_phylogenetics.host_association import (
-    summarize_host_switching,
-    write_host_state_node_table,
-    write_host_switch_branch_table,
-    write_host_switch_count_table,
-    write_host_switch_exclusion_table,
-    write_host_switch_fit_table,
-    write_host_switch_summary_table,
-    write_unsupported_host_switch_claim_table,
+from bijux_phylogenetics.branch_lengths import (
+    analyze_branch_length_distribution,
+    analyze_tree_set_branch_lengths,
+    write_branch_length_table,
 )
-from bijux_phylogenetics.ecological_niche import (
-    summarize_niche_transitions,
-    write_niche_state_node_table,
-    write_niche_transition_branch_table,
-    write_niche_transition_clade_table,
-    write_niche_transition_count_table,
-    write_niche_transition_exclusion_table,
-    write_niche_transition_rate_table,
-    write_niche_transition_summary_table,
-)
-from bijux_phylogenetics.phylogeography import (
-    render_coordinate_movement_visualization,
-    render_geographic_map_html,
-    summarize_continuous_phylogeography,
-    summarize_continuous_phylogeography_map,
-    summarize_discrete_region_map,
-    write_coordinate_estimate_table,
-    write_coordinate_movement_branch_table,
-    write_coordinate_movement_exclusion_table,
-    write_coordinate_movement_outlier_table,
-    write_coordinate_movement_summary_table,
-    write_geographic_map_exclusion_table,
-    write_geographic_map_line_table,
-    write_geographic_map_marker_table,
-    write_geographic_map_summary_table,
+from bijux_phylogenetics.clades import (
+    extract_tree_clades,
+    extract_tree_set_clades,
+    write_clade_table,
 )
 from bijux_phylogenetics.command_line.registry import COMMAND_SPECS, get_command_spec
-from bijux_phylogenetics.comparative.common import (
-    summarize_numeric_trait,
-    summarize_numeric_trait_readiness,
-)
-from bijux_phylogenetics.comparative.phylogenetic_signal import (
-    summarize_phylogenetic_signal,
-    write_phylogenetic_signal_permutation_table,
-    write_phylogenetic_signal_summary_table,
-)
-from bijux_phylogenetics.comparative.correlated_trait_evolution import (
-    summarize_correlated_trait_evolution,
-    write_correlated_trait_comparison_table,
-    write_correlated_trait_exclusion_table,
-    write_correlated_trait_observation_table,
-    write_correlated_trait_summary_table,
-)
-from bijux_phylogenetics.comparative.brownian_trait_evolution import (
-    summarize_brownian_trait_evolution,
-    write_brownian_trait_evolution_exclusion_table,
-    write_brownian_trait_evolution_summary_table,
-)
 from bijux_phylogenetics.comparative.brownian_regime_rates import (
     summarize_brownian_regime_rates,
     write_brownian_regime_branch_table,
@@ -276,53 +224,10 @@ from bijux_phylogenetics.comparative.brownian_regime_rates import (
     write_brownian_regime_rate_table,
     write_brownian_regime_summary_table,
 )
-from bijux_phylogenetics.comparative.trait_regime_mapping import (
-    render_trait_regime_map,
-    summarize_trait_regime_mapping,
-    write_trait_regime_branch_table,
-    write_trait_regime_exclusion_table,
-    write_trait_regime_node_table,
-    write_trait_regime_summary_table,
-)
-from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
-    summarize_early_burst_trait_evolution,
-    write_early_burst_rate_change_profile_table,
-    write_early_burst_trait_evolution_comparison_table,
-    write_early_burst_trait_evolution_exclusion_table,
-    write_early_burst_trait_evolution_summary_table,
-)
-from bijux_phylogenetics.comparative.trait_rate_through_time import (
-    summarize_trait_rate_through_time,
-    write_trait_rate_through_time_exclusion_table,
-    write_trait_rate_through_time_interval_table,
-    write_trait_rate_through_time_summary_table,
-)
-from bijux_phylogenetics.comparative.ou_trait_evolution import (
-    summarize_ou_trait_evolution,
-    write_ou_trait_evolution_exclusion_table,
-    write_ou_trait_evolution_summary_table,
-)
-from bijux_phylogenetics.comparative.independent_contrasts import (
-    summarize_independent_contrast_regression,
-    write_independent_contrast_regression_table,
-    write_independent_contrast_table,
-)
-from bijux_phylogenetics.comparative.models import (
-    assess_comparative_method_maturity,
-    audit_comparative_parameter_uncertainty,
-    audit_ou_identifiability_reference_examples,
-    compare_brownian_and_ou_models,
-    run_comparative_sensitivity_analysis,
-    validate_comparative_reference_examples,
-)
-from bijux_phylogenetics.comparative.multivariate_regression import (
-    run_multivariate_comparative_regression,
-    write_multivariate_excluded_taxa_table,
-    write_multivariate_response_coefficient_table,
-    write_multivariate_response_model_table,
-    write_multivariate_residual_association_table,
-    write_multivariate_residual_correlation_table,
-    write_multivariate_residual_covariance_table,
+from bijux_phylogenetics.comparative.brownian_trait_evolution import (
+    summarize_brownian_trait_evolution,
+    write_brownian_trait_evolution_exclusion_table,
+    write_brownian_trait_evolution_summary_table,
 )
 from bijux_phylogenetics.comparative.clade_residuals import (
     analyze_comparative_residual_clades,
@@ -340,18 +245,87 @@ from bijux_phylogenetics.comparative.clade_traits import (
     write_clade_trait_exclusion_table,
     write_clade_trait_summary_table,
 )
-from bijux_phylogenetics.comparative.trait_outliers import (
-    summarize_trait_outliers,
-    write_trait_outlier_exclusion_table,
-    write_trait_outlier_summary_table,
-    write_trait_outlier_taxon_table,
+from bijux_phylogenetics.comparative.common import (
+    summarize_numeric_trait,
+    summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.comparative.trait_imputation import (
-    summarize_trait_imputation,
-    write_trait_imputation_exclusion_table,
-    write_trait_imputation_holdout_table,
-    write_trait_imputation_summary_table,
-    write_trait_imputation_table,
+from bijux_phylogenetics.comparative.correlated_trait_evolution import (
+    summarize_correlated_trait_evolution,
+    write_correlated_trait_comparison_table,
+    write_correlated_trait_exclusion_table,
+    write_correlated_trait_observation_table,
+    write_correlated_trait_summary_table,
+)
+from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
+    summarize_early_burst_trait_evolution,
+    write_early_burst_rate_change_profile_table,
+    write_early_burst_trait_evolution_comparison_table,
+    write_early_burst_trait_evolution_exclusion_table,
+    write_early_burst_trait_evolution_summary_table,
+)
+from bijux_phylogenetics.comparative.independent_contrasts import (
+    summarize_independent_contrast_regression,
+    write_independent_contrast_regression_table,
+    write_independent_contrast_table,
+)
+from bijux_phylogenetics.comparative.models import (
+    assess_comparative_method_maturity,
+    audit_comparative_parameter_uncertainty,
+    audit_ou_identifiability_reference_examples,
+    compare_brownian_and_ou_models,
+    run_comparative_sensitivity_analysis,
+    validate_comparative_reference_examples,
+)
+from bijux_phylogenetics.comparative.multivariate_regression import (
+    run_multivariate_comparative_regression,
+    write_multivariate_excluded_taxa_table,
+    write_multivariate_residual_association_table,
+    write_multivariate_residual_correlation_table,
+    write_multivariate_residual_covariance_table,
+    write_multivariate_response_coefficient_table,
+    write_multivariate_response_model_table,
+)
+from bijux_phylogenetics.comparative.ou_trait_evolution import (
+    summarize_ou_trait_evolution,
+    write_ou_trait_evolution_exclusion_table,
+    write_ou_trait_evolution_summary_table,
+)
+from bijux_phylogenetics.comparative.pgls import (
+    inspect_pgls_inputs,
+    run_pgls,
+    run_pgls_multiple_testing,
+    write_pgls_model_matrix_table,
+)
+from bijux_phylogenetics.comparative.pgls_brownian_covariance import (
+    summarize_brownian_covariance_pgls,
+    write_brownian_covariance_table,
+)
+from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
+    summarize_pgls_categorical_contrasts,
+    write_pgls_categorical_contrast_table,
+)
+from bijux_phylogenetics.comparative.pgls_interaction_coefficients import (
+    summarize_pgls_interaction_coefficients,
+    write_pgls_interaction_coefficient_table,
+)
+from bijux_phylogenetics.comparative.pgls_lambda_fit import (
+    write_pgls_lambda_profile_table,
+)
+from bijux_phylogenetics.comparative.pgls_ou_covariance import (
+    summarize_ou_covariance_pgls,
+    write_ou_alpha_profile_table,
+    write_ou_covariance_table,
+)
+from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+    summarize_phylogenetic_logistic,
+    write_phylogenetic_logistic_coefficient_table,
+    write_phylogenetic_logistic_excluded_taxa_table,
+    write_phylogenetic_logistic_fitted_table,
+)
+from bijux_phylogenetics.comparative.phylogenetic_signal import (
+    summarize_phylogenetic_signal,
+    write_phylogenetic_signal_permutation_table,
+    write_phylogenetic_signal_summary_table,
 )
 from bijux_phylogenetics.comparative.posterior_tree_pgls import (
     run_posterior_tree_pgls,
@@ -365,37 +339,8 @@ from bijux_phylogenetics.comparative.regression_model_selection import (
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
 )
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
-    summarize_phylogenetic_logistic,
-    write_phylogenetic_logistic_coefficient_table,
-    write_phylogenetic_logistic_excluded_taxa_table,
-    write_phylogenetic_logistic_fitted_table,
-)
-from bijux_phylogenetics.comparative.pgls import (
-    inspect_pgls_inputs,
-    run_pgls,
-    run_pgls_multiple_testing,
-    write_pgls_model_matrix_table,
-)
-from bijux_phylogenetics.comparative.pgls_brownian_covariance import (
-    summarize_brownian_covariance_pgls,
-    write_brownian_covariance_table,
-)
-from bijux_phylogenetics.comparative.pgls_ou_covariance import (
-    summarize_ou_covariance_pgls,
-    write_ou_alpha_profile_table,
-    write_ou_covariance_table,
-)
-from bijux_phylogenetics.comparative.pgls_categorical_contrasts import (
-    summarize_pgls_categorical_contrasts,
-    write_pgls_categorical_contrast_table,
-)
-from bijux_phylogenetics.comparative.pgls_interaction_coefficients import (
-    summarize_pgls_interaction_coefficients,
-    write_pgls_interaction_coefficient_table,
-)
-from bijux_phylogenetics.comparative.pgls_lambda_fit import (
-    write_pgls_lambda_profile_table,
+from bijux_phylogenetics.comparative.report_package import (
+    build_comparative_report_package,
 )
 from bijux_phylogenetics.comparative.reporting import (
     build_comparative_method_report,
@@ -404,11 +349,35 @@ from bijux_phylogenetics.comparative.reporting import (
     compare_comparative_results_across_trees,
     write_comparative_method_report,
 )
-from bijux_phylogenetics.comparative.report_package import (
-    build_comparative_report_package,
-)
 from bijux_phylogenetics.comparative.signal import (
     compute_phylogenetic_independent_contrasts,
+)
+from bijux_phylogenetics.comparative.trait_imputation import (
+    summarize_trait_imputation,
+    write_trait_imputation_exclusion_table,
+    write_trait_imputation_holdout_table,
+    write_trait_imputation_summary_table,
+    write_trait_imputation_table,
+)
+from bijux_phylogenetics.comparative.trait_outliers import (
+    summarize_trait_outliers,
+    write_trait_outlier_exclusion_table,
+    write_trait_outlier_summary_table,
+    write_trait_outlier_taxon_table,
+)
+from bijux_phylogenetics.comparative.trait_rate_through_time import (
+    summarize_trait_rate_through_time,
+    write_trait_rate_through_time_exclusion_table,
+    write_trait_rate_through_time_interval_table,
+    write_trait_rate_through_time_summary_table,
+)
+from bijux_phylogenetics.comparative.trait_regime_mapping import (
+    render_trait_regime_map,
+    summarize_trait_regime_mapping,
+    write_trait_regime_branch_table,
+    write_trait_regime_exclusion_table,
+    write_trait_regime_node_table,
+    write_trait_regime_summary_table,
 )
 from bijux_phylogenetics.compare.reports import build_tree_comparison_report
 from bijux_phylogenetics.compare.taxon_influence import (
@@ -428,46 +397,24 @@ from bijux_phylogenetics.compare.topology import (
     write_support_comparison_table,
     write_tree_comparison_table,
 )
-from bijux_phylogenetics.clades import (
-    extract_tree_clades,
-    extract_tree_set_clades,
-    write_clade_table,
-)
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.demo import run_capability_demo
-from bijux_phylogenetics.datasets import (
-    run_pleistocene_bear_cytb_fragment_demo,
-    run_avian_reproductive_trait_demo,
-    run_catarrhine_mitogenome_five_locus_panel_demo,
-    run_central_european_seashore_flora_demo,
-    run_influenza_a_ha_reference_demo,
-    run_primate_comparative_demo,
-    run_rabies_geographic_transition_panel_demo,
-    run_rabies_cross_host_geography_panel_demo,
-    run_rabies_cross_host_panel_demo,
-)
-from bijux_phylogenetics.datasets.known_answer_reference import (
-    run_known_answer_reference_demo,
-)
-from bijux_phylogenetics.datasets.data_quality_stress import (
-    run_catarrhine_data_quality_stress_panel_demo,
-)
 from bijux_phylogenetics.core.environment import inspect_environment
 from bijux_phylogenetics.core.locus_occupancy import (
     build_locus_occupancy_report,
     filter_locus_occupancy,
     write_locus_partitions,
 )
-from bijux_phylogenetics.core.partitions import (
-    build_partition_summary_report,
-    parse_locus_partitions,
-    write_partition_summary_table,
-)
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
 from bijux_phylogenetics.core.metadata import (
     inspect_metadata_table,
     load_taxon_table,
     write_taxon_rows,
+)
+from bijux_phylogenetics.core.partitions import (
+    build_partition_summary_report,
+    parse_locus_partitions,
+    write_partition_summary_table,
 )
 from bijux_phylogenetics.core.pruning import (
     drop_tree_taxa,
@@ -503,6 +450,23 @@ from bijux_phylogenetics.core.traits import (
     link_tree_to_traits,
     prune_traits_to_tree,
     validate_traits_table,
+)
+from bijux_phylogenetics.datasets import (
+    run_avian_reproductive_trait_demo,
+    run_catarrhine_mitogenome_five_locus_panel_demo,
+    run_central_european_seashore_flora_demo,
+    run_influenza_a_ha_reference_demo,
+    run_pleistocene_bear_cytb_fragment_demo,
+    run_primate_comparative_demo,
+    run_rabies_cross_host_geography_panel_demo,
+    run_rabies_cross_host_panel_demo,
+    run_rabies_geographic_transition_panel_demo,
+)
+from bijux_phylogenetics.datasets.data_quality_stress import (
+    run_catarrhine_data_quality_stress_panel_demo,
+)
+from bijux_phylogenetics.datasets.known_answer_reference import (
+    run_known_answer_reference_demo,
 )
 from bijux_phylogenetics.diagnostics.assumptions import assess_tree_assumptions
 from bijux_phylogenetics.diagnostics.root_to_tip import (
@@ -566,6 +530,16 @@ from bijux_phylogenetics.diversification import (
     write_lineage_through_time_table,
     write_trait_dependent_diversification_table,
 )
+from bijux_phylogenetics.ecological_niche import (
+    summarize_niche_transitions,
+    write_niche_state_node_table,
+    write_niche_transition_branch_table,
+    write_niche_transition_clade_table,
+    write_niche_transition_count_table,
+    write_niche_transition_exclusion_table,
+    write_niche_transition_rate_table,
+    write_niche_transition_summary_table,
+)
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
     list_mafft_alignment_modes,
@@ -584,11 +558,11 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
 )
-from bijux_phylogenetics.engines.large_alignment_inference import (
-    run_large_alignment_inference,
-)
 from bijux_phylogenetics.engines.inference_reproducibility import (
     run_inference_reproducibility_check,
+)
+from bijux_phylogenetics.engines.large_alignment_inference import (
+    run_large_alignment_inference,
 )
 from bijux_phylogenetics.errors import (
     EngineUnavailableError,
@@ -614,6 +588,16 @@ from bijux_phylogenetics.evidence.workbench import (
     list_registered_evidence_studies,
     refresh_evidence_book,
     rerun_evidence_book_selection,
+)
+from bijux_phylogenetics.host_association import (
+    summarize_host_switching,
+    write_host_state_node_table,
+    write_host_switch_branch_table,
+    write_host_switch_count_table,
+    write_host_switch_exclusion_table,
+    write_host_switch_fit_table,
+    write_host_switch_summary_table,
+    write_unsupported_host_switch_claim_table,
 )
 from bijux_phylogenetics.io.fasta import (
     assess_alignment_low_information,
@@ -651,6 +635,27 @@ from bijux_phylogenetics.io.fasta import (
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylogeography import (
+    render_coordinate_movement_visualization,
+    render_geographic_map_html,
+    summarize_continuous_phylogeography,
+    summarize_continuous_phylogeography_map,
+    summarize_discrete_region_map,
+    write_coordinate_estimate_table,
+    write_coordinate_movement_branch_table,
+    write_coordinate_movement_exclusion_table,
+    write_coordinate_movement_outlier_table,
+    write_coordinate_movement_summary_table,
+    write_geographic_map_exclusion_table,
+    write_geographic_map_line_table,
+    write_geographic_map_marker_table,
+    write_geographic_map_summary_table,
+)
+from bijux_phylogenetics.reference_parity import (
+    validate_reference_parity_examples,
+    write_reference_parity_observation_table,
+    write_reference_parity_summary_table,
+)
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import (
     AnnotationStrip,
@@ -672,11 +677,6 @@ from bijux_phylogenetics.reports.service import (
     write_annotation_report,
 )
 from bijux_phylogenetics.reports.tree_package import build_tree_report_package
-from bijux_phylogenetics.reference_parity import (
-    validate_reference_parity_examples,
-    write_reference_parity_observation_table,
-    write_reference_parity_summary_table,
-)
 from bijux_phylogenetics.results import build_command_result, build_error_result
 from bijux_phylogenetics.simulation import (
     simulate_birth_death_trees,
@@ -846,7 +846,7 @@ def _write_locus_occupancy_matrix_tsv(path: Path, report: Any) -> Path:
     )
 
 
-def _evidence_book_metrics(repo_root: Path) -> dict[str, int | str]:
+def _evidence_book_metrics(repo_root: Path) -> dict[str, object]:
     freshness_report = build_evidence_freshness_report(repo_root)
     integrity_report = build_evidence_integrity_report(repo_root)
     coverage_report = build_evidence_coverage_gap_report(repo_root)
@@ -910,9 +910,7 @@ def _parse_transition_pairs(raw: str | None) -> list[tuple[str, str]]:
     pairs: list[tuple[str, str]] = []
     for item in _split_csv_values(raw):
         if "->" not in item:
-            raise ValueError(
-                f"transition item must be SOURCE->TARGET, got '{item}'"
-            )
+            raise ValueError(f"transition item must be SOURCE->TARGET, got '{item}'")
         source_state, target_state = item.split("->", 1)
         if not source_state.strip() or not target_state.strip():
             raise ValueError(
@@ -934,9 +932,7 @@ def _parse_labelled_run(raw: str) -> tuple[str, Path]:
 def _parse_time_bin_definition(raw: str) -> TimeBinDefinition:
     parts = [part.strip() for part in raw.split(":", 2)]
     if len(parts) != 3:
-        raise ValueError(
-            f"time bin must be in LABEL:START:END form, got '{raw}'"
-        )
+        raise ValueError(f"time bin must be in LABEL:START:END form, got '{raw}'")
     label, raw_start, raw_end = parts
     if not label:
         raise ValueError(f"time bin label must be non-empty, got '{raw}'")
@@ -2457,7 +2453,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Reconstruct or normalize branch regime assignments for comparative workflows.",
     )
     comparative_regime_map.add_argument("tree", type=Path)
-    regime_map_source = comparative_regime_map.add_mutually_exclusive_group(required=True)
+    regime_map_source = comparative_regime_map.add_mutually_exclusive_group(
+        required=True
+    )
     regime_map_source.add_argument(
         "--table",
         type=Path,
@@ -2866,7 +2864,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the fitted OU alpha likelihood profile as TSV or CSV.",
     )
     comparative_ou_pgls.add_argument(
-        "--json", action="store_true", help="Emit the OU covariance PGLS result as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the OU covariance PGLS result as JSON.",
     )
     _add_manifest_argument(comparative_ou_pgls)
     comparative_multiple_testing = comparative_subparsers.add_parser(
@@ -3034,7 +3034,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the coefficient-distribution summary ledger as TSV or CSV.",
     )
     comparative_posterior_pgls.add_argument(
-        "--json", action="store_true", help="Emit the posterior-tree PGLS report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the posterior-tree PGLS report as JSON.",
     )
     _add_manifest_argument(comparative_posterior_pgls)
     comparative_model_selection = comparative_subparsers.add_parser(
@@ -3120,7 +3122,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the explicit excluded-taxa ledger as TSV or CSV.",
     )
     comparative_multivariate.add_argument(
-        "--json", action="store_true", help="Emit the multivariate regression report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the multivariate regression report as JSON.",
     )
     _add_manifest_argument(comparative_multivariate)
     comparative_report = comparative_subparsers.add_parser(
@@ -5876,7 +5880,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     adapter_mrbayes_trees.add_argument("input_path", type=Path)
     adapter_mrbayes_trees.add_argument(
-        "--json", action="store_true", help="Emit the posterior tree set report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the posterior tree set report as JSON.",
     )
     _add_manifest_argument(adapter_mrbayes_trees)
     adapter_mrbayes_subsample = adapter_subparsers.add_parser(
@@ -5905,7 +5911,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write a TSV ledger of retained posterior-tree metadata.",
     )
     adapter_mrbayes_subsample.add_argument(
-        "--json", action="store_true", help="Emit the posterior subsampling report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the posterior subsampling report as JSON.",
     )
     _add_manifest_argument(adapter_mrbayes_subsample)
     adapter_mrbayes_mcmc = adapter_subparsers.add_parser(
@@ -5971,7 +5979,9 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_mrbayes_burnin.add_argument("--parameter-out", type=Path)
     adapter_mrbayes_burnin.add_argument("--clade-out", type=Path)
     adapter_mrbayes_burnin.add_argument(
-        "--json", action="store_true", help="Emit the burn-in sensitivity report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the burn-in sensitivity report as JSON.",
     )
     _add_manifest_argument(adapter_mrbayes_burnin)
     adapter_mrbayes_convergence = adapter_subparsers.add_parser(
@@ -6107,7 +6117,9 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_beast_burnin.add_argument("--parameter-out", type=Path)
     adapter_beast_burnin.add_argument("--clade-out", type=Path)
     adapter_beast_burnin.add_argument(
-        "--json", action="store_true", help="Emit the burn-in sensitivity report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the burn-in sensitivity report as JSON.",
     )
     _add_manifest_argument(adapter_beast_burnin)
     adapter_beast_parameters = adapter_subparsers.add_parser(
@@ -6147,7 +6159,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the retained posterior tree set as normalized Newick.",
     )
     adapter_beast_trees.add_argument(
-        "--json", action="store_true", help="Emit the posterior tree set report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the posterior tree set report as JSON.",
     )
     _add_manifest_argument(adapter_beast_trees)
     adapter_beast_subsample = adapter_subparsers.add_parser(
@@ -6181,7 +6195,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write a TSV ledger of retained posterior-tree metadata.",
     )
     adapter_beast_subsample.add_argument(
-        "--json", action="store_true", help="Emit the posterior subsampling report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the posterior subsampling report as JSON.",
     )
     _add_manifest_argument(adapter_beast_subsample)
     adapter_beast_consensus = adapter_subparsers.add_parser(
@@ -6212,7 +6228,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the retained clade-frequency ledger as TSV.",
     )
     adapter_beast_consensus.add_argument(
-        "--json", action="store_true", help="Emit the posterior consensus report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the posterior consensus report as JSON.",
     )
     _add_manifest_argument(adapter_beast_consensus)
     adapter_beast_diversity = adapter_subparsers.add_parser(
@@ -6247,7 +6265,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the unstable-clade ledger as TSV.",
     )
     adapter_beast_diversity.add_argument(
-        "--json", action="store_true", help="Emit the topology diversity report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the topology diversity report as JSON.",
     )
     _add_manifest_argument(adapter_beast_diversity)
     adapter_beast_convergence = adapter_subparsers.add_parser(
@@ -9029,7 +9049,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "baseline_term_count": report.baseline_term_count,
                             "candidate_clade_count": report.candidate_clade_count,
                             "blocked_clade_count": report.blocked_clade_count,
-                            "coefficient_change_row_count": len(report.coefficient_rows),
+                            "coefficient_change_row_count": len(
+                                report.coefficient_rows
+                            ),
                             "top_influential_clade": top_clade,
                             "major_clade_fraction": report.major_clade_fraction,
                             "minimum_major_clade_size": report.minimum_major_clade_size,
@@ -9094,7 +9116,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "unrooted_topology_count": report.unrooted_topology_count,
                             "tree_fit_row_count": len(report.tree_rows),
                             "coefficient_row_count": len(report.coefficient_rows),
-                            "coefficient_summary_count": len(report.coefficient_summaries),
+                            "coefficient_summary_count": len(
+                                report.coefficient_summaries
+                            ),
                             "stable_supported_term_count": sum(
                                 row.conclusion_stability == "stable_supported"
                                 for row in report.coefficient_summaries
@@ -9237,9 +9261,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "coefficient_count": len(
                                 report.snapshot.pgls_model.coefficients
                             ),
-                            "package_output_count": 0
-                            if package_result is None
-                            else 10,
+                            "package_output_count": 0 if package_result is None else 10,
                         },
                         data=report if package_result is None else package_result,
                     ),
@@ -9408,7 +9430,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 )
                 outputs: list[Path | str] = []
                 if args.covariance_out is not None:
-                    outputs.append(write_ou_covariance_table(args.covariance_out, report))
+                    outputs.append(
+                        write_ou_covariance_table(args.covariance_out, report)
+                    )
                 if args.alpha_profile_out is not None:
                     outputs.append(
                         write_ou_alpha_profile_table(args.alpha_profile_out, report)
@@ -9517,7 +9541,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     )
                 )
             outputs = _finalize_outputs(
-                args, command="comparative", inputs=[args.tree, args.table], outputs=outputs
+                args,
+                command="comparative",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
             )
             _print_result(
                 build_command_result(
@@ -9743,9 +9770,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "unstable_node_count": summary.unstable_node_count,
                             "comparison_node_count": (
-                                len(comparison.rows)
-                                if comparison is not None
-                                else 0
+                                len(comparison.rows) if comparison is not None else 0
                             ),
                             "comparison_differing_node_count": (
                                 comparison.differing_node_count
@@ -10094,8 +10119,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     confidence_rows = build_discrete_ancestral_tree_set_confidence_rows(
                         report
                     )
-                    confidence_summary = summarize_discrete_ancestral_tree_set_confidence(
-                        report
+                    confidence_summary = (
+                        summarize_discrete_ancestral_tree_set_confidence(report)
                     )
                     outputs = []
                     if args.summary_out is not None:
@@ -10334,9 +10359,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "ordered_state_count": len(report.ordered_states),
                             "fit_count": len(report.fit_rows),
                             "differing_node_count": summary.differing_node_count,
-                            "ambiguity_change_count": (
-                                summary.ambiguity_change_count
-                            ),
+                            "ambiguity_change_count": (summary.ambiguity_change_count),
                             "restricted_transition_count": (
                                 summary.restricted_transition_count
                             ),
@@ -10410,9 +10433,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "fit_count": len(report.fit_rows),
                             "differing_node_count": summary.differing_node_count,
-                            "ambiguity_change_count": (
-                                summary.ambiguity_change_count
-                            ),
+                            "ambiguity_change_count": (summary.ambiguity_change_count),
                             "forbidden_transition_count": (
                                 summary.forbidden_transition_count
                             ),
@@ -10851,7 +10872,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-            assert args.out is not None
+            if args.out is None:
+                raise ValueError(
+                    "ancestral report rendering requires an explicit output path"
+                )
             result = render_ancestral_state_report(
                 tree_path=args.tree,
                 traits_path=args.table,
@@ -10905,7 +10929,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     )
                 if args.nodes_out is not None:
                     outputs.append(
-                        write_geographic_region_probability_table(args.nodes_out, report)
+                        write_geographic_region_probability_table(
+                            args.nodes_out, report
+                        )
                     )
                 if args.rates_out is not None:
                     outputs.append(
@@ -11258,9 +11284,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.warnings,
                         metrics={
                             "model": report.summary.model,
-                            "tree_is_time_scaled": (
-                                report.summary.tree_is_time_scaled
-                            ),
+                            "tree_is_time_scaled": (report.summary.tree_is_time_scaled),
                             "root_age": report.summary.root_age,
                             "event_count": report.summary.event_count,
                             "time_bin_count": report.summary.time_bin_count,
@@ -11404,9 +11428,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "strongly_supported_event_count": (
                                 report.summary.strongly_supported_event_count
                             ),
-                            "mean_event_support": (
-                                report.summary.mean_event_support
-                            ),
+                            "mean_event_support": (report.summary.mean_event_support),
                             "excluded_taxon_count": (
                                 report.summary.excluded_taxon_count
                             ),
@@ -11475,207 +11497,203 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
-        if args.command == "host-association":
-            if args.host_association_command == "switches":
-                report = summarize_host_switching(
-                    args.tree,
-                    args.table,
-                    trait=args.trait,
-                    taxon_column=args.taxon_column,
-                    model=args.model,
-                    constraint_path=args.constraints,
+        if (
+            args.command == "host-association"
+            and args.host_association_command == "switches"
+        ):
+            report = summarize_host_switching(
+                args.tree,
+                args.table,
+                trait=args.trait,
+                taxon_column=args.taxon_column,
+                model=args.model,
+                constraint_path=args.constraints,
+            )
+            outputs: list[Path | str] = []
+            if args.summary_out is not None:
+                outputs.append(
+                    write_host_switch_summary_table(
+                        args.summary_out,
+                        report,
+                    )
                 )
-                outputs: list[Path | str] = []
-                if args.summary_out is not None:
-                    outputs.append(
-                        write_host_switch_summary_table(
-                            args.summary_out,
-                            report,
-                        )
+            if args.nodes_out is not None:
+                outputs.append(
+                    write_host_state_node_table(
+                        args.nodes_out,
+                        report,
                     )
-                if args.nodes_out is not None:
-                    outputs.append(
-                        write_host_state_node_table(
-                            args.nodes_out,
-                            report,
-                        )
+                )
+            if args.branches_out is not None:
+                outputs.append(
+                    write_host_switch_branch_table(
+                        args.branches_out,
+                        report,
                     )
-                if args.branches_out is not None:
-                    outputs.append(
-                        write_host_switch_branch_table(
-                            args.branches_out,
-                            report,
-                        )
+                )
+            if args.counts_out is not None:
+                outputs.append(
+                    write_host_switch_count_table(
+                        args.counts_out,
+                        report,
                     )
-                if args.counts_out is not None:
-                    outputs.append(
-                        write_host_switch_count_table(
-                            args.counts_out,
-                            report,
-                        )
+                )
+            if args.fits_out is not None:
+                outputs.append(
+                    write_host_switch_fit_table(
+                        args.fits_out,
+                        report,
                     )
-                if args.fits_out is not None:
-                    outputs.append(
-                        write_host_switch_fit_table(
-                            args.fits_out,
-                            report,
-                        )
+                )
+            if args.unsupported_out is not None:
+                outputs.append(
+                    write_unsupported_host_switch_claim_table(
+                        args.unsupported_out,
+                        report,
                     )
-                if args.unsupported_out is not None:
-                    outputs.append(
-                        write_unsupported_host_switch_claim_table(
-                            args.unsupported_out,
-                            report,
-                        )
+                )
+            if args.exclusions_out is not None:
+                outputs.append(
+                    write_host_switch_exclusion_table(
+                        args.exclusions_out,
+                        report,
                     )
-                if args.exclusions_out is not None:
-                    outputs.append(
-                        write_host_switch_exclusion_table(
-                            args.exclusions_out,
-                            report,
-                        )
-                    )
-                inputs = [args.tree, args.table]
-                if args.constraints is not None:
-                    inputs.append(args.constraints)
-                outputs = _finalize_outputs(
-                    args,
+                )
+            inputs = [args.tree, args.table]
+            if args.constraints is not None:
+                inputs.append(args.constraints)
+            outputs = _finalize_outputs(
+                args,
+                command="host-association",
+                inputs=inputs,
+                outputs=outputs,
+            )
+            _print_result(
+                build_command_result(
                     command="host-association",
                     inputs=inputs,
                     outputs=outputs,
+                    warnings=report.warnings,
+                    metrics={
+                        "model": report.model,
+                        "analysis_constraint_mode": (
+                            report.summary.analysis_constraint_mode
+                        ),
+                        "observed_host_count": report.summary.observed_host_count,
+                        "host_switch_count": report.summary.host_switch_count,
+                        "certain_host_switch_count": (
+                            report.summary.certain_host_switch_count
+                        ),
+                        "uncertain_host_switch_count": (
+                            report.summary.uncertain_host_switch_count
+                        ),
+                        "preferred_constraint": (report.summary.preferred_constraint),
+                        "unsupported_switch_claim_count": (
+                            report.summary.unsupported_switch_claim_count
+                        ),
+                        "excluded_taxon_count": (report.summary.excluded_taxon_count),
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if (
+            args.command == "ecological-niche"
+            and args.ecological_niche_command == "transitions"
+        ):
+            report = summarize_niche_transitions(
+                args.tree,
+                args.table,
+                trait=args.trait,
+                taxon_column=args.taxon_column,
+                model=args.model,
+            )
+            outputs: list[Path | str] = []
+            if args.summary_out is not None:
+                outputs.append(
+                    write_niche_transition_summary_table(
+                        args.summary_out,
+                        report,
+                    )
                 )
-                _print_result(
-                    build_command_result(
-                        command="host-association",
-                        inputs=inputs,
-                        outputs=outputs,
-                        warnings=report.warnings,
-                        metrics={
-                            "model": report.model,
-                            "analysis_constraint_mode": (
-                                report.summary.analysis_constraint_mode
-                            ),
-                            "observed_host_count": report.summary.observed_host_count,
-                            "host_switch_count": report.summary.host_switch_count,
-                            "certain_host_switch_count": (
-                                report.summary.certain_host_switch_count
-                            ),
-                            "uncertain_host_switch_count": (
-                                report.summary.uncertain_host_switch_count
-                            ),
-                            "preferred_constraint": (
-                                report.summary.preferred_constraint
-                            ),
-                            "unsupported_switch_claim_count": (
-                                report.summary.unsupported_switch_claim_count
-                            ),
-                            "excluded_taxon_count": (
-                                report.summary.excluded_taxon_count
-                            ),
-                        },
-                        data=report,
-                    ),
-                    json_output=args.json,
+            if args.nodes_out is not None:
+                outputs.append(
+                    write_niche_state_node_table(
+                        args.nodes_out,
+                        report,
+                    )
                 )
-                return 0
-        if args.command == "ecological-niche":
-            if args.ecological_niche_command == "transitions":
-                report = summarize_niche_transitions(
-                    args.tree,
-                    args.table,
-                    trait=args.trait,
-                    taxon_column=args.taxon_column,
-                    model=args.model,
+            if args.rates_out is not None:
+                outputs.append(
+                    write_niche_transition_rate_table(
+                        args.rates_out,
+                        report,
+                    )
                 )
-                outputs: list[Path | str] = []
-                if args.summary_out is not None:
-                    outputs.append(
-                        write_niche_transition_summary_table(
-                            args.summary_out,
-                            report,
-                        )
+            if args.branches_out is not None:
+                outputs.append(
+                    write_niche_transition_branch_table(
+                        args.branches_out,
+                        report,
                     )
-                if args.nodes_out is not None:
-                    outputs.append(
-                        write_niche_state_node_table(
-                            args.nodes_out,
-                            report,
-                        )
+                )
+            if args.counts_out is not None:
+                outputs.append(
+                    write_niche_transition_count_table(
+                        args.counts_out,
+                        report,
                     )
-                if args.rates_out is not None:
-                    outputs.append(
-                        write_niche_transition_rate_table(
-                            args.rates_out,
-                            report,
-                        )
+                )
+            if args.clades_out is not None:
+                outputs.append(
+                    write_niche_transition_clade_table(
+                        args.clades_out,
+                        report,
                     )
-                if args.branches_out is not None:
-                    outputs.append(
-                        write_niche_transition_branch_table(
-                            args.branches_out,
-                            report,
-                        )
+                )
+            if args.exclusions_out is not None:
+                outputs.append(
+                    write_niche_transition_exclusion_table(
+                        args.exclusions_out,
+                        report,
                     )
-                if args.counts_out is not None:
-                    outputs.append(
-                        write_niche_transition_count_table(
-                            args.counts_out,
-                            report,
-                        )
-                    )
-                if args.clades_out is not None:
-                    outputs.append(
-                        write_niche_transition_clade_table(
-                            args.clades_out,
-                            report,
-                        )
-                    )
-                if args.exclusions_out is not None:
-                    outputs.append(
-                        write_niche_transition_exclusion_table(
-                            args.exclusions_out,
-                            report,
-                        )
-                    )
-                outputs = _finalize_outputs(
-                    args,
+                )
+            outputs = _finalize_outputs(
+                args,
+                command="ecological-niche",
+                inputs=[args.tree, args.table],
+                outputs=outputs,
+            )
+            _print_result(
+                build_command_result(
                     command="ecological-niche",
                     inputs=[args.tree, args.table],
                     outputs=outputs,
-                )
-                _print_result(
-                    build_command_result(
-                        command="ecological-niche",
-                        inputs=[args.tree, args.table],
-                        outputs=outputs,
-                        warnings=report.warnings,
-                        metrics={
-                            "model": report.model,
-                            "observed_niche_count": report.summary.observed_niche_count,
-                            "transition_rate_row_count": (
-                                report.summary.transition_rate_row_count
-                            ),
-                            "changed_branch_count": (
-                                report.summary.changed_branch_count
-                            ),
-                            "certain_transition_count": (
-                                report.summary.certain_transition_count
-                            ),
-                            "uncertain_transition_count": (
-                                report.summary.uncertain_transition_count
-                            ),
-                            "repeated_shift_clade_count": (
-                                report.summary.repeated_shift_clade_count
-                            ),
-                            "excluded_taxon_count": (
-                                report.summary.excluded_taxon_count
-                            ),
-                        },
-                        data=report,
-                    ),
-                    json_output=args.json,
-                )
-                return 0
+                    warnings=report.warnings,
+                    metrics={
+                        "model": report.model,
+                        "observed_niche_count": report.summary.observed_niche_count,
+                        "transition_rate_row_count": (
+                            report.summary.transition_rate_row_count
+                        ),
+                        "changed_branch_count": (report.summary.changed_branch_count),
+                        "certain_transition_count": (
+                            report.summary.certain_transition_count
+                        ),
+                        "uncertain_transition_count": (
+                            report.summary.uncertain_transition_count
+                        ),
+                        "repeated_shift_clade_count": (
+                            report.summary.repeated_shift_clade_count
+                        ),
+                        "excluded_taxon_count": (report.summary.excluded_taxon_count),
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
         if args.command == "phylogeography":
             if args.phylogeography_command == "coordinates":
                 report = summarize_continuous_phylogeography(
@@ -11832,9 +11850,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "line_count": report.summary.line_count,
                             "visible_line_count": report.summary.visible_line_count,
-                            "time_filter_applied": (
-                                report.summary.time_filter_applied
-                            ),
+                            "time_filter_applied": (report.summary.time_filter_applied),
                             "excluded_record_count": (
                                 report.summary.excluded_record_count
                             ),
@@ -11917,9 +11933,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             ),
                             "line_count": report.summary.line_count,
                             "visible_line_count": report.summary.visible_line_count,
-                            "time_filter_applied": (
-                                report.summary.time_filter_applied
-                            ),
+                            "time_filter_applied": (report.summary.time_filter_applied),
                             "excluded_record_count": (
                                 report.summary.excluded_record_count
                             ),
@@ -13935,17 +13949,21 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "shared_clades": len(report.shared_clades),
                             "support_disagreements": sum(
-                                1 for row in report.shared_clades if row.support_disagreement
+                                1
+                                for row in report.shared_clades
+                                if row.support_disagreement
                             ),
                             "high_support_conflicts": sum(
                                 1
                                 for row in report.conflicting_clades
-                                if row.conflict_classification == "high_support_conflict"
+                                if row.conflict_classification
+                                == "high_support_conflict"
                             ),
                             "low_support_disagreements": sum(
                                 1
                                 for row in report.conflicting_clades
-                                if row.conflict_classification == "low_support_disagreement"
+                                if row.conflict_classification
+                                == "low_support_disagreement"
                             ),
                             "moderate_support_disagreements": sum(
                                 1
@@ -14094,7 +14112,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "shared_taxa": len(report.shared_taxa),
                             "left_removed_taxa": len(report.left_pruning.removed_taxa),
-                            "right_removed_taxa": len(report.right_pruning.removed_taxa),
+                            "right_removed_taxa": len(
+                                report.right_pruning.removed_taxa
+                            ),
                             "topology_equal_after_pruning": (
                                 report.post_pruning_comparison.topology_equal
                             ),
@@ -14489,7 +14509,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[],
                         outputs=refresh_report.updated_paths,
                     )
-                    metrics = {
+                    metrics: dict[str, object] = {
                         "reviewer_summary_count": refresh_report.reviewer_summary_count,
                         "updated_path_count": len(refresh_report.updated_paths),
                         **_evidence_book_metrics(repo_root),
@@ -14517,7 +14537,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         inputs=[],
                         outputs=report.refresh_report.updated_paths,
                     )
-                    metrics = {
+                    metrics: dict[str, object] = {
                         "selected_study_count": 1,
                         "selected_evidence_count": len(report.selected_evidence_ids),
                         "updated_path_count": len(report.refresh_report.updated_paths),
@@ -14547,7 +14567,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     inputs=build_inputs,
                     outputs=report.refresh_report.updated_paths,
                 )
-                metrics = {
+                metrics: dict[str, object] = {
                     "selected_study_count": 1,
                     "updated_path_count": len(report.refresh_report.updated_paths),
                     "reviewer_summary_count": report.refresh_report.reviewer_summary_count,
@@ -15064,7 +15084,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     expected_output_count = len(
                         [
                             path
-                            for path in result.dataset_export.expected_output_root.rglob("*")
+                            for path in result.dataset_export.expected_output_root.rglob(
+                                "*"
+                            )
                             if path.is_file()
                         ]
                     )
@@ -15109,7 +15131,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     outputs=[
                         result.dataset_export.readme_path,
                         result.dataset_export.taxa_path,
-                        *sorted(result.dataset_export.locus_alignment_root.glob("*.fasta")),
+                        *sorted(
+                            result.dataset_export.locus_alignment_root.glob("*.fasta")
+                        ),
                         result.workflow_bundle.workflow_summary_path,
                         result.workflow_bundle.supermatrix_path,
                         result.workflow_bundle.partitions_path,
@@ -17020,7 +17044,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "retained_tree_count": report.retained_tree_count,
                             "selection_method": report.selection_method,
                             "retained_state_count": len(
-                                [tree for tree in report.trees if tree.state is not None]
+                                [
+                                    tree
+                                    for tree in report.trees
+                                    if tree.state is not None
+                                ]
                             ),
                         },
                         data=report,
@@ -17045,7 +17073,9 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     outputs.append(
                         write_clade_frequency_table(
                             args.clade_table_out,
-                            compute_clade_frequency_table(report.retained_tree_set_path),
+                            compute_clade_frequency_table(
+                                report.retained_tree_set_path
+                            ),
                         )
                     )
                 outputs = _finalize_outputs(

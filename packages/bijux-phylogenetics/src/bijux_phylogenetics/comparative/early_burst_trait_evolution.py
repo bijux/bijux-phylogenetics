@@ -155,6 +155,11 @@ def summarize_early_burst_trait_evolution(
         "The early-burst fit is reviewed against Brownian and OU fits on the same pruned taxon set.",
         "Weak identifiability is flagged from the bounded rate-change profile and model-selection context.",
     ]
+    fit_intervals = [
+        interval
+        for interval in fit.confidence_intervals
+        if isinstance(interval, ComparativeParameterInterval)
+    ]
     return EarlyBurstTraitEvolutionSummaryReport(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -171,7 +176,7 @@ def summarize_early_burst_trait_evolution(
         log_likelihood=fit.log_likelihood,
         aic=fit.aic,
         aicc=fit.aicc,
-        confidence_intervals=[rate_change_interval, *list(fit.confidence_intervals)],
+        confidence_intervals=[rate_change_interval, *fit_intervals],
         residual_diagnostics=fit.residual_diagnostics,
         comparison_rows=list(comparison.rows),
         likelihood_ratio_tests=list(comparison.likelihood_ratio_tests),
@@ -189,7 +194,9 @@ def write_early_burst_trait_evolution_summary_table(
     report: EarlyBurstTraitEvolutionSummaryReport,
 ) -> Path:
     """Write one summary ledger for an early-burst trait-evolution fit."""
-    interval_by_name = {interval.name: interval for interval in report.confidence_intervals}
+    interval_by_name = {
+        interval.name: interval for interval in report.confidence_intervals
+    }
     rate_change_interval = interval_by_name.get("rate_change")
     sigma_interval = interval_by_name.get("rate")
     return write_taxon_rows(
@@ -265,7 +272,9 @@ def write_early_burst_trait_evolution_exclusion_table(
     return write_taxon_rows(
         path,
         columns=["taxon", "reason"],
-        rows=[{"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa],
+        rows=[
+            {"taxon": row.taxon, "reason": row.reason} for row in report.excluded_taxa
+        ],
     )
 
 

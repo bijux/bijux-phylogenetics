@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
+import math
 from pathlib import Path
 import statistics
 import tempfile
@@ -118,9 +118,7 @@ def run_posterior_tree_pgls(
             "burnin fraction must be between 0 inclusive and 1 exclusive"
         )
     if not 0.0 < significance_threshold < 1.0:
-        raise ComparativeMethodError(
-            "significance threshold must be between 0 and 1"
-        )
+        raise ComparativeMethodError("significance threshold must be between 0 and 1")
     if lambda_value != "estimate":
         lambda_value = float(lambda_value)
         if not 0.0 <= lambda_value <= 1.0:
@@ -152,7 +150,9 @@ def run_posterior_tree_pgls(
             "retained trees do not share identical tip sets and were reduced to their shared taxa"
         )
 
-    with tempfile.TemporaryDirectory(prefix="bijux-phylogenetics-posterior-tree-pgls-") as tmp_dir:
+    with tempfile.TemporaryDirectory(
+        prefix="bijux-phylogenetics-posterior-tree-pgls-"
+    ) as tmp_dir:
         tmp_dir_path = Path(tmp_dir)
         reference_tree_path = tmp_dir_path / "posterior-tree-pgls-reference-tree.nwk"
         reference_tree = _prune_tree_to_taxa(
@@ -183,7 +183,9 @@ def run_posterior_tree_pgls(
                 analysis_taxa,
                 scratch_path=tmp_dir_path / f"posterior-tree-pgls-pruned-{index}.nwk",
             )
-            for index, (_source_tree_index, tree) in enumerate(kept_tree_entries, start=1)
+            for index, (_source_tree_index, tree) in enumerate(
+                kept_tree_entries, start=1
+            )
         ]
         analysis_tree_set_path.write_text(
             "".join(dumps_newick(tree) + "\n" for tree in analysis_trees),
@@ -244,13 +246,18 @@ def run_posterior_tree_pgls(
     coefficient_summaries = _summarize_coefficients(
         coefficient_rows,
         significance_threshold=significance_threshold,
-        term_order=[column for column in input_report.encoded_columns],
+        term_order=list(input_report.encoded_columns),
     )
-    if any(row.conclusion_stability == "direction_conflict" for row in coefficient_summaries):
+    if any(
+        row.conclusion_stability == "direction_conflict"
+        for row in coefficient_summaries
+    ):
         warnings.append(
             "one or more coefficients change direction across retained trees"
         )
-    if any(row.conclusion_stability == "mixed_support" for row in coefficient_summaries):
+    if any(
+        row.conclusion_stability == "mixed_support" for row in coefficient_summaries
+    ):
         warnings.append(
             "one or more coefficients keep one direction but not one stable support decision across retained trees"
         )
@@ -441,7 +448,9 @@ def _summarize_coefficients(
     grouped: dict[str, list[PosteriorTreePGLSCoefficientRow]] = {}
     for row in rows:
         grouped.setdefault(row.term, []).append(row)
-    ordered_terms = term_order + sorted(term for term in grouped if term not in term_order)
+    ordered_terms = term_order + sorted(
+        term for term in grouped if term not in term_order
+    )
     summaries: list[PosteriorTreePGLSCoefficientSummaryRow] = []
     for term in ordered_terms:
         term_rows = grouped.get(term)
@@ -470,7 +479,8 @@ def _summarize_coefficients(
                 negative_tree_count=negative_tree_count,
                 zero_tree_count=zero_tree_count,
                 dominant_direction=dominant_direction,
-                direction_consistency=direction_counts[dominant_direction] / len(term_rows),
+                direction_consistency=direction_counts[dominant_direction]
+                / len(term_rows),
                 significant_tree_count=significant_tree_count,
                 significance_fraction=significant_tree_count / len(term_rows),
                 conclusion_stability=_conclusion_stability(
@@ -483,7 +493,9 @@ def _summarize_coefficients(
                 ),
                 mean_estimate=statistics.fmean(estimates),
                 median_estimate=statistics.median(estimates),
-                standard_deviation=statistics.stdev(estimates) if len(estimates) > 1 else 0.0,
+                standard_deviation=statistics.stdev(estimates)
+                if len(estimates) > 1
+                else 0.0,
                 minimum_estimate=min(estimates),
                 maximum_estimate=max(estimates),
                 lower_95_empirical_estimate=_empirical_quantile(estimates, 0.025),

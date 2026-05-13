@@ -5,15 +5,15 @@ import math
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
-    summarize_phylogenetic_logistic,
-)
 from bijux_phylogenetics.comparative.pgls import (
     ComparativeFormulaSpecification,
     _coerce_numeric_value,
     _parse_term_descriptor,
     _resolve_formula_specification,
     run_pgls,
+)
+from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+    summarize_phylogenetic_logistic,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
@@ -440,9 +440,13 @@ def _candidate_specification(formula: str) -> _CandidateSpecification:
         formula=formula,
     )
     response_descriptor = _parse_term_descriptor(specification.response)
-    predictor_descriptors = [_parse_term_descriptor(term) for term in specification.predictors]
+    predictor_descriptors = [
+        _parse_term_descriptor(term) for term in specification.predictors
+    ]
     required_columns = [response_descriptor.source_column]
-    required_columns.extend(descriptor.source_column for descriptor in predictor_descriptors)
+    required_columns.extend(
+        descriptor.source_column for descriptor in predictor_descriptors
+    )
     return _CandidateSpecification(
         formula=formula,
         specification=specification,
@@ -455,9 +459,10 @@ def _candidate_specification(formula: str) -> _CandidateSpecification:
 
 def _shared_response_family(response_values: list[str]) -> str:
     numeric_values = [float(value) for value in response_values]
-    if all(math.isclose(value, round(value), abs_tol=1e-12) for value in numeric_values):
-        if {int(round(value)) for value in numeric_values} <= {0, 1}:
-            return "logistic"
+    if all(
+        math.isclose(value, round(value), abs_tol=1e-12) for value in numeric_values
+    ) and {int(round(value)) for value in numeric_values} <= {0, 1}:
+        return "logistic"
     return "pgls"
 
 
@@ -608,7 +613,9 @@ def _build_pairwise_rows(
     pairwise_rows: list[ComparativeRegressionPairwiseComparisonRow] = []
     for left_index, left in enumerate(rows):
         for right in rows[left_index + 1 :]:
-            comparison_kind = _comparison_kind(left.encoded_columns, right.encoded_columns)
+            comparison_kind = _comparison_kind(
+                left.encoded_columns, right.encoded_columns
+            )
             preferred = left.formula if left.rank < right.rank else right.formula
             likelihood_ratio_statistic: float | None = None
             if comparison_kind in {"left_nested_in_right", "right_nested_in_left"}:

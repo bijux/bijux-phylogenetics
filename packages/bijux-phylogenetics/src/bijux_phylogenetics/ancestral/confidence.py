@@ -129,7 +129,9 @@ def build_continuous_ancestral_confidence_rows(
     report: ContinuousAncestralReport,
 ) -> list[ContinuousAncestralConfidenceRow]:
     """Build ranked internal-node confidence rows for one continuous reconstruction."""
-    internal_estimates = [estimate for estimate in report.estimates if not estimate.is_tip]
+    internal_estimates = [
+        estimate for estimate in report.estimates if not estimate.is_tip
+    ]
     if not internal_estimates:
         return []
     trait_range = _continuous_trait_range(report)
@@ -182,7 +184,9 @@ def summarize_continuous_ancestral_confidence(
         unstable_count=sum(row.unstable for row in rows),
         high_entropy_count=0,
         top_uncertain_id=top_row.node if top_row is not None else None,
-        top_uncertain_label=top_row.node_name or top_row.node if top_row is not None else None,
+        top_uncertain_label=top_row.node_name or top_row.node
+        if top_row is not None
+        else None,
         top_uncertain_score=top_row.uncertainty_score if top_row is not None else None,
         warning_count=len(report.warnings),
     )
@@ -192,7 +196,9 @@ def build_discrete_ancestral_confidence_rows(
     report: DiscreteAncestralReport,
 ) -> list[DiscreteAncestralConfidenceRow]:
     """Build ranked internal-node confidence rows for one discrete reconstruction."""
-    internal_estimates = [estimate for estimate in report.estimates if not estimate.is_tip]
+    internal_estimates = [
+        estimate for estimate in report.estimates if not estimate.is_tip
+    ]
     rows = [
         _build_discrete_confidence_row(
             node=estimate.node,
@@ -231,7 +237,9 @@ def summarize_discrete_ancestral_confidence(
         unstable_count=sum(row.unstable for row in rows),
         high_entropy_count=sum(row.normalized_entropy >= 0.5 for row in rows),
         top_uncertain_id=top_row.node if top_row is not None else None,
-        top_uncertain_label=top_row.node_name or top_row.node if top_row is not None else None,
+        top_uncertain_label=top_row.node_name or top_row.node
+        if top_row is not None
+        else None,
         top_uncertain_score=top_row.uncertainty_score if top_row is not None else None,
         warning_count=len(report.warnings),
     )
@@ -248,14 +256,15 @@ def build_continuous_ancestral_tree_set_confidence_rows(
         (row.empirical_interval_width for row in report.clade_summaries),
         default=0.0,
     )
-    rows = [
+    rows: list[ContinuousAncestralTreeSetConfidenceRow] = [
         ContinuousAncestralTreeSetConfidenceRow(
             clade_id=row.clade_id,
             clade_taxa=row.clade_taxa,
             tree_presence_count=row.tree_presence_count,
             tree_presence_fraction=row.tree_presence_fraction,
             mean_confidence=stable_value(
-                sum(confidence_by_clade[row.clade_id]) / len(confidence_by_clade[row.clade_id])
+                sum(confidence_by_clade[row.clade_id])
+                / len(confidence_by_clade[row.clade_id])
             ),
             mean_standard_error=row.mean_standard_error,
             empirical_interval_width=row.empirical_interval_width,
@@ -280,7 +289,25 @@ def build_continuous_ancestral_tree_set_confidence_rows(
             + row.unstable_tree_fraction
             + row.normalized_empirical_interval_width
         )
-        scored_rows.append(replace(row, uncertainty_score=uncertainty_score))
+        scored_rows.append(
+            ContinuousAncestralTreeSetConfidenceRow(
+                clade_id=row.clade_id,
+                clade_taxa=row.clade_taxa,
+                tree_presence_count=row.tree_presence_count,
+                tree_presence_fraction=row.tree_presence_fraction,
+                mean_confidence=row.mean_confidence,
+                mean_standard_error=row.mean_standard_error,
+                empirical_interval_width=row.empirical_interval_width,
+                normalized_empirical_interval_width=row.normalized_empirical_interval_width,
+                unstable_tree_count=row.unstable_tree_count,
+                unstable_tree_fraction=row.unstable_tree_fraction,
+                instability_score=row.instability_score,
+                uncertainty_score=uncertainty_score,
+                uncertainty_rank=row.uncertainty_rank,
+                confidence_class=row.confidence_class,
+                stability_class=row.stability_class,
+            )
+        )
     return _rank_continuous_tree_set_rows(scored_rows)
 
 
@@ -514,7 +541,9 @@ def write_discrete_ancestral_confidence_table(
                 "descendant_taxa": ",".join(row.descendant_taxa),
                 "most_likely_state": row.most_likely_state,
                 "state_set": ",".join(row.state_set),
-                "state_probabilities": json.dumps(row.state_probabilities, sort_keys=True),
+                "state_probabilities": json.dumps(
+                    row.state_probabilities, sort_keys=True
+                ),
                 "max_posterior_probability": str(row.max_posterior_probability),
                 "runner_up_probability": str(row.runner_up_probability),
                 "probability_margin": str(row.probability_margin),
@@ -619,7 +648,9 @@ def write_discrete_ancestral_tree_set_confidence_table(
                 "unique_state_count": str(row.unique_state_count),
                 "ambiguous_tree_fraction": str(row.ambiguous_tree_fraction),
                 "unstable_tree_fraction": str(row.unstable_tree_fraction),
-                "state_distribution": json.dumps(row.state_distribution, sort_keys=True),
+                "state_distribution": json.dumps(
+                    row.state_distribution, sort_keys=True
+                ),
                 "entropy": str(row.entropy),
                 "normalized_entropy": str(row.normalized_entropy),
                 "instability_score": str(row.instability_score),
@@ -751,19 +782,23 @@ def _distribution_entropy(
     probability_distribution: dict[str, float] | None = None,
 ) -> tuple[float, float]:
     if probability_distribution is not None:
-        probabilities = [value for value in probability_distribution.values() if value > 0.0]
+        probabilities = [
+            value for value in probability_distribution.values() if value > 0.0
+        ]
     else:
-        resolved_total = total_count if total_count is not None else sum(distribution.values())
+        resolved_total = (
+            total_count if total_count is not None else sum(distribution.values())
+        )
         if resolved_total <= 0:
             return 0.0, 0.0
         probabilities = [
-            count / resolved_total
-            for count in distribution.values()
-            if count > 0
+            count / resolved_total for count in distribution.values() if count > 0
         ]
     if len(probabilities) <= 1:
         return 0.0, 0.0
-    entropy = -sum(probability * math.log2(probability) for probability in probabilities)
+    entropy = -sum(
+        probability * math.log2(probability) for probability in probabilities
+    )
     maximum_entropy = math.log2(len(probabilities))
     normalized_entropy = entropy / maximum_entropy if maximum_entropy > 0.0 else 0.0
     return stable_value(entropy), stable_value(normalized_entropy)

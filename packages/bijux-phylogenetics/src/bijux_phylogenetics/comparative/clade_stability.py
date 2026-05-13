@@ -5,13 +5,13 @@ import math
 from pathlib import Path
 import tempfile
 
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
-    summarize_phylogenetic_logistic,
-)
 from bijux_phylogenetics.comparative.pgls import (
     ComparativeFormulaSpecification,
     inspect_pgls_inputs,
     run_pgls,
+)
+from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+    summarize_phylogenetic_logistic,
 )
 from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
@@ -254,9 +254,7 @@ def analyze_comparative_clade_stability(
 
     _rank_clade_rows(rows)
     influential_clades = [
-        row.clade_id
-        for row in rows
-        if row.fit_status == "fit" and row.rank > 0
+        row.clade_id for row in rows if row.fit_status == "fit" and row.rank > 0
     ][:3]
     warnings: list[str] = []
     if blocked_clade_count:
@@ -268,9 +266,7 @@ def analyze_comparative_clade_stability(
             "one or more clade removals changed coefficient significance calls"
         )
     if any(row.sign_changed_term_count > 0 for row in rows):
-        warnings.append(
-            "one or more clade removals changed coefficient direction"
-        )
+        warnings.append("one or more clade removals changed coefficient direction")
     if any(row.missing_baseline_term_count > 0 for row in rows):
         warnings.append(
             "one or more clade removals changed the estimable baseline coefficient set"
@@ -475,9 +471,10 @@ def _fit_snapshot(
 
 
 def _shared_response_family(response_values: list[float]) -> str:
-    if all(math.isclose(value, round(value), abs_tol=1e-12) for value in response_values):
-        if {int(round(value)) for value in response_values} <= {0, 1}:
-            return "logistic"
+    if all(
+        math.isclose(value, round(value), abs_tol=1e-12) for value in response_values
+    ) and {int(round(value)) for value in response_values} <= {0, 1}:
+        return "logistic"
     return "pgls"
 
 
@@ -574,7 +571,9 @@ def _coefficient_change_rows(
     dropped: _ComparativeFitSnapshot,
 ) -> _CoefficientComparison:
     shared_terms = sorted(set(baseline.coefficients) & set(dropped.coefficients))
-    missing_baseline_terms = sorted(set(baseline.coefficients) - set(dropped.coefficients))
+    missing_baseline_terms = sorted(
+        set(baseline.coefficients) - set(dropped.coefficients)
+    )
     rows: list[ComparativeCladeCoefficientChangeRow] = []
     for term in shared_terms:
         baseline_term = baseline.coefficients[term]

@@ -4,13 +4,13 @@ from dataclasses import dataclass
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
-    summarize_phylogenetic_logistic,
-)
 from bijux_phylogenetics.comparative.pgls import (
     ComparativeFormulaSpecification,
     inspect_pgls_inputs,
     run_pgls,
+)
+from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+    summarize_phylogenetic_logistic,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
@@ -221,9 +221,7 @@ def write_comparative_residual_clade_table(
                 "max_abs_standardized_residual": format(
                     row.max_abs_standardized_residual, ".15g"
                 ),
-                "residual_sum_of_squares": format(
-                    row.residual_sum_of_squares, ".15g"
-                ),
+                "residual_sum_of_squares": format(row.residual_sum_of_squares, ".15g"),
                 "residual_sum_of_squares_share": format(
                     row.residual_sum_of_squares_share, ".15g"
                 ),
@@ -239,9 +237,10 @@ def write_comparative_residual_clade_table(
 
 
 def _shared_response_family(response_values: list[float]) -> str:
-    if all(math.isclose(value, round(value), abs_tol=1e-12) for value in response_values):
-        if {int(round(value)) for value in response_values} <= {0, 1}:
-            return "logistic"
+    if all(
+        math.isclose(value, round(value), abs_tol=1e-12) for value in response_values
+    ) and {int(round(value)) for value in response_values} <= {0, 1}:
+        return "logistic"
     return "pgls"
 
 
@@ -340,8 +339,7 @@ def _build_clade_rows(
                         1 for row in member_rows if row.residual < 0.0
                     ),
                     influence_score=(
-                        residual_sum_of_squares_share
-                        * mean_abs_standardized_residual
+                        residual_sum_of_squares_share * mean_abs_standardized_residual
                     ),
                     residual_heavy=(
                         mean_abs_standardized_residual >= 1.5

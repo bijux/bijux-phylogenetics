@@ -222,12 +222,18 @@ def summarize_host_switching(
         constrained_report=constrained_report,
         allowed_transition_pairs=active_allowed_transition_pairs,
     )
-    warnings = list(dict.fromkeys(
-        [
-            *unconstrained_report.warnings,
-            *(constrained_report.warnings if constrained_report is not None else []),
-        ]
-    ))
+    warnings = list(
+        dict.fromkeys(
+            [
+                *unconstrained_report.warnings,
+                *(
+                    constrained_report.warnings
+                    if constrained_report is not None
+                    else []
+                ),
+            ]
+        )
+    )
     summary = _build_summary(
         active_report=active_report,
         unconstrained_report=unconstrained_report,
@@ -584,8 +590,7 @@ def _build_branch_rows(
                 set(parent_estimate.state_set) & set(child_estimate.state_set)
             )
             changed = (
-                parent_estimate.most_likely_state
-                != child_estimate.most_likely_state
+                parent_estimate.most_likely_state != child_estimate.most_likely_state
             )
             transition = (
                 f"{parent_estimate.most_likely_state}->{child_estimate.most_likely_state}"
@@ -681,7 +686,11 @@ def _build_fit_row(
         for estimate in report.estimates
         if estimate.node == report.estimates[0].node
     )
-    if report.log_likelihood is None or report.parameter_count is None or report.aic is None:
+    if (
+        report.log_likelihood is None
+        or report.parameter_count is None
+        or report.aic is None
+    ):
         raise AncestralReconstructionError(
             "host-switching fit comparison requires a likelihood discrete ancestral model"
         )
@@ -787,23 +796,23 @@ def _build_summary(
         if estimate.node == active_report.estimates[0].node
     )
     certain_host_switch_count = sum(
-        row.certainty_class == "certain_switch"
-        for row in branch_rows
-        if row.changed
+        row.certainty_class == "certain_switch" for row in branch_rows if row.changed
     )
     uncertain_host_switch_count = sum(
-        row.certainty_class == "uncertain_switch"
-        for row in branch_rows
-        if row.changed
+        row.certainty_class == "uncertain_switch" for row in branch_rows if row.changed
     )
     observed_host_count = len(active_report.observed_states)
     allowed_transition_count = len(active_report.allowed_transition_pairs)
     all_transition_count = observed_host_count * max(observed_host_count - 1, 0)
     forbidden_transition_count = max(all_transition_count - allowed_transition_count, 0)
     preferred_constraint = "unconstrained"
-    if constrained_report is not None and constrained_report.aic is not None:
-        if constrained_report.aic <= (unconstrained_report.aic or constrained_report.aic):
-            preferred_constraint = "constrained"
+    if (
+        constrained_report is not None
+        and constrained_report.aic is not None
+        and constrained_report.aic
+        <= (unconstrained_report.aic or constrained_report.aic)
+    ):
+        preferred_constraint = "constrained"
     return HostSwitchSummary(
         trait=active_report.trait,
         taxon_column=active_report.taxon_column,
@@ -813,8 +822,12 @@ def _build_summary(
         analyzed_taxon_count=active_report.taxon_count,
         excluded_taxon_count=len(exclusion_rows),
         observed_host_count=observed_host_count,
-        internal_node_count=sum(not estimate.is_tip for estimate in active_report.estimates),
-        ambiguous_internal_node_count=sum(row.ambiguous for row in _build_node_rows(active_report)),
+        internal_node_count=sum(
+            not estimate.is_tip for estimate in active_report.estimates
+        ),
+        ambiguous_internal_node_count=sum(
+            row.ambiguous for row in _build_node_rows(active_report)
+        ),
         host_switch_count=sum(row.total_switch_count for row in count_rows),
         certain_host_switch_count=certain_host_switch_count,
         uncertain_host_switch_count=uncertain_host_switch_count,
@@ -822,7 +835,8 @@ def _build_summary(
         forbidden_transition_count=forbidden_transition_count,
         constrained_log_likelihood=(
             _stable_float(constrained_report.log_likelihood)
-            if constrained_report is not None and constrained_report.log_likelihood is not None
+            if constrained_report is not None
+            and constrained_report.log_likelihood is not None
             else None
         ),
         unconstrained_log_likelihood=_stable_float(
@@ -863,16 +877,22 @@ def _load_allowed_host_transitions(
         raise ValueError(
             "host-transition constraint file must contain source_host and target_host columns"
         )
-    allowed_field = "transition_allowed" if "transition_allowed" in reader.fieldnames else None
+    allowed_field = (
+        "transition_allowed" if "transition_allowed" in reader.fieldnames else None
+    )
     observed_host_set = set(observed_hosts)
     allowed_pairs: list[tuple[str, str]] = []
     for row in reader:
         source_host = (row.get("source_host") or "").strip()
         target_host = (row.get("target_host") or "").strip()
         if not source_host or not target_host:
-            raise ValueError("host-transition constraint rows must name both source_host and target_host")
+            raise ValueError(
+                "host-transition constraint rows must name both source_host and target_host"
+            )
         if source_host == target_host:
-            raise ValueError("host-transition constraint rows must connect distinct hosts")
+            raise ValueError(
+                "host-transition constraint rows must connect distinct hosts"
+            )
         if source_host not in observed_host_set:
             raise ValueError(
                 "host-transition source host is not present in the analyzed host vocabulary: "
@@ -883,11 +903,15 @@ def _load_allowed_host_transitions(
                 "host-transition target host is not present in the analyzed host vocabulary: "
                 f"{target_host}"
             )
-        if allowed_field is not None and not _parse_truthy_cell(row.get(allowed_field, "")):
+        if allowed_field is not None and not _parse_truthy_cell(
+            row.get(allowed_field, "")
+        ):
             continue
         allowed_pairs.append((source_host, target_host))
     if not allowed_pairs:
-        raise ValueError("host-transition constraint file must allow at least one directed host transition")
+        raise ValueError(
+            "host-transition constraint file must allow at least one directed host transition"
+        )
     return sorted(set(allowed_pairs))
 
 
