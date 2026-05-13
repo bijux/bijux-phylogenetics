@@ -7,6 +7,7 @@ from pathlib import Path
 import bijux_phylogenetics
 import bijux_phylogenetics.compare as compare_api
 from bijux_phylogenetics.ancestral import (
+    build_ancestral_report_package,
     build_continuous_ancestral_confidence_rows,
     build_continuous_ancestral_tree_set_confidence_rows,
     build_discrete_ancestral_confidence_rows,
@@ -38,6 +39,8 @@ from bijux_phylogenetics.ancestral import (
     summarize_discrete_ancestral_tree_set_confidence,
     summarize_discrete_ancestral_report,
     summarize_continuous_ancestral_report,
+    summarize_continuous_change_branches,
+    summarize_continuous_change_counts,
     summarize_continuous_ancestral_tree_set,
     summarize_continuous_ancestral_tree_set_report,
     summarize_discrete_ancestral_tree_set,
@@ -73,6 +76,8 @@ from bijux_phylogenetics.ancestral import (
     write_continuous_ancestral_tree_set_node_table,
     write_continuous_ancestral_tree_set_summary_table,
     write_continuous_ancestral_uncertainty_table,
+    write_continuous_change_branch_table,
+    write_continuous_change_count_table,
     write_discrete_ancestral_comparison_table,
     write_discrete_ancestral_confidence_table,
     write_discrete_ancestral_exclusion_table,
@@ -2396,6 +2401,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_continuous_ancestral_confidence
     )
     assert (
+        bijux_phylogenetics.summarize_continuous_change_branches
+        is summarize_continuous_change_branches
+    )
+    assert (
+        bijux_phylogenetics.summarize_continuous_change_counts
+        is summarize_continuous_change_counts
+    )
+    assert (
         bijux_phylogenetics.continuous_ancestral_exclusions
         is continuous_ancestral_exclusions
     )
@@ -2420,6 +2433,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_ancestral_figure_package
     )
     assert (
+        bijux_phylogenetics.build_ancestral_report_package
+        is build_ancestral_report_package
+    )
+    assert (
         bijux_phylogenetics.build_ancestral_sensitivity_report
         is build_ancestral_sensitivity_report
     )
@@ -2441,6 +2458,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.write_continuous_ancestral_summary_table
         is write_continuous_ancestral_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_change_branch_table
+        is write_continuous_change_branch_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_change_count_table
+        is write_continuous_change_count_table
     )
     assert (
         bijux_phylogenetics.write_continuous_ancestral_confidence_table

@@ -93,6 +93,16 @@ from .transitions import (
     write_ancestral_transition_tree_set_tree_table,
 )
 from .package import AncestralFigurePackageResult, build_ancestral_figure_package
+from .report_package import (
+    AncestralContinuousChangeBranchRow,
+    AncestralContinuousChangeCountRow,
+    AncestralReportPackageResult,
+    build_ancestral_report_package,
+    summarize_continuous_change_branches,
+    summarize_continuous_change_counts,
+    write_continuous_change_branch_table,
+    write_continuous_change_count_table,
+)
 from .root_sensitivity import (
     RootSensitivityAssumptionRow,
     RootSensitivityNodeRow,
@@ -169,7 +179,10 @@ __all__ = [
     "AncestralTransitionTreeSetReport",
     "AncestralTransitionTreeSetSummary",
     "AncestralVisualizationResult",
+    "AncestralContinuousChangeBranchRow",
+    "AncestralContinuousChangeCountRow",
     "AncestralFigurePackageResult",
+    "AncestralReportPackageResult",
     "AncestralSensitivityReport",
     "AncestralSensitivitySummary",
     "AncestralTreeSetExclusion",
@@ -214,6 +227,7 @@ __all__ = [
     "RootSensitivityReport",
     "RootSensitivitySummary",
     "build_ancestral_figure_package",
+    "build_ancestral_report_package",
     "build_ancestral_sensitivity_report",
     "build_continuous_ancestral_confidence_rows",
     "build_continuous_ancestral_tree_set_confidence_rows",
@@ -236,6 +250,8 @@ __all__ = [
     "summarize_ancestral_root_sensitivity",
     "summarize_ancestral_root_sensitivity_report",
     "summarize_continuous_ancestral_confidence",
+    "summarize_continuous_change_branches",
+    "summarize_continuous_change_counts",
     "summarize_discrete_ancestral_report",
     "summarize_continuous_ancestral_report",
     "summarize_continuous_ancestral_tree_set_confidence",
@@ -280,6 +296,8 @@ __all__ = [
     "write_continuous_ancestral_tree_set_node_table",
     "write_continuous_ancestral_tree_set_summary_table",
     "write_continuous_ancestral_uncertainty_table",
+    "write_continuous_change_branch_table",
+    "write_continuous_change_count_table",
     "write_discrete_ancestral_comparison_table",
     "write_discrete_ancestral_confidence_table",
     "write_discrete_ancestral_exclusion_table",
