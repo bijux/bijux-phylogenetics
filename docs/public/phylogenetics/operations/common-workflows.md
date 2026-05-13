@@ -164,6 +164,35 @@ This gives users a real degraded-sequence stress surface without requiring
 them to assemble ancient and modern accession panels or invent their own
 missingness reporting convention.
 
+When the goal is to review a real multi-locus assembly and partitioned
+inference surface instead of a single-gene example, use
+`demo catarrhine-mitogenome-five-locus-panel`. This workflow materializes the
+packaged catarrhine mitochondrial panel, which ships with five aligned coding
+genes over the same six taxa, and then reruns the owned concatenation,
+occupancy, model-selection, and partitioned-support surfaces.
+
+```bash
+bijux-phylogenetics demo catarrhine-mitogenome-five-locus-panel \
+  --out artifacts/catarrhine-mitogenome-five-locus-panel \
+  --json
+```
+
+The packaged multi-locus workflow writes the same dataset/workflow split as
+the other demos, but focuses on reviewer-facing supermatrix assembly and
+partitioned inference:
+
+- concatenated supermatrix output
+- explicit locus partition file
+- per-taxon, per-locus, and matrix occupancy ledgers
+- partition summary ledger
+- model-candidate ledger from partitioned model selection
+- supported tree and branch-support ledger from partitioned bootstrap review
+
+The packaged locus set is intentionally small and explicit: five
+mitochondrial coding genes extracted from stable RefSeq mitochondrial genomes.
+That keeps the surface honest about scale while still exercising the full
+multi-locus workflow contract.
+
 When the goal is to review host-state evolution on a real pathogen panel, use
 `demo rabies-cross-host-panel`. This workflow materializes the packaged rabies
 dataset, which ships with a rooted nucleoprotein tree, raw sequences, and host
