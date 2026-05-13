@@ -1,0 +1,2 @@
+dataset_id	taxon_count	locus_count	alignment_length	partition_count	selected_model	minimum_support	maximum_support	weakly_supported_clade_count	low_coverage_taxon_count	low_coverage_locus_count	warning_count
+catarrhine_mitogenome_five_locus_panel	6	5	5222	5	TIM2+F+G4	100	100	0	0	0	18

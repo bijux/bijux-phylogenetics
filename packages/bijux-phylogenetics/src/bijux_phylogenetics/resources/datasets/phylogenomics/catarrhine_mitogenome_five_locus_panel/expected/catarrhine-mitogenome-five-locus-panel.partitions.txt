@@ -1,0 +1,5 @@
+DNA,mt-cox1 = 1-1569
+DNA,mt-cox2 = 1570-2253
+DNA,mt-cox3 = 2254-3037
+DNA,mt-cytb = 3038-4178
+DNA,mt-nd2 = 4179-5222
