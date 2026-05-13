@@ -8,7 +8,7 @@
   "type": "commonjs",
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.32.0",
-    "@redocly/cli": "2.30.4"
+    "@redocly/cli": "2.30.5"
   },
   "overrides": {
     "@protobufjs/utf8": "^1.1.1",
