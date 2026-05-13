@@ -1,7 +1,7 @@
 PACKAGE_KIND := repository-python
 PACKAGE_IMPORT_NAME := bijux_phylogenetics
 PACKAGE_INSTALL_PYTHON_PACKAGES = "$(MONOREPO_ROOT)/packages/bijux-phylogenetics-dev[dev]"
-LINT_DIRS = src tests
+LINT_DIRS = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/src $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests
 MYPY_TARGETS = src
 ENABLE_MYPY := 1
 ENABLE_CODESPELL := 0

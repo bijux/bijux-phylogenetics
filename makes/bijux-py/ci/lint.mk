@@ -46,13 +46,8 @@ FMT_RUN_RUFF_CHECK_FIX ?= 0
 RUFF_FIX_FLAG := $(if $(filter 1,$(RUFF_CHECK_FIX)),--fix,)
 LINT_PYCACHE_ENV := PYTHONPYCACHEPREFIX="$(abspath $(LINT_PYCACHE_PREFIX))"
 MYPY_RUN_DIR ?= $(MONOREPO_ROOT)
-RUFF_RUN_DIR ?= $(MONOREPO_ROOT)
 MYPY_CONFIG_ABS := $(abspath $(MYPY_CONFIG))
 MYPY_CACHE_DIR_ABS := $(abspath $(MYPY_CACHE_DIR))
-RUFF_CACHE_DIR_ABS := $(abspath $(RUFF_CACHE_DIR))
-RUFF_CONFIG_ABS := $(abspath $(RUFF_CONFIG))
-FMT_DIRS_ABS := $(foreach target,$(FMT_DIRS),$(if $(filter /%,$(target)),$(target),$(abspath $(target))))
-LINT_TARGETS_ABS := $(foreach target,$(LINT_TARGETS),$(if $(filter /%,$(target)),$(target),$(abspath $(target))))
 MYPY_TARGETS_ABS := $(foreach target,$(MYPY_TARGETS),$(if $(filter /%,$(target)),$(target),$(abspath $(target))))
 MYPY_CORE_CONFIG_ABS := $(if $(MYPY_CORE_CONFIG),$(abspath $(MYPY_CORE_CONFIG)))
 MYPY_CORE_TARGETS_ABS := $(foreach target,$(MYPY_CORE_TARGETS),$(if $(filter /%,$(target)),$(target),$(abspath $(target))))
@@ -66,11 +61,9 @@ fmt: fmt-artifacts
 
 fmt-artifacts: | $(VENV)
 	@mkdir -p "$(LINT_ARTIFACTS_DIR)" "$(RUFF_CACHE_DIR)"
-	@( cd "$(RUFF_RUN_DIR)" && \
-	  $(LINT_PYCACHE_ENV) $(RUFF) format --config "$(RUFF_CONFIG_ABS)" --cache-dir "$(RUFF_CACHE_DIR_ABS)" $(FMT_DIRS_ABS) ) 2>&1 | tee "$(FMT_LOG)"; test $${PIPESTATUS[0]} -eq 0
+	@$(LINT_PYCACHE_ENV) $(RUFF) format --config "$(RUFF_CONFIG)" --cache-dir "$(RUFF_CACHE_DIR)" $(FMT_DIRS) 2>&1 | tee "$(FMT_LOG)"; test $${PIPESTATUS[0]} -eq 0
 	@if [ "$(FMT_RUN_RUFF_CHECK_FIX)" = "1" ]; then \
-	  ( cd "$(RUFF_RUN_DIR)" && \
-	    $(LINT_PYCACHE_ENV) $(RUFF) check --config "$(RUFF_CONFIG_ABS)" --fix --cache-dir "$(RUFF_CACHE_DIR_ABS)" $(FMT_DIRS_ABS) ) 2>&1 | tee "$(LINT_ARTIFACTS_DIR)/fmt-ruff-fix.log"; test $${PIPESTATUS[0]} -eq 0; \
+	  $(LINT_PYCACHE_ENV) $(RUFF) check --config "$(RUFF_CONFIG)" --fix --cache-dir "$(RUFF_CACHE_DIR)" $(FMT_DIRS) 2>&1 | tee "$(LINT_ARTIFACTS_DIR)/fmt-ruff-fix.log"; test $${PIPESTATUS[0]} -eq 0; \
 	fi
 
 lint: lint-artifacts
@@ -81,11 +74,9 @@ lint-artifacts: | $(VENV)
 	$(call run_make_targets,$(LINT_PRE_TARGETS),$(LINT_SELF_MAKE))
 	@{ \
 	  echo "→ Ruff format (check)"; \
-	  ( cd "$(RUFF_RUN_DIR)" && \
-	    $(LINT_PYCACHE_ENV) $(RUFF) format --check --config "$(RUFF_CONFIG_ABS)" --cache-dir "$(RUFF_CACHE_DIR_ABS)" $(LINT_TARGETS_ABS) ); \
+	  $(LINT_PYCACHE_ENV) $(RUFF) format --check --config "$(RUFF_CONFIG)" --cache-dir "$(RUFF_CACHE_DIR)" $(LINT_TARGETS); \
 	} 2>&1 | tee "$(LINT_ARTIFACTS_DIR)/ruff-format.log"; test $${PIPESTATUS[0]} -eq 0
-	@( cd "$(RUFF_RUN_DIR)" && \
-	  $(LINT_PYCACHE_ENV) $(RUFF) check $(RUFF_FIX_FLAG) --config "$(RUFF_CONFIG_ABS)" --cache-dir "$(RUFF_CACHE_DIR_ABS)" $(LINT_TARGETS_ABS) ) 2>&1 | tee "$(LINT_ARTIFACTS_DIR)/ruff.log"; test $${PIPESTATUS[0]} -eq 0
+	@$(LINT_PYCACHE_ENV) $(RUFF) check $(RUFF_FIX_FLAG) --config "$(RUFF_CONFIG)" --cache-dir "$(RUFF_CACHE_DIR)" $(LINT_TARGETS) 2>&1 | tee "$(LINT_ARTIFACTS_DIR)/ruff.log"; test $${PIPESTATUS[0]} -eq 0
 	@if [ "$(ENABLE_MYPY)" != "1" ]; then \
 	  echo "✖ Mypy must remain enabled for $(PROJECT_SLUG)" | tee "$(LINT_ARTIFACTS_DIR)/mypy.log"; \
 	  exit 1; \
