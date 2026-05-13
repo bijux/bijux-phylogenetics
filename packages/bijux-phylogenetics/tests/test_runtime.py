@@ -183,10 +183,17 @@ from bijux_phylogenetics.comparative import (
     CorrelatedTraitEvolutionReport,
     CorrelatedTraitExclusion,
     CorrelatedTraitObservationRow,
+    ComparativeAnalysisSummaryRow,
+    ComparativeAuditTableRow,
     ComparativeCladeCoefficientChangeRow,
     ComparativeCladeResidualReport,
     ComparativeCladeStabilityReport,
     ComparativeCladeStabilityRow,
+    ComparativeCoefficientTableRow,
+    ComparativeInterpretationRow,
+    ComparativeReportPackageResult,
+    ComparativeResidualTableRow,
+    ComparativeSignalTableRow,
     EarlyBurstIdentifiabilityWarning,
     EarlyBurstRateChangeProfileRow,
     EarlyBurstTraitEvolutionExclusion,
@@ -240,6 +247,7 @@ from bijux_phylogenetics.comparative import (
     audit_ou_identifiability_reference_examples,
     build_branch_identity_lookup,
     build_pgls_model_matrix,
+    build_comparative_report_package,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
     compute_phylogenetic_signal_test,
@@ -254,6 +262,12 @@ from bijux_phylogenetics.comparative import (
     summarize_brownian_regime_rates,
     summarize_trait_regime_mapping,
     summarize_brownian_trait_evolution,
+    summarize_comparative_analysis,
+    summarize_comparative_audit,
+    summarize_comparative_coefficients,
+    summarize_comparative_interpretation,
+    summarize_comparative_residuals,
+    summarize_comparative_signal,
     summarize_early_burst_trait_evolution,
     summarize_clade_traits,
     summarize_trait_outliers,
@@ -269,6 +283,7 @@ from bijux_phylogenetics.comparative import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
     write_brownian_covariance_table,
+    write_comparative_audit_table,
     write_brownian_regime_branch_table,
     write_brownian_regime_comparison_table,
     write_brownian_regime_exclusion_table,
@@ -287,8 +302,15 @@ from bijux_phylogenetics.comparative import (
     write_early_burst_trait_evolution_summary_table,
     write_comparative_clade_coefficient_change_table,
     write_comparative_clade_stability_table,
+    write_comparative_coefficient_table,
+    write_comparative_contrast_table,
+    write_comparative_interpretation_table,
+    write_comparative_model_comparison_table,
     write_comparative_residual_clade_table,
+    write_comparative_residual_table,
     write_comparative_residual_taxon_table,
+    write_comparative_signal_table,
+    write_comparative_summary_table,
     write_posterior_tree_pgls_coefficient_table,
     write_posterior_tree_pgls_summary_table,
     write_posterior_tree_pgls_tree_table,
@@ -1822,6 +1844,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bijux_phylogenetics.audit_ou_identifiability_reference_examples
         is audit_ou_identifiability_reference_examples
     )
+    assert (
+        bijux_phylogenetics.build_comparative_report_package
+        is build_comparative_report_package
+    )
     assert bijux_phylogenetics.build_pgls_model_matrix is build_pgls_model_matrix
     assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
     assert bijux_phylogenetics.run_pgls is run_pgls
@@ -1840,6 +1866,30 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.summarize_brownian_trait_evolution
         is summarize_brownian_trait_evolution
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_analysis
+        is summarize_comparative_analysis
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_audit
+        is summarize_comparative_audit
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_coefficients
+        is summarize_comparative_coefficients
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_interpretation
+        is summarize_comparative_interpretation
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_residuals
+        is summarize_comparative_residuals
+    )
+    assert (
+        bijux_phylogenetics.summarize_comparative_signal
+        is summarize_comparative_signal
     )
     assert (
         bijux_phylogenetics.summarize_early_burst_trait_evolution
@@ -1885,6 +1935,31 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is BrownianRegimeIdentifiabilityWarning
     )
     assert (
+        bijux_phylogenetics.ComparativeAnalysisSummaryRow
+        is ComparativeAnalysisSummaryRow
+    )
+    assert bijux_phylogenetics.ComparativeAuditTableRow is ComparativeAuditTableRow
+    assert (
+        bijux_phylogenetics.ComparativeCoefficientTableRow
+        is ComparativeCoefficientTableRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeInterpretationRow
+        is ComparativeInterpretationRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeReportPackageResult
+        is ComparativeReportPackageResult
+    )
+    assert (
+        bijux_phylogenetics.ComparativeResidualTableRow
+        is ComparativeResidualTableRow
+    )
+    assert (
+        bijux_phylogenetics.ComparativeSignalTableRow
+        is ComparativeSignalTableRow
+    )
+    assert (
         bijux_phylogenetics.EarlyBurstTraitEvolutionSummaryReport
         is EarlyBurstTraitEvolutionSummaryReport
     )
@@ -1907,6 +1982,38 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bijux_phylogenetics.TraitOutlierSummaryReport is TraitOutlierSummaryReport
     assert bijux_phylogenetics.TraitOutlierTaxonRow is TraitOutlierTaxonRow
     assert bijux_phylogenetics.TraitOutlierExclusion is TraitOutlierExclusion
+    assert (
+        bijux_phylogenetics.write_comparative_audit_table
+        is write_comparative_audit_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_coefficient_table
+        is write_comparative_coefficient_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_contrast_table
+        is write_comparative_contrast_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_interpretation_table
+        is write_comparative_interpretation_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_model_comparison_table
+        is write_comparative_model_comparison_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_residual_table
+        is write_comparative_residual_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_signal_table
+        is write_comparative_signal_table
+    )
+    assert (
+        bijux_phylogenetics.write_comparative_summary_table
+        is write_comparative_summary_table
+    )
     assert (
         bijux_phylogenetics.TraitImputationSummaryReport
         is TraitImputationSummaryReport
