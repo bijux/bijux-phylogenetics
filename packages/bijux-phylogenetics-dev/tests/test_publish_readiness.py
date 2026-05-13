@@ -721,6 +721,16 @@ def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     assert report["release_gate"]["superficial_completion_refused"] is False
 
 
+def test_build_publish_readiness_report_accepts_secured_runtime_dependency_contract() -> (
+    None
+):
+    report = build_publish_readiness_report(REPO_ROOT)
+
+    issue_codes = {issue["code"] for issue in report["package_boundaries"]["issues"]}
+    assert "dependency-role-drift" not in issue_codes
+    assert report["scorecards"]["package_boundaries"]["status"] == "ready"
+
+
 def test_build_publish_readiness_report_flags_governed_junk(
     tmp_path: Path,
 ) -> None:
