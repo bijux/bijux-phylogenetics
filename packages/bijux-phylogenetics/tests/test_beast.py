@@ -16,9 +16,11 @@ from bijux_phylogenetics.bayesian.beast import (
     parse_beast_posterior_tree_samples,
     prepare_beast_time_tree_analysis,
     run_beast_posterior_inference,
+    summarize_beast_analysis_xml,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
     summarize_beast_log,
+    validate_beast_analysis_xml,
     validate_beast_posterior_log,
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
@@ -274,6 +276,64 @@ def test_prepare_beast_time_tree_analysis_supports_protein_alignments_without_st
     )
 
 
+def test_summarize_beast_analysis_xml_reads_real_fixture() -> None:
+    report = summarize_beast_analysis_xml(fixture("beast2_strict_yule_posterior.xml"))
+
+    assert report.valid is True
+    assert report.beast_version == "2.7"
+    assert report.taxon_count == 4
+    assert report.character_count == 8
+    assert report.beast_data_type == "nucleotide"
+    assert report.substitution_model == "HKY"
+    assert report.clock_model == "strict"
+    assert report.tree_prior == "yule"
+    assert report.starting_tree_source == "upgma"
+    assert report.chain_length == 2000
+    assert report.posterior_log_path == Path("beast2_strict_yule_posterior.$(seed).log")
+    assert report.posterior_tree_path == Path(
+        "beast2_strict_yule_posterior.$(seed).trees"
+    )
+    assert report.calibration_count == 0
+    assert report.tip_date_count == 0
+
+
+def test_validate_beast_analysis_xml_reports_missing_required_outputs(
+    tmp_path: Path,
+) -> None:
+    xml_path = tmp_path / "broken-analysis.xml"
+    xml_path.write_text(
+        "<?xml version='1.0' encoding='utf-8'?>\n"
+        "<beast version='2.7'>\n"
+        "  <data id='alignment' dataType='nucleotide'>\n"
+        "    <sequence taxon='A'>ACTG</sequence>\n"
+        "    <sequence taxon='B'>ACTG</sequence>\n"
+        "  </data>\n"
+        "  <input spec='HKY' id='hky' />\n"
+        "  <input spec='SiteModel' id='siteModel'>\n"
+        "    <substModel idref='hky' />\n"
+        "  </input>\n"
+        "  <input spec='beast.base.evolution.tree.ClusterTree' id='tree' clusterType='upgma'>\n"
+        "    <taxa idref='alignment' />\n"
+        "  </input>\n"
+        "  <input spec='beast.base.evolution.branchratemodel.StrictClockModel' id='branchRates' />\n"
+        "  <input spec='beast.base.evolution.speciation.YuleModel' id='treePrior' />\n"
+        "  <run spec='MCMC' id='mcmc' chainLength='1000'>\n"
+        "    <state><stateNode idref='tree' /></state>\n"
+        "    <logger logEvery='100'><log idref='posterior' /></logger>\n"
+        "  </run>\n"
+        "</beast>\n",
+        encoding="utf-8",
+    )
+
+    report = validate_beast_analysis_xml(xml_path)
+
+    assert report.valid is False
+    assert {issue.code for issue in report.issues} >= {
+        "missing-posterior-log",
+        "missing-posterior-trees",
+    }
+
+
 def test_run_beast_posterior_inference_writes_outputs_and_resumes(
     tmp_path: Path,
 ) -> None:
@@ -461,6 +521,58 @@ def test_summarize_beast_log_reads_real_beast_fixture() -> None:
     assert summary.clock_parameters == ["clockRate"]
 
 
+def test_summarize_beast_log_reports_known_reference_ess(
+    tmp_path: Path,
+) -> None:
+    log_path = tmp_path / "known-ess.log"
+    log_path.write_text(
+        "state\tposterior\n"
+        "0\t0\n"
+        "1\t0\n"
+        "2\t1\n"
+        "3\t1\n",
+        encoding="utf-8",
+    )
+
+    report = summarize_beast_log(log_path, burnin_fraction=0.0)
+    posterior = next(
+        summary
+        for summary in report.parameter_summaries
+        if summary.parameter == "posterior"
+    )
+
+    assert posterior.effective_sample_size == pytest.approx(2.666667)
+
+
+@pytest.mark.parametrize(
+    ("burnin_fraction", "burnin_count", "kept_count"),
+    [
+        (0.0, 0, 101),
+        (0.1, 10, 91),
+        (0.25, 25, 76),
+        (0.5, 50, 51),
+    ],
+)
+def test_real_beast_fixtures_cover_standard_burnin_fractions(
+    burnin_fraction: float,
+    burnin_count: int,
+    kept_count: int,
+) -> None:
+    log_summary = summarize_beast_log(
+        fixture("beast2_strict_yule_posterior.log"),
+        burnin_fraction=burnin_fraction,
+    )
+    tree_report = parse_beast_posterior_tree_samples(
+        fixture("beast2_strict_yule_posterior.trees"),
+        burnin_fraction=burnin_fraction,
+    )
+
+    assert log_summary.burnin_row_count == burnin_count
+    assert log_summary.kept_row_count == kept_count
+    assert tree_report.burnin_tree_count == burnin_count
+    assert tree_report.kept_tree_count == kept_count
+
+
 def test_summarize_beast_log_reports_median_sd_and_hpd_interval(
     tmp_path: Path,
 ) -> None:
@@ -533,6 +645,29 @@ def test_parse_beast_posterior_tree_samples_handles_translate_and_burnin(
     assert output_path == normalized_path
     assert mcc_report.kept_tree_count == 3
     assert consensus_report.tree_count == 3
+
+
+def test_parse_beast_posterior_tree_samples_reports_metadata_annotations(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "posterior-annotations.trees"
+    tree_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = [&R] ((A[&height=0.1]:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2):0.0[&lnP=-10.0,height_95%_HPD={0.2,0.4}];\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    report = parse_beast_posterior_tree_samples(tree_path, burnin_fraction=0.0)
+    sample = report.trees[0]
+
+    assert sample.annotation_key_count == 3
+    assert sample.annotation_record_count == 3
+    assert sample.annotation_keys == ["height", "height_95%_HPD", "lnP"]
+    assert sample.annotation_values["height"] == "0.1"
+    assert sample.annotation_values["lnP"] == "-10.0"
+    assert sample.annotation_values["height_95%_HPD"] == "{0.2,0.4}"
 
 
 def test_parse_beast_posterior_tree_samples_applies_burnin_fraction(
@@ -927,6 +1062,7 @@ def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calib
         posterior_tree_path=fixture("example_tree_set_left.nwk"),
         primary_log_path=fixture("example_beast.log"),
         additional_log_paths=[second_chain],
+        analysis_xml_path=fixture("beast2_strict_yule_posterior.xml"),
         tree_path=fixture("example_tree_named_clades.nwk"),
         calibration_path=fixture("example_calibrations.tsv"),
         tip_dates_path=fixture("example_tip_dates.tsv"),
@@ -941,6 +1077,7 @@ def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calib
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
     assert report.chain_count == 2
+    assert "analysis-assumptions" in html
     assert "posterior-log-validation" in html
     assert "burnin-sensitivity" in html
     assert "chain-mixing" in html

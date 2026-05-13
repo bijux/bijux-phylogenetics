@@ -189,6 +189,45 @@ class BeastPreparationReport:
 
 
 @dataclass(slots=True)
+class BeastAnalysisXmlIssue:
+    code: str
+    message: str
+
+
+@dataclass(slots=True)
+class BeastAnalysisXmlLogger:
+    logger_kind: str
+    file_name: str | None
+    log_every: int | None
+
+
+@dataclass(slots=True)
+class BeastAnalysisXmlReport:
+    path: Path
+    beast_version: str | None
+    beast_namespace: str | None
+    taxon_count: int
+    character_count: int
+    beast_data_type: str | None
+    substitution_model: str | None
+    clock_model: str | None
+    tree_prior: str | None
+    starting_tree_source: str | None
+    chain_length: int | None
+    state_node_count: int
+    logger_count: int
+    posterior_log_path: Path | None
+    posterior_tree_path: Path | None
+    calibration_count: int
+    calibration_ids: list[str]
+    tip_date_count: int
+    tip_date_units: str | None
+    tip_date_direction: str | None
+    issues: list[BeastAnalysisXmlIssue]
+    valid: bool
+
+
+@dataclass(slots=True)
 class BeastCalibration:
     calibration_id: str
     beast_distribution: str
@@ -255,6 +294,10 @@ class BeastPosteriorTreeSample:
     rooted: bool
     tip_names: list[str]
     newick: str
+    annotation_key_count: int
+    annotation_record_count: int
+    annotation_keys: list[str]
+    annotation_values: dict[str, str]
 
 
 @dataclass(slots=True)
@@ -1664,6 +1707,12 @@ def prepare_beast_time_tree_analysis(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     xml_tree.write(output_path, encoding="utf-8", xml_declaration=True)
     output_path.write_text(output_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    xml_report = validate_beast_analysis_xml(output_path)
+    if not xml_report.valid:
+        messages = "; ".join(issue.message for issue in xml_report.issues)
+        raise EngineWorkflowError(
+            f"generated BEAST analysis XML failed structural validation: {messages}"
+        )
     return BeastPreparationReport(
         alignment_path=alignment_path,
         output_path=output_path,
@@ -1692,6 +1741,219 @@ def prepare_beast_time_tree_analysis(
         tree_log_path=tree_log_path,
         calibrations=beast_calibrations,
     )
+
+
+def summarize_beast_analysis_xml(path: Path) -> BeastAnalysisXmlReport:
+    """Summarize one prepared BEAST analysis XML into reviewer-facing assumptions."""
+    issues: list[BeastAnalysisXmlIssue] = []
+    try:
+        root = ET.parse(path).getroot()
+    except ET.ParseError as error:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="invalid-xml",
+                message=f"BEAST analysis XML is not well formed: {error}",
+            )
+        )
+        return BeastAnalysisXmlReport(
+            path=path,
+            beast_version=None,
+            beast_namespace=None,
+            taxon_count=0,
+            character_count=0,
+            beast_data_type=None,
+            substitution_model=None,
+            clock_model=None,
+            tree_prior=None,
+            starting_tree_source=None,
+            chain_length=None,
+            state_node_count=0,
+            logger_count=0,
+            posterior_log_path=None,
+            posterior_tree_path=None,
+            calibration_count=0,
+            calibration_ids=[],
+            tip_date_count=0,
+            tip_date_units=None,
+            tip_date_direction=None,
+            issues=issues,
+            valid=False,
+        )
+
+    if root.tag != "beast":
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="unexpected-root",
+                message="BEAST analysis XML must use a top-level <beast> element",
+            )
+        )
+
+    alignment = root.find("./data[@id='alignment']")
+    if alignment is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-alignment",
+                message="BEAST analysis XML must define one alignment data block",
+            )
+        )
+        taxon_count = 0
+        character_count = 0
+        beast_data_type = None
+    else:
+        sequences = alignment.findall("./sequence")
+        taxon_count = len(sequences)
+        sequence_lengths = {
+            len(sequence.text or "")
+            for sequence in sequences
+        }
+        character_count = 0 if not sequence_lengths else max(sequence_lengths)
+        if len(sequence_lengths) > 1:
+            issues.append(
+                BeastAnalysisXmlIssue(
+                    code="ragged-alignment",
+                    message="BEAST analysis XML alignment sequences must share one common length",
+                )
+            )
+        beast_data_type = alignment.get("dataType")
+        if beast_data_type is None:
+            issues.append(
+                BeastAnalysisXmlIssue(
+                    code="missing-data-type",
+                    message="BEAST analysis XML alignment must declare its dataType",
+                )
+            )
+
+    run = root.find("./run[@id='mcmc']")
+    if run is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-run",
+                message="BEAST analysis XML must define one MCMC run with id 'mcmc'",
+            )
+        )
+        chain_length = None
+        state_node_count = 0
+        loggers: list[BeastAnalysisXmlLogger] = []
+    else:
+        chain_length = _safe_int_attribute(
+            run,
+            "chainLength",
+            issues=issues,
+            issue_code="missing-chain-length",
+            issue_message="BEAST analysis XML run must declare a numeric chainLength",
+        )
+        state_node_count = len(run.findall("./state/stateNode"))
+        if state_node_count == 0:
+            issues.append(
+                BeastAnalysisXmlIssue(
+                    code="missing-state-nodes",
+                    message="BEAST analysis XML run must declare at least one stateNode",
+                )
+            )
+        loggers = _collect_beast_analysis_xml_loggers(run)
+        if not loggers:
+            issues.append(
+                BeastAnalysisXmlIssue(
+                    code="missing-loggers",
+                    message="BEAST analysis XML run must declare posterior logging outputs",
+                )
+            )
+
+    substitution_model = _summarize_beast_xml_substitution_model(root)
+    if substitution_model is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-substitution-model",
+                message="BEAST analysis XML must declare a substitution model in the site model",
+            )
+        )
+    clock_model = _summarize_beast_xml_clock_model(root)
+    if clock_model is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-clock-model",
+                message="BEAST analysis XML must declare one branch-rate model",
+            )
+        )
+    tree_prior = _summarize_beast_xml_tree_prior(root)
+    if tree_prior is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-tree-prior",
+                message="BEAST analysis XML must declare one tree prior",
+            )
+        )
+    starting_tree_source = _summarize_beast_xml_starting_tree_source(root)
+    if starting_tree_source is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-starting-tree",
+                message="BEAST analysis XML must declare a starting tree source",
+            )
+        )
+
+    posterior_log_path = _beast_xml_logged_output_path(loggers, logger_kind="posterior-log")
+    posterior_tree_path = _beast_xml_logged_output_path(loggers, logger_kind="posterior-trees")
+    if posterior_log_path is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-posterior-log",
+                message="BEAST analysis XML must define one posterior parameter log output",
+            )
+        )
+    if posterior_tree_path is None:
+        issues.append(
+            BeastAnalysisXmlIssue(
+                code="missing-posterior-trees",
+                message="BEAST analysis XML must define one posterior tree log output",
+            )
+        )
+
+    calibration_distributions = root.findall(
+        ".//distribution[@spec='beast.base.evolution.tree.MRCAPrior']"
+    )
+    calibration_ids = [
+        distribution.get("id", "")
+        for distribution in calibration_distributions
+        if distribution.get("id")
+    ]
+    tip_trait = root.find(".//*[@traitname='date-forward']")
+    tip_date_units = None if tip_trait is None else tip_trait.get("units")
+    tip_date_direction = None if tip_trait is None else tip_trait.get("traitname")
+    tip_date_count = 0
+    if tip_trait is not None:
+        tip_value = tip_trait.get("value", "")
+        tip_date_count = len([part for part in tip_value.split(",") if part.strip()])
+
+    return BeastAnalysisXmlReport(
+        path=path,
+        beast_version=root.get("version"),
+        beast_namespace=root.get("namespace"),
+        taxon_count=taxon_count,
+        character_count=character_count,
+        beast_data_type=beast_data_type,
+        substitution_model=substitution_model,
+        clock_model=clock_model,
+        tree_prior=tree_prior,
+        starting_tree_source=starting_tree_source,
+        chain_length=chain_length,
+        state_node_count=state_node_count,
+        logger_count=len(loggers),
+        posterior_log_path=posterior_log_path,
+        posterior_tree_path=posterior_tree_path,
+        calibration_count=len(calibration_ids),
+        calibration_ids=calibration_ids,
+        tip_date_count=tip_date_count,
+        tip_date_units=tip_date_units,
+        tip_date_direction=tip_date_direction,
+        issues=issues,
+        valid=not issues,
+    )
+
+
+def validate_beast_analysis_xml(path: Path) -> BeastAnalysisXmlReport:
+    """Validate that a prepared BEAST analysis XML is structurally complete."""
+    return summarize_beast_analysis_xml(path)
 
 
 def run_beast_posterior_inference(
@@ -1901,7 +2163,14 @@ def parse_beast_posterior_tree_samples(
     samples: list[BeastPosteriorTreeSample] = []
     trees: list[PhyloTree] = []
     for tree_name, tree_text in kept_entries:
-        newick, tree, rooted = _parse_beast_tree_text(
+        (
+            newick,
+            tree,
+            rooted,
+            annotation_values,
+            annotation_keys,
+            annotation_record_count,
+        ) = _parse_beast_tree_text(
             tree_text, translation=translation
         )
         samples.append(
@@ -1911,6 +2180,10 @@ def parse_beast_posterior_tree_samples(
                 rooted=rooted if rooted is not None else True,
                 tip_names=tree.tip_names,
                 newick=newick,
+                annotation_key_count=len(annotation_keys),
+                annotation_record_count=annotation_record_count,
+                annotation_keys=annotation_keys,
+                annotation_values=annotation_values,
             )
         )
         trees.append(tree)
@@ -2664,12 +2937,22 @@ def _split_beast_tree_entries(
 
 def _parse_beast_tree_text(
     tree_text: str, *, translation: dict[str, str]
-) -> tuple[str, PhyloTree, bool | None]:
+) -> tuple[str, PhyloTree, bool | None, dict[str, str], list[str], int]:
     rooted = _detect_nexus_rooted_flag(tree_text)
+    annotation_values, annotation_keys, annotation_record_count = (
+        _extract_beast_tree_annotations(tree_text)
+    )
     stripped = _strip_square_bracket_comments(tree_text).strip()
     translated = _translate_nexus_tip_labels(stripped, translation)
     tree = loads_biophylo(f"{translated};", source_format="newick")
-    return dumps_newick(tree), tree, rooted
+    return (
+        dumps_newick(tree),
+        tree,
+        rooted,
+        annotation_values,
+        annotation_keys,
+        annotation_record_count,
+    )
 
 
 def _detect_nexus_rooted_flag(tree_text: str) -> bool | None:
@@ -2754,6 +3037,60 @@ def _translate_nexus_tip_labels(newick: str, mapping: dict[str, str]) -> str:
     return re.sub(r"(?<=[(,])\s*([A-Za-z0-9_.-]+)(?=\s*[:),])", replace, newick)
 
 
+def _extract_beast_tree_annotations(
+    tree_text: str,
+) -> tuple[dict[str, str], list[str], int]:
+    annotation_values: dict[str, str] = {}
+    annotation_keys: list[str] = []
+    annotation_record_count = 0
+    for match in re.finditer(r"\[(.*?)\]", tree_text):
+        raw = match.group(1).strip()
+        if not raw.startswith("&"):
+            continue
+        directive = raw[1:].strip()
+        if directive in {"R", "U"}:
+            continue
+        for token in _split_beast_annotation_tokens(directive):
+            if not token:
+                continue
+            if "=" in token:
+                key, value = token.split("=", 1)
+                normalized_value = value.strip()
+            else:
+                key = token
+                normalized_value = "true"
+            normalized_key = key.strip()
+            if not normalized_key:
+                continue
+            if normalized_key not in annotation_values:
+                annotation_keys.append(normalized_key)
+            annotation_values[normalized_key] = normalized_value
+            annotation_record_count += 1
+    return annotation_values, sorted(annotation_keys), annotation_record_count
+
+
+def _split_beast_annotation_tokens(text: str) -> list[str]:
+    tokens: list[str] = []
+    current: list[str] = []
+    brace_depth = 0
+    for char in text:
+        if char == "{":
+            brace_depth += 1
+        elif char == "}" and brace_depth:
+            brace_depth -= 1
+        if char == "," and brace_depth == 0:
+            token = "".join(current).strip()
+            if token:
+                tokens.append(token)
+            current = []
+            continue
+        current.append(char)
+    token = "".join(current).strip()
+    if token:
+        tokens.append(token)
+    return tokens
+
+
 def _strip_square_bracket_comments(text: str) -> str:
     result: list[str] = []
     depth = 0
@@ -2774,3 +3111,122 @@ def _beast_state_field(fieldnames: list[str]) -> str | None:
         if candidate in fieldnames:
             return candidate
     return None
+
+
+def _safe_int_attribute(
+    element: ET.Element,
+    attribute: str,
+    *,
+    issues: list[BeastAnalysisXmlIssue],
+    issue_code: str,
+    issue_message: str,
+) -> int | None:
+    raw = element.get(attribute)
+    if raw is None:
+        issues.append(BeastAnalysisXmlIssue(code=issue_code, message=issue_message))
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        issues.append(BeastAnalysisXmlIssue(code=issue_code, message=issue_message))
+        return None
+
+
+def _collect_beast_analysis_xml_loggers(
+    run: ET.Element,
+) -> list[BeastAnalysisXmlLogger]:
+    loggers: list[BeastAnalysisXmlLogger] = []
+    for logger in run.findall("./logger"):
+        file_name = logger.get("fileName")
+        log_every = None
+        raw_log_every = logger.get("logEvery")
+        if raw_log_every is not None:
+            try:
+                log_every = int(raw_log_every)
+            except ValueError:
+                log_every = None
+        loggers.append(
+            BeastAnalysisXmlLogger(
+                logger_kind=_classify_beast_analysis_xml_logger(logger),
+                file_name=file_name,
+                log_every=log_every,
+            )
+        )
+    return loggers
+
+
+def _classify_beast_analysis_xml_logger(logger: ET.Element) -> str:
+    file_name = logger.get("fileName")
+    has_tree_log = logger.find("./log[@idref='tree']") is not None
+    has_posterior_log = logger.find("./log[@idref='posterior']") is not None
+    if file_name is None:
+        return "screen"
+    if has_tree_log and file_name.endswith(".trees"):
+        return "posterior-trees"
+    if has_posterior_log:
+        return "posterior-log"
+    return "other-file"
+
+
+def _beast_xml_logged_output_path(
+    loggers: list[BeastAnalysisXmlLogger], *, logger_kind: str
+) -> Path | None:
+    for logger in loggers:
+        if logger.logger_kind == logger_kind and logger.file_name is not None:
+            return Path(logger.file_name)
+    return None
+
+
+def _summarize_beast_xml_substitution_model(root: ET.Element) -> str | None:
+    substitution_model = root.find("./input[@id='siteModel']/substModel")
+    if substitution_model is None:
+        return None
+    spec = substitution_model.get("spec")
+    if spec:
+        return spec.split(".")[-1]
+    id_ref = substitution_model.get("idref")
+    if id_ref == "hky":
+        return "HKY"
+    if id_ref is not None:
+        return id_ref
+    return None
+
+
+def _summarize_beast_xml_clock_model(root: ET.Element) -> str | None:
+    branch_rates = root.find("./input[@id='branchRates']")
+    if branch_rates is None:
+        return None
+    spec = branch_rates.get("spec")
+    if spec is None:
+        return None
+    if spec.endswith("StrictClockModel"):
+        return "strict"
+    if spec.endswith("UCRelaxedClockModel"):
+        return "relaxed-lognormal"
+    return spec.split(".")[-1]
+
+
+def _summarize_beast_xml_tree_prior(root: ET.Element) -> str | None:
+    tree_prior = root.find("./input[@id='treePrior']")
+    if tree_prior is None:
+        return None
+    spec = tree_prior.get("spec")
+    if spec is None:
+        return None
+    if spec.endswith("YuleModel"):
+        return "yule"
+    if spec.endswith("BirthDeathGernhard08Model"):
+        return "birth-death"
+    return spec.split(".")[-1]
+
+
+def _summarize_beast_xml_starting_tree_source(root: ET.Element) -> str | None:
+    tree = root.find("./tree[@id='tree']")
+    if tree is not None:
+        return "provided-tree"
+    cluster_tree = root.find("./input[@id='tree']")
+    if cluster_tree is None:
+        return None
+    if cluster_tree.get("spec", "").endswith("ClusterTree"):
+        return cluster_tree.get("clusterType", "cluster")
+    return cluster_tree.get("spec")
