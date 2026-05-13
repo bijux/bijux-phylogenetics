@@ -121,6 +121,7 @@ from bijux_phylogenetics.bayesian import (
     render_bayesian_posterior_report,
     render_bayesian_run_comparison_report,
     render_calibration_audit_report,
+    run_beast_posterior_inference,
     run_mrbayes_posterior_inference,
     subsample_beast_posterior_tree_set,
     subsample_mrbayes_posterior_tree_set,
@@ -2897,6 +2898,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.prepare_beast_time_tree_analysis
         is prepare_beast_time_tree_analysis
+    )
+    assert (
+        bijux_phylogenetics.run_beast_posterior_inference
+        is run_beast_posterior_inference
     )
     assert bijux_phylogenetics.BeastCalibration is BeastCalibration
     assert (
