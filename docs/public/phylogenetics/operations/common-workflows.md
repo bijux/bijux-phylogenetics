@@ -746,6 +746,24 @@ baseline model and the requested comparison model. The excluded-taxa ledger
 keeps one row per dropped tip with an explicit reason such as
 `missing_discrete_trait_state`.
 
+When the goal is to verify that the owned discrete ancestral likelihood
+surface still matches governed external references and known policy examples,
+use `ancestral discrete-reference`. This workflow reruns the checked-in
+`ape::ace` ER, SYM, and ARD reference cases and then reruns the owned
+root-prior, ambiguity, ordered-state, and irreversible-loss review surfaces
+on packaged known examples.
+
+```bash
+bijux-phylogenetics ancestral discrete-reference \
+  --json
+```
+
+The JSON report keeps the trust contract compact and explicit:
+
+- one governed case count across the whole suite
+- one external-case count for the `ape::ace` parity subset
+- one all-passed flag for the full discrete ancestral reference lane
+
 When the goal is to decide whether a discrete trait should be reconstructed as
 ordered rather than unordered, use `ancestral ordered-discrete`. This workflow
 fits the same discrete likelihood model twice on one tree: once with the

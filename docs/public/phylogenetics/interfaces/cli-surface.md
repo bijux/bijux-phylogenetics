@@ -870,6 +870,16 @@ tip ledger. Each row preserves:
 - `taxon`
 - `reason`
 
+`ancestral discrete-reference` reruns the governed discrete ancestral
+reference suite before any user dataset is interpreted. It validates
+equal-rates, symmetric, and all-rates-different likelihood reconstructions
+against checked-in `ape::ace` probability fixtures and then reruns the owned
+root-prior, ambiguity, ordered-state, and irreversible-transition policy
+surfaces on known examples. Its JSON metrics report:
+- `case_count`
+- `external_case_count`
+- `all_passed`
+
 `ancestral ordered-discrete` is the governed ordered-state comparison surface
 for one discrete likelihood ancestral reconstruction. It fits the requested
 likelihood model twice on the same tree: once with the supplied ordered state
