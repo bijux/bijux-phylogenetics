@@ -52,6 +52,51 @@
       border-radius: 12px;
       padding: 1rem;
     }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+    .summary-card {
+      background: #f6fffd;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+    }
+    .summary-card dt {
+      margin: 0;
+      font: 600 0.82rem/1.2 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #476b67;
+    }
+    .summary-card dd {
+      margin: 0.35rem 0 0;
+      font: 700 1.2rem/1.25 var(--mono);
+      color: var(--ink);
+    }
+
+    .artifact-list {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .artifact-list li + li {
+      margin-top: 0.65rem;
+    }
+    .artifact-list a {
+      color: var(--accent);
+      font-family: var(--mono);
+      text-decoration: none;
+    }
+    .artifact-list a:hover {
+      text-decoration: underline;
+    }
+    .artifact-note {
+      display: block;
+      margin-top: 0.2rem;
+      color: #51646b;
+    }
   </style>
 </head>
 <body>
@@ -62,10 +107,31 @@
   "dataset_id": "rabies_method_sensitivity_panel",
   "execution_mode": "parallel",
   "parallel_workers": 2,
+  "report_manifest_path": "report-artifacts/rabies-method-sensitivity-report.manifest.json",
   "stable_clade_count": 2,
   "variant_count": 4
 }</script>
-    <section><h2>workflow-summary</h2><pre>dataset: Rabies method-sensitivity panel
+<section><h2>summary</h2><div class="summary-grid">
+<dl class="summary-card"><dt>variants</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>execution mode</dt><dd>parallel</dd></dl>
+<dl class="summary-card"><dt>parallel workers</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>stable clades</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>changed clades</dt><dd>8</dd></dl>
+<dl class="summary-card"><dt>linked artifacts</dt><dd>9</dd></dl>
+</div></section>
+<section><h2>artifacts</h2><ul class="artifact-list">
+<li>workflow-summary: <a href="workflow-summary.tsv">workflow-summary.tsv</a><span class="artifact-note">239 bytes</span></li>
+<li>variant-summary: <a href="variant-summary.tsv">variant-summary.tsv</a><span class="artifact-note">606 bytes</span></li>
+<li>parallel-summary: <a href="parallel-execution-summary.tsv">parallel-execution-summary.tsv</a><span class="artifact-note">487 bytes</span></li>
+<li>preprocessing-comparison: <a href="preprocessing-rooted-comparisons.tsv">preprocessing-rooted-comparisons.tsv</a><span class="artifact-note">497 bytes</span></li>
+<li>stable-clades: <a href="stable-clades.tsv">stable-clades.tsv</a><span class="artifact-note">439 bytes</span></li>
+<li>changed-clades: <a href="changed-clades.tsv">changed-clades.tsv</a><span class="artifact-note">1979 bytes</span></li>
+<li>conclusion-summary: <a href="method-conclusion-summary.tsv">method-conclusion-summary.tsv</a><span class="artifact-note">1645 bytes</span></li>
+<li>config: <a href="workflow-config.resolved.json">workflow-config.resolved.json</a><span class="artifact-note">1420 bytes</span></li>
+<li>workflow-manifest: <a href="rabies-method-sensitivity.manifest.json">rabies-method-sensitivity.manifest.json</a><span class="artifact-note">2983 bytes</span></li>
+<li>report-manifest: <a href="report-artifacts/rabies-method-sensitivity-report.manifest.json">report-artifacts/rabies-method-sensitivity-report.manifest.json</a><span class="artifact-note">1998 bytes</span></li>
+</ul></section>
+<section><h2>workflow-summary</h2><pre>dataset: Rabies method-sensitivity panel
 variants: 4
 execution mode: parallel
 parallel workers: 2

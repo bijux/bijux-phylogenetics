@@ -45,12 +45,21 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
     assert result.config_path.is_file()
     assert result.sequences_path.is_file()
     assert result.metadata_path.is_file()
-    assert len(expected_files) == 70
+    assert len(expected_files) == 71
     assert Path("parallel-execution-summary.tsv") in expected_files
     assert Path("rabies-method-sensitivity.manifest.json") in expected_files
+    assert (
+        Path("report-artifacts/rabies-method-sensitivity-report.manifest.json")
+        in expected_files
+    )
     assert Path("parallel-logs/auto-gap-threshold.log") in expected_files
     assert Path("workflow-summary.tsv") in expected_files
     assert Path("variants/auto-gap-threshold/unrooted-conclusions.tsv") in expected_files
+    report_html = (
+        result.expected_output_root / "rabies-method-sensitivity-report.html"
+    ).read_text(encoding="utf-8")
+    assert 'href="workflow-summary.tsv"' in report_html
+    assert "report-artifacts/rabies-method-sensitivity-report.manifest.json" in report_html
 
 
 @pytest.mark.slow
@@ -91,6 +100,7 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.workflow_bundle.variant_summary_path.is_file()
     assert result.workflow_bundle.parallel_summary_path.is_file()
     assert result.workflow_bundle.manifest_path.is_file()
+    assert result.workflow_bundle.report_manifest_path.is_file()
     assert result.workflow_bundle.task_logs_root.is_dir()
     assert result.workflow_bundle.report_path.is_file()
     assert result.overview_path.is_file()
@@ -144,7 +154,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 15
+    assert payload["metrics"]["artifact_count"] == 16
     assert payload["metrics"]["taxon_count"] == 9
     assert payload["metrics"]["variant_count"] == 4
     assert payload["metrics"]["parallel_workers"] == 2
@@ -154,11 +164,21 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["preprocessing_change_pair_count"] == 0
     assert payload["metrics"]["rooted_engine_change_variant_count"] == 0
     assert payload["metrics"]["serious_conflict_variant_count"] == 4
-    assert payload["metrics"]["reference_output_count"] == 70
+    assert payload["metrics"]["report_linked_artifact_count"] == 10
+    assert payload["metrics"]["report_html_size_bytes"] > 0
+    assert payload["metrics"]["report_linked_artifact_bytes"] > 0
+    assert payload["metrics"]["report_total_output_bytes"] >= payload["metrics"]["report_html_size_bytes"]
+    assert payload["metrics"]["reference_output_count"] == 71
     assert payload["data"]["dataset"]["dataset_id"] == "rabies_method_sensitivity_panel"
     assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
         output / "workflow" / "workflow-summary.tsv"
     )
     assert payload["data"]["workflow_bundle"]["parallel_summary_path"] == str(
         output / "workflow" / "parallel-execution-summary.tsv"
+    )
+    assert payload["data"]["workflow_bundle"]["report_manifest_path"] == str(
+        output
+        / "workflow"
+        / "report-artifacts"
+        / "rabies-method-sensitivity-report.manifest.json"
     )

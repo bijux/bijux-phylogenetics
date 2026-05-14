@@ -16002,6 +16002,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.workflow_bundle.conclusion_summary_path,
                         result.workflow_bundle.config_path,
                         result.workflow_bundle.manifest_path,
+                        result.workflow_bundle.report_manifest_path,
                         result.workflow_bundle.report_path,
                         result.overview_path,
                     ],
@@ -16045,6 +16046,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "serious_conflict_variant_count": (
                                     result.workflow_bundle.serious_conflict_variant_count
+                                ),
+                                "report_linked_artifact_count": (
+                                    result.workflow_bundle.report_linked_artifact_count
+                                ),
+                                "report_html_size_bytes": (
+                                    result.workflow_bundle.report_html_size_bytes
+                                ),
+                                "report_linked_artifact_bytes": (
+                                    result.workflow_bundle.report_linked_artifact_bytes
+                                ),
+                                "report_total_output_bytes": (
+                                    result.workflow_bundle.report_total_output_bytes
                                 ),
                                 "reference_output_count": expected_output_count,
                             },

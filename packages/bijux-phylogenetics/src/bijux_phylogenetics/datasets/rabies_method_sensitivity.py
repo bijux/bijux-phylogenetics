@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
@@ -201,7 +202,12 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     conclusion_summary_path: Path
     config_path: Path
     manifest_path: Path
+    report_manifest_path: Path
     report_path: Path
+    report_linked_artifact_count: int
+    report_html_size_bytes: int
+    report_linked_artifact_bytes: int
+    report_total_output_bytes: int
     task_logs_root: Path
     variants_root: Path
 
@@ -533,6 +539,34 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "variants_root": variants_root,
         },
     )
+    report_manifest_path = _write_report_manifest(
+        output_root / "report-artifacts" / "rabies-method-sensitivity-report.manifest.json",
+        report=report,
+        bundle_paths={
+            "workflow_summary": workflow_summary_path,
+            "variant_summary": variant_summary_path,
+            "parallel_summary": parallel_summary_path,
+            "preprocessing_comparison": preprocessing_comparison_path,
+            "stable_clades": stable_clades_path,
+            "changed_clades": changed_clades_path,
+            "conclusion_summary": conclusion_summary_path,
+            "config": config_path,
+            "workflow_manifest": manifest_path,
+        },
+    )
+    report_linked_files = (
+        workflow_summary_path,
+        variant_summary_path,
+        parallel_summary_path,
+        preprocessing_comparison_path,
+        stable_clades_path,
+        changed_clades_path,
+        conclusion_summary_path,
+        config_path,
+        manifest_path,
+        report_manifest_path,
+    )
+    report_linked_artifact_count = len(report_linked_files)
     report_path = _write_report(
         output_root / "rabies-method-sensitivity-report.html",
         report=report,
@@ -545,9 +579,13 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
             "changed_clades": changed_clades_path,
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
-            "manifest": manifest_path,
+            "workflow_manifest": manifest_path,
         },
+        report_manifest_path=report_manifest_path,
     )
+    report_html_size_bytes = report_path.stat().st_size
+    report_linked_artifact_bytes = sum(path.stat().st_size for path in report_linked_files)
+    report_total_output_bytes = report_html_size_bytes + report_linked_artifact_bytes
     preprocessing_change_pair_count = sum(
         1
         for row in report.preprocessing_comparison_rows
@@ -583,7 +621,12 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         conclusion_summary_path=conclusion_summary_path,
         config_path=config_path,
         manifest_path=manifest_path,
+        report_manifest_path=report_manifest_path,
         report_path=report_path,
+        report_linked_artifact_count=report_linked_artifact_count,
+        report_html_size_bytes=report_html_size_bytes,
+        report_linked_artifact_bytes=report_linked_artifact_bytes,
+        report_total_output_bytes=report_total_output_bytes,
         task_logs_root=task_logs_root,
         variants_root=variants_root,
     )
@@ -1294,11 +1337,46 @@ def _write_manifest(
     return path
 
 
+def _relative_bundle_path(base_path: Path, value: Path) -> str:
+    return Path(os.path.relpath(value, start=base_path.parent)).as_posix()
+
+
+def _write_report_manifest(
+    path: Path,
+    *,
+    report: RabiesMethodSensitivityPanelWorkflowReport,
+    bundle_paths: dict[str, Path],
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    linked_files = {key: value for key, value in bundle_paths.items() if value.is_file()}
+    payload = {
+        "dataset_id": report.dataset.dataset_id,
+        "report_kind": "rabies_method_sensitivity_html_report",
+        "variant_count": len(report.variant_runs),
+        "parallel_workers": report.parallel_workers,
+        "execution_mode": report.execution_mode,
+        "stable_clade_count": len(report.stable_clade_rows),
+        "changed_clade_count": len(report.changed_clade_rows),
+        "linked_artifact_count": len(linked_files),
+        "linked_artifacts": {
+            key: {
+                "path": _relative_bundle_path(path, value),
+                "byte_count": value.stat().st_size,
+                "sha256": _sha256(value),
+            }
+            for key, value in linked_files.items()
+        },
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
 def _write_report(
     path: Path,
     *,
     report: RabiesMethodSensitivityPanelWorkflowReport,
     bundle_paths: dict[str, Path],
+    report_manifest_path: Path,
 ) -> Path:
     variant_lines = [
         (
@@ -1350,10 +1428,20 @@ def _write_report(
                     f"changed clades: {bundle_paths['changed_clades'].name}",
                     f"method conclusions: {bundle_paths['conclusion_summary'].name}",
                     f"resolved config: {bundle_paths['config'].name}",
-                    f"workflow manifest: {bundle_paths['manifest'].name}",
+                    f"workflow manifest: {bundle_paths['workflow_manifest'].name}",
                 ]
             ),
         ),
+    ]
+    report_manifest = json.loads(report_manifest_path.read_text(encoding="utf-8"))
+    artifact_links = [
+        (
+            key.replace("_", "-"),
+            _relative_bundle_path(path, value),
+            f"{value.stat().st_size} bytes",
+        )
+        for key, value in bundle_paths.items()
+        if value.is_file()
     ]
     return write_html_report(
         title="Rabies Method-Sensitivity Report",
@@ -1366,7 +1454,24 @@ def _write_report(
             "execution_mode": report.execution_mode,
             "stable_clade_count": len(report.stable_clade_rows),
             "changed_clade_count": len(report.changed_clade_rows),
+            "report_manifest_path": _relative_bundle_path(path, report_manifest_path),
         },
+        summary_metrics=[
+            ("variants", len(report.variant_runs)),
+            ("execution mode", report.execution_mode),
+            ("parallel workers", report.parallel_workers),
+            ("stable clades", len(report.stable_clade_rows)),
+            ("changed clades", len(report.changed_clade_rows)),
+            ("linked artifacts", report_manifest["linked_artifact_count"]),
+        ],
+        artifact_links=[
+            *artifact_links,
+            (
+                "report-manifest",
+                _relative_bundle_path(path, report_manifest_path),
+                f"{report_manifest_path.stat().st_size} bytes",
+            ),
+        ],
     )
 
 
@@ -1390,7 +1495,11 @@ def _write_overview(
         f"- preprocessing-rooted changes: `{bundle.preprocessing_change_pair_count}`",
         f"- rooted engine changes: `{bundle.rooted_engine_change_variant_count}`",
         f"- variants with unrooted serious conflicts: `{bundle.serious_conflict_variant_count}`",
+        f"- report linked artifacts: `{bundle.report_linked_artifact_count}`",
+        f"- report html bytes: `{bundle.report_html_size_bytes}`",
+        f"- report total output bytes: `{bundle.report_total_output_bytes}`",
         f"- workflow manifest: `{bundle.manifest_path.name}`",
+        f"- report manifest: `{bundle.report_manifest_path.relative_to(bundle.output_root).as_posix()}`",
         f"- report: `{bundle.report_path.name}`",
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")

@@ -1,0 +1,57 @@
+{
+  "changed_clade_count": 8,
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "execution_mode": "parallel",
+  "linked_artifact_count": 9,
+  "linked_artifacts": {
+    "changed_clades": {
+      "byte_count": 1979,
+      "path": "../changed-clades.tsv",
+      "sha256": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf"
+    },
+    "conclusion_summary": {
+      "byte_count": 1645,
+      "path": "../method-conclusion-summary.tsv",
+      "sha256": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f"
+    },
+    "config": {
+      "byte_count": 1420,
+      "path": "../workflow-config.resolved.json",
+      "sha256": "6bf41c83ce33785660e9512bd4c18fc906ae263290d6498eb3aa458010823099"
+    },
+    "parallel_summary": {
+      "byte_count": 487,
+      "path": "../parallel-execution-summary.tsv",
+      "sha256": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1"
+    },
+    "preprocessing_comparison": {
+      "byte_count": 497,
+      "path": "../preprocessing-rooted-comparisons.tsv",
+      "sha256": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d"
+    },
+    "stable_clades": {
+      "byte_count": 439,
+      "path": "../stable-clades.tsv",
+      "sha256": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e"
+    },
+    "variant_summary": {
+      "byte_count": 606,
+      "path": "../variant-summary.tsv",
+      "sha256": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab"
+    },
+    "workflow_manifest": {
+      "byte_count": 2983,
+      "path": "../rabies-method-sensitivity.manifest.json",
+      "sha256": "39442496722379a34c5d5df7336045f893d5dc0006cfa2366122dfa81579452a"
+    },
+    "workflow_summary": {
+      "byte_count": 239,
+      "path": "../workflow-summary.tsv",
+      "sha256": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f"
+    }
+  },
+  "parallel_workers": 2,
+  "report_kind": "rabies_method_sensitivity_html_report",
+  "stable_clade_count": 2,
+  "variant_count": 4
+}
