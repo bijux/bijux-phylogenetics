@@ -5,6 +5,8 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
+from time import perf_counter
+import tracemalloc
 
 from bijux_phylogenetics.core.alignment import (
     AlignmentAmbiguousColumnReport,
@@ -80,10 +82,14 @@ from bijux_phylogenetics.reference_validation import (
 )
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.tree_set import (
+    TreeSetProcessingSummary,
+    TreeSetWorkflowBudgetReport,
     assess_tree_set_maturity,
     assess_tree_set_storage_risk,
     assess_tree_set_thinning_sensitivity,
     benchmark_tree_set_uncertainty,
+    build_tree_set_budget_report,
+    build_tree_set_workflow_budget,
     cluster_trees_by_topology,
     compare_consensus_thresholds,
     compare_posterior_topological_diversity,
@@ -93,6 +99,7 @@ from bijux_phylogenetics.tree_set import (
     detect_posterior_topology_multimodality,
     detect_unstable_clades,
     detect_unstable_taxa,
+    enforce_tree_set_tree_budget,
     load_tree_set,
     summarize_posterior_topology_diversity,
     summarize_clade_credibility_conflicts,
@@ -161,6 +168,8 @@ class TreeUncertaintyReportBuildResult:
     source_path: Path
     tree_count: int
     rooted_topology_count: int
+    processing: TreeSetProcessingSummary
+    budget_report: TreeSetWorkflowBudgetReport
     machine_manifest: dict[str, object]
 
 
@@ -337,6 +346,19 @@ def write_annotation_report(path: Path, report: TableLinkageReport) -> Path:
 
 def _section(name: str, payload: object) -> tuple[str, str]:
     return name, json.dumps(payload, default=str, indent=2, sort_keys=True)
+
+
+def _truncate_report_rows(
+    rows: list[object],
+    *,
+    limit: int | None,
+    section_name: str,
+    truncated_sections: list[str],
+) -> tuple[list[object], int]:
+    if limit is None or len(rows) <= limit:
+        return rows, 0
+    truncated_sections.append(section_name)
+    return rows[:limit], len(rows) - limit
 
 
 def _write_machine_manifest(path: Path, payload: dict[str, object]) -> Path:
@@ -1374,83 +1396,296 @@ def render_distance_report(
 
 
 def render_tree_uncertainty_report(
-    *, tree_set_path: Path, out_path: Path
+    *,
+    tree_set_path: Path,
+    out_path: Path,
+    max_tree_count: int | None = None,
+    max_report_table_rows: int | None = None,
+    memory_warning_threshold_bytes: int | None = None,
 ) -> TreeUncertaintyReportBuildResult:
     """Build a deterministic HTML report for consensus and uncertainty across a tree set."""
-    summary = load_tree_set(tree_set_path)
-    consensus_tree, consensus = compute_consensus_tree(tree_set_path)
-    clade_frequencies = compute_clade_frequency_table(tree_set_path)
-    clusters = cluster_trees_by_topology(tree_set_path)
-    diversity = summarize_posterior_topology_diversity(tree_set_path)
-    multimodality = detect_posterior_topology_multimodality(tree_set_path)
-    unstable_taxa = detect_unstable_taxa(tree_set_path)
-    unstable_clades = detect_unstable_clades(tree_set_path)
-    clade_conflicts = summarize_clade_credibility_conflicts(tree_set_path)
-    conclusion_summary = summarize_uncertainty_aware_conclusions(tree_set_path)
-    storage_risk = assess_tree_set_storage_risk(tree_set_path)
-    thinning_sensitivity = assess_tree_set_thinning_sensitivity(tree_set_path)
-    consensus_sensitivity = compare_consensus_thresholds(tree_set_path)
-    maturity = assess_tree_set_maturity(tree_set_path)
-    benchmark = benchmark_tree_set_uncertainty(
-        tree_counts=[summary.tree_count],
-        taxon_counts=[max(len(summary.shared_taxa), 2)],
+    budget = build_tree_set_workflow_budget(
+        max_tree_count=max_tree_count,
+        max_report_table_rows=max_report_table_rows,
+        memory_warning_threshold_bytes=memory_warning_threshold_bytes,
     )
-    title = "Bijux Tree Uncertainty Report"
-    sections = [
-        _section("tree-set-summary", asdict(summary)),
-        _section(
-            "consensus-tree",
-            {"newick": dumps_newick(consensus_tree), "report": asdict(consensus)},
-        ),
-        _section("clade-frequencies", asdict(clade_frequencies)),
-        _section(
-            "rf-distance-distribution",
-            {
-                "tree_count": diversity.tree_count,
-                "pair_count": diversity.pair_count,
-                "rows": [asdict(row) for row in diversity.rf_distribution],
-            },
-        ),
-        _section("topology-clusters", asdict(clusters)),
-        _section("topological-diversity", asdict(diversity)),
-        _section("topology-multimodality", asdict(multimodality)),
-        _section("unstable-taxa", asdict(unstable_taxa)),
-        _section("unstable-clades", asdict(unstable_clades)),
-        _section("clade-credibility-conflicts", asdict(clade_conflicts)),
-        _section("uncertainty-aware-conclusions", asdict(conclusion_summary)),
-        _section("storage-risk", asdict(storage_risk)),
-        _section("thinning-sensitivity", asdict(thinning_sensitivity)),
-        _section("consensus-threshold-sensitivity", asdict(consensus_sensitivity)),
-        _section("tree-set-benchmark", asdict(benchmark)),
-        _section("maturity-gate", asdict(maturity)),
-    ]
-    core_sections = sections[:11]
-    supplemental_sections = sections[11:]
-    machine_manifest = {
-        "report_kind": "tree-uncertainty",
-        "title": title,
-        "source_path": str(tree_set_path),
-        "input_checksum": _sha256(tree_set_path),
-        "tree_count": summary.tree_count,
-        "rooted_topology_count": summary.rooted_topology_count,
-        "sections": [name for name, _ in core_sections],
-        "supplemental_sections": [name for name, _ in supplemental_sections],
-    }
-    write_html_report(
-        title=title,
-        sections=sections,
-        out_path=out_path,
-        embedded_json=machine_manifest,
-    )
-    return TreeUncertaintyReportBuildResult(
-        output_path=out_path,
-        report_kind="tree-uncertainty",
-        title=title,
-        source_path=tree_set_path,
-        tree_count=summary.tree_count,
-        rooted_topology_count=summary.rooted_topology_count,
-        machine_manifest=machine_manifest,
-    )
+    started = perf_counter()
+    started_tracing = tracemalloc.is_tracing()
+    if not started_tracing:
+        tracemalloc.start()
+    try:
+        summary = load_tree_set(tree_set_path)
+        enforce_tree_set_tree_budget(
+            tree_count=summary.tree_count,
+            budget=budget,
+            workflow_name="tree uncertainty report",
+            source_path=tree_set_path,
+        )
+        consensus_tree, consensus = compute_consensus_tree(tree_set_path)
+        clade_frequencies = compute_clade_frequency_table(tree_set_path)
+        clusters = cluster_trees_by_topology(tree_set_path)
+        diversity = summarize_posterior_topology_diversity(tree_set_path)
+        multimodality = detect_posterior_topology_multimodality(tree_set_path)
+        unstable_taxa = detect_unstable_taxa(tree_set_path)
+        unstable_clades = detect_unstable_clades(tree_set_path)
+        clade_conflicts = summarize_clade_credibility_conflicts(tree_set_path)
+        conclusion_summary = summarize_uncertainty_aware_conclusions(tree_set_path)
+        storage_risk = assess_tree_set_storage_risk(tree_set_path)
+        thinning_sensitivity = assess_tree_set_thinning_sensitivity(tree_set_path)
+        consensus_sensitivity = compare_consensus_thresholds(tree_set_path)
+        maturity = assess_tree_set_maturity(tree_set_path)
+        benchmark = benchmark_tree_set_uncertainty(
+            tree_counts=[summary.tree_count],
+            taxon_counts=[max(len(summary.shared_taxa), 2)],
+        )
+        title = "Bijux Tree Uncertainty Report"
+        truncated_sections: list[str] = []
+        clade_frequency_rows, clade_frequency_truncated = _truncate_report_rows(
+            [asdict(row) for row in clade_frequencies.clade_frequencies],
+            limit=budget.max_report_table_rows,
+            section_name="clade-frequencies",
+            truncated_sections=truncated_sections,
+        )
+        rf_rows, rf_truncated = _truncate_report_rows(
+            [asdict(row) for row in diversity.rf_distribution],
+            limit=budget.max_report_table_rows,
+            section_name="rf-distance-distribution",
+            truncated_sections=truncated_sections,
+        )
+        cluster_rows, cluster_truncated = _truncate_report_rows(
+            [asdict(row) for row in clusters.clusters],
+            limit=budget.max_report_table_rows,
+            section_name="topology-clusters",
+            truncated_sections=truncated_sections,
+        )
+        unstable_taxa_rows, unstable_taxa_truncated = _truncate_report_rows(
+            [asdict(row) for row in unstable_taxa.taxa],
+            limit=budget.max_report_table_rows,
+            section_name="unstable-taxa",
+            truncated_sections=truncated_sections,
+        )
+        unstable_clade_rows, unstable_clade_truncated = _truncate_report_rows(
+            [asdict(row) for row in unstable_clades.clades],
+            limit=budget.max_report_table_rows,
+            section_name="unstable-clades",
+            truncated_sections=truncated_sections,
+        )
+        conflict_rows, conflict_truncated = _truncate_report_rows(
+            [asdict(row) for row in clade_conflicts.conflicts],
+            limit=budget.max_report_table_rows,
+            section_name="clade-credibility-conflicts",
+            truncated_sections=truncated_sections,
+        )
+        robust_rows, robust_truncated = _truncate_report_rows(
+            [asdict(row) for row in conclusion_summary.robust_clades],
+            limit=budget.max_report_table_rows,
+            section_name="uncertainty-aware-conclusions.robust",
+            truncated_sections=truncated_sections,
+        )
+        uncertain_rows, uncertain_truncated = _truncate_report_rows(
+            [asdict(row) for row in conclusion_summary.uncertain_clades],
+            limit=budget.max_report_table_rows,
+            section_name="uncertainty-aware-conclusions.uncertain",
+            truncated_sections=truncated_sections,
+        )
+        conflicting_rows, conflicting_truncated = _truncate_report_rows(
+            [asdict(row) for row in conclusion_summary.conflicting_clades],
+            limit=budget.max_report_table_rows,
+            section_name="uncertainty-aware-conclusions.conflicting",
+            truncated_sections=truncated_sections,
+        )
+        thinning_rows, thinning_truncated = _truncate_report_rows(
+            [asdict(row) for row in thinning_sensitivity.rows],
+            limit=budget.max_report_table_rows,
+            section_name="thinning-sensitivity",
+            truncated_sections=truncated_sections,
+        )
+        consensus_rows, consensus_truncated = _truncate_report_rows(
+            [asdict(row) for row in consensus_sensitivity.rows],
+            limit=budget.max_report_table_rows,
+            section_name="consensus-threshold-sensitivity",
+            truncated_sections=truncated_sections,
+        )
+        benchmark_rows, benchmark_truncated = _truncate_report_rows(
+            [asdict(row) for row in benchmark.rows],
+            limit=budget.max_report_table_rows,
+            section_name="tree-set-benchmark",
+            truncated_sections=truncated_sections,
+        )
+        sections = [
+            _section("tree-set-summary", asdict(summary)),
+            _section(
+                "consensus-tree",
+                {"newick": dumps_newick(consensus_tree), "report": asdict(consensus)},
+            ),
+            _section(
+                "clade-frequencies",
+                {
+                    "tree_count": clade_frequencies.tree_count,
+                    "shared_taxa": clade_frequencies.shared_taxa,
+                    "row_count": len(clade_frequencies.clade_frequencies),
+                    "truncated_row_count": clade_frequency_truncated,
+                    "rows": clade_frequency_rows,
+                },
+            ),
+            _section(
+                "rf-distance-distribution",
+                {
+                    "tree_count": diversity.tree_count,
+                    "pair_count": diversity.pair_count,
+                    "row_count": len(diversity.rf_distribution),
+                    "truncated_row_count": rf_truncated,
+                    "rows": rf_rows,
+                },
+            ),
+            _section(
+                "topology-clusters",
+                {
+                    "tree_count": clusters.tree_count,
+                    "rooted_topology_count": clusters.rooted_topology_count,
+                    "row_count": len(clusters.clusters),
+                    "truncated_row_count": cluster_truncated,
+                    "rows": cluster_rows,
+                },
+            ),
+            _section("topological-diversity", asdict(diversity)),
+            _section("topology-multimodality", asdict(multimodality)),
+            _section(
+                "unstable-taxa",
+                {
+                    "tree_count": unstable_taxa.tree_count,
+                    "row_count": len(unstable_taxa.taxa),
+                    "truncated_row_count": unstable_taxa_truncated,
+                    "rows": unstable_taxa_rows,
+                },
+            ),
+            _section(
+                "unstable-clades",
+                {
+                    "tree_count": unstable_clades.tree_count,
+                    "row_count": len(unstable_clades.clades),
+                    "truncated_row_count": unstable_clade_truncated,
+                    "rows": unstable_clade_rows,
+                },
+            ),
+            _section(
+                "clade-credibility-conflicts",
+                {
+                    "tree_count": clade_conflicts.tree_count,
+                    "credibility_threshold": clade_conflicts.credibility_threshold,
+                    "high_credibility_clade_count": (
+                        clade_conflicts.high_credibility_clade_count
+                    ),
+                    "row_count": len(clade_conflicts.conflicts),
+                    "truncated_row_count": conflict_truncated,
+                    "rows": conflict_rows,
+                },
+            ),
+            _section(
+                "uncertainty-aware-conclusions",
+                {
+                    "tree_count": conclusion_summary.tree_count,
+                    "robust_clade_count": conclusion_summary.robust_clade_count,
+                    "uncertain_clade_count": conclusion_summary.uncertain_clade_count,
+                    "conflicting_clade_count": (
+                        conclusion_summary.conflicting_clade_count
+                    ),
+                    "robust_rows": robust_rows,
+                    "robust_truncated_row_count": robust_truncated,
+                    "uncertain_rows": uncertain_rows,
+                    "uncertain_truncated_row_count": uncertain_truncated,
+                    "conflicting_rows": conflicting_rows,
+                    "conflicting_truncated_row_count": conflicting_truncated,
+                },
+            ),
+            _section("storage-risk", asdict(storage_risk)),
+            _section(
+                "thinning-sensitivity",
+                {
+                    "path": str(thinning_sensitivity.path),
+                    "original_tree_count": thinning_sensitivity.original_tree_count,
+                    "original_rooted_topology_count": (
+                        thinning_sensitivity.original_rooted_topology_count
+                    ),
+                    "original_dominant_topology_frequency": (
+                        thinning_sensitivity.original_dominant_topology_frequency
+                    ),
+                    "warning_count": len(thinning_sensitivity.warnings),
+                    "warnings": thinning_sensitivity.warnings,
+                    "row_count": len(thinning_sensitivity.rows),
+                    "truncated_row_count": thinning_truncated,
+                    "rows": thinning_rows,
+                },
+            ),
+            _section(
+                "consensus-threshold-sensitivity",
+                {
+                    "path": str(consensus_sensitivity.path),
+                    "tree_count": consensus_sensitivity.tree_count,
+                    "warning_count": len(consensus_sensitivity.warnings),
+                    "warnings": consensus_sensitivity.warnings,
+                    "row_count": len(consensus_sensitivity.rows),
+                    "truncated_row_count": consensus_truncated,
+                    "rows": consensus_rows,
+                },
+            ),
+            _section(
+                "tree-set-benchmark",
+                {
+                    "tree_counts": benchmark.tree_counts,
+                    "taxon_counts": benchmark.taxon_counts,
+                    "row_count": len(benchmark.rows),
+                    "truncated_row_count": benchmark_truncated,
+                    "rows": benchmark_rows,
+                },
+            ),
+            _section("maturity-gate", asdict(maturity)),
+        ]
+        core_sections = sections[:11]
+        supplemental_sections = sections[11:]
+        _current, peak = tracemalloc.get_traced_memory()
+        processing = TreeSetProcessingSummary(
+            runtime_seconds=round(perf_counter() - started, 6),
+            peak_memory_bytes=peak,
+            skipped_malformed_tree_count=summary.processing.skipped_malformed_tree_count,
+        )
+        budget_report = build_tree_set_budget_report(
+            budget=budget,
+            peak_memory_bytes=processing.peak_memory_bytes,
+            truncated_section_names=truncated_sections,
+        )
+        machine_manifest = {
+            "report_kind": "tree-uncertainty",
+            "title": title,
+            "source_path": str(tree_set_path),
+            "input_checksum": _sha256(tree_set_path),
+            "tree_count": summary.tree_count,
+            "rooted_topology_count": summary.rooted_topology_count,
+            "processing": asdict(processing),
+            "budget": asdict(budget_report),
+            "sections": [name for name, _ in core_sections],
+            "supplemental_sections": [name for name, _ in supplemental_sections],
+        }
+        write_html_report(
+            title=title,
+            sections=sections,
+            out_path=out_path,
+            embedded_json=machine_manifest,
+        )
+        return TreeUncertaintyReportBuildResult(
+            output_path=out_path,
+            report_kind="tree-uncertainty",
+            title=title,
+            source_path=tree_set_path,
+            tree_count=summary.tree_count,
+            rooted_topology_count=summary.rooted_topology_count,
+            processing=processing,
+            budget_report=budget_report,
+            machine_manifest=machine_manifest,
+        )
+    finally:
+        if not started_tracing:
+            tracemalloc.stop()
 
 
 def render_tree_set_comparison_report(
