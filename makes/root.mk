@@ -281,20 +281,26 @@ package-check: build ## Validate built distributions with twine
 	@"$(ROOT_CHECK_PYTHON)" -m twine check "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.whl "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.tar.gz
 .PHONY: package-check
 
-package-smoke: build ## Install the wheel into a temp venv and run the CLI
+package-smoke: build ## Install the wheel into a temp venv and run the governed CLI smoke proof
 	@rm -rf "$(CURDIR)/artifacts/tmp/package-smoke"
-	@"$(UV)" venv --python "$(PYTHON)" "$(CURDIR)/artifacts/tmp/package-smoke"
-	@"$(UV)" pip install --python "$(CURDIR)/artifacts/tmp/package-smoke/bin/python" "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.whl
-	@"$(CURDIR)/artifacts/tmp/package-smoke/bin/bijux-phylogenetics" --version
-	@"$(CURDIR)/artifacts/tmp/package-smoke/bin/bijux-phylogenetics" --help >/dev/null
+	@PYTHONPATH="$(CURDIR)/packages/bijux-phylogenetics-dev/src$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	"$(ROOT_CHECK_PYTHON)" -m bijux_phylogenetics_dev.quality.package_install_smoke \
+		--repo-root "$(CURDIR)" \
+		--dist-dir "$(CURDIR)/artifacts/bijux-phylogenetics/build" \
+		--artifacts-root "$(CURDIR)/artifacts/tmp/package-smoke" \
+		--build-python "$(ROOT_CHECK_PYTHON)" \
+		--artifact-kind wheel
 .PHONY: package-smoke
 
-package-source-smoke: build ## Install the sdist into a temp venv and run the CLI
+package-source-smoke: build ## Install the sdist into a temp venv and run the governed CLI smoke proof
 	@rm -rf "$(CURDIR)/artifacts/tmp/package-source-smoke"
-	@"$(UV)" venv --python "$(PYTHON)" "$(CURDIR)/artifacts/tmp/package-source-smoke"
-	@"$(UV)" pip install --python "$(CURDIR)/artifacts/tmp/package-source-smoke/bin/python" "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.tar.gz
-	@"$(CURDIR)/artifacts/tmp/package-source-smoke/bin/bijux-phylogenetics" --version
-	@"$(CURDIR)/artifacts/tmp/package-source-smoke/bin/bijux-phylogenetics" --help >/dev/null
+	@PYTHONPATH="$(CURDIR)/packages/bijux-phylogenetics-dev/src$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	"$(ROOT_CHECK_PYTHON)" -m bijux_phylogenetics_dev.quality.package_install_smoke \
+		--repo-root "$(CURDIR)" \
+		--dist-dir "$(CURDIR)/artifacts/bijux-phylogenetics/build" \
+		--artifacts-root "$(CURDIR)/artifacts/tmp/package-source-smoke" \
+		--build-python "$(ROOT_CHECK_PYTHON)" \
+		--artifact-kind sdist
 .PHONY: package-source-smoke
 
 package-verify: package-check package-smoke package-source-smoke ## Run the full packaging proof surface

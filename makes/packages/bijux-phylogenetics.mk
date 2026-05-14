@@ -53,24 +53,14 @@ test-all-plus-run-time: test
 .PHONY: test-all-plus-run-time
 
 build-install-smoke:
-	@tmp_root="$(PROJECT_ARTIFACTS_DIR)/tmp/build-install-smoke"; \
-	dist_name="$$(printf '%s' "$(BUILD_PACKAGE_NAME)" | tr '-' '_')"; \
-	wheel_path="$$(ls -1t "$(BUILD_DIR_ABS)/$${dist_name}"-*.whl | head -n 1)"; \
-	sdist_path="$$(ls -1t "$(BUILD_DIR_ABS)/$${dist_name}"-*.tar.gz | head -n 1)"; \
-	export PIP_DISABLE_PIP_VERSION_CHECK=1; \
-	if [ -z "$$wheel_path" ] || [ -z "$$sdist_path" ]; then \
-	  echo "✘ Missing build artifacts for $(BUILD_PACKAGE_NAME) in $(BUILD_DIR_ABS)"; \
-	  exit 1; \
-	fi; \
-	rm -rf "$$tmp_root"; \
-	"$(BUILD_PYTHON)" -m venv "$$tmp_root/smoke"; \
-	"$$tmp_root/smoke/bin/python" -m pip install "$$wheel_path"; \
-	"$$tmp_root/smoke/bin/bijux-phylogenetics" --version; \
-	"$$tmp_root/smoke/bin/bijux-phylogenetics" --help >/dev/null; \
-	"$$tmp_root/smoke/bin/python" -m pip uninstall -y "$(BUILD_PACKAGE_NAME)" >/dev/null; \
-	"$$tmp_root/smoke/bin/python" -m pip install "$$sdist_path"; \
-	"$$tmp_root/smoke/bin/bijux-phylogenetics" --version; \
-	"$$tmp_root/smoke/bin/bijux-phylogenetics" --help >/dev/null
+	@rm -rf "$(PROJECT_ARTIFACTS_DIR)/tmp/build-install-smoke"
+	@PYTHONPATH="$(MONOREPO_ROOT)/packages/bijux-phylogenetics-dev/src$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.quality.package_install_smoke \
+		--repo-root "$(MONOREPO_ROOT)" \
+		--dist-dir "$(BUILD_DIR_ABS)" \
+		--artifacts-root "$(PROJECT_ARTIFACTS_DIR)/tmp/build-install-smoke" \
+		--build-python "$(VENV_PYTHON)" \
+		--artifact-kind both
 .PHONY: build-install-smoke
 
 external-engine-lane:
