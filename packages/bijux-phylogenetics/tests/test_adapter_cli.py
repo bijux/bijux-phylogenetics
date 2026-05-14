@@ -237,7 +237,7 @@ def _fake_mrbayes(path: Path) -> Path:
 import sys
 from pathlib import Path
 
-if "--version" in sys.argv[1:]:
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
     print("MrBayes v3.2.7a fixture")
     raise SystemExit(0)
 
@@ -293,7 +293,7 @@ def _fake_mrbayes_malformed_outputs(path: Path) -> Path:
 import sys
 from pathlib import Path
 
-if "--version" in sys.argv[1:]:
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
     print("MrBayes v3.2.7a fixture")
     raise SystemExit(0)
 

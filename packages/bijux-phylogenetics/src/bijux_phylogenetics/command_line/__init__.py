@@ -1073,6 +1073,8 @@ def _adapter_version_args(engine_name: str) -> tuple[str, ...]:
     normalized = engine_name.lower()
     if normalized == "fasttree":
         return ("-help",)
+    if normalized == "mrbayes":
+        return ("-v",)
     return ("--version",)
 
 

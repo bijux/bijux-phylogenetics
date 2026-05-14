@@ -102,7 +102,7 @@ _ENGINE_POLICIES: tuple[EngineSupportPolicy, ...] = (
         engine_id="mrbayes",
         display_name="MrBayes",
         default_executable="mb",
-        version_args=("--version",),
+        version_args=("-v",),
         minimum_supported=(3, 2, 0),
         tested_before=(4, 0, 0),
     ),

@@ -597,7 +597,7 @@ def run_mrbayes_posterior_inference(
     version = read_engine_version(
         "MrBayes",
         executable,
-        version_args=("--version",),
+        version_args=("-v",),
         timeout_seconds=timeout_seconds,
     )
     run = execute_engine_command(

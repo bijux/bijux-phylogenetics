@@ -30,6 +30,8 @@ def fake_engine_metadata(monkeypatch: pytest.MonkeyPatch):
 
     def fake_read(engine_name: str, executable: str | Path, *, version_args):
         key = Path(executable).name if Path(executable).name in installed else str(executable)
+        if key == "mb":
+            assert version_args == ("-v",)
         version_text = installed[key][0]
         from bijux_phylogenetics.engines.common import EngineVersionInfo
 
