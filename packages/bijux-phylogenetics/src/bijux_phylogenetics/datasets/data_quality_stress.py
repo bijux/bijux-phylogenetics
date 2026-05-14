@@ -8,8 +8,11 @@ from tempfile import TemporaryDirectory
 
 from bijux_phylogenetics.core.alignment import (
     AlignmentRecord,
+    CodingSequencePreparationReport,
+    FastaRepairReport,
     FastaInputValidationReport,
     SequenceCompositionOutlier,
+    SequenceLengthOutlier,
 )
 from bijux_phylogenetics.core.metadata import write_taxon_rows
 from bijux_phylogenetics.core.pruning import drop_tree_taxa
@@ -20,6 +23,7 @@ from bijux_phylogenetics.core.traits import (
     validate_traits_table,
 )
 from bijux_phylogenetics.core.tree import TreeNode
+from bijux_phylogenetics.errors import MetadataJoinError
 from bijux_phylogenetics.diagnostics.validation import (
     TreeInspectionReport,
     TreeValidationReport,
@@ -28,7 +32,10 @@ from bijux_phylogenetics.diagnostics.validation import (
 )
 from bijux_phylogenetics.io.fasta import (
     detect_composition_outlier_sequences,
+    detect_sequence_length_outliers,
     load_fasta_alignment,
+    prepare_coding_sequences_for_alignment,
+    repair_fasta_input,
     validate_fasta_input,
     write_fasta_alignment,
 )
@@ -37,8 +44,11 @@ from bijux_phylogenetics.io.newick import write_newick
 _DATASET_ID = "catarrhine_data_quality_stress_panel"
 _DATASET_LABEL = "Catarrhine data quality stress panel"
 _RAW_ALIGNMENT_NAME = "alignment.fasta"
+_RAW_SEQUENCE_INPUT_NAME = "sequence-input.fasta"
+_RAW_CODING_SEQUENCE_NAME = "coding-sequences.fasta"
 _RAW_TREE_NAME = "tree.nwk"
 _RAW_TRAITS_NAME = "traits.csv"
+_RAW_TRAIT_MISMATCH_NAME = "traits-mismatch.csv"
 _SEQUENCE_TYPE = "dna"
 _WORKFLOW_REQUIRED_TRAITS = ("body_mass_g", "gestation_days")
 _TREE_BRANCH_FLOOR = 1e-6
@@ -55,6 +65,9 @@ class CatarrhineDataQualityStressPanelDataset:
     raw_alignment_path: Path
     raw_tree_path: Path
     raw_traits_path: Path
+    raw_sequence_input_path: Path
+    raw_coding_sequences_path: Path
+    raw_trait_mismatch_path: Path
     reference_output_root: Path
     taxon_count: int
     raw_trait_row_count: int
@@ -72,6 +85,9 @@ class CatarrhineDataQualityStressPanelExportResult:
     raw_alignment_path: Path
     raw_tree_path: Path
     raw_traits_path: Path
+    raw_sequence_input_path: Path
+    raw_coding_sequences_path: Path
+    raw_trait_mismatch_path: Path
     expected_output_root: Path
 
 
@@ -114,6 +130,13 @@ class CatarrhineDataQualityStressPanelWorkflowReport:
     """Audit and cleanup report for the packaged stress panel."""
 
     dataset: CatarrhineDataQualityStressPanelDataset
+    raw_sequence_input_validation: FastaInputValidationReport
+    raw_sequence_input_repair: FastaRepairReport
+    raw_sequence_length_outliers: list[SequenceLengthOutlier]
+    repaired_sequence_input_validation: FastaInputValidationReport
+    coding_sequence_preparation: CodingSequencePreparationReport
+    raw_trait_mismatch_linkage: TraitLinkageReport
+    raw_trait_mismatch_error: str | None
     raw_alignment_validation: FastaInputValidationReport
     sequence_outliers: list[SequenceCompositionOutlier]
     raw_tree_inspection: TreeInspectionReport
@@ -125,6 +148,8 @@ class CatarrhineDataQualityStressPanelWorkflowReport:
     cleaned_linkage: TraitLinkageReport
     cleaned_alignment_validation: FastaInputValidationReport
     cleaned_alignment_records: list[AlignmentRecord]
+    repaired_sequence_input_path: Path
+    prepared_coding_sequences_path: Path
     cleaned_tree_path: Path
     cleaned_traits_path: Path
     cleaned_alignment_path: Path
@@ -141,14 +166,30 @@ class CatarrhineDataQualityStressPanelWorkflowBundle:
     output_root: Path
     raw_taxon_count: int
     cleaned_taxon_count: int
+    duplicate_sequence_identifier_count: int
+    illegal_character_count: int
+    empty_sequence_count: int
+    raw_sequence_length_outlier_count: int
     duplicate_trait_taxon_count: int
     missing_trait_value_count: int
     sequence_outlier_count: int
     tree_zero_length_branch_count: int
+    tree_negative_branch_count: int
     tree_long_branch_outlier_count: int
+    coding_frame_error_count: int
+    coding_internal_stop_count: int
+    raw_trait_missing_from_traits_count: int
+    raw_trait_extra_taxon_count: int
     dropped_taxon_count: int
     repaired_branch_count: int
     workflow_summary_path: Path
+    raw_sequence_findings_path: Path
+    raw_sequence_repair_path: Path
+    repaired_sequence_input_path: Path
+    repaired_sequence_validation_path: Path
+    coding_sequence_exclusions_path: Path
+    prepared_coding_sequences_path: Path
+    raw_trait_linkage_path: Path
     trait_duplicates_path: Path
     trait_missing_values_path: Path
     sequence_outliers_path: Path
@@ -179,8 +220,11 @@ def load_catarrhine_data_quality_stress_panel_dataset() -> (
     dataset_root = _resource_root()
     raw_root = dataset_root / "raw"
     raw_alignment_path = raw_root / _RAW_ALIGNMENT_NAME
+    raw_sequence_input_path = raw_root / _RAW_SEQUENCE_INPUT_NAME
+    raw_coding_sequences_path = raw_root / _RAW_CODING_SEQUENCE_NAME
     raw_tree_path = raw_root / _RAW_TREE_NAME
     raw_traits_path = raw_root / _RAW_TRAITS_NAME
+    raw_trait_mismatch_path = raw_root / _RAW_TRAIT_MISMATCH_NAME
     taxon_count = validate_fasta_input(
         raw_alignment_path, sequence_type=_SEQUENCE_TYPE
     ).summary.sequence_count
@@ -193,6 +237,9 @@ def load_catarrhine_data_quality_stress_panel_dataset() -> (
         raw_alignment_path=raw_alignment_path,
         raw_tree_path=raw_tree_path,
         raw_traits_path=raw_traits_path,
+        raw_sequence_input_path=raw_sequence_input_path,
+        raw_coding_sequences_path=raw_coding_sequences_path,
+        raw_trait_mismatch_path=raw_trait_mismatch_path,
         reference_output_root=dataset_root / "expected",
         taxon_count=taxon_count,
         raw_trait_row_count=raw_trait_row_count,
@@ -200,9 +247,10 @@ def load_catarrhine_data_quality_stress_panel_dataset() -> (
         sequence_type=_SEQUENCE_TYPE,
         source_summary=(
             "Real catarrhine mitochondrial sequence and topology material packaged "
-            "with deliberate data-quality defects so duplicate traits, missing "
-            "values, sequence outliers, and branch-length pathologies remain "
-            "visible and reviewable."
+            "with deliberate data-quality defects so duplicate FASTA identifiers, "
+            "illegal or empty sequences, coding frame and stop-codon failures, "
+            "trait duplication, tree-trait mismatch, sequence outliers, and "
+            "branch-length pathologies remain visible and reviewable."
         ),
     )
 
@@ -221,9 +269,27 @@ def export_catarrhine_data_quality_stress_panel_dataset(
     raw_alignment_path = Path(
         shutil.copy2(dataset.raw_alignment_path, raw_root / _RAW_ALIGNMENT_NAME)
     )
+    raw_sequence_input_path = Path(
+        shutil.copy2(
+            dataset.raw_sequence_input_path,
+            raw_root / _RAW_SEQUENCE_INPUT_NAME,
+        )
+    )
+    raw_coding_sequences_path = Path(
+        shutil.copy2(
+            dataset.raw_coding_sequences_path,
+            raw_root / _RAW_CODING_SEQUENCE_NAME,
+        )
+    )
     raw_tree_path = Path(shutil.copy2(dataset.raw_tree_path, raw_root / _RAW_TREE_NAME))
     raw_traits_path = Path(
         shutil.copy2(dataset.raw_traits_path, raw_root / _RAW_TRAITS_NAME)
+    )
+    raw_trait_mismatch_path = Path(
+        shutil.copy2(
+            dataset.raw_trait_mismatch_path,
+            raw_root / _RAW_TRAIT_MISMATCH_NAME,
+        )
     )
     expected_output_root = destination / "expected"
     shutil.copytree(dataset.reference_output_root, expected_output_root)
@@ -233,6 +299,9 @@ def export_catarrhine_data_quality_stress_panel_dataset(
         raw_alignment_path=raw_alignment_path,
         raw_tree_path=raw_tree_path,
         raw_traits_path=raw_traits_path,
+        raw_sequence_input_path=raw_sequence_input_path,
+        raw_coding_sequences_path=raw_coding_sequences_path,
+        raw_trait_mismatch_path=raw_trait_mismatch_path,
         expected_output_root=expected_output_root,
     )
 
@@ -246,13 +315,71 @@ def run_catarrhine_data_quality_stress_panel_workflow(
     assembled_root = out_dir / "assembled"
     assembled_root.mkdir(parents=True, exist_ok=True)
 
+    raw_sequence_input_validation = validate_fasta_input(
+        dataset.raw_sequence_input_path,
+        sequence_type=dataset.sequence_type,
+    )
+    repaired_sequence_records, raw_sequence_input_repair = repair_fasta_input(
+        dataset.raw_sequence_input_path,
+        sequence_type=dataset.sequence_type,
+        normalize_identifiers=True,
+        remove_invalid_records=True,
+    )
+    provisional_repaired_sequence_path = write_fasta_alignment(
+        assembled_root / "repaired-sequence-input.provisional.fasta",
+        repaired_sequence_records,
+    )
+    raw_sequence_length_outliers = detect_sequence_length_outliers(
+        provisional_repaired_sequence_path
+    )
+    repaired_sequence_input_path = write_fasta_alignment(
+        assembled_root / "repaired-sequence-input.fasta",
+        [
+            record
+            for record in repaired_sequence_records
+            if record.identifier
+            not in {row.identifier for row in raw_sequence_length_outliers}
+        ],
+    )
+    repaired_sequence_input_validation = validate_fasta_input(
+        repaired_sequence_input_path,
+        sequence_type=dataset.sequence_type,
+    )
+    prepared_coding_sequences, coding_sequence_preparation = (
+        prepare_coding_sequences_for_alignment(
+            dataset.raw_coding_sequences_path,
+            sequence_type=dataset.sequence_type,
+        )
+    )
+    prepared_coding_sequences_path = write_fasta_alignment(
+        assembled_root / "prepared-coding-sequences.fasta",
+        prepared_coding_sequences,
+    )
+    raw_trait_mismatch_linkage = link_tree_to_traits(
+        dataset.raw_tree_path,
+        dataset.raw_trait_mismatch_path,
+        strict=False,
+    )
+    raw_trait_mismatch_error: str | None = None
+    try:
+        link_tree_to_traits(
+            dataset.raw_tree_path,
+            dataset.raw_trait_mismatch_path,
+            strict=True,
+        )
+    except MetadataJoinError as error:
+        raw_trait_mismatch_error = str(error)
+
     raw_alignment_validation = validate_fasta_input(
         dataset.raw_alignment_path,
         sequence_type=dataset.sequence_type,
     )
     sequence_outliers = detect_composition_outlier_sequences(dataset.raw_alignment_path)
     raw_tree_inspection = inspect_tree_path(dataset.raw_tree_path)
-    raw_tree_validation = validate_tree_path(dataset.raw_tree_path)
+    raw_tree_validation = validate_tree_path(
+        dataset.raw_tree_path,
+        allow_negative_branch_lengths=True,
+    )
 
     raw_trait_rows = _load_permissive_trait_rows(dataset.raw_traits_path)
     trait_duplicates = _resolve_duplicate_traits(raw_trait_rows)
@@ -324,6 +451,10 @@ def run_catarrhine_data_quality_stress_panel_workflow(
     cleaned_taxa = sorted(cleaned_linkage.usable_taxa)
 
     repair_actions = _build_repair_actions(
+        raw_sequence_input_repair=raw_sequence_input_repair,
+        raw_sequence_length_outliers=raw_sequence_length_outliers,
+        coding_sequence_preparation=coding_sequence_preparation,
+        raw_trait_mismatch_error=raw_trait_mismatch_error,
         trait_duplicates=trait_duplicates,
         missing_required_trait_taxa=missing_required_trait_taxa,
         sequence_outlier_taxa=sequence_outlier_taxa,
@@ -332,6 +463,13 @@ def run_catarrhine_data_quality_stress_panel_workflow(
     )
     return CatarrhineDataQualityStressPanelWorkflowReport(
         dataset=dataset,
+        raw_sequence_input_validation=raw_sequence_input_validation,
+        raw_sequence_input_repair=raw_sequence_input_repair,
+        raw_sequence_length_outliers=raw_sequence_length_outliers,
+        repaired_sequence_input_validation=repaired_sequence_input_validation,
+        coding_sequence_preparation=coding_sequence_preparation,
+        raw_trait_mismatch_linkage=raw_trait_mismatch_linkage,
+        raw_trait_mismatch_error=raw_trait_mismatch_error,
         raw_alignment_validation=raw_alignment_validation,
         sequence_outliers=sequence_outliers,
         raw_tree_inspection=raw_tree_inspection,
@@ -343,6 +481,8 @@ def run_catarrhine_data_quality_stress_panel_workflow(
         cleaned_linkage=cleaned_linkage,
         cleaned_alignment_validation=cleaned_alignment_validation,
         cleaned_alignment_records=cleaned_alignment_records,
+        repaired_sequence_input_path=repaired_sequence_input_path,
+        prepared_coding_sequences_path=prepared_coding_sequences_path,
         cleaned_tree_path=cleaned_tree_path,
         cleaned_traits_path=cleaned_traits_path,
         cleaned_alignment_path=cleaned_alignment_path,
@@ -364,6 +504,34 @@ def write_catarrhine_data_quality_stress_panel_workflow_bundle(
 
     workflow_summary_path = _write_workflow_summary_table(
         output_root / "workflow-summary.tsv",
+        report,
+    )
+    raw_sequence_findings_path = _write_raw_sequence_findings_table(
+        output_root / "raw-sequence-findings.tsv",
+        report,
+    )
+    raw_sequence_repair_path = _write_raw_sequence_repair_table(
+        output_root / "raw-sequence-repair.tsv",
+        report,
+    )
+    repaired_sequence_input_path = _copy_output(
+        report.repaired_sequence_input_path,
+        output_root / "repaired-sequence-input.fasta",
+    )
+    repaired_sequence_validation_path = _write_repaired_sequence_validation_table(
+        output_root / "repaired-sequence-validation.tsv",
+        report,
+    )
+    coding_sequence_exclusions_path = _write_coding_sequence_exclusions_table(
+        output_root / "coding-sequence-exclusions.tsv",
+        report.coding_sequence_preparation,
+    )
+    prepared_coding_sequences_path = _copy_output(
+        report.prepared_coding_sequences_path,
+        output_root / "prepared-coding-sequences.fasta",
+    )
+    raw_trait_linkage_path = _write_raw_trait_linkage_table(
+        output_root / "raw-trait-linkage.tsv",
         report,
     )
     trait_duplicates_path = _write_trait_duplicates_table(
@@ -411,16 +579,46 @@ def write_catarrhine_data_quality_stress_panel_workflow_bundle(
         output_root=output_root,
         raw_taxon_count=report.dataset.taxon_count,
         cleaned_taxon_count=len(report.cleaned_taxa),
+        duplicate_sequence_identifier_count=len(
+            report.raw_sequence_input_validation.duplicate_identifiers
+        ),
+        illegal_character_count=len(report.raw_sequence_input_validation.illegal_characters),
+        empty_sequence_count=len(report.raw_sequence_input_validation.empty_sequences),
+        raw_sequence_length_outlier_count=len(report.raw_sequence_length_outliers),
         duplicate_trait_taxon_count=len(report.trait_duplicates),
         missing_trait_value_count=len(report.missing_traits),
         sequence_outlier_count=len(report.sequence_outliers),
         tree_zero_length_branch_count=report.raw_tree_validation.zero_length_branches,
+        tree_negative_branch_count=report.raw_tree_validation.negative_branch_lengths,
         tree_long_branch_outlier_count=len(
             report.raw_tree_inspection.long_branch_outliers
+        ),
+        coding_frame_error_count=sum(
+            1
+            for row in report.coding_sequence_preparation.excluded_sequences
+            if row.reason == "frame-error"
+        ),
+        coding_internal_stop_count=sum(
+            1
+            for row in report.coding_sequence_preparation.excluded_sequences
+            if row.reason == "internal-stop-codon"
+        ),
+        raw_trait_missing_from_traits_count=len(
+            report.raw_trait_mismatch_linkage.missing_from_traits
+        ),
+        raw_trait_extra_taxon_count=len(
+            report.raw_trait_mismatch_linkage.extra_trait_taxa
         ),
         dropped_taxon_count=len(report.dropped_taxa),
         repaired_branch_count=len(report.repaired_branch_nodes),
         workflow_summary_path=workflow_summary_path,
+        raw_sequence_findings_path=raw_sequence_findings_path,
+        raw_sequence_repair_path=raw_sequence_repair_path,
+        repaired_sequence_input_path=repaired_sequence_input_path,
+        repaired_sequence_validation_path=repaired_sequence_validation_path,
+        coding_sequence_exclusions_path=coding_sequence_exclusions_path,
+        prepared_coding_sequences_path=prepared_coding_sequences_path,
+        raw_trait_linkage_path=raw_trait_linkage_path,
         trait_duplicates_path=trait_duplicates_path,
         trait_missing_values_path=trait_missing_values_path,
         sequence_outliers_path=sequence_outliers_path,
@@ -581,6 +779,10 @@ def _apply_branch_length_floor(root: TreeNode, *, floor: float) -> list[str]:
 
 def _build_repair_actions(
     *,
+    raw_sequence_input_repair: FastaRepairReport,
+    raw_sequence_length_outliers: list[SequenceLengthOutlier],
+    coding_sequence_preparation: CodingSequencePreparationReport,
+    raw_trait_mismatch_error: str | None,
     trait_duplicates: list[TraitDuplicateResolution],
     missing_required_trait_taxa: list[str],
     sequence_outlier_taxa: list[str],
@@ -588,6 +790,64 @@ def _build_repair_actions(
     repaired_branch_nodes: list[str],
 ) -> list[DataQualityRepairAction]:
     actions: list[DataQualityRepairAction] = []
+    if raw_sequence_input_repair.normalized_identifiers:
+        actions.append(
+            DataQualityRepairAction(
+                action_kind="normalize_duplicate_sequence_identifiers",
+                affected_taxa=[
+                    row.repaired_identifier
+                    for row in raw_sequence_input_repair.normalized_identifiers
+                ],
+                affected_nodes=[],
+                reason="raw FASTA identifiers were duplicated and required deterministic renaming",
+                result="rewrote retained duplicate identifiers into unique names",
+            )
+        )
+    if raw_sequence_input_repair.removed_records:
+        actions.append(
+            DataQualityRepairAction(
+                action_kind="remove_invalid_sequence_records",
+                affected_taxa=[
+                    row.identifier for row in raw_sequence_input_repair.removed_records
+                ],
+                affected_nodes=[],
+                reason="raw FASTA records contained empty sequences or illegal characters",
+                result="removed invalid records before downstream reuse",
+            )
+        )
+    if raw_sequence_length_outliers:
+        actions.append(
+            DataQualityRepairAction(
+                action_kind="drop_sequence_length_outliers",
+                affected_taxa=[row.identifier for row in raw_sequence_length_outliers],
+                affected_nodes=[],
+                reason="raw FASTA sequence lengths deviated too far from the dataset baseline",
+                result="excluded length outliers from the repaired FASTA subset",
+            )
+        )
+    if coding_sequence_preparation.excluded_sequences:
+        actions.append(
+            DataQualityRepairAction(
+                action_kind="exclude_invalid_coding_sequences",
+                affected_taxa=[
+                    row.identifier
+                    for row in coding_sequence_preparation.excluded_sequences
+                ],
+                affected_nodes=[],
+                reason="coding-sequence preparation found frame errors or premature stop codons",
+                result="retained only translation-ready coding sequences",
+            )
+        )
+    if raw_trait_mismatch_error:
+        actions.append(
+            DataQualityRepairAction(
+                action_kind="reject_raw_trait_linkage_mismatch",
+                affected_taxa=[],
+                affected_nodes=[],
+                reason="raw trait linkage omitted one tree taxon and introduced one extra trait taxon",
+                result="strict raw linkage failed and the mismatched table was kept only as a review surface",
+            )
+        )
     for row in trait_duplicates:
         actions.append(
             DataQualityRepairAction(
@@ -653,11 +913,20 @@ def _write_workflow_summary_table(
             [
                 "dataset_id",
                 "raw_taxon_count",
+                "duplicate_sequence_identifier_count",
+                "illegal_character_count",
+                "empty_sequence_count",
+                "raw_sequence_length_outlier_count",
+                "coding_frame_error_count",
+                "coding_internal_stop_count",
+                "raw_trait_missing_from_traits_count",
+                "raw_trait_extra_taxon_count",
                 "raw_trait_row_count",
                 "duplicate_trait_taxon_count",
                 "missing_trait_value_count",
                 "sequence_outlier_count",
                 "tree_zero_length_branch_count",
+                "tree_negative_branch_count",
                 "tree_long_branch_outlier_count",
                 "dropped_taxon_count",
                 "cleaned_taxon_count",
@@ -668,11 +937,32 @@ def _write_workflow_summary_table(
             [
                 report.dataset.dataset_id,
                 str(report.dataset.taxon_count),
+                str(len(report.raw_sequence_input_validation.duplicate_identifiers)),
+                str(len(report.raw_sequence_input_validation.illegal_characters)),
+                str(len(report.raw_sequence_input_validation.empty_sequences)),
+                str(len(report.raw_sequence_length_outliers)),
+                str(
+                    sum(
+                        1
+                        for row in report.coding_sequence_preparation.excluded_sequences
+                        if row.reason == "frame-error"
+                    )
+                ),
+                str(
+                    sum(
+                        1
+                        for row in report.coding_sequence_preparation.excluded_sequences
+                        if row.reason == "internal-stop-codon"
+                    )
+                ),
+                str(len(report.raw_trait_mismatch_linkage.missing_from_traits)),
+                str(len(report.raw_trait_mismatch_linkage.extra_trait_taxa)),
                 str(report.dataset.raw_trait_row_count),
                 str(len(report.trait_duplicates)),
                 str(len(report.missing_traits)),
                 str(len(report.sequence_outliers)),
                 str(report.raw_tree_validation.zero_length_branches),
+                str(report.raw_tree_validation.negative_branch_lengths),
                 str(len(report.raw_tree_inspection.long_branch_outliers)),
                 str(len(report.dropped_taxa)),
                 str(len(report.cleaned_taxa)),
@@ -716,6 +1006,147 @@ def _write_trait_duplicates_table(
     )
 
 
+def _write_raw_sequence_findings_table(
+    path: Path,
+    report: CatarrhineDataQualityStressPanelWorkflowReport,
+) -> Path:
+    rows: list[dict[str, str]] = []
+    for row in report.raw_sequence_input_validation.duplicate_identifiers:
+        rows.append(
+            {
+                "issue_kind": "duplicate_identifier",
+                "identifier": row.identifier,
+                "detail": (
+                    f"occurrences={row.occurrences};record_indices="
+                    + ",".join(str(value) for value in row.record_indices)
+                ),
+                "action": "normalize_identifier_collision",
+            }
+        )
+    for row in report.raw_sequence_input_validation.illegal_characters:
+        rows.append(
+            {
+                "issue_kind": "illegal_character",
+                "identifier": row.identifier,
+                "detail": f"record_index={row.record_index};position={row.position};character={row.character}",
+                "action": "remove_invalid_record",
+            }
+        )
+    for row in report.raw_sequence_input_validation.empty_sequences:
+        rows.append(
+            {
+                "issue_kind": "empty_sequence",
+                "identifier": row.identifier,
+                "detail": f"record_index={row.record_index}",
+                "action": "remove_invalid_record",
+            }
+        )
+    for row in report.raw_sequence_length_outliers:
+        rows.append(
+            {
+                "issue_kind": "sequence_length_outlier",
+                "identifier": row.identifier,
+                "detail": (
+                    f"raw_length={row.raw_length};median_length="
+                    f"{_format_number(row.median_length)};note={row.note}"
+                ),
+                "action": "drop_length_outlier",
+            }
+        )
+    return write_taxon_rows(
+        path,
+        columns=["issue_kind", "identifier", "detail", "action"],
+        rows=rows,
+    )
+
+
+def _write_raw_sequence_repair_table(
+    path: Path,
+    report: CatarrhineDataQualityStressPanelWorkflowReport,
+) -> Path:
+    rows: list[dict[str, str]] = []
+    for row in report.raw_sequence_input_repair.normalized_identifiers:
+        rows.append(
+            {
+                "action_kind": "rename_identifier",
+                "identifier": row.original_identifier,
+                "result_identifier": row.repaired_identifier,
+                "detail": f"record_index={row.record_index};note={row.note}",
+            }
+        )
+    for row in report.raw_sequence_input_repair.removed_records:
+        rows.append(
+            {
+                "action_kind": "remove_record",
+                "identifier": row.identifier,
+                "result_identifier": "",
+                "detail": f"record_index={row.record_index};reason={row.reason}",
+            }
+        )
+    for row in report.raw_sequence_length_outliers:
+        rows.append(
+            {
+                "action_kind": "drop_length_outlier",
+                "identifier": row.identifier,
+                "result_identifier": "",
+                "detail": f"raw_length={row.raw_length};note={row.note}",
+            }
+        )
+    return write_taxon_rows(
+        path,
+        columns=["action_kind", "identifier", "result_identifier", "detail"],
+        rows=rows,
+    )
+
+
+def _write_repaired_sequence_validation_table(
+    path: Path,
+    report: CatarrhineDataQualityStressPanelWorkflowReport,
+) -> Path:
+    substantive_warnings = _substantive_alignment_warnings(
+        report.repaired_sequence_input_validation.warnings
+    )
+    return write_taxon_rows(
+        path,
+        columns=[
+            "surface",
+            "sequence_count",
+            "duplicate_identifier_count",
+            "illegal_character_count",
+            "empty_sequence_count",
+            "length_outlier_count",
+            "warning_count",
+            "detail",
+        ],
+        rows=[
+            {
+                "surface": "repaired_sequence_input",
+                "sequence_count": str(
+                    report.repaired_sequence_input_validation.summary.sequence_count
+                ),
+                "duplicate_identifier_count": str(
+                    len(report.repaired_sequence_input_validation.duplicate_identifiers)
+                ),
+                "illegal_character_count": str(
+                    len(report.repaired_sequence_input_validation.illegal_characters)
+                ),
+                "empty_sequence_count": str(
+                    len(report.repaired_sequence_input_validation.empty_sequences)
+                ),
+                "length_outlier_count": str(
+                    len(report.repaired_sequence_input_validation.length_outliers)
+                ),
+                "warning_count": str(len(substantive_warnings)),
+                "detail": (
+                    "repaired FASTA input retains only unique identifiers and "
+                    "records without illegal characters, empty bodies, or retained "
+                    "length outliers"
+                ),
+            }
+        ],
+    )
+
+
 def _write_trait_missing_values_table(
     path: Path,
     rows: list[TraitMissingObservation],
@@ -738,6 +1169,38 @@ def _write_trait_missing_values_table(
                 "action": row.action,
             }
             for row in rows
+        ],
+    )
+
+
+def _write_coding_sequence_exclusions_table(
+    path: Path,
+    report: CodingSequencePreparationReport,
+) -> Path:
+    return write_taxon_rows(
+        path,
+        columns=[
+            "identifier",
+            "reason",
+            "comparable_length",
+            "invalid_codon_count",
+            "premature_stop_count",
+            "terminal_stop_count",
+            "trailing_bases",
+            "note",
+        ],
+        rows=[
+            {
+                "identifier": row.identifier,
+                "reason": row.reason,
+                "comparable_length": str(row.comparable_length),
+                "invalid_codon_count": str(row.invalid_codon_count),
+                "premature_stop_count": str(row.premature_stop_count),
+                "terminal_stop_count": str(row.terminal_stop_count),
+                "trailing_bases": str(row.trailing_bases),
+                "note": row.note,
+            }
+            for row in report.excluded_sequences
         ],
     )
 
@@ -783,6 +1246,22 @@ def _write_tree_issues_table(
                 "action": "apply_branch_length_floor_in_cleaned_tree",
             }
         )
+    if report.raw_tree_validation.negative_branch_lengths:
+        rows.append(
+            {
+                "issue_code": "negative_branch_lengths",
+                "severity": "warning",
+                "affected_taxa": "",
+                "affected_nodes": ",".join(
+                    _tree_warning_nodes(
+                        report.raw_tree_validation,
+                        warning_code="negative_branch_lengths",
+                    )
+                ),
+                "raw_value": str(report.raw_tree_validation.negative_branch_lengths),
+                "action": "apply_branch_length_floor_in_cleaned_tree",
+            }
+        )
     for outlier in report.raw_tree_inspection.long_branch_outliers:
         rows.append(
             {
@@ -811,6 +1290,40 @@ def _write_tree_issues_table(
             "action",
         ],
         rows=rows,
+    )
+
+
+def _write_raw_trait_linkage_table(
+    path: Path,
+    report: CatarrhineDataQualityStressPanelWorkflowReport,
+) -> Path:
+    linkage = report.raw_trait_mismatch_linkage
+    return write_taxon_rows(
+        path,
+        columns=[
+            "surface",
+            "tree_taxa",
+            "trait_taxa",
+            "linked_taxa",
+            "missing_from_traits",
+            "extra_trait_taxa",
+            "strict_status",
+            "detail",
+        ],
+        rows=[
+            {
+                "surface": "raw_trait_mismatch",
+                "tree_taxa": str(linkage.tree_taxa),
+                "trait_taxa": str(linkage.trait_taxa),
+                "linked_taxa": str(linkage.linked_taxa),
+                "missing_from_traits": ",".join(linkage.missing_from_traits),
+                "extra_trait_taxa": ",".join(linkage.extra_trait_taxa),
+                "strict_status": (
+                    "failed" if report.raw_trait_mismatch_error is not None else "passed"
+                ),
+                "detail": report.raw_trait_mismatch_error or "raw linkage passed",
+            }
+        ],
     )
 
 
@@ -920,6 +1433,20 @@ def _substantive_alignment_warnings(warnings: list[str]) -> list[str]:
     return [warning for warning in warnings if warning not in ignored]
 
 
+def _tree_warning_nodes(
+    report: TreeValidationReport,
+    *,
+    warning_code: str,
+) -> list[str]:
+    affected_nodes = [
+        node
+        for warning in report.warning_details
+        if warning.code == warning_code
+        for node in warning.affected_nodes
+    ]
+    return sorted(dict.fromkeys(affected_nodes))
+
+
 def _write_overview(
     path: Path,
     dataset: CatarrhineDataQualityStressPanelDataset,
@@ -931,6 +1458,12 @@ def _write_overview(
         f"- dataset id: `{dataset.dataset_id}`",
         f"- raw taxon count: `{workflow_bundle.raw_taxon_count}`",
         f"- cleaned taxon count: `{workflow_bundle.cleaned_taxon_count}`",
+        f"- duplicate sequence identifiers: `{workflow_bundle.duplicate_sequence_identifier_count}`",
+        f"- illegal FASTA characters: `{workflow_bundle.illegal_character_count}`",
+        f"- empty FASTA records: `{workflow_bundle.empty_sequence_count}`",
+        f"- raw-sequence length outliers: `{workflow_bundle.raw_sequence_length_outlier_count}`",
+        f"- coding frame errors: `{workflow_bundle.coding_frame_error_count}`",
+        f"- coding internal stop codons: `{workflow_bundle.coding_internal_stop_count}`",
         f"- duplicate trait taxa: `{workflow_bundle.duplicate_trait_taxon_count}`",
         f"- sequence outliers: `{workflow_bundle.sequence_outlier_count}`",
         f"- repaired branch count: `{workflow_bundle.repaired_branch_count}`",
@@ -938,6 +1471,13 @@ def _write_overview(
         "Generated outputs:",
         "",
         f"- workflow summary: `{workflow_bundle.workflow_summary_path.name}`",
+        f"- raw sequence findings: `{workflow_bundle.raw_sequence_findings_path.name}`",
+        f"- raw sequence repair ledger: `{workflow_bundle.raw_sequence_repair_path.name}`",
+        f"- repaired sequence input: `{workflow_bundle.repaired_sequence_input_path.name}`",
+        f"- repaired sequence validation: `{workflow_bundle.repaired_sequence_validation_path.name}`",
+        f"- coding sequence exclusions: `{workflow_bundle.coding_sequence_exclusions_path.name}`",
+        f"- prepared coding sequences: `{workflow_bundle.prepared_coding_sequences_path.name}`",
+        f"- raw trait linkage mismatch: `{workflow_bundle.raw_trait_linkage_path.name}`",
         f"- trait duplicates: `{workflow_bundle.trait_duplicates_path.name}`",
         f"- trait missing values: `{workflow_bundle.trait_missing_values_path.name}`",
         f"- sequence outliers: `{workflow_bundle.sequence_outliers_path.name}`",
