@@ -34,7 +34,7 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 .PHONY: \
 	help list list-all install lock lock-check lint quality security test test-all test-all-plus-run-time docs docs-check docs-serve api build sbom clean all \
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
-	install-external-engine-runtime test-external-engines test-scientific-validation-slow test-stress-small test-stress-heavy \
+	install-external-engine-runtime test-external-engines \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
 	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book rerun-evidence-cleanroom rerun-governed-evidence-cleanroom \
 	sync-evidence-artifacts sync-evidence-unit-artifacts check-evidence-artifacts check-evidence-unit-artifacts sync-evidence-unit-inputs check-evidence-unit-inputs report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
@@ -101,15 +101,18 @@ test-external-engines: root-check-env ## Run real external engine integration an
 .PHONY: test-external-engines
 
 test-scientific-validation-slow: root-check-env ## Run the slow governed external-engine validation lane
-	@$(MAKE) -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" -C "$(CURDIR)/packages/bijux-phylogenetics" scientific-validation-slow
+	@echo "✘ slow tests are reserved for 'make test-all' or 'make test-all-plus-run-time'"
+	@exit 2
 .PHONY: test-scientific-validation-slow
 
 test-stress-small: root-check-env ## Run the governed small large-dataset stress tier
-	@$(MAKE) -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" -C "$(CURDIR)/packages/bijux-phylogenetics" stress-small-lane
+	@echo "✘ slow tests are reserved for 'make test-all' or 'make test-all-plus-run-time'"
+	@exit 2
 .PHONY: test-stress-small
 
 test-stress-heavy: root-check-env ## Run the governed heavy large-dataset stress tier
-	@$(MAKE) -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" -C "$(CURDIR)/packages/bijux-phylogenetics" stress-heavy-lane
+	@echo "✘ slow tests are reserved for 'make test-all' or 'make test-all-plus-run-time'"
+	@exit 2
 .PHONY: test-stress-heavy
 
 sync-badges: root-check-env ## Render shared badge blocks into managed README surfaces
