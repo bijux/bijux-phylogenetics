@@ -144,6 +144,47 @@ print(warning, file=sys.stderr)
     )
 
 
+def _fake_trimal_whitespace_heavy(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print("trimAl v2.0")
+    raise SystemExit(0)
+
+args = sys.argv[1:]
+input_path = Path(args[args.index("-in") + 1])
+output_path = Path(args[args.index("-out") + 1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+output_path.parent.mkdir(parents=True, exist_ok=True)
+with output_path.open("w", encoding="utf-8") as handle:
+    handle.write("\\n")
+    for identifier, sequence in records:
+        handle.write(f"  >{identifier}  \\n")
+        handle.write(f" {sequence[:-1]} \\n\\n")
+print("warning: trimal fixture wrote padded FASTA output", file=sys.stderr)
+""",
+    )
+
+
 def _fake_trimal_empty(path: Path) -> Path:
     return _write_executable(
         path,
@@ -972,6 +1013,32 @@ def test_run_alignment_trimming_supports_all_named_trimal_modes(tmp_path: Path) 
         assert len(trimmed[0].sequence) == (
             len(load_fasta_alignment(input_path)[0].sequence) - removed_sites
         )
+
+
+def test_run_alignment_trimming_accepts_whitespace_heavy_trimal_output(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_trimal_whitespace_heavy(tmp_path / "trimal-whitespace")
+    input_path = fixture("alignments/example_alignment_trim.fasta")
+    output_path = tmp_path / "trimmed.fasta"
+
+    report = run_alignment_trimming(
+        input_path,
+        output_path,
+        executable=executable,
+    )
+
+    input_alignment = load_fasta_alignment(input_path)
+    trimmed = load_fasta_alignment(output_path)
+    assert report.run.warning_lines == [
+        "warning: trimal fixture wrote padded FASTA output"
+    ]
+    assert len(trimmed) == len(input_alignment)
+    assert report.trimming_summary is not None
+    assert all(
+        len(row.sequence) == report.trimming_summary.trimmed_alignment_length
+        for row in trimmed
+    )
 
 
 def test_run_model_selection_parses_best_fit_model_and_writes_manifest(
