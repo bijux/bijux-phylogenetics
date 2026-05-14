@@ -471,6 +471,9 @@ from bijux_phylogenetics.datasets import (
 from bijux_phylogenetics.datasets.data_quality_stress import (
     run_catarrhine_data_quality_stress_panel_demo,
 )
+from bijux_phylogenetics.datasets.continuous_mode_recovery import (
+    run_continuous_mode_recovery_panel_demo,
+)
 from bijux_phylogenetics.datasets.known_answer_reference import (
     run_known_answer_reference_demo,
 )
@@ -694,6 +697,7 @@ from bijux_phylogenetics.simulation import (
     simulate_coalescent_trees,
     simulate_discrete_traits,
     simulate_dna_alignment,
+    simulate_early_burst_traits,
     simulate_ou_traits,
     simulate_protein_alignment,
     write_continuous_trait_table,
@@ -4826,6 +4830,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the simulation report as JSON."
     )
     _add_manifest_argument(simulate_ou)
+    simulate_early_burst = simulate_subparsers.add_parser(
+        "traits-early-burst",
+        help="Simulate a continuous tip trait under an early-burst branch-rate process.",
+    )
+    simulate_early_burst.add_argument("tree", type=Path)
+    simulate_early_burst.add_argument("--root-state", type=float, default=0.0)
+    simulate_early_burst.add_argument("--sigma", type=float, default=1.0)
+    simulate_early_burst.add_argument("--rate-change", type=float, default=1.0)
+    simulate_early_burst.add_argument("--seed", type=int, default=1)
+    simulate_early_burst.add_argument("--out", required=True, type=Path)
+    simulate_early_burst.add_argument(
+        "--json", action="store_true", help="Emit the simulation report as JSON."
+    )
+    _add_manifest_argument(simulate_early_burst)
     simulate_discrete = simulate_subparsers.add_parser(
         "traits-discrete",
         help="Simulate a discrete tip trait under a symmetric jump process.",
@@ -5567,6 +5585,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_catarrhine_stress)
+    demo_continuous_mode_recovery = demo_subparsers.add_parser(
+        "continuous-mode-recovery-panel",
+        help="Materialize the packaged continuous-trait recovery dataset and rerun the governed simulation-recovery outputs.",
+    )
+    demo_continuous_mode_recovery.add_argument("--out", required=True, type=Path)
+    demo_continuous_mode_recovery.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_continuous_mode_recovery)
     demo_known_answer = demo_subparsers.add_parser(
         "known-answer-reference-panel",
         help="Materialize the packaged known-answer simulation dataset and rerun the governed recovery outputs.",
@@ -13470,6 +13497,33 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     json_output=args.json,
                 )
                 return 0
+            if args.simulate_command == "traits-early-burst":
+                report = simulate_early_burst_traits(
+                    args.tree,
+                    root_state=args.root_state,
+                    sigma=args.sigma,
+                    rate_change=args.rate_change,
+                    seed=args.seed,
+                )
+                output_path = write_continuous_trait_table(args.out, report)
+                outputs = _finalize_outputs(
+                    args, command="simulate", inputs=[args.tree], outputs=[output_path]
+                )
+                _print_result(
+                    build_command_result(
+                        command="simulate",
+                        inputs=[args.tree],
+                        outputs=outputs,
+                        metrics={
+                            "tip_count": report.tip_count,
+                            "trait_count": len(report.traits),
+                            "rate_change": report.rate_change,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
             if args.simulate_command == "traits-discrete":
                 report = simulate_discrete_traits(
                     args.tree,
@@ -15591,6 +15645,67 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "repaired_branch_count": (
                                     result.workflow_bundle.repaired_branch_count
+                                ),
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "continuous-mode-recovery-panel":
+                result = run_continuous_mode_recovery_panel_demo(args.out)
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.reference_tree_path,
+                        result.dataset_export.simulation_cases_path,
+                        result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.recovery_summary_path,
+                        result.workflow_bundle.parameter_recovery_path,
+                        result.workflow_bundle.model_choice_path,
+                        result.workflow_bundle.warning_review_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        [
+                            path
+                            for path in result.dataset_export.expected_output_root.rglob(
+                                "*"
+                            )
+                            if path.is_file()
+                        ]
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "taxon_count": result.dataset.taxon_count,
+                                "case_count": result.dataset.case_count,
+                                "selection_match_count": (
+                                    result.workflow_bundle.selection_match_count
+                                ),
+                                "parameter_pass_count": (
+                                    result.workflow_bundle.parameter_pass_count
+                                ),
+                                "parameter_row_count": (
+                                    result.workflow_bundle.parameter_row_count
+                                ),
+                                "expected_warning_case_count": (
+                                    result.workflow_bundle.expected_warning_case_count
+                                ),
+                                "expected_warning_present_count": (
+                                    result.workflow_bundle.expected_warning_present_count
                                 ),
                                 "reference_output_count": expected_output_count,
                             },

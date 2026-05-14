@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
 import bijux_phylogenetics
+from bijux_phylogenetics.cli import main
 from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     export_continuous_mode_recovery_panel_dataset,
     load_continuous_mode_recovery_panel_dataset,
@@ -104,4 +106,37 @@ def test_public_runtime_exports_include_continuous_mode_recovery_panel() -> None
     assert (
         bijux_phylogenetics.run_continuous_mode_recovery_panel_demo
         is run_continuous_mode_recovery_panel_demo
+    )
+
+
+@pytest.mark.slow
+def test_cli_demo_continuous_mode_recovery_panel_json_output_reports_metrics(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output = tmp_path / "continuous-mode-demo"
+    exit_code = main(
+        [
+            "demo",
+            "continuous-mode-recovery-panel",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["command"] == "demo"
+    assert payload["metrics"]["artifact_count"] == 9
+    assert payload["metrics"]["taxon_count"] == 12
+    assert payload["metrics"]["case_count"] == 4
+    assert payload["metrics"]["selection_match_count"] == 4
+    assert payload["metrics"]["parameter_pass_count"] == 5
+    assert payload["metrics"]["parameter_row_count"] == 5
+    assert payload["metrics"]["expected_warning_case_count"] == 1
+    assert payload["metrics"]["expected_warning_present_count"] == 1
+    assert payload["metrics"]["reference_output_count"] == 9
+    assert payload["data"]["dataset"]["dataset_id"] == "continuous_mode_recovery_panel"
+    assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
+        output / "workflow" / "workflow-summary.tsv"
     )

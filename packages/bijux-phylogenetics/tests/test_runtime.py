@@ -3157,6 +3157,38 @@ def test_simulate_early_burst_traits_uses_declared_rate_change() -> None:
     ]
 
 
+def test_cli_simulate_early_burst_traits_reports_rate_change(
+    tmp_path: Path, capsys
+) -> None:
+    output = tmp_path / "early-burst.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "traits-early-burst",
+            str(fixture("example_tree.nwk")),
+            "--root-state",
+            "1.0",
+            "--sigma",
+            "0.5",
+            "--rate-change",
+            "4.0",
+            "--seed",
+            "7",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["command"] == "simulate"
+    assert payload["metrics"]["rate_change"] == 4.0
+    assert payload["metrics"]["trait_count"] == 4
+    assert payload["data"]["model"] == "early-burst"
+    assert payload["data"]["rate_change"] == 4.0
+    assert output.read_text(encoding="utf-8").splitlines()[0] == "taxon\tvalue"
+
+
 def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -> None:
     report = simulate_discrete_traits(
         fixture("example_tree.nwk"),
