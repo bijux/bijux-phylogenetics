@@ -727,11 +727,13 @@ from bijux_phylogenetics.tree_set import (
     detect_unstable_clades,
     detect_unstable_taxa,
     load_tree_set,
+    summarize_posterior_topology_diversity,
     summarize_clade_credibility_conflicts,
     summarize_uncertainty_aware_conclusions,
     write_bootstrap_tree_set_artifacts,
     write_clade_frequency_table,
     write_consensus_tree,
+    write_tree_distance_distribution_table,
     write_topology_cluster_table,
     write_tree_distance_matrix,
     write_unstable_clade_table,
@@ -4667,6 +4669,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the distance report as JSON."
     )
     _add_manifest_argument(tree_set_distances)
+    tree_set_diversity_summary = tree_set_subparsers.add_parser(
+        "diversity",
+        help="Summarize topology diversity and RF distribution across one tree set.",
+    )
+    tree_set_diversity_summary.add_argument("tree_set", type=Path)
+    tree_set_diversity_summary.add_argument(
+        "--out",
+        type=Path,
+        help="Write the RF-distribution table as TSV.",
+    )
+    tree_set_diversity_summary.add_argument(
+        "--json", action="store_true", help="Emit the diversity report as JSON."
+    )
+    _add_manifest_argument(tree_set_diversity_summary)
     tree_set_clusters = tree_set_subparsers.add_parser(
         "cluster",
         help="Cluster trees by identical rooted topology signatures.",
@@ -13062,6 +13078,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
                             "shared_taxon_count": len(report.shared_taxa),
                             "rooted_topology_count": report.rooted_topology_count,
                             "unrooted_topology_count": report.unrooted_topology_count,
@@ -13087,6 +13108,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
                             "shared_taxon_count": len(report.shared_taxa),
                         },
                         data=report,
@@ -13112,6 +13138,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
                             "clade_count": len(report.clade_frequencies),
                         },
                         data=report,
@@ -13224,7 +13255,44 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
                             "pair_count": len(report.pairs),
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.tree_set_command == "diversity":
+                report = summarize_posterior_topology_diversity(args.tree_set)
+                outputs = []
+                if args.out is not None:
+                    outputs.append(write_tree_distance_distribution_table(args.out, report))
+                outputs = _finalize_outputs(
+                    args,
+                    command="tree-set",
+                    inputs=[args.tree_set],
+                    outputs=outputs,
+                )
+                _print_result(
+                    build_command_result(
+                        command="tree-set",
+                        inputs=[args.tree_set],
+                        outputs=outputs,
+                        metrics={
+                            "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
+                            "rooted_topology_count": report.rooted_topology_count,
+                            "pair_count": report.pair_count,
+                            "rf_bucket_count": len(report.rf_distribution),
                         },
                         data=report,
                     ),
@@ -13243,6 +13311,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
                             "cluster_count": len(report.clusters),
                         },
                         data=report,
@@ -13262,6 +13335,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
                             "unstable_taxon_count": len(report.taxa),
                         },
                         data=report,
@@ -13281,6 +13359,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         outputs=outputs,
                         metrics={
                             "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "skipped_malformed_tree_count": (
+                                report.processing.skipped_malformed_tree_count
+                            ),
                             "unstable_clade_count": len(report.clades),
                         },
                         data=report,
@@ -13310,6 +13393,15 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         warnings=report.summary_report.warnings,
                         metrics={
                             "tree_count": report.summary_report.tree_count,
+                            "runtime_seconds": (
+                                report.summary_report.processing.runtime_seconds
+                            ),
+                            "peak_memory_bytes": (
+                                report.summary_report.processing.peak_memory_bytes
+                            ),
+                            "skipped_malformed_tree_count": (
+                                report.summary_report.processing.skipped_malformed_tree_count
+                            ),
                             "rooted_topology_count": (
                                 report.summary_report.diversity.rooted_topology_count
                             ),
