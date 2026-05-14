@@ -897,6 +897,116 @@ def test_comparative_trait_imputation_cli_writes_review_ledgers(
     ]
 
 
+def test_comparative_covariance_audit_cli_reports_pgls_profile_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analysis"] == "pgls"
+    assert payload["metrics"]["covariance_model"] == "pagel-lambda"
+    assert payload["metrics"]["matrix_dimension"] == 4
+    assert payload["metrics"]["matrix_rank"] == 4
+    assert payload["metrics"]["fit_strategy"] == "regularization"
+    assert payload["metrics"]["singular"] is False
+    assert payload["metrics"]["near_singular"] is False
+    assert payload["metrics"]["matched_taxon_count"] == 4
+    assert payload["metrics"]["analysis_taxon_count"] == 4
+    assert payload["metrics"]["candidate_row_count"] == 101
+    assert payload["metrics"]["blocker_count"] == 0
+
+
+def test_comparative_covariance_audit_cli_reports_duplicate_trait_blockers(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative_duplicate.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "1.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["fit_strategy"] == "failure"
+    assert payload["metrics"]["duplicate_trait_taxon_count"] == 1
+    assert payload["metrics"]["candidate_row_count"] == 0
+    assert payload["metrics"]["blocker_count"] == 1
+    assert payload["data"]["duplicate_trait_taxa"] == ["A"]
+    assert payload["data"]["blockers"] == ["trait table contains duplicate taxon keys"]
+
+
+def test_comparative_covariance_audit_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "covariance-audit-summary.tsv"
+    candidates_out = tmp_path / "covariance-audit-candidates.tsv"
+    excluded_out = tmp_path / "covariance-audit-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative_missing_predictor.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "1.0",
+            "--summary-out",
+            str(summary_out),
+            "--candidates-out",
+            str(candidates_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["candidate_row_count"] == 1
+    assert payload["metrics"]["blocker_count"] == 0
+    assert summary_out.exists()
+    assert candidates_out.exists()
+    assert excluded_out.exists()
+    summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
+    candidate_rows = candidates_out.read_text(encoding="utf-8").splitlines()
+    excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    assert summary_rows[0].startswith("analysis\tcovariance_model\tanalysis_label")
+    assert candidate_rows[0].startswith("candidate_label\tparameter_name")
+    assert excluded_rows[0] == "taxon\treason\tdetails"
+    assert len(summary_rows) == 2
+    assert len(candidate_rows) == 2
+    assert len(excluded_rows) == 2
+
+
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
     exit_code = main(
         [
