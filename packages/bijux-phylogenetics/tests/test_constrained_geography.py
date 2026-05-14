@@ -10,6 +10,9 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteTransitionRateRow,
 )
 from bijux_phylogenetics.biogeography import (
+    constrained_geography as constrained_geography_module,
+)
+from bijux_phylogenetics.biogeography import (
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
     write_constrained_geographic_exclusion_table,
@@ -17,9 +20,6 @@ from bijux_phylogenetics.biogeography import (
     write_constrained_geographic_summary_table,
     write_constrained_geographic_transition_table,
     write_unsupported_geographic_transition_claim_table,
-)
-from bijux_phylogenetics.biogeography import (
-    constrained_geography as constrained_geography_module,
 )
 from bijux_phylogenetics.errors import AncestralReconstructionError
 
@@ -59,7 +59,7 @@ def test_summarize_constrained_geographic_model_reports_unsupported_transition_c
 ) -> None:
     class _FakeNode:
         def __init__(
-            self, name: str | None, children: list["_FakeNode"] | None = None
+            self, name: str | None, children: list[_FakeNode] | None = None
         ) -> None:
             self.name = name
             self.children = children or []
