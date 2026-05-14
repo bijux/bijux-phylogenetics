@@ -50,13 +50,16 @@ from .bootstrap_artifacts import (
 from .common import (
     EngineRunReport,
     EngineVersionInfo,
+    active_engine_run_is_live,
     build_engine_output_error,
     build_file_checksums,
     cleanup_incomplete_engine_run,
     clear_incomplete_engine_run,
+    engine_active_marker_path,
     engine_incomplete_marker_path,
     execute_engine_command,
     load_engine_manifest,
+    load_active_engine_run,
     load_incomplete_engine_run,
     load_unaligned_fasta,
     read_engine_version,
@@ -282,6 +285,19 @@ def _resolve_incomplete_workflow_state(
     incomplete_run_policy: str,
 ) -> list[str]:
     _validate_incomplete_run_policy(incomplete_run_policy)
+    active_record = load_active_engine_run(manifest_path)
+    if active_record is not None and active_engine_run_is_live(active_record):
+        raise EngineWorkflowError(
+            "engine workflow is already running for the requested output manifest",
+            code="engine_workflow_already_running",
+            details={
+                "manifest_path": str(manifest_path),
+                "marker_path": str(engine_active_marker_path(manifest_path)),
+                "running_process_id": active_record.process_id,
+                "running_workflow": active_record.workflow,
+                "running_engine_name": active_record.engine_name,
+            },
+        )
     record = load_incomplete_engine_run(manifest_path)
     if record is None:
         return []
