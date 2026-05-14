@@ -1,0 +1,5 @@
+[ID: 1]
+Gen	Move$acc_run1	Swap(1<>2)$acc(1)	AvgStdDev(s)
+100	0.5	0.75	0.20
+warning: interrupted diagnostics row
+200	NA	1.0

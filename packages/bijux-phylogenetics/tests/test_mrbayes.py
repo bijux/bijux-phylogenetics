@@ -409,6 +409,29 @@ def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(
     )
 
 
+def test_parse_mrbayes_parameter_traces_accepts_warning_heavy_fixture() -> None:
+    report = parse_mrbayes_parameter_traces(
+        fixture("engine_outputs/mrbayes/trace-warning-heavy.run1.p")
+    )
+
+    assert report.row_count == 2
+    assert report.columns == ["LnL", "TL", "alpha"]
+    assert report.rows[0].generation == 0
+    assert report.rows[1].values["alpha"] == pytest.approx(0.95)
+
+
+def test_parse_mrbayes_parameter_traces_reports_truncated_fixture() -> None:
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_mrbayes_parameter_traces(
+            fixture("engine_outputs/mrbayes/trace-truncated.run1.p")
+        )
+
+    assert error.value.code == "mrbayes_trace_missing_parameter_value"
+    assert error.value.details["artifact_kind"] == "mrbayes-trace"
+    assert error.value.details["column"] == "alpha"
+    assert error.value.details["row_number"] == 3
+
+
 def test_parse_mrbayes_posterior_tree_samples_and_consensus_tree(
     tmp_path: Path,
 ) -> None:
@@ -459,6 +482,29 @@ def test_parse_mrbayes_mcmc_diagnostics(
     assert report.rows[0].generation == 100
     assert report.rows[0].values["AvgStdDev(s)"] == 0.2
     assert report.rows[1].values["Move$acc_run1"] is None
+
+
+def test_parse_mrbayes_mcmc_diagnostics_accepts_warning_heavy_fixture() -> None:
+    report = parse_mrbayes_mcmc_diagnostics(
+        fixture("engine_outputs/mrbayes/mcmc-warning-heavy.mcmc")
+    )
+
+    assert report.row_count == 2
+    assert len(report.comment_lines) == 2
+    assert report.columns == ["Move$acc_run1", "Swap(1<>2)$acc(1)", "AvgStdDev(s)"]
+    assert report.rows[1].values["Move$acc_run1"] is None
+
+
+def test_parse_mrbayes_mcmc_diagnostics_reports_truncated_fixture() -> None:
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_mrbayes_mcmc_diagnostics(
+            fixture("engine_outputs/mrbayes/mcmc-truncated.mcmc")
+        )
+
+    assert error.value.code == "mrbayes_mcmc_missing_parameter_value"
+    assert error.value.details["artifact_kind"] == "mrbayes-mcmc"
+    assert error.value.details["column"] == "AvgStdDev(s)"
+    assert error.value.details["row_number"] == 3
 
 
 def test_parse_real_mrbayes_output_fixture() -> None:
