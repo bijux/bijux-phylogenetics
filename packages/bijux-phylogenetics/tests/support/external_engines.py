@@ -129,3 +129,32 @@ def require_alignment_engine_executables() -> dict[str, str]:
         for name, resolved in executables.items()
         if resolved is not None
     }
+
+
+def require_alignment_validation_matrix_executables() -> dict[str, str]:
+    executables = {
+        "mafft": real_mafft_executable(),
+        "trimal": real_trimal_executable(),
+        "iqtree": real_iqtree_executable(),
+        "fasttree": real_fasttree_executable(),
+    }
+    missing = [name for name, resolved in executables.items() if resolved is None]
+    if missing:
+        pytest.skip(
+            "real alignment validation matrix coverage requires installed executables: "
+            + ", ".join(sorted(missing))
+        )
+    return {
+        name: str(resolved)
+        for name, resolved in executables.items()
+        if resolved is not None
+    }
+
+
+def require_bayesian_validation_matrix_executables() -> dict[str, str]:
+    executable = real_mrbayes_executable()
+    if executable is None:
+        pytest.skip(
+            "real Bayesian validation matrix coverage requires an installed MrBayes executable"
+        )
+    return {"mrbayes": str(executable)}
