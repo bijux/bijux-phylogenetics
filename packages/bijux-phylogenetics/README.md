@@ -191,7 +191,7 @@ bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --ou
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set diversity posterior.trees --out artifacts/posterior.rf-distribution.tsv --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
-bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
+bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html --max-tree-count 5000 --max-report-table-rows 50 --memory-warning-threshold-bytes 134217728
 bijux-phylogenetics demo gnathostome-ortholog-protein-benchmark --out artifacts/gnathostome-ortholog-protein-benchmark --json
 bijux-phylogenetics demo rabies-method-sensitivity-panel --out artifacts/rabies-method-sensitivity-panel --json
 bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
@@ -218,6 +218,13 @@ output root:
 - `rabies-cross-host-geography-overview.html` for one direct public handoff
 - `rabies-cross-host-geography-package.manifest.json` for the biological
   question, short answer, config provenance, output checksums, and key metrics
+
+Its packaged `workflow-config.json` now also carries explicit resource-budget
+controls alongside the scientific settings: `iqtree_threads`,
+`timeout_seconds`, `max_bootstrap_tree_count`, `max_report_table_rows`, and
+`memory_warning_threshold_bytes`. The runtime records observed workflow and
+bootstrap-review runtime or memory where available and emits structured budget
+failures or warnings instead of silently overrunning those limits.
 
 Its JSON metrics also surface the same `biological_question` and
 `short_answer` directly so reviewers do not need to open the nested HTML report

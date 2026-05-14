@@ -833,6 +833,10 @@ metadata table. Its JSON metrics report:
 - `migration_event_count`
 - `clade_row_count`
 - `bootstrap_tree_count`
+- `timeout_seconds`
+- `max_bootstrap_tree_count`
+- `max_report_table_rows`
+- `budget_warning_count`
 - `comparative_formula`
 - `comparative_selected_model`
 - `reference_output_count`
@@ -878,6 +882,20 @@ The command writes:
 - `workflow/biogeography/region-counts.tsv`
 - `workflow/biogeography/ancestral-regions.tsv`
 - `workflow/biogeography/transition-matrix.tsv`
+
+The packaged `dataset/workflow-config.json` is also the governed resource
+budget surface for this workflow. In addition to the biological settings it
+accepts:
+
+- `iqtree_threads`
+- `timeout_seconds`
+- `max_bootstrap_tree_count`
+- `max_report_table_rows`
+- `memory_warning_threshold_bytes`
+
+When the bootstrap review or integrated HTML report exceeds one of those
+budgets, the runtime now either fails with a structured workflow-budget error
+or records one explicit warning in the workflow summary and JSON metrics.
 - `workflow/biogeography/event-table.tsv`
 - `workflow/biogeography/map-markers.tsv`
 - `workflow/biogeography/map-lines.tsv`

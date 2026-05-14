@@ -546,6 +546,19 @@ other demos, but it keeps the full scientific chain together:
 - comparative trait table, comparative-ready tree, branch-adjustment ledger, and comparative report package
 - integrated HTML report and machine-readable manifest
 
+Its `workflow-config.json` is also the place to govern execution budgets
+honestly. That config now carries the real runtime controls for this workflow:
+
+- `iqtree_threads` for the IQ-TREE execution lane
+- `timeout_seconds` for the engine-backed sequence-to-tree steps
+- `max_bootstrap_tree_count` for bootstrap-summary inputs
+- `max_report_table_rows` for reviewer-facing HTML tables
+- `memory_warning_threshold_bytes` for measured bootstrap-review memory
+
+When one of those limits is crossed, the workflow now raises one structured
+budget failure or records one explicit warning in `workflow-summary.tsv`
+instead of silently continuing.
+
 At the package root it also writes one reviewer-facing overview HTML page and
 one package manifest. Those top-level artifacts state the biological question,
 one short answer, the exact reproduction config path and checksum, and the key
