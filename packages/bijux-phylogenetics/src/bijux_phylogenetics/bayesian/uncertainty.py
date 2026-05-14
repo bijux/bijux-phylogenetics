@@ -14,6 +14,7 @@ from bijux_phylogenetics.bayesian.beast import (
 )
 from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
 from bijux_phylogenetics.core.metadata import write_taxon_rows
+from bijux_phylogenetics.engines.common import load_engine_manifest
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.tree_set import (
@@ -64,6 +65,18 @@ class BayesianLimitationsTextResult:
     title: str
     warning_count: int
     text: str
+
+
+@dataclass(slots=True)
+class BeastWorkflowEvidenceReport:
+    analysis_xml_path: Path | None
+    engine_manifest_path: Path | None
+    engine_execution_status: str
+    analysis_xml_status: str
+    posterior_log_status: str
+    posterior_tree_status: str
+    posterior_summary_status: str
+    statement: str
 
 
 def build_posterior_uncertainty_figure_package(
@@ -349,6 +362,11 @@ def write_bayesian_methods_summary_text(
         if resolved_analysis_xml_path is None
         else summarize_beast_analysis_xml(resolved_analysis_xml_path)
     )
+    workflow_evidence = summarize_beast_workflow_evidence(
+        posterior_tree_path=posterior_tree_path,
+        primary_log_path=primary_log_path,
+        analysis_xml_path=resolved_analysis_xml_path,
+    )
     resolved_clock_model = clock_model
     resolved_tree_prior = tree_prior
     chain_settings_text = (
@@ -381,6 +399,7 @@ def write_bayesian_methods_summary_text(
     warning_count = len(validation.issues) + len(burnin.warnings) + len(mixing.issues)
     text = (
         "# Bayesian Analysis Methods Summary\n\n"
+        f"{workflow_evidence.statement} "
         f"We evaluated the posterior tree sample in `{posterior_tree_path.name}` against the primary log `{primary_log_path.name}`. "
         f"The analysis is described here as using a `{resolved_clock_model}` clock model and a `{resolved_tree_prior}` tree prior. "
         f"{calibration_text} {tip_date_text}\n\n"
@@ -400,6 +419,88 @@ def write_bayesian_methods_summary_text(
         title="Bayesian Analysis Methods Summary",
         warning_count=warning_count,
         text=text,
+    )
+
+
+def summarize_beast_workflow_evidence(
+    *,
+    posterior_tree_path: Path,
+    primary_log_path: Path,
+    analysis_xml_path: Path | None,
+) -> BeastWorkflowEvidenceReport:
+    """Describe whether current BEAST diagnostics are prepared-only, parsed, or tied to a recorded run."""
+    manifest_path = (
+        None if analysis_xml_path is None else analysis_xml_path.with_suffix(".manifest.json")
+    )
+    manifest_matches_outputs = False
+    if manifest_path is not None and manifest_path.exists():
+        try:
+            payload = load_engine_manifest(manifest_path)
+        except (OSError, ValueError, json.JSONDecodeError):
+            manifest_matches_outputs = False
+        else:
+            run_payload = payload.get("run")
+            output_paths = (
+                {}
+                if not isinstance(run_payload, dict)
+                else dict(run_payload.get("output_paths", {}))
+            )
+            workflow = (
+                None if not isinstance(run_payload, dict) else run_payload.get("workflow")
+            )
+            manifest_matches_outputs = (
+                workflow == "posterior-tree-inference"
+                and output_paths.get("posterior_log") == str(primary_log_path)
+                and output_paths.get("posterior_trees") == str(posterior_tree_path)
+            )
+    if manifest_matches_outputs:
+        statement = (
+            f"This diagnostics build did not execute BEAST itself; it parsed a recorded BEAST posterior run from "
+            f"`{manifest_path.name}` using inferred posterior log `{primary_log_path.name}` and inferred posterior trees "
+            f"`{posterior_tree_path.name}`, while summarizing the prepared XML `{analysis_xml_path.name if analysis_xml_path is not None else 'unspecified'}`."
+        )
+        return BeastWorkflowEvidenceReport(
+            analysis_xml_path=analysis_xml_path,
+            engine_manifest_path=manifest_path,
+            engine_execution_status="recorded-prior-beast-run",
+            analysis_xml_status=(
+                "prepared-and-parsed"
+                if analysis_xml_path is not None
+                else "not-supplied"
+            ),
+            posterior_log_status="inferred-and-parsed",
+            posterior_tree_status="inferred-and-parsed",
+            posterior_summary_status="summarized-from-parsed-output",
+            statement=statement,
+        )
+    if analysis_xml_path is None:
+        statement = (
+            f"This diagnostics build did not execute BEAST itself; it parsed existing posterior log `{primary_log_path.name}` "
+            f"and posterior trees `{posterior_tree_path.name}` without any supplied BEAST XML."
+        )
+        return BeastWorkflowEvidenceReport(
+            analysis_xml_path=None,
+            engine_manifest_path=None,
+            engine_execution_status="not-executed-during-report-build",
+            analysis_xml_status="not-supplied",
+            posterior_log_status="parsed-existing-output",
+            posterior_tree_status="parsed-existing-output",
+            posterior_summary_status="summarized-from-parsed-output",
+            statement=statement,
+        )
+    statement = (
+        f"This diagnostics build did not execute BEAST itself; it parsed existing posterior log `{primary_log_path.name}` "
+        f"and posterior trees `{posterior_tree_path.name}`, and it only summarized the prepared XML `{analysis_xml_path.name}`."
+    )
+    return BeastWorkflowEvidenceReport(
+        analysis_xml_path=analysis_xml_path,
+        engine_manifest_path=None,
+        engine_execution_status="not-executed-during-report-build",
+        analysis_xml_status="prepared-and-parsed",
+        posterior_log_status="parsed-existing-output",
+        posterior_tree_status="parsed-existing-output",
+        posterior_summary_status="summarized-from-parsed-output",
+        statement=statement,
     )
 
 

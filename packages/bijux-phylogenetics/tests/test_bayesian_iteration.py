@@ -448,6 +448,8 @@ def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnosti
     assert "effective sample size" in text
     assert "beast2_strict_yule_posterior.xml" in text
     assert "chain length" in text.lower()
+    assert "did not execute BEAST itself" in text
+    assert "only summarized the prepared XML" in text
 
 
 def test_write_bayesian_limitations_text_includes_diagnostics_and_dating_risks(

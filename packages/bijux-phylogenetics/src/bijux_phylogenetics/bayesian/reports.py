@@ -26,6 +26,7 @@ from bijux_phylogenetics.bayesian.mrbayes import (
     summarize_mrbayes_posterior_trees,
 )
 from bijux_phylogenetics.bayesian.uncertainty import (
+    summarize_beast_workflow_evidence,
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
@@ -395,6 +396,11 @@ def render_bayesian_diagnostics_report(
         if resolved_analysis_xml_path is None
         else summarize_beast_analysis_xml(resolved_analysis_xml_path)
     )
+    workflow_evidence = summarize_beast_workflow_evidence(
+        posterior_tree_path=posterior_tree_path,
+        primary_log_path=primary_log_path,
+        analysis_xml_path=resolved_analysis_xml_path,
+    )
     mixing = assess_beast_chain_mixing(
         log_paths,
         ess_threshold=ess_threshold,
@@ -471,6 +477,12 @@ def render_bayesian_diagnostics_report(
         *(
             [
                 (
+                    "workflow-evidence",
+                    json.dumps(
+                        asdict(workflow_evidence), default=str, indent=2, sort_keys=True
+                    ),
+                ),
+                (
                     "analysis-assumptions",
                     json.dumps(
                         asdict(analysis_summary), default=str, indent=2, sort_keys=True
@@ -479,6 +491,18 @@ def render_bayesian_diagnostics_report(
             ]
             if analysis_summary is not None
             else []
+        ),
+        *(
+            []
+            if analysis_summary is not None
+            else [
+                (
+                    "workflow-evidence",
+                    json.dumps(
+                        asdict(workflow_evidence), default=str, indent=2, sort_keys=True
+                    ),
+                )
+            ]
         ),
         (
             "posterior-log-validation",

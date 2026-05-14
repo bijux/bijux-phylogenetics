@@ -1149,3 +1149,42 @@ def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calib
     assert "methods-summary-text" in html
     assert "fossil-calibrations" in html
     assert "tip-dates" in html
+
+
+def test_render_bayesian_diagnostics_report_marks_recorded_beast_runs_honestly(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast(tmp_path / "beast-fixture")
+    analysis_path = tmp_path / "analysis.xml"
+    output_path = tmp_path / "bayesian-diagnostics.html"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        analysis_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+    workflow = run_beast_posterior_inference(
+        analysis_path,
+        executable=executable,
+        seed=9,
+    )
+
+    report = render_bayesian_diagnostics_report(
+        posterior_tree_path=workflow.output_paths["posterior_trees"],
+        primary_log_path=workflow.output_paths["posterior_log"],
+        analysis_xml_path=analysis_path,
+        out_path=output_path,
+        burnin_fractions=(0.0, 0.5),
+        ess_threshold=2.0,
+        mean_shift_threshold=1.0,
+        cross_chain_mean_shift_threshold=5.0,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert "workflow-evidence" in html
+    assert "recorded-prior-beast-run" in html
+    assert "did not execute BEAST itself" in html
+    assert "inferred posterior log" in html
