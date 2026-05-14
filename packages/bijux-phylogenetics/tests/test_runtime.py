@@ -472,6 +472,11 @@ from bijux_phylogenetics.compare.topology import (
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
 )
+from bijux_phylogenetics.compare.tree_distance_reference import (
+    TreeDistanceReferenceObservation,
+    TreeDistanceReferenceValidationReport,
+    validate_tree_distance_reference_examples,
+)
 from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
@@ -949,6 +954,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.TaxonInfluenceReport is TaxonInfluenceReport
     assert bijux_phylogenetics.TaxonInfluenceRow is TaxonInfluenceRow
     assert (
+        bijux_phylogenetics.TreeDistanceReferenceObservation
+        is TreeDistanceReferenceObservation
+    )
+    assert (
+        bijux_phylogenetics.TreeDistanceReferenceValidationReport
+        is TreeDistanceReferenceValidationReport
+    )
+    assert (
         bijux_phylogenetics.compare_branch_score_distance
         is compare_branch_score_distance
     )
@@ -997,6 +1010,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert compare_api.SupportConflictRow is SupportConflictRow
     assert compare_api.TaxonInfluenceReport is TaxonInfluenceReport
     assert compare_api.TaxonInfluenceRow is TaxonInfluenceRow
+    assert (
+        compare_api.TreeDistanceReferenceObservation
+        is TreeDistanceReferenceObservation
+    )
+    assert (
+        compare_api.TreeDistanceReferenceValidationReport
+        is TreeDistanceReferenceValidationReport
+    )
     assert compare_api.compare_clade_overlap is compare_clade_overlap
     assert compare_api.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
     assert compare_api.compare_support_values is compare_support_values
@@ -1016,6 +1037,14 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
     assert compare_api.RobinsonFouldsComparisonReport is RobinsonFouldsComparisonReport
     assert compare_api.compare_robinson_foulds is compare_robinson_foulds
+    assert (
+        bijux_phylogenetics.validate_tree_distance_reference_examples
+        is validate_tree_distance_reference_examples
+    )
+    assert (
+        compare_api.validate_tree_distance_reference_examples
+        is validate_tree_distance_reference_examples
+    )
     assert (
         bijux_phylogenetics.assess_distance_method_maturity
         is assess_distance_method_maturity
