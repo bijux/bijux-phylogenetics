@@ -215,6 +215,15 @@ manifest, `--incomplete-run-policy clean` is the governed way to discard that
 partial state, and a missing executable stops before any incomplete-run marker
 is written because no engine run started.
 
+The external-engine trust surface now has two distinct verification lanes.
+Fast `engine_contract` tests keep fake-executable and parser behavior stable in
+routine verification, while `tests/real_local` carries the governed
+`engine_real` lane for installed MAFFT, trimAl, IQ-TREE, FastTree, and
+MrBayes executables plus the checked-in real BEAST XML/log/tree corpus. Those
+real-local tests write one external validation matrix JSON artifact per lane
+that records reviewer-facing engine names, validation modes, executable paths,
+version text, commands, exit codes, runtime, output paths, and output hashes.
+
 The rabies demonstration bundle now publishes one governed reproducibility and
 review layer alongside the biological outputs: `workflow-config-audit.tsv`,
 `workflow-config.resolved.json`, one rooted-ML-versus-bootstrap-consensus
