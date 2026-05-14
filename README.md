@@ -102,7 +102,10 @@ What does not exist today:
 - `make help` to list repository automation targets
 - `make install` to sync the editable environment from the tracked `uv.lock`
 - `make check` to run the main verification pass: lock check, lint, tests, docs, and distribution verification
-- `make package-verify` to run wheel, sdist, and smoke-install package proofs
+- `make package-verify` to build the wheel and sdist, validate them with Twine,
+  install each into a clean virtual environment, run CLI help, validate the
+  packaged example FASTA, render a packaged tree report bundle, and fit a
+  comparative PGLS model on the packaged primate dataset
 - `make docs-serve` to serve the docs locally at `http://127.0.0.1:8000/`
 - `make sync-badges` to render the shared badge catalog into managed README surfaces
 
