@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import csv
 import math
 from pathlib import Path
-from statistics import correlation, covariance, variance
 
+import numpy
+
+from bijux_phylogenetics.comparative._math import student_t_two_sided_p_value
+from bijux_phylogenetics.comparative.common import (
+    build_brownian_covariance_matrix,
+    lambda_transform_covariance,
+)
 from bijux_phylogenetics.comparative.multivariate_regression import (
     MULTIVARIATE_MISSING_VALUE_POLICY,
     MULTIVARIATE_NUMERICAL_TOLERANCE,
@@ -15,9 +22,11 @@ from bijux_phylogenetics.comparative.multivariate_regression import (
     write_multivariate_response_coefficient_table,
     write_multivariate_response_model_table,
 )
+from bijux_phylogenetics.io.trees import load_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
+REFERENCE_PARITY_TOLERANCE = 1e-9
 
 
 def fixture(name: str) -> Path:
@@ -29,6 +38,98 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def _load_numeric_rows(path: Path) -> dict[str, dict[str, float]]:
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t")
+        return {
+            row["taxon"]: {
+                key: float(value)
+                for key, value in row.items()
+                if key != "taxon" and value is not None and value != ""
+            }
+            for row in reader
+        }
+
+
+def _multivariate_reference_gls(
+    *,
+    tree_path: Path,
+    traits_path: Path,
+    responses: list[str],
+    predictors: list[str],
+    taxa: list[str],
+    lambda_value: float,
+) -> dict[str, object]:
+    rows_by_taxon = _load_numeric_rows(traits_path)
+    tree = load_tree(tree_path)
+    covariance = numpy.array(
+        lambda_transform_covariance(
+            build_brownian_covariance_matrix(tree, taxa),
+            lambda_value,
+        ),
+        dtype=float,
+    )
+    inverse_covariance = numpy.linalg.inv(covariance)
+    sign, log_determinant = numpy.linalg.slogdet(covariance)
+    assert sign > 0.0
+    design_matrix = numpy.array(
+        [
+            [1.0, *(rows_by_taxon[taxon][predictor] for predictor in predictors)]
+            for taxon in taxa
+        ],
+        dtype=float,
+    )
+    coefficient_names = ["intercept", *predictors]
+    coefficients_by_response: dict[str, dict[str, tuple[float, float, float]]] = {}
+    residual_matrix_rows: list[list[float]] = []
+    log_likelihoods: dict[str, float] = {}
+    residual_variances: dict[str, float] = {}
+    xt_vinv_x = design_matrix.T @ inverse_covariance @ design_matrix
+    covariance_of_betas = numpy.linalg.inv(xt_vinv_x)
+    for response in responses:
+        observed = numpy.array(
+            [rows_by_taxon[taxon][response] for taxon in taxa],
+            dtype=float,
+        )
+        coefficients = covariance_of_betas @ (
+            design_matrix.T @ inverse_covariance @ observed
+        )
+        fitted = design_matrix @ coefficients
+        residuals = observed - fitted
+        residual_matrix_rows.append(residuals.tolist())
+        degrees_of_freedom = len(taxa) - len(coefficient_names)
+        residual_scale = float(residuals.T @ inverse_covariance @ residuals)
+        residual_variance = residual_scale / degrees_of_freedom
+        residual_variances[response] = residual_variance
+        log_likelihoods[response] = -0.5 * (
+            len(taxa)
+            * math.log(2.0 * math.pi * max(residual_scale / len(taxa), 1e-12))
+            + float(log_determinant)
+            + len(taxa)
+        )
+        coefficients_by_response[response] = {}
+        for index, term in enumerate(coefficient_names):
+            standard_error = math.sqrt(
+                max(float(covariance_of_betas[index, index]) * residual_variance, 0.0)
+            )
+            test_statistic = (
+                float(coefficients[index]) / standard_error if standard_error else 0.0
+            )
+            coefficients_by_response[response][term] = (
+                float(coefficients[index]),
+                standard_error,
+                student_t_two_sided_p_value(test_statistic, degrees_of_freedom),
+            )
+    residual_matrix = numpy.array(residual_matrix_rows, dtype=float)
+    return {
+        "coefficients_by_response": coefficients_by_response,
+        "log_likelihoods": log_likelihoods,
+        "residual_variances": residual_variances,
+        "residual_covariance": numpy.cov(residual_matrix, ddof=1),
+        "residual_correlation": numpy.corrcoef(residual_matrix),
+    }
 
 
 def test_run_multivariate_comparative_regression_reports_covariance_and_association() -> (
@@ -81,35 +182,68 @@ def test_run_multivariate_comparative_regression_matches_independent_python_refe
 ):
     report = run_multivariate_comparative_regression(
         fixture("example_tree_six_taxa.nwk"),
-        fixture("example_traits_comparative_multiple.tsv"),
+        fixture("example_traits_comparative_multivariate_full_rank.tsv"),
         responses=["response_growth", "response_range"],
         predictors=["predictor_one", "predictor_two"],
         lambda_value=0.0,
     )
-    left_model = report.response_models[0]
-    right_model = report.response_models[1]
-    diagonal = next(
-        row
-        for row in report.covariance_rows
-        if row.left_response == left_model.response
-        and row.right_response == left_model.response
+    reference = _multivariate_reference_gls(
+        tree_path=fixture("example_tree_six_taxa.nwk"),
+        traits_path=fixture("example_traits_comparative_multivariate_full_rank.tsv"),
+        responses=report.responses,
+        predictors=report.predictors,
+        taxa=report.analysis_taxa,
+        lambda_value=0.0,
     )
-    pair = report.association_rows[0]
-    assert math.isclose(
-        diagonal.covariance,
-        variance(left_model.residuals),
-        abs_tol=report.numerical_tolerance,
-    )
-    assert math.isclose(
-        pair.covariance,
-        covariance(left_model.residuals, right_model.residuals),
-        abs_tol=report.numerical_tolerance,
-    )
-    assert math.isclose(
-        pair.correlation,
-        correlation(left_model.residuals, right_model.residuals),
-        abs_tol=report.numerical_tolerance,
-    )
+    for row in report.response_model_rows:
+        assert math.isclose(
+            row.log_likelihood,
+            reference["log_likelihoods"][row.response],
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(
+            row.residual_variance,
+            reference["residual_variances"][row.response],
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+    coefficient_reference = reference["coefficients_by_response"]
+    for row in report.coefficient_rows:
+        estimate, standard_error, p_value = coefficient_reference[row.response][row.term]
+        assert math.isclose(
+            row.estimate,
+            estimate,
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(
+            row.standard_error,
+            standard_error,
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(row.p_value, p_value, abs_tol=REFERENCE_PARITY_TOLERANCE)
+    response_index = {response: index for index, response in enumerate(report.responses)}
+    covariance_reference = reference["residual_covariance"]
+    correlation_reference = reference["residual_correlation"]
+    for row in report.covariance_rows:
+        left_index = response_index[row.left_response]
+        right_index = response_index[row.right_response]
+        assert math.isclose(
+            row.covariance,
+            float(covariance_reference[left_index, right_index]),
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+        assert math.isclose(
+            row.correlation,
+            float(correlation_reference[left_index, right_index]),
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
+    for row in report.correlation_rows:
+        left_index = response_index[row.left_response]
+        right_index = response_index[row.right_response]
+        assert math.isclose(
+            row.correlation,
+            float(correlation_reference[left_index, right_index]),
+            abs_tol=REFERENCE_PARITY_TOLERANCE,
+        )
 
 
 def test_run_multivariate_comparative_regression_reports_full_rank_covariance_diagnostics() -> (
