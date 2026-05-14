@@ -9896,6 +9896,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         "lambda_upper_95_confidence_interval": (
                             report.lambda_fit.upper_95_confidence_interval
                         ),
+                        "aic": report.aic,
                         "r_squared": report.r_squared,
                     },
                     data={

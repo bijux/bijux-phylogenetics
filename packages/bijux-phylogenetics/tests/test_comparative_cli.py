@@ -1116,6 +1116,7 @@ def test_comparative_pgls_cli_fits_multiple_predictors(capsys) -> None:
         for coefficient in payload["data"]["model"]["coefficients"]
     }
     assert exit_code == 0
+    assert payload["metrics"]["aic"] == payload["data"]["model"]["aic"]
     assert payload["metrics"]["coefficient_count"] == 3
     assert payload["metrics"]["confidence_interval_count"] == 3
     assert payload["metrics"]["residual_degrees_of_freedom"] == 1
@@ -1153,6 +1154,7 @@ def test_comparative_pgls_cli_reports_estimated_lambda_profile(capsys) -> None:
     )
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
+    assert payload["metrics"]["aic"] == payload["data"]["model"]["aic"]
     assert payload["metrics"]["lambda_estimation_mode"] == "estimated"
     assert payload["metrics"]["lambda_profile_point_count"] == 101
     assert payload["metrics"]["lambda_lower_95_confidence_interval"] == 0.0
