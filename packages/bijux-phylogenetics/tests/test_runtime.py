@@ -3275,6 +3275,40 @@ def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -
         "A|B",
         "C|D",
     ]
+    assert [
+        (
+            row.parent_node,
+            row.child_node,
+            row.start_state,
+            row.end_state,
+            row.event_count,
+        )
+        for row in report.branch_histories
+    ] == [
+        ("A|B|C|D", "A|B", "wet", "mixed", 1),
+        ("A|B", "A", "mixed", "wet", 1),
+        ("A|B", "B", "mixed", "dry", 2),
+        ("A|B|C|D", "C|D", "wet", "dry", 2),
+        ("C|D", "C", "dry", "wet", 1),
+        ("C|D", "D", "dry", "mixed", 4),
+    ]
+    assert [
+        (event.source_state, event.target_state)
+        for row in report.branch_histories
+        for event in row.events
+    ] == [
+        ("wet", "mixed"),
+        ("mixed", "wet"),
+        ("mixed", "wet"),
+        ("wet", "dry"),
+        ("wet", "mixed"),
+        ("mixed", "dry"),
+        ("dry", "wet"),
+        ("dry", "wet"),
+        ("wet", "mixed"),
+        ("mixed", "wet"),
+        ("wet", "mixed"),
+    ]
 
 
 def test_simulate_dna_alignment_returns_requested_taxa_and_length(

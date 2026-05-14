@@ -74,6 +74,27 @@ class SimulatedDiscreteNode:
     state: str
 
 
+@dataclass(frozen=True, slots=True)
+class SimulatedDiscreteTransitionEvent:
+    parent_node: str
+    child_node: str
+    source_state: str
+    target_state: str
+    event_index: int
+
+
+@dataclass(frozen=True, slots=True)
+class SimulatedDiscreteBranchHistory:
+    parent_node: str
+    child_node: str
+    branch_length: float
+    start_state: str
+    end_state: str
+    changed: bool
+    event_count: int
+    events: list[SimulatedDiscreteTransitionEvent]
+
+
 @dataclass(slots=True)
 class DiscreteTraitSimulationReport:
     model: str
@@ -85,6 +106,7 @@ class DiscreteTraitSimulationReport:
     root_state: str
     traits: list[SimulatedDiscreteTrait]
     node_states: list[SimulatedDiscreteNode]
+    branch_histories: list[SimulatedDiscreteBranchHistory]
 
 
 @dataclass(slots=True)
@@ -323,14 +345,17 @@ def _simulate_symmetric_state_trajectory(
     rate: float,
     states: tuple[str, ...],
     rng: random.Random,
-) -> str:
+) -> tuple[str, list[tuple[str, str]]]:
     if rate < 0.0:
         raise ValueError(f"rate must be nonnegative, got {rate}")
     next_state = state
+    transitions: list[tuple[str, str]] = []
     for _ in range(_poisson_count(rate * branch_length, rng)):
         alternatives = [candidate for candidate in states if candidate != next_state]
-        next_state = rng.choice(alternatives)
-    return next_state
+        candidate = rng.choice(alternatives)
+        transitions.append((next_state, candidate))
+        next_state = candidate
+    return next_state, transitions
 
 
 def _simulate_coalescent_tree_once(
@@ -583,17 +608,50 @@ def simulate_discrete_traits(
     starting_state = root_state or unique_states[0]
     if starting_state not in unique_states:
         raise ValueError(f"root_state '{starting_state}' is not present in states")
-    node_values = _iter_node_trait_values(
-        tree,
-        root_state=starting_state,
-        propagate=lambda state, branch_length: _simulate_symmetric_state_trajectory(
-            state,
-            branch_length=branch_length,
-            rate=transition_rate,
-            states=unique_states,
-            rng=rng,
-        ),
-    )
+    node_values: dict[str, str] = {}
+    branch_histories: list[SimulatedDiscreteBranchHistory] = []
+
+    def visit(node: TreeNode, state: str) -> None:
+        parent_signature = node_signature(node)
+        node_values[parent_signature] = state
+        if node.is_leaf():
+            return
+        for child in node.children:
+            branch_length = max(child.branch_length or 0.0, 0.0)
+            child_signature = node_signature(child)
+            child_state, transitions = _simulate_symmetric_state_trajectory(
+                state,
+                branch_length=branch_length,
+                rate=transition_rate,
+                states=unique_states,
+                rng=rng,
+            )
+            branch_histories.append(
+                SimulatedDiscreteBranchHistory(
+                    parent_node=parent_signature,
+                    child_node=child_signature,
+                    branch_length=float(format(branch_length, ".15g")),
+                    start_state=state,
+                    end_state=child_state,
+                    changed=child_state != state,
+                    event_count=len(transitions),
+                    events=[
+                        SimulatedDiscreteTransitionEvent(
+                            parent_node=parent_signature,
+                            child_node=child_signature,
+                            source_state=source_state,
+                            target_state=target_state,
+                            event_index=index,
+                        )
+                        for index, (source_state, target_state) in enumerate(
+                            transitions, start=1
+                        )
+                    ],
+                )
+            )
+            visit(child, child_state)
+
+    visit(tree.root, starting_state)
     values = _tip_values_from_node_map(tree, node_values)
     return DiscreteTraitSimulationReport(
         model="symmetric-discrete",
@@ -617,6 +675,7 @@ def simulate_discrete_traits(
             )
             for node in tree.iter_nodes()
         ],
+        branch_histories=branch_histories,
     )
 
 
