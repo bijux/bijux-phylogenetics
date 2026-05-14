@@ -563,6 +563,13 @@ def test_run_beast_posterior_inference_rejects_or_cleans_malformed_outputs(
         incomplete_run_policy="clean",
     )
     assert report.output_paths["posterior_log"].exists()
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "threads": 1,
+        "seed": 1,
+        "overwrite": True,
+        "timeout_seconds": None,
+    }
     assert marker_path.exists() is False
 
 

@@ -125,6 +125,7 @@ class EngineWorkflowReport:
     manifest_path: Path
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
+    config: dict[str, object] = field(default_factory=dict)
     selected_model: str | None = None
     log_likelihood: float | None = None
     iqtree_summary: IqtreeWorkflowSummary | None = None
@@ -190,6 +191,7 @@ class CodonAwareAlignmentWorkflowReport:
     manifest_path: Path
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
+    config: dict[str, object]
     sequence_type: AlignmentAlphabet
     genetic_code_id: int
     genetic_code_name: str
@@ -606,6 +608,7 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
         warning_lines=[str(item) for item in run_payload["warning_lines"]],
         started_at_utc=str(run_payload.get("started_at_utc", "")),
         ended_at_utc=str(run_payload.get("ended_at_utc", "")),
+        runtime_seconds=float(run_payload.get("runtime_seconds", 0.0)),
         timeout_seconds=(
             None
             if run_payload.get("timeout_seconds") is None
@@ -630,6 +633,10 @@ def _restore_workflow_report(payload: dict[str, object]) -> EngineWorkflowReport
         output_checksums={
             str(key): str(value)
             for key, value in dict(payload.get("output_checksums", {})).items()
+        },
+        config={
+            str(key): value
+            for key, value in dict(payload.get("config", {})).items()
         },
         selected_model=None
         if payload.get("selected_model") is None
@@ -1188,6 +1195,7 @@ def _restore_codon_aware_alignment_report(
         warning_lines=[str(item) for item in run_payload["warning_lines"]],
         started_at_utc=str(run_payload.get("started_at_utc", "")),
         ended_at_utc=str(run_payload.get("ended_at_utc", "")),
+        runtime_seconds=float(run_payload.get("runtime_seconds", 0.0)),
         timeout_seconds=(
             None
             if run_payload.get("timeout_seconds") is None
@@ -1212,6 +1220,10 @@ def _restore_codon_aware_alignment_report(
         output_checksums={
             str(key): str(value)
             for key, value in dict(payload.get("output_checksums", {})).items()
+        },
+        config={
+            str(key): value
+            for key, value in dict(payload.get("config", {})).items()
         },
         sequence_type=str(payload["sequence_type"]),
         genetic_code_id=int(payload.get("genetic_code_id", 1)),
@@ -1503,6 +1515,11 @@ def run_multiple_sequence_alignment(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
+        config={
+            "mode": mode,
+            "extra_args": list(extra_args),
+            "timeout_seconds": timeout_seconds,
+        },
         notes=[
             f"mafft alignment mode: {mode}",
             "alignment output validated as deterministic equal-length FASTA",
@@ -1613,6 +1630,12 @@ def run_codon_aware_multiple_sequence_alignment(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
+        config={
+            "mode": mode,
+            "sequence_type": preparation.sequence_type,
+            "genetic_code_id": preparation.genetic_code_id,
+            "timeout_seconds": timeout_seconds,
+        },
         sequence_type=preparation.sequence_type,
         genetic_code_id=preparation.genetic_code_id,
         genetic_code_name=preparation.genetic_code_name,
@@ -1712,6 +1735,11 @@ def run_alignment_trimming(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
+        config={
+            "mode": mode,
+            "gap_threshold": gap_threshold,
+            "timeout_seconds": timeout_seconds,
+        },
         trimming_summary=trimming_summary,
         notes=[
             f"trimal trimming mode: {mode}",
@@ -1845,6 +1873,13 @@ def run_model_selection(
             [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_checksums={},
+        config={
+            "sequence_type": sequence_type,
+            "partition_path": None if partition_path is None else str(partition_path),
+            "seed": seed,
+            "threads": threads,
+            "timeout_seconds": timeout_seconds,
+        },
         selected_model=selected_model,
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
@@ -1993,6 +2028,14 @@ def run_maximum_likelihood_tree_inference(
             [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_checksums={},
+        config={
+            "model": model,
+            "sequence_type": sequence_type,
+            "partition_path": None if partition_path is None else str(partition_path),
+            "seed": seed,
+            "threads": threads,
+            "timeout_seconds": timeout_seconds,
+        },
         selected_model=iqtree_summary.selected_model,
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
@@ -2175,6 +2218,15 @@ def run_bootstrap_support_estimation(
             [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_checksums={},
+        config={
+            "model": model,
+            "replicates": replicates,
+            "sequence_type": sequence_type,
+            "partition_path": None if partition_path is None else str(partition_path),
+            "seed": seed,
+            "threads": threads,
+            "timeout_seconds": timeout_seconds,
+        },
         selected_model=iqtree_summary.selected_model,
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
@@ -2362,6 +2414,16 @@ def run_sh_alrt_support_estimation(
             [input_path] if partition_path is None else [input_path, partition_path]
         ),
         output_checksums={},
+        config={
+            "model": model,
+            "sh_alrt_replicates": sh_alrt_replicates,
+            "bootstrap_replicates": bootstrap_replicates,
+            "sequence_type": sequence_type,
+            "partition_path": None if partition_path is None else str(partition_path),
+            "seed": seed,
+            "threads": threads,
+            "timeout_seconds": timeout_seconds,
+        },
         selected_model=iqtree_summary.selected_model,
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
@@ -2478,6 +2540,10 @@ def run_bootstrap_consensus_tree(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([bootstrap_trees_path]),
         output_checksums={},
+        config={
+            "minimum_support": minimum_support,
+            "timeout_seconds": timeout_seconds,
+        },
         log_likelihood=iqtree_summary.log_likelihood,
         iqtree_summary=iqtree_summary,
         model_selection_summary=model_selection_summary,
@@ -2573,6 +2639,10 @@ def run_fast_tree_inference(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
+        config={
+            "sequence_type": sequence_type,
+            "timeout_seconds": timeout_seconds,
+        },
         fasttree_support_summary=fasttree_support_summary,
         notes=[
             "fast approximate tree validated as parseable Newick output",

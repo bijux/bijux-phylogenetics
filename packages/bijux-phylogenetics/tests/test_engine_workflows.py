@@ -481,6 +481,12 @@ def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(
     assert report.run.warning_lines == [
         "WARNING: mafft fixture inserted alignment padding"
     ]
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "mode": "auto",
+        "extra_args": [],
+        "timeout_seconds": None,
+    }
     assert report.manifest_path.exists()
 
 
@@ -542,6 +548,13 @@ def test_run_codon_aware_multiple_sequence_alignment_preserves_triplet_gaps(
         "sequence contains one or more premature stop codons\n"
     )
     assert report.run.command[1:-1] == ["--localpair", "--maxiterate", "1000"]
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "mode": "linsi",
+        "sequence_type": "dna",
+        "genetic_code_id": 1,
+        "timeout_seconds": None,
+    }
     assert report.notes[0].startswith("codon-aware alignment preserved")
     assert report.manifest_path.exists()
 
@@ -828,6 +841,16 @@ def test_run_bootstrap_support_estimation_exports_branch_ledgers_and_histogram(
     assert report.bootstrap_support_summary.weakly_supported_clade_count == 0
     assert report.weak_backbone_report is not None
     assert report.weak_backbone_report.weak_backbone_node_count == 0
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "model": "GTR+G",
+        "replicates": 1000,
+        "sequence_type": None,
+        "partition_path": None,
+        "seed": 1,
+        "threads": 1,
+        "timeout_seconds": None,
+    }
 
 
 def test_run_sh_alrt_support_estimation_exports_combined_support_and_conflicts(

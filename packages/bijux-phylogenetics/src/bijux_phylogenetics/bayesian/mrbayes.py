@@ -649,6 +649,9 @@ def run_mrbayes_posterior_inference(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([nexus_path]),
         output_checksums={},
+        config={
+            "timeout_seconds": timeout_seconds,
+        },
         notes=[
             "MrBayes posterior trees, parameter traces, consensus tree, and MCMC diagnostics validated after engine execution",
             *incomplete_notes,

@@ -2346,6 +2346,12 @@ def run_beast_posterior_inference(
         manifest_path=manifest_path,
         input_checksums=build_file_checksums([xml_path]),
         output_checksums={},
+        config={
+            "threads": threads,
+            "seed": seed,
+            "overwrite": overwrite,
+            "timeout_seconds": timeout_seconds,
+        },
         notes=[
             "BEAST posterior log and posterior tree set validated after engine execution",
             f"beast threads: {threads}",

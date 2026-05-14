@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess  # nosec B404
+import time
 from typing import Any
 
 from bijux_phylogenetics.errors import (
@@ -42,6 +43,7 @@ class EngineRunReport:
     warning_lines: list[str]
     started_at_utc: str
     ended_at_utc: str
+    runtime_seconds: float
     timeout_seconds: float | None
     timed_out: bool
 
@@ -292,6 +294,7 @@ def execute_engine_command(
     stderr_path.parent.mkdir(parents=True, exist_ok=True)
     command = [executable, *command_args]
     started_at_utc = utc_now_text()
+    started = time.perf_counter()
     incomplete_record = EngineIncompleteRunRecord(
         engine_name=engine_name,
         workflow=workflow,
@@ -393,6 +396,7 @@ def execute_engine_command(
         warning_lines=warning_lines,
         started_at_utc=started_at_utc,
         ended_at_utc=ended_at_utc,
+        runtime_seconds=max(0.0, round(time.perf_counter() - started, 6)),
         timeout_seconds=timeout_seconds,
         timed_out=False,
     )
