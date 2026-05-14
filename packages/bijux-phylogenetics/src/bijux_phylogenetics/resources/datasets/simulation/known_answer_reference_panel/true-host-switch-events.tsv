@@ -1,0 +1,15 @@
+parent_node	child_node	branch_length	source_state	target_state	changed	event_count
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	0.093937389187041	bat	bat	false	0
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1|SimTaxon2	0.138342003776927	bat	bat	false	0
+SimTaxon1|SimTaxon2	SimTaxon1	0.195174506314933	bat	canid	true	1
+SimTaxon1|SimTaxon2	SimTaxon2	0.195174506314933	bat	bat	false	0
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon3|SimTaxon4	0.33351651009186	bat	bat	false	0
+SimTaxon3|SimTaxon4	SimTaxon3	0	bat	bat	false	0
+SimTaxon3|SimTaxon4	SimTaxon4	0	bat	bat	false	0
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	0.120785530783683	bat	bat	false	0
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5	0.306668368495217	bat	canid	true	1
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7|SimTaxon8	0.002180918817425	bat	bat	false	0
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7	0.279190544610666	bat	bat	false	0
+SimTaxon6|SimTaxon7	SimTaxon6	0.025296905067126	bat	bat	false	0
+SimTaxon6|SimTaxon7	SimTaxon7	0.025296905067126	bat	bat	false	0
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon8	0.304487449677792	bat	bat	false	0

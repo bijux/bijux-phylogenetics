@@ -115,10 +115,19 @@ class KnownAnswerReferenceDataset:
     true_tree_path: Path
     alignment_path: Path
     continuous_traits_path: Path
+    ou_traits_path: Path
     discrete_traits_path: Path
+    host_traits_path: Path
+    geographic_traits_path: Path
     true_parameters_path: Path
     true_continuous_nodes_path: Path
+    true_ou_nodes_path: Path
     true_discrete_nodes_path: Path
+    true_host_nodes_path: Path
+    true_geographic_nodes_path: Path
+    true_host_switch_events_path: Path
+    true_geographic_transition_events_path: Path
+    recovery_thresholds_path: Path
     reference_output_root: Path
     taxon_count: int
     sequence_length: int
@@ -137,10 +146,19 @@ class KnownAnswerReferenceExportResult:
     true_tree_path: Path
     alignment_path: Path
     continuous_traits_path: Path
+    ou_traits_path: Path
     discrete_traits_path: Path
+    host_traits_path: Path
+    geographic_traits_path: Path
     true_parameters_path: Path
     true_continuous_nodes_path: Path
+    true_ou_nodes_path: Path
     true_discrete_nodes_path: Path
+    true_host_nodes_path: Path
+    true_geographic_nodes_path: Path
+    true_host_switch_events_path: Path
+    true_geographic_transition_events_path: Path
+    recovery_thresholds_path: Path
     expected_output_root: Path
 
 
@@ -202,10 +220,21 @@ def load_known_answer_reference_dataset() -> KnownAnswerReferenceDataset:
     true_tree_path = dataset_root / "true-tree.nwk"
     alignment_path = dataset_root / "simulated-alignment.fasta"
     continuous_traits_path = dataset_root / "continuous-traits.tsv"
+    ou_traits_path = dataset_root / "ou-traits.tsv"
     discrete_traits_path = dataset_root / "discrete-traits.tsv"
+    host_traits_path = dataset_root / "host-traits.tsv"
+    geographic_traits_path = dataset_root / "geographic-traits.tsv"
     true_parameters_path = dataset_root / "true-parameters.tsv"
     true_continuous_nodes_path = dataset_root / "true-continuous-nodes.tsv"
+    true_ou_nodes_path = dataset_root / "true-ou-nodes.tsv"
     true_discrete_nodes_path = dataset_root / "true-discrete-nodes.tsv"
+    true_host_nodes_path = dataset_root / "true-host-nodes.tsv"
+    true_geographic_nodes_path = dataset_root / "true-geographic-nodes.tsv"
+    true_host_switch_events_path = dataset_root / "true-host-switch-events.tsv"
+    true_geographic_transition_events_path = (
+        dataset_root / "true-geographic-transition-events.tsv"
+    )
+    recovery_thresholds_path = dataset_root / "recovery-thresholds.tsv"
     validate_fasta_input(alignment_path, sequence_type=_SEQUENCE_TYPE)
     records = load_fasta_alignment(alignment_path)
     tree = load_tree(true_tree_path)
@@ -216,10 +245,19 @@ def load_known_answer_reference_dataset() -> KnownAnswerReferenceDataset:
         true_tree_path=true_tree_path,
         alignment_path=alignment_path,
         continuous_traits_path=continuous_traits_path,
+        ou_traits_path=ou_traits_path,
         discrete_traits_path=discrete_traits_path,
+        host_traits_path=host_traits_path,
+        geographic_traits_path=geographic_traits_path,
         true_parameters_path=true_parameters_path,
         true_continuous_nodes_path=true_continuous_nodes_path,
+        true_ou_nodes_path=true_ou_nodes_path,
         true_discrete_nodes_path=true_discrete_nodes_path,
+        true_host_nodes_path=true_host_nodes_path,
+        true_geographic_nodes_path=true_geographic_nodes_path,
+        true_host_switch_events_path=true_host_switch_events_path,
+        true_geographic_transition_events_path=true_geographic_transition_events_path,
+        recovery_thresholds_path=recovery_thresholds_path,
         reference_output_root=dataset_root / "expected",
         taxon_count=tree.tip_count,
         sequence_length=len(records[0].sequence),
@@ -228,9 +266,10 @@ def load_known_answer_reference_dataset() -> KnownAnswerReferenceDataset:
         distance_model=_DISTANCE_MODEL,
         source_summary=(
             "Deterministic owned simulation panel with one birth-death tree, one "
-            "JC-like DNA alignment, one Brownian continuous trait, and one "
-            "symmetric discrete trait, packaged with full node-level truth ledgers "
-            "for recovery review."
+            "JC-like DNA alignment, one Brownian continuous trait, one OU "
+            "continuous trait, one generic discrete trait, one host-state trait, "
+            "and one geographic-state trait, packaged with node-level truth, "
+            "branch-event truth, and explicit recovery thresholds."
         ),
     )
 
@@ -255,9 +294,21 @@ def export_known_answer_reference_dataset(
         dataset.continuous_traits_path,
         destination / "continuous-traits.tsv",
     )
+    ou_traits_path = shutil.copy2(
+        dataset.ou_traits_path,
+        destination / "ou-traits.tsv",
+    )
     discrete_traits_path = shutil.copy2(
         dataset.discrete_traits_path,
         destination / "discrete-traits.tsv",
+    )
+    host_traits_path = shutil.copy2(
+        dataset.host_traits_path,
+        destination / "host-traits.tsv",
+    )
+    geographic_traits_path = shutil.copy2(
+        dataset.geographic_traits_path,
+        destination / "geographic-traits.tsv",
     )
     true_parameters_path = shutil.copy2(
         dataset.true_parameters_path,
@@ -267,9 +318,33 @@ def export_known_answer_reference_dataset(
         dataset.true_continuous_nodes_path,
         destination / "true-continuous-nodes.tsv",
     )
+    true_ou_nodes_path = shutil.copy2(
+        dataset.true_ou_nodes_path,
+        destination / "true-ou-nodes.tsv",
+    )
     true_discrete_nodes_path = shutil.copy2(
         dataset.true_discrete_nodes_path,
         destination / "true-discrete-nodes.tsv",
+    )
+    true_host_nodes_path = shutil.copy2(
+        dataset.true_host_nodes_path,
+        destination / "true-host-nodes.tsv",
+    )
+    true_geographic_nodes_path = shutil.copy2(
+        dataset.true_geographic_nodes_path,
+        destination / "true-geographic-nodes.tsv",
+    )
+    true_host_switch_events_path = shutil.copy2(
+        dataset.true_host_switch_events_path,
+        destination / "true-host-switch-events.tsv",
+    )
+    true_geographic_transition_events_path = shutil.copy2(
+        dataset.true_geographic_transition_events_path,
+        destination / "true-geographic-transition-events.tsv",
+    )
+    recovery_thresholds_path = shutil.copy2(
+        dataset.recovery_thresholds_path,
+        destination / "recovery-thresholds.tsv",
     )
     expected_output_root = destination / "expected"
     shutil.copytree(dataset.reference_output_root, expected_output_root)
@@ -279,10 +354,21 @@ def export_known_answer_reference_dataset(
         true_tree_path=Path(true_tree_path),
         alignment_path=Path(alignment_path),
         continuous_traits_path=Path(continuous_traits_path),
+        ou_traits_path=Path(ou_traits_path),
         discrete_traits_path=Path(discrete_traits_path),
+        host_traits_path=Path(host_traits_path),
+        geographic_traits_path=Path(geographic_traits_path),
         true_parameters_path=Path(true_parameters_path),
         true_continuous_nodes_path=Path(true_continuous_nodes_path),
+        true_ou_nodes_path=Path(true_ou_nodes_path),
         true_discrete_nodes_path=Path(true_discrete_nodes_path),
+        true_host_nodes_path=Path(true_host_nodes_path),
+        true_geographic_nodes_path=Path(true_geographic_nodes_path),
+        true_host_switch_events_path=Path(true_host_switch_events_path),
+        true_geographic_transition_events_path=Path(
+            true_geographic_transition_events_path
+        ),
+        recovery_thresholds_path=Path(recovery_thresholds_path),
         expected_output_root=expected_output_root,
     )
 
