@@ -87,6 +87,7 @@ class InferenceReproducibilityComparisonRow:
 class InferenceReproducibilityWorkflowReport:
     """End-to-end reproducibility result for repeated supported IQ-TREE inference."""
 
+    workflow: str
     input_path: Path
     out_dir: Path
     prefix: str
@@ -103,6 +104,7 @@ class InferenceReproducibilityWorkflowReport:
     manifest_path: Path
     output_paths: dict[str, Path]
     step_manifests: dict[str, Path]
+    config: dict[str, object]
     commands: dict[str, list[str]]
     engine_versions: dict[str, str]
     input_checksums: dict[str, str]
@@ -521,6 +523,7 @@ def run_inference_reproducibility_check(
         f"repeat count: {repeats}",
     ]
     report = InferenceReproducibilityWorkflowReport(
+        workflow="inference-reproducibility",
         input_path=input_path,
         out_dir=out_dir,
         prefix=workflow_prefix,
@@ -539,6 +542,13 @@ def run_inference_reproducibility_check(
         manifest_path=final_outputs["manifest"],
         output_paths=final_outputs,
         step_manifests=step_manifests,
+        config={
+            "sequence_type": sequence_type,
+            "repeats": repeats,
+            "bootstrap_replicates": bootstrap_replicates,
+            "seed": seed,
+            "threads": threads,
+        },
         commands={
             "model_selection": model_selection_workflow.run.command,
             **{

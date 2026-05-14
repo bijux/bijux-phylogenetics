@@ -136,6 +136,9 @@ def test_run_large_alignment_inference_streams_many_sequences_and_reports_resour
     assert report.output_paths["resource_table"].exists()
     assert report.output_paths["tree"].exists()
     assert report.output_paths["log"].exists()
+    assert report.workflow == "large-alignment-inference"
+    assert report.runtime_seconds >= 0.0
+    assert report.config["sequence_type"] == "protein"
     assert any("scanned linearly before inference" in note for note in report.notes)
     assert any(
         "does not create an intermediate alignment copy" in note
@@ -169,6 +172,7 @@ def test_run_large_alignment_inference_resume_reuses_verified_outputs(
     assert first.resumed is False
     assert second.resumed is True
     assert second.output_checksums == first.output_checksums
+    assert second.workflow == "large-alignment-inference"
 
 
 def test_run_large_alignment_inference_honors_timeout_seconds(

@@ -522,9 +522,12 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert str(report.out_dir) not in model_text
         workflow_manifest = _load_json(report.manifest_path)
         run_manifest = _load_json(report.run_manifest_path)
+        assert report.workflow == "fasta-to-tree"
         assert workflow_manifest["selected_model"] == expected_model
+        assert workflow_manifest["workflow"] == "fasta-to-tree"
         assert workflow_manifest["iqtree_seed"] == 1
         assert workflow_manifest["bootstrap_replicates"] == 1000
+        assert workflow_manifest["config"]["iqtree_threads"] == 1
         assert "alignment" in workflow_manifest["commands"]
         assert "iqtree_model_selection" in workflow_manifest["engine_versions"]
         assert report.run_manifest_path == report.output_paths["run_manifest"]

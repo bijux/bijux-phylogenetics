@@ -80,6 +80,7 @@ class FastaToTreeSupportRow:
 class FastaToTreeWorkflowReport:
     """End-to-end result for one raw-FASTA-to-tree workflow run."""
 
+    workflow: str
     input_path: Path
     prepared_input_path: Path
     out_dir: Path
@@ -99,6 +100,7 @@ class FastaToTreeWorkflowReport:
     manifest_path: Path
     run_manifest_path: Path
     output_paths: dict[str, Path]
+    config: dict[str, object]
     commands: dict[str, list[str]]
     engine_versions: dict[str, str]
     step_manifests: dict[str, Path]
@@ -623,6 +625,7 @@ def run_fasta_to_tree_workflow(
             ["--timeout-seconds", format(timeout_seconds, ".12g")]
         )
     report = FastaToTreeWorkflowReport(
+        workflow="fasta-to-tree",
         input_path=input_path,
         prepared_input_path=prepared_input_path,
         out_dir=out_dir,
@@ -644,6 +647,18 @@ def run_fasta_to_tree_workflow(
         manifest_path=final_outputs["manifest"],
         run_manifest_path=final_outputs["run_manifest"],
         output_paths=final_outputs,
+        config={
+            "sequence_type": inferred_sequence_type,
+            "alignment_mode": alignment_mode,
+            "trimming_mode": trimming_mode,
+            "trim_gap_threshold": trim_gap_threshold,
+            "iqtree_seed": iqtree_seed,
+            "iqtree_threads": iqtree_threads,
+            "bootstrap_replicates": bootstrap_replicates,
+            "timeout_seconds": timeout_seconds,
+            "resume": resume,
+            "incomplete_run_policy": incomplete_run_policy,
+        },
         commands={
             "alignment": alignment_workflow.run.command,
             "trimming": trimming_workflow.run.command,

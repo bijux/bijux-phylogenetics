@@ -1357,6 +1357,8 @@ def test_run_tree_inference_comparison_exports_tables_and_conflicts(
     assert report.iqtree_seed == 1
     assert report.iqtree_threads == 1
     assert report.bootstrap_replicates == 1000
+    assert report.workflow == "tree-inference-comparison"
+    assert report.config["iqtree_seed"] == 1
     assert report.commands["model_selection"][0] == str(iqtree)
     assert report.commands["fasttree"][0] == str(fasttree)
     assert "iqtree_support" in report.engine_versions
@@ -1398,6 +1400,8 @@ def test_run_inference_reproducibility_check_reports_deterministic_reruns(
     assert report.repeat_count == 3
     assert report.iqtree_seed == 1
     assert report.iqtree_threads == 1
+    assert report.workflow == "inference-reproducibility"
+    assert report.config["repeats"] == 3
     assert report.overall_status == "deterministic"
     assert report.commands["model_selection"][0] == str(executable)
     assert report.commands["baseline"][0] == str(executable)

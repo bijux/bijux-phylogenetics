@@ -146,6 +146,7 @@ class InferenceComparisonConclusionSummary:
 class InferenceComparisonWorkflowReport:
     """End-to-end result for one engine-comparison workflow on one alignment."""
 
+    workflow: str
     input_path: Path
     out_dir: Path
     prefix: str
@@ -162,6 +163,7 @@ class InferenceComparisonWorkflowReport:
     manifest_path: Path
     output_paths: dict[str, Path]
     step_manifests: dict[str, Path]
+    config: dict[str, object]
     commands: dict[str, list[str]]
     engine_versions: dict[str, str]
     input_checksums: dict[str, str]
@@ -1122,6 +1124,7 @@ def run_tree_inference_comparison(
         f"ultrafast bootstrap replicates: {bootstrap_replicates}",
     ]
     report = InferenceComparisonWorkflowReport(
+        workflow="tree-inference-comparison",
         input_path=input_path,
         out_dir=out_dir,
         prefix=workflow_prefix,
@@ -1143,6 +1146,15 @@ def run_tree_inference_comparison(
             "model_selection": model_selection_workflow.manifest_path,
             "iqtree_support": iqtree_support_workflow.manifest_path,
             "fasttree": fasttree_workflow.manifest_path,
+        },
+        config={
+            "sequence_type": sequence_type,
+            "iqtree_seed": iqtree_seed,
+            "iqtree_threads": iqtree_threads,
+            "bootstrap_replicates": bootstrap_replicates,
+            "timeout_seconds": timeout_seconds,
+            "resume": resume,
+            "incomplete_run_policy": incomplete_run_policy,
         },
         commands={
             "model_selection": model_selection_workflow.run.command,

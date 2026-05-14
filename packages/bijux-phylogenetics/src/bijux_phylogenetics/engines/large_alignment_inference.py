@@ -78,6 +78,7 @@ class LargeAlignmentResourceRow:
 class LargeAlignmentInferenceWorkflowReport:
     """One governed large-alignment inference run over an aligned FASTA matrix."""
 
+    workflow: str
     input_path: Path
     out_dir: Path
     prefix: str
@@ -86,10 +87,14 @@ class LargeAlignmentInferenceWorkflowReport:
     approximate_method: bool
     timeout_seconds: float | None
     resumed: bool
+    started_at_utc: str
+    ended_at_utc: str
+    runtime_seconds: float
     manifest_path: Path
     output_paths: dict[str, Path]
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
+    config: dict[str, object]
     input_summary: LargeAlignmentInputSummary
     resource_rows: list[LargeAlignmentResourceRow]
     engine_version_text: str
@@ -447,6 +452,7 @@ def _restore_large_alignment_report(
     payload: dict[str, object],
 ) -> LargeAlignmentInferenceWorkflowReport:
     return LargeAlignmentInferenceWorkflowReport(
+        workflow=str(payload.get("workflow", "large-alignment-inference")),
         input_path=Path(str(payload["input_path"])),
         out_dir=Path(str(payload["out_dir"])),
         prefix=str(payload["prefix"]),
@@ -459,6 +465,9 @@ def _restore_large_alignment_report(
             else float(payload["timeout_seconds"])
         ),
         resumed=bool(payload.get("resumed", False)),
+        started_at_utc=str(payload.get("started_at_utc", "")),
+        ended_at_utc=str(payload.get("ended_at_utc", "")),
+        runtime_seconds=float(payload.get("runtime_seconds", 0.0)),
         manifest_path=Path(str(payload["manifest_path"])),
         output_paths={
             key: Path(str(value))
@@ -471,6 +480,10 @@ def _restore_large_alignment_report(
         output_checksums={
             str(key): str(value)
             for key, value in dict(payload["output_checksums"]).items()
+        },
+        config={
+            str(key): value
+            for key, value in dict(payload.get("config", {})).items()
         },
         input_summary=LargeAlignmentInputSummary(
             input_path=Path(str(dict(payload["input_summary"])["input_path"])),
@@ -616,6 +629,8 @@ def run_large_alignment_inference(
     )
     write_incomplete_engine_run(incomplete_record)
 
+    started_at_utc = incomplete_record.started_at_utc
+    started = time.perf_counter()
     try:
         warning_lines, inference_resource = _execute_large_fasttree_command(
             executable=resolved,
@@ -657,6 +672,7 @@ def run_large_alignment_inference(
         *incomplete_notes,
     ]
     report = LargeAlignmentInferenceWorkflowReport(
+        workflow="large-alignment-inference",
         input_path=input_path,
         out_dir=out_dir,
         prefix=prefix,
@@ -665,6 +681,9 @@ def run_large_alignment_inference(
         approximate_method=True,
         timeout_seconds=timeout_seconds,
         resumed=False,
+        started_at_utc=started_at_utc,
+        ended_at_utc=utc_now_text(),
+        runtime_seconds=max(0.0, round(time.perf_counter() - started, 6)),
         manifest_path=manifest_path,
         output_paths={
             "tree": tree_path,
@@ -678,6 +697,12 @@ def run_large_alignment_inference(
         },
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
+        config={
+            "sequence_type": effective_sequence_type,
+            "timeout_seconds": timeout_seconds,
+            "resume": resume,
+            "incomplete_run_policy": incomplete_run_policy,
+        },
         input_summary=input_summary,
         resource_rows=resource_rows,
         engine_version_text=version.text,
