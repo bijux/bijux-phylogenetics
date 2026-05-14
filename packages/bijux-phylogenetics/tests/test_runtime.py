@@ -632,6 +632,7 @@ from bijux_phylogenetics.engines import (
     classify_inference_workflow_failure,
     compare_fast_and_ml_trees,
     compare_inferred_tree_to_taxon_metadata,
+    export_workflow_result_bundle,
     infer_unaligned_sequence_type,
     render_inference_workflow_report,
     rewrite_inference_comparison_report_html,
@@ -652,6 +653,7 @@ from bijux_phylogenetics.engines import (
     validate_inference_engine_outputs,
     validate_ml_tree_contains_expected_taxa,
     validate_model_selection_against_engine_outputs,
+    validate_workflow_result_bundle,
     write_inference_comparison_clade_table,
     write_inference_comparison_conclusion_table,
     write_inference_comparison_summary_table,
@@ -2915,6 +2917,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.render_inference_workflow_report
         is render_inference_workflow_report
+    )
+    assert (
+        bijux_phylogenetics.export_workflow_result_bundle
+        is export_workflow_result_bundle
+    )
+    assert (
+        bijux_phylogenetics.validate_workflow_result_bundle
+        is validate_workflow_result_bundle
     )
     assert bijux_phylogenetics.prepare_mrbayes_analysis is prepare_mrbayes_analysis
     assert (

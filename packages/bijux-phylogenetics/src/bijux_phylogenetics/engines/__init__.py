@@ -71,6 +71,14 @@ from .reports import (
     render_inference_workflow_report,
     render_model_selection_limitations_report,
 )
+from .result_bundle import (
+    WorkflowResultBundleFile,
+    WorkflowResultBundleIssue,
+    WorkflowResultBundleReport,
+    WorkflowResultBundleValidationReport,
+    export_workflow_result_bundle,
+    validate_workflow_result_bundle,
+)
 from .replay import (
     ManifestReplayComparison,
     ManifestReplayDrift,
@@ -168,6 +176,10 @@ __all__ = [
     "ManifestReplayReport",
     "ModelSelectionLimitationsReport",
     "ModelSelectionLimitationsReportBuildResult",
+    "WorkflowResultBundleFile",
+    "WorkflowResultBundleIssue",
+    "WorkflowResultBundleReport",
+    "WorkflowResultBundleValidationReport",
     "WorkflowPreflightStatus",
     "audit_alignment_inference_readiness",
     "BootstrapTreeSetValidationReport",
@@ -188,9 +200,11 @@ __all__ = [
     "validate_bootstrap_tree_set",
     "validate_inference_engine_outputs",
     "validate_model_selection_against_engine_outputs",
+    "validate_workflow_result_bundle",
     "compare_fast_and_ml_trees",
     "execute_engine_command",
     "bundle_inference_workflow_evidence",
+    "export_workflow_result_bundle",
     "inspect_external_engine_preflight",
     "list_mafft_alignment_modes",
     "list_external_engine_workflows",
