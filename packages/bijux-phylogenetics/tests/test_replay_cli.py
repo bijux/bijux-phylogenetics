@@ -124,3 +124,38 @@ def test_phylo_replay_cli_fails_for_changed_inputs(tmp_path: Path, capsys) -> No
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == "manifest_replay_input_changed"
+
+
+def test_phylo_replay_cli_reports_engine_version_drift(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_iqtree(tmp_path / "iqtree-fixture", version="2.9.9")
+    drifted_executable = _fake_iqtree(tmp_path / "iqtree-drifted", version="3.0.0")
+    workflow = run_model_selection(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "model-selection",
+        executable=executable,
+        prefix="example",
+    )
+
+    exit_code = main(
+        [
+            "phylo",
+            "replay",
+            str(workflow.manifest_path),
+            "--out-dir",
+            str(tmp_path / "model-selection-replay"),
+            "--iqtree-executable",
+            str(drifted_executable),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["engine_version_drift_count"] == 1
+    assert payload["metrics"]["outputs_equivalent"] is True
+    assert payload["data"]["engine_version_drift_detected"] is True
+    assert payload["data"]["engine_version_drift"][0]["label"] == "iqtree"
+    assert payload["data"]["engine_version_drift"][0]["matched"] is False
