@@ -7,6 +7,8 @@ from pathlib import Path
 import tempfile
 
 from bijux_phylogenetics.comparative import validate_comparative_reference_examples
+from bijux_phylogenetics.comparative.pgls import run_pgls
+from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
 from bijux_phylogenetics.compare.topology import (
     _unrooted_splits,
     compare_branch_score_distance,
@@ -100,6 +102,16 @@ def _resolve_repository_path(relative_path: str) -> Path:
     return _repository_root() / relative_path
 
 
+def _resolve_input_path(relative_path: str) -> Path:
+    package_candidate = _resolve_fixture_path(relative_path)
+    if package_candidate.exists():
+        return package_candidate
+    repository_candidate = _resolve_repository_path(relative_path)
+    if repository_candidate.exists():
+        return repository_candidate
+    return package_candidate
+
+
 def _numeric_outputs_match(
     expected: dict[str, object],
     observed: dict[str, object],
@@ -174,7 +186,7 @@ def _build_comparative_observations() -> tuple[
                 method=str(entry["method"]),
                 case=str(entry["case"]),
                 input_fixtures=[
-                    _resolve_fixture_path(path) for path in entry["input_fixtures"]
+                    _resolve_input_path(path) for path in entry["input_fixtures"]
                 ],
                 reference_tool=str(entry["reference_tool"]),
                 reference_version=str(entry["reference_version"]),
@@ -217,7 +229,7 @@ def _build_tree_observation(
     *,
     suite: str,
 ) -> ReferenceParityObservation:
-    input_paths = [_resolve_fixture_path(path) for path in entry["input_fixtures"]]
+    input_paths = [_resolve_input_path(path) for path in entry["input_fixtures"]]
     method = str(entry["method"])
     expected_output: dict[str, object] = dict(entry["expected_output"])
     tolerance = float(entry["tolerance"])
@@ -334,6 +346,96 @@ def _build_tree_observation(
     )
 
 
+def _extended_primate_pgls_estimated_lambda_observation(
+    input_paths: list[Path],
+) -> dict[str, float]:
+    report = run_pgls(
+        input_paths[0],
+        input_paths[1],
+        response="longevity",
+        predictors=["social_group_size"],
+        taxon_column="species",
+        lambda_value="estimate",
+    )
+    coefficients = {
+        coefficient.name: coefficient.estimate for coefficient in report.coefficients
+    }
+    return {
+        "intercept": coefficients["intercept"],
+        "social_group_size": coefficients["social_group_size"],
+        "log_likelihood": report.log_likelihood,
+        "lambda_value": report.lambda_value,
+    }
+
+
+def _extended_primate_pagels_lambda_observation(
+    input_paths: list[Path],
+) -> dict[str, float]:
+    report = estimate_pagels_lambda(
+        input_paths[0],
+        input_paths[1],
+        trait="longevity",
+        taxon_column="species",
+    )
+    return {
+        "lambda_value": report.lambda_value,
+        "log_likelihood": report.log_likelihood,
+    }
+
+
+def _build_extended_comparative_observations() -> tuple[
+    list[ReferenceParityObservation], dict[str, str]
+]:
+    fixture = _load_fixture_document("reference_parity_extended_comparative.json")
+    observed_builders = {
+        "pgls-primate-longevity-estimated-lambda": (
+            _extended_primate_pgls_estimated_lambda_observation
+        ),
+        "pagel-lambda-primate-longevity": (
+            _extended_primate_pagels_lambda_observation
+        ),
+    }
+    observations: list[ReferenceParityObservation] = []
+    for entry in fixture["observations"]:
+        case = str(entry["case"])
+        input_paths = [_resolve_input_path(path) for path in entry["input_fixtures"]]
+        expected_output = {
+            key: float(value) for key, value in dict(entry["expected_output"]).items()
+        }
+        observed_output = observed_builders[case](input_paths)
+        passed = _numeric_outputs_match(
+            expected_output,
+            observed_output,
+            tolerance=float(entry["tolerance"]),
+        )
+        observations.append(
+            ReferenceParityObservation(
+                suite="extended",
+                method=str(entry["method"]),
+                case=case,
+                input_fixtures=input_paths,
+                reference_tool=str(entry["reference_tool"]),
+                reference_version=str(entry["reference_version"]),
+                reference_source=str(entry["reference_source"]),
+                tolerance=float(entry["tolerance"]),
+                tolerance_reason=str(entry["tolerance_reason"]),
+                expected_failure_mode=str(entry["failure_mode"]),
+                taxon_overlap_policy=None,
+                shared_taxa=[],
+                left_only_taxa=[],
+                right_only_taxa=[],
+                expected_output=expected_output,
+                observed_output=observed_output,
+                mismatch_kind=None if passed else str(entry["failure_mode"]),
+                passed=passed,
+            )
+        )
+    return observations, {
+        str(tool): str(version)
+        for tool, version in dict(fixture["source_packages"]).items()
+    }
+
+
 def _build_tree_observations(
     fixture_name: str,
     *,
@@ -402,6 +504,11 @@ def validate_reference_parity_examples(
     ]
     suite = "core"
     if include_extended:
+        extended_comparative_observations, extended_comparative_tools = (
+            _build_extended_comparative_observations()
+        )
+        observations.extend(extended_comparative_observations)
+        reference_tools.update(extended_comparative_tools)
         extended_observations, extended_tools = _build_tree_observations(
             "reference_parity_extended.json",
             suite="extended",
@@ -414,7 +521,7 @@ def validate_reference_parity_examples(
         reference_tools.update(extended_tools)
         suite = "core+extended"
         limitations.append(
-            "The extended suite adds a larger posterior tree-set parity check and is intended for optional validation lanes."
+            "The extended suite adds governed primate comparative parity checks and a larger posterior tree-set parity check for optional validation lanes."
         )
     summary_rows = _build_summary_rows(observations)
     case_count = len(observations)

@@ -1,0 +1,48 @@
+{
+  "generated_on": "2026-05-14",
+  "source_packages": {
+    "ape": "5.8.1",
+    "nlme": "3.1.168",
+    "phytools": "2.5.2"
+  },
+  "observations": [
+    {
+      "case": "pgls-primate-longevity-estimated-lambda",
+      "method": "pgls",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "reference_tool": "ape+nlme",
+      "reference_version": "ape=5.8.1;nlme=3.1.168",
+      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json via ape::corPagel/nlme::gls",
+      "tolerance": 0.01,
+      "tolerance_reason": "The governed primate regression stores rounded external coefficients while the Bijux estimate uses the full likelihood search, so the tolerance absorbs real-dataset optimizer and rounding drift without hiding directional mismatches.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "intercept": 249.9584,
+        "social_group_size": 1.6621,
+        "log_likelihood": -444.0691,
+        "lambda_value": 0.7687
+      }
+    },
+    {
+      "case": "pagel-lambda-primate-longevity",
+      "method": "pagels-lambda",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/phylogenetic-signal-parity.json via phytools::phylosig(method='lambda')",
+      "tolerance": 0.005,
+      "tolerance_reason": "The governed primate signal bundle uses a larger real dataset with rounded external likelihood outputs, so a small tolerance absorbs profile-search and reporting drift while still rejecting materially different lambda fits.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "lambda_value": 0.8027,
+        "log_likelihood": -446.9432
+      }
+    }
+  ]
+}
