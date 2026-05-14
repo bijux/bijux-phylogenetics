@@ -542,10 +542,13 @@ from bijux_phylogenetics.ecological_niche import (
 )
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
+    inspect_external_engine_preflight,
+    list_external_engine_workflows,
     list_mafft_alignment_modes,
     list_trimal_trimming_modes,
     read_engine_version,
     render_inference_workflow_report,
+    require_preflight_workflow,
     run_alignment_trimming,
     run_bootstrap_consensus_tree,
     run_bootstrap_support_estimation,
@@ -1057,6 +1060,15 @@ def _add_external_adapter_execution_arguments(
     )
 
 
+def _add_preflight_executable_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--mafft-executable", type=str)
+    parser.add_argument("--trimal-executable", type=str)
+    parser.add_argument("--iqtree-executable", type=str)
+    parser.add_argument("--fasttree-executable", type=str)
+    parser.add_argument("--mrbayes-executable", type=str)
+    parser.add_argument("--beast-executable", type=str)
+
+
 def _adapter_version_args(engine_name: str) -> tuple[str, ...]:
     normalized = engine_name.lower()
     if normalized == "fasttree":
@@ -1313,6 +1325,8 @@ def _command_inputs(args: Any) -> list[Path | str]:
         if getattr(args, "out_dir", None) is not None:
             return [args.input_path, args.out_dir]
         return [args.input_path]
+    if args.command == "phylo":
+        return [] if getattr(args, "workflow", None) is None else [args.workflow]
     return []
 
 
@@ -1341,6 +1355,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the report as JSON."
     )
     _add_manifest_argument(env_inspect)
+
+    phylo = subparsers.add_parser(
+        get_command_spec("phylo").name, help=get_command_spec("phylo").summary
+    )
+    phylo_subparsers = phylo.add_subparsers(dest="phylo_command", required=True)
+    phylo_preflight = phylo_subparsers.add_parser(
+        "preflight",
+        help="Inspect external engine availability, version support, and workflow readiness.",
+    )
+    phylo_preflight.add_argument(
+        "--workflow",
+        choices=list_external_engine_workflows(),
+        help="Require one selected external-engine workflow to be runnable in the current environment.",
+    )
+    _add_preflight_executable_arguments(phylo_preflight)
+    phylo_preflight.add_argument(
+        "--json", action="store_true", help="Emit the preflight report as JSON."
+    )
+    _add_manifest_argument(phylo_preflight)
 
     metadata = subparsers.add_parser(
         get_command_spec("metadata").name, help=get_command_spec("metadata").summary
@@ -6403,6 +6436,52 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     inputs=[],
                     outputs=outputs,
                     metrics={"dependency_count": len(report.dependencies)},
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
+        if args.command == "phylo":
+            executables = {
+                "mafft": args.mafft_executable,
+                "trimal": args.trimal_executable,
+                "iqtree": args.iqtree_executable,
+                "fasttree": args.fasttree_executable,
+                "mrbayes": args.mrbayes_executable,
+                "beast": args.beast_executable,
+            }
+            report = inspect_external_engine_preflight(
+                executables=executables,
+                selected_workflow=args.workflow,
+            )
+            selected_workflow_status = None
+            if args.workflow is not None:
+                selected_workflow_status = require_preflight_workflow(
+                    report, workflow_id=args.workflow
+                ).readiness_status
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[] if args.workflow is None else [args.workflow],
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[] if args.workflow is None else [args.workflow],
+                    outputs=outputs,
+                    metrics={
+                        "engine_count": len(report.engines),
+                        "available_engine_count": sum(
+                            1 for engine in report.engines if engine.available
+                        ),
+                        "workflow_count": len(report.workflows),
+                        "runnable_workflow_count": sum(
+                            1 for workflow in report.workflows if workflow.runnable
+                        ),
+                        "selected_workflow": args.workflow,
+                        "selected_workflow_status": selected_workflow_status,
+                        "overall_status": report.overall_status,
+                    },
                     data=report,
                 ),
                 json_output=args.json,

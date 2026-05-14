@@ -23,6 +23,13 @@ COMMAND_SPECS: tuple[CommandSpec, ...] = (
         outputs=("environment-report",),
     ),
     CommandSpec(
+        name="phylo",
+        domain="engines",
+        summary="Inspect external engine availability and workflow readiness.",
+        inputs=("workflow-id",),
+        outputs=("engine-preflight-report",),
+    ),
+    CommandSpec(
         name="metadata",
         domain="metadata-linkage",
         summary="Inspect metadata tables keyed by taxon.",
