@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-13
+last_reviewed: 2026-05-14
 ---
 
 # Common Workflows
@@ -417,12 +417,14 @@ real compact pathogen panel, use `demo rabies-cross-host-geography-panel`.
 This workflow starts from raw rabies nucleoprotein sequences plus one combined
 host-and-geography metadata table, reruns alignment, trimming,
 maximum-likelihood inference, bootstrap support estimation, explicit outgroup
-rooting, host-switching review, geographic transition review, migration-event
-extraction, and one final HTML handoff.
+rooting, bootstrap topology review, clade extraction, host-switching review,
+geographic transition review, migration-event extraction, one comparative
+model, and one final HTML handoff.
 
 ```bash
 bijux-phylogenetics demo rabies-cross-host-geography-panel \
   --out artifacts/rabies-cross-host-geography-panel \
+  --config packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json \
   --mafft-executable mafft \
   --trimal-executable trimal \
   --iqtree-executable iqtree2 \
@@ -432,20 +434,27 @@ bijux-phylogenetics demo rabies-cross-host-geography-panel \
 The packaged integrated workflow writes the same dataset/workflow split as the
 other demos, but it keeps the full scientific chain together:
 
+- FASTA validation, sequence-type detection, and alignment-quality review ledgers
 - aligned FASTA and trimmed FASTA
 - maximum-likelihood rooted tree with bootstrap support ledger
+- bootstrap topology review with consensus, clade-frequency, instability, and distance tables
+- rooted clade table annotated with host and region metadata
 - explicit rooting-evidence ledger
 - host-switch summary, node, branch, count, fit, unsupported-claim, and exclusion ledgers
 - full biogeography package with ancestral-region tree, transition matrix, migration events, and self-contained map
+- comparative trait table, comparative-ready tree, branch-adjustment ledger, and comparative report package
 - integrated HTML report and machine-readable manifest
 
 The packaged metadata carries both raw `host_species` and `country` provenance
 plus the grouped workflow traits `host_group` and `region_group`. Those grouped
 traits are explicit and intentional: they keep one small real rabies panel
 interpretable for end-to-end host and geography review without overstating
-species-level or locality-level resolution. This integrated workflow does
-depend on external `mafft`, `trimal`, and `iqtree2` executables because it
-reruns the real sequence-to-tree path instead of relying on a pre-rooted tree.
+species-level or locality-level resolution. The comparative layer derives one
+regional longitude trait from the shipped centroid table and records any
+nonpositive branch-length repair needed before comparative fitting. This
+integrated workflow does depend on external `mafft`, `trimal`, and `iqtree2`
+executables because it reruns the real sequence-to-tree path instead of
+relying on a pre-rooted tree.
 
 When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and

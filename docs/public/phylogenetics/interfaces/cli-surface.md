@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-13
+last_reviewed: 2026-05-14
 ---
 
 # CLI Surface
@@ -581,31 +581,50 @@ metadata table. Its JSON metrics report:
 
 - `artifact_count`
 - `sequence_count`
+- `config_path`
 - `host_trait`
 - `geography_trait`
 - `selected_model`
+- `aligned_quality_score`
+- `trimmed_quality_score`
 - `minimum_support`
 - `maximum_support`
 - `root_host`
 - `root_region`
 - `host_switch_count`
 - `migration_event_count`
+- `clade_row_count`
+- `bootstrap_tree_count`
+- `comparative_formula`
+- `comparative_selected_model`
 - `reference_output_count`
 
 The command writes:
 
 - `dataset/README.md`
+- `dataset/workflow-config.json`
 - `dataset/sequences.fasta`
 - `dataset/metadata.csv`
 - `dataset/region-centroids.csv`
 - `dataset/expected/**`
 - `workflow/workflow-summary.tsv`
+- `workflow/input-validation.tsv`
+- `workflow/alignment-quality.tsv`
+- `workflow/alignment-sequence-ranking.tsv`
 - `workflow/rabies-cross-host-geography-panel.aln`
 - `workflow/rabies-cross-host-geography-panel.trimmed.aln`
 - `workflow/rabies-cross-host-geography-panel.rooted.tree`
 - `workflow/rabies-cross-host-geography-panel.rooting.tsv`
 - `workflow/rabies-cross-host-geography-panel.model.tsv`
 - `workflow/rabies-cross-host-geography-panel.support.tsv`
+- `workflow/clade-table.tsv`
+- `workflow/bootstrap-review/bootstrap-review.summary.tsv`
+- `workflow/bootstrap-review/bootstrap-review.consensus.nwk`
+- `workflow/bootstrap-review/bootstrap-review.clade-frequencies.tsv`
+- `workflow/bootstrap-review/bootstrap-review.unstable-branches.tsv`
+- `workflow/bootstrap-review/bootstrap-review.unstable-clades.tsv`
+- `workflow/bootstrap-review/bootstrap-review.distance-matrix.tsv`
+- `workflow/bootstrap-review/bootstrap-review.topology-clusters.tsv`
 - `workflow/host-switch-summary.tsv`
 - `workflow/host-state-nodes.tsv`
 - `workflow/host-switch-branches.tsv`
@@ -624,6 +643,22 @@ The command writes:
 - `workflow/biogeography/map-markers.tsv`
 - `workflow/biogeography/map-lines.tsv`
 - `workflow/biogeography/exclusions.tsv`
+- `workflow/comparative-traits.tsv`
+- `workflow/comparative-tree.nwk`
+- `workflow/comparative-tree-adjustments.tsv`
+- `workflow/comparative/comparative-report.html`
+- `workflow/comparative/comparative-summary.tsv`
+- `workflow/comparative/coefficient-table.tsv`
+- `workflow/comparative/residual-summary.tsv`
+- `workflow/comparative/signal-summary.tsv`
+- `workflow/comparative/model-comparison.tsv`
+- `workflow/comparative/interpretation-table.tsv`
+- `workflow/comparative/audit-table.tsv`
+- `workflow/comparative/contrast-table.tsv`
+- `workflow/comparative/model-matrix.tsv`
+- `workflow/comparative/categorical-contrasts.tsv`
+- `workflow/comparative/lambda-profile.tsv`
+- `workflow/comparative/comparative.manifest.json`
 - `workflow/rabies-cross-host-geography-report.html`
 - `workflow/rabies-cross-host-geography.manifest.json`
 - `overview.md`
@@ -633,12 +668,15 @@ biological surfaces:
 
 - host workflow trait `host_group`
 - geography workflow trait `region_group`
+- comparative formula `region_longitude ~ host_group`
 - discrete ancestral model `ard` for both state-evolution analyses
 - explicit outgroup rooting on `bat_chile_rv108`
 
 This command does require external `mafft`, `trimal`, and `iqtree2`
 executables because it reruns the full raw-sequence inference path instead of
-starting from a packaged rooted tree.
+starting from a packaged rooted tree. Use `--config dataset/workflow-config.json`
+against a packaged export when the exact shipped workflow settings should drive
+the rerun.
 
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
