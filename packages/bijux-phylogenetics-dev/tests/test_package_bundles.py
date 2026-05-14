@@ -169,6 +169,46 @@ def test_runtime_publication_policy_allows_secured_xml_dependency() -> None:
         "cairosvg>=2.9.0,<3.0",
         "defusedxml>=0.7.1,<1.0",
     )
+    assert (
+        "src/bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/examples/trees/example_tree.nwk"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/examples/trees/example_tree.nwk"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json"
+        in runtime_policy.required_wheel_entries
+    )
 
 
 def test_check_package_bundles_reports_target_package_policy_coverage(

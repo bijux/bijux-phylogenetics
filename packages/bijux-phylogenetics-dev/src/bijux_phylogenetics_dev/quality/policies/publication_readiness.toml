@@ -69,11 +69,21 @@ required_sdist_entries = [
     "NOTICE",
     "src/bijux_phylogenetics/__init__.py",
     "src/bijux_phylogenetics/cli.py",
+    "src/bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta",
+    "src/bijux_phylogenetics/resources/examples/trees/example_tree.nwk",
+    "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk",
+    "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv",
+    "src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json",
 ]
 required_wheel_entries = [
     "bijux_phylogenetics/__init__.py",
     "bijux_phylogenetics/cli.py",
     "bijux_phylogenetics/py.typed",
+    "bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta",
+    "bijux_phylogenetics/resources/examples/trees/example_tree.nwk",
+    "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk",
+    "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv",
+    "bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json",
 ]
 forbidden_archive_prefixes = [
     "tests/",
