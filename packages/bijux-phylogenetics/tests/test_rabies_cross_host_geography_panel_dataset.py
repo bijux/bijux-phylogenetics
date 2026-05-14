@@ -198,17 +198,22 @@ def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_wor
     assert result.dataset_export.centroids_path.is_file()
     assert result.dataset_export.workflow_config_path.is_file()
     assert result.workflow_bundle.workflow_summary_path.is_file()
+    assert result.workflow_bundle.config_audit_path.is_file()
+    assert result.workflow_bundle.resolved_config_path.is_file()
     assert result.workflow_bundle.clade_table_path.is_file()
     assert result.workflow_bundle.bootstrap_summary_path.is_file()
+    assert result.workflow_bundle.bootstrap_tree_comparison_summary_path.is_file()
     assert result.workflow_bundle.tree_path.is_file()
     assert result.workflow_bundle.host_switch_summary_path.is_file()
     assert result.workflow_bundle.biogeography_report_path.is_file()
     assert result.workflow_bundle.comparative_report_path.is_file()
+    assert result.workflow_bundle.scientific_findings_path.is_file()
     assert result.workflow_bundle.final_report_path.is_file()
     assert result.overview_path.is_file()
     overview = result.overview_path.read_text(encoding="utf-8")
     assert "final report" in overview
     assert "comparative report" in overview
+    assert "rooted-versus-consensus comparison" in overview
 
 
 def test_export_rabies_cross_host_geography_panel_dataset_copies_expected_outputs(
@@ -229,6 +234,12 @@ def test_export_rabies_cross_host_geography_panel_dataset_copies_expected_output
     assert "biogeography/biogeography-report.html" in expected_files
     assert "comparative/comparative-report.html" in expected_files
     assert "bootstrap-review/bootstrap-review.summary.tsv" in expected_files
+    assert (
+        "bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv"
+        in expected_files
+    )
+    assert "workflow-config-audit.tsv" in expected_files
+    assert "scientific-findings.tsv" in expected_files
 
 
 def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surface() -> (
@@ -282,7 +293,7 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 27
+    assert payload["metrics"]["artifact_count"] == 31
     assert payload["metrics"]["sequence_count"] == 9
     assert payload["metrics"]["config_path"] == str(output / "dataset" / "workflow-config.json")
     assert payload["metrics"]["host_trait"] == "host_group"
@@ -298,9 +309,12 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     assert payload["metrics"]["migration_event_count"] == 4
     assert payload["metrics"]["clade_row_count"] == 17
     assert payload["metrics"]["bootstrap_tree_count"] == 1000
+    assert payload["metrics"]["bootstrap_consensus_rooted_rf_distance"] == 1
     assert payload["metrics"]["comparative_formula"] == "region_longitude ~ host_group"
     assert payload["metrics"]["comparative_selected_model"] == "brownian"
-    assert payload["metrics"]["reference_output_count"] == 53
+    assert payload["metrics"]["config_check_count"] == 8
+    assert payload["metrics"]["scientific_finding_count"] == 6
+    assert payload["metrics"]["reference_output_count"] == 59
     assert payload["data"]["dataset"]["dataset_id"] == (
         "rabies_cross_host_geography_panel"
     )

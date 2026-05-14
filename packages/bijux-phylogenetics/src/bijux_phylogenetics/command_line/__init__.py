@@ -15071,6 +15071,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.dataset_export.metadata_path,
                         result.dataset_export.centroids_path,
                         result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.config_audit_path,
+                        result.workflow_bundle.resolved_config_path,
                         result.workflow_bundle.input_validation_path,
                         result.workflow_bundle.alignment_quality_path,
                         result.workflow_bundle.alignment_sequence_ranking_path,
@@ -15082,6 +15084,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.workflow_bundle.support_table_path,
                         result.workflow_bundle.clade_table_path,
                         result.workflow_bundle.bootstrap_summary_path,
+                        result.workflow_bundle.bootstrap_tree_comparison_summary_path,
                         result.workflow_bundle.host_switch_summary_path,
                         result.workflow_bundle.host_switch_counts_path,
                         result.workflow_bundle.biogeography_report_path,
@@ -15089,6 +15092,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.workflow_bundle.biogeography_map_path,
                         result.workflow_bundle.comparative_report_path,
                         result.workflow_bundle.comparative_summary_path,
+                        result.workflow_bundle.scientific_findings_path,
                         result.workflow_bundle.final_report_path,
                         result.workflow_bundle.final_manifest_path,
                         result.overview_path,
@@ -15136,11 +15140,20 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "bootstrap_tree_count": (
                                     result.workflow_bundle.bootstrap_tree_count
                                 ),
+                                "bootstrap_consensus_rooted_rf_distance": (
+                                    result.workflow_bundle.bootstrap_consensus_rooted_rf_distance
+                                ),
                                 "comparative_formula": (
                                     result.workflow_bundle.comparative_formula
                                 ),
                                 "comparative_selected_model": (
                                     result.workflow_bundle.comparative_selected_model
+                                ),
+                                "config_check_count": (
+                                    result.workflow_bundle.config_check_count
+                                ),
+                                "scientific_finding_count": (
+                                    result.workflow_bundle.scientific_finding_count
                                 ),
                                 "reference_output_count": expected_output_count,
                             },
