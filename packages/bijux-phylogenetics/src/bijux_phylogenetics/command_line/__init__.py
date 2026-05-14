@@ -15705,9 +15705,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     outputs=[
                         result.dataset_export.readme_path,
                         result.dataset_export.raw_alignment_path,
+                        result.dataset_export.raw_sequence_input_path,
+                        result.dataset_export.raw_coding_sequences_path,
                         result.dataset_export.raw_tree_path,
                         result.dataset_export.raw_traits_path,
+                        result.dataset_export.raw_trait_mismatch_path,
                         result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.raw_sequence_findings_path,
+                        result.workflow_bundle.raw_sequence_repair_path,
+                        result.workflow_bundle.repaired_sequence_input_path,
+                        result.workflow_bundle.repaired_sequence_validation_path,
+                        result.workflow_bundle.coding_sequence_exclusions_path,
+                        result.workflow_bundle.prepared_coding_sequences_path,
+                        result.workflow_bundle.raw_trait_linkage_path,
                         result.workflow_bundle.trait_duplicates_path,
                         result.workflow_bundle.trait_missing_values_path,
                         result.workflow_bundle.sequence_outliers_path,
@@ -15734,6 +15744,18 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "artifact_count": len(outputs),
                                 "raw_taxon_count": result.workflow_bundle.raw_taxon_count,
                                 "cleaned_taxon_count": result.workflow_bundle.cleaned_taxon_count,
+                                "duplicate_sequence_identifier_count": (
+                                    result.workflow_bundle.duplicate_sequence_identifier_count
+                                ),
+                                "illegal_character_count": (
+                                    result.workflow_bundle.illegal_character_count
+                                ),
+                                "empty_sequence_count": (
+                                    result.workflow_bundle.empty_sequence_count
+                                ),
+                                "raw_sequence_length_outlier_count": (
+                                    result.workflow_bundle.raw_sequence_length_outlier_count
+                                ),
                                 "duplicate_trait_taxon_count": (
                                     result.workflow_bundle.duplicate_trait_taxon_count
                                 ),
@@ -15746,8 +15768,23 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "tree_zero_length_branch_count": (
                                     result.workflow_bundle.tree_zero_length_branch_count
                                 ),
+                                "tree_negative_branch_count": (
+                                    result.workflow_bundle.tree_negative_branch_count
+                                ),
                                 "tree_long_branch_outlier_count": (
                                     result.workflow_bundle.tree_long_branch_outlier_count
+                                ),
+                                "coding_frame_error_count": (
+                                    result.workflow_bundle.coding_frame_error_count
+                                ),
+                                "coding_internal_stop_count": (
+                                    result.workflow_bundle.coding_internal_stop_count
+                                ),
+                                "raw_trait_missing_from_traits_count": (
+                                    result.workflow_bundle.raw_trait_missing_from_traits_count
+                                ),
+                                "raw_trait_extra_taxon_count": (
+                                    result.workflow_bundle.raw_trait_extra_taxon_count
                                 ),
                                 "dropped_taxon_count": (
                                     result.workflow_bundle.dropped_taxon_count
