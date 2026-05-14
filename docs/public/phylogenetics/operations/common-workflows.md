@@ -2414,6 +2414,22 @@ shared-taxa pruning, and it keeps the
 `--taxon-overlap-policy require-identical` rejection path explicit for both RF
 and branch-score comparisons.
 
+When the goal is to verify that support values still stay attached to the right
+branches across parser and topology surfaces, use `topology support-reference`.
+
+```bash
+bijux-phylogenetics topology support-reference --json
+```
+
+This surface reruns checked support cases for plain IQ-TREE UFBoot labels,
+compound SH-aLRT/UFBoot labels, FastTree local support, and posterior clade
+frequencies. It also keeps two policy checks explicit:
+
+- support comparison must stay clade-mapped when two trees differ only by node
+  ordering
+- bootstrap-versus-posterior review must report topology mismatch explicitly
+  when one support surface contains clades the other does not
+
 When the main question is whether topology conflicts are serious or only weakly
 supported, use `compare support`. That surface combines clade presence with the
 support values parsed from each tree and writes one support-aware conflict

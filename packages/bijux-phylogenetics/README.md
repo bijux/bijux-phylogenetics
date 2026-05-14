@@ -440,6 +440,18 @@ and shared-taxa pruning cases. It also keeps the owned
 `--taxon-overlap-policy require-identical` rejection behavior explicit for both
 RF and branch-score comparison.
 
+Branch-support parsing now has its own governed validation surface as well:
+
+```bash
+uv run bijux-phylogenetics topology support-reference --json
+```
+
+That suite locks IQ-TREE UFBoot labels, composite SH-aLRT/UFBoot labels,
+FastTree local support, and posterior clade frequencies against checked
+fixtures, proves that support comparison still maps values by clade instead of
+node order, and flags bootstrap-versus-posterior topology mismatch explicitly
+when one support surface contains clades the other does not.
+
 ## Read this next
 
 - package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)

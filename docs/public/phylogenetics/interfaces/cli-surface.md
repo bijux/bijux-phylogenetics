@@ -4358,6 +4358,23 @@ policy cases keep `--taxon-overlap-policy require-identical` explicit for both
 RF and branch-score comparisons, so a future regression cannot silently turn
 those mismatch rejections into pruning behavior.
 
+Use `topology support-reference` when the question is whether branch-support
+parsing still attaches IQ-TREE, FastTree, and posterior support values to the
+correct clades instead of only parsing one tree ad hoc. That command reruns the
+checked support fixture set and reports:
+
+- `case_count`
+- `reference_case_count`
+- `policy_case_count`
+- `all_passed`
+
+The governed cases cover plain IQ-TREE UFBoot labels, compound SH-aLRT/UFBoot
+labels, FastTree local support, and posterior clade frequencies from a checked
+tree set. The policy cases keep two review guarantees explicit: rotated trees
+with the same clades must still compare by clade rather than node order, and
+bootstrap-versus-posterior comparison must flag topology mismatch when support
+appears on clades that the other uncertainty surface does not contain.
+
 `compare support` is the governed support-aware tree-comparison surface for two
 trees over their shared taxon set. It keeps one shared-clade row for clades
 present in both trees, normalizes support values onto `0..1` fractions for
