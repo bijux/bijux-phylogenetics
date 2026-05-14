@@ -48,6 +48,46 @@ def test_tabular_numeric_tolerance_accepts_harmless_rounding(tmp_path: Path) -> 
     assert report.equivalent is True
 
 
+def test_tabular_identity_fields_match_rows_by_stable_node_id(tmp_path: Path) -> None:
+    expected = tmp_path / "expected.tsv"
+    observed = tmp_path / "observed.tsv"
+    expected.write_text(
+        "node\tvalue\nA|B\t1\nC|D\t2\n",
+        encoding="utf-8",
+    )
+    observed.write_text(
+        "node\tvalue\nC|D\t2\nA|B\t1\n",
+        encoding="utf-8",
+    )
+
+    report = compare_scientific_output(expected, observed)
+
+    assert report.equivalent is True
+
+
+def test_probability_tables_allow_governed_confidence_tolerance(tmp_path: Path) -> None:
+    expected = tmp_path / "host-state-nodes.tsv"
+    observed = tmp_path / "observed.tsv"
+    expected.write_text(
+        (
+            "node\thost_probabilities\tparent_confidence\n"
+            'A|B\t"{""bat"": 0.01, ""canid"": 0.79, ""livestock"": 0.20}"\t0.79\n'
+        ),
+        encoding="utf-8",
+    )
+    observed.write_text(
+        (
+            "node\thost_probabilities\tparent_confidence\n"
+            'A|B\t"{""bat"": 0.03, ""canid"": 0.77, ""livestock"": 0.20}"\t0.77\n'
+        ),
+        encoding="utf-8",
+    )
+
+    report = compare_scientific_output(expected, observed)
+
+    assert report.equivalent is True
+
+
 def test_html_report_contract_ignores_whitespace_but_keeps_links_and_manifest(
     tmp_path: Path,
 ) -> None:
