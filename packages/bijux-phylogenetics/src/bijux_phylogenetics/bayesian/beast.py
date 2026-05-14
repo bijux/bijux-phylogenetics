@@ -66,6 +66,10 @@ _BEAST_TREE_PATTERN = re.compile(
     r"tree\s+([^\s=]+)\s*=\s*(.+?);", flags=re.IGNORECASE | re.DOTALL
 )
 _BEAST_TREE_STATE_PATTERN = re.compile(r"STATE_(\d+)$", flags=re.IGNORECASE)
+_TABULAR_WARNING_PREFIX_PATTERN = re.compile(
+    r"^(warning|warn|caution|note|info)\b",
+    flags=re.IGNORECASE,
+)
 XmlElement: TypeAlias = Any
 
 
@@ -2376,33 +2380,22 @@ def parse_beast_log(path: Path) -> BeastLogReport:
             path=path,
             artifact_kind="beast-log",
         )
-    with path.open(encoding="utf-8", newline="") as handle:
-        filtered_lines = [
-            line
-            for line in handle
-            if line.strip() and not line.lstrip().startswith("#")
-        ]
-    reader = csv.DictReader(filtered_lines, delimiter="\t")
-    if reader.fieldnames is None:
-        raise _beast_artifact_error(
-            f"BEAST log contains no header row: {path}",
-            code="beast_log_missing_header",
-            path=path,
-            artifact_kind="beast-log",
-        )
-    state_field = _beast_state_field(reader.fieldnames)
+    logical_lines = _read_tabular_artifact_lines(path)
+    header_fields, data_lines = _split_beast_log_table(logical_lines, path=path)
+    state_field = _beast_state_field(header_fields)
     if state_field is None:
         raise _beast_artifact_error(
             f"BEAST log lacks a state column: {path}",
             code="beast_log_missing_state_column",
             path=path,
             artifact_kind="beast-log",
-            details={"columns": list(reader.fieldnames)},
+            details={"columns": list(header_fields)},
         )
-    columns = [field for field in reader.fieldnames if field and field != state_field]
+    columns = [field for field in header_fields if field and field != state_field]
     rows: list[BeastLogRow] = []
-    for row_number, row in enumerate(reader, start=2):
-        raw_state = row.get(state_field)
+    for row_number, fields in enumerate(data_lines, start=2):
+        row = _build_tabular_row(header_fields, fields)
+        raw_state = _normalize_tabular_field(row.get(state_field))
         if raw_state in {None, ""}:
             raise _beast_artifact_error(
                 f"BEAST log contains an empty state value on row {row_number}: {path}",
@@ -2423,7 +2416,7 @@ def parse_beast_log(path: Path) -> BeastLogReport:
             ) from error
         values: dict[str, float] = {}
         for column in columns:
-            raw_value = row.get(column)
+            raw_value = _normalize_tabular_field(row.get(column))
             if raw_value in {None, ""}:
                 raise _beast_artifact_error(
                     f"BEAST log is missing a sampled value for '{column}' on row {row_number}: {path}",
@@ -2455,6 +2448,114 @@ def parse_beast_log(path: Path) -> BeastLogReport:
             artifact_kind="beast-log",
         )
     return BeastLogReport(path=path, row_count=len(rows), columns=columns, rows=rows)
+
+
+def _read_tabular_artifact_lines(path: Path) -> list[str]:
+    lines: list[str] = []
+    with path.open(encoding="utf-8", newline="") as handle:
+        for raw_line in handle:
+            if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+                continue
+            lines.append(raw_line.rstrip("\r\n"))
+    return lines
+
+
+def _normalize_tabular_field(value: str | None) -> str | None:
+    if value is None:
+        return None
+    return value.lstrip("\ufeff").strip()
+
+
+def _split_tabular_fields(line: str) -> list[str]:
+    return [_normalize_tabular_field(field) or "" for field in line.split("\t")]
+
+
+def _is_tabular_warning_line(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped or "\t" in stripped:
+        return False
+    return _TABULAR_WARNING_PREFIX_PATTERN.match(stripped) is not None
+
+
+def _trim_trailing_empty_fields(
+    fields: list[str],
+    *,
+    expected_count: int,
+) -> list[str]:
+    trimmed = list(fields)
+    while len(trimmed) > expected_count and trimmed[-1] == "":
+        trimmed.pop()
+    return trimmed
+
+
+def _build_tabular_row(
+    header_fields: list[str],
+    fields: list[str],
+) -> dict[str, str | None]:
+    return {
+        header_fields[index]: (fields[index] if index < len(fields) else None)
+        for index in range(len(header_fields))
+    }
+
+
+def _split_beast_log_table(
+    logical_lines: list[str],
+    *,
+    path: Path,
+) -> tuple[list[str], list[list[str]]]:
+    if not logical_lines:
+        raise _beast_artifact_error(
+            f"BEAST log contains no header row: {path}",
+            code="beast_log_missing_header",
+            path=path,
+            artifact_kind="beast-log",
+        )
+    header_fields: list[str] | None = None
+    header_index = -1
+    for index, line in enumerate(logical_lines):
+        if _is_tabular_warning_line(line):
+            continue
+        fields = _split_tabular_fields(line)
+        if _beast_state_field(fields) is not None:
+            header_fields = fields
+            header_index = index
+            break
+        if len(fields) > 1:
+            raise _beast_artifact_error(
+                f"BEAST log lacks a state column: {path}",
+                code="beast_log_missing_state_column",
+                path=path,
+                artifact_kind="beast-log",
+                details={"columns": fields},
+            )
+    if header_fields is None:
+        raise _beast_artifact_error(
+            f"BEAST log contains no header row: {path}",
+            code="beast_log_missing_header",
+            path=path,
+            artifact_kind="beast-log",
+        )
+    data_lines: list[list[str]] = []
+    for line in logical_lines[header_index + 1 :]:
+        if _is_tabular_warning_line(line):
+            continue
+        fields = _trim_trailing_empty_fields(
+            _split_tabular_fields(line),
+            expected_count=len(header_fields),
+        )
+        if len(fields) > len(header_fields):
+            raise _beast_artifact_error(
+                f"BEAST log contains more fields than its header: {path}",
+                code="beast_log_unexpected_field_count",
+                path=path,
+                artifact_kind="beast-log",
+                details={
+                    "expected_field_count": len(header_fields),
+                    "observed_field_count": len(fields),
+                },
+            )
+        data_lines.append(fields)
+    return header_fields, data_lines
 
 
 def summarize_beast_log(
@@ -3509,9 +3610,10 @@ def _strip_square_bracket_comments(text: str) -> str:
 
 
 def _beast_state_field(fieldnames: list[str]) -> str | None:
-    for candidate in ("state", "State", "Sample", "sample"):
-        if candidate in fieldnames:
-            return candidate
+    for fieldname in fieldnames:
+        normalized = (_normalize_tabular_field(fieldname) or "").lower()
+        if normalized in {"state", "sample"}:
+            return fieldname
     return None
 
 
