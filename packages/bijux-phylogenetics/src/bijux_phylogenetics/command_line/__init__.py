@@ -9320,6 +9320,21 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "predictor_count": len(report.predictors),
                             "analysis_taxa": len(report.analysis_taxa),
                             "excluded_taxa": len(report.excluded_taxa),
+                            "residual_covariance_response_count": (
+                                report.covariance_diagnostics.response_count
+                            ),
+                            "residual_covariance_matrix_rank": (
+                                report.covariance_diagnostics.matrix_rank
+                            ),
+                            "residual_covariance_condition_number": (
+                                report.covariance_diagnostics.condition_number
+                            ),
+                            "residual_covariance_singular": (
+                                report.covariance_diagnostics.is_singular
+                            ),
+                            "residual_covariance_near_singular": (
+                                report.covariance_diagnostics.is_near_singular
+                            ),
                             "residual_covariance_row_count": len(
                                 report.covariance_rows
                             ),
