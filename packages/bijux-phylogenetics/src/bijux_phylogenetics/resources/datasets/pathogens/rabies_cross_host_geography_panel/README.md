@@ -94,3 +94,7 @@ The governed workflow bundle now also includes:
 - `workflow-config.json`: one config file that reproduces the full workflow
 - `expected/`: governed stable workflow outputs regenerated from the owned
   runtime surface
+
+When the public demo is materialized, it also writes
+`dataset/source-accessions.tsv` so the packaged accession set remains available
+as one machine-readable provenance ledger alongside the copied dataset files.
