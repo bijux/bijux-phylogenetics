@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 import json
 from pathlib import Path
 import shutil
@@ -150,10 +151,19 @@ class InferenceComparisonWorkflowReport:
     prefix: str
     sequence_type: AlignmentAlphabet | None
     selected_model: str
+    iqtree_seed: int
+    iqtree_threads: int
+    bootstrap_replicates: int
+    timeout_seconds: float | None
+    started_at_utc: str
+    ended_at_utc: str
+    runtime_seconds: float
     engine_artifact_dir: Path
     manifest_path: Path
     output_paths: dict[str, Path]
     step_manifests: dict[str, Path]
+    commands: dict[str, list[str]]
+    engine_versions: dict[str, str]
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
     model_selection_workflow: EngineWorkflowReport
@@ -942,6 +952,7 @@ def run_tree_inference_comparison(
     incomplete_run_policy: str = "reject",
 ) -> InferenceComparisonWorkflowReport:
     """Run IQ-TREE and FastTree on one alignment and compare the inferred trees."""
+    started_at = datetime.now(UTC)
     workflow_prefix = prefix
     out_dir.mkdir(parents=True, exist_ok=True)
     engine_artifact_dir = out_dir / "engine-artifacts" / workflow_prefix
@@ -1116,6 +1127,15 @@ def run_tree_inference_comparison(
         prefix=workflow_prefix,
         sequence_type=sequence_type,
         selected_model=model_selection_workflow.selected_model,
+        iqtree_seed=iqtree_seed,
+        iqtree_threads=iqtree_threads,
+        bootstrap_replicates=bootstrap_replicates,
+        timeout_seconds=timeout_seconds,
+        started_at_utc=started_at.replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z"),
+        ended_at_utc="",
+        runtime_seconds=0.0,
         engine_artifact_dir=engine_artifact_dir,
         manifest_path=final_outputs["manifest"],
         output_paths=final_outputs,
@@ -1123,6 +1143,16 @@ def run_tree_inference_comparison(
             "model_selection": model_selection_workflow.manifest_path,
             "iqtree_support": iqtree_support_workflow.manifest_path,
             "fasttree": fasttree_workflow.manifest_path,
+        },
+        commands={
+            "model_selection": model_selection_workflow.run.command,
+            "iqtree_support": iqtree_support_workflow.run.command,
+            "fasttree": fasttree_workflow.run.command,
+        },
+        engine_versions={
+            "iqtree_model_selection": model_selection_workflow.run.version.text,
+            "iqtree_support": iqtree_support_workflow.run.version.text,
+            "fasttree": fasttree_workflow.run.version.text,
         },
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
@@ -1139,6 +1169,14 @@ def run_tree_inference_comparison(
         taxon_influence_report=taxon_influence_report,
         warnings=warnings,
         notes=notes,
+    )
+    ended_at = datetime.now(UTC)
+    report.ended_at_utc = (
+        ended_at.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
+    report.runtime_seconds = max(
+        0.0,
+        round((ended_at - started_at).total_seconds(), 6),
     )
     report.output_checksums = build_file_checksums(
         [

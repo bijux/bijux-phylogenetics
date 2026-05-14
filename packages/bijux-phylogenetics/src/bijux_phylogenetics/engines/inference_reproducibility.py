@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from bijux_phylogenetics.compare.topology import (
@@ -93,10 +94,17 @@ class InferenceReproducibilityWorkflowReport:
     selected_model: str
     repeat_count: int
     bootstrap_replicates: int
+    iqtree_seed: int
+    iqtree_threads: int
+    started_at_utc: str
+    ended_at_utc: str
+    runtime_seconds: float
     engine_artifact_dir: Path
     manifest_path: Path
     output_paths: dict[str, Path]
     step_manifests: dict[str, Path]
+    commands: dict[str, list[str]]
+    engine_versions: dict[str, str]
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
     model_selection_workflow: EngineWorkflowReport
@@ -409,6 +417,7 @@ def run_inference_reproducibility_check(
     threads: int = 1,
 ) -> InferenceReproducibilityWorkflowReport:
     """Rerun supported IQ-TREE inference and classify deterministic versus unstable output."""
+    started_at = datetime.now(UTC)
     if repeats < 2:
         raise ValueError(f"repeats must be at least 2, got {repeats}")
     workflow_prefix = prefix
@@ -519,10 +528,31 @@ def run_inference_reproducibility_check(
         selected_model=model_selection_workflow.selected_model,
         repeat_count=repeats,
         bootstrap_replicates=bootstrap_replicates,
+        iqtree_seed=seed,
+        iqtree_threads=threads,
+        started_at_utc=started_at.replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z"),
+        ended_at_utc="",
+        runtime_seconds=0.0,
         engine_artifact_dir=engine_artifact_dir,
         manifest_path=final_outputs["manifest"],
         output_paths=final_outputs,
         step_manifests=step_manifests,
+        commands={
+            "model_selection": model_selection_workflow.run.command,
+            **{
+                row.run_label: workflow.run.command
+                for row, workflow in zip(run_rows, run_workflows, strict=True)
+            },
+        },
+        engine_versions={
+            "iqtree_model_selection": model_selection_workflow.run.version.text,
+            **{
+                row.run_label: workflow.run.version.text
+                for row, workflow in zip(run_rows, run_workflows, strict=True)
+            },
+        },
         input_checksums=build_file_checksums([input_path]),
         output_checksums={},
         model_selection_workflow=model_selection_workflow,
@@ -533,6 +563,14 @@ def run_inference_reproducibility_check(
         overall_status=overall_status,
         warnings=warnings,
         notes=notes,
+    )
+    ended_at = datetime.now(UTC)
+    report.ended_at_utc = (
+        ended_at.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
+    report.runtime_seconds = max(
+        0.0,
+        round((ended_at - started_at).total_seconds(), 6),
     )
     report.output_checksums = build_file_checksums(
         [

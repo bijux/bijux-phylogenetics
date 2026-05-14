@@ -1331,6 +1331,13 @@ def test_run_tree_inference_comparison_exports_tables_and_conflicts(
     assert report.output_paths["comparison_table"].exists()
     assert report.output_paths["shared_clades"].exists()
     assert report.output_paths["conflicting_clades"].exists()
+    assert report.iqtree_seed == 1
+    assert report.iqtree_threads == 1
+    assert report.bootstrap_replicates == 1000
+    assert report.commands["model_selection"][0] == str(iqtree)
+    assert report.commands["fasttree"][0] == str(fasttree)
+    assert "iqtree_support" in report.engine_versions
+    assert report.runtime_seconds >= 0.0
     assert report.engine_comparison.topology.topology_equal is True
     assert len(report.shared_clade_rows) == 2
     assert any(
@@ -1366,7 +1373,13 @@ def test_run_inference_reproducibility_check_reports_deterministic_reruns(
 
     assert report.selected_model == "GTR+G"
     assert report.repeat_count == 3
+    assert report.iqtree_seed == 1
+    assert report.iqtree_threads == 1
     assert report.overall_status == "deterministic"
+    assert report.commands["model_selection"][0] == str(executable)
+    assert report.commands["baseline"][0] == str(executable)
+    assert report.engine_versions["baseline"]
+    assert report.runtime_seconds >= 0.0
     assert [row.classification for row in report.comparison_rows] == [
         "deterministic",
         "deterministic",
