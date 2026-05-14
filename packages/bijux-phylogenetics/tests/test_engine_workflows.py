@@ -90,6 +90,43 @@ print("WARNING: mafft fixture inserted alignment padding", file=sys.stderr)
     )
 
 
+def _fake_mafft_with_version(path: Path, version_text: str) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print({version_text!r}, file=sys.stderr)
+    raise SystemExit(0)
+
+input_path = Path(sys.argv[-1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+width = max(len(sequence) for _identifier, sequence in records)
+for identifier, sequence in records:
+    print(f">{{identifier}}")
+    print(sequence.ljust(width, "-"))
+print("WARNING: mafft fixture inserted alignment padding", file=sys.stderr)
+""",
+    )
+
+
 def _fake_trimal(path: Path) -> Path:
     return _write_executable(
         path,
@@ -912,6 +949,32 @@ def test_run_multiple_sequence_alignment_resume_reuses_completed_output(
     assert first.resumed is False
     assert second.resumed is True
     assert second.output_paths["alignment"] == output_path
+
+
+def test_run_multiple_sequence_alignment_resume_invalidates_changed_engine_version(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft_with_version(tmp_path / "mafft-fixture", "mafft v7.999")
+    input_path = tmp_path / "unaligned.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
+    output_path = tmp_path / "aligned.fasta"
+
+    first = run_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+    )
+    _fake_mafft_with_version(executable, "mafft v8.000")
+    second = run_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+        resume=True,
+    )
+
+    assert first.resumed is False
+    assert second.resumed is False
+    assert first.run.version.text != second.run.version.text
 
 
 def test_run_alignment_trimming_resume_reuses_completed_output(tmp_path: Path) -> None:
