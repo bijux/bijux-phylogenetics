@@ -4341,6 +4341,23 @@ silently become zero: the split is counted in `missing_length_split_count` and
 the final branch-score distance is reported as unavailable until the missing
 length is resolved.
 
+Use `topology distance-reference` when the question is whether the runtime
+still matches the governed tree-distance evidence surface instead of only one
+pair of user trees. That command reruns checked rooted RF, unrooted RF,
+normalized RF, and branch-score cases from the repository fixture set and
+reports:
+
+- `case_count`
+- `external_case_count`
+- `policy_case_count`
+- `all_passed`
+
+The governed cases cover binary trees, rooting-only disagreement, topology
+disagreement, polytomies, star-tree collapse, and shared-taxa pruning. The
+policy cases keep `--taxon-overlap-policy require-identical` explicit for both
+RF and branch-score comparisons, so a future regression cannot silently turn
+those mismatch rejections into pruning behavior.
+
 `compare support` is the governed support-aware tree-comparison surface for two
 trees over their shared taxon set. It keeps one shared-clade row for clades
 present in both trees, normalizes support values onto `0..1` fractions for

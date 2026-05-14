@@ -427,6 +427,19 @@ treatment-coded interaction terms, and one governed estimated-lambda primate
 regression against checked R `ape` plus `nlme` outputs for coefficients,
 standard errors, p-values, likelihood, and AIC.
 
+Tree-distance hard cases now have their own governed validation surface:
+
+```bash
+uv run bijux-phylogenetics topology distance-reference --json
+```
+
+That suite locks rooted RF, unrooted RF, normalized RF, and branch-score
+distance against checked DendroPy 5.0.8 references, including polytomies,
+star-tree collapse, branch-length-only disagreement, rooting-only disagreement,
+and shared-taxa pruning cases. It also keeps the owned
+`--taxon-overlap-policy require-identical` rejection behavior explicit for both
+RF and branch-score comparison.
+
 ## Read this next
 
 - package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)

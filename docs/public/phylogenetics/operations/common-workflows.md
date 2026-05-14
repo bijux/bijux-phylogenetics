@@ -2399,6 +2399,21 @@ lacks a branch length on one side, the per-split ledger records that missing
 length explicitly and the branch-score summary becomes unavailable instead of
 silently treating the missing value as zero.
 
+When the goal is to check whether the runtime still agrees with the governed
+tree-distance reference corpus rather than compare one ad hoc pair of trees,
+use `topology distance-reference`.
+
+```bash
+bijux-phylogenetics topology distance-reference --json
+```
+
+This surface reruns the checked hard cases for rooted RF, unrooted RF,
+normalized RF, and branch-score distance. The fixture set includes binary
+disagreement, rooting-only disagreement, polytomies, star-tree collapse, and
+shared-taxa pruning, and it keeps the
+`--taxon-overlap-policy require-identical` rejection path explicit for both RF
+and branch-score comparisons.
+
 When the main question is whether topology conflicts are serious or only weakly
 supported, use `compare support`. That surface combines clade presence with the
 support values parsed from each tree and writes one support-aware conflict
