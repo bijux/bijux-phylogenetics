@@ -63,9 +63,99 @@ def test_comparative_signal_cli_reports_lambda_and_p_value(capsys) -> None:
     assert exit_code == 0
     assert 0.0 <= payload["metrics"]["pagels_lambda"] <= 1.0
     assert 0.0 < payload["metrics"]["signal_p_value"] <= 1.0
+    assert payload["metrics"]["tree_is_ultrametric"] is True
+    assert payload["metrics"]["ultrametric_policy"] == (
+        "accept-rooted-trees-and-report-ultrametricity"
+    )
+    assert payload["metrics"]["missing_value_policy"] == (
+        "prune-overlapping-missing-values"
+    )
+    assert payload["metrics"]["pruned_missing_value_taxon_count"] == 0
+    assert payload["metrics"]["signal_seed"] == 7
     assert 0.0 <= payload["metrics"]["lambda_likelihood_ratio_p_value"] <= 1.0
     assert payload["metrics"]["permutation_row_count"] == 19
     assert len(payload["data"]["signal_test"]["permutation_rows"]) == 19
+
+
+def test_comparative_signal_cli_reports_pruned_missing_value_policy(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_brownian_missing.tsv")),
+            "--trait",
+            "response_growth",
+            "--permutations",
+            "11",
+            "--seed",
+            "17",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["pruned_missing_value_taxon_count"] == 1
+    assert payload["metrics"]["missing_value_policy"] == (
+        "prune-overlapping-missing-values"
+    )
+    assert payload["data"]["input_audit"]["pruned_missing_value_taxa"] == ["B"]
+
+
+def test_comparative_signal_cli_reports_non_ultrametric_acceptance(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree_internal_long_branch.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--permutations",
+            "11",
+            "--seed",
+            "19",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_is_ultrametric"] is False
+    assert payload["metrics"]["ultrametric_policy"] == (
+        "accept-rooted-trees-and-report-ultrametricity"
+    )
+
+
+def test_comparative_signal_cli_rejects_constant_trait_values(
+    tmp_path: Path, capsys
+) -> None:
+    traits_path = tmp_path / "constant-traits.tsv"
+    traits_path.write_text(
+        "taxon\tresponse\nA\t2.0\nB\t2.0\nC\t2.0\nD\t2.0\n",
+        encoding="utf-8",
+    )
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree.nwk")),
+            str(traits_path),
+            "--trait",
+            "response",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"] == [
+        {
+            "code": "comparative_method_error",
+            "message": (
+                "phylogenetic signal requires at least two distinct numeric trait values after pruning"
+            ),
+        }
+    ]
 
 
 def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
