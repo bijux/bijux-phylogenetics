@@ -189,6 +189,14 @@ bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment 
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
 
+The rabies demonstration bundle now publishes one governed reproducibility and
+review layer alongside the biological outputs: `workflow-config-audit.tsv`,
+`workflow-config.resolved.json`, one rooted-ML-versus-bootstrap-consensus
+comparison under `bootstrap-review/`, and `scientific-findings.tsv`. The demo
+JSON payload surfaces the config-check count, rooted consensus RF distance, and
+scientific-finding count so reviewers can quickly tell whether the run stayed
+within the expected contract.
+
 For aligned multi-locus datasets, `alignment concatenate` is now the canonical
 supermatrix assembly surface. It preserves taxon identifiers across loci,
 inserts `?` blocks for absent taxa, writes a remapped partition file, and can

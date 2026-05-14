@@ -73,6 +73,19 @@ directory and records the comparative formula, clade columns, bootstrap review
 thresholds, and engine-facing workflow defaults used by the public runtime
 surface.
 
+The governed workflow bundle now also includes:
+
+- `workflow-config-audit.tsv`: config checks over input presence, taxon
+  crosswalks, centroid coverage, and comparative-response availability
+- `workflow-config.resolved.json`: resolved workflow parameters plus input
+  checksums
+- `bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv`: one stable
+  ML-versus-consensus topology summary
+- `bootstrap-review/rooted-tree-vs-bootstrap-consensus.comparison.tsv`: split
+  comparison ledger across topology, support, and branch-length surfaces
+- `scientific-findings.tsv`: reviewer-facing biological findings with linked
+  source artifacts and cautions
+
 ## Contents
 
 - `sequences.fasta`: raw rabies nucleoprotein coding sequences
