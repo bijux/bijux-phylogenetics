@@ -477,6 +477,7 @@ from bijux_phylogenetics.datasets import (
     run_rabies_cross_host_geography_panel_demo,
     run_rabies_cross_host_panel_demo,
     run_rabies_geographic_transition_panel_demo,
+    run_rabies_method_sensitivity_panel_demo,
 )
 from bijux_phylogenetics.datasets.data_quality_stress import (
     run_catarrhine_data_quality_stress_panel_demo,
@@ -5613,6 +5614,26 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_rabies_host_geography)
+    demo_rabies_method_sensitivity = demo_subparsers.add_parser(
+        "rabies-method-sensitivity-panel",
+        help="Materialize the packaged rabies method-sensitivity dataset and rerun the governed preprocessing and engine-comparison workflow outputs.",
+    )
+    demo_rabies_method_sensitivity.add_argument("--out", required=True, type=Path)
+    demo_rabies_method_sensitivity.add_argument("--mafft-executable", type=str)
+    demo_rabies_method_sensitivity.add_argument("--trimal-executable", type=str)
+    demo_rabies_method_sensitivity.add_argument("--iqtree-executable", type=str)
+    demo_rabies_method_sensitivity.add_argument("--fasttree-executable", type=str)
+    demo_rabies_method_sensitivity.add_argument("--iqtree-seed", type=int, default=1)
+    demo_rabies_method_sensitivity.add_argument(
+        "--iqtree-threads", type=int, default=1
+    )
+    demo_rabies_method_sensitivity.add_argument(
+        "--bootstrap-replicates", type=int, default=1000
+    )
+    demo_rabies_method_sensitivity.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_rabies_method_sensitivity)
     demo_catarrhine_mitogenome = demo_subparsers.add_parser(
         "catarrhine-mitogenome-five-locus-panel",
         help="Materialize the packaged catarrhine multi-locus dataset and rerun the governed concatenation and partitioned inference outputs.",
@@ -15694,6 +15715,80 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "scientific_finding_count": (
                                     result.workflow_bundle.scientific_finding_count
+                                ),
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "rabies-method-sensitivity-panel":
+                result = run_rabies_method_sensitivity_panel_demo(
+                    args.out,
+                    mafft_executable=args.mafft_executable or "mafft",
+                    trimal_executable=args.trimal_executable or "trimal",
+                    iqtree_executable=args.iqtree_executable or "iqtree2",
+                    fasttree_executable=args.fasttree_executable or "FastTree",
+                    iqtree_seed=args.iqtree_seed,
+                    iqtree_threads=args.iqtree_threads,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.config_path,
+                        result.dataset_export.sequences_path,
+                        result.dataset_export.metadata_path,
+                        result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.variant_summary_path,
+                        result.workflow_bundle.preprocessing_comparison_path,
+                        result.workflow_bundle.stable_clades_path,
+                        result.workflow_bundle.changed_clades_path,
+                        result.workflow_bundle.conclusion_summary_path,
+                        result.workflow_bundle.config_path,
+                        result.workflow_bundle.report_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        [
+                            path
+                            for path in result.dataset_export.expected_output_root.rglob(
+                                "*"
+                            )
+                            if path.is_file()
+                        ]
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "taxon_count": result.dataset.taxon_count,
+                                "variant_count": result.workflow_bundle.variant_count,
+                                "stable_clade_count": (
+                                    result.workflow_bundle.stable_clade_count
+                                ),
+                                "changed_clade_count": (
+                                    result.workflow_bundle.changed_clade_count
+                                ),
+                                "preprocessing_change_pair_count": (
+                                    result.workflow_bundle.preprocessing_change_pair_count
+                                ),
+                                "rooted_engine_change_variant_count": (
+                                    result.workflow_bundle.rooted_engine_change_variant_count
+                                ),
+                                "serious_conflict_variant_count": (
+                                    result.workflow_bundle.serious_conflict_variant_count
                                 ),
                                 "reference_output_count": expected_output_count,
                             },
