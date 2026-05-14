@@ -180,6 +180,18 @@ class RabiesWorkflowConfigAuditRow:
 
 
 @dataclass(slots=True)
+class RabiesScientificFindingRow:
+    """One reviewer-facing scientific finding from the rabies workflow bundle."""
+
+    finding_id: str
+    question: str
+    claim: str
+    evidence: str
+    caution: str
+    source_artifact: str
+
+
+@dataclass(slots=True)
 class RabiesCrossHostGeographyPanelDataset:
     """Packaged rabies panel for one complete host and geography workflow."""
 
@@ -287,6 +299,8 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     comparative_pgls_lambda: float
     comparative_pgls_r_squared: float
     comparative_branch_repair_count: int
+    config_check_count: int
+    scientific_finding_count: int
     workflow_summary_path: Path
     config_audit_path: Path
     resolved_config_path: Path
@@ -342,6 +356,7 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     comparative_categorical_contrasts_path: Path
     comparative_lambda_profile_path: Path
     comparative_manifest_path: Path
+    scientific_findings_path: Path
     final_report_path: Path
     final_manifest_path: Path
 
@@ -817,6 +832,16 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
             "lambda_profile_table": comparative_lambda_profile_path,
         },
     )
+    scientific_finding_rows = _build_scientific_finding_rows(
+        report=report,
+        bootstrap_tree_comparison_report=bootstrap_tree_comparison_report,
+        comparative_summary_row=comparative_summary_row,
+        comparative_interpretation_rows=comparative_interpretation_rows,
+    )
+    scientific_findings_path = _write_scientific_findings_table(
+        output_root / "scientific-findings.tsv",
+        scientific_finding_rows,
+    )
 
     workflow_summary_path = _write_workflow_summary_table(
         output_root / "workflow-summary.tsv",
@@ -825,16 +850,19 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         bootstrap_artifacts=bootstrap_artifacts,
         bootstrap_tree_comparison_report=bootstrap_tree_comparison_report,
         comparative_summary_row=comparative_summary_row,
+        scientific_finding_count=len(scientific_finding_rows),
     )
     final_report_path = _write_integrated_report(
         output_root / "rabies-cross-host-geography-report.html",
         report=report,
         workflow_summary_path=workflow_summary_path,
         bootstrap_artifacts=bootstrap_artifacts,
+        bootstrap_tree_comparison_report=bootstrap_tree_comparison_report,
         clade_row_count=len(stable_clade_report.rows),
         comparative_summary_row=comparative_summary_row,
         comparative_interpretation_rows=comparative_interpretation_rows,
         comparative_branch_repair_count=len(report.comparative_branch_repairs),
+        scientific_finding_rows=scientific_finding_rows,
     )
     final_manifest_path = _write_manifest(
         output_root / "rabies-cross-host-geography.manifest.json",
@@ -843,8 +871,11 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         bootstrap_artifacts=bootstrap_artifacts,
         bootstrap_tree_comparison_report=bootstrap_tree_comparison_report,
         clade_row_count=len(stable_clade_report.rows),
+        scientific_finding_count=len(scientific_finding_rows),
         bundle_paths={
             "workflow_summary": workflow_summary_path,
+            "config_audit": config_audit_path,
+            "resolved_config": resolved_config_path,
             "input_validation": input_validation_path,
             "alignment_quality": alignment_quality_path,
             "alignment_sequence_ranking": alignment_sequence_ranking_path,
@@ -893,6 +924,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
             "comparative_categorical_contrasts": comparative_categorical_contrasts_path,
             "comparative_lambda_profile": comparative_lambda_profile_path,
             "comparative_manifest": comparative_manifest_path,
+            "scientific_findings": scientific_findings_path,
             "final_report": final_report_path,
         },
     )
@@ -952,6 +984,8 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_pgls_lambda=comparative_summary_row.pgls_lambda,
         comparative_pgls_r_squared=comparative_summary_row.pgls_r_squared,
         comparative_branch_repair_count=len(report.comparative_branch_repairs),
+        config_check_count=len(report.config_audit_rows),
+        scientific_finding_count=len(scientific_finding_rows),
         workflow_summary_path=workflow_summary_path,
         config_audit_path=config_audit_path,
         resolved_config_path=resolved_config_path,
@@ -1011,6 +1045,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_categorical_contrasts_path=comparative_categorical_contrasts_path,
         comparative_lambda_profile_path=comparative_lambda_profile_path,
         comparative_manifest_path=comparative_manifest_path,
+        scientific_findings_path=scientific_findings_path,
         final_report_path=final_report_path,
         final_manifest_path=final_manifest_path,
     )
@@ -1566,6 +1601,154 @@ def _write_bootstrap_tree_comparison_summary(
     return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
 
 
+def _build_scientific_finding_rows(
+    *,
+    report: RabiesCrossHostGeographyPanelWorkflowReport,
+    bootstrap_tree_comparison_report: ComparisonReportBuildResult,
+    comparative_summary_row: ComparativeAnalysisSummaryRow,
+    comparative_interpretation_rows: list[ComparativeInterpretationRow],
+) -> list[RabiesScientificFindingRow]:
+    host_summary = report.host_switching.summary
+    geography_summary = report.biogeography_report.state_report.summary
+    migration_summary = report.biogeography_report.event_report.summary
+    bootstrap_question = "Does the bootstrap consensus preserve the rooted ML conclusion?"
+    if bootstrap_tree_comparison_report.topology.topology_equal:
+        bootstrap_claim = (
+            "The bootstrap consensus preserves the rooted ML topology on the shared taxon set."
+        )
+    else:
+        bootstrap_claim = (
+            "The bootstrap consensus differs from the rooted ML topology after support-driven summarization."
+        )
+    comparative_claim = next(
+        (
+            row.claim
+            for row in comparative_interpretation_rows
+            if row.topic == "coefficient" and row.claim
+        ),
+        "The comparative layer did not expose one stable host-associated longitude shift.",
+    )
+    return [
+        RabiesScientificFindingRow(
+            finding_id="root_host_state",
+            question="What host state anchors the rooted rabies panel?",
+            claim=f"The rooted tree places the ancestral host state in {host_summary.root_host}.",
+            evidence=(
+                f"root host confidence {_format_number(host_summary.root_confidence)} "
+                f"with outgroup {','.join(report.dataset.outgroup_taxa)}"
+            ),
+            caution=(
+                "The panel is compact and grouped by broad host classes rather than species-level host states."
+            ),
+            source_artifact=report.dataset.workflow_prefix + ".rooting.tsv",
+        ),
+        RabiesScientificFindingRow(
+            finding_id="root_region_state",
+            question="What geographic regime anchors the rooted rabies panel?",
+            claim=(
+                f"The rooted tree places the ancestral region in {geography_summary.root_region}."
+            ),
+            evidence=(
+                f"root region probability {_format_number(geography_summary.root_region_probability)} "
+                f"across {geography_summary.changed_branch_count} changed branches"
+            ),
+            caution=(
+                "Grouped macroregions simplify the raw locality labels so the result should be treated as regional rather than site-level history."
+            ),
+            source_artifact="biogeography/summary.tsv",
+        ),
+        RabiesScientificFindingRow(
+            finding_id="host_switching",
+            question="How much host-switching signal appears in the rooted tree?",
+            claim=(
+                f"The host reconstruction inferred {host_summary.host_switch_count} host-switch branch changes."
+            ),
+            evidence=(
+                f"certain changes {host_summary.certain_host_switch_count}; "
+                f"uncertain changes {host_summary.uncertain_host_switch_count}"
+            ),
+            caution=(
+                "Branch-wise host changes depend on the grouped host coding and should not be over-read as one exhaustive host-jump catalogue."
+            ),
+            source_artifact="host-switch-summary.tsv",
+        ),
+        RabiesScientificFindingRow(
+            finding_id="bootstrap_consensus",
+            question=bootstrap_question,
+            claim=bootstrap_claim,
+            evidence=(
+                f"rooted RF distance {bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance}; "
+                f"high-support conflicts "
+                f"{len([row for row in bootstrap_tree_comparison_report.support.conflicting_clades if row.conflict_classification == 'high_support_conflict'])}"
+            ),
+            caution=(
+                "Consensus trees can collapse low-support branches, so exact rooted agreement is stricter than shared major clades."
+            ),
+            source_artifact=(
+                "bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv"
+            ),
+        ),
+        RabiesScientificFindingRow(
+            finding_id="comparative_longitude",
+            question=(
+                "Do host-associated rabies lineages occupy one distinct longitudinal regime in this panel?"
+            ),
+            claim=comparative_claim,
+            evidence=(
+                f"selected model {comparative_summary_row.selected_model}; "
+                f"PGLS lambda {_format_number(comparative_summary_row.pgls_lambda)}; "
+                f"r-squared {_format_number(comparative_summary_row.pgls_r_squared)}"
+            ),
+            caution=(
+                "The comparative claim is associational, uses only nine taxa, and retains residual-diagnostic cautions."
+            ),
+            source_artifact="comparative/interpretation-table.tsv",
+        ),
+        RabiesScientificFindingRow(
+            finding_id="migration_events",
+            question="How much regional movement is implied by the geographic reconstruction?",
+            claim=(
+                f"The biogeography layer inferred {migration_summary.event_count} migration events across the rooted tree."
+            ),
+            evidence=(
+                f"strongly supported migration events {migration_summary.strongly_supported_event_count}"
+            ),
+            caution=(
+                "Event counts summarize transitions over grouped regions and do not replace one dated dispersal analysis."
+            ),
+            source_artifact="biogeography/event-table.tsv",
+        ),
+    ]
+
+
+def _write_scientific_findings_table(
+    path: Path,
+    rows: list[RabiesScientificFindingRow],
+) -> Path:
+    return write_taxon_rows(
+        path,
+        columns=[
+            "finding_id",
+            "question",
+            "claim",
+            "evidence",
+            "caution",
+            "source_artifact",
+        ],
+        rows=[
+            {
+                "finding_id": row.finding_id,
+                "question": row.question,
+                "claim": row.claim,
+                "evidence": row.evidence,
+                "caution": row.caution,
+                "source_artifact": row.source_artifact,
+            }
+            for row in rows
+        ],
+    )
+
+
 def _write_input_validation_table(
     path: Path,
     *,
@@ -1697,6 +1880,7 @@ def _write_workflow_summary_table(
     bootstrap_artifacts: BootstrapTreeSetArtifactReport,
     bootstrap_tree_comparison_report: ComparisonReportBuildResult,
     comparative_summary_row: ComparativeAnalysisSummaryRow,
+    scientific_finding_count: int,
 ) -> Path:
     support = report.fasta_to_tree.support_summary
     host_summary = report.host_switching.summary
@@ -1772,6 +1956,8 @@ def _write_workflow_summary_table(
         "comparative_branch_repair_count": str(
             len(report.comparative_branch_repairs)
         ),
+        "config_check_count": str(len(report.config_audit_rows)),
+        "scientific_finding_count": str(scientific_finding_count),
     }
     return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
 
@@ -2005,6 +2191,7 @@ def _write_manifest(
     bootstrap_artifacts: BootstrapTreeSetArtifactReport,
     bootstrap_tree_comparison_report: ComparisonReportBuildResult,
     clade_row_count: int,
+    scientific_finding_count: int,
     bundle_paths: dict[str, Path],
 ) -> Path:
     manifest = {
@@ -2049,6 +2236,8 @@ def _write_manifest(
             "comparative_selected_model": comparative_summary_row.selected_model,
             "comparative_pgls_lambda": comparative_summary_row.pgls_lambda,
             "comparative_pgls_r_squared": comparative_summary_row.pgls_r_squared,
+            "config_check_count": len(report.config_audit_rows),
+            "scientific_finding_count": scientific_finding_count,
         },
     }
     path.write_text(
@@ -2063,10 +2252,12 @@ def _write_integrated_report(
     report: RabiesCrossHostGeographyPanelWorkflowReport,
     workflow_summary_path: Path,
     bootstrap_artifacts: BootstrapTreeSetArtifactReport,
+    bootstrap_tree_comparison_report: ComparisonReportBuildResult,
     clade_row_count: int,
     comparative_summary_row: ComparativeAnalysisSummaryRow,
     comparative_interpretation_rows: list[ComparativeInterpretationRow],
     comparative_branch_repair_count: int,
+    scientific_finding_rows: list[RabiesScientificFindingRow],
 ) -> Path:
     support_summary = report.fasta_to_tree.support_summary
     host_summary = report.host_switching.summary
@@ -2137,6 +2328,10 @@ def _write_integrated_report(
                     f"Host reconstruction inferred {host_summary.host_switch_count} host-switch branches, with {host_summary.certain_host_switch_count} certain and {host_summary.uncertain_host_switch_count} uncertain changes.",
                     f"Geographic reconstruction inferred {migration_summary.event_count} migration events across {geography_summary.changed_branch_count} changed branches.",
                     f"Bootstrap replicate review retained {bootstrap_summary.tree_count} trees across {bootstrap_summary.diversity.rooted_topology_count} rooted topologies.",
+                    (
+                        "The rooted ML tree versus bootstrap consensus comparison "
+                        f"returned rooted RF distance {bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance}."
+                    ),
                     f"The clade table contains {clade_row_count} node rows and the comparative tree required {comparative_branch_repair_count} explicit branch-length repair(s).",
                 ]
             ),
@@ -2166,7 +2361,10 @@ def _write_integrated_report(
                     f"rooted topology count: {bootstrap_summary.diversity.rooted_topology_count}",
                     f"unstable branch count: {bootstrap_summary.unstable_branch_count}",
                     f"clade row count: {clade_row_count}",
-                    "see bootstrap-review/ for consensus, clade frequencies, instability, distances, and topology clusters",
+                    (
+                        "see bootstrap-review/ for consensus, clade frequencies, "
+                        "instability, distances, topology clusters, and rooted-tree comparison"
+                    ),
                 ]
             ),
             _table(
@@ -2240,16 +2438,43 @@ def _write_integrated_report(
             "      </div>",
             _migration_event_table(report.biogeography_report),
             "    </section>",
+            '    <section class="panel full">',
+            "      <h2>Scientific Findings Ledger</h2>",
+            _table(
+                headers=[
+                    "finding_id",
+                    "question",
+                    "claim",
+                    "evidence",
+                    "caution",
+                    "source_artifact",
+                ],
+                rows=[
+                    [
+                        row.finding_id,
+                        row.question,
+                        row.claim,
+                        row.evidence,
+                        row.caution,
+                        row.source_artifact,
+                    ]
+                    for row in scientific_finding_rows
+                ],
+            ),
+            "    </section>",
             "  </section>",
             '  <section class="panel" style="margin-top: 20px;">',
             "    <h2>Key Files</h2>",
             _html_list(
                 [
                     f'<a href="{workflow_summary_path.name}">{workflow_summary_path.name}</a>',
+                    '<a href="workflow-config-audit.tsv">workflow-config-audit.tsv</a>',
                     '<a href="clade-table.tsv">clade-table.tsv</a>',
                     '<a href="bootstrap-review/bootstrap-review.summary.tsv">bootstrap-review/bootstrap-review.summary.tsv</a>',
+                    '<a href="bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv">bootstrap-review/rooted-tree-vs-bootstrap-consensus.summary.tsv</a>',
                     '<a href="comparative/comparative-report.html">comparative/comparative-report.html</a>',
                     '<a href="comparative/interpretation-table.tsv">comparative/interpretation-table.tsv</a>',
+                    '<a href="scientific-findings.tsv">scientific-findings.tsv</a>',
                     '<a href="host-switch-summary.tsv">host-switch-summary.tsv</a>',
                     '<a href="biogeography/event-table.tsv">biogeography/event-table.tsv</a>',
                     '<a href="rabies-cross-host-geography.manifest.json">rabies-cross-host-geography.manifest.json</a>',

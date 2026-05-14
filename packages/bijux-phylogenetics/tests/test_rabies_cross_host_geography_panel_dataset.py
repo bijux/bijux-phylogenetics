@@ -116,6 +116,39 @@ def test_rabies_cross_host_geography_panel_workflow_bundle_writes_bootstrap_cons
 
 
 @pytest.mark.slow
+def test_rabies_cross_host_geography_panel_workflow_bundle_writes_findings_and_config_audit(
+    tmp_path: Path,
+) -> None:
+    executables = require_alignment_engine_executables()
+    report = run_rabies_cross_host_geography_panel_workflow(
+        tmp_path / "workflow-run",
+        mafft_executable=executables["mafft"],
+        trimal_executable=executables["trimal"],
+        iqtree_executable=executables["iqtree2"],
+    )
+    bundle = write_rabies_cross_host_geography_panel_workflow_bundle(
+        tmp_path / "workflow",
+        report,
+    )
+    assert bundle.config_audit_path.is_file()
+    assert bundle.resolved_config_path.is_file()
+    assert bundle.scientific_findings_path.is_file()
+    with bundle.config_audit_path.open("r", encoding="utf-8", newline="") as handle:
+        audit_rows = list(csv.DictReader(handle, delimiter="\t"))
+    with bundle.scientific_findings_path.open(
+        "r", encoding="utf-8", newline=""
+    ) as handle:
+        finding_rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert all(row["status"] == "pass" for row in audit_rows)
+    assert len(audit_rows) == bundle.config_check_count
+    assert len(finding_rows) == bundle.scientific_finding_count
+    assert {row["finding_id"] for row in finding_rows} >= {
+        "bootstrap_consensus",
+        "comparative_longitude",
+    }
+
+
+@pytest.mark.slow
 def test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
