@@ -39,6 +39,9 @@ from bijux_phylogenetics.ancestral.discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
+from bijux_phylogenetics.ancestral.discrete_reference import (
+    validate_discrete_ancestral_reference_examples,
+)
 from bijux_phylogenetics.ancestral.irreversible_discrete import (
     summarize_irreversible_discrete_reconstruction,
     summarize_irreversible_discrete_report,
@@ -3383,6 +3386,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the reconstruction as JSON."
     )
     _add_manifest_argument(ancestral_discrete)
+    ancestral_discrete_reference = ancestral_subparsers.add_parser(
+        "discrete-reference",
+        help="Validate built-in discrete ancestral reference examples.",
+    )
+    ancestral_discrete_reference.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the reference validation report as JSON.",
+    )
     ancestral_tree_set = ancestral_subparsers.add_parser(
         "tree-set",
         help="Summarize ancestral reconstruction stability across a tree set.",
@@ -10115,6 +10127,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "report": report,
                             "comparison": comparison,
                         },
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.ancestral_command == "discrete-reference":
+                report = validate_discrete_ancestral_reference_examples()
+                outputs = _finalize_outputs(args, command="ancestral", inputs=[])
+                _print_result(
+                    build_command_result(
+                        command="ancestral",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "case_count": report.case_count,
+                            "external_case_count": report.external_case_count,
+                            "all_passed": report.all_passed,
+                        },
+                        data=report,
                     ),
                     json_output=args.json,
                 )
