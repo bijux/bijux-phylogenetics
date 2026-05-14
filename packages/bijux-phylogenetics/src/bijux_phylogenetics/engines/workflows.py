@@ -560,8 +560,11 @@ def _validate_iqtree_model_result(
     prefix_path: Path,
     *,
     workflow: str,
+    default_selected_model: str | None = None,
 ) -> str:
     selected_model = _parse_best_model_artifact(prefix_path)
+    if selected_model is None and default_selected_model is not None:
+        return default_selected_model
     if selected_model is None:
         raise build_engine_output_error(
             f"iqtree {workflow} did not expose a parsable best-fit model result",
@@ -2242,6 +2245,7 @@ def run_maximum_likelihood_tree_inference(
         selected_model = _validate_iqtree_model_result(
             prefix_path,
             workflow="maximum-likelihood-tree",
+            default_selected_model=model,
         )
         iqtree_summary = _build_iqtree_summary(
             prefix_path,
@@ -2427,6 +2431,7 @@ def run_bootstrap_support_estimation(
         selected_model = _validate_iqtree_model_result(
             prefix_path,
             workflow="bootstrap-support",
+            default_selected_model=model,
         )
         iqtree_summary = _build_iqtree_summary(
             prefix_path,
@@ -2657,6 +2662,7 @@ def run_sh_alrt_support_estimation(
         selected_model = _validate_iqtree_model_result(
             prefix_path,
             workflow="sh-alrt-support",
+            default_selected_model=model,
         )
         iqtree_summary = _build_iqtree_summary(
             prefix_path,

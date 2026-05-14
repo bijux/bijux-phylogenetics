@@ -415,6 +415,61 @@ prefix.with_suffix(".log").write_text(
     )
 
 
+def _fake_iqtree_fixed_model_without_best_fit_artifact(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+selected_model = args[args.index("-m") + 1] if "-m" in args else "GTR+G"
+if "-bb" in args:
+    prefix.with_suffix(".treefile").write_text(
+        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        f"Model of substitution: {selected_model}\\n"
+        "Log-likelihood of the tree: -234.567\\n"
+        "Bootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
+    raise SystemExit(0)
+
+prefix.with_suffix(".treefile").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    f"Model of substitution: {selected_model}\\n"
+    "Log-likelihood of the tree: -345.678\\n"
+    "Tree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_iqtree_without_support_labels(path: Path) -> Path:
     return _write_executable(
         path,
@@ -1433,23 +1488,53 @@ def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(
         raise AssertionError("expected empty trim output to raise EngineWorkflowError")
 
 
-def test_run_maximum_likelihood_tree_inference_requires_parsed_model_result(
+def test_run_model_selection_requires_parsed_model_result(
     tmp_path: Path,
 ) -> None:
     executable = _fake_iqtree_missing_model_result(tmp_path / "iqtree-no-model")
 
     with pytest.raises(EngineWorkflowError) as error:
-        run_maximum_likelihood_tree_inference(
+        run_model_selection(
             fixture("alignments/example_alignment.fasta"),
-            out_dir=tmp_path / "ml",
-            model="GTR+G",
+            out_dir=tmp_path / "model-selection",
             executable=executable,
             prefix="example",
         )
 
     assert error.value.code == "engine_model_result_missing"
-    assert error.value.details["workflow"] == "maximum-likelihood-tree"
-    assert not (tmp_path / "ml" / "example.manifest.json").exists()
+    assert error.value.details["workflow"] == "model-selection"
+    assert not (tmp_path / "model-selection" / "example.manifest.json").exists()
+
+
+def test_run_fixed_model_iqtree_workflows_accept_report_without_best_fit_artifact(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_fixed_model_without_best_fit_artifact(
+        tmp_path / "iqtree-fixed-model"
+    )
+
+    ml_report = run_maximum_likelihood_tree_inference(
+        fixture("alignments/example_alignment_protein.fasta"),
+        out_dir=tmp_path / "ml",
+        model="JTTDCMut+G4",
+        executable=executable,
+        prefix="example-protein",
+        sequence_type="protein",
+    )
+    bootstrap_report = run_bootstrap_support_estimation(
+        fixture("alignments/example_alignment_protein.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="JTTDCMut+G4",
+        executable=executable,
+        prefix="example-protein",
+        sequence_type="protein",
+        replicates=1000,
+    )
+
+    assert ml_report.selected_model == "JTTDCMut+G4"
+    assert bootstrap_report.selected_model == "JTTDCMut+G4"
+    assert ml_report.output_paths["tree"].exists()
+    assert bootstrap_report.output_paths["support_tree"].exists()
 
 
 def test_run_bootstrap_support_estimation_requires_support_labels(
