@@ -192,6 +192,7 @@ bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
 bijux-phylogenetics demo gnathostome-ortholog-protein-benchmark --out artifacts/gnathostome-ortholog-protein-benchmark --json
+bijux-phylogenetics demo rabies-method-sensitivity-panel --out artifacts/rabies-method-sensitivity-panel --json
 bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
 bijux-phylogenetics demo catarrhine-data-quality-stress-panel --out artifacts/catarrhine-data-quality-stress-panel --json
 bijux-phylogenetics demo known-answer-reference-panel --out artifacts/known-answer-reference-panel --json
@@ -220,6 +221,16 @@ output root:
 Its JSON metrics also surface the same `biological_question` and
 `short_answer` directly so reviewers do not need to open the nested HTML report
 to understand the intended scientific claim.
+
+`demo rabies-method-sensitivity-panel` is the repository's governed public
+workflow for method-sensitivity review on the same compact rabies panel. It
+reruns four declared alignment-and-trimming variants, compares IQ-TREE and
+FastTree on each variant, roots both engine trees on the packaged outgroup,
+and writes one reviewer-facing bundle that separates preprocessing stability
+from engine-sensitive unrooted clade changes. The workflow summary records the
+variant count, stable-clade count, changed-clade count, rooted preprocessing
+change count, rooted engine change count, and the number of variants that
+still show serious unrooted engine conflicts before rooting.
 
 `demo gnathostome-ortholog-protein-benchmark` is the repository's governed
 public amino-acid workflow benchmark. It packages one small real ortholog

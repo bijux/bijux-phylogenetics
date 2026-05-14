@@ -477,6 +477,41 @@ and intentional: it keeps the compact rabies panel interpretable for geography
 review instead of overstating locality-level movement certainty from a tiny
 demo panel.
 
+When the goal is to test whether your biological conclusion survives
+reasonable preprocessing and engine choices on the same compact pathogen
+panel, use `demo rabies-method-sensitivity-panel`. This workflow reruns a
+declared four-variant matrix over the packaged rabies nucleoprotein FASTA,
+compares `auto` versus `ginsi` alignment, compares trimAl gap-threshold versus
+`gappyout` trimming, and then compares rooted IQ-TREE versus rooted FastTree
+topologies for each variant.
+
+```bash
+bijux-phylogenetics demo rabies-method-sensitivity-panel \
+  --out artifacts/rabies-method-sensitivity-panel \
+  --mafft-executable mafft \
+  --trimal-executable trimal \
+  --iqtree-executable iqtree2 \
+  --fasttree-executable FastTree \
+  --json
+```
+
+The resulting bundle is designed for reviewer-facing method-sensitivity
+inspection rather than only raw tree production:
+
+- one workflow summary with stable-clade, changed-clade, rooted preprocessing, and rooted engine counts
+- one variant summary with alignment length, trimmed length, selected model, support range, and rooted engine RF distance
+- one rooted preprocessing comparison table across every declared variant pair
+- one stable-clade ledger and one changed-clade ledger aggregated across variants
+- one method-conclusion ledger that states which claims remained stable and which remained engine-sensitive
+- one per-variant evidence package with aligned FASTA, trimmed FASTA, unrooted comparison tables, clade ledgers, support-weighted conflicts, rooted trees, and rooting review
+
+This workflow is intentionally narrower than the flagship integrated rabies
+demo. It does not fit comparative models or reconstruct host and geography
+states. Its job is to answer a different scientific question: whether the
+rooted high-level rabies conclusion is robust to declared alignment, trimming,
+and engine choices, and where unrooted internal structure remains sensitive to
+those choices.
+
 When the goal is to prove one full sequence-to-result biological workflow on a
 real compact pathogen panel, use `demo rabies-cross-host-geography-panel`.
 This workflow starts from raw rabies nucleoprotein sequences plus one combined

@@ -746,6 +746,69 @@ workflow trait:
 This command does not require external inference executables because the
 rooted rabies tree is packaged directly with the dataset.
 
+`demo rabies-method-sensitivity-panel` is the governed packaged method-sensitivity
+surface for the compact rabies nucleoprotein panel. It materializes the
+packaged FASTA, metadata, and declared workflow-config matrix into one output
+directory, reruns four alignment-and-trimming variants, compares IQ-TREE
+against FastTree on each trimmed alignment, roots both engine trees on the
+packaged outgroup, and writes one reviewer-facing bundle that separates rooted
+preprocessing stability from unrooted engine-sensitive clade differences. Its
+JSON metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `variant_count`
+- `stable_clade_count`
+- `changed_clade_count`
+- `preprocessing_change_pair_count`
+- `rooted_engine_change_variant_count`
+- `serious_conflict_variant_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/workflow-config.json`
+- `dataset/sequences.fasta`
+- `dataset/metadata.csv`
+- `dataset/expected/**`
+- `workflow/workflow-summary.tsv`
+- `workflow/variant-summary.tsv`
+- `workflow/preprocessing-rooted-comparisons.tsv`
+- `workflow/stable-clades.tsv`
+- `workflow/changed-clades.tsv`
+- `workflow/method-conclusion-summary.tsv`
+- `workflow/workflow-config.resolved.json`
+- `workflow/rabies-method-sensitivity-report.html`
+- `workflow/variants/<variant-id>/*.aln`
+- `workflow/variants/<variant-id>/*.trimmed.aln`
+- `workflow/variants/<variant-id>/fasttree.nwk`
+- `workflow/variants/<variant-id>/iqtree-support.nwk`
+- `workflow/variants/<variant-id>/rooted-fasttree.nwk`
+- `workflow/variants/<variant-id>/rooted-iqtree-support.nwk`
+- `workflow/variants/<variant-id>/rooting-summary.tsv`
+- `workflow/variants/<variant-id>/rooted-engine-comparison.tsv`
+- `workflow/variants/<variant-id>/unrooted-comparison.tsv`
+- `workflow/variants/<variant-id>/unrooted-shared-clades.tsv`
+- `workflow/variants/<variant-id>/unrooted-conflicting-clades.tsv`
+- `workflow/variants/<variant-id>/unrooted-support-weighted-conflicts.tsv`
+- `workflow/variants/<variant-id>/unrooted-conclusions.tsv`
+- `workflow/variants/<variant-id>/unrooted-stability-summary.tsv`
+- `overview.md`
+
+The packaged workflow matrix currently declares four durable variants:
+
+- `auto-gap-threshold`
+- `ginsi-gap-threshold`
+- `auto-gappyout`
+- `ginsi-gappyout`
+
+The outgroup is fixed to `bat_chile_rv108`, and the workflow treats that
+rooting choice as explicit evidence rather than an implicit side effect of the
+engine comparison. This command depends on external `mafft`, `trimal`,
+`iqtree2`, and `FastTree` executables because it reruns the real
+sequence-to-alignment-to-tree path for each declared method combination.
+
 `demo rabies-cross-host-geography-panel` is the governed packaged integrated
 pathogen workflow surface. It materializes the shipped rabies nucleoprotein
 panel into one output directory and reruns the full owned sequence-to-tree,
