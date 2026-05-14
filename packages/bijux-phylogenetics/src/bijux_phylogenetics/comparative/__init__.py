@@ -55,6 +55,15 @@ from .common import (
     summarize_numeric_trait,
     summarize_numeric_trait_readiness,
 )
+from .covariance_audit import (
+    ComparativeCovarianceAuditReport,
+    CovarianceAuditCandidateRow,
+    CovarianceAuditExcludedTaxon,
+    summarize_comparative_covariance_audit,
+    write_comparative_covariance_audit_candidate_table,
+    write_comparative_covariance_audit_excluded_taxa_table,
+    write_comparative_covariance_audit_summary_table,
+)
 from .correlated_trait_evolution import (
     CorrelatedTraitComparisonRow,
     CorrelatedTraitEvolutionReport,
@@ -533,6 +542,7 @@ __all__ = [
     "summarize_trait_regime_mapping",
     "summarize_numeric_trait",
     "summarize_numeric_trait_readiness",
+    "summarize_comparative_covariance_audit",
     "summarize_comparative_analysis",
     "summarize_comparative_audit",
     "summarize_comparative_coefficients",
@@ -541,6 +551,9 @@ __all__ = [
     "summarize_comparative_signal",
     "validate_comparative_reference_examples",
     "write_comparative_audit_table",
+    "write_comparative_covariance_audit_candidate_table",
+    "write_comparative_covariance_audit_excluded_taxa_table",
+    "write_comparative_covariance_audit_summary_table",
     "write_comparative_coefficient_table",
     "write_comparative_contrast_table",
     "write_comparative_interpretation_table",
@@ -614,4 +627,7 @@ __all__ = [
     "write_comparative_residual_table",
     "write_comparative_signal_table",
     "write_comparative_summary_table",
+    "ComparativeCovarianceAuditReport",
+    "CovarianceAuditCandidateRow",
+    "CovarianceAuditExcludedTaxon",
 ]
