@@ -401,6 +401,14 @@ so the checked output bundle is reproducible across reruns. Ultrafast bootstrap
 support remains the supported branch-support backend here, which means
 `--bootstrap-replicates` must be at least `1000`.
 
+When `--resume` is enabled, the workflow reuses only stage outputs whose
+manifest, input checksums, command, and detected engine version still match the
+current run. The composite `prefix.manifest.json` now records one
+`stage_fingerprints` ledger for raw-input validation, alignment, trimming,
+model selection, inference, support, and final reporting so reviewers can see
+which downstream stages were invalidated by changed inputs, changed bootstrap
+settings, or changed engine binaries.
+
 Named MAFFT strategies are now first-class on both `adapter align` and
 `adapter fasta-to-tree`. Use `--mode` or `--alignment-mode` with one of
 `auto`, `linsi`, `ginsi`, `einsi`, or `fast`. The runtime expands each named

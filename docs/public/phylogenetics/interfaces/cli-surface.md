@@ -5061,6 +5061,13 @@ one review bundle, while leaving the step-specific engine artifacts under
 artifacts semantically rather than byte-for-byte so stable scientific results
 are not rejected because of harmless path or timestamp differences.
 
+Its composite manifest now also records `stage_fingerprints` for raw-input
+validation, alignment, trimming, model selection, inference, support, and the
+final reviewer-facing report. Those fingerprints explain the resolved resume
+state directly: a stage is reused only when the recorded inputs, config,
+command, and detected engine version still match the current run, and changed
+upstream fingerprints invalidate the downstream stages automatically.
+
 `adapter infer-fast` is the governed FastTree surface for aligned matrices when
 speed matters more than fully optimized ML search. It keeps the inferred tree
 plus `.support.tsv`, `.low-support.tsv`, and `.support-histogram.tsv` sidecars,

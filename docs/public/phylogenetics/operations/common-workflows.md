@@ -3480,6 +3480,14 @@ The IQ-TREE part of the workflow now defaults to deterministic execution with
 governed support workflow here, so `--bootstrap-replicates` must be at least
 `1000`.
 
+`--resume` is stage-aware for this composite workflow. Raw-input validation,
+alignment, trimming, model selection, inference, support, and final reporting
+each contribute one deterministic fingerprint to `mammals.manifest.json`. A
+downstream stage is reused only when its recorded inputs, config, command, and
+detected engine version still match; changing the raw FASTA invalidates the
+downstream tree-building stages, while changing bootstrap replicates invalidates
+the support and report stages without forcing a fresh alignment.
+
 Use `alignment sequence-type` when you need the raw FASTA type decision before
 any engine is invoked. It reports compatible types, the selected default, the
 confidence level, and mixed or invalid blocking signals.
