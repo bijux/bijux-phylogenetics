@@ -1530,7 +1530,11 @@ When the goal is to measure whether one numeric trait shows phylogenetic
 structure rather than fit a regression, use `comparative signal`. That
 workflow reports Blomberg's K, Pagel's lambda, a permutation p-value for the
 observed K value, and a likelihood-ratio-style p-value for the fitted lambda
-against the zero-signal lambda boundary.
+against the zero-signal lambda boundary. It also records whether the rooted
+tree is ultrametric, keeps overlapping missing trait values as an explicit
+pruning decision instead of a hidden cleanup step, reproduces permutation rows
+from the supplied seed, and rejects constant post-pruning trait vectors with a
+typed comparative-method error.
 
 ```bash
 bijux-phylogenetics comparative signal \

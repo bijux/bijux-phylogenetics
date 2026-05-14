@@ -49,7 +49,7 @@ bijux-phylogenetics --help
 - compare shared clades, clade changes, and shared-split branch lengths between trees
 - validate trait and metadata linkage against tree tips
 - check comparative readiness for rooted trees and numeric traits
-- compute phylogenetic independent contrasts, Blomberg's K, Pagel's lambda, and permutation-based signal tests
+- compute phylogenetic independent contrasts, Blomberg's K, Pagel's lambda, and permutation-based signal tests with explicit missing-value pruning, seeded reproducibility, constant-trait rejection, and rooted non-ultrametric acceptance reporting
 - fit standalone Brownian or OU continuous-trait models with confidence intervals, residual diagnostics, model comparison, and leave-one-taxon-out sensitivity
 - fit phylogenetic generalized least-squares models with numeric, categorical, and interaction predictors through explicit formula auditing
 - adjust repeated comparative hypothesis tests with Benjamini-Hochberg correction and emit integrated comparative audit, influence, tree-comparison, pruning-comparison, and reviewer-facing report outputs
@@ -199,6 +199,12 @@ bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment 
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 bijux-phylogenetics phylo preflight --workflow fasta-to-tree --json
 ```
+
+`comparative signal` keeps its input policy explicit in JSON output: rooted
+trees are accepted whether or not they are ultrametric, overlapping missing
+trait values are pruned and reported, permutation rows are reproducible from
+the supplied seed, and constant post-pruning trait vectors fail with a typed
+comparative-method error instead of returning misleading scalar summaries.
 
 The BEAST adapter surface now makes its evidence state explicit. `adapter
 beast-prepare` only prepares XML, `adapter beast-log`, `beast-trees`, and

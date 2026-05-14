@@ -2961,13 +2961,26 @@ signal. Its JSON metrics report:
 - `blombergs_k`
 - `pagels_lambda`
 - `signal_p_value`
+- `tree_is_ultrametric`
+- `ultrametric_policy`
+- `missing_value_policy`
+- `pruned_missing_value_taxon_count`
+- `signal_seed`
 - `lambda_likelihood_ratio_p_value`
 - `permutation_row_count`
 
-The command preserves three distinct surfaces under `data`:
+The command preserves four distinct surfaces under `data`:
+- `input_audit` for the rootedness, ultrametricity, pruning, and warning policy
 - `blombergs_k` for the fitted K summary
 - `pagels_lambda` for the fitted lambda summary
 - `signal_test` for the permutation-based K test
+
+The governed signal policy is explicit rather than implicit:
+- rooted trees with branch lengths are accepted whether or not they are ultrametric
+- ultrametric status is reported, not silently assumed
+- overlapping missing trait values are pruned and reported under `input_audit`
+- permutation rows are reproducible from `--seed`
+- constant post-pruning trait vectors fail with `comparative_method_error`
 
 When `--summary-out` is supplied, `comparative signal` writes one flat summary
 ledger as CSV or TSV. The row preserves:
@@ -3003,7 +3016,8 @@ permutation ledger as CSV or TSV. Each row preserves:
 This surface exists so phylogenetic signal review does not collapse into one
 scalar. Reviewers can inspect the fitted K and lambda values, the permutation
 null distribution, and the explicit p-value contract without rerunning the
-analysis manually.
+analysis manually, while still seeing whether the fit depended on pruning or a
+non-ultrametric rooted tree.
 
 `comparative brownian` is the governed standalone Brownian trait-evolution
 surface for one numeric trait on a rooted tree with branch lengths. Its JSON
