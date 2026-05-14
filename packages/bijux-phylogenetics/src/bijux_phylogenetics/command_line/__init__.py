@@ -562,6 +562,7 @@ from bijux_phylogenetics.ecological_niche import (
 )
 from bijux_phylogenetics.engines import (
     compare_fast_and_ml_trees,
+    export_workflow_result_bundle,
     inspect_external_engine_preflight,
     list_external_engine_workflows,
     list_mafft_alignment_modes,
@@ -581,6 +582,7 @@ from bijux_phylogenetics.engines import (
     run_multiple_sequence_alignment,
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
+    validate_workflow_result_bundle,
 )
 from bijux_phylogenetics.engines.inference_reproducibility import (
     run_inference_reproducibility_check,
@@ -589,6 +591,7 @@ from bijux_phylogenetics.engines.large_alignment_inference import (
     run_large_alignment_inference,
 )
 from bijux_phylogenetics.errors import (
+    EngineWorkflowError,
     EngineUnavailableError,
     EvidenceContractError,
     MetadataJoinError,
@@ -1357,6 +1360,10 @@ def _command_inputs(args: Any) -> list[Path | str]:
             if getattr(args, "out_dir", None) is not None:
                 inputs.append(args.out_dir)
             return inputs
+        if getattr(args, "phylo_command", None) == "bundle":
+            return [args.manifest_path, args.out_dir]
+        if getattr(args, "phylo_command", None) == "validate-bundle":
+            return [args.bundle_root]
         return [] if getattr(args, "workflow", None) is None else [args.workflow]
     return []
 
@@ -1416,6 +1423,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the replay report as JSON."
     )
     _add_manifest_argument(phylo_replay)
+    phylo_bundle = phylo_subparsers.add_parser(
+        "bundle",
+        help="Export one portable workflow-result bundle from a governed workflow manifest.",
+    )
+    phylo_bundle.add_argument("manifest_path", type=Path)
+    phylo_bundle.add_argument("--out-dir", required=True, type=Path)
+    phylo_bundle.add_argument(
+        "--json", action="store_true", help="Emit the bundle report as JSON."
+    )
+    _add_manifest_argument(phylo_bundle)
+    phylo_validate_bundle = phylo_subparsers.add_parser(
+        "validate-bundle",
+        help="Validate one workflow-result bundle for checksum integrity and required workflow contents.",
+    )
+    phylo_validate_bundle.add_argument("bundle_root", type=Path)
+    phylo_validate_bundle.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
+    _add_manifest_argument(phylo_validate_bundle)
 
     metadata = subparsers.add_parser(
         get_command_spec("metadata").name, help=get_command_spec("metadata").summary
@@ -6638,12 +6664,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             return 0
         if args.command == "phylo":
             executables = {
-                "mafft": args.mafft_executable,
-                "trimal": args.trimal_executable,
-                "iqtree": args.iqtree_executable,
-                "fasttree": args.fasttree_executable,
-                "mrbayes": args.mrbayes_executable,
-                "beast": args.beast_executable,
+                "mafft": getattr(args, "mafft_executable", None),
+                "trimal": getattr(args, "trimal_executable", None),
+                "iqtree": getattr(args, "iqtree_executable", None),
+                "fasttree": getattr(args, "fasttree_executable", None),
+                "mrbayes": getattr(args, "mrbayes_executable", None),
+                "beast": getattr(args, "beast_executable", None),
             }
             if args.phylo_command == "preflight":
                 report = inspect_external_engine_preflight(
@@ -6677,6 +6703,76 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "selected_workflow": args.workflow,
                             "selected_workflow_status": selected_workflow_status,
                             "overall_status": report.overall_status,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.phylo_command == "bundle":
+                report = export_workflow_result_bundle(
+                    args.manifest_path,
+                    bundle_root=args.out_dir,
+                )
+                validation = validate_workflow_result_bundle(report.bundle_root)
+                outputs = _finalize_outputs(
+                    args,
+                    command="phylo",
+                    inputs=[args.manifest_path],
+                    outputs=[
+                        report.bundle_root,
+                        report.bundle_manifest_path,
+                        report.report_path,
+                    ],
+                )
+                _print_result(
+                    build_command_result(
+                        command="phylo",
+                        inputs=[args.manifest_path],
+                        outputs=outputs,
+                        warnings=report.notes,
+                        metrics={
+                            "workflow": report.workflow,
+                            "file_count": report.file_count,
+                            "copied_input_count": report.copied_input_count,
+                            "copied_output_count": report.copied_output_count,
+                            "copied_step_manifest_count": (
+                                report.copied_step_manifest_count
+                            ),
+                            "copied_step_output_count": report.copied_step_output_count,
+                            "copied_report_count": report.copied_report_count,
+                            "missing_input_count": len(report.missing_input_paths),
+                            "validation_passed": validation.valid,
+                        },
+                        data={"bundle": report, "validation": validation},
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.phylo_command == "validate-bundle":
+                report = validate_workflow_result_bundle(args.bundle_root)
+                if not report.valid:
+                    raise EngineWorkflowError(
+                        "workflow result bundle validation failed",
+                        code="workflow_bundle_validation_failed",
+                        details={
+                            "issue_count": len(report.issues),
+                            "bundle_root": str(args.bundle_root),
+                        },
+                    )
+                outputs = _finalize_outputs(
+                    args,
+                    command="phylo",
+                    inputs=[args.bundle_root],
+                )
+                _print_result(
+                    build_command_result(
+                        command="phylo",
+                        inputs=[args.bundle_root],
+                        outputs=outputs,
+                        metrics={
+                            "workflow": report.workflow,
+                            "file_count": report.file_count,
                         },
                         data=report,
                     ),
