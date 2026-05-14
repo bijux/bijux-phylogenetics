@@ -90,3 +90,7 @@ class AncestralReconstructionError(PhylogeneticsError):
 
 class DiversificationAnalysisError(PhylogeneticsError):
     code = "diversification_analysis_error"
+
+
+class WorkflowBudgetError(PhylogeneticsError):
+    code = "workflow_budget_error"

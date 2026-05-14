@@ -19,7 +19,7 @@ from bijux_phylogenetics.compare.topology import (
     _unrooted_splits,
 )
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import InvalidAlignmentError
+from bijux_phylogenetics.errors import InvalidAlignmentError, WorkflowBudgetError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.iqtree_support import (
     parse_iqtree_branch_support_label,
@@ -44,6 +44,22 @@ class TreeSetProcessingSummary:
     runtime_seconds: float
     peak_memory_bytes: int
     skipped_malformed_tree_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class TreeSetWorkflowBudget:
+    max_tree_count: int | None = None
+    max_report_table_rows: int | None = None
+    memory_warning_threshold_bytes: int | None = None
+
+
+@dataclass(slots=True)
+class TreeSetWorkflowBudgetReport:
+    max_tree_count: int | None
+    max_report_table_rows: int | None
+    memory_warning_threshold_bytes: int | None
+    truncated_section_names: list[str]
+    warning_messages: list[str]
 
 
 @dataclass(slots=True)
@@ -224,6 +240,7 @@ class BootstrapTreeSetArtifactReport:
     out_dir: Path
     prefix: str
     summary_report: BootstrapTreeSetSummaryReport
+    budget_report: TreeSetWorkflowBudgetReport
     output_paths: dict[str, Path]
 
 
@@ -743,6 +760,100 @@ def _maximal_nested_clades(
 
 def _mean(values: list[float]) -> float:
     return round(sum(values) / len(values), 15)
+
+
+def _validate_budget_limit(
+    value: int | None,
+    *,
+    name: str,
+) -> int | None:
+    if value is None:
+        return None
+    if value < 1:
+        raise ValueError(f"{name} must be at least 1, got {value}")
+    return value
+
+
+def build_tree_set_workflow_budget(
+    *,
+    max_tree_count: int | None = None,
+    max_report_table_rows: int | None = None,
+    memory_warning_threshold_bytes: int | None = None,
+) -> TreeSetWorkflowBudget:
+    """Normalize one reviewer-facing resource budget for tree-set workflows."""
+    validated_threshold = (
+        None
+        if memory_warning_threshold_bytes is None
+        else _validate_budget_limit(
+            memory_warning_threshold_bytes,
+            name="memory_warning_threshold_bytes",
+        )
+    )
+    return TreeSetWorkflowBudget(
+        max_tree_count=_validate_budget_limit(
+            max_tree_count,
+            name="max_tree_count",
+        ),
+        max_report_table_rows=_validate_budget_limit(
+            max_report_table_rows,
+            name="max_report_table_rows",
+        ),
+        memory_warning_threshold_bytes=validated_threshold,
+    )
+
+
+def enforce_tree_set_tree_budget(
+    *,
+    tree_count: int,
+    budget: TreeSetWorkflowBudget,
+    workflow_name: str,
+    source_path: Path,
+) -> None:
+    """Reject tree-set workflows that exceed an explicit input-size budget."""
+    if budget.max_tree_count is None or tree_count <= budget.max_tree_count:
+        return
+    raise WorkflowBudgetError(
+        (
+            f"{workflow_name} budget allows at most {budget.max_tree_count} trees, "
+            f"but {source_path} contains {tree_count}"
+        ),
+        code="tree_set_tree_budget_exceeded",
+        details={
+            "workflow_name": workflow_name,
+            "source_path": str(source_path),
+            "tree_count": tree_count,
+            "max_tree_count": budget.max_tree_count,
+        },
+    )
+
+
+def build_tree_set_budget_report(
+    *,
+    budget: TreeSetWorkflowBudget,
+    peak_memory_bytes: int,
+    truncated_section_names: list[str] | None = None,
+) -> TreeSetWorkflowBudgetReport:
+    """Summarize how one tree-set workflow budget was applied."""
+    warning_messages: list[str] = []
+    if (
+        budget.memory_warning_threshold_bytes is not None
+        and peak_memory_bytes > budget.memory_warning_threshold_bytes
+    ):
+        warning_messages.append(
+            "peak memory exceeded the configured workflow warning threshold"
+        )
+    truncated_names = sorted(set(truncated_section_names or []))
+    if truncated_names:
+        warning_messages.append(
+            "reviewer-facing sections were truncated to the configured row limit"
+        )
+    return TreeSetWorkflowBudgetReport(
+        max_tree_count=budget.max_tree_count,
+        max_report_table_rows=budget.max_report_table_rows,
+        memory_warning_threshold_bytes=budget.memory_warning_threshold_bytes,
+        truncated_section_names=truncated_names,
+        warning_messages=warning_messages,
+    )
 
 
 def _shannon_effective_count(frequencies: list[float]) -> float:
@@ -1582,9 +1693,21 @@ def write_bootstrap_tree_set_artifacts(
     prefix: str = "bootstrap-tree-set",
     consensus_threshold: float = 0.5,
     robust_support_threshold: float = 0.9,
+    max_tree_count: int | None = None,
+    memory_warning_threshold_bytes: int | None = None,
 ) -> BootstrapTreeSetArtifactReport:
     """Write a governed artifact set for one bootstrap replicate tree file."""
+    budget = build_tree_set_workflow_budget(
+        max_tree_count=max_tree_count,
+        memory_warning_threshold_bytes=memory_warning_threshold_bytes,
+    )
     analysis = _analyze_tree_set(tree_set_path)
+    enforce_tree_set_tree_budget(
+        tree_count=len(analysis.trees),
+        budget=budget,
+        workflow_name="bootstrap tree-set artifact workflow",
+        source_path=tree_set_path,
+    )
     summary_report = _build_bootstrap_tree_set_summary_report(
         analysis,
         consensus_threshold=consensus_threshold,
@@ -1627,11 +1750,16 @@ def write_bootstrap_tree_set_artifacts(
             _build_topology_cluster_report(analysis),
         ),
     }
+    budget_report = build_tree_set_budget_report(
+        budget=budget,
+        peak_memory_bytes=summary_report.processing.peak_memory_bytes,
+    )
     return BootstrapTreeSetArtifactReport(
         input_path=tree_set_path,
         out_dir=out_dir,
         prefix=prefix,
         summary_report=summary_report,
+        budget_report=budget_report,
         output_paths=output_paths,
     )
 
