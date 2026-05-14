@@ -104,6 +104,9 @@ def test_rabies_cross_host_geography_panel_workflow_bundle_writes_bootstrap_cons
         "r", encoding="utf-8", newline=""
     ) as handle:
         row = next(csv.DictReader(handle, delimiter="\t"))
+    report_html = bundle.bootstrap_tree_comparison_report_path.read_text(
+        encoding="utf-8"
+    )
     assert int(row["rooted_rf_distance"]) == (
         bundle.bootstrap_consensus_rooted_rf_distance
     )
@@ -113,6 +116,7 @@ def test_rabies_cross_host_geography_panel_workflow_bundle_writes_bootstrap_cons
     assert int(row["high_support_conflict_count"]) == (
         bundle.bootstrap_consensus_high_support_conflict_count
     )
+    assert str(bundle.output_root) not in report_html
 
 
 @pytest.mark.slow

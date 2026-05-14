@@ -684,6 +684,10 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         out_path=bootstrap_output_root
         / "rooted-tree-vs-bootstrap-consensus.report.html",
     )
+    _stabilize_bundle_report_paths(
+        bootstrap_tree_comparison_report.output_path,
+        output_root=output_root,
+    )
     bootstrap_tree_comparison_table_path = write_tree_comparison_table(
         bootstrap_output_root / "rooted-tree-vs-bootstrap-consensus.comparison.tsv",
         tree_path,
@@ -1599,6 +1603,13 @@ def _write_bootstrap_tree_comparison_summary(
         ),
     }
     return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
+
+
+def _stabilize_bundle_report_paths(path: Path, *, output_root: Path) -> Path:
+    text = path.read_text(encoding="utf-8")
+    normalized_root = output_root.as_posix().rstrip("/") + "/"
+    path.write_text(text.replace(normalized_root, ""), encoding="utf-8")
+    return path
 
 
 def _build_scientific_finding_rows(
