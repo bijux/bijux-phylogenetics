@@ -4334,10 +4334,12 @@ control contract. `adapter align`, `trim`, `model-select`, `infer-ml`,
 
 - `--timeout-seconds` for a wall-clock execution budget
 - `--resume` to reuse only one verified completed run
-- `--incomplete-run-policy reject|clean` to stop on or remove partial outputs from a failed or timed-out earlier run
+- `--incomplete-run-policy reject|clean` to stop on or remove partial outputs from a failed, timed-out, killed, or malformed-output earlier run
 
 The JSON payloads now expose the applied timeout budget and the resolved resume
 status, so automation can distinguish a fresh execution from a verified reuse.
+If the executable itself cannot be resolved, the command fails before any
+incomplete-run marker is written because no engine run started.
 
 For coding nucleotide inputs, `adapter align --codon-aware` is the supported
 alignment entrypoint. It excludes frame-broken sequences and sequences with

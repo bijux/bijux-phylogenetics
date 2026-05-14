@@ -2572,9 +2572,11 @@ failure-control contract. `adapter align`, `trim`, `model-select`, `infer-ml`,
 - `--incomplete-run-policy reject|clean` to either stop on stale incomplete outputs or remove them before a fresh rerun
 
 That contract is intentionally strict. A resume is allowed only for verified
-completed runs. Failed or timed-out runs leave an explicit incomplete-run
-marker, and `--incomplete-run-policy clean` is the governed way to discard that
-partial state before rerunning.
+completed runs. Failed, timed-out, killed, or malformed-output runs leave an
+explicit incomplete-run marker, and `--incomplete-run-policy clean` is the
+governed way to discard that partial state before rerunning. A missing
+executable stops before any incomplete-run marker is written because no engine
+run started.
 
 Use `adapter beast-prepare` when you need a real BEAST2 XML template from one
 aligned matrix plus optional dating metadata. The command writes a BEAST2-style

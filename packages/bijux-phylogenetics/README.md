@@ -207,6 +207,14 @@ matching `analysis.manifest.json` from `adapter beast-run` is present, those
 diagnostics identify the posterior log and tree set as outputs from a recorded
 prior BEAST inference rather than implying the report executed BEAST itself.
 
+The Bayesian runtime controls are intentionally strict. `adapter beast-run`
+and `adapter mrbayes-run` leave an explicit `.incomplete.json` marker not only
+for timeouts and nonzero exits but also when the engine exits yet the emitted
+posterior files fail validation. `--resume` reuses only one verified completed
+manifest, `--incomplete-run-policy clean` is the governed way to discard that
+partial state, and a missing executable stops before any incomplete-run marker
+is written because no engine run started.
+
 The rabies demonstration bundle now publishes one governed reproducibility and
 review layer alongside the biological outputs: `workflow-config-audit.tsv`,
 `workflow-config.resolved.json`, one rooted-ML-versus-bootstrap-consensus
