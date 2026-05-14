@@ -14,7 +14,7 @@ from bijux_phylogenetics.bayesian.beast import (
 )
 from bijux_phylogenetics.bayesian.burnin import DEFAULT_BURNIN_FRACTIONS
 from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.engines.common import load_engine_manifest
+from bijux_phylogenetics.engines.common import build_file_checksums, load_engine_manifest
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.svg import render_tree_svg
 from bijux_phylogenetics.tree_set import (
@@ -433,11 +433,12 @@ def summarize_beast_workflow_evidence(
         None if analysis_xml_path is None else analysis_xml_path.with_suffix(".manifest.json")
     )
     manifest_matches_outputs = False
+    manifest_mismatch = False
     if manifest_path is not None and manifest_path.exists():
         try:
             payload = load_engine_manifest(manifest_path)
         except (OSError, ValueError, json.JSONDecodeError):
-            manifest_matches_outputs = False
+            manifest_mismatch = True
         else:
             run_payload = payload.get("run")
             output_paths = (
@@ -448,11 +449,27 @@ def summarize_beast_workflow_evidence(
             workflow = (
                 None if not isinstance(run_payload, dict) else run_payload.get("workflow")
             )
+            expected_output_checksums = build_file_checksums(
+                [primary_log_path, posterior_tree_path]
+            )
+            expected_input_checksums = (
+                {}
+                if analysis_xml_path is None
+                else build_file_checksums([analysis_xml_path])
+            )
+            manifest_output_checksums = dict(payload.get("output_checksums", {}))
+            manifest_input_checksums = dict(payload.get("input_checksums", {}))
             manifest_matches_outputs = (
                 workflow == "posterior-tree-inference"
                 and output_paths.get("posterior_log") == str(primary_log_path)
                 and output_paths.get("posterior_trees") == str(posterior_tree_path)
+                and manifest_output_checksums == expected_output_checksums
+                and (
+                    analysis_xml_path is None
+                    or manifest_input_checksums == expected_input_checksums
+                )
             )
+            manifest_mismatch = not manifest_matches_outputs
     if manifest_matches_outputs:
         statement = (
             f"This diagnostics build did not execute BEAST itself; it parsed a recorded BEAST posterior run from "
@@ -470,6 +487,22 @@ def summarize_beast_workflow_evidence(
             ),
             posterior_log_status="inferred-and-parsed",
             posterior_tree_status="inferred-and-parsed",
+            posterior_summary_status="summarized-from-parsed-output",
+            statement=statement,
+        )
+    if analysis_xml_path is not None and manifest_mismatch:
+        statement = (
+            f"This diagnostics build did not execute BEAST itself; sibling manifest `{manifest_path.name}` did not match the "
+            f"supplied XML, posterior log, and posterior tree files, so `{primary_log_path.name}` and `{posterior_tree_path.name}` "
+            f"were treated as parsed existing outputs while `{analysis_xml_path.name}` was only summarized as prepared XML."
+        )
+        return BeastWorkflowEvidenceReport(
+            analysis_xml_path=analysis_xml_path,
+            engine_manifest_path=manifest_path,
+            engine_execution_status="manifest-mismatch",
+            analysis_xml_status="prepared-and-parsed",
+            posterior_log_status="parsed-existing-output",
+            posterior_tree_status="parsed-existing-output",
             posterior_summary_status="summarized-from-parsed-output",
             statement=statement,
         )
