@@ -1830,7 +1830,10 @@ dropped, which responses they blocked, and which columns or terms failed.
 
 The JSON report also preserves reviewer-facing warnings when the shared fit has
 weak residual degrees of freedom or when the residual covariance matrix is
-singular within the governed multivariate numerical tolerance.
+singular within the governed multivariate numerical tolerance. It also reports
+residual covariance matrix rank, condition number, and singular-versus-near-
+singular state directly, so reviewers do not need to infer matrix stability
+only from the warning text or the raw covariance ledger.
 
 When the goal is to hand a reviewer one durable comparative bundle rather than
 separate regression, signal, contrast, and diagnostics outputs, use

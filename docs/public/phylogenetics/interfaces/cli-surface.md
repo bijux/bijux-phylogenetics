@@ -3621,6 +3621,11 @@ complete-case taxon set. Its JSON metrics report:
 - `predictor_count`
 - `analysis_taxa`
 - `excluded_taxa`
+- `residual_covariance_response_count`
+- `residual_covariance_matrix_rank`
+- `residual_covariance_condition_number`
+- `residual_covariance_singular`
+- `residual_covariance_near_singular`
 - `response_model_count`
 - `coefficient_row_count`
 - `residual_covariance_row_count`
@@ -3635,6 +3640,7 @@ The command preserves:
 - `response_model_rows` with one explicit fit-summary row per response
 - `coefficient_rows` with one explicit coefficient row per response-term pair
 - `covariance_rows` with one residual covariance row per ordered response pair
+- `covariance_diagnostics` with residual covariance matrix rank, condition number, and singular-versus-near-singular state
 - `correlation_rows` with one residual correlation row per ordered response pair
 - `association_rows` with one residual association row per unique response pair
 - `excluded_taxa` with one explicit complete-case exclusion row per dropped taxon
