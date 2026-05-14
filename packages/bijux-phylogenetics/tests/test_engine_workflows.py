@@ -802,13 +802,21 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
     input_path = fixture("alignments/example_alignment.fasta")
     out_dir = tmp_path / "model-selection"
 
-    with pytest.raises(EngineWorkflowError, match="did not produce expected outputs"):
+    with pytest.raises(EngineWorkflowError, match="did not produce expected outputs") as error:
         run_model_selection(
             input_path,
             out_dir=out_dir,
             executable=partial_executable,
             prefix="example",
         )
+    assert error.value.code == "engine_required_output_missing"
+    assert error.value.details["workflow"] == "model-selection"
+    assert error.value.details["missing_outputs"] == [
+        {
+            "output_name": "iqtree_log",
+            "path": str(out_dir / "example.log"),
+        }
+    ]
 
     manifest_path = out_dir / "example.manifest.json"
     marker_path = manifest_path.with_suffix(".incomplete.json")

@@ -73,6 +73,33 @@ class EngineIncompleteRunRecord:
     failure_message: str | None
 
 
+def build_engine_output_error(
+    message: str,
+    *,
+    code: str,
+    engine_name: str,
+    workflow: str,
+    path: Path | None = None,
+    output_name: str | None = None,
+    artifact_kind: str | None = None,
+    details: dict[str, Any] | None = None,
+) -> EngineWorkflowError:
+    """Build one structured engine-output validation error."""
+    payload: dict[str, Any] = {
+        "engine_name": engine_name,
+        "workflow": workflow,
+    }
+    if path is not None:
+        payload["path"] = str(path)
+    if output_name is not None:
+        payload["output_name"] = output_name
+    if artifact_kind is not None:
+        payload["artifact_kind"] = artifact_kind
+    if details is not None:
+        payload.update(details)
+    return EngineWorkflowError(message, code=code, details=payload)
+
+
 def resolve_engine_executable(executable: str | Path) -> str:
     """Resolve an engine executable from PATH or an explicit filesystem path."""
     candidate = Path(executable)
@@ -371,7 +398,11 @@ def execute_engine_command(
         raise EngineWorkflowError(
             f"{engine_name} {workflow} failed with exit code {result.returncode}; stderr log: {stderr_path}"
         )
-    missing_outputs = [str(path) for path in output_paths.values() if not path.exists()]
+    missing_outputs = [
+        {"output_name": output_name, "path": str(path)}
+        for output_name, path in output_paths.items()
+        if not path.exists()
+    ]
     if missing_outputs:
         incomplete_record.ended_at_utc = ended_at_utc
         incomplete_record.exit_code = result.returncode
@@ -379,8 +410,18 @@ def execute_engine_command(
             f"{engine_name} {workflow} did not produce expected outputs"
         )
         write_incomplete_engine_run(incomplete_record)
-        raise EngineWorkflowError(
-            f"{engine_name} {workflow} did not produce expected outputs: {', '.join(missing_outputs)}"
+        missing_paths = ", ".join(
+            entry["path"] for entry in missing_outputs if isinstance(entry["path"], str)
+        )
+        raise build_engine_output_error(
+            f"{engine_name} {workflow} did not produce expected outputs: {missing_paths}",
+            code="engine_required_output_missing",
+            engine_name=engine_name,
+            workflow=workflow,
+            details={
+                "missing_outputs": missing_outputs,
+                "declared_output_count": len(output_paths),
+            },
         )
     return EngineRunReport(
         engine_name=engine_name,
