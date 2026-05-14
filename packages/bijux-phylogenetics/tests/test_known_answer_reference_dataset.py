@@ -105,6 +105,7 @@ def test_export_known_answer_reference_dataset_copies_expected_outputs(
     assert "workflow-summary.tsv" in expected_files
 
 
+@pytest.mark.slow
 def test_public_runtime_exports_include_known_answer_reference_surface() -> None:
     assert (
         bijux_phylogenetics.load_known_answer_reference_dataset

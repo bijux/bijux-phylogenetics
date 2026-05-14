@@ -176,9 +176,12 @@ def _render_continuous_ancestral_tree_svg(
     layout: str,
     branch_coloring: str,
 ) -> TreeRenderResult:
-    continuous_traits, internal_annotations, internal_annotation_colors, branch_colors = (
-        _build_continuous_render_data(report, branch_coloring=branch_coloring)
-    )
+    (
+        continuous_traits,
+        internal_annotations,
+        internal_annotation_colors,
+        branch_colors,
+    ) = _build_continuous_render_data(report, branch_coloring=branch_coloring)
     return render_tree_svg(
         analysis_tree_path,
         out_path=svg_path,
@@ -238,7 +241,14 @@ def _render_discrete_ancestral_tree_svg(
     discrete_node_style: str,
     branch_coloring: str,
 ) -> TreeRenderResult:
-    categorical_traits, internal_annotations, internal_annotation_colors, internal_pies, internal_pie_colors, branch_colors = _build_discrete_render_data(
+    (
+        categorical_traits,
+        internal_annotations,
+        internal_annotation_colors,
+        internal_pies,
+        internal_pie_colors,
+        branch_colors,
+    ) = _build_discrete_render_data(
         report,
         discrete_node_style=discrete_node_style,
         branch_coloring=branch_coloring,

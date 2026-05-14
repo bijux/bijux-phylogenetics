@@ -420,6 +420,7 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "test_known_answer_reference_dataset.py": {
             "test_write_known_answer_reference_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_known_answer_reference_demo_materializes_dataset_and_workflow",
+            "test_public_runtime_exports_include_known_answer_reference_surface",
             "test_cli_demo_known_answer_reference_panel_json_output_reports_recovery_metrics",
         },
         REPO_ROOT
@@ -532,7 +533,9 @@ def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_
 
 
 def test_root_conftest_registers_markers_from_repository_pytest_config() -> None:
-    conftest_path = REPO_ROOT / "packages" / "bijux-phylogenetics" / "conftest.py"
+    conftest_path = (
+        REPO_ROOT / "packages" / "bijux-phylogenetics" / "tests" / "conftest.py"
+    )
     conftest_text = conftest_path.read_text(encoding="utf-8")
 
     assert 'PYTEST_CONFIG_PATH = REPO_ROOT / "configs" / "pytest.ini"' in conftest_text
