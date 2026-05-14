@@ -406,6 +406,9 @@ from bijux_phylogenetics.compare.topology import (
     write_support_comparison_table,
     write_tree_comparison_table,
 )
+from bijux_phylogenetics.compare.support_reference import (
+    validate_support_reference_examples,
+)
 from bijux_phylogenetics.compare.tree_distance_reference import (
     validate_tree_distance_reference_examples,
 )
@@ -5182,6 +5185,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the validation report as JSON."
     )
     _add_manifest_argument(topology_distance_reference)
+    topology_support_reference = topology_subparsers.add_parser(
+        "support-reference",
+        help="Validate governed branch-support mapping cases against checked fixtures.",
+    )
+    topology_support_reference.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
+    _add_manifest_argument(topology_support_reference)
     topology_outgroup = topology_subparsers.add_parser(
         "root-outgroup", help="Root a tree on explicit outgroup taxa."
     )
@@ -14146,6 +14157,30 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         metrics={
                             "case_count": report.case_count,
                             "external_case_count": report.external_case_count,
+                            "policy_case_count": report.policy_case_count,
+                            "all_passed": report.all_passed,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.topology_command == "support-reference":
+                report = validate_support_reference_examples()
+                outputs = _finalize_outputs(
+                    args,
+                    command="topology",
+                    inputs=[],
+                    outputs=[],
+                )
+                _print_result(
+                    build_command_result(
+                        command="topology",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "case_count": report.case_count,
+                            "reference_case_count": report.reference_case_count,
                             "policy_case_count": report.policy_case_count,
                             "all_passed": report.all_passed,
                         },

@@ -702,6 +702,11 @@ from .compare.topology import (
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
 )
+from .compare.support_reference import (
+    SupportReferenceObservation,
+    SupportReferenceValidationReport,
+    validate_support_reference_examples,
+)
 from .compare.tree_distance_reference import (
     TreeDistanceReferenceObservation,
     TreeDistanceReferenceValidationReport,
@@ -1823,6 +1828,8 @@ __all__ = [
     "TaxonInfluenceReport",
     "TaxonInfluenceRow",
     "TreeComparisonReport",
+    "SupportReferenceObservation",
+    "SupportReferenceValidationReport",
     "TreeDistanceReferenceObservation",
     "TreeDistanceReferenceValidationReport",
     "RobinsonFouldsComparisonReport",
@@ -1916,6 +1923,8 @@ __all__ = [
     "BootstrapPosteriorSupportComparisonReport",
     "SupportComparisonReport",
     "SupportConflictRow",
+    "SupportReferenceObservation",
+    "SupportReferenceValidationReport",
     "cluster_trees_by_topology",
     "classify_alignment_sequences",
     "clean_alignment_with_profile",
@@ -2551,6 +2560,7 @@ __all__ = [
     "validate_reference_parity_examples",
     "validate_report_regression_fixtures",
     "validate_simulation_reproducibility",
+    "validate_support_reference_examples",
     "validate_taxon_naming_reference_fixtures",
     "validate_tree_distance_reference_examples",
     "validate_tree_reference_fixtures",
