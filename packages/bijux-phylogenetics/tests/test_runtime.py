@@ -472,6 +472,11 @@ from bijux_phylogenetics.compare.topology import (
     write_shared_taxa_removed_taxa_table,
     write_support_comparison_table,
 )
+from bijux_phylogenetics.compare.support_reference import (
+    SupportReferenceObservation,
+    SupportReferenceValidationReport,
+    validate_support_reference_examples,
+)
 from bijux_phylogenetics.compare.tree_distance_reference import (
     TreeDistanceReferenceObservation,
     TreeDistanceReferenceValidationReport,
@@ -1038,12 +1043,33 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert compare_api.RobinsonFouldsComparisonReport is RobinsonFouldsComparisonReport
     assert compare_api.compare_robinson_foulds is compare_robinson_foulds
     assert (
+        bijux_phylogenetics.validate_support_reference_examples
+        is validate_support_reference_examples
+    )
+    assert (
+        compare_api.validate_support_reference_examples
+        is validate_support_reference_examples
+    )
+    assert (
         bijux_phylogenetics.validate_tree_distance_reference_examples
         is validate_tree_distance_reference_examples
     )
     assert (
         compare_api.validate_tree_distance_reference_examples
         is validate_tree_distance_reference_examples
+    )
+    assert (
+        bijux_phylogenetics.SupportReferenceObservation
+        is SupportReferenceObservation
+    )
+    assert (
+        bijux_phylogenetics.SupportReferenceValidationReport
+        is SupportReferenceValidationReport
+    )
+    assert compare_api.SupportReferenceObservation is SupportReferenceObservation
+    assert (
+        compare_api.SupportReferenceValidationReport
+        is SupportReferenceValidationReport
     )
     assert (
         bijux_phylogenetics.assess_distance_method_maturity
@@ -3667,8 +3693,30 @@ def test_compare_bootstrap_and_posterior_uncertainty_reports_conflicting_clades(
 
     rows = {row.clade: row for row in report.rows}
     assert report.posterior_tree_count == 3
+    assert report.topology_mismatch_detected is True
+    assert report.topology_mismatch_clade_count == 2
     assert rows["A|B"].agreement == "strong_conflict"
     assert rows["C|D"].posterior_frequency == 0.333333333333333
+
+
+def test_compare_bootstrap_and_posterior_uncertainty_uses_ufboot_from_composite_labels(
+    tmp_path: Path,
+) -> None:
+    bootstrap_tree = tmp_path / "bootstrap-support.treefile"
+    bootstrap_tree.write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\n",
+        encoding="utf-8",
+    )
+
+    report = compare_bootstrap_and_posterior_uncertainty(
+        bootstrap_tree,
+        fixture("example_tree_set_right.nwk"),
+    )
+
+    rows = {row.clade: row for row in report.rows}
+    assert rows["A|B"].bootstrap_support == 0.97
+    assert rows["C|D"].bootstrap_support == 0.96
+    assert report.topology_mismatch_detected is True
 
 
 def test_render_tree_set_comparison_report_embeds_tree_set_differences(
