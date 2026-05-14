@@ -5068,6 +5068,14 @@ state directly: a stage is reused only when the recorded inputs, config,
 command, and detected engine version still match the current run, and changed
 upstream fingerprints invalidate the downstream stages automatically.
 
+The same manifest is now the entrypoint for `phylo bundle`, which exports one
+portable workflow-result directory. That bundle keeps the copied workflow
+manifest, extracted config, bundle-local rerun ledger, reviewer-facing HTML
+report, copied inputs when still available, final workflow outputs, and
+declared step-level engine artifacts together. `phylo validate-bundle` then
+checks both checksum integrity and the required workflow entries before the
+bundle is treated as a valid handoff.
+
 `adapter infer-fast` is the governed FastTree surface for aligned matrices when
 speed matters more than fully optimized ML search. It keeps the inferred tree
 plus `.support.tsv`, `.low-support.tsv`, and `.support-histogram.tsv` sidecars,
@@ -5126,6 +5134,12 @@ equivalence is semantic rather than byte-for-byte: tree workflows compare
 topology and support, alignment workflows compare aligned records, model
 selection compares the chosen model, and reproducibility workflows compare the
 governed classification outcome.
+
+`phylo bundle` and `phylo validate-bundle` sit next to replay on that same
+manifest contract. `phylo bundle` writes one reviewer-facing result directory
+from a governed workflow manifest, while `phylo validate-bundle` fails if the
+bundle is missing its required report, workflow outputs, or declared step
+manifests even when the remaining copied files still hash correctly.
 
 `adapter compare-engines` is the governed side-by-side inference mode for one
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap

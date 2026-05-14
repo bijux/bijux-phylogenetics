@@ -3310,6 +3310,26 @@ Equivalence is workflow-specific rather than byte-for-byte: trees are compared
 by topology and support, alignments by aligned records, and model-selection
 workflows by the selected substitution model.
 
+Use `phylo bundle` when you need one portable workflow handoff directory for a
+reviewer or collaborator.
+
+```bash
+bijux-phylogenetics phylo bundle \
+  artifacts/fasta-to-tree/mammals.manifest.json \
+  --out-dir artifacts/fasta-to-tree-bundle \
+  --json
+bijux-phylogenetics phylo validate-bundle \
+  artifacts/fasta-to-tree-bundle \
+  --json
+```
+
+The exported bundle keeps the copied workflow manifest, extracted config,
+bundle-local rerun ledger, reviewer-facing HTML report, final workflow outputs,
+and declared step-level engine artifacts in one directory. Validation is not
+just a checksum pass: `phylo validate-bundle` also checks the required workflow
+entries for completeness, so a missing report, tree, or step manifest fails the
+handoff before it is shared.
+
 The shared-clade ledger preserves both engines' support values for clades that
 appear in both trees. The conflicting-clade ledger separates clades that appear
 in only one tree from shared clades whose normalized support fractions diverge
@@ -3487,6 +3507,13 @@ downstream stage is reused only when its recorded inputs, config, command, and
 detected engine version still match; changing the raw FASTA invalidates the
 downstream tree-building stages, while changing bootstrap replicates invalidates
 the support and report stages without forcing a fresh alignment.
+
+When you need to send this workflow to another scientist, export from that same
+`mammals.manifest.json` with `phylo bundle`. The resulting bundle includes the
+copied input FASTA when it is still available, the workflow config, the
+reviewer-facing `.aln`, `.trimmed.aln`, `.tree`, `.log`, `.model.tsv`,
+`.support.tsv`, `.run.json` outputs, the copied step manifests, the native
+engine artifacts, and one bundle-local rerun ledger plus HTML summary report.
 
 Use `alignment sequence-type` when you need the raw FASTA type decision before
 any engine is invoked. It reports compatible types, the selected default, the

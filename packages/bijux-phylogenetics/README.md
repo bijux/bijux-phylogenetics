@@ -355,6 +355,26 @@ requiring byte-identical files. Tree workflows compare topology and support
 semantically, while alignment and model-selection workflows compare the durable
 scientific result for that workflow surface.
 
+Use `phylo bundle` when you need one portable handoff directory for review or
+bundle-local reruns.
+
+```bash
+bijux-phylogenetics phylo bundle \
+  artifacts/fasta-to-tree/example.manifest.json \
+  --out-dir artifacts/fasta-to-tree-bundle \
+  --json
+bijux-phylogenetics phylo validate-bundle \
+  artifacts/fasta-to-tree-bundle \
+  --json
+```
+
+That bundle copies the workflow manifest, extracted config, bundle-local rerun
+ledger, reviewer-facing HTML report, copied inputs when they still exist,
+reviewer-facing outputs, and step-level engine artifacts plus step manifests.
+`phylo validate-bundle` then checks both checksum integrity and workflow
+completeness, including the presence of the required report, outputs, and
+declared step manifests.
+
 The rabies demonstration bundle now publishes one governed reproducibility and
 review layer alongside the biological outputs: `workflow-config-audit.tsv`,
 `workflow-config.resolved.json`, one rooted-ML-versus-bootstrap-consensus
@@ -408,6 +428,13 @@ current run. The composite `prefix.manifest.json` now records one
 model selection, inference, support, and final reporting so reviewers can see
 which downstream stages were invalidated by changed inputs, changed bootstrap
 settings, or changed engine binaries.
+
+That same composite manifest is now the canonical bundle-export anchor for
+portable review. `phylo bundle` copies the raw input when it is still present,
+extracts the workflow config into one stable JSON file, keeps the reviewer
+outputs together with the step-level engine artifacts, and writes one
+reviewer-facing HTML report plus a bundle-local rerun ledger. The companion
+`phylo validate-bundle` command fails when that handoff surface is incomplete.
 
 Named MAFFT strategies are now first-class on both `adapter align` and
 `adapter fasta-to-tree`. Use `--mode` or `--alignment-mode` with one of
