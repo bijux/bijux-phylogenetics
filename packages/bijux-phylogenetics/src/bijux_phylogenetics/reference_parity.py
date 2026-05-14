@@ -10,7 +10,7 @@ from bijux_phylogenetics.comparative import validate_comparative_reference_examp
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     fit_continuous_evolutionary_mode,
 )
-from bijux_phylogenetics.comparative.pgls import run_pgls
+from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix, run_pgls
 from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
 from bijux_phylogenetics.compare.topology import (
     _unrooted_splits,
@@ -170,6 +170,10 @@ def _build_comparative_observations() -> tuple[
     observations: list[ReferenceParityObservation] = []
     reference_tools: dict[str, str] = {}
     for entry in comparative_cases:
+        reference_tools[str(entry["reference_tool"])] = str(entry["reference_version"])
+        if str(entry["method"]) == "pgls":
+            observations.append(_build_pgls_observation(entry, suite="core"))
+            continue
         observed = observed_by_case[str(entry["case"])]
         expected_output = {
             key: float(value) for key, value in dict(entry["expected_output"]).items()
@@ -182,7 +186,6 @@ def _build_comparative_observations() -> tuple[
             observed_output,
             tolerance=float(entry["tolerance"]),
         )
-        reference_tools[str(entry["reference_tool"])] = str(entry["reference_version"])
         observations.append(
             ReferenceParityObservation(
                 suite="core",
@@ -371,6 +374,110 @@ def _extended_primate_pgls_estimated_lambda_observation(
     }
 
 
+def _flatten_pgls_observed_output(
+    *,
+    report,
+    model_matrix=None,
+) -> dict[str, float]:
+    observed_output: dict[str, float] = {
+        "log_likelihood": report.log_likelihood,
+        "aic": report.aic,
+        "lambda_value": report.lambda_value,
+    }
+    for coefficient in report.coefficients:
+        observed_output[f"coefficient.{coefficient.name}.estimate"] = (
+            coefficient.estimate
+        )
+        observed_output[f"coefficient.{coefficient.name}.standard_error"] = (
+            coefficient.standard_error
+        )
+        observed_output[f"coefficient.{coefficient.name}.p_value"] = (
+            coefficient.p_value
+        )
+    if model_matrix is not None:
+        for row in model_matrix.rows:
+            for column, value in row.encoded_values.items():
+                observed_output[f"model_matrix.{row.taxon}.{column}"] = value
+    return observed_output
+
+
+def _build_pgls_observation(
+    entry: dict[str, object],
+    *,
+    suite: str,
+) -> ReferenceParityObservation:
+    input_paths = [_resolve_input_path(path) for path in entry["input_fixtures"]]
+    formula = (
+        None if entry.get("formula") is None else str(entry.get("formula"))
+    )
+    predictors = (
+        None
+        if entry.get("predictors") is None
+        else [str(value) for value in list(entry["predictors"])]
+    )
+    lambda_value_entry = entry.get("lambda_value", "estimate")
+    lambda_value: float | str
+    if lambda_value_entry == "estimate":
+        lambda_value = "estimate"
+    else:
+        lambda_value = float(lambda_value_entry)
+    report = run_pgls(
+        input_paths[0],
+        input_paths[1],
+        response=None if entry.get("response") is None else str(entry["response"]),
+        predictors=predictors,
+        formula=formula,
+        taxon_column=(
+            None if entry.get("taxon_column") is None else str(entry["taxon_column"])
+        ),
+        lambda_value=lambda_value,
+    )
+    model_matrix = None
+    if bool(entry.get("include_model_matrix", False)):
+        model_matrix = build_pgls_model_matrix(
+            input_paths[0],
+            input_paths[1],
+            response=None if entry.get("response") is None else str(entry["response"]),
+            predictors=predictors,
+            formula=formula,
+            taxon_column=(
+                None if entry.get("taxon_column") is None else str(entry["taxon_column"])
+            ),
+        )
+    expected_output = {
+        key: float(value) for key, value in dict(entry["expected_output"]).items()
+    }
+    observed_output = _flatten_pgls_observed_output(
+        report=report,
+        model_matrix=model_matrix,
+    )
+    passed = _numeric_outputs_match(
+        expected_output,
+        observed_output,
+        tolerance=float(entry["tolerance"]),
+    )
+    return ReferenceParityObservation(
+        suite=suite,
+        method="pgls",
+        case=str(entry["case"]),
+        input_fixtures=input_paths,
+        reference_tool=str(entry["reference_tool"]),
+        reference_version=str(entry["reference_version"]),
+        reference_source=str(entry["reference_source"]),
+        tolerance=float(entry["tolerance"]),
+        tolerance_reason=str(entry["tolerance_reason"]),
+        expected_failure_mode=str(entry["failure_mode"]),
+        taxon_overlap_policy=None,
+        shared_taxa=[],
+        left_only_taxa=[],
+        right_only_taxa=[],
+        expected_output=expected_output,
+        observed_output=observed_output,
+        mismatch_kind=None if passed else _classify_comparative_mismatch("pgls"),
+        passed=passed,
+    )
+
+
 def _extended_primate_pagels_lambda_observation(
     input_paths: list[Path],
 ) -> dict[str, float]:
@@ -444,6 +551,9 @@ def _build_extended_comparative_observations() -> tuple[
     observations: list[ReferenceParityObservation] = []
     for entry in fixture["observations"]:
         case = str(entry["case"])
+        if str(entry["method"]) == "pgls":
+            observations.append(_build_pgls_observation(entry, suite="extended"))
+            continue
         input_paths = [_resolve_input_path(path) for path in entry["input_fixtures"]]
         expected_output = {
             key: float(value) for key, value in dict(entry["expected_output"]).items()

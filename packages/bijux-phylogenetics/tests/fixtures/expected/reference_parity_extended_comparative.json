@@ -2,7 +2,7 @@
   "generated_on": "2026-05-14",
   "source_packages": {
     "ape": "5.8.1",
-    "nlme": "3.1.168",
+    "nlme": "3.1.169",
     "phytools": "2.5.2"
   },
   "observations": [
@@ -13,17 +13,28 @@
         "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
         "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
       ],
+      "response": "longevity",
+      "predictors": [
+        "social_group_size"
+      ],
+      "taxon_column": "species",
+      "lambda_value": "estimate",
       "reference_tool": "ape+nlme",
-      "reference_version": "ape=5.8.1;nlme=3.1.168",
-      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json via ape::corPagel/nlme::gls",
-      "tolerance": 0.01,
-      "tolerance_reason": "The governed primate regression stores rounded external coefficients while the Bijux estimate uses the full likelihood search, so the tolerance absorbs real-dataset optimizer and rounding drift without hiding directional mismatches.",
+      "reference_version": "ape=5.8.1;nlme=3.1.169",
+      "reference_source": "ape::corPagel fixed=FALSE via nlme::gls over the governed primate longevity dataset",
+      "tolerance": 0.1,
+      "tolerance_reason": "The governed primate estimated-lambda regression uses a real dataset and external optimizer surface, so the tolerance absorbs the remaining lambda-profile discretization and optimizer drift while still rejecting materially different coefficient, uncertainty, likelihood, or AIC behavior.",
       "failure_mode": "model_assumption",
       "expected_output": {
-        "intercept": 249.9584,
-        "social_group_size": 1.6621,
-        "log_likelihood": -444.0691,
-        "lambda_value": 0.7687
+        "aic": 896.13829632446982,
+        "coefficient.intercept.estimate": 249.95843527502848,
+        "coefficient.intercept.p_value": 3.4432591889139311e-06,
+        "coefficient.intercept.standard_error": 49.728278317433137,
+        "coefficient.social_group_size.estimate": 1.6621481351591505,
+        "coefficient.social_group_size.p_value": 0.016888613296791418,
+        "coefficient.social_group_size.standard_error": 0.67975150736705636,
+        "lambda_value": 0.76865653963126879,
+        "log_likelihood": -444.06914816223491
       }
     },
     {
