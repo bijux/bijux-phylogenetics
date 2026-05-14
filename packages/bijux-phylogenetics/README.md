@@ -60,6 +60,7 @@ bijux-phylogenetics --help
 - audit alignment inference readiness, validate model-selection outputs against engine artifacts, verify inferred-tree taxa against the alignment, inspect metadata-group clustering, classify inference failures, and validate bootstrap tree sets before interpreting engine outputs
 - estimate lineage-through-time curves, simple Yule or birth-death diversification rates, sampling-aware corrections, clade outlier summaries, and trait-linked diversification tables for rooted ultrametric trees
 - run governed MAFFT-, trimAl-, IQ-TREE-, and FastTree-style external workflows with captured commands, versions, logs, and warning summaries
+- prepare BEAST XML analyses, validate prepared XML assumptions, parse BEAST posterior logs or annotation-rich tree sets, compute burn-in-aware ESS and posterior summaries, and distinguish prepared versus parsed versus recorded prior inference evidence in reviewer-facing diagnostics
 - prepare and run deterministic MrBayes analyses, summarize posterior trees after burn-in filtering, parse parameter traces, and compute per-parameter ESS values
 - compare fast approximate and maximum-likelihood trees through the same deterministic tree-comparison report surface
 - resume inference only when saved manifests, inputs, and outputs still match, and render standalone HTML inference workflow reports from those manifests
@@ -170,6 +171,14 @@ bijux-phylogenetics adapter bootstrap alignment.fasta --out-dir artifacts/bootst
 bijux-phylogenetics adapter consensus artifacts/bootstrap/mammals.ufboot --out-dir artifacts/consensus --prefix mammals --json
 bijux-phylogenetics adapter infer-fast alignment.fasta --out artifacts/fasttree.nwk --json
 bijux-phylogenetics adapter compare --fast-tree artifacts/fasttree.nwk --ml-tree artifacts/ml/mammals.treefile --out artifacts/engine-comparison.html --json
+bijux-phylogenetics adapter beast-prepare alignment.fasta --out artifacts/beast/analysis.xml --tree tree.nwk --calibrations calibrations.tsv --tip-dates tip-dates.tsv --clock-model strict --tree-prior yule --json
+bijux-phylogenetics adapter beast-xml artifacts/beast/analysis.xml --json
+bijux-phylogenetics adapter beast-run artifacts/beast/analysis.xml --resume --json
+bijux-phylogenetics adapter beast-log artifacts/beast/analysis.1.log --burnin-fraction 0.1 --summary-out artifacts/beast/log-summary.tsv --json
+bijux-phylogenetics adapter beast-trees artifacts/beast/analysis.1.trees --burnin-fraction 0.1 --tree-set-out artifacts/beast/postburnin.nwk --json
+bijux-phylogenetics adapter beast-consensus artifacts/beast/analysis.1.trees --burnin-fraction 0.1 --out artifacts/beast/consensus.nwk --clade-table-out artifacts/beast/clades.tsv --json
+bijux-phylogenetics adapter bayesian-methods artifacts/beast/analysis.1.trees --log artifacts/beast/analysis.1.log --analysis-xml artifacts/beast/analysis.xml --out artifacts/beast/methods.md --json
+bijux-phylogenetics adapter bayesian-evidence --out-dir artifacts/beast/evidence --inputs alignment.fasta calibrations.tsv tip-dates.tsv --configs artifacts/beast/analysis.xml --trees tree.nwk artifacts/beast/consensus.nwk --logs artifacts/beast/analysis.1.log --diagnostics artifacts/beast/log-summary.tsv --reports artifacts/beast/methods.md --json
 bijux-phylogenetics adapter mrbayes-prepare alignment.fasta --out artifacts/mrbayes/analysis.nex --ngen 20000 --samplefreq 100 --json
 bijux-phylogenetics adapter mrbayes-run artifacts/mrbayes/analysis.nex --resume --json
 bijux-phylogenetics adapter mrbayes-summarize artifacts/mrbayes/analysis.run1.t --burnin-fraction 0.25 --json
@@ -188,6 +197,15 @@ bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
 ```
+
+The BEAST adapter surface now makes its evidence state explicit. `adapter
+beast-prepare` only prepares XML, `adapter beast-log`, `beast-trees`, and
+`beast-consensus` parse existing posterior outputs, and reviewer-facing
+diagnostics such as `adapter bayesian-methods` state when they are only
+summarizing a prepared XML versus parsing existing log/tree outputs. When a
+matching `analysis.manifest.json` from `adapter beast-run` is present, those
+diagnostics identify the posterior log and tree set as outputs from a recorded
+prior BEAST inference rather than implying the report executed BEAST itself.
 
 The rabies demonstration bundle now publishes one governed reproducibility and
 review layer alongside the biological outputs: `workflow-config-audit.tsv`,
