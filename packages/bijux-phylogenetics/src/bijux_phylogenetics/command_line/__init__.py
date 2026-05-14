@@ -5420,6 +5420,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Materialize the packaged rabies integrated dataset and rerun the full sequence-to-tree, host, and geography workflow outputs.",
     )
     demo_rabies_host_geography.add_argument("--out", required=True, type=Path)
+    demo_rabies_host_geography.add_argument(
+        "--config",
+        type=Path,
+        help="Optional workflow config JSON. Defaults to the packaged dataset config.",
+    )
     demo_rabies_host_geography.add_argument("--mafft-executable", type=str)
     demo_rabies_host_geography.add_argument("--trimal-executable", type=str)
     demo_rabies_host_geography.add_argument("--iqtree-executable", type=str)
@@ -15047,6 +15052,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
             if args.demo_command == "rabies-cross-host-geography-panel":
                 result = run_rabies_cross_host_geography_panel_demo(
                     args.out,
+                    config_path=args.config,
                     mafft_executable=args.mafft_executable or "mafft",
                     trimal_executable=args.trimal_executable or "trimal",
                     iqtree_executable=args.iqtree_executable or "iqtree2",
@@ -15060,21 +15066,29 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     inputs=[],
                     outputs=[
                         result.dataset_export.readme_path,
+                        result.dataset_export.workflow_config_path,
                         result.dataset_export.sequences_path,
                         result.dataset_export.metadata_path,
                         result.dataset_export.centroids_path,
                         result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.input_validation_path,
+                        result.workflow_bundle.alignment_quality_path,
+                        result.workflow_bundle.alignment_sequence_ranking_path,
                         result.workflow_bundle.alignment_path,
                         result.workflow_bundle.trimmed_alignment_path,
                         result.workflow_bundle.tree_path,
                         result.workflow_bundle.rooting_report_path,
                         result.workflow_bundle.model_table_path,
                         result.workflow_bundle.support_table_path,
+                        result.workflow_bundle.clade_table_path,
+                        result.workflow_bundle.bootstrap_summary_path,
                         result.workflow_bundle.host_switch_summary_path,
                         result.workflow_bundle.host_switch_counts_path,
                         result.workflow_bundle.biogeography_report_path,
                         result.workflow_bundle.biogeography_tree_figure_path,
                         result.workflow_bundle.biogeography_map_path,
+                        result.workflow_bundle.comparative_report_path,
+                        result.workflow_bundle.comparative_summary_path,
                         result.workflow_bundle.final_report_path,
                         result.workflow_bundle.final_manifest_path,
                         result.overview_path,
@@ -15098,15 +15112,36 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             metrics={
                                 "artifact_count": len(outputs),
                                 "sequence_count": result.dataset.sequence_count,
+                                "config_path": str(
+                                    result.dataset_export.workflow_config_path
+                                ),
                                 "host_trait": result.dataset.host_trait,
                                 "geography_trait": result.dataset.geography_trait,
                                 "selected_model": result.workflow_bundle.selected_model,
+                                "aligned_quality_score": (
+                                    result.workflow_bundle.aligned_quality_score
+                                ),
+                                "trimmed_quality_score": (
+                                    result.workflow_bundle.trimmed_quality_score
+                                ),
                                 "minimum_support": result.workflow_bundle.minimum_support,
                                 "maximum_support": result.workflow_bundle.maximum_support,
                                 "root_host": result.workflow_bundle.root_host,
                                 "root_region": result.workflow_bundle.root_region,
                                 "host_switch_count": result.workflow_bundle.host_switch_count,
                                 "migration_event_count": result.workflow_bundle.migration_event_count,
+                                "clade_row_count": (
+                                    result.workflow_bundle.clade_row_count
+                                ),
+                                "bootstrap_tree_count": (
+                                    result.workflow_bundle.bootstrap_tree_count
+                                ),
+                                "comparative_formula": (
+                                    result.workflow_bundle.comparative_formula
+                                ),
+                                "comparative_selected_model": (
+                                    result.workflow_bundle.comparative_selected_model
+                                ),
                                 "reference_output_count": expected_output_count,
                             },
                             data=result,
