@@ -791,6 +791,7 @@ from bijux_phylogenetics.reference_validation import (
     validate_taxon_naming_reference_fixtures,
     validate_tree_reference_fixtures,
 )
+from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.render.package import build_tree_figure_package
 from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
@@ -8818,6 +8819,31 @@ def test_render_tree_report_writes_embedded_manifest(tmp_path: Path) -> None:
     assert result.machine_manifest_path.exists()
     assert 'id="bijux-report-manifest"' in text
     assert "Bijux Tree Report" in text
+
+
+def test_write_html_report_renders_summary_metrics_and_artifact_links(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "summary-report.html"
+    write_html_report(
+        title="Summary Report",
+        sections=[("overview", "compact reviewer summary")],
+        out_path=output,
+        embedded_json={"report_kind": "summary"},
+        summary_metrics=[("tree count", 12), ("report mode", "scaled-summary")],
+        artifact_links=[
+            ("clade-frequencies", "summary-report.artifacts/clade-frequencies.tsv", "128 bytes"),
+            ("report-manifest", "summary-report.artifacts/summary.manifest.json", None),
+        ],
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert "<h2>summary</h2>" in text
+    assert "tree count" in text
+    assert "scaled-summary" in text
+    assert 'href="summary-report.artifacts/clade-frequencies.tsv"' in text
+    assert "128 bytes" in text
+    assert 'href="summary-report.artifacts/summary.manifest.json"' in text
 
 
 def test_render_tree_report_preserves_support_and_branch_diagnostics(
