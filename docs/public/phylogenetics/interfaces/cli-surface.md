@@ -494,6 +494,48 @@ The packaged simulation contract is explicit:
 This command does not require external executables because both the truth
 surface and the governed recovery checks run entirely inside the owned runtime.
 
+`demo continuous-mode-recovery-panel` is the governed packaged continuous
+trait-model recovery surface. It materializes the shipped deterministic
+simulation panel into one output directory and reruns the owned Brownian,
+Ornstein-Uhlenbeck, and early-burst recovery workflow over one shared rooted
+tree and four packaged simulation cases. Its JSON metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `case_count`
+- `selection_match_count`
+- `parameter_pass_count`
+- `parameter_row_count`
+- `expected_warning_case_count`
+- `expected_warning_present_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/reference-tree.nwk`
+- `dataset/simulation-cases.tsv`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/recovery-summary.tsv`
+- `workflow/parameter-recovery.tsv`
+- `workflow/model-choice.tsv`
+- `workflow/warning-review.tsv`
+- `workflow/simulated-traits/*.tsv`
+- `overview.md`
+
+The packaged recovery contract is explicit:
+
+- Brownian cases are judged on sigma-squared recovery and Brownian model choice.
+- OU cases are judged on alpha, sigma-squared, optimum recovery, and OU model choice.
+- Early-burst cases are judged on rate-change recovery and early-burst model choice.
+- Weak OU cases are judged on warning transparency and Brownian-like model support rather than fake strong parameter certainty.
+
+`simulate traits-early-burst` is the owned continuous-trait simulator for one
+early-burst branch-rate case. It writes one tip-trait table and reports the
+declared `rate_change` in JSON output so reviewers can tie downstream recovery
+rows back to the generating parameter instead of inferring it indirectly.
+
 `demo rabies-cross-host-panel` is the governed packaged pathogen
 host-switching surface. It materializes the shipped rabies nucleoprotein panel
 into one output directory and reruns the owned host-switching workflow over

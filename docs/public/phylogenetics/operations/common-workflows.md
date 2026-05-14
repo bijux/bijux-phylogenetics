@@ -362,6 +362,51 @@ This gives users one durable internal reference surface for checking that
 topology and ancestral-state recovery remain interpretable when the answers are
 actually known in advance.
 
+When the goal is to check whether Brownian, OU, and early-burst trait models
+recover known generating parameters instead of only fitting one observed trait
+table, use `demo continuous-mode-recovery-panel`. This workflow materializes
+the packaged deterministic recovery panel and reruns the owned simulation plus
+refit bundle over one shared rooted tree and four governed scenarios.
+
+```bash
+bijux-phylogenetics demo continuous-mode-recovery-panel \
+  --out artifacts/continuous-mode-recovery-panel \
+  --json
+```
+
+The packaged recovery workflow keeps the trust contract explicit:
+
+- one shared rooted reference tree
+- one Brownian recovery case judged on sigma-squared recovery
+- one strong OU recovery case judged on alpha, sigma-squared, and optimum recovery
+- one strong early-burst recovery case judged on rate-change recovery
+- one weak OU case judged on identifiability warnings and Brownian-like support
+
+The governed recovery bundle then exposes:
+
+- one case summary ledger with expected-versus-selected best model
+- one parameter-recovery ledger with absolute and relative error plus declared tolerances
+- one BM-versus-OU-versus-early-burst model-choice ledger
+- one warning ledger for OU and early-burst identifiability review
+- one simulated trait table per case so users can rerun the same recovery checks directly
+
+When the goal is to generate a standalone early-burst trait table for custom
+downstream review, use `simulate traits-early-burst`.
+
+```bash
+bijux-phylogenetics simulate traits-early-burst tree.nwk \
+  --root-state 1.0 \
+  --sigma 0.5 \
+  --rate-change 4.0 \
+  --out artifacts/simulated-early-burst.tsv \
+  --json
+```
+
+This simulator is the owned generating surface used by the packaged recovery
+panel. It keeps the declared `rate_change` explicit in JSON output so recovery
+reports can be tied back to known truth without reconstructing provenance from
+notes or filenames.
+
 When the goal is to review host-state evolution on a real pathogen panel, use
 `demo rabies-cross-host-panel`. This workflow materializes the packaged rabies
 dataset, which ships with a rooted nucleoprotein tree, raw sequences, and host

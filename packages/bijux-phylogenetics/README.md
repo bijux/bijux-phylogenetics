@@ -85,7 +85,8 @@ bijux-phylogenetics --help
 - audit NJ and UPGMA method assumptions, including explicit UPGMA ultrametric-clock violations for computed or imported distance matrices
 - load posterior tree sets, compute consensus trees, and export clade-frequency or pairwise tree-distance summaries
 - cluster identical rooted topologies, detect unstable taxa or clades, and compare two posterior tree sets
-- simulate birth-death or coalescent trees, Brownian or OU continuous traits, discrete traits, and DNA or protein alignments
+- simulate birth-death or coalescent trees, Brownian, OU, or early-burst continuous traits, discrete traits, and DNA or protein alignments
+- ship governed internal recovery panels that check whether Brownian, OU, and early-burst trait models recover known simulation truth with explicit parameter-error and warning ledgers
 - benchmark validation, tree comparison, and alignment diagnostics across increasing problem sizes
 - root trees on explicit outgroups or reroot them by midpoint
 - audit rooting, ordering, clade extraction, and pruning transforms with before/after summaries and retained-versus-removed taxon reasoning
@@ -191,6 +192,8 @@ bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
 bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
 bijux-phylogenetics simulate tree-birth-death --tree-count 5 --tip-count 16 --out simulated.trees
+bijux-phylogenetics simulate traits-early-burst tree.nwk --root-state 1.0 --sigma 0.5 --rate-change 4.0 --out simulated-early-burst.tsv --json
+bijux-phylogenetics demo continuous-mode-recovery-panel --out artifacts/continuous-mode-recovery-panel --json
 bijux-phylogenetics simulate alignment-dna tree.nwk --sequence-length 500 --out simulated-alignment.fasta
 bijux-phylogenetics benchmark tree-comparison --replicates 3 --json
 bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
