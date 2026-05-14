@@ -74,6 +74,19 @@ class MetadataJoinReport:
     extra_metadata_taxa: list[str]
 
 
+@dataclass(slots=True)
+class TaxonTableIndexAudit:
+    """Index-level audit of a taxon-keyed table before strict loading."""
+
+    path: Path
+    format: str
+    row_count: int
+    taxon_column: str
+    taxa: list[str]
+    duplicate_taxa: list[str]
+    empty_taxon_rows: list[int]
+
+
 def _detect_delimiter(path: Path) -> tuple[str, str]:
     suffix = path.suffix.lower()
     if suffix == ".csv":
@@ -142,6 +155,47 @@ def load_taxon_table(path: Path, *, taxon_column: str | None = None) -> TaxonTab
         taxon_column=resolved_taxon_column,
         rows=rows,
         taxa=sorted(taxa),
+    )
+
+
+def inspect_taxon_table_index(
+    path: Path, *, taxon_column: str | None = None
+) -> TaxonTableIndexAudit:
+    """Inspect taxon-key integrity without rejecting duplicate or empty keys early."""
+    if not path.exists():
+        raise FileNotFoundError(f"table file not found: {path}")
+
+    delimiter, table_format = _detect_delimiter(path)
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter=delimiter)
+        if not reader.fieldnames:
+            raise MetadataJoinError(f"table has no header row: {path}")
+        columns = [column.strip() for column in reader.fieldnames]
+        resolved_taxon_column = _resolve_taxon_column(columns, taxon_column)
+        observed_taxa: list[str] = []
+        duplicate_taxa: set[str] = set()
+        empty_taxon_rows: list[int] = []
+        seen_taxa: set[str] = set()
+        row_count = 0
+        for row_index, row in enumerate(reader, start=2):
+            row_count += 1
+            taxon = str(row.get(resolved_taxon_column, "")).strip()
+            if not taxon:
+                empty_taxon_rows.append(row_index)
+                continue
+            observed_taxa.append(taxon)
+            if taxon in seen_taxa:
+                duplicate_taxa.add(taxon)
+                continue
+            seen_taxa.add(taxon)
+    return TaxonTableIndexAudit(
+        path=path,
+        format=table_format,
+        row_count=row_count,
+        taxon_column=resolved_taxon_column,
+        taxa=sorted(set(observed_taxa)),
+        duplicate_taxa=sorted(duplicate_taxa),
+        empty_taxon_rows=empty_taxon_rows,
     )
 
 
