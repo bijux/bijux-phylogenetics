@@ -1,0 +1,6 @@
+action_kind	identifier	result_identifier	detail
+rename_identifier	pan_troglodytes	pan_troglodytes_2	record_index=3;note=normalized identifier and resolved duplicate collision
+remove_record	gorilla_gorilla		record_index=4;reason=illegal-characters+sequence-type-mismatch
+remove_record	pongo_pygmaeus		record_index=5;reason=empty-sequence
+drop_length_outlier	hylobates_lar		raw_length=12;note=shorter than baseline
+drop_length_outlier	macaca_mulatta		raw_length=161;note=longer than baseline

@@ -1,0 +1,2 @@
+surface	tree_taxa	trait_taxa	linked_taxa	missing_from_traits	extra_trait_taxa	strict_status	detail
+raw_trait_mismatch	6	6	5	pan_troglodytes	nomascus_leucogenys	failed	trait linkage mismatch: 1 tree taxa missing from traits and 1 trait taxa absent from tree
