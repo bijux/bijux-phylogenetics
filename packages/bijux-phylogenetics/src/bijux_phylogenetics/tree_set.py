@@ -19,6 +19,10 @@ from bijux_phylogenetics.compare.topology import (
 from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
+from bijux_phylogenetics.io.iqtree_support import (
+    parse_iqtree_branch_support_label,
+    support_fraction as normalize_support_fraction,
+)
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.simulation import simulate_birth_death_trees, write_tree_set
@@ -315,6 +319,8 @@ class BootstrapPosteriorSupportComparisonReport:
     posterior_tree_count: int
     shared_taxa: list[str]
     high_conflict_clade_count: int
+    topology_mismatch_detected: bool
+    topology_mismatch_clade_count: int
     rows: list[BootstrapPosteriorCladeComparison]
 
 
@@ -1690,6 +1696,9 @@ def compare_bootstrap_and_posterior_uncertainty(
                 agreement=agreement,
             )
         )
+    topology_mismatch_clade_count = sum(
+        1 for row in rows if row.agreement == "method_specific"
+    )
     return BootstrapPosteriorSupportComparisonReport(
         bootstrap_tree_path=bootstrap_tree_path,
         posterior_tree_set_path=posterior_tree_set_path,
@@ -1698,6 +1707,8 @@ def compare_bootstrap_and_posterior_uncertainty(
         high_conflict_clade_count=sum(
             1 for row in rows if row.agreement == "strong_conflict"
         ),
+        topology_mismatch_detected=topology_mismatch_clade_count > 0,
+        topology_mismatch_clade_count=topology_mismatch_clade_count,
         rows=rows,
     )
 
@@ -2001,6 +2012,17 @@ def _parse_support_label(value: str | None) -> float | None:
     text = value.strip()
     if not text:
         return None
+    parsed_iqtree_label = parse_iqtree_branch_support_label(text)
+    if parsed_iqtree_label is not None:
+        support_value = (
+            parsed_iqtree_label.ufboot_support
+            if parsed_iqtree_label.ufboot_support is not None
+            else parsed_iqtree_label.sh_alrt_support
+        )
+        if support_value is None:
+            return None
+        normalized = normalize_support_fraction(support_value)
+        return None if normalized is None else round(normalized, 15)
     try:
         parsed = float(text)
     except ValueError:
