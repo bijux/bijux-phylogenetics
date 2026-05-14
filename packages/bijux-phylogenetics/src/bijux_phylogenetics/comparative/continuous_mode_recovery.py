@@ -100,7 +100,7 @@ class ContinuousModeRecoveryCaseReport:
     """Full recovery review for one deterministic simulation case."""
 
     scenario: ContinuousModeRecoveryScenario
-    traits_path: Path
+    traits_path: Path | None
     simulation: ContinuousTraitSimulationReport
     brownian_fit: BrownianTraitEvolutionSummaryReport
     ou_fit: OUTraitEvolutionSummaryReport
@@ -125,12 +125,24 @@ class ContinuousModeRecoveryReport:
 def run_continuous_mode_recovery(
     tree_path: Path,
     scenarios: list[ContinuousModeRecoveryScenario],
+    *,
+    artifacts_root: Path | None = None,
 ) -> ContinuousModeRecoveryReport:
     """Simulate, refit, and compare BM, OU, and early-burst cases on one tree."""
+    if artifacts_root is not None:
+        artifacts_root.mkdir(parents=True, exist_ok=True)
+        case_reports = [
+            _run_case(tree_path, scenario, artifacts_root, persist_traits=True)
+            for scenario in scenarios
+        ]
+        return ContinuousModeRecoveryReport(
+            tree_path=tree_path,
+            case_reports=case_reports,
+        )
     with TemporaryDirectory(prefix="continuous-mode-recovery-") as temporary_root:
         temporary_path = Path(temporary_root)
         case_reports = [
-            _run_case(tree_path, scenario, temporary_path)
+            _run_case(tree_path, scenario, temporary_path, persist_traits=False)
             for scenario in scenarios
         ]
     return ContinuousModeRecoveryReport(
@@ -290,11 +302,13 @@ def write_continuous_mode_recovery_warning_table(
 def _run_case(
     tree_path: Path,
     scenario: ContinuousModeRecoveryScenario,
-    temporary_root: Path,
+    working_root: Path,
+    *,
+    persist_traits: bool,
 ) -> ContinuousModeRecoveryCaseReport:
     simulation = _simulate_case(tree_path, scenario)
     traits_path = write_continuous_trait_table(
-        temporary_root / f"{scenario.case_id}-traits.tsv",
+        working_root / f"{scenario.case_id}-traits.tsv",
         simulation,
     )
     brownian_fit = summarize_brownian_trait_evolution(
@@ -334,7 +348,7 @@ def _run_case(
     observed_warning_kinds = {row.kind for row in warning_rows}
     return ContinuousModeRecoveryCaseReport(
         scenario=scenario,
-        traits_path=traits_path,
+        traits_path=traits_path if persist_traits else None,
         simulation=simulation,
         brownian_fit=brownian_fit,
         ou_fit=ou_fit,

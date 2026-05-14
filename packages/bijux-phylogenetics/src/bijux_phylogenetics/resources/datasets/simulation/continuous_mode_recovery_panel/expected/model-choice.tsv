@@ -1,0 +1,13 @@
+case_id	generating_model	expected_selected_model	model	parameter_count	log_likelihood	aic	aicc	selected
+brownian-sigma-recovery	brownian	brownian	brownian	2	-16.1850411258348	36.3700822516696	37.7034155850029	true
+brownian-sigma-recovery	brownian	brownian	ornstein-uhlenbeck	3	-16.0916323268881	38.1832646537762	41.1832646537762	false
+brownian-sigma-recovery	brownian	brownian	early-burst	3	-16.0916553455915	38.183310691183	41.183310691183	false
+ou-parameter-recovery	ornstein-uhlenbeck	ornstein-uhlenbeck	brownian	2	-3.91337147674185	11.8267429534837	13.160076286817	false
+ou-parameter-recovery	ornstein-uhlenbeck	ornstein-uhlenbeck	ornstein-uhlenbeck	3	-1.36944154950132	8.73888309900264	11.7388830990026	true
+ou-parameter-recovery	ornstein-uhlenbeck	ornstein-uhlenbeck	early-burst	3	-1.36945049030352	8.73890098060704	11.738900980607	false
+early-burst-rate-recovery	early-burst	early-burst	brownian	2	-73.6224720843898	151.24494416878	152.578277502113	false
+early-burst-rate-recovery	early-burst	early-burst	ornstein-uhlenbeck	3	-68.3078174423399	142.61563488468	145.61563488468	false
+early-burst-rate-recovery	early-burst	early-burst	early-burst	3	-68.3078115100497	142.615623020099	145.615623020099	true
+weak-ou-identifiability	ornstein-uhlenbeck	brownian	brownian	2	-0.032029582223345	4.06405916444669	5.39739249778002	true
+weak-ou-identifiability	ornstein-uhlenbeck	brownian	ornstein-uhlenbeck	3	-0.030961132621536	6.06192226524307	9.06192226524307	false
+weak-ou-identifiability	ornstein-uhlenbeck	brownian	early-burst	3	-0.030968900426982	6.06193780085396	9.06193780085396	false

@@ -1,0 +1,5 @@
+case_id	label	generating_model	expected_selected_model	selected_model	selection_matches_expectation	parameter_row_count	parameter_pass_count	expected_warning_count	expected_warning_kinds_present	warning_count	notes
+brownian-sigma-recovery	Brownian sigma recovery	brownian	brownian	brownian	true	1	1	0	true	4	Brownian simulation should recover sigma squared and remain preferred by AICc.
+ou-parameter-recovery	OU parameter recovery	ornstein-uhlenbeck	ornstein-uhlenbeck	ornstein-uhlenbeck	true	3	3	0	true	3	OU simulation should recover alpha, sigma squared, and theta while remaining preferred by AICc.
+early-burst-rate-recovery	Early-burst rate recovery	early-burst	early-burst	early-burst	true	1	1	0	true	2	Early-burst simulation should recover a positive rate-change parameter and remain preferred by AICc.
+weak-ou-identifiability	Weak OU identifiability review	ornstein-uhlenbeck	brownian	brownian	true	0	0	1	true	4	Weak OU pull should trigger identifiability warnings and stay close to Brownian support.
