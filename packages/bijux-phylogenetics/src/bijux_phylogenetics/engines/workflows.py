@@ -26,7 +26,7 @@ from bijux_phylogenetics.core.partitions import (
     write_partition_summary_table,
 )
 from bijux_phylogenetics.diagnostics.validation import validate_tree_path
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import (
     back_translate_aligned_coding_sequences,
     classify_sequence_coding_behavior,
@@ -38,6 +38,7 @@ from bijux_phylogenetics.io.fasta import (
     write_fasta_alignment,
 )
 from bijux_phylogenetics.io.newick import loads_newick
+from bijux_phylogenetics.tree_set import load_tree_set
 
 from .bootstrap_artifacts import (
     build_bootstrap_support_histogram_rows,
@@ -49,6 +50,7 @@ from .bootstrap_artifacts import (
 from .common import (
     EngineRunReport,
     EngineVersionInfo,
+    build_engine_output_error,
     build_file_checksums,
     cleanup_incomplete_engine_run,
     clear_incomplete_engine_run,
@@ -59,6 +61,7 @@ from .common import (
     load_unaligned_fasta,
     read_engine_version,
     resolve_engine_executable,
+    update_incomplete_engine_run,
     validate_timeout_seconds,
     write_engine_manifest,
 )
@@ -298,13 +301,82 @@ def _partition_support_path(prefix_path: Path, suffix: str) -> Path:
     return prefix_path.parent / f"{prefix_path.name}.{suffix}"
 
 
-def _validate_alignment_output(path: Path) -> None:
+def _record_output_validation_failure(
+    manifest_path: Path,
+    run: EngineRunReport,
+    error: PhylogeneticsError,
+) -> None:
+    update_incomplete_engine_run(
+        manifest_path,
+        ended_at_utc=run.ended_at_utc,
+        timed_out=run.timed_out,
+        exit_code=run.exit_code,
+        failure_message=(
+            f"{run.engine_name} {run.workflow} produced outputs that failed "
+            f"validation: {error.code}"
+        ),
+    )
+
+
+def _require_nonempty_text_output(
+    path: Path,
+    *,
+    engine_name: str,
+    workflow: str,
+    output_name: str,
+    artifact_kind: str,
+) -> str:
+    if not path.exists():
+        raise build_engine_output_error(
+            f"{engine_name} {workflow} did not produce required output '{output_name}': {path}",
+            code="engine_required_output_missing",
+            engine_name=engine_name,
+            workflow=workflow,
+            path=path,
+            output_name=output_name,
+            artifact_kind=artifact_kind,
+        )
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if not text.strip():
+        raise build_engine_output_error(
+            f"{engine_name} {workflow} produced an empty required output '{output_name}': {path}",
+            code="engine_output_empty",
+            engine_name=engine_name,
+            workflow=workflow,
+            path=path,
+            output_name=output_name,
+            artifact_kind=artifact_kind,
+        )
+    return text
+
+
+def _validate_alignment_output(
+    path: Path,
+    *,
+    engine_name: str,
+    workflow: str,
+    output_name: str,
+    artifact_kind: str,
+) -> AlignmentSummary:
+    _require_nonempty_text_output(
+        path,
+        engine_name=engine_name,
+        workflow=workflow,
+        output_name=output_name,
+        artifact_kind=artifact_kind,
+    )
     records = load_fasta_alignment(path)
     if not records or len(records[0].sequence) < 1:
-        raise EngineWorkflowError(
-            f"inference alignment is empty after filtering: {path}"
+        raise build_engine_output_error(
+            f"{engine_name} {workflow} produced an empty alignment after validation: {path}",
+            code="engine_output_empty",
+            engine_name=engine_name,
+            workflow=workflow,
+            path=path,
+            output_name=output_name,
+            artifact_kind=artifact_kind,
         )
-    summarise_fasta(path)
+    return summarise_fasta(path)
 
 
 def _write_coding_exclusion_table(
@@ -426,14 +498,112 @@ def _build_alignment_trimming_summary(
     )
 
 
-def _validate_tree_output(path: Path) -> None:
-    if not path.exists():
-        raise EngineWorkflowError(f"tree output was not created: {path}")
-    tree_text = path.read_text(encoding="utf-8")
-    if not tree_text.strip():
-        raise EngineWorkflowError(f"tree output is empty: {path}")
+def _validate_tree_output(
+    path: Path,
+    *,
+    engine_name: str,
+    workflow: str,
+    output_name: str,
+    artifact_kind: str,
+) -> None:
+    tree_text = _require_nonempty_text_output(
+        path,
+        engine_name=engine_name,
+        workflow=workflow,
+        output_name=output_name,
+        artifact_kind=artifact_kind,
+    )
     loads_newick(tree_text)
     validate_tree_path(path)
+
+
+def _validate_tree_set_output(
+    path: Path,
+    *,
+    engine_name: str,
+    workflow: str,
+    output_name: str,
+    artifact_kind: str,
+) -> None:
+    _require_nonempty_text_output(
+        path,
+        engine_name=engine_name,
+        workflow=workflow,
+        output_name=output_name,
+        artifact_kind=artifact_kind,
+    )
+    load_tree_set(path)
+
+
+def _validate_iqtree_required_artifacts(
+    prefix_path: Path,
+    *,
+    workflow: str,
+) -> None:
+    _require_nonempty_text_output(
+        prefix_path.with_suffix(".iqtree"),
+        engine_name="iqtree",
+        workflow=workflow,
+        output_name="iqtree_report",
+        artifact_kind="iqtree-report",
+    )
+    _require_nonempty_text_output(
+        prefix_path.with_suffix(".log"),
+        engine_name="iqtree",
+        workflow=workflow,
+        output_name="iqtree_log",
+        artifact_kind="iqtree-log",
+    )
+
+
+def _validate_iqtree_model_result(
+    prefix_path: Path,
+    *,
+    workflow: str,
+) -> str:
+    selected_model = _parse_best_model_artifact(prefix_path)
+    if selected_model is None:
+        raise build_engine_output_error(
+            f"iqtree {workflow} did not expose a parsable best-fit model result",
+            code="engine_model_result_missing",
+            engine_name="iqtree",
+            workflow=workflow,
+            path=prefix_path.with_suffix(".iqtree"),
+            output_name="iqtree_report",
+            artifact_kind="iqtree-model-result",
+            details={
+                "model_sidecar_path": (
+                    None
+                    if resolve_iqtree_model_sidecar(prefix_path) is None
+                    else str(resolve_iqtree_model_sidecar(prefix_path))
+                )
+            },
+        )
+    return selected_model
+
+
+def _validate_support_value_count(
+    *,
+    engine_name: str,
+    workflow: str,
+    path: Path,
+    output_name: str,
+    artifact_kind: str,
+    support_value_count: int,
+    support_kind: str,
+) -> None:
+    if support_value_count > 0:
+        return
+    raise build_engine_output_error(
+        f"{engine_name} {workflow} did not expose any parsable {support_kind} values in '{output_name}': {path}",
+        code="engine_support_values_missing",
+        engine_name=engine_name,
+        workflow=workflow,
+        path=path,
+        output_name=output_name,
+        artifact_kind=artifact_kind,
+        details={"support_kind": support_kind},
+    )
 
 
 def _ensure_inference_ready_alignment(path: Path) -> None:
@@ -1505,7 +1675,17 @@ def run_multiple_sequence_alignment(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    _validate_alignment_output(out_path)
+    try:
+        _validate_alignment_output(
+            out_path,
+            engine_name="mafft",
+            workflow="multiple-sequence-alignment",
+            output_name="alignment",
+            artifact_kind="multiple-sequence-alignment",
+        )
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     report = EngineWorkflowReport(
         workflow="multiple-sequence-alignment",
         engine_name="mafft",
@@ -1595,14 +1775,34 @@ def run_codon_aware_multiple_sequence_alignment(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
+    try:
+        _validate_alignment_output(
+            guide_alignment_path,
+            engine_name="mafft",
+            workflow="codon-aware-multiple-sequence-alignment",
+            output_name="guide_alignment",
+            artifact_kind="mafft-guide-alignment",
+        )
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     aligned_guide = load_fasta_alignment(guide_alignment_path)
     codon_records = back_translate_aligned_coding_sequences(
         aligned_guide,
         coding_records=prepared_records,
     )
     write_fasta_alignment(out_path, codon_records)
-    _validate_alignment_output(out_path)
-    codon_summary = summarise_fasta(out_path)
+    try:
+        codon_summary = _validate_alignment_output(
+            out_path,
+            engine_name="mafft",
+            workflow="codon-aware-multiple-sequence-alignment",
+            output_name="alignment",
+            artifact_kind="codon-aware-alignment",
+        )
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     if codon_summary.alignment_length % 3 != 0:
         raise EngineWorkflowError(
             "codon-aware alignment produced an alignment length that is not divisible by three"
@@ -1718,14 +1918,23 @@ def run_alignment_trimming(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    _validate_alignment_output(out_path)
-    trimmed_summary = summarise_fasta(out_path)
-    trimming_summary = _build_alignment_trimming_summary(
-        mode=mode,
-        gap_threshold=gap_threshold,
-        input_summary=input_summary,
-        trimmed_summary=trimmed_summary,
-    )
+    try:
+        trimmed_summary = _validate_alignment_output(
+            out_path,
+            engine_name="trimal",
+            workflow="alignment-trimming",
+            output_name="trimmed_alignment",
+            artifact_kind="trimmed-alignment",
+        )
+        trimming_summary = _build_alignment_trimming_summary(
+            mode=mode,
+            gap_threshold=gap_threshold,
+            input_summary=input_summary,
+            trimmed_summary=trimmed_summary,
+        )
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     report = EngineWorkflowReport(
         workflow="alignment-trimming",
         engine_name="trimal",
@@ -1837,20 +2046,33 @@ def run_model_selection(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    iqtree_summary = _build_iqtree_summary(
-        prefix_path,
-        default_selected_model=None,
-    )
-    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
-    if iqtree_summary.selected_model is None:
-        raise EngineWorkflowError(
-            f"iqtree model-selection did not expose a parsable best-fit model in {iqtree_report_path}"
+    try:
+        _validate_iqtree_required_artifacts(prefix_path, workflow="model-selection")
+        selected_model = _validate_iqtree_model_result(
+            prefix_path,
+            workflow="model-selection",
         )
-    if model_selection_summary is None or model_selection_summary.candidate_count < 1:
-        raise EngineWorkflowError(
-            f"iqtree model-selection did not expose a parsable candidate-model table in {iqtree_report_path}"
+        iqtree_summary = _build_iqtree_summary(
+            prefix_path,
+            default_selected_model=selected_model,
         )
-    selected_model = iqtree_summary.selected_model
+        model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
+        if (
+            model_selection_summary is None
+            or model_selection_summary.candidate_count < 1
+        ):
+            raise build_engine_output_error(
+                "iqtree model-selection did not expose a parsable candidate-model table",
+                code="iqtree_model_candidates_missing",
+                engine_name="iqtree",
+                workflow="model-selection",
+                path=iqtree_report_path,
+                output_name="iqtree_report",
+                artifact_kind="iqtree-model-candidates",
+            )
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     selected_model_path = prefix_path.with_suffix(".selected-model.txt")
     selected_model_path.write_text(selected_model + "\n", encoding="utf-8")
     model_candidates_path = prefix_path.with_suffix(".model-candidates.tsv")
@@ -2005,13 +2227,31 @@ def run_maximum_likelihood_tree_inference(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    _validate_tree_output(tree_path)
-    iqtree_summary = _build_iqtree_summary(
-        prefix_path,
-        default_selected_model=model,
-        support_tree_path=tree_path,
-    )
-    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
+    try:
+        _validate_iqtree_required_artifacts(
+            prefix_path,
+            workflow="maximum-likelihood-tree",
+        )
+        _validate_tree_output(
+            tree_path,
+            engine_name="iqtree",
+            workflow="maximum-likelihood-tree",
+            output_name="tree",
+            artifact_kind="maximum-likelihood-tree",
+        )
+        selected_model = _validate_iqtree_model_result(
+            prefix_path,
+            workflow="maximum-likelihood-tree",
+        )
+        iqtree_summary = _build_iqtree_summary(
+            prefix_path,
+            default_selected_model=selected_model,
+            support_tree_path=tree_path,
+        )
+        model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     report = EngineWorkflowReport(
         workflow="maximum-likelihood-tree",
         engine_name="iqtree",
@@ -2168,18 +2408,47 @@ def run_bootstrap_support_estimation(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    _validate_tree_output(support_tree_path)
-    if not bootstrap_tree_path.read_text(encoding="utf-8").strip():
-        raise EngineWorkflowError(f"bootstrap tree set is empty: {bootstrap_tree_path}")
-    iqtree_summary = _build_iqtree_summary(
-        prefix_path,
-        default_selected_model=model,
-        support_tree_path=support_tree_path,
-    )
-    bootstrap_support_summary = summarize_bootstrap_support_distribution(
-        support_tree_path
-    )
-    weak_backbone_report = detect_weakly_supported_backbone(support_tree_path)
+    try:
+        _validate_iqtree_required_artifacts(prefix_path, workflow="bootstrap-support")
+        _validate_tree_output(
+            support_tree_path,
+            engine_name="iqtree",
+            workflow="bootstrap-support",
+            output_name="support_tree",
+            artifact_kind="bootstrap-supported-tree",
+        )
+        _validate_tree_set_output(
+            bootstrap_tree_path,
+            engine_name="iqtree",
+            workflow="bootstrap-support",
+            output_name="bootstrap_trees",
+            artifact_kind="bootstrap-tree-set",
+        )
+        selected_model = _validate_iqtree_model_result(
+            prefix_path,
+            workflow="bootstrap-support",
+        )
+        iqtree_summary = _build_iqtree_summary(
+            prefix_path,
+            default_selected_model=selected_model,
+            support_tree_path=support_tree_path,
+        )
+        bootstrap_support_summary = summarize_bootstrap_support_distribution(
+            support_tree_path
+        )
+        _validate_support_value_count(
+            engine_name="iqtree",
+            workflow="bootstrap-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="bootstrap-supported-tree",
+            support_value_count=bootstrap_support_summary.supported_node_count,
+            support_kind="bootstrap support",
+        )
+        weak_backbone_report = detect_weakly_supported_backbone(support_tree_path)
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     write_bootstrap_support_table(
         support_table_path,
         build_bootstrap_support_rows(bootstrap_support_summary),
@@ -2369,18 +2638,67 @@ def run_sh_alrt_support_estimation(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    _validate_tree_output(support_tree_path)
-    if not bootstrap_tree_path.read_text(encoding="utf-8").strip():
-        raise EngineWorkflowError(f"bootstrap tree set is empty: {bootstrap_tree_path}")
-    iqtree_summary = _build_iqtree_summary(
-        prefix_path,
-        default_selected_model=model,
-        support_tree_path=support_tree_path,
-    )
-    bootstrap_support_summary = summarize_bootstrap_support_distribution(
-        support_tree_path
-    )
-    sh_alrt_support_summary = summarize_sh_alrt_support_distribution(support_tree_path)
+    try:
+        _validate_iqtree_required_artifacts(prefix_path, workflow="sh-alrt-support")
+        _validate_tree_output(
+            support_tree_path,
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            output_name="support_tree",
+            artifact_kind="sh-alrt-supported-tree",
+        )
+        _validate_tree_set_output(
+            bootstrap_tree_path,
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            output_name="bootstrap_trees",
+            artifact_kind="bootstrap-tree-set",
+        )
+        selected_model = _validate_iqtree_model_result(
+            prefix_path,
+            workflow="sh-alrt-support",
+        )
+        iqtree_summary = _build_iqtree_summary(
+            prefix_path,
+            default_selected_model=selected_model,
+            support_tree_path=support_tree_path,
+        )
+        bootstrap_support_summary = summarize_bootstrap_support_distribution(
+            support_tree_path
+        )
+        _validate_support_value_count(
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="sh-alrt-supported-tree",
+            support_value_count=bootstrap_support_summary.supported_node_count,
+            support_kind="ultrafast bootstrap support",
+        )
+        sh_alrt_support_summary = summarize_sh_alrt_support_distribution(
+            support_tree_path
+        )
+        _validate_support_value_count(
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="sh-alrt-supported-tree",
+            support_value_count=sh_alrt_support_summary.annotated_node_count,
+            support_kind="sh-alrt support",
+        )
+        _validate_support_value_count(
+            engine_name="iqtree",
+            workflow="sh-alrt-support",
+            path=support_tree_path,
+            output_name="support_tree",
+            artifact_kind="sh-alrt-supported-tree",
+            support_value_count=sh_alrt_support_summary.fully_scored_node_count,
+            support_kind="joint sh-alrt and ultrafast bootstrap support",
+        )
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     write_sh_alrt_support_table(
         support_table_path,
         build_sh_alrt_support_rows(sh_alrt_support_summary),
@@ -2524,13 +2842,39 @@ def run_bootstrap_consensus_tree(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    _validate_tree_output(consensus_tree_path)
-    iqtree_summary = _build_iqtree_summary(
-        prefix_path,
-        default_selected_model=None,
-        support_tree_path=consensus_tree_path,
-    )
-    model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
+    try:
+        _require_nonempty_text_output(
+            log_path,
+            engine_name="iqtree",
+            workflow="bootstrap-consensus",
+            output_name="iqtree_log",
+            artifact_kind="iqtree-log",
+        )
+        _validate_tree_output(
+            consensus_tree_path,
+            engine_name="iqtree",
+            workflow="bootstrap-consensus",
+            output_name="consensus_tree",
+            artifact_kind="bootstrap-consensus-tree",
+        )
+        iqtree_summary = _build_iqtree_summary(
+            prefix_path,
+            default_selected_model=None,
+            support_tree_path=consensus_tree_path,
+        )
+        _validate_support_value_count(
+            engine_name="iqtree",
+            workflow="bootstrap-consensus",
+            path=consensus_tree_path,
+            output_name="consensus_tree",
+            artifact_kind="bootstrap-consensus-tree",
+            support_value_count=iqtree_summary.support_value_count,
+            support_kind="bootstrap consensus support",
+        )
+        model_selection_summary = _build_iqtree_model_selection_summary(prefix_path)
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     report = EngineWorkflowReport(
         workflow="bootstrap-consensus",
         engine_name="iqtree",
@@ -2611,8 +2955,27 @@ def run_fast_tree_inference(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    _validate_tree_output(out_path)
-    fasttree_support_summary = summarize_fasttree_support_distribution(out_path)
+    try:
+        _validate_tree_output(
+            out_path,
+            engine_name="FastTree",
+            workflow="fast-approximate-tree",
+            output_name="tree",
+            artifact_kind="fast-approximate-tree",
+        )
+        fasttree_support_summary = summarize_fasttree_support_distribution(out_path)
+        _validate_support_value_count(
+            engine_name="FastTree",
+            workflow="fast-approximate-tree",
+            path=out_path,
+            output_name="tree",
+            artifact_kind="fast-approximate-tree",
+            support_value_count=fasttree_support_summary.annotated_node_count,
+            support_kind="FastTree local support",
+        )
+    except PhylogeneticsError as error:
+        _record_output_validation_failure(manifest_path, run, error)
+        raise
     write_fasttree_support_table(
         support_table_path,
         build_fasttree_support_rows(fasttree_support_summary),

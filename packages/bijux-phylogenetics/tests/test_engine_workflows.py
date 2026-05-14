@@ -385,6 +385,71 @@ raise SystemExit(0)
     )
 
 
+def _fake_iqtree_missing_model_result(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".treefile").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Log-likelihood of the tree: -456.789\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -456.789\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_iqtree_without_support_labels(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".treefile").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".ufboot").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSupport analysis completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture support log\\nBEST SCORE FOUND : -222.222\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_fasttree(path: Path) -> Path:
     return _write_executable(
         path,
@@ -398,6 +463,22 @@ if not args or "-help" in args:
 
 print("((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);")
 print("warning: fasttree fixture approximate support only", file=sys.stderr)
+""",
+    )
+
+
+def _fake_fasttree_without_support_labels(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+
+args = sys.argv[1:]
+if not args or "-help" in args:
+    print("FastTree Version 2.2 fixture")
+    raise SystemExit(0)
+
+print("((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);")
 """,
     )
 
@@ -1346,9 +1427,95 @@ def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(
             input_path, tmp_path / "empty.fasta", executable=empty_trimal
         )
     except EngineWorkflowError as error:
-        assert "inference alignment is empty after filtering" in error.message
+        assert error.code == "engine_output_empty"
+        assert error.details["output_name"] == "trimmed_alignment"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected empty trim output to raise EngineWorkflowError")
+
+
+def test_run_maximum_likelihood_tree_inference_requires_parsed_model_result(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_missing_model_result(tmp_path / "iqtree-no-model")
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_maximum_likelihood_tree_inference(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "ml",
+            model="GTR+G",
+            executable=executable,
+            prefix="example",
+        )
+
+    assert error.value.code == "engine_model_result_missing"
+    assert error.value.details["workflow"] == "maximum-likelihood-tree"
+    assert not (tmp_path / "ml" / "example.manifest.json").exists()
+
+
+def test_run_bootstrap_support_estimation_requires_support_labels(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_without_support_labels(
+        tmp_path / "iqtree-no-bootstrap-labels"
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_bootstrap_support_estimation(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "bootstrap",
+            model="GTR+G",
+            executable=executable,
+            prefix="example",
+            replicates=1000,
+        )
+
+    assert error.value.code == "engine_support_values_missing"
+    assert error.value.details["workflow"] == "bootstrap-support"
+    assert error.value.details["support_kind"] == "bootstrap support"
+
+
+def test_run_sh_alrt_support_estimation_requires_joint_support_labels(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_without_support_labels(
+        tmp_path / "iqtree-no-sh-alrt-labels"
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_sh_alrt_support_estimation(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "sh-alrt",
+            model="GTR+G",
+            executable=executable,
+            prefix="example",
+            sh_alrt_replicates=1000,
+            bootstrap_replicates=1000,
+        )
+
+    assert error.value.code == "engine_support_values_missing"
+    assert error.value.details["workflow"] == "sh-alrt-support"
+    assert error.value.details["support_kind"] in {
+        "ultrafast bootstrap support",
+        "sh-alrt support",
+        "joint sh-alrt and ultrafast bootstrap support",
+    }
+
+
+def test_run_fast_tree_inference_requires_support_annotations(tmp_path: Path) -> None:
+    executable = _fake_fasttree_without_support_labels(
+        tmp_path / "fasttree-no-support"
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_fast_tree_inference(
+            fixture("alignments/example_alignment.fasta"),
+            tmp_path / "fasttree.nwk",
+            executable=executable,
+        )
+
+    assert error.value.code == "engine_support_values_missing"
+    assert error.value.details["workflow"] == "fast-approximate-tree"
+    assert error.value.details["support_kind"] == "FastTree local support"
 
 
 def test_inference_workflow_resume_and_html_report(tmp_path: Path) -> None:
