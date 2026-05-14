@@ -23,6 +23,7 @@ def test_load_rabies_method_sensitivity_panel_dataset_exposes_packaged_surface()
     assert dataset.taxon_count == 9
     assert dataset.sequence_type == "dna"
     assert dataset.outgroup_taxa == ("bat_chile_rv108",)
+    assert dataset.parallel_workers == 2
     assert len(dataset.variants) == 4
     assert dataset.variants[0].variant_id == "auto-gap-threshold"
     assert dataset.sequences_path.is_file()
@@ -44,7 +45,10 @@ def test_export_rabies_method_sensitivity_panel_dataset_copies_expected_outputs(
     assert result.config_path.is_file()
     assert result.sequences_path.is_file()
     assert result.metadata_path.is_file()
-    assert len(expected_files) == 64
+    assert len(expected_files) == 70
+    assert Path("parallel-execution-summary.tsv") in expected_files
+    assert Path("rabies-method-sensitivity.manifest.json") in expected_files
+    assert Path("parallel-logs/auto-gap-threshold.log") in expected_files
     assert Path("workflow-summary.tsv") in expected_files
     assert Path("variants/auto-gap-threshold/unrooted-conclusions.tsv") in expected_files
 
@@ -85,6 +89,9 @@ def test_run_rabies_method_sensitivity_panel_demo_materializes_dataset_and_workf
     assert result.dataset_export.config_path.is_file()
     assert result.workflow_bundle.workflow_summary_path.is_file()
     assert result.workflow_bundle.variant_summary_path.is_file()
+    assert result.workflow_bundle.parallel_summary_path.is_file()
+    assert result.workflow_bundle.manifest_path.is_file()
+    assert result.workflow_bundle.task_logs_root.is_dir()
     assert result.workflow_bundle.report_path.is_file()
     assert result.overview_path.is_file()
     assert "variants" in result.overview_path.read_text(encoding="utf-8")
@@ -137,16 +144,21 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 13
+    assert payload["metrics"]["artifact_count"] == 15
     assert payload["metrics"]["taxon_count"] == 9
     assert payload["metrics"]["variant_count"] == 4
+    assert payload["metrics"]["parallel_workers"] == 2
+    assert payload["metrics"]["execution_mode"] == "parallel"
     assert payload["metrics"]["stable_clade_count"] == 2
     assert payload["metrics"]["changed_clade_count"] == 8
     assert payload["metrics"]["preprocessing_change_pair_count"] == 0
     assert payload["metrics"]["rooted_engine_change_variant_count"] == 0
     assert payload["metrics"]["serious_conflict_variant_count"] == 4
-    assert payload["metrics"]["reference_output_count"] == 64
+    assert payload["metrics"]["reference_output_count"] == 70
     assert payload["data"]["dataset"]["dataset_id"] == "rabies_method_sensitivity_panel"
     assert payload["data"]["workflow_bundle"]["workflow_summary_path"] == str(
         output / "workflow" / "workflow-summary.tsv"
+    )
+    assert payload["data"]["workflow_bundle"]["parallel_summary_path"] == str(
+        output / "workflow" / "parallel-execution-summary.tsv"
     )
