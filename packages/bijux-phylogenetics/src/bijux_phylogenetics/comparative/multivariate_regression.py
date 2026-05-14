@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 
 from bijux_phylogenetics.comparative._math import student_t_two_sided_p_value
+from bijux_phylogenetics.comparative._math import invert_matrix
 from bijux_phylogenetics.comparative.pgls import (
     PGLSInputReport,
     PGLSResult,
@@ -24,6 +25,7 @@ MULTIVARIATE_MISSING_VALUE_POLICY = (
     "shared_complete_case_across_responses_and_predictor_terms"
 )
 MULTIVARIATE_WEAK_SAMPLE_RESIDUAL_DF_THRESHOLD = 2
+MULTIVARIATE_NEAR_SINGULAR_CONDITION_THRESHOLD = 1e12
 
 
 @dataclass(slots=True)
@@ -73,6 +75,17 @@ class MultivariateResidualAssociationRow:
     p_value: float
     lower_95_confidence_interval: float | None
     upper_95_confidence_interval: float | None
+
+
+@dataclass(slots=True)
+class MultivariateResidualCovarianceDiagnostics:
+    """Matrix-level diagnostics for multivariate residual covariance."""
+
+    response_count: int
+    matrix_rank: int
+    condition_number: float
+    is_singular: bool
+    is_near_singular: bool
 
 
 @dataclass(slots=True)
@@ -127,6 +140,7 @@ class MultivariateComparativeRegressionReport:
     covariance_rows: list[MultivariateResidualCovarianceRow]
     correlation_rows: list[MultivariateResidualCorrelationRow]
     association_rows: list[MultivariateResidualAssociationRow]
+    covariance_diagnostics: MultivariateResidualCovarianceDiagnostics
     warnings: list[str]
 
 
@@ -269,10 +283,11 @@ def run_multivariate_comparative_regression(
     covariance_rows = _build_residual_covariance_rows(response_models)
     correlation_rows = _build_residual_correlation_rows(covariance_rows)
     association_rows = _build_residual_association_rows(response_models)
+    covariance_diagnostics = _build_residual_covariance_diagnostics(covariance_rows)
     warnings = _build_multivariate_warnings(
         final_input_reports=final_input_reports,
         response_models=response_models,
-        covariance_rows=covariance_rows,
+        covariance_diagnostics=covariance_diagnostics,
     )
     return MultivariateComparativeRegressionReport(
         tree_path=tree_path,
@@ -290,6 +305,7 @@ def run_multivariate_comparative_regression(
         covariance_rows=covariance_rows,
         correlation_rows=correlation_rows,
         association_rows=association_rows,
+        covariance_diagnostics=covariance_diagnostics,
         warnings=warnings,
     )
 
@@ -710,11 +726,41 @@ def _build_residual_association_rows(
     return association_rows
 
 
+def _build_residual_covariance_diagnostics(
+    covariance_rows: list[MultivariateResidualCovarianceRow],
+) -> MultivariateResidualCovarianceDiagnostics:
+    response_names = _ordered_response_names(covariance_rows)
+    covariance_matrix = _covariance_matrix(covariance_rows, response_names)
+    response_count = len(response_names)
+    matrix_rank = _matrix_rank(
+        covariance_matrix,
+        tolerance=MULTIVARIATE_NUMERICAL_TOLERANCE,
+    )
+    is_singular = matrix_rank < response_count
+    if is_singular:
+        condition_number = math.inf
+    else:
+        inverse = invert_matrix(covariance_matrix)
+        condition_number = _matrix_infinity_norm(
+            covariance_matrix
+        ) * _matrix_infinity_norm(inverse)
+    return MultivariateResidualCovarianceDiagnostics(
+        response_count=response_count,
+        matrix_rank=matrix_rank,
+        condition_number=condition_number,
+        is_singular=is_singular,
+        is_near_singular=(
+            is_singular
+            or condition_number >= MULTIVARIATE_NEAR_SINGULAR_CONDITION_THRESHOLD
+        ),
+    )
+
+
 def _build_multivariate_warnings(
     *,
     final_input_reports: list[PGLSInputReport],
     response_models: list[PGLSResult],
-    covariance_rows: list[MultivariateResidualCovarianceRow],
+    covariance_diagnostics: MultivariateResidualCovarianceDiagnostics,
 ) -> list[str]:
     warnings: list[str] = []
     for report in final_input_reports:
@@ -732,10 +778,7 @@ def _build_multivariate_warnings(
         warnings.append(
             "shared multivariate regression retains weak residual degrees of freedom, so response-specific coefficients and residual covariance estimates may be unstable"
         )
-    if any(
-        row.is_diagonal and abs(row.covariance) <= MULTIVARIATE_NUMERICAL_TOLERANCE
-        for row in covariance_rows
-    ):
+    if covariance_diagnostics.is_near_singular:
         warnings.append(
             "residual covariance matrix is singular or near-singular within the multivariate numerical tolerance"
         )
@@ -794,6 +837,74 @@ def _covariance_and_correlation(
     correlation = covariance / denominator
     correlation = max(-1.0, min(1.0, correlation))
     return covariance, correlation
+
+
+def _ordered_response_names(
+    covariance_rows: list[MultivariateResidualCovarianceRow],
+) -> list[str]:
+    response_names: list[str] = []
+    for row in covariance_rows:
+        if row.left_response not in response_names:
+            response_names.append(row.left_response)
+    return response_names
+
+
+def _covariance_matrix(
+    covariance_rows: list[MultivariateResidualCovarianceRow],
+    response_names: list[str],
+) -> list[list[float]]:
+    lookup = {
+        (row.left_response, row.right_response): row.covariance
+        for row in covariance_rows
+    }
+    return [
+        [
+            lookup[(left_response, right_response)]
+            for right_response in response_names
+        ]
+        for left_response in response_names
+    ]
+
+
+def _matrix_rank(matrix: list[list[float]], *, tolerance: float) -> int:
+    working = [list(row) for row in matrix]
+    row_count = len(working)
+    column_count = len(working[0]) if working else 0
+    rank = 0
+    pivot_row = 0
+    for column_index in range(column_count):
+        if pivot_row >= row_count:
+            break
+        best_row = max(
+            range(pivot_row, row_count),
+            key=lambda row_index: abs(working[row_index][column_index]),
+        )
+        pivot_value = working[best_row][column_index]
+        if abs(pivot_value) <= tolerance:
+            continue
+        if best_row != pivot_row:
+            working[pivot_row], working[best_row] = (
+                working[best_row],
+                working[pivot_row],
+            )
+        for row_index in range(pivot_row + 1, row_count):
+            factor = working[row_index][column_index] / working[pivot_row][column_index]
+            if abs(factor) <= tolerance:
+                continue
+            for trailing_index in range(column_index, column_count):
+                working[row_index][trailing_index] -= (
+                    factor * working[pivot_row][trailing_index]
+                )
+        rank += 1
+        pivot_row += 1
+    return rank
+
+
+def _matrix_infinity_norm(matrix: list[list[float]]) -> float:
+    return max(
+        (sum(abs(value) for value in row) for row in matrix),
+        default=0.0,
+    )
 
 
 def _correlation_test(correlation: float, pair_count: int) -> tuple[float, float]:
