@@ -5,6 +5,14 @@ from .common import (
     read_engine_version,
     resolve_engine_executable,
 )
+from .preflight import (
+    ExternalEnginePreflightReport,
+    ExternalEnginePreflightStatus,
+    WorkflowPreflightStatus,
+    inspect_external_engine_preflight,
+    list_external_engine_workflows,
+    require_preflight_workflow,
+)
 from .evidence import InferenceEvidenceBundleResult, bundle_inference_workflow_evidence
 from .fasta_to_tree import (
     FastaToTreeModelRow,
@@ -114,6 +122,8 @@ __all__ = [
     "compare_inferred_tree_to_taxon_metadata",
     "AlignmentTrimmingSummary",
     "CodonAwareAlignmentWorkflowReport",
+    "ExternalEnginePreflightReport",
+    "ExternalEnginePreflightStatus",
     "EngineRunReport",
     "EngineVersionInfo",
     "FastaToTreeModelRow",
@@ -147,6 +157,7 @@ __all__ = [
     "InferenceWorkflowReportBuildResult",
     "ModelSelectionLimitationsReport",
     "ModelSelectionLimitationsReportBuildResult",
+    "WorkflowPreflightStatus",
     "audit_alignment_inference_readiness",
     "BootstrapTreeSetValidationReport",
     "ExternalEngineValidationCase",
@@ -169,12 +180,15 @@ __all__ = [
     "compare_fast_and_ml_trees",
     "execute_engine_command",
     "bundle_inference_workflow_evidence",
+    "inspect_external_engine_preflight",
     "list_mafft_alignment_modes",
+    "list_external_engine_workflows",
     "list_trimal_trimming_modes",
     "read_engine_version",
     "render_inference_sensitivity_report",
     "render_inference_workflow_report",
     "render_model_selection_limitations_report",
+    "require_preflight_workflow",
     "rewrite_inference_comparison_report_html",
     "resolve_engine_executable",
     "resolve_mafft_alignment_mode",
