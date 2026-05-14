@@ -316,12 +316,18 @@ The packaged stress workflow keeps the messiness explicit rather than hiding
 it in preprocessing:
 
 - one raw aligned FASTA with a deliberate sequence composition outlier
-- one raw tree with a zero-length branch and one extreme terminal branch
+- one raw FASTA validation surface with duplicate identifiers, illegal characters, empty sequences, and explicit length outliers
+- one raw coding FASTA surface with one frame error and one premature stop codon
+- one raw tree with a zero-length branch, one negative branch, and one extreme terminal branch
 - one raw trait table with a duplicate taxon row and missing values
+- one raw trait-linkage mismatch table with one missing tree taxon and one extra trait taxon
+- raw-sequence findings and repair ledgers
+- coding-sequence exclusion ledger
+- raw trait-linkage mismatch ledger
 - duplicate-trait and missing-trait ledgers
 - sequence-outlier and tree-issue ledgers
 - explicit repair-actions ledger
-- one cleaned alignment, cleaned tree, and cleaned trait table
+- one repaired raw FASTA subset, one prepared coding-sequence subset, and one cleaned alignment, cleaned tree, and cleaned trait table
 - cleaned linkage and cleaned validation ledgers for the resolved subset
 
 This gives users a governed dirty-data review surface that proves how

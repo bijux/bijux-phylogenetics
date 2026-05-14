@@ -400,16 +400,26 @@ than raw alignment generation.
 `demo catarrhine-data-quality-stress-panel` is the governed packaged dirty-data
 stress surface. It materializes the shipped catarrhine stress panel into one
 output directory and reruns the owned audit-and-cleanup workflow over its raw
-alignment, tree, and traits inputs. Its JSON metrics report:
+alignment, raw FASTA validation, coding-sequence, tree, and trait inputs. Its
+JSON metrics report:
 
 - `artifact_count`
 - `raw_taxon_count`
 - `cleaned_taxon_count`
+- `duplicate_sequence_identifier_count`
+- `illegal_character_count`
+- `empty_sequence_count`
+- `raw_sequence_length_outlier_count`
 - `duplicate_trait_taxon_count`
 - `missing_trait_value_count`
 - `sequence_outlier_count`
 - `tree_zero_length_branch_count`
+- `tree_negative_branch_count`
 - `tree_long_branch_outlier_count`
+- `coding_frame_error_count`
+- `coding_internal_stop_count`
+- `raw_trait_missing_from_traits_count`
+- `raw_trait_extra_taxon_count`
 - `dropped_taxon_count`
 - `repaired_branch_count`
 - `reference_output_count`
@@ -418,10 +428,20 @@ The command writes:
 
 - `dataset/README.md`
 - `dataset/raw/alignment.fasta`
+- `dataset/raw/sequence-input.fasta`
+- `dataset/raw/coding-sequences.fasta`
 - `dataset/raw/tree.nwk`
 - `dataset/raw/traits.csv`
+- `dataset/raw/traits-mismatch.csv`
 - `dataset/expected/*`
 - `workflow/workflow-summary.tsv`
+- `workflow/raw-sequence-findings.tsv`
+- `workflow/raw-sequence-repair.tsv`
+- `workflow/repaired-sequence-input.fasta`
+- `workflow/repaired-sequence-validation.tsv`
+- `workflow/coding-sequence-exclusions.tsv`
+- `workflow/prepared-coding-sequences.fasta`
+- `workflow/raw-trait-linkage.tsv`
 - `workflow/trait-duplicates.tsv`
 - `workflow/trait-missing-values.tsv`
 - `workflow/sequence-outliers.tsv`
@@ -437,9 +457,12 @@ The command writes:
 The packaged stress contract is explicit about scope:
 
 - the raw alignment is already aligned and is stress-tested through composition review, not alignment generation
-- the raw tree is intentionally dirty in branch lengths, not in syntax
+- the raw sequence-validation FASTA is intentionally dirty in duplicate identifiers, illegal characters, empty records, and length outliers
+- the raw coding FASTA is intentionally dirty in frame consistency and premature stop codons
+- the raw tree is intentionally dirty in zero and negative branch lengths plus one extreme long branch, not in syntax
 - the raw trait table is intentionally dirty in duplicates and missingness
-- the workflow resolves duplicates deterministically and writes one cleaned comparative subset instead of mutating the raw dataset in place
+- the raw trait-mismatch table is intentionally wrong in taxon overlap and is kept as a failure-review surface
+- the workflow resolves or excludes fixable inputs deterministically, records strict mismatch failure where repair would be dishonest, and writes one cleaned comparative subset instead of mutating raw inputs in place
 
 `demo known-answer-reference-panel` is the governed packaged known-answer
 simulation surface. It materializes the shipped deterministic simulation panel

@@ -192,6 +192,7 @@ bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
 bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
+bijux-phylogenetics demo catarrhine-data-quality-stress-panel --out artifacts/catarrhine-data-quality-stress-panel --json
 bijux-phylogenetics demo known-answer-reference-panel --out artifacts/known-answer-reference-panel --json
 bijux-phylogenetics simulate tree-birth-death --tree-count 5 --tip-count 16 --out simulated.trees
 bijux-phylogenetics simulate traits-early-burst tree.nwk --root-state 1.0 --sigma 0.5 --rate-change 4.0 --out simulated-early-burst.tsv --json
@@ -229,6 +230,19 @@ metrics now surface not only topology and ancestral recovery but also
 `parameter_row_count`, `threshold_pass_count`, `threshold_row_count`,
 `host_event_accuracy`, and `geographic_event_accuracy`, so the trust contract
 is grounded in known simulation answers instead of only one inferred summary.
+
+`demo catarrhine-data-quality-stress-panel` is the repository's governed
+dirty-data gauntlet. It combines one already aligned catarrhine matrix, one
+raw FASTA validation surface with duplicate identifiers, illegal characters,
+empty sequences, and length outliers, one raw coding FASTA surface with a
+frame error and a premature stop codon, one raw trait-linkage mismatch
+surface, and one rooted tree with zero, negative, and extreme branch lengths.
+The demo writes explicit review ledgers for every defect class plus one cleaned
+comparative subset, and its JSON metrics expose the same counts directly
+through `duplicate_sequence_identifier_count`,
+`raw_sequence_length_outlier_count`, `coding_frame_error_count`,
+`coding_internal_stop_count`, `raw_trait_missing_from_traits_count`,
+`raw_trait_extra_taxon_count`, and `tree_negative_branch_count`.
 
 `comparative signal` keeps its input policy explicit in JSON output: rooted
 trees are accepted whether or not they are ultrametric, overlapping missing
