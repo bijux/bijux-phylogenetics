@@ -479,6 +479,52 @@ phylogenetic covariance, pass that exact numeric lambda instead. That keeps
 coefficient and p-value review tied to one covariance assumption rather than
 silently mixing model-selection differences with coefficient-level inference.
 
+When the goal is to inspect the covariance assumptions themselves before
+trusting a comparative fit, use `comparative covariance-audit`. This workflow
+does not fit coefficients first and explain problems later. It audits the tree,
+trait table, taxon overlap, branch lengths, and candidate covariance matrices
+up front for PGLS, Brownian trait models, or OU trait models.
+
+```bash
+bijux-phylogenetics comparative covariance-audit \
+  artifacts/primates.nwk \
+  artifacts/primates.csv \
+  --analysis pgls \
+  --formula "longevity ~ social_group_size + mating_system" \
+  --summary-out artifacts/primates.covariance-audit-summary.tsv \
+  --candidates-out artifacts/primates.covariance-audit-candidates.tsv \
+  --excluded-taxa-out artifacts/primates.covariance-audit-excluded.tsv \
+  --json
+```
+
+The JSON result reports:
+
+- matrix dimension and rank
+- matched taxa and analysis-taxon counts
+- taxa missing from the trait table or absent from the tree
+- duplicate tree or trait taxa
+- zero-length and negative branch counts
+- covariance singularity and near-singularity
+- raw condition number
+- whether fitting would proceed by exact solve, regularization, pseudoinverse, or failure
+
+For `--analysis pgls`, use `--formula` or `--response` plus `--predictors`.
+For `--analysis brownian-trait` or `--analysis ou-trait`, use `--trait`.
+Estimated Pagel's lambda and estimated OU alpha produce one candidate ledger
+row per audited covariance candidate so reviewers can see whether only one part
+of the profile is unstable.
+
+The ledger outputs keep the audit reviewable:
+
+- `--summary-out` writes one overall audit row
+- `--candidates-out` writes one row per lambda or alpha candidate, or one row for fixed Brownian covariance
+- `--excluded-taxa-out` writes the explicit taxon-pruning reasons used before covariance construction
+
+This workflow is intentionally honest about stabilization. The current
+governed comparative fitting paths may regularize covariance inversion with a
+small diagonal epsilon, and the audit reports that as `regularization` instead
+of hiding it behind a successful coefficient table.
+
 When the response is binary rather than continuous, use `comparative logistic`.
 This workflow keeps the comparative formula surface, but fits a binary
 working-correlation approximation instead of reusing continuous-trait PGLS

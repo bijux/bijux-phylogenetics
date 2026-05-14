@@ -2563,6 +2563,106 @@ association under phylogenetic covariance. Its JSON metrics now report
 review tooling can distinguish a minimally identified model from one with
 meaningful residual support.
 
+`comparative covariance-audit` is the governed pre-fit review surface for
+PGLS, Brownian trait evolution, and OU trait evolution. Its purpose is to
+show whether the tree-trait overlap and induced covariance matrix are safe to
+trust before coefficient or parameter interpretation starts.
+
+Its JSON metrics report:
+- `analysis`
+- `covariance_model`
+- `matrix_dimension`
+- `matrix_rank`
+- `condition_number`
+- `fit_strategy`
+- `singular`
+- `near_singular`
+- `matched_taxon_count`
+- `analysis_taxon_count`
+- `duplicate_tree_taxon_count`
+- `duplicate_trait_taxon_count`
+- `candidate_row_count`
+- `blocker_count`
+- `warning_count`
+
+The command requires `--analysis pgls`, `--analysis brownian-trait`, or
+`--analysis ou-trait`. PGLS accepts `--formula` or the
+`--response` plus `--predictors` surface. Brownian and OU trait audits accept
+`--trait`. `--lambda-value` accepts `estimate` or one numeric Pagel's lambda
+for PGLS. `--alpha` accepts `estimate` or one positive numeric OU alpha for OU
+trait audits.
+
+The command reports:
+- matched taxa
+- tree taxa missing from the trait table
+- extra trait-table taxa absent from the tree
+- duplicate tree or trait taxa
+- zero-length and negative branch counts
+- minimum and maximum branch length
+- whether the covariance is singular or near-singular
+- whether the fitting path would proceed by `exact`, `regularization`,
+  `pseudoinverse`, or `failure`
+
+The candidate-level audit is explicit rather than narrative. When the audit
+profiles estimated Pagel's lambda or OU alpha, each candidate row records its
+matrix rank, raw condition number, stabilized fit condition number,
+positive-definiteness before fitting, and the fit-strategy details used for
+that candidate.
+
+When `--summary-out` is supplied, `comparative covariance-audit` writes one
+flat summary row as CSV or TSV. The row preserves:
+- `analysis`
+- `covariance_model`
+- `analysis_label`
+- `matrix_dimension`
+- `matrix_rank`
+- `condition_number`
+- `fit_strategy`
+- `singular`
+- `near_singular`
+- `tree_taxon_count`
+- `trait_taxon_count`
+- `matched_taxon_count`
+- `analysis_taxon_count`
+- `missing_from_traits_count`
+- `extra_trait_taxon_count`
+- `duplicate_tree_taxon_count`
+- `duplicate_trait_taxon_count`
+- `empty_trait_taxon_row_count`
+- `zero_length_branch_count`
+- `negative_branch_length_count`
+- `minimum_branch_length`
+- `maximum_branch_length`
+- `blocker_count`
+- `warning_count`
+
+When `--candidates-out` is supplied, the command also writes one candidate
+ledger with:
+- `candidate_label`
+- `parameter_name`
+- `parameter_value`
+- `matrix_dimension`
+- `matrix_rank`
+- `condition_number`
+- `fit_condition_number`
+- `positive_definite_before_fit`
+- `singular`
+- `near_singular`
+- `fit_strategy`
+- `fit_strategy_details`
+
+When `--excluded-taxa-out` is supplied, the command writes one explicit
+excluded-taxa ledger with:
+- `taxon`
+- `reason`
+- `details`
+
+The fit-strategy field is intentionally honest about the current runtime. The
+governed Brownian, OU, and Pagel-lambda fitting paths currently stabilize
+covariance inversion with diagonal epsilon regularization where needed, and the
+audit reports that directly instead of implying an exact closed-form solve when
+stabilization was required.
+
 `comparative logistic` is the governed binary-response companion surface. It
 preserves the same formula and predictor-encoding contract as `comparative
 pgls`, but the fitted model is an explicit
