@@ -7,6 +7,9 @@ from pathlib import Path
 import tempfile
 
 from bijux_phylogenetics.comparative import validate_comparative_reference_examples
+from bijux_phylogenetics.comparative.evolutionary_modes import (
+    fit_continuous_evolutionary_mode,
+)
 from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
 from bijux_phylogenetics.compare.topology import (
@@ -383,6 +386,43 @@ def _extended_primate_pagels_lambda_observation(
     }
 
 
+def _extended_primate_brownian_mode_observation(
+    input_paths: list[Path],
+) -> dict[str, float]:
+    report = fit_continuous_evolutionary_mode(
+        input_paths[0],
+        input_paths[1],
+        trait="longevity",
+        taxon_column="species",
+        mode="brownian",
+    )
+    return {
+        "aic": report.aic,
+        "log_likelihood": report.log_likelihood,
+        "rate": report.rate,
+        "root_state": report.root_state,
+    }
+
+
+def _extended_primate_ou_mode_observation(
+    input_paths: list[Path],
+) -> dict[str, float]:
+    report = fit_continuous_evolutionary_mode(
+        input_paths[0],
+        input_paths[1],
+        trait="longevity",
+        taxon_column="species",
+        mode="ornstein-uhlenbeck",
+    )
+    return {
+        "aic": report.aic,
+        "alpha": report.parameter_value or 0.0,
+        "log_likelihood": report.log_likelihood,
+        "rate": report.rate,
+        "root_state": report.root_state,
+    }
+
+
 def _build_extended_comparative_observations() -> tuple[
     list[ReferenceParityObservation], dict[str, str]
 ]:
@@ -393,6 +433,12 @@ def _build_extended_comparative_observations() -> tuple[
         ),
         "pagel-lambda-primate-longevity": (
             _extended_primate_pagels_lambda_observation
+        ),
+        "brownian-primate-longevity-intercept-only": (
+            _extended_primate_brownian_mode_observation
+        ),
+        "ornstein-uhlenbeck-primate-longevity-intercept-only": (
+            _extended_primate_ou_mode_observation
         ),
     }
     observations: list[ReferenceParityObservation] = []

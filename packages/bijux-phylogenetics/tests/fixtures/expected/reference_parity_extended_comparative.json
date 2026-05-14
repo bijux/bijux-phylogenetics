@@ -43,6 +43,47 @@
         "lambda_value": 0.8027,
         "log_likelihood": -446.9432
       }
+    },
+    {
+      "case": "brownian-primate-longevity-intercept-only",
+      "method": "brownian-trait-model",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "reference_tool": "geiger",
+      "reference_version": "2.0.11",
+      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json via geiger::fitContinuous(model='BM')",
+      "tolerance": 0.1,
+      "tolerance_reason": "The governed primate intercept-only Brownian fit carries a very large rate parameter on a real dataset, so the tolerance absorbs reference rounding on the rate scale while still rejecting materially different likelihood or root-state fits.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "aic": 956.8469,
+        "log_likelihood": -476.4234,
+        "rate": 88740.5017,
+        "root_state": 262.35
+      }
+    },
+    {
+      "case": "ornstein-uhlenbeck-primate-longevity-intercept-only",
+      "method": "ornstein-uhlenbeck-trait-model",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "reference_tool": "ape+nlme",
+      "reference_version": "ape=5.8.1;nlme=3.1.168",
+      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json via ape::corMartins intercept-only fit",
+      "tolerance": 0.1,
+      "tolerance_reason": "The governed primate intercept-only OU fit stores rounded external rate and alpha outputs on a larger dataset, so the tolerance absorbs reporting drift without hiding materially different optimum or likelihood behavior.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "aic": 928.5062,
+        "alpha": 5.3344,
+        "log_likelihood": -461.2531,
+        "rate": 170166.0788,
+        "root_state": 282.7144
+      }
     }
   ]
 }

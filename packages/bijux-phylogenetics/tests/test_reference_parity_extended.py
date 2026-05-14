@@ -10,7 +10,7 @@ pytestmark = [pytest.mark.scientific_validation]
 def test_validate_reference_parity_examples_extended_passes() -> None:
     report = validate_reference_parity_examples(include_extended=True)
     assert report.all_passed is True
-    assert report.case_count == 16
+    assert report.case_count == 18
     assert report.failed_case_count == 0
     assert report.covered_methods == [
         "blombergs-k",
@@ -33,9 +33,21 @@ def test_validate_reference_parity_examples_extended_passes() -> None:
     pagel_row = next(
         row for row in report.summary_rows if row.method == "pagels-lambda"
     )
+    brownian_row = next(
+        row for row in report.summary_rows if row.method == "brownian-trait-model"
+    )
+    ou_row = next(
+        row
+        for row in report.summary_rows
+        if row.method == "ornstein-uhlenbeck-trait-model"
+    )
     assert posterior_row.case_count == 2
     assert posterior_row.suite == "mixed"
     assert pgls_row.case_count == 2
     assert pgls_row.suite == "mixed"
     assert pagel_row.case_count == 2
     assert pagel_row.suite == "mixed"
+    assert brownian_row.case_count == 2
+    assert brownian_row.suite == "mixed"
+    assert ou_row.case_count == 2
+    assert ou_row.suite == "mixed"
