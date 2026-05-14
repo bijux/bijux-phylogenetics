@@ -44,6 +44,12 @@ from .discrete import (
     write_discrete_ancestral_probability_table,
     write_discrete_ancestral_summary_table,
 )
+from .discrete_reference import (
+    DiscreteAncestralReferenceObservation,
+    DiscreteAncestralReferenceProbabilityRow,
+    DiscreteAncestralReferenceValidationReport,
+    validate_discrete_ancestral_reference_examples,
+)
 from .irreversible_discrete import (
     IrreversibleDiscreteFitRow,
     IrreversibleDiscreteNodeComparisonRow,
@@ -205,6 +211,9 @@ __all__ = [
     "DiscreteAncestralExclusion",
     "DiscreteAncestralPairComparisonReport",
     "DiscreteAncestralPairComparisonRow",
+    "DiscreteAncestralReferenceObservation",
+    "DiscreteAncestralReferenceProbabilityRow",
+    "DiscreteAncestralReferenceValidationReport",
     "DiscreteAncestralReport",
     "DiscreteAncestralSummary",
     "DiscreteAncestralTreeSetCladeSummaryRow",
@@ -243,6 +252,7 @@ __all__ = [
     "render_ancestral_state_report",
     "render_ancestral_state_tree",
     "render_ancestral_state_visualization",
+    "validate_discrete_ancestral_reference_examples",
     "summarize_irreversible_discrete_reconstruction",
     "summarize_irreversible_discrete_report",
     "summarize_ordered_discrete_reconstruction",

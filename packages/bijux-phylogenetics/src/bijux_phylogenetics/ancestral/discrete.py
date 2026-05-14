@@ -1121,8 +1121,7 @@ def _estimate_marginal_state_probabilities(
     root_prior: numpy.ndarray,
 ) -> dict[str, dict[str, float]]:
     state_index = {state: index for index, state in enumerate(state_order)}
-    partial_by_node: dict[str, numpy.ndarray] = {}
-    child_contributions: dict[str, dict[str, numpy.ndarray]] = {}
+    posterior_by_node: dict[str, numpy.ndarray] = {}
     transition_cache: dict[float, numpy.ndarray] = {}
 
     def transition(branch_length: float) -> numpy.ndarray:
@@ -1137,50 +1136,41 @@ def _estimate_marginal_state_probabilities(
         if node.is_leaf():
             partial = numpy.zeros(len(state_order), dtype=float)
             partial[state_index[states_by_taxon[node.name]]] = 1.0
-            partial_by_node[signature] = partial
-            child_contributions[signature] = {}
+            posterior_by_node[signature] = partial
             return partial
         partial = numpy.ones(len(state_order), dtype=float)
-        contribution_by_child: dict[str, numpy.ndarray] = {}
         for child in node.children:
             child_partial = postorder(child)
-            contribution = transition(_branch_length(child)) @ child_partial
-            contribution_by_child[node_signature(child)] = contribution
-            partial *= contribution
-        scale = float(partial.sum())
-        if scale > 0.0:
-            partial /= scale
-        partial_by_node[signature] = partial
-        child_contributions[signature] = contribution_by_child
+            partial *= transition(_branch_length(child)) @ child_partial
+        partial = _normalize_array(partial)
+        posterior_by_node[signature] = partial
         return partial
 
     postorder(tree.root)
-    posterior_by_node: dict[str, numpy.ndarray] = {}
     root_signature = node_signature(tree.root)
     posterior_by_node[root_signature] = _normalize_array(
-        root_prior * partial_by_node[root_signature]
+        root_prior * posterior_by_node[root_signature]
     )
 
-    def preorder(node, down_message: numpy.ndarray) -> None:
+    def preorder(node) -> None:
         parent_signature = node_signature(node)
-        if not node.is_leaf():
-            for child in node.children:
-                sibling_support = down_message.copy()
-                child_signature = node_signature(child)
-                for sibling in node.children:
-                    if sibling is child:
-                        continue
-                    sibling_support *= child_contributions[parent_signature][
-                        node_signature(sibling)
-                    ]
-                branch_transition = transition(_branch_length(child))
-                child_down = _normalize_array(sibling_support @ branch_transition)
-                posterior_by_node[child_signature] = _normalize_array(
-                    child_down * partial_by_node[child_signature]
-                )
-                preorder(child, child_down)
+        if node.is_leaf():
+            return
+        parent_probabilities = posterior_by_node[parent_signature]
+        for child in node.children:
+            if child.is_leaf():
+                continue
+            child_signature = node_signature(child)
+            branch_transition = transition(_branch_length(child))
+            child_probabilities = posterior_by_node[child_signature]
+            denominator = child_probabilities @ branch_transition
+            updated = (parent_probabilities / denominator) @ branch_transition
+            posterior_by_node[child_signature] = _normalize_array(
+                updated * child_probabilities
+            )
+            preorder(child)
 
-    preorder(tree.root, _normalize_array(root_prior))
+    preorder(tree.root)
     return {
         node: {
             state: float(format(probability, ".15g"))
