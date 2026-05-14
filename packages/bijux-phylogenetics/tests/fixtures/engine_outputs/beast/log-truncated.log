@@ -1,0 +1,5 @@
+# BEAST parser fixture with an interrupted final sampled row
+state	posterior	likelihood
+0	-100.0	-90.0
+warning: operator summary line should be ignored
+10	-99.0

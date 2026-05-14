@@ -1,0 +1,7 @@
+# BEAST parser fixture with warning-heavy preamble and interleaved warnings
+WARNING: resuming posterior sampling from a checkpoint
+note: adaptive operator diagnostics follow in stderr in real runs
+ state 	 posterior 	 prior 	 likelihood 	 clockRate 
+0	-48.5	-6.8	-41.7	0.0010
+WARNING: operator acceptance table omitted from persisted log
+20	-47.1	-7.1	-40.0	0.0012

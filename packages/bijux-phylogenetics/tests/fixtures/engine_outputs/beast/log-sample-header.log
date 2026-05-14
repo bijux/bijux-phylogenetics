@@ -1,0 +1,4 @@
+# BEAST parser fixture with native Sample header, BOM, and padded fields
+﻿ Sample 	 posterior 	 prior 	 likelihood 	 tree.height 
+0	-48.5	-6.8	-41.7	0.11
+20	-47.1	-7.1	-40.0	0.45

@@ -704,6 +704,33 @@ def test_parse_beast_log_accepts_native_sample_header(tmp_path: Path) -> None:
     assert set(summary.tree_parameters) == {"tree.height", "birthRate"}
 
 
+def test_parse_beast_log_accepts_warning_heavy_fixture() -> None:
+    report = parse_beast_log(fixture("engine_outputs/beast/log-warning-heavy.log"))
+
+    assert report.row_count == 2
+    assert report.columns == ["posterior", "prior", "likelihood", "clockRate"]
+    assert report.rows[0].state == 0
+    assert report.rows[1].state == 20
+
+
+def test_parse_beast_log_accepts_sample_header_fixture_with_bom() -> None:
+    report = parse_beast_log(fixture("engine_outputs/beast/log-sample-header.log"))
+
+    assert report.row_count == 2
+    assert report.columns == ["posterior", "prior", "likelihood", "tree.height"]
+    assert report.rows[1].state == 20
+
+
+def test_parse_beast_log_reports_truncated_fixture_with_structured_error() -> None:
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_beast_log(fixture("engine_outputs/beast/log-truncated.log"))
+
+    assert error.value.code == "beast_log_missing_parameter_value"
+    assert error.value.details["artifact_kind"] == "beast-log"
+    assert error.value.details["column"] == "likelihood"
+    assert error.value.details["row_number"] == 3
+
+
 def test_summarize_beast_log_reads_real_beast_fixture() -> None:
     report = parse_beast_log(fixture("beast2_strict_yule_posterior.log"))
     summary = summarize_beast_log(
