@@ -4341,6 +4341,16 @@ status, so automation can distinguish a fresh execution from a verified reuse.
 If the executable itself cannot be resolved, the command fails before any
 incomplete-run marker is written because no engine run started.
 
+Success on these governed adapter commands now means more than "the process
+exited and a file appeared." MAFFT and trimAl must emit non-empty valid
+alignments, IQ-TREE must emit the required `.iqtree`, `.log`, tree, model,
+and support artifacts for the selected workflow, FastTree must emit a valid
+tree with parseable local-support annotations, and BEAST or MrBayes must emit
+their full required posterior artifact sets. Missing required files, empty
+required files, missing IQ-TREE model results, and missing required support
+annotations surface stable structured error codes before manifests or
+review-facing reports are written.
+
 For coding nucleotide inputs, `adapter align --codon-aware` is the supported
 alignment entrypoint. It excludes frame-broken sequences and sequences with
 ambiguous or invalid codons plus sequences with premature stop codons, aligns a
@@ -4588,6 +4598,14 @@ governed support histogram so review surfaces can rely on structured engine
 outputs instead of re-parsing free text. The SH-aLRT command also exposes
 annotated-branch counts, SH-aLRT minima and maxima, and conflicting-signal
 counts for the combined SH-aLRT/UFBoot review surface.
+
+Those IQ-TREE commands are now also strict about bundle completeness. `adapter
+model-select` fails if the best-fit model or candidate table cannot be parsed;
+`adapter infer-ml` fails if the tree, report, log, or model result is missing
+or empty; `adapter bootstrap` fails if the bootstrap tree set is empty or the
+supported tree does not contain parseable support labels; `adapter sh-alrt`
+fails if joint SH-aLRT/UFBoot labels are missing; and `adapter consensus`
+fails if the consensus tree lacks parseable support values.
 
 `adapter fasta-to-tree` is the governed raw-FASTA workflow surface above those
 direct IQ-TREE adapters. It keeps `.aln`, `.trimmed.aln`, `.tree`, `.log`,

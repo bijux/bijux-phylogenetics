@@ -216,6 +216,18 @@ manifest, `--incomplete-run-policy clean` is the governed way to discard that
 partial state, and a missing executable stops before any incomplete-run marker
 is written because no engine run started.
 
+That strictness now applies across every governed external-engine workflow.
+MAFFT and trimAl runs succeed only when they emit non-empty valid alignments,
+IQ-TREE runs succeed only when the required `.iqtree`, `.log`, tree, model,
+and support artifacts are present and parseable for the selected workflow,
+FastTree succeeds only when the tree and local-support annotations can be
+parsed, and BEAST or MrBayes succeed only when the expected posterior artifact
+set exists. Missing required files, empty required files, missing model
+results, and missing required support annotations now surface stable structured
+errors such as `engine_required_output_missing`, `engine_output_empty`,
+`engine_model_result_missing`, and `engine_support_values_missing` before any
+workflow manifest or reviewer-facing report is written.
+
 The external-engine trust surface now has two distinct verification lanes.
 Fast `engine_contract` tests keep fake-executable and parser behavior stable in
 routine verification, while `tests/real_local` carries the governed

@@ -2578,6 +2578,15 @@ governed way to discard that partial state before rerunning. A missing
 executable stops before any incomplete-run marker is written because no engine
 run started.
 
+Workflow success is also strict about output completeness. Non-empty files are
+not enough by themselves: alignment workflows must emit valid retained-site
+matrices, IQ-TREE workflows must emit the required tree, log, report, model,
+and support artifacts for the chosen mode, FastTree must emit parseable local
+support labels, and BEAST or MrBayes must emit their full posterior artifact
+sets. Missing required files, empty required files, missing model results, and
+missing support annotations stop the workflow with stable structured error
+codes before manifests or reviewer-facing reports are written.
+
 Use `adapter beast-prepare` when you need a real BEAST2 XML template from one
 aligned matrix plus optional dating metadata. The command writes a BEAST2-style
 XML file with an explicit alignment block, a starting tree, a strict or
@@ -2921,6 +2930,11 @@ Those artifacts map support values back onto explicit descendant-taxon clades,
 flag low-support branches directly, and preserve the same `lt50`, `50to69`,
 `70to89`, and `ge90` buckets that appear in the manifest and HTML workflow
 report.
+
+That bootstrap surface is now a real validation gate as well as an artifact
+writer. If IQ-TREE returns a treefile and `.ufboot` set but the supported tree
+does not actually contain parseable support labels, the workflow fails instead
+of writing a superficially complete review bundle.
 
 Use `adapter infer-fast` when you need a rapid approximate tree for one aligned
 DNA or protein matrix and you want reviewer-facing local-support evidence
