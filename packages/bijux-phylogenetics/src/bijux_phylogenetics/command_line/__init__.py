@@ -547,6 +547,7 @@ from bijux_phylogenetics.engines import (
     list_mafft_alignment_modes,
     list_trimal_trimming_modes,
     read_engine_version,
+    replay_workflow_manifest,
     render_inference_workflow_report,
     require_preflight_workflow,
     run_alignment_trimming,
@@ -1328,6 +1329,11 @@ def _command_inputs(args: Any) -> list[Path | str]:
             return [args.input_path, args.out_dir]
         return [args.input_path]
     if args.command == "phylo":
+        if getattr(args, "phylo_command", None) == "replay":
+            inputs: list[Path | str] = [args.manifest_path]
+            if getattr(args, "out_dir", None) is not None:
+                inputs.append(args.out_dir)
+            return inputs
         return [] if getattr(args, "workflow", None) is None else [args.workflow]
     return []
 
@@ -1376,6 +1382,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the preflight report as JSON."
     )
     _add_manifest_argument(phylo_preflight)
+    phylo_replay = phylo_subparsers.add_parser(
+        "replay",
+        help="Rerun one governed phylogenetics workflow from its manifest and compare the replayed outputs.",
+    )
+    phylo_replay.add_argument("manifest_path", type=Path)
+    phylo_replay.add_argument("--out-dir", type=Path)
+    _add_preflight_executable_arguments(phylo_replay)
+    phylo_replay.add_argument(
+        "--json", action="store_true", help="Emit the replay report as JSON."
+    )
+    _add_manifest_argument(phylo_replay)
 
     metadata = subparsers.add_parser(
         get_command_spec("metadata").name, help=get_command_spec("metadata").summary
@@ -6452,37 +6469,73 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 "mrbayes": args.mrbayes_executable,
                 "beast": args.beast_executable,
             }
-            report = inspect_external_engine_preflight(
+            if args.phylo_command == "preflight":
+                report = inspect_external_engine_preflight(
+                    executables=executables,
+                    selected_workflow=args.workflow,
+                )
+                selected_workflow_status = None
+                if args.workflow is not None:
+                    selected_workflow_status = require_preflight_workflow(
+                        report, workflow_id=args.workflow
+                    ).readiness_status
+                outputs = _finalize_outputs(
+                    args,
+                    command="phylo",
+                    inputs=[] if args.workflow is None else [args.workflow],
+                )
+                _print_result(
+                    build_command_result(
+                        command="phylo",
+                        inputs=[] if args.workflow is None else [args.workflow],
+                        outputs=outputs,
+                        metrics={
+                            "engine_count": len(report.engines),
+                            "available_engine_count": sum(
+                                1 for engine in report.engines if engine.available
+                            ),
+                            "workflow_count": len(report.workflows),
+                            "runnable_workflow_count": sum(
+                                1 for workflow in report.workflows if workflow.runnable
+                            ),
+                            "selected_workflow": args.workflow,
+                            "selected_workflow_status": selected_workflow_status,
+                            "overall_status": report.overall_status,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            report = replay_workflow_manifest(
+                args.manifest_path,
+                out_dir=args.out_dir,
                 executables=executables,
-                selected_workflow=args.workflow,
             )
-            selected_workflow_status = None
-            if args.workflow is not None:
-                selected_workflow_status = require_preflight_workflow(
-                    report, workflow_id=args.workflow
-                ).readiness_status
             outputs = _finalize_outputs(
                 args,
                 command="phylo",
-                inputs=[] if args.workflow is None else [args.workflow],
+                inputs=[args.manifest_path],
+                outputs=[report.replay_manifest_path],
             )
             _print_result(
                 build_command_result(
                     command="phylo",
-                    inputs=[] if args.workflow is None else [args.workflow],
+                    inputs=[args.manifest_path],
                     outputs=outputs,
                     metrics={
-                        "engine_count": len(report.engines),
-                        "available_engine_count": sum(
-                            1 for engine in report.engines if engine.available
+                        "workflow": report.workflow,
+                        "input_drift_count": len(report.input_drift),
+                        "changed_input_count": sum(
+                            1 for drift in report.input_drift if not drift.matched
                         ),
-                        "workflow_count": len(report.workflows),
-                        "runnable_workflow_count": sum(
-                            1 for workflow in report.workflows if workflow.runnable
+                        "engine_version_drift_count": sum(
+                            1
+                            for drift in report.engine_version_drift
+                            if not drift.matched
                         ),
-                        "selected_workflow": args.workflow,
-                        "selected_workflow_status": selected_workflow_status,
-                        "overall_status": report.overall_status,
+                        "comparison_count": len(report.comparisons),
+                        "outputs_equivalent": report.outputs_equivalent,
                     },
                     data=report,
                 ),
