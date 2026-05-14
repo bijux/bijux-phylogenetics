@@ -537,6 +537,143 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert str(report.output_paths["tree"]) in run_manifest["output_checksums"]
 
 
+def test_run_fasta_to_tree_workflow_records_stage_fingerprints(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_fasta_to_tree_workflow(
+        fixture("alignments/example_sequences_raw.fasta"),
+        out_dir=tmp_path / "stage-fingerprints",
+        prefix="stage-fingerprints",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+
+    assert list(report.stage_fingerprints) == [
+        "fasta_validation",
+        "alignment",
+        "trimming",
+        "model_selection",
+        "inference",
+        "support",
+        "report",
+    ]
+    assert report.stage_fingerprints["alignment"].engine_versions == {
+        "mafft": "mafft v7.999"
+    }
+    assert report.stage_fingerprints["support"].engine_versions == {
+        "iqtree_bootstrap_support": "IQ-TREE multicore version 2.9.9"
+    }
+    assert (
+        report.stage_fingerprints["report"].upstream_fingerprints["support"]
+        == report.stage_fingerprints["support"].fingerprint
+    )
+    assert all(
+        len(stage.fingerprint) == 64 for stage in report.stage_fingerprints.values()
+    )
+    manifest_payload = _load_json(report.manifest_path)
+    assert manifest_payload["stage_fingerprints"]["fasta_validation"]["stage"] == (
+        "fasta_validation"
+    )
+    assert manifest_payload["stage_fingerprints"]["report"]["upstream_fingerprints"][
+        "inference"
+    ] == report.stage_fingerprints["inference"].fingerprint
+
+
+def test_run_fasta_to_tree_workflow_reruns_only_support_stage_when_replicates_change(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+
+    first = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "support-rerun",
+        prefix="support-rerun",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+    second = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "support-rerun",
+        prefix="support-rerun",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=2000,
+        resume=True,
+    )
+
+    assert first.alignment_workflow.resumed is False
+    assert second.alignment_workflow.resumed is True
+    assert second.trimming_workflow.resumed is True
+    assert second.model_selection_workflow.resumed is True
+    assert second.maximum_likelihood_workflow.resumed is True
+    assert second.bootstrap_workflow.resumed is False
+    assert (
+        first.stage_fingerprints["support"].fingerprint
+        != second.stage_fingerprints["support"].fingerprint
+    )
+    assert (
+        first.stage_fingerprints["inference"].fingerprint
+        == second.stage_fingerprints["inference"].fingerprint
+    )
+
+
+def test_run_fasta_to_tree_workflow_input_change_invalidates_downstream_stages(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = tmp_path / "changed-input.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
+
+    first = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "changed-input",
+        prefix="changed-input",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+    input_path.write_text(">A\nTTTTT\n>B\nACTGA\n>C\nGGG\n", encoding="utf-8")
+    second = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "changed-input",
+        prefix="changed-input",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+        resume=True,
+    )
+
+    assert second.alignment_workflow.resumed is False
+    assert second.trimming_workflow.resumed is False
+    assert second.model_selection_workflow.resumed is False
+    assert second.maximum_likelihood_workflow.resumed is False
+    assert second.bootstrap_workflow.resumed is False
+    assert (
+        first.stage_fingerprints["fasta_validation"].fingerprint
+        != second.stage_fingerprints["fasta_validation"].fingerprint
+    )
+    assert (
+        first.stage_fingerprints["alignment"].fingerprint
+        != second.stage_fingerprints["alignment"].fingerprint
+    )
+
+
 def test_write_fasta_to_tree_log_renders_workflow_outputs_relative_to_root(
     tmp_path: Path,
 ) -> None:
