@@ -721,6 +721,14 @@ def detect_invalid_alignment_characters(
 ) -> list[InvalidAlignmentCharacter]:
     """List sequence characters invalid for the declared alphabet."""
     records = load_fasta_alignment(path)
+    return _detect_invalid_alignment_characters_records(records, alphabet=alphabet)
+
+
+def _detect_invalid_alignment_characters_records(
+    records: list[AlignmentRecord],
+    *,
+    alphabet: AlignmentAlphabet,
+) -> list[InvalidAlignmentCharacter]:
     if alphabet == "dna":
         allowed = _DNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
     elif alphabet == "rna":
@@ -836,6 +844,17 @@ def detect_composition_outlier_sequences(
 ) -> list[SequenceCompositionOutlier]:
     """Detect sequences with unusually deviant GC or amino-acid composition."""
     records = load_fasta_alignment(path)
+    return _detect_composition_outlier_sequences_records(
+        records,
+        deviation_threshold=deviation_threshold,
+    )
+
+
+def _detect_composition_outlier_sequences_records(
+    records: list[AlignmentRecord],
+    *,
+    deviation_threshold: float = 0.25,
+) -> list[SequenceCompositionOutlier]:
     alphabet = infer_alignment_alphabet(records)
     if alphabet in {"dna", "rna"}:
         per_sequence_gc = [
@@ -903,6 +922,12 @@ def detect_composition_outlier_sequences(
 def detect_identical_duplicate_sequences(path: Path) -> list[DuplicateSequenceGroup]:
     """Group sequences that are exactly identical over the full aligned string."""
     records = load_fasta_alignment(path)
+    return _detect_identical_duplicate_sequences_records(records)
+
+
+def _detect_identical_duplicate_sequences_records(
+    records: list[AlignmentRecord],
+) -> list[DuplicateSequenceGroup]:
     grouped: dict[str, list[str]] = {}
     for record in records:
         grouped.setdefault(record.sequence, []).append(record.identifier)
@@ -941,6 +966,17 @@ def detect_near_duplicate_sequences(
     """Return sequence pairs above the given identity threshold."""
     _validate_fraction_threshold(identity_threshold)
     records = load_fasta_alignment(path)
+    return _detect_near_duplicate_sequences_records(
+        records,
+        identity_threshold=identity_threshold,
+    )
+
+
+def _detect_near_duplicate_sequences_records(
+    records: list[AlignmentRecord],
+    *,
+    identity_threshold: float,
+) -> list[NearDuplicateSequencePair]:
     near_duplicates: list[NearDuplicateSequencePair] = []
     for index, left in enumerate(records):
         for right in records[index + 1 :]:
@@ -2063,6 +2099,21 @@ def summarize_alignment_windows(
 
     summary = summarise_fasta(path)
     records = load_fasta_alignment(path)
+    return _summarize_alignment_windows_from_records(
+        summary,
+        records,
+        window_size=window_size,
+        step_size=step_size,
+    )
+
+
+def _summarize_alignment_windows_from_records(
+    summary: AlignmentSummary,
+    records: list[AlignmentRecord],
+    *,
+    window_size: int,
+    step_size: int,
+) -> list[AlignmentWindowSummary]:
     windows: list[AlignmentWindowSummary] = []
     for start_index in range(0, summary.alignment_length, step_size):
         end_index = min(start_index + window_size, summary.alignment_length)
@@ -2143,10 +2194,16 @@ def detect_over_aligned_regions(
     step_size: int = 10,
 ) -> list[AlignmentSuspiciousRegion]:
     """Flag suspicious windows that look excessively gap-heavy or over-regularized."""
+    return _detect_over_aligned_regions_from_windows(
+        summarize_alignment_windows(path, window_size=window_size, step_size=step_size)
+    )
+
+
+def _detect_over_aligned_regions_from_windows(
+    windows: list[AlignmentWindowSummary],
+) -> list[AlignmentSuspiciousRegion]:
     regions: list[AlignmentSuspiciousRegion] = []
-    for window in summarize_alignment_windows(
-        path, window_size=window_size, step_size=step_size
-    ):
+    for window in windows:
         uncertainty_fraction = (
             window.gap_fraction + window.missing_fraction + window.ambiguity_fraction
         )
@@ -2170,10 +2227,16 @@ def detect_under_aligned_regions(
     step_size: int = 10,
 ) -> list[AlignmentSuspiciousRegion]:
     """Flag suspicious windows with strong local mismatch or gap disorder."""
+    return _detect_under_aligned_regions_from_windows(
+        summarize_alignment_windows(path, window_size=window_size, step_size=step_size)
+    )
+
+
+def _detect_under_aligned_regions_from_windows(
+    windows: list[AlignmentWindowSummary],
+) -> list[AlignmentSuspiciousRegion]:
     regions: list[AlignmentSuspiciousRegion] = []
-    for window in summarize_alignment_windows(
-        path, window_size=window_size, step_size=step_size
-    ):
+    for window in windows:
         if window.variable_fraction >= 0.7 and window.disagreement_fraction >= 0.35:
             regions.append(
                 AlignmentSuspiciousRegion(
@@ -2202,6 +2265,19 @@ def assess_alignment_low_information(
             f"minimum_informative_sites must be non-negative, got {minimum_informative_sites}"
         )
     summary = summarise_fasta(path)
+    return _assess_alignment_low_information_from_summary(
+        summary,
+        minimum_informative_sites=minimum_informative_sites,
+        minimum_informative_fraction=minimum_informative_fraction,
+    )
+
+
+def _assess_alignment_low_information_from_summary(
+    summary: AlignmentSummary,
+    *,
+    minimum_informative_sites: int,
+    minimum_informative_fraction: float,
+) -> AlignmentLowInformationReport:
     informative_fraction = (
         0.0
         if summary.alignment_length == 0
@@ -2300,6 +2376,19 @@ def build_ambiguous_alignment_column_report(
     """Report columns dominated by ambiguity, explicit missingness, or gaps."""
     _validate_fraction_threshold(threshold)
     summary = summarise_fasta(path)
+    return _build_ambiguous_alignment_column_report_from_summary(
+        path,
+        summary,
+        threshold=threshold,
+    )
+
+
+def _build_ambiguous_alignment_column_report_from_summary(
+    path: Path,
+    summary: AlignmentSummary,
+    *,
+    threshold: float,
+) -> AlignmentAmbiguousColumnReport:
     uncertainty_by_position = {
         row.position: row for row in summary.per_site_uncertainty
     }
@@ -2759,23 +2848,34 @@ def _alignment_suspicion_reasons(
 
 def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
     """Generate a higher-level alignment quality report from composition and identity diagnostics."""
-    summary = summarise_fasta(path)
+    records = load_fasta_alignment(path)
+    summary = summarise_records_as_alignment_summary(path=path, records=records)
     inferred_alphabet = summary.inferred_alphabet
-    invalid_characters = (
-        []
-        if inferred_alphabet == "unknown"
-        else detect_invalid_alignment_characters(path, alphabet=inferred_alphabet)
+    invalid_characters = summary.invalid_characters
+    composition_outliers = summary.composition_outliers
+    sequence_length_outliers = _detect_sequence_length_outlier_rows(
+        [(record.identifier, len(record.sequence)) for record in records]
     )
-    composition_outliers = detect_composition_outlier_sequences(path)
-    sequence_length_outliers = detect_sequence_length_outliers(path)
-    duplicate_sequence_groups = detect_identical_duplicate_sequences(path)
-    near_duplicate_pairs = detect_near_duplicate_sequences(
-        path, identity_threshold=0.95
+    duplicate_sequence_groups = summary.duplicate_sequence_groups
+    near_duplicate_pairs = summary.near_duplicate_pairs
+    low_information = _assess_alignment_low_information_from_summary(
+        summary,
+        minimum_informative_sites=_LOW_INFORMATION_SITE_THRESHOLD,
+        minimum_informative_fraction=_LOW_INFORMATION_FRACTION_THRESHOLD,
     )
-    low_information = assess_alignment_low_information(path)
-    ambiguous_columns = build_ambiguous_alignment_column_report(path)
-    over_aligned = detect_over_aligned_regions(path)
-    under_aligned = detect_under_aligned_regions(path)
+    ambiguous_columns = _build_ambiguous_alignment_column_report_from_summary(
+        path,
+        summary,
+        threshold=0.5,
+    )
+    windows = _summarize_alignment_windows_from_records(
+        summary,
+        records,
+        window_size=30,
+        step_size=10,
+    )
+    over_aligned = _detect_over_aligned_regions_from_windows(windows)
+    under_aligned = _detect_under_aligned_regions_from_windows(windows)
     missing_data_concentration = _summarize_missing_data_concentration(summary)
     suspicious_reasons = _alignment_suspicion_reasons(
         low_information=low_information,
@@ -3472,10 +3572,11 @@ def summarise_records_as_alignment_summary(
     whole_alignment_gc_content = compute_whole_alignment_gc_content(
         records, alphabet=inferred_alphabet
     )
-    composition_outliers = detect_composition_outlier_sequences(path)
-    duplicate_sequence_groups = detect_identical_duplicate_sequences(path)
-    near_duplicate_pairs = detect_near_duplicate_sequences(
-        path, identity_threshold=0.95
+    composition_outliers = _detect_composition_outlier_sequences_records(records)
+    duplicate_sequence_groups = _detect_identical_duplicate_sequences_records(records)
+    near_duplicate_pairs = _detect_near_duplicate_sequences_records(
+        records,
+        identity_threshold=0.95,
     )
 
     return AlignmentSummary(
