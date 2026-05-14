@@ -204,6 +204,20 @@ bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB -
 bijux-phylogenetics phylo preflight --workflow fasta-to-tree --json
 ```
 
+`demo rabies-cross-host-geography-panel` is the repository's flagship public
+biological workflow surface. In addition to the dataset and workflow
+subdirectories, the demo now writes one reviewer-facing package layer at the
+output root:
+
+- `dataset/source-accessions.tsv` for machine-readable accession provenance
+- `rabies-cross-host-geography-overview.html` for one direct public handoff
+- `rabies-cross-host-geography-package.manifest.json` for the biological
+  question, short answer, config provenance, output checksums, and key metrics
+
+Its JSON metrics also surface the same `biological_question` and
+`short_answer` directly so reviewers do not need to open the nested HTML report
+to understand the intended scientific claim.
+
 `comparative signal` keeps its input policy explicit in JSON output: rooted
 trees are accepted whether or not they are ultrametric, overlapping missing
 trait values are pruned and reported, permutation rows are reproducible from
