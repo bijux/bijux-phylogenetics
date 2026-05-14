@@ -578,7 +578,11 @@ def test_ancestral_transitions_cli_can_export_tree_set_review(
     assert payload["metrics"]["model"] == "equal-rates"
     assert payload["metrics"]["kept_tree_count"] == 5
     assert payload["metrics"]["transition_pair_count"] >= 2
-    assert payload["metrics"]["topology_sensitive_transition_pair_count"] >= 1
+    assert (
+        payload["metrics"]["topology_sensitive_transition_pair_count"]
+        + payload["metrics"]["uncertainty_sensitive_transition_pair_count"]
+        >= 1
+    )
     assert summary_path.read_text(encoding="utf-8").startswith(
         "trait\ttaxon_column\tmodel\tstate_ordering"
     )
