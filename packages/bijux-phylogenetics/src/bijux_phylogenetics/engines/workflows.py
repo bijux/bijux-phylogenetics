@@ -1309,12 +1309,15 @@ def _resume_existing_workflow(
     manifest_path: Path,
     input_paths: list[Path],
     expected_command: list[str],
+    expected_version: EngineVersionInfo,
 ) -> EngineWorkflowReport | None:
     if not manifest_path.exists():
         return None
     payload = load_engine_manifest(manifest_path)
     report = _restore_workflow_report(payload)
     if report.run.command != expected_command:
+        return None
+    if report.run.version.text != expected_version.text:
         return None
     current_input_checksums = build_file_checksums(input_paths)
     if report.input_checksums != current_input_checksums:
@@ -1431,6 +1434,7 @@ def _resume_existing_codon_aware_alignment(
     manifest_path: Path,
     input_path: Path,
     expected_command: list[str],
+    expected_version: EngineVersionInfo,
     expected_sequence_type: AlignmentAlphabet,
     expected_genetic_code_id: int,
 ) -> CodonAwareAlignmentWorkflowReport | None:
@@ -1439,6 +1443,8 @@ def _resume_existing_codon_aware_alignment(
     payload = load_engine_manifest(manifest_path)
     report = _restore_codon_aware_alignment_report(payload)
     if report.run.command != expected_command:
+        return None
+    if report.run.version.text != expected_version.text:
         return None
     if report.sequence_type != expected_sequence_type:
         return None
@@ -1658,6 +1664,7 @@ def run_multiple_sequence_alignment(
             manifest_path=manifest_path,
             input_paths=[input_path],
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None:
             return resumed
@@ -1756,6 +1763,7 @@ def run_codon_aware_multiple_sequence_alignment(
             manifest_path=manifest_path,
             input_path=input_path,
             expected_command=command,
+            expected_version=version,
             expected_sequence_type=preparation.sequence_type,
             expected_genetic_code_id=preparation.genetic_code_id,
         )
@@ -1901,6 +1909,7 @@ def run_alignment_trimming(
             manifest_path=manifest_path,
             input_paths=[input_path],
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None:
             return resumed
@@ -2026,6 +2035,7 @@ def run_model_selection(
                 [input_path] if partition_path is None else [input_path, partition_path]
             ),
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None:
             return resumed
@@ -2206,6 +2216,7 @@ def run_maximum_likelihood_tree_inference(
                 [input_path] if partition_path is None else [input_path, partition_path]
             ),
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None:
             return resumed
@@ -2387,6 +2398,7 @@ def run_bootstrap_support_estimation(
                 [input_path] if partition_path is None else [input_path, partition_path]
             ),
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None and _resume_has_bootstrap_review_outputs(resumed):
             return resumed
@@ -2618,6 +2630,7 @@ def run_sh_alrt_support_estimation(
                 [input_path] if partition_path is None else [input_path, partition_path]
             ),
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None and _resume_has_sh_alrt_review_outputs(resumed):
             return resumed
@@ -2825,6 +2838,7 @@ def run_bootstrap_consensus_tree(
             manifest_path=manifest_path,
             input_paths=[bootstrap_trees_path],
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None:
             return resumed
@@ -2941,6 +2955,7 @@ def run_fast_tree_inference(
             manifest_path=manifest_path,
             input_paths=[input_path],
             expected_command=command,
+            expected_version=version,
         )
         if resumed is not None and _resume_has_fasttree_review_outputs(resumed):
             return resumed
