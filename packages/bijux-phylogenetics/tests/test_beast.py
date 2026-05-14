@@ -38,7 +38,7 @@ from bijux_phylogenetics.bayesian.reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.errors import EngineUnavailableError, EngineWorkflowError
 from bijux_phylogenetics.tree_set import compute_consensus_tree
 
 pytestmark = pytest.mark.engine_contract
@@ -438,6 +438,29 @@ def test_run_beast_posterior_inference_writes_outputs_and_resumes(
         ).kept_tree_count
         == 2
     )
+
+
+def test_run_beast_posterior_inference_reports_missing_executable_without_marker(
+    tmp_path: Path,
+) -> None:
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineUnavailableError, match="was not found"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=tmp_path / "missing-beast",
+            seed=1,
+        )
+
+    assert list(tmp_path.glob("*.incomplete.json")) == []
 
 
 def test_run_beast_posterior_inference_times_out_and_marks_incomplete_run(

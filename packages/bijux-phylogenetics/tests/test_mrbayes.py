@@ -25,7 +25,7 @@ from bijux_phylogenetics.bayesian.posterior import (
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.errors import EngineUnavailableError, EngineWorkflowError
 
 pytestmark = pytest.mark.engine_contract
 
@@ -281,6 +281,21 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     assert summary.rooted_topology_count == 2
     assert summary.filtered_tree_set_path.exists()
     assert consensus_tree.tip_count == 4
+
+
+def test_run_mrbayes_posterior_inference_reports_missing_executable_without_marker(
+    tmp_path: Path,
+) -> None:
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+
+    with pytest.raises(EngineUnavailableError, match="was not found"):
+        run_mrbayes_posterior_inference(
+            nexus_path,
+            executable=tmp_path / "missing-mrbayes",
+        )
+
+    assert list(tmp_path.glob("*.incomplete.json")) == []
 
 
 def test_run_mrbayes_posterior_inference_times_out_and_marks_incomplete_run(
