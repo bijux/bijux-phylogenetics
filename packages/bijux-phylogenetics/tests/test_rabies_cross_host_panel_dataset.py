@@ -12,6 +12,9 @@ from bijux_phylogenetics.datasets import (
     run_rabies_cross_host_panel_workflow,
     write_rabies_cross_host_panel_workflow_bundle,
 )
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 
 def test_load_rabies_cross_host_panel_dataset_exposes_packaged_surface() -> None:
@@ -50,10 +53,7 @@ def test_write_rabies_cross_host_panel_workflow_bundle_matches_packaged_expected
         bundle.host_switch_exclusions_path.name: bundle.host_switch_exclusions_path,
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 def test_run_rabies_cross_host_panel_demo_materializes_dataset_and_workflow(

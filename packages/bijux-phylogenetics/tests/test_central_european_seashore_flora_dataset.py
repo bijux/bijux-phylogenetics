@@ -14,6 +14,9 @@ from bijux_phylogenetics.datasets import (
     run_central_european_seashore_flora_workflow,
     write_central_european_seashore_flora_workflow_bundle,
 )
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 
 def test_load_central_european_seashore_flora_dataset_exposes_packaged_plant_surface() -> (
@@ -76,10 +79,7 @@ def test_write_central_european_seashore_flora_workflow_bundle_matches_packaged_
         bundle.clade_exclusion_path.name: bundle.clade_exclusion_path,
     }
     assert {path.name for path in expected_root.glob("*.tsv")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow

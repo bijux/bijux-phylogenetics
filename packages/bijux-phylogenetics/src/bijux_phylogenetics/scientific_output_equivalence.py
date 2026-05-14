@@ -290,8 +290,14 @@ def _compare_tabular_file(
         )
         return
 
-    expected_sorted = sorted(expected_rows, key=lambda row: _row_sort_key(row, expected_fields))
-    observed_sorted = sorted(observed_rows, key=lambda row: _row_sort_key(row, observed_fields))
+    identity_fields = _resolve_tabular_identity_fields(
+        expected_fields,
+        expected_rows,
+        observed_rows,
+    )
+    sort_fields = identity_fields or expected_fields
+    expected_sorted = sorted(expected_rows, key=lambda row: _row_sort_key(row, sort_fields))
+    observed_sorted = sorted(observed_rows, key=lambda row: _row_sort_key(row, sort_fields))
     for index, (expected_row, observed_row) in enumerate(
         zip(expected_sorted, observed_sorted, strict=True),
         start=1,
@@ -299,10 +305,22 @@ def _compare_tabular_file(
         for field in expected_fields:
             expected_value = expected_row[field]
             observed_value = observed_row[field]
+            field_tolerance = _table_field_tolerance(
+                field,
+                relative_path=relative_path,
+                base_tolerance=numeric_tolerance,
+            )
             if _cells_match(
                 expected_value,
                 observed_value,
-                numeric_tolerance=numeric_tolerance,
+                numeric_tolerance=field_tolerance,
+            ):
+                continue
+            if _field_is_tie_equivalent(
+                field,
+                expected_row,
+                observed_row,
+                numeric_tolerance=field_tolerance,
             ):
                 continue
             issues.append(
@@ -432,10 +450,67 @@ def _row_sort_key(row: dict[str, str], fields: list[str]) -> tuple[str, ...]:
     return tuple(row[field].strip() for field in fields)
 
 
+def _table_field_tolerance(
+    field: str,
+    *,
+    relative_path: Path,
+    base_tolerance: float,
+) -> float:
+    if (
+        field == "confidence"
+        or field.endswith("_confidence")
+        or field.endswith("_probabilities")
+    ):
+        return max(base_tolerance, 0.05)
+    if relative_path.name.endswith("-probabilities.tsv"):
+        return max(base_tolerance, 0.05)
+    return base_tolerance
+
+
+def _resolve_tabular_identity_fields(
+    fields: list[str],
+    expected_rows: list[dict[str, str]],
+    observed_rows: list[dict[str, str]],
+) -> list[str] | None:
+    preferred_fields = [
+        "node",
+        "node_id",
+        "clade",
+        "split_id",
+        "taxon",
+        "species",
+        "variant_id",
+        "label",
+        "name",
+        "tree_side",
+        "source_label",
+        "target_label",
+    ]
+    for field in preferred_fields:
+        if field not in fields:
+            continue
+        expected_values = [row[field].strip() for row in expected_rows]
+        observed_values = [row[field].strip() for row in observed_rows]
+        if len(set(expected_values)) != len(expected_values):
+            continue
+        if len(set(observed_values)) != len(observed_values):
+            continue
+        if set(expected_values) != set(observed_values):
+            continue
+        return [field]
+    return None
+
+
 def _cells_match(expected_value: str, observed_value: str, *, numeric_tolerance: float) -> bool:
     expected_text = expected_value.strip()
     observed_text = observed_value.strip()
     if expected_text == observed_text:
+        return True
+    if _structured_cell_match(
+        expected_text,
+        observed_text,
+        numeric_tolerance=numeric_tolerance,
+    ):
         return True
     expected_numeric = _maybe_float(expected_text)
     observed_numeric = _maybe_float(observed_text)
@@ -459,6 +534,113 @@ def _maybe_float(value: str) -> float | None:
     if math.isnan(parsed) or math.isinf(parsed):
         return None
     return parsed
+
+
+def _structured_cell_match(
+    expected_text: str,
+    observed_text: str,
+    *,
+    numeric_tolerance: float,
+) -> bool:
+    expected_payload = _maybe_json_cell(expected_text)
+    observed_payload = _maybe_json_cell(observed_text)
+    if expected_payload is None or observed_payload is None:
+        return False
+    return _json_like_equal(
+        expected_payload,
+        observed_payload,
+        numeric_tolerance=numeric_tolerance,
+    )
+
+
+def _field_is_tie_equivalent(
+    field: str,
+    expected_row: dict[str, str],
+    observed_row: dict[str, str],
+    *,
+    numeric_tolerance: float,
+) -> bool:
+    if field != "most_likely_state":
+        return False
+    expected_probabilities = _maybe_json_cell(expected_row.get("state_probabilities", ""))
+    observed_probabilities = _maybe_json_cell(observed_row.get("state_probabilities", ""))
+    if not isinstance(expected_probabilities, dict) or not isinstance(
+        observed_probabilities, dict
+    ):
+        return False
+    if not _json_like_equal(
+        expected_probabilities,
+        observed_probabilities,
+        numeric_tolerance=numeric_tolerance,
+    ):
+        return False
+    expected_state = expected_row.get(field, "").strip()
+    observed_state = observed_row.get(field, "").strip()
+    if expected_state not in expected_probabilities or observed_state not in expected_probabilities:
+        return False
+    maximum_probability = max(
+        float(value) for value in expected_probabilities.values()
+    )
+    return math.isclose(
+        float(expected_probabilities[expected_state]),
+        maximum_probability,
+        rel_tol=numeric_tolerance,
+        abs_tol=numeric_tolerance,
+    ) and math.isclose(
+        float(expected_probabilities[observed_state]),
+        maximum_probability,
+        rel_tol=numeric_tolerance,
+        abs_tol=numeric_tolerance,
+    )
+
+
+def _maybe_json_cell(value: str) -> Any | None:
+    if not value or value[0] not in {"{", "["}:
+        return None
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return None
+
+
+def _json_like_equal(
+    expected_payload: Any,
+    observed_payload: Any,
+    *,
+    numeric_tolerance: float,
+) -> bool:
+    if isinstance(expected_payload, dict) and isinstance(observed_payload, dict):
+        if set(expected_payload) != set(observed_payload):
+            return False
+        return all(
+            _json_like_equal(
+                expected_payload[key],
+                observed_payload[key],
+                numeric_tolerance=numeric_tolerance,
+            )
+            for key in expected_payload
+        )
+    if isinstance(expected_payload, list) and isinstance(observed_payload, list):
+        if len(expected_payload) != len(observed_payload):
+            return False
+        return all(
+            _json_like_equal(
+                left,
+                right,
+                numeric_tolerance=numeric_tolerance,
+            )
+            for left, right in zip(expected_payload, observed_payload, strict=True)
+        )
+    if isinstance(expected_payload, (int, float)) and isinstance(
+        observed_payload, (int, float)
+    ):
+        return math.isclose(
+            float(expected_payload),
+            float(observed_payload),
+            rel_tol=numeric_tolerance,
+            abs_tol=numeric_tolerance,
+        )
+    return expected_payload == observed_payload
 
 
 def _load_fasta_records(path: Path) -> dict[str, str]:

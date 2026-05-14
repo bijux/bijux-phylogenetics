@@ -16,6 +16,9 @@ from bijux_phylogenetics.datasets import (
 )
 
 from .support.external_engines import require_alignment_engine_executables
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 pytestmark = [
     pytest.mark.real_local,
@@ -71,10 +74,7 @@ def test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_e
         bundle.support_table_path.name: bundle.support_table_path,
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow

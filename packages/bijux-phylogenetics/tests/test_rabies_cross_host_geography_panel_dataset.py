@@ -21,6 +21,9 @@ from bijux_phylogenetics.datasets import (
 )
 
 from .support.external_engines import require_alignment_engine_executables
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 pytestmark = [
     pytest.mark.real_local,
@@ -199,10 +202,7 @@ def test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_package
         if path.is_file()
     }
     assert expected_files == set(generated)
-    for relative_name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / relative_name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow

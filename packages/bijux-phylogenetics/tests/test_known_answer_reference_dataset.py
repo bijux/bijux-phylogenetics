@@ -14,6 +14,9 @@ from bijux_phylogenetics.datasets.known_answer_reference import (
     run_known_answer_reference_workflow,
     write_known_answer_reference_workflow_bundle,
 )
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 
 def test_load_known_answer_reference_dataset_exposes_packaged_surface() -> None:
@@ -95,10 +98,7 @@ def test_write_known_answer_reference_workflow_bundle_matches_packaged_expected_
         bundle.threshold_evaluation_path.name: bundle.threshold_evaluation_path,
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow

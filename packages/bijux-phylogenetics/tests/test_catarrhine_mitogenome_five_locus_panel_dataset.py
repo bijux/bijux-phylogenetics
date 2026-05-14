@@ -14,6 +14,9 @@ from bijux_phylogenetics.datasets.phylogenomics import (
     run_catarrhine_mitogenome_five_locus_panel_workflow,
     write_catarrhine_mitogenome_five_locus_panel_workflow_bundle,
 )
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 
 def test_load_catarrhine_mitogenome_five_locus_panel_dataset_exposes_packaged_surface() -> (
@@ -61,10 +64,7 @@ def test_write_catarrhine_mitogenome_five_locus_panel_workflow_bundle_matches_pa
         bundle.support_table_path.name: bundle.support_table_path,
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow

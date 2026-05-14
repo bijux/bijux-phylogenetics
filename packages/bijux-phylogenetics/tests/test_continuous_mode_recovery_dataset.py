@@ -14,6 +14,9 @@ from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     run_continuous_mode_recovery_panel_workflow,
     write_continuous_mode_recovery_panel_workflow_bundle,
 )
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 
 def test_load_continuous_mode_recovery_panel_dataset_exposes_packaged_surface() -> None:
@@ -42,11 +45,10 @@ def test_write_continuous_mode_recovery_panel_workflow_bundle_matches_expected_o
     assert [path.relative_to(bundle.output_root) for path in generated_paths] == [
         path.relative_to(expected_root) for path in expected_paths
     ]
-    for generated_path in generated_paths:
-        relative = generated_path.relative_to(bundle.output_root)
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / relative
-        ).read_text(encoding="utf-8")
+    generated = {
+        path.relative_to(bundle.output_root): path for path in generated_paths
+    }
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow

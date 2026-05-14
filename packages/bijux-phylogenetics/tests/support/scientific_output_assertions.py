@@ -17,6 +17,19 @@ def assert_scientific_outputs_equivalent(
     return report
 
 
+def assert_selected_scientific_outputs_equivalent(
+    expected_root: Path,
+    observed_files: dict[str | Path, Path],
+) -> list[ScientificOutputEquivalenceReport]:
+    reports: list[ScientificOutputEquivalenceReport] = []
+    for relative_name, observed_path in observed_files.items():
+        relative_path = Path(relative_name)
+        report = compare_scientific_output(expected_root / relative_path, observed_path)
+        assert report.equivalent, _format_equivalence_report(report)
+        reports.append(report)
+    return reports
+
+
 def _format_equivalence_report(report: ScientificOutputEquivalenceReport) -> str:
     lines = [
         "scientific output equivalence failed:",

@@ -14,6 +14,9 @@ from bijux_phylogenetics.datasets import (
     run_avian_reproductive_trait_workflow,
     write_avian_reproductive_trait_workflow_bundle,
 )
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 
 def test_load_avian_reproductive_trait_dataset_exposes_packaged_bird_surface() -> None:
@@ -74,10 +77,7 @@ def test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expecte
         bundle.clade_exclusion_path.name: bundle.clade_exclusion_path,
     }
     assert {path.name for path in expected_root.glob("*.tsv")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow

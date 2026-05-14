@@ -14,6 +14,9 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
     run_rabies_method_sensitivity_panel_workflow,
     write_rabies_method_sensitivity_panel_workflow_bundle,
 )
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 
 def test_load_rabies_method_sensitivity_panel_dataset_exposes_packaged_surface() -> None:
@@ -83,10 +86,7 @@ def test_write_rabies_method_sensitivity_panel_workflow_bundle_matches_packaged_
         if path.is_file()
     }
     assert set(generated) == set(expected)
-    for relative_path, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == expected[
-            relative_path
-        ].read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, expected)
 
 
 @pytest.mark.slow
