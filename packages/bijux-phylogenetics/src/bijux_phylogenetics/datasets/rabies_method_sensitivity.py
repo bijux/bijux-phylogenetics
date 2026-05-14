@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 from dataclasses import dataclass
@@ -23,6 +24,7 @@ from bijux_phylogenetics.engines.workflows import (
     run_alignment_trimming,
     run_multiple_sequence_alignment,
 )
+from bijux_phylogenetics.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.render.html import write_html_report
@@ -74,6 +76,7 @@ class RabiesMethodSensitivityPanelDataset:
     iqtree_seed: int
     iqtree_threads: int
     bootstrap_replicates: int
+    parallel_workers: int
     source_accessions: tuple[str, ...]
     variants: tuple[RabiesMethodSensitivityVariant, ...]
     source_summary: str
@@ -107,6 +110,20 @@ class RabiesMethodSensitivityVariantRun:
     rooted_engine_comparison_table_path: Path
     alignment_length: int
     trimmed_alignment_length: int
+
+
+@dataclass(frozen=True, slots=True)
+class RabiesMethodSensitivityTaskRecord:
+    """One isolated variant execution record within the workflow batch."""
+
+    variant_id: str
+    label: str
+    execution_mode: str
+    status: str
+    log_path: Path
+    output_root: Path
+    error_code: str | None
+    error_message: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +167,9 @@ class RabiesMethodSensitivityPanelWorkflowReport:
     """One governed method-sensitivity workflow run over the packaged rabies panel."""
 
     dataset: RabiesMethodSensitivityPanelDataset
+    parallel_workers: int
+    execution_mode: str
+    task_records: tuple[RabiesMethodSensitivityTaskRecord, ...]
     variant_runs: tuple[RabiesMethodSensitivityVariantRun, ...]
     preprocessing_comparison_rows: tuple[
         RabiesMethodSensitivityPreprocessingComparisonRow, ...
@@ -170,14 +190,19 @@ class RabiesMethodSensitivityPanelWorkflowBundle:
     preprocessing_change_pair_count: int
     rooted_engine_change_variant_count: int
     serious_conflict_variant_count: int
+    parallel_workers: int
+    execution_mode: str
     workflow_summary_path: Path
     variant_summary_path: Path
+    parallel_summary_path: Path
     preprocessing_comparison_path: Path
     stable_clades_path: Path
     changed_clades_path: Path
     conclusion_summary_path: Path
     config_path: Path
+    manifest_path: Path
     report_path: Path
+    task_logs_root: Path
     variants_root: Path
 
 
@@ -227,6 +252,7 @@ def load_rabies_method_sensitivity_panel_dataset() -> (
         iqtree_seed=int(config["iqtree_seed"]),
         iqtree_threads=int(config["iqtree_threads"]),
         bootstrap_replicates=int(config["bootstrap_replicates"]),
+        parallel_workers=int(config.get("parallel_workers", 1)),
         source_accessions=_SOURCE_ACCESSIONS,
         variants=variants,
         source_summary=(
@@ -278,6 +304,7 @@ def run_rabies_method_sensitivity_panel_workflow(
     iqtree_seed: int | None = None,
     iqtree_threads: int | None = None,
     bootstrap_replicates: int | None = None,
+    parallel_workers: int | None = None,
 ) -> RabiesMethodSensitivityPanelWorkflowReport:
     """Run the owned method-sensitivity workflow over the packaged rabies panel."""
     dataset = load_rabies_method_sensitivity_panel_dataset()
@@ -291,76 +318,136 @@ def run_rabies_method_sensitivity_panel_workflow(
         if bootstrap_replicates is None
         else bootstrap_replicates
     )
+    resolved_parallel_workers = (
+        dataset.parallel_workers if parallel_workers is None else parallel_workers
+    )
+    if resolved_parallel_workers < 1:
+        raise ValueError(
+            f"parallel_workers must be at least 1, got {resolved_parallel_workers}"
+        )
+    execution_mode = (
+        "parallel"
+        if resolved_parallel_workers > 1 and len(dataset.variants) > 1
+        else "serial"
+    )
 
-    variant_runs: list[RabiesMethodSensitivityVariantRun] = []
-    for variant in dataset.variants:
+    task_log_root = out_dir / "parallel-logs"
+    task_log_root.mkdir(parents=True, exist_ok=True)
+    task_records_by_variant: dict[str, RabiesMethodSensitivityTaskRecord] = {}
+    variant_runs_by_variant: dict[str, RabiesMethodSensitivityVariantRun] = {}
+
+    def run_variant(
+        variant: RabiesMethodSensitivityVariant,
+    ) -> tuple[RabiesMethodSensitivityTaskRecord, RabiesMethodSensitivityVariantRun | None]:
         variant_root = out_dir / "variants" / variant.variant_id
-        alignment_path = variant_root / f"{variant.variant_id}.aln"
-        trimmed_alignment_path = variant_root / f"{variant.variant_id}.trimmed.aln"
-        alignment_workflow = run_multiple_sequence_alignment(
-            dataset.sequences_path,
-            alignment_path,
-            executable=mafft_executable,
-            mode=variant.alignment_mode,
-        )
-        trimming_workflow = run_alignment_trimming(
-            alignment_path,
-            trimmed_alignment_path,
-            executable=trimal_executable,
-            mode=variant.trimming_mode,
-            gap_threshold=variant.trim_gap_threshold,
-        )
-        inference_comparison = run_tree_inference_comparison(
-            trimmed_alignment_path,
-            out_dir=variant_root / "engine-comparison",
-            prefix=variant.variant_id,
-            sequence_type=dataset.sequence_type,
-            iqtree_executable=iqtree_executable,
-            fasttree_executable=fasttree_executable,
-            iqtree_seed=resolved_seed,
-            iqtree_threads=resolved_threads,
-            bootstrap_replicates=resolved_bootstrap_replicates,
-        )
-        fasttree_rooted, fasttree_rooting = root_tree_on_outgroup(
-            inference_comparison.output_paths["fasttree_tree"],
-            outgroup_taxa=list(dataset.outgroup_taxa),
-        )
-        iqtree_rooted, iqtree_rooting = root_tree_on_outgroup(
-            inference_comparison.output_paths["iqtree_support_tree"],
-            outgroup_taxa=list(dataset.outgroup_taxa),
-        )
-        rooted_fasttree_path = variant_root / "rooted-fasttree.nwk"
-        rooted_iqtree_path = variant_root / "rooted-iqtree-support.nwk"
-        write_newick(rooted_fasttree_path, fasttree_rooted)
-        write_newick(rooted_iqtree_path, iqtree_rooted)
-        rooted_engine_comparison = compare_tree_paths(
-            rooted_fasttree_path, rooted_iqtree_path
-        )
-        rooted_engine_comparison_table_path = write_tree_comparison_table(
-            variant_root / "rooted-engine-comparison.tsv",
-            rooted_fasttree_path,
-            rooted_iqtree_path,
-        )
-        aligned_records = load_fasta_alignment(alignment_workflow.output_paths["alignment"])
-        trimmed_records = load_fasta_alignment(
-            trimming_workflow.output_paths["trimmed_alignment"]
-        )
-        variant_runs.append(
-            RabiesMethodSensitivityVariantRun(
-                config=variant,
-                alignment_workflow=alignment_workflow,
-                trimming_workflow=trimming_workflow,
-                inference_comparison=inference_comparison,
-                rooted_fasttree_path=rooted_fasttree_path,
-                rooted_iqtree_path=rooted_iqtree_path,
-                fasttree_rooting=fasttree_rooting,
-                iqtree_rooting=iqtree_rooting,
-                rooted_engine_comparison=rooted_engine_comparison,
-                rooted_engine_comparison_table_path=rooted_engine_comparison_table_path,
-                alignment_length=len(aligned_records[0].sequence),
-                trimmed_alignment_length=len(trimmed_records[0].sequence),
+        variant_log_path = task_log_root / f"{variant.variant_id}.log"
+        try:
+            variant_run = _run_variant_workflow(
+                dataset=dataset,
+                variant=variant,
+                variant_root=variant_root,
+                mafft_executable=mafft_executable,
+                trimal_executable=trimal_executable,
+                iqtree_executable=iqtree_executable,
+                fasttree_executable=fasttree_executable,
+                iqtree_seed=resolved_seed,
+                iqtree_threads=resolved_threads,
+                bootstrap_replicates=resolved_bootstrap_replicates,
             )
+        except Exception as error:
+            error_code = (
+                error.code
+                if isinstance(error, PhylogeneticsError) and error.code is not None
+                else "parallel_variant_failed"
+            )
+            error_message = str(error)
+            _write_task_log(
+                variant_log_path,
+                variant=variant,
+                execution_mode=execution_mode,
+                status="failed",
+                output_root=Path("variants") / variant.variant_id,
+                error_code=error_code,
+                error_message=error_message,
+            )
+            return (
+                RabiesMethodSensitivityTaskRecord(
+                    variant_id=variant.variant_id,
+                    label=variant.label,
+                    execution_mode=execution_mode,
+                    status="failed",
+                    log_path=variant_log_path,
+                    output_root=variant_root,
+                    error_code=error_code,
+                    error_message=error_message,
+                ),
+                None,
+            )
+        _write_task_log(
+            variant_log_path,
+            variant=variant,
+            execution_mode=execution_mode,
+            status="succeeded",
+            output_root=Path("variants") / variant.variant_id,
+            error_code=None,
+            error_message=None,
         )
+        return (
+            RabiesMethodSensitivityTaskRecord(
+                variant_id=variant.variant_id,
+                label=variant.label,
+                execution_mode=execution_mode,
+                status="succeeded",
+                log_path=variant_log_path,
+                output_root=variant_root,
+                error_code=None,
+                error_message=None,
+            ),
+            variant_run,
+        )
+
+    if execution_mode == "serial":
+        for variant in dataset.variants:
+            task_record, variant_run = run_variant(variant)
+            task_records_by_variant[variant.variant_id] = task_record
+            if variant_run is not None:
+                variant_runs_by_variant[variant.variant_id] = variant_run
+    else:
+        with ThreadPoolExecutor(max_workers=resolved_parallel_workers) as executor:
+            futures = {
+                executor.submit(run_variant, variant): variant.variant_id
+                for variant in dataset.variants
+            }
+            for future in as_completed(futures):
+                task_record, variant_run = future.result()
+                task_records_by_variant[task_record.variant_id] = task_record
+                if variant_run is not None:
+                    variant_runs_by_variant[task_record.variant_id] = variant_run
+
+    task_records = tuple(
+        task_records_by_variant[variant.variant_id] for variant in dataset.variants
+    )
+    failed_task_records = [record for record in task_records if record.status != "succeeded"]
+    if failed_task_records:
+        raise EngineWorkflowError(
+            "rabies method-sensitivity workflow left one or more parallel tasks failed while preserving successful isolated outputs",
+            code="workflow_parallel_task_failed",
+            details={
+                "failed_variants": [record.variant_id for record in failed_task_records],
+                "successful_variants": [
+                    record.variant_id for record in task_records if record.status == "succeeded"
+                ],
+                "parallel_workers": resolved_parallel_workers,
+                "execution_mode": execution_mode,
+                "task_logs": {
+                    record.variant_id: str(record.log_path)
+                    for record in task_records
+                },
+            },
+        )
+    variant_runs = [
+        variant_runs_by_variant[variant.variant_id] for variant in dataset.variants
+    ]
 
     preprocessing_comparison_rows = tuple(
         _build_preprocessing_comparison_rows(variant_runs)
@@ -376,6 +463,9 @@ def run_rabies_method_sensitivity_panel_workflow(
     )
     return RabiesMethodSensitivityPanelWorkflowReport(
         dataset=dataset,
+        parallel_workers=resolved_parallel_workers,
+        execution_mode=execution_mode,
+        task_records=task_records,
         variant_runs=tuple(variant_runs),
         preprocessing_comparison_rows=preprocessing_comparison_rows,
         stable_clade_rows=stable_clade_rows,
@@ -401,6 +491,10 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         output_root / "variant-summary.tsv",
         report,
     )
+    parallel_summary_path = _write_parallel_execution_summary_table(
+        output_root / "parallel-execution-summary.tsv",
+        report,
+    )
     preprocessing_comparison_path = _write_preprocessing_comparison_table(
         output_root / "preprocessing-rooted-comparisons.tsv",
         report.preprocessing_comparison_rows,
@@ -421,18 +515,37 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         output_root / "workflow-config.resolved.json",
         report,
     )
+    task_logs_root = _copy_task_logs(output_root / "parallel-logs", report.task_records)
     variants_root = _write_variant_outputs(output_root / "variants", report.variant_runs)
+    manifest_path = _write_manifest(
+        output_root / "rabies-method-sensitivity.manifest.json",
+        report=report,
+        bundle_paths={
+            "workflow_summary": workflow_summary_path,
+            "variant_summary": variant_summary_path,
+            "parallel_summary": parallel_summary_path,
+            "preprocessing_comparison": preprocessing_comparison_path,
+            "stable_clades": stable_clades_path,
+            "changed_clades": changed_clades_path,
+            "conclusion_summary": conclusion_summary_path,
+            "config": config_path,
+            "task_logs_root": task_logs_root,
+            "variants_root": variants_root,
+        },
+    )
     report_path = _write_report(
         output_root / "rabies-method-sensitivity-report.html",
         report=report,
         bundle_paths={
             "workflow_summary": workflow_summary_path,
             "variant_summary": variant_summary_path,
+            "parallel_summary": parallel_summary_path,
             "preprocessing_comparison": preprocessing_comparison_path,
             "stable_clades": stable_clades_path,
             "changed_clades": changed_clades_path,
             "conclusion_summary": conclusion_summary_path,
             "config": config_path,
+            "manifest": manifest_path,
         },
     )
     preprocessing_change_pair_count = sum(
@@ -459,14 +572,19 @@ def write_rabies_method_sensitivity_panel_workflow_bundle(
         preprocessing_change_pair_count=preprocessing_change_pair_count,
         rooted_engine_change_variant_count=rooted_engine_change_variant_count,
         serious_conflict_variant_count=serious_conflict_variant_count,
+        parallel_workers=report.parallel_workers,
+        execution_mode=report.execution_mode,
         workflow_summary_path=workflow_summary_path,
         variant_summary_path=variant_summary_path,
+        parallel_summary_path=parallel_summary_path,
         preprocessing_comparison_path=preprocessing_comparison_path,
         stable_clades_path=stable_clades_path,
         changed_clades_path=changed_clades_path,
         conclusion_summary_path=conclusion_summary_path,
         config_path=config_path,
+        manifest_path=manifest_path,
         report_path=report_path,
+        task_logs_root=task_logs_root,
         variants_root=variants_root,
     )
 
@@ -481,6 +599,7 @@ def run_rabies_method_sensitivity_panel_demo(
     iqtree_seed: int | None = None,
     iqtree_threads: int | None = None,
     bootstrap_replicates: int | None = None,
+    parallel_workers: int | None = None,
 ) -> RabiesMethodSensitivityPanelDemoResult:
     """Materialize the packaged dataset and rerun the governed sensitivity workflow."""
     if output_root.exists():
@@ -498,6 +617,7 @@ def run_rabies_method_sensitivity_panel_demo(
             iqtree_seed=iqtree_seed,
             iqtree_threads=iqtree_threads,
             bootstrap_replicates=bootstrap_replicates,
+            parallel_workers=parallel_workers,
         )
         workflow_bundle = write_rabies_method_sensitivity_panel_workflow_bundle(
             output_root / "workflow",
@@ -531,6 +651,85 @@ def _build_preprocessing_comparison_rows(
                 )
             )
     return rows
+
+
+def _run_variant_workflow(
+    *,
+    dataset: RabiesMethodSensitivityPanelDataset,
+    variant: RabiesMethodSensitivityVariant,
+    variant_root: Path,
+    mafft_executable: str | Path,
+    trimal_executable: str | Path,
+    iqtree_executable: str | Path,
+    fasttree_executable: str | Path,
+    iqtree_seed: int,
+    iqtree_threads: int,
+    bootstrap_replicates: int,
+) -> RabiesMethodSensitivityVariantRun:
+    alignment_path = variant_root / f"{variant.variant_id}.aln"
+    trimmed_alignment_path = variant_root / f"{variant.variant_id}.trimmed.aln"
+    alignment_workflow = run_multiple_sequence_alignment(
+        dataset.sequences_path,
+        alignment_path,
+        executable=mafft_executable,
+        mode=variant.alignment_mode,
+    )
+    trimming_workflow = run_alignment_trimming(
+        alignment_path,
+        trimmed_alignment_path,
+        executable=trimal_executable,
+        mode=variant.trimming_mode,
+        gap_threshold=variant.trim_gap_threshold,
+    )
+    inference_comparison = run_tree_inference_comparison(
+        trimmed_alignment_path,
+        out_dir=variant_root / "engine-comparison",
+        prefix=variant.variant_id,
+        sequence_type=dataset.sequence_type,
+        iqtree_executable=iqtree_executable,
+        fasttree_executable=fasttree_executable,
+        iqtree_seed=iqtree_seed,
+        iqtree_threads=iqtree_threads,
+        bootstrap_replicates=bootstrap_replicates,
+    )
+    fasttree_rooted, fasttree_rooting = root_tree_on_outgroup(
+        inference_comparison.output_paths["fasttree_tree"],
+        outgroup_taxa=list(dataset.outgroup_taxa),
+    )
+    iqtree_rooted, iqtree_rooting = root_tree_on_outgroup(
+        inference_comparison.output_paths["iqtree_support_tree"],
+        outgroup_taxa=list(dataset.outgroup_taxa),
+    )
+    rooted_fasttree_path = variant_root / "rooted-fasttree.nwk"
+    rooted_iqtree_path = variant_root / "rooted-iqtree-support.nwk"
+    write_newick(rooted_fasttree_path, fasttree_rooted)
+    write_newick(rooted_iqtree_path, iqtree_rooted)
+    rooted_engine_comparison = compare_tree_paths(
+        rooted_fasttree_path, rooted_iqtree_path
+    )
+    rooted_engine_comparison_table_path = write_tree_comparison_table(
+        variant_root / "rooted-engine-comparison.tsv",
+        rooted_fasttree_path,
+        rooted_iqtree_path,
+    )
+    aligned_records = load_fasta_alignment(alignment_workflow.output_paths["alignment"])
+    trimmed_records = load_fasta_alignment(
+        trimming_workflow.output_paths["trimmed_alignment"]
+    )
+    return RabiesMethodSensitivityVariantRun(
+        config=variant,
+        alignment_workflow=alignment_workflow,
+        trimming_workflow=trimming_workflow,
+        inference_comparison=inference_comparison,
+        rooted_fasttree_path=rooted_fasttree_path,
+        rooted_iqtree_path=rooted_iqtree_path,
+        fasttree_rooting=fasttree_rooting,
+        iqtree_rooting=iqtree_rooting,
+        rooted_engine_comparison=rooted_engine_comparison,
+        rooted_engine_comparison_table_path=rooted_engine_comparison_table_path,
+        alignment_length=len(aligned_records[0].sequence),
+        trimmed_alignment_length=len(trimmed_records[0].sequence),
+    )
 
 
 def _comparison_axis(
@@ -876,6 +1075,33 @@ def _write_conclusion_summary_table(
     return _write_tsv(path, rendered)
 
 
+def _write_parallel_execution_summary_table(
+    path: Path, report: RabiesMethodSensitivityPanelWorkflowReport
+) -> Path:
+    rows = [
+        [
+            "variant_id",
+            "label",
+            "execution_mode",
+            "status",
+            "log_path",
+            "error_code",
+        ]
+    ]
+    for task in report.task_records:
+        rows.append(
+            [
+                task.variant_id,
+                task.label,
+                task.execution_mode,
+                task.status,
+                Path("parallel-logs", task.log_path.name).as_posix(),
+                "" if task.error_code is None else task.error_code,
+            ]
+        )
+    return _write_tsv(path, rows)
+
+
 def _write_resolved_config(
     path: Path, report: RabiesMethodSensitivityPanelWorkflowReport
 ) -> Path:
@@ -888,6 +1114,8 @@ def _write_resolved_config(
         "iqtree_seed": report.dataset.iqtree_seed,
         "iqtree_threads": report.dataset.iqtree_threads,
         "bootstrap_replicates": report.dataset.bootstrap_replicates,
+        "parallel_workers": report.parallel_workers,
+        "execution_mode": report.execution_mode,
         "input_checksums": {
             "sequences.fasta": _sha256(report.dataset.sequences_path),
             "metadata.csv": _sha256(report.dataset.metadata_path),
@@ -905,6 +1133,16 @@ def _write_resolved_config(
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _copy_task_logs(
+    output_root: Path,
+    task_records: tuple[RabiesMethodSensitivityTaskRecord, ...],
+) -> Path:
+    output_root.mkdir(parents=True, exist_ok=True)
+    for task in task_records:
+        _copy_output(task.log_path, output_root / task.log_path.name)
+    return output_root
 
 
 def _write_variant_outputs(
@@ -1005,6 +1243,57 @@ def _write_rooting_summary_table(
     return _write_tsv(path, rows)
 
 
+def _write_manifest(
+    path: Path,
+    *,
+    report: RabiesMethodSensitivityPanelWorkflowReport,
+    bundle_paths: dict[str, Path],
+) -> Path:
+    payload = {
+        "dataset_id": report.dataset.dataset_id,
+        "label": report.dataset.label,
+        "report_kind": "rabies_method_sensitivity_workflow_bundle",
+        "variant_count": len(report.variant_runs),
+        "parallel_execution": {
+            "execution_mode": report.execution_mode,
+            "parallel_workers": report.parallel_workers,
+            "requested_task_count": len(report.task_records),
+            "completed_task_count": len(
+                [task for task in report.task_records if task.status == "succeeded"]
+            ),
+            "failed_task_count": len(
+                [task for task in report.task_records if task.status != "succeeded"]
+            ),
+        },
+        "task_records": [
+            {
+                "variant_id": task.variant_id,
+                "label": task.label,
+                "status": task.status,
+                "execution_mode": task.execution_mode,
+                "log_path": Path("parallel-logs", task.log_path.name).as_posix(),
+                "output_root": Path("variants", task.variant_id).as_posix(),
+                "error_code": task.error_code,
+                "error_message": task.error_message,
+            }
+            for task in report.task_records
+        ],
+        "output_paths": {
+            key: value.name
+            if value.parent == path.parent
+            else value.relative_to(path.parent).as_posix()
+            for key, value in bundle_paths.items()
+        },
+        "output_checksums": {
+            key: _sha256(value)
+            for key, value in bundle_paths.items()
+            if value.is_file()
+        },
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
 def _write_report(
     path: Path,
     *,
@@ -1037,6 +1326,8 @@ def _write_report(
                 [
                     f"dataset: {report.dataset.label}",
                     f"variants: {len(report.variant_runs)}",
+                    f"execution mode: {report.execution_mode}",
+                    f"parallel workers: {report.parallel_workers}",
                     f"stable clades across variants: {len(report.stable_clade_rows)}",
                     f"changed clades across variants: {len(report.changed_clade_rows)}",
                     *variant_lines,
@@ -1053,11 +1344,13 @@ def _write_report(
                 [
                     f"workflow summary: {bundle_paths['workflow_summary'].name}",
                     f"variant summary: {bundle_paths['variant_summary'].name}",
+                    f"parallel execution summary: {bundle_paths['parallel_summary'].name}",
                     f"preprocessing rooted comparisons: {bundle_paths['preprocessing_comparison'].name}",
                     f"stable clades: {bundle_paths['stable_clades'].name}",
                     f"changed clades: {bundle_paths['changed_clades'].name}",
                     f"method conclusions: {bundle_paths['conclusion_summary'].name}",
                     f"resolved config: {bundle_paths['config'].name}",
+                    f"workflow manifest: {bundle_paths['manifest'].name}",
                 ]
             ),
         ),
@@ -1069,6 +1362,8 @@ def _write_report(
         embedded_json={
             "dataset_id": report.dataset.dataset_id,
             "variant_count": len(report.variant_runs),
+            "parallel_workers": report.parallel_workers,
+            "execution_mode": report.execution_mode,
             "stable_clade_count": len(report.stable_clade_rows),
             "changed_clade_count": len(report.changed_clade_rows),
         },
@@ -1088,13 +1383,45 @@ def _write_overview(
         "## Bundle",
         "",
         f"- variants: `{bundle.variant_count}`",
+        f"- execution mode: `{bundle.execution_mode}`",
+        f"- parallel workers: `{bundle.parallel_workers}`",
         f"- stable clades across variants: `{bundle.stable_clade_count}`",
         f"- changed clades across variants: `{bundle.changed_clade_count}`",
         f"- preprocessing-rooted changes: `{bundle.preprocessing_change_pair_count}`",
         f"- rooted engine changes: `{bundle.rooted_engine_change_variant_count}`",
         f"- variants with unrooted serious conflicts: `{bundle.serious_conflict_variant_count}`",
+        f"- workflow manifest: `{bundle.manifest_path.name}`",
         f"- report: `{bundle.report_path.name}`",
     ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_task_log(
+    path: Path,
+    *,
+    variant: RabiesMethodSensitivityVariant,
+    execution_mode: str,
+    status: str,
+    output_root: Path,
+    error_code: str | None,
+    error_message: str | None,
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        f"variant_id: {variant.variant_id}",
+        f"label: {variant.label}",
+        f"execution_mode: {execution_mode}",
+        f"alignment_mode: {variant.alignment_mode}",
+        f"trimming_mode: {variant.trimming_mode}",
+        f"trim_gap_threshold: {_format_float(variant.trim_gap_threshold)}",
+        f"status: {status}",
+        f"output_root: {output_root.as_posix()}",
+    ]
+    if error_code is not None:
+        lines.append(f"error_code: {error_code}")
+    if error_message is not None:
+        lines.append(f"error_message: {error_message}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
 

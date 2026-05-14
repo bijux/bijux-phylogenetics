@@ -11,6 +11,7 @@
   "iqtree_seed": 1,
   "iqtree_threads": 1,
   "bootstrap_replicates": 1000,
+  "parallel_workers": 2,
   "variants": [
     {
       "variant_id": "auto-gap-threshold",
