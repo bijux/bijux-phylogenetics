@@ -61,9 +61,43 @@ def test_render_tree_uncertainty_report_truncates_budgeted_sections(
 
     html = output_path.read_text(encoding="utf-8")
     assert report.processing.runtime_seconds >= 0.0
+    assert report.artifact_root.is_dir()
+    assert report.artifact_manifest_path.is_file()
     assert "clade-frequencies" in report.budget_report.truncated_section_names
-    assert "truncated_row_count" in html
+    assert 'href="tree-set-report.artifacts/clade-frequencies.tsv"' in html
+    assert "preview_rows" in html
+    assert "&quot;rows&quot;: [" not in html
     assert report.machine_manifest["budget"]["truncated_section_names"]
+    assert report.machine_manifest["linked_artifact_count"] == report.linked_artifact_count
+    assert report.total_output_bytes >= report.html_size_bytes
+
+
+def test_render_tree_uncertainty_report_scales_to_large_tree_sets(
+    tmp_path: Path,
+) -> None:
+    large_tree_set = tmp_path / "large-tree-set.nwk"
+    source_lines = fixture("example_tree_set_left.nwk").read_text(encoding="utf-8").splitlines()
+    large_tree_set.write_text("\n".join(source_lines * 400) + "\n", encoding="utf-8")
+    output_path = tmp_path / "large-tree-set-report.html"
+
+    report = render_tree_uncertainty_report(
+        tree_set_path=large_tree_set,
+        out_path=output_path,
+        max_report_table_rows=3,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.tree_count == 1200
+    assert report.linked_artifact_count >= 10
+    assert report.processing.peak_memory_bytes >= 0
+    assert report.html_size_bytes > 0
+    assert report.linked_artifact_bytes > 0
+    assert report.total_output_bytes >= report.html_size_bytes
+    assert (report.artifact_root / "clade-frequencies.tsv").is_file()
+    assert (report.artifact_root / "tree-uncertainty.manifest.json").is_file()
+    assert 'href="large-tree-set-report.artifacts/clade-frequencies.tsv"' in html
+    assert report.machine_manifest["html_size_bytes"] == report.html_size_bytes
+    assert report.machine_manifest["total_output_bytes"] == report.total_output_bytes
 
 
 def test_cli_tree_set_report_returns_structured_tree_budget_error(
@@ -109,3 +143,29 @@ def test_cli_tree_set_package_reports_budget_warning_metrics(
     assert exit_code == 0
     assert payload["metrics"]["budget_warning_count"] >= 1
     assert payload["metrics"]["runtime_seconds"] >= 0.0
+
+
+def test_cli_tree_set_report_reports_output_size_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "tree-set-report.html"
+    exit_code = main(
+        [
+            "tree-set",
+            "report",
+            str(fixture("example_tree_set_left.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["linked_artifact_count"] >= 10
+    assert payload["metrics"]["html_size_bytes"] > 0
+    assert payload["metrics"]["linked_artifact_bytes"] > 0
+    assert payload["metrics"]["total_output_bytes"] >= payload["metrics"]["html_size_bytes"]
+    assert payload["data"]["artifact_manifest_path"] == str(
+        output_path.parent / "tree-set-report.artifacts" / "tree-uncertainty.manifest.json"
+    )

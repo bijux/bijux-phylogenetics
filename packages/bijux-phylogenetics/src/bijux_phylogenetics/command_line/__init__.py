@@ -13686,7 +13686,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                 args,
                 command="tree-set",
                 inputs=[args.tree_set],
-                outputs=[args.out],
+                outputs=[args.out, report.artifact_manifest_path],
             )
             _print_result(
                 build_command_result(
@@ -13702,6 +13702,10 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             report.budget_report.warning_messages
                         ),
                         "section_count": len(report.machine_manifest["sections"]),
+                        "linked_artifact_count": report.linked_artifact_count,
+                        "html_size_bytes": report.html_size_bytes,
+                        "linked_artifact_bytes": report.linked_artifact_bytes,
+                        "total_output_bytes": report.total_output_bytes,
                     },
                     data=report,
                 ),
