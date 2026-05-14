@@ -4790,6 +4790,9 @@ def build_parser() -> argparse.ArgumentParser:
     tree_set_package.add_argument("tree_set", type=Path)
     tree_set_package.add_argument("--out-dir", required=True, type=Path)
     tree_set_package.add_argument("--layout", default="phylogram")
+    tree_set_package.add_argument("--max-tree-count", type=int)
+    tree_set_package.add_argument("--max-report-table-rows", type=int)
+    tree_set_package.add_argument("--memory-warning-threshold-bytes", type=int)
     tree_set_package.add_argument(
         "--json", action="store_true", help="Emit the package result as JSON."
     )
@@ -4800,6 +4803,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tree_set_report.add_argument("tree_set", type=Path)
     tree_set_report.add_argument("--out", required=True, type=Path)
+    tree_set_report.add_argument("--max-tree-count", type=int)
+    tree_set_report.add_argument("--max-report-table-rows", type=int)
+    tree_set_report.add_argument("--memory-warning-threshold-bytes", type=int)
     tree_set_report.add_argument(
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
@@ -13527,6 +13533,11 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     args.tree_set,
                     out_dir=args.out_dir,
                     layout=args.layout,
+                    max_tree_count=args.max_tree_count,
+                    max_report_table_rows=args.max_report_table_rows,
+                    memory_warning_threshold_bytes=(
+                        args.memory_warning_threshold_bytes
+                    ),
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -13547,14 +13558,27 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         command="tree-set",
                         inputs=[args.tree_set],
                         outputs=outputs,
-                        metrics={"artifact_count": 7},
+                        warnings=report.budget_report.warning_messages,
+                        metrics={
+                            "artifact_count": 7,
+                            "tree_count": report.tree_count,
+                            "runtime_seconds": report.processing.runtime_seconds,
+                            "peak_memory_bytes": report.processing.peak_memory_bytes,
+                            "budget_warning_count": len(
+                                report.budget_report.warning_messages
+                            ),
+                        },
                         data=report,
                     ),
                     json_output=args.json,
                 )
                 return 0
             report = render_tree_uncertainty_report(
-                tree_set_path=args.tree_set, out_path=args.out
+                tree_set_path=args.tree_set,
+                out_path=args.out,
+                max_tree_count=args.max_tree_count,
+                max_report_table_rows=args.max_report_table_rows,
+                memory_warning_threshold_bytes=args.memory_warning_threshold_bytes,
             )
             outputs = _finalize_outputs(
                 args,
@@ -13567,8 +13591,14 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     command="tree-set",
                     inputs=[args.tree_set],
                     outputs=outputs,
+                    warnings=report.budget_report.warning_messages,
                     metrics={
                         "tree_count": report.tree_count,
+                        "runtime_seconds": report.processing.runtime_seconds,
+                        "peak_memory_bytes": report.processing.peak_memory_bytes,
+                        "budget_warning_count": len(
+                            report.budget_report.warning_messages
+                        ),
                         "section_count": len(report.machine_manifest["sections"]),
                     },
                     data=report,
@@ -15716,6 +15746,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.dataset_export.centroids_path,
                         result.dataset_export.accession_table_path,
                         result.workflow_bundle.workflow_summary_path,
+                        result.workflow_bundle.resource_observations_path,
                         result.workflow_bundle.config_audit_path,
                         result.workflow_bundle.resolved_config_path,
                         result.workflow_bundle.input_validation_path,
@@ -15792,6 +15823,24 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 ),
                                 "bootstrap_tree_count": (
                                     result.workflow_bundle.bootstrap_tree_count
+                                ),
+                                "timeout_seconds": (
+                                    result.workflow_bundle.timeout_seconds
+                                ),
+                                "max_bootstrap_tree_count": (
+                                    result.workflow_bundle.max_bootstrap_tree_count
+                                ),
+                                "max_report_table_rows": (
+                                    result.workflow_bundle.max_report_table_rows
+                                ),
+                                "budget_warning_count": (
+                                    result.workflow_bundle.budget_warning_count
+                                ),
+                                "bootstrap_review_runtime_seconds": (
+                                    result.workflow_bundle.bootstrap_review_runtime_seconds
+                                ),
+                                "bootstrap_review_peak_memory_bytes": (
+                                    result.workflow_bundle.bootstrap_review_peak_memory_bytes
                                 ),
                                 "bootstrap_consensus_rooted_rf_distance": (
                                     result.workflow_bundle.bootstrap_consensus_rooted_rf_distance
