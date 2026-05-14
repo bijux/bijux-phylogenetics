@@ -456,8 +456,15 @@ metrics report:
 - `same_unrooted_topology`
 - `same_taxa_different_rooting`
 - `robinson_foulds_distance`
+- `parameter_row_count`
+- `threshold_pass_count`
+- `threshold_row_count`
 - `continuous_internal_node_mean_absolute_error`
 - `discrete_internal_node_accuracy`
+- `host_internal_node_accuracy`
+- `host_event_accuracy`
+- `geographic_internal_node_accuracy`
+- `geographic_event_accuracy`
 - `reference_output_count`
 
 The command writes:
@@ -466,18 +473,57 @@ The command writes:
 - `dataset/true-tree.nwk`
 - `dataset/simulated-alignment.fasta`
 - `dataset/continuous-traits.tsv`
+- `dataset/ou-traits.tsv`
 - `dataset/discrete-traits.tsv`
+- `dataset/host-traits.tsv`
+- `dataset/geographic-traits.tsv`
 - `dataset/true-parameters.tsv`
 - `dataset/true-continuous-nodes.tsv`
+- `dataset/true-ou-nodes.tsv`
 - `dataset/true-discrete-nodes.tsv`
+- `dataset/true-host-nodes.tsv`
+- `dataset/true-geographic-nodes.tsv`
+- `dataset/true-host-switch-events.tsv`
+- `dataset/true-geographic-transition-events.tsv`
+- `dataset/recovery-thresholds.tsv`
 - `dataset/expected/*`
 - `workflow/workflow-summary.tsv`
 - `workflow/recovered-distance-tree.nwk`
 - `workflow/tree-recovery.tsv`
 - `workflow/parameter-recovery.tsv`
 - `workflow/brownian-fit-summary.tsv`
+- `workflow/ou-fit-summary.tsv`
 - `workflow/continuous-ancestral-summary.tsv`
+- `workflow/continuous-ancestral-uncertainty.tsv`
 - `workflow/continuous-node-recovery.tsv`
+- `workflow/discrete-ancestral-summary.tsv`
+- `workflow/discrete-ancestral-probabilities.tsv`
+- `workflow/discrete-node-recovery.tsv`
+- `workflow/host-switch-summary.tsv`
+- `workflow/host-state-nodes.tsv`
+- `workflow/host-switch-branches.tsv`
+- `workflow/host-node-recovery.tsv`
+- `workflow/host-event-recovery.tsv`
+- `workflow/geographic-ancestral-summary.tsv`
+- `workflow/geographic-state-probabilities.tsv`
+- `workflow/geographic-transition-summary.tsv`
+- `workflow/geographic-node-recovery.tsv`
+- `workflow/geographic-event-recovery.tsv`
+- `workflow/recovery-threshold-evaluation.tsv`
+- `overview.md`
+
+The packaged truth contract is explicit rather than inferred from one recovery
+score:
+
+- Brownian and OU parameter recovery is measured against stored generating
+  values
+- discrete, host, and geographic internal-node recovery is measured against
+  stored node truths
+- host-switch and geographic-transition recovery is measured branch by branch
+  against stored simulated events
+- recovery pass and fail thresholds are declared in
+  `dataset/recovery-thresholds.tsv` and evaluated in
+  `workflow/recovery-threshold-evaluation.tsv`
 - `workflow/discrete-ancestral-summary.tsv`
 - `workflow/discrete-node-recovery.tsv`
 - `overview.md`

@@ -192,6 +192,7 @@ bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
 bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
+bijux-phylogenetics demo known-answer-reference-panel --out artifacts/known-answer-reference-panel --json
 bijux-phylogenetics simulate tree-birth-death --tree-count 5 --tip-count 16 --out simulated.trees
 bijux-phylogenetics simulate traits-early-burst tree.nwk --root-state 1.0 --sigma 0.5 --rate-change 4.0 --out simulated-early-burst.tsv --json
 bijux-phylogenetics demo continuous-mode-recovery-panel --out artifacts/continuous-mode-recovery-panel --json
@@ -217,6 +218,17 @@ output root:
 Its JSON metrics also surface the same `biological_question` and
 `short_answer` directly so reviewers do not need to open the nested HTML report
 to understand the intended scientific claim.
+
+`demo known-answer-reference-panel` is the repository's governed internal
+simulation truth suite. It exports one deterministic tree, alignment,
+Brownian-trait, OU-trait, discrete-trait, host-association, and geographic
+panel with stored node truths, branch-transition truths, and explicit recovery
+thresholds, then reruns the owned recovery workflow and writes parameter,
+internal-node, branch-event, and threshold-evaluation ledgers. Its JSON
+metrics now surface not only topology and ancestral recovery but also
+`parameter_row_count`, `threshold_pass_count`, `threshold_row_count`,
+`host_event_accuracy`, and `geographic_event_accuracy`, so the trust contract
+is grounded in known simulation answers instead of only one inferred summary.
 
 `comparative signal` keeps its input policy explicit in JSON output: rooted
 trees are accepted whether or not they are ultrametric, overlapping missing

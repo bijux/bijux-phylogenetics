@@ -345,18 +345,25 @@ The packaged known-answer workflow keeps the truth contract explicit:
 - one true birth-death tree
 - one simulated DNA alignment generated on that tree
 - one simulated Brownian continuous trait
+- one simulated OU continuous trait
 - one simulated three-state discrete trait
+- one simulated host-association trait with stored branch-change truth
+- one simulated geographic trait with stored branch-change truth
 - one true-parameter ledger with the exact simulation seeds and values
-- one true continuous-node ledger and one true discrete-node ledger
+- one true continuous-node ledger and one true OU-node ledger
+- one true discrete-node ledger, one true host-node ledger, and one true geographic-node ledger
+- one host-switch event ledger, one geographic transition-event ledger, and one declared recovery-threshold ledger
 
 The governed recovery bundle then exposes how well the owned runtime recovers
 those known answers:
 
 - neighbor-joining distance-tree recovery against the true tree
 - Brownian parameter recovery on the true tree
+- OU parameter recovery on the true tree
 - continuous ancestral reconstruction against stored node truth
 - discrete ancestral reconstruction against stored node truth
-- explicit parameter and node recovery ledgers instead of a narrative claim
+- host-switch and geographic-state recovery against stored node and branch-event truth
+- explicit pass or fail evaluation against declared thresholds instead of only a narrative claim
 
 This gives users one durable internal reference surface for checking that
 topology and ancestral-state recovery remain interpretable when the answers are
