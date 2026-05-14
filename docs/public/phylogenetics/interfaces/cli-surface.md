@@ -4633,12 +4633,21 @@ and writes a dedicated unstable-branch ledger for consensus branches that fall
 below the robust bootstrap threshold or conflict with alternative clades across
 the replicates.
 
+`tree-set diversity` is the compact topology-dispersion surface for one
+posterior or bootstrap tree set. It reads the tree set iteratively, buckets the
+pairwise rooted RF signal into one frequency ledger, and reports rooted
+topology count, pair count, runtime, peak memory, and skipped malformed-tree
+count without requiring the full pairwise matrix as the primary review surface.
+When `--out` is supplied, it writes one `.tsv` RF-distribution ledger with one
+row per distinct rooted RF bucket.
+
 The command writes a stable artifact bundle under `--out-dir`:
-- `.summary.tsv` with one row of tree-count, topology-diversity, threshold, and consensus summary fields
+- `.summary.tsv` with one row of tree-count, runtime, peak memory, skipped malformed-tree count, topology-diversity, threshold, and consensus summary fields
 - `.consensus.nwk` with the consensus topology labeled by bootstrap support percentages
 - `.clade-frequencies.tsv` with one row per informative clade frequency
 - `.unstable-branches.tsv` with one row per non-robust consensus branch
 - `.unstable-clades.tsv` with the broader conflicting-clade ledger across the full replicate set
+- `.rf-distribution.tsv` with one row per rooted RF bucket across distinct tree pairs
 - `.distance-matrix.tsv` and `.topology-clusters.tsv` for direct topology-variation review
 
 The unstable-branch contract is explicit. A consensus branch is omitted from the
@@ -4646,6 +4655,12 @@ unstable-branch ledger only when its replicate frequency reaches the robust
 threshold and no conflicting alternative clade is present. That keeps a
 bootstrap summary from overstating a majority-rule consensus as if every branch
 were equally stable.
+
+Both `tree-set diversity` and `tree-set bootstrap-summary` skip malformed
+line-oriented Newick tree records instead of aborting the full review surface.
+Their JSON payloads and summary ledgers record `runtime_seconds`,
+`peak_memory_bytes`, and `skipped_malformed_tree_count` so large-tree review is
+measurable instead of implicit.
 
 The topology family provides direct tree-transformation commands for already
 inferred trees. `topology root-outgroup` accepts one outgroup taxon or one

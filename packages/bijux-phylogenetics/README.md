@@ -189,6 +189,7 @@ bijux-phylogenetics adapter mrbayes-traces artifacts/mrbayes/analysis.run1.p --j
 bijux-phylogenetics adapter mrbayes-ess artifacts/mrbayes/analysis.run1.p --json
 bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --out artifacts/mrbayes/inference-report.html --json
 bijux-phylogenetics tree-set inspect posterior.trees --json
+bijux-phylogenetics tree-set diversity posterior.trees --out artifacts/posterior.rf-distribution.tsv --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
 bijux-phylogenetics demo gnathostome-ortholog-protein-benchmark --out artifacts/gnathostome-ortholog-protein-benchmark --json

@@ -2636,6 +2636,7 @@ The written artifact set includes:
 - `mammals-bootstrap.clade-frequencies.tsv`
 - `mammals-bootstrap.unstable-branches.tsv`
 - `mammals-bootstrap.unstable-clades.tsv`
+- `mammals-bootstrap.rf-distribution.tsv`
 - `mammals-bootstrap.distance-matrix.tsv`
 - `mammals-bootstrap.topology-clusters.tsv`
 
@@ -2643,6 +2644,21 @@ This bootstrap-specific bundle matters because majority-rule consensus alone can
 hide whether its retained branches are only weakly recovered or compete with
 clear alternative clades across the replicate set. The unstable-branch ledger
 keeps that distinction explicit.
+
+For large posterior or bootstrap tree sets where the full pairwise matrix is no
+longer the right first review surface, use `tree-set diversity` to emit the
+compact rooted RF distribution directly. The JSON payload and the written
+summary ledgers from both `tree-set diversity` and `tree-set bootstrap-summary`
+record `runtime_seconds`, `peak_memory_bytes`, and
+`skipped_malformed_tree_count`, so 1,000-tree review stays explicit about cost
+and malformed-record loss instead of hiding them behind a successful exit code.
+
+```bash
+bijux-phylogenetics tree-set diversity \
+  artifacts/mammals.bootstrap.ufboot \
+  --out artifacts/mammals-bootstrap.rf-distribution.tsv \
+  --json
+```
 
 When your starting point is one aligned FASTA per locus, run
 `alignment concatenate` first. That workflow writes the concatenated alignment,
