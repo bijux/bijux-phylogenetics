@@ -34,7 +34,11 @@ from .validation import (
     FastTreeSupportSummaryReport,
     summarize_fasttree_support_distribution,
 )
-from .workflows import _resolve_incomplete_workflow_state, _validate_tree_output
+from .workflows import (
+    _resolve_incomplete_workflow_state,
+    _validate_support_value_count,
+    _validate_tree_output,
+)
 
 __all__ = [
     "LargeAlignmentInputSummary",
@@ -639,7 +643,13 @@ def run_large_alignment_inference(
             stderr_path=stderr_log_path,
             timeout_seconds=timeout_seconds,
         )
-        _validate_tree_output(tree_path)
+        _validate_tree_output(
+            tree_path,
+            engine_name="FastTree",
+            workflow="large-alignment-inference",
+            output_name="tree",
+            artifact_kind="large-alignment-tree",
+        )
     except EngineWorkflowError as error:
         incomplete_record.ended_at_utc = utc_now_text()
         incomplete_record.timed_out = "timed out after" in str(error)
@@ -647,6 +657,15 @@ def run_large_alignment_inference(
         write_incomplete_engine_run(incomplete_record)
         raise
     support_summary = summarize_fasttree_support_distribution(tree_path)
+    _validate_support_value_count(
+        engine_name="FastTree",
+        workflow="large-alignment-inference",
+        path=tree_path,
+        output_name="tree",
+        artifact_kind="large-alignment-tree",
+        support_value_count=support_summary.annotated_node_count,
+        support_kind="FastTree local support",
+    )
     write_fasttree_support_table(
         support_table_path,
         build_fasttree_support_rows(support_summary),

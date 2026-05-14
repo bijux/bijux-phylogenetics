@@ -767,7 +767,7 @@ def test_run_fasta_to_tree_workflow_rejects_empty_trimmed_alignment(
     trimal = _fake_trimal_empty_output(tmp_path / "trimal-empty-fixture")
     iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
 
-    with pytest.raises(InvalidAlignmentError, match="contains no FASTA records"):
+    with pytest.raises(EngineWorkflowError) as error:
         run_fasta_to_tree_workflow(
             fixture("alignments/example_sequences_raw.fasta"),
             out_dir=tmp_path / "empty-trimmed-alignment",
@@ -777,6 +777,8 @@ def test_run_fasta_to_tree_workflow_rejects_empty_trimmed_alignment(
             iqtree_executable=iqtree,
             bootstrap_replicates=1000,
         )
+    assert error.value.code == "engine_output_empty"
+    assert error.value.details["output_name"] == "trimmed_alignment"
 
 
 def test_run_fasta_to_tree_workflow_surfaces_trimming_failure(
