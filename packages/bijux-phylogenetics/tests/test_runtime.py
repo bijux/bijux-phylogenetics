@@ -5782,7 +5782,7 @@ def test_render_tree_uncertainty_report_embeds_consensus_and_instability_section
     assert result.rooted_topology_count == 2
     assert result.machine_manifest["report_kind"] == "tree-uncertainty"
     assert "consensus-tree" in html
-    assert "pairwise-tree-distances" in html
+    assert "rf-distance-distribution" in html
     assert "topology-multimodality" in html
     assert "clade-credibility-conflicts" in html
     assert "unstable-clades" in html
