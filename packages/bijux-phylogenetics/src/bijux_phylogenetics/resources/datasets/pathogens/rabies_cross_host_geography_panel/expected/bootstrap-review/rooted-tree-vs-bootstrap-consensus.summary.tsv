@@ -1,0 +1,2 @@
+left_tree	right_tree	shared_taxon_count	rooted_rf_distance	rooted_normalized_rf	topology_equal	same_unrooted_topology	same_taxa_different_rooting	same_topology_different_branch_lengths	support_conflict_count	high_support_conflict_count	branch_score_distance
+rabies-cross-host-geography-panel.rooted.tree	bootstrap-review.consensus.nwk	9	1	0.0769230769231	false	true	true	false	1	0	

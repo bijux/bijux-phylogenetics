@@ -1,0 +1,9 @@
+check_id	status	observed_value	detail
+sequences_path	pass	sequences.fasta	input file is present
+metadata_path	pass	metadata.csv	input file is present
+centroids_path	pass	region-centroids.csv	input file is present
+metadata_required_columns	pass	7	metadata exposes the required workflow columns
+taxon_crosswalk	pass	9	metadata taxa match the FASTA identifiers
+outgroup_taxa	pass	bat_chile_rv108	all outgroup taxa are present in the FASTA panel
+centroid_region_coverage	pass	5	each grouped geography state has one centroid row
+comparative_response_column	pass	region_longitude	comparative response is present in the derived trait table
