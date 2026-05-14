@@ -48,8 +48,14 @@ def test_validate_reference_parity_examples_records_failure_modes_and_inputs() -
     assert pgls.input_fixtures[0].name == "example_tree.nwk"
     assert pgls.reference_tool == "ape+nlme"
     assert "floating-point linear algebra" in pgls.tolerance_reason
+    assert pgls.expected_failure_mode == "model_assumption"
+    assert pgls.taxon_overlap_policy is None
     assert rf.expected_output["robinson_foulds_distance"] == 2
     assert rf.expected_output["normalized_robinson_foulds"] == 1.0
+    assert rf.expected_failure_mode == "topology"
+    assert rf.shared_taxa == ["A", "B", "C", "D"]
+    assert rf.left_only_taxa == []
+    assert rf.right_only_taxa == []
     assert consensus.observed_output["unrooted_robinson_foulds"] == 0
     assert consensus.observed_output["consensus_splits"] == [
         "C|D||A|B|E|F",
@@ -71,5 +77,11 @@ def test_write_reference_parity_tables_writes_summary_and_observations(
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
     assert rows
+    assert rows[0]["expected_failure_mode"] in {
+        "topology",
+        "branch_length",
+        "model_assumption",
+        "numerical_tolerance",
+    }
     parsed_payload = json.loads(rows[0]["observed_output"])
     assert isinstance(parsed_payload, dict)

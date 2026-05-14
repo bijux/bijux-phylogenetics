@@ -33,6 +33,11 @@ class ReferenceParityObservation:
     reference_source: str
     tolerance: float
     tolerance_reason: str
+    expected_failure_mode: str
+    taxon_overlap_policy: str | None
+    shared_taxa: list[str]
+    left_only_taxa: list[str]
+    right_only_taxa: list[str]
     expected_output: dict[str, object]
     observed_output: dict[str, object]
     mismatch_kind: str | None
@@ -68,7 +73,15 @@ class ReferenceParityReport:
 
 
 def _fixtures_root() -> Path:
-    return Path(__file__).resolve().parents[2] / "tests" / "fixtures"
+    return _package_root() / "tests" / "fixtures"
+
+
+def _package_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _repository_root() -> Path:
+    return Path(__file__).resolve().parents[4]
 
 
 def _expected_root() -> Path:
@@ -80,7 +93,11 @@ def _load_fixture_document(name: str) -> dict[str, object]:
 
 
 def _resolve_fixture_path(relative_path: str) -> Path:
-    return Path(__file__).resolve().parents[2] / relative_path
+    return _package_root() / relative_path
+
+
+def _resolve_repository_path(relative_path: str) -> Path:
+    return _repository_root() / relative_path
 
 
 def _numeric_outputs_match(
@@ -164,6 +181,11 @@ def _build_comparative_observations() -> tuple[
                 reference_source=str(entry["reference_source"]),
                 tolerance=float(entry["tolerance"]),
                 tolerance_reason=str(entry["tolerance_reason"]),
+                expected_failure_mode=str(entry["failure_mode"]),
+                taxon_overlap_policy=None,
+                shared_taxa=[],
+                left_only_taxa=[],
+                right_only_taxa=[],
                 expected_output=expected_output,
                 observed_output=observed_output,
                 mismatch_kind=None
@@ -199,14 +221,28 @@ def _build_tree_observation(
     method = str(entry["method"])
     expected_output: dict[str, object] = dict(entry["expected_output"])
     tolerance = float(entry["tolerance"])
+    expected_failure_mode = str(entry["failure_mode"])
+    taxon_overlap_policy = (
+        str(entry["taxon_overlap_policy"])
+        if entry.get("taxon_overlap_policy") is not None
+        else None
+    )
     mismatch_kind: str | None = None
+    shared_taxa: list[str] = []
+    left_only_taxa: list[str] = []
+    right_only_taxa: list[str] = []
 
     if method == "robinson-foulds-distance":
         report = compare_robinson_foulds(
             input_paths[0],
             input_paths[1],
             rf_mode=str(entry.get("rf_mode", "unrooted")),
+            taxon_overlap_policy=taxon_overlap_policy or "prune-to-shared",
         )
+        shared_taxa = report.shared_taxa
+        left_only_taxa = report.left_only_taxa
+        right_only_taxa = report.right_only_taxa
+        taxon_overlap_policy = report.taxon_overlap_policy
         observed_output: dict[str, object] = {
             "robinson_foulds_distance": report.robinson_foulds_distance,
             "normalized_robinson_foulds": report.normalized_robinson_foulds,
@@ -218,7 +254,15 @@ def _build_tree_observation(
         )
         mismatch_kind = None if passed else "topology"
     elif method == "branch-score-distance":
-        report = compare_branch_score_distance(input_paths[0], input_paths[1])
+        report = compare_branch_score_distance(
+            input_paths[0],
+            input_paths[1],
+            taxon_overlap_policy=taxon_overlap_policy or "prune-to-shared",
+        )
+        shared_taxa = report.shared_taxa
+        left_only_taxa = report.left_only_taxa
+        right_only_taxa = report.right_only_taxa
+        taxon_overlap_policy = report.taxon_overlap_policy
         observed_output = {
             "branch_score_distance": report.branch_score_distance,
         }
@@ -278,6 +322,11 @@ def _build_tree_observation(
         reference_source=str(entry["reference_source"]),
         tolerance=tolerance,
         tolerance_reason=str(entry["tolerance_reason"]),
+        expected_failure_mode=expected_failure_mode,
+        taxon_overlap_policy=taxon_overlap_policy,
+        shared_taxa=shared_taxa,
+        left_only_taxa=left_only_taxa,
+        right_only_taxa=right_only_taxa,
         expected_output=expected_output,
         observed_output=observed_output,
         mismatch_kind=mismatch_kind,
@@ -438,6 +487,11 @@ def write_reference_parity_observation_table(
                 "reference_source",
                 "tolerance",
                 "tolerance_reason",
+                "expected_failure_mode",
+                "taxon_overlap_policy",
+                "shared_taxa",
+                "left_only_taxa",
+                "right_only_taxa",
                 "passed",
                 "mismatch_kind",
                 "expected_output",
@@ -460,6 +514,11 @@ def write_reference_parity_observation_table(
                     "reference_source": observation.reference_source,
                     "tolerance": format(observation.tolerance, ".12g"),
                     "tolerance_reason": observation.tolerance_reason,
+                    "expected_failure_mode": observation.expected_failure_mode,
+                    "taxon_overlap_policy": observation.taxon_overlap_policy or "",
+                    "shared_taxa": "|".join(observation.shared_taxa),
+                    "left_only_taxa": "|".join(observation.left_only_taxa),
+                    "right_only_taxa": "|".join(observation.right_only_taxa),
                     "passed": str(observation.passed).lower(),
                     "mismatch_kind": observation.mismatch_kind or "",
                     "expected_output": json.dumps(
