@@ -145,7 +145,9 @@ def _validate_external_probability_cases(
                 observed_metrics={
                     "node_count": len(observed_rows),
                     "root_state": root_observed.most_likely_state,
-                    "root_ambiguous": root_observed.ambiguous,
+                    "root_ambiguous": _expected_ambiguous(
+                        root_observed.state_probabilities
+                    ),
                     "max_probability_delta": max_probability_delta,
                 },
                 probability_rows=probability_rows,

@@ -24,6 +24,7 @@ from bijux_phylogenetics.ancestral import (
     render_ancestral_state_report,
     render_ancestral_state_tree,
     render_ancestral_state_visualization,
+    validate_discrete_ancestral_reference_examples,
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
     summarize_ancestral_transition_report,
@@ -2564,6 +2565,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bijux_phylogenetics.render_ancestral_state_visualization
         is render_ancestral_state_visualization
+    )
+    assert (
+        bijux_phylogenetics.validate_discrete_ancestral_reference_examples
+        is validate_discrete_ancestral_reference_examples
     )
     assert (
         bijux_phylogenetics.summarize_continuous_ancestral_tree_set
