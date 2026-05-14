@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import csv
 from dataclasses import dataclass
+from io import StringIO
 import math
 from pathlib import Path
 import tempfile
 from time import perf_counter
+import tracemalloc
 
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Tree as BioTree
@@ -37,11 +39,19 @@ class TreeSetRecord:
     unrooted_topology_id: str
 
 
+@dataclass(frozen=True, slots=True)
+class TreeSetProcessingSummary:
+    runtime_seconds: float
+    peak_memory_bytes: int
+    skipped_malformed_tree_count: int
+
+
 @dataclass(slots=True)
 class TreeSetReport:
     path: Path
     source_format: str
     tree_count: int
+    processing: TreeSetProcessingSummary
     shared_taxa: list[str]
     taxa_union: list[str]
     rooted_topology_count: int
@@ -60,6 +70,7 @@ class CladeFrequency:
 class CladeFrequencyReport:
     path: Path
     tree_count: int
+    processing: TreeSetProcessingSummary
     shared_taxa: list[str]
     clade_frequencies: list[CladeFrequency]
 
@@ -68,6 +79,7 @@ class CladeFrequencyReport:
 class ConsensusTreeReport:
     path: Path
     tree_count: int
+    processing: TreeSetProcessingSummary
     shared_taxa: list[str]
     consensus_newick: str
 
@@ -84,14 +96,24 @@ class TreeDistancePair:
 class TreeDistanceMatrixReport:
     path: Path
     tree_count: int
+    processing: TreeSetProcessingSummary
     shared_taxa: list[str]
     pairs: list[TreeDistancePair]
+
+
+@dataclass(frozen=True, slots=True)
+class TreeDistanceDistributionRow:
+    robinson_foulds_distance: int
+    normalized_robinson_foulds: float
+    pair_count: int
+    frequency: float
 
 
 @dataclass(slots=True)
 class PosteriorTopologyDiversityReport:
     path: Path
     tree_count: int
+    processing: TreeSetProcessingSummary
     rooted_topology_count: int
     dominant_topology_frequency: float
     effective_topology_count: float
@@ -101,6 +123,7 @@ class PosteriorTopologyDiversityReport:
     maximum_robinson_foulds_distance: int
     maximum_normalized_robinson_foulds_distance: float
     unstable_clade_count: int
+    rf_distribution: list[TreeDistanceDistributionRow]
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,6 +140,7 @@ class TreeTopologyCluster:
 class TreeTopologyClusterReport:
     path: Path
     tree_count: int
+    processing: TreeSetProcessingSummary
     rooted_topology_count: int
     clusters: list[TreeTopologyCluster]
 
@@ -141,6 +165,7 @@ class UnstableTaxon:
 class UnstableTaxaReport:
     path: Path
     tree_count: int
+    processing: TreeSetProcessingSummary
     taxa: list[UnstableTaxon]
 
 
@@ -159,6 +184,7 @@ class UnstableClade:
 class UnstableCladeReport:
     path: Path
     tree_count: int
+    processing: TreeSetProcessingSummary
     clades: list[UnstableClade]
 
 
@@ -180,6 +206,7 @@ class BootstrapTreeSetSummaryReport:
     consensus_threshold: float
     robust_support_threshold: float
     tree_count: int
+    processing: TreeSetProcessingSummary
     shared_taxa: list[str]
     summary: TreeSetReport
     clade_frequencies: CladeFrequencyReport
@@ -330,6 +357,7 @@ class TreeSetBenchmarkRow:
     taxon_count: int
     replicate: int
     elapsed_seconds: float
+    peak_memory_bytes: int
     rooted_topology_count: int
     unstable_taxon_count: int
     unstable_clade_count: int
@@ -413,6 +441,24 @@ class TreeSetMaturityGateReport:
     warnings: list[str]
 
 
+@dataclass(slots=True)
+class _TreeSetAnalysis:
+    path: Path
+    source_format: str
+    processing: TreeSetProcessingSummary
+    trees: list[PhyloTree]
+    shared_taxa: list[str]
+    taxa_union: list[str]
+    exact_taxa: list[str] | None
+    records: list[TreeSetRecord]
+    rooted_topology_counts: dict[str, int]
+    unrooted_topology_counts: dict[str, int]
+    rooted_representatives: dict[str, tuple[int, str, PhyloTree]]
+    clade_counts: dict[frozenset[str], int] | None
+    clade_branch_lengths: dict[frozenset[str], list[float]]
+    terminal_lengths: dict[str, list[float]]
+
+
 def _shared_taxa(trees: list[PhyloTree]) -> set[str]:
     shared = set(trees[0].tip_names)
     for tree in trees[1:]:
@@ -425,6 +471,165 @@ def _taxa_union(trees: list[PhyloTree]) -> set[str]:
     for tree in trees:
         taxa.update(tree.tip_names)
     return taxa
+
+
+def _iter_newick_tree_statements(path: Path):
+    source_index = 0
+    buffer = ""
+    with path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line:
+                continue
+            buffer = f"{buffer} {line}".strip() if buffer else line
+            while ";" in buffer:
+                statement, buffer = buffer.split(";", 1)
+                normalized = statement.strip()
+                if not normalized:
+                    continue
+                source_index += 1
+                yield source_index, f"{normalized};"
+        remainder = buffer.strip()
+        if remainder:
+            source_index += 1
+            yield source_index, remainder
+
+
+def _iter_tree_set(path: Path):
+    if not path.exists():
+        raise FileNotFoundError(f"tree-set file not found: {path}")
+    source_format = detect_tree_format(path)
+    if source_format == "newick":
+        for source_index, statement in _iter_newick_tree_statements(path):
+            try:
+                bio_tree = Phylo.read(StringIO(statement), "newick")
+            except Exception as error:  # pragma: no cover - parser exceptions vary
+                yield source_format, source_index, None, str(error)
+                continue
+            yield source_format, source_index, bio_tree, None
+        return
+
+    for source_index, bio_tree in enumerate(Phylo.parse(path, source_format), start=1):
+        yield source_format, source_index, bio_tree, None
+
+
+def _exact_taxa_or_none(trees: list[PhyloTree]) -> list[str] | None:
+    first = sorted(trees[0].tip_names)
+    for tree in trees[1:]:
+        if sorted(tree.tip_names) != first:
+            return None
+    return first
+
+
+def _processing_summary(
+    *, started: float, started_tracing: bool
+) -> TreeSetProcessingSummary:
+    _current, peak = tracemalloc.get_traced_memory()
+    if not started_tracing:
+        tracemalloc.stop()
+    return TreeSetProcessingSummary(
+        runtime_seconds=round(perf_counter() - started, 6),
+        peak_memory_bytes=peak,
+        skipped_malformed_tree_count=0,
+    )
+
+
+def _analyze_tree_set(path: Path) -> _TreeSetAnalysis:
+    started = perf_counter()
+    started_tracing = tracemalloc.is_tracing()
+    if not started_tracing:
+        tracemalloc.start()
+
+    source_format: str | None = None
+    skipped_malformed_tree_count = 0
+    trees: list[PhyloTree] = []
+    try:
+        for parsed_format, _source_index, bio_tree, error_message in _iter_tree_set(path):
+            source_format = parsed_format
+            if error_message is not None:
+                skipped_malformed_tree_count += 1
+                continue
+            if bio_tree is None:
+                continue
+            trees.append(tree_from_biophylo(bio_tree, source_format=parsed_format))
+        if not trees:
+            raise InvalidAlignmentError(f"tree set contains no trees: {path}")
+        shared_taxa = sorted(_shared_taxa(trees))
+        shared_taxa_set = set(shared_taxa)
+        taxa_union = sorted(_taxa_union(trees))
+        records: list[TreeSetRecord] = []
+        rooted_topology_counts: dict[str, int] = {}
+        unrooted_topology_counts: dict[str, int] = {}
+        rooted_representatives: dict[str, tuple[int, str, PhyloTree]] = {}
+        for index, tree in enumerate(trees, start=1):
+            rooted_topology_id = _rooted_topology_id(tree, shared_taxa_set)
+            unrooted_topology_id = _unrooted_topology_id(tree, shared_taxa_set)
+            records.append(
+                TreeSetRecord(
+                    index=index,
+                    tip_count=tree.tip_count,
+                    taxa=sorted(tree.tip_names),
+                    rooted_topology_id=rooted_topology_id,
+                    unrooted_topology_id=unrooted_topology_id,
+                )
+            )
+            rooted_topology_counts[rooted_topology_id] = (
+                rooted_topology_counts.get(rooted_topology_id, 0) + 1
+            )
+            unrooted_topology_counts[unrooted_topology_id] = (
+                unrooted_topology_counts.get(unrooted_topology_id, 0) + 1
+            )
+            rooted_representatives.setdefault(
+                rooted_topology_id, (index, dumps_newick(tree), tree)
+            )
+
+        exact_taxa = _exact_taxa_or_none(trees)
+        clade_counts: dict[frozenset[str], int] | None = None
+        clade_branch_lengths: dict[frozenset[str], list[float]] = {}
+        terminal_lengths: dict[str, list[float]] = {}
+        if exact_taxa is not None:
+            exact_taxa_set = set(exact_taxa)
+            clade_counts = {}
+            for tree in trees:
+                for clade in _informative_clades(tree, exact_taxa_set):
+                    clade_counts[clade] = clade_counts.get(clade, 0) + 1
+                for clade, length in _clade_branch_lengths(tree, exact_taxa_set).items():
+                    if length is not None:
+                        clade_branch_lengths.setdefault(clade, []).append(float(length))
+                for taxon, length in _terminal_branch_lengths(tree).items():
+                    if length is not None:
+                        terminal_lengths.setdefault(taxon, []).append(float(length))
+    finally:
+        processing = _processing_summary(started=started, started_tracing=started_tracing)
+    processing = TreeSetProcessingSummary(
+        runtime_seconds=processing.runtime_seconds,
+        peak_memory_bytes=processing.peak_memory_bytes,
+        skipped_malformed_tree_count=skipped_malformed_tree_count,
+    )
+    return _TreeSetAnalysis(
+        path=path,
+        source_format=source_format or detect_tree_format(path),
+        processing=processing,
+        trees=trees,
+        shared_taxa=shared_taxa,
+        taxa_union=taxa_union,
+        exact_taxa=exact_taxa,
+        records=records,
+        rooted_topology_counts=rooted_topology_counts,
+        unrooted_topology_counts=unrooted_topology_counts,
+        rooted_representatives=rooted_representatives,
+        clade_counts=clade_counts,
+        clade_branch_lengths=clade_branch_lengths,
+        terminal_lengths=terminal_lengths,
+    )
+
+
+def _require_exact_taxa(analysis: _TreeSetAnalysis) -> list[str]:
+    if analysis.exact_taxa is None:
+        raise InvalidAlignmentError(
+            "tree-set analysis requires all trees to share the exact same taxon set"
+        )
+    return analysis.exact_taxa
 
 
 def _require_tree_set(path: Path) -> tuple[str, list[BioTree], list[PhyloTree]]:
@@ -655,57 +860,302 @@ def _tree_distance(
     return distance, normalized
 
 
+def _build_clade_frequency_report(analysis: _TreeSetAnalysis) -> CladeFrequencyReport:
+    exact_taxa = _require_exact_taxa(analysis)
+    counts = analysis.clade_counts or {}
+    total = len(analysis.trees)
+    return CladeFrequencyReport(
+        path=analysis.path,
+        tree_count=total,
+        processing=analysis.processing,
+        shared_taxa=exact_taxa,
+        clade_frequencies=[
+            CladeFrequency(
+                clade=_format_clade(clade),
+                tree_count=count,
+                frequency=round(count / total, 15),
+            )
+            for clade, count in sorted(counts.items(), key=lambda item: _format_clade(item[0]))
+        ],
+    )
+
+
+def _build_topology_cluster_report(
+    analysis: _TreeSetAnalysis,
+) -> TreeTopologyClusterReport:
+    tree_count = len(analysis.trees)
+    clusters: list[TreeTopologyCluster] = []
+    indices_by_topology: dict[str, list[int]] = {}
+    for record in analysis.records:
+        indices_by_topology.setdefault(record.rooted_topology_id, []).append(record.index)
+    for topology_id, indices in sorted(
+        indices_by_topology.items(),
+        key=lambda item: (-len(item[1]), item[1][0]),
+    ):
+        representative_index, representative_newick, _tree = analysis.rooted_representatives[
+            topology_id
+        ]
+        clusters.append(
+            TreeTopologyCluster(
+                rooted_topology_id=topology_id,
+                tree_indices=indices,
+                tree_count=len(indices),
+                frequency=round(len(indices) / tree_count, 15),
+                representative_index=representative_index,
+                representative_newick=representative_newick,
+            )
+        )
+    return TreeTopologyClusterReport(
+        path=analysis.path,
+        tree_count=tree_count,
+        processing=analysis.processing,
+        rooted_topology_count=len(analysis.rooted_topology_counts),
+        clusters=clusters,
+    )
+
+
+def _build_unstable_clade_report(analysis: _TreeSetAnalysis) -> UnstableCladeReport:
+    _require_exact_taxa(analysis)
+    counts = analysis.clade_counts or {}
+    all_clades = set(counts)
+    tree_count = len(analysis.trees)
+    unstable_clades = [
+        UnstableClade(
+            clade=_format_clade(clade),
+            tree_count=count,
+            frequency=round(count / tree_count, 15),
+            conflict_count=len(
+                conflicts := sorted(
+                    _format_clade(other)
+                    for other in all_clades
+                    if _clades_conflict(clade, other)
+                )
+            ),
+            instability_score=round(min(count / tree_count, 1.0 - (count / tree_count)), 15),
+            support_classification=_support_classification(
+                round(count / tree_count, 15),
+                len(conflicts),
+            ),
+            conflicting_clades=conflicts,
+        )
+        for clade, count in sorted(counts.items(), key=lambda item: _format_clade(item[0]))
+        if count < tree_count
+    ]
+    unstable_clades.sort(
+        key=lambda row: (-row.instability_score, -row.conflict_count, row.clade)
+    )
+    return UnstableCladeReport(
+        path=analysis.path,
+        tree_count=tree_count,
+        processing=analysis.processing,
+        clades=unstable_clades,
+    )
+
+
+def _build_consensus_tree_with_threshold(
+    analysis: _TreeSetAnalysis,
+    *,
+    threshold: float,
+) -> tuple[PhyloTree, ConsensusTreeReport]:
+    shared_taxa = _require_exact_taxa(analysis)
+    universe = frozenset(shared_taxa)
+    counts = analysis.clade_counts or {}
+    majority_clades = {
+        clade
+        for clade, count in counts.items()
+        if count / len(analysis.trees) >= threshold
+    }
+    clade_support = {
+        clade: round((counts[clade] / len(analysis.trees)) * 100.0, 15)
+        for clade in majority_clades
+    }
+    clade_lengths = {
+        clade: _mean(lengths)
+        for clade, lengths in analysis.clade_branch_lengths.items()
+        if clade in majority_clades and lengths
+    }
+    terminal_length_means = {
+        taxon: _mean(lengths)
+        for taxon, lengths in analysis.terminal_lengths.items()
+        if lengths
+    }
+    tree = PhyloTree(
+        root=_build_consensus_node(
+            universe,
+            majority_clades=majority_clades,
+            clade_support=clade_support,
+            clade_lengths=clade_lengths,
+            terminal_lengths=terminal_length_means,
+            is_root=True,
+        ),
+        source_format=analysis.source_format,
+    )
+    return tree, ConsensusTreeReport(
+        path=analysis.path,
+        tree_count=len(analysis.trees),
+        processing=analysis.processing,
+        shared_taxa=shared_taxa,
+        consensus_newick=dumps_newick(tree),
+    )
+
+
+def _build_tree_distance_matrix_report(
+    analysis: _TreeSetAnalysis,
+) -> TreeDistanceMatrixReport:
+    shared_taxa = set(_require_exact_taxa(analysis))
+    pairs: list[TreeDistancePair] = []
+    for left_index, left in enumerate(analysis.trees, start=1):
+        for right_index, right in enumerate(
+            analysis.trees[left_index - 1 :], start=left_index
+        ):
+            distance, normalized = _tree_distance(left, right, shared_taxa)
+            pairs.append(
+                TreeDistancePair(
+                    left_index=left_index,
+                    right_index=right_index,
+                    robinson_foulds_distance=distance,
+                    normalized_robinson_foulds=normalized,
+                )
+            )
+    return TreeDistanceMatrixReport(
+        path=analysis.path,
+        tree_count=len(analysis.trees),
+        processing=analysis.processing,
+        shared_taxa=sorted(shared_taxa),
+        pairs=pairs,
+    )
+
+
+def _rf_distribution_from_analysis(
+    analysis: _TreeSetAnalysis,
+) -> tuple[list[TreeDistanceDistributionRow], int, float, float, int, float]:
+    exact_taxa_set = set(_require_exact_taxa(analysis))
+    representatives = [
+        (
+            topology_id,
+            analysis.rooted_topology_counts[topology_id],
+            analysis.rooted_representatives[topology_id][2],
+        )
+        for topology_id in sorted(
+            analysis.rooted_representatives,
+            key=lambda topology_id: analysis.rooted_representatives[topology_id][0],
+        )
+    ]
+    pair_counts: dict[tuple[int, float], int] = {}
+    total_pairs = 0
+    for index, (_left_id, left_count, left_tree) in enumerate(representatives):
+        for right_index, (_right_id, right_count, right_tree) in enumerate(
+            representatives[index:], start=index
+        ):
+            if right_index == index:
+                pair_count = (left_count * (left_count - 1)) // 2
+            else:
+                pair_count = left_count * right_count
+            if pair_count == 0:
+                continue
+            distance, normalized = _tree_distance(left_tree, right_tree, exact_taxa_set)
+            key = (distance, normalized)
+            pair_counts[key] = pair_counts.get(key, 0) + pair_count
+            total_pairs += pair_count
+    if total_pairs == 0:
+        return [], 0, 0.0, 0.0, 0, 0.0
+    rows = [
+        TreeDistanceDistributionRow(
+            robinson_foulds_distance=distance,
+            normalized_robinson_foulds=normalized,
+            pair_count=count,
+            frequency=round(count / total_pairs, 15),
+        )
+        for (distance, normalized), count in sorted(pair_counts.items())
+    ]
+    mean_rf = round(
+        sum(row.robinson_foulds_distance * row.pair_count for row in rows) / total_pairs,
+        15,
+    )
+    mean_normalized_rf = round(
+        sum(row.normalized_robinson_foulds * row.pair_count for row in rows) / total_pairs,
+        15,
+    )
+    maximum_rf = max(row.robinson_foulds_distance for row in rows)
+    maximum_normalized_rf = round(
+        max(row.normalized_robinson_foulds for row in rows),
+        15,
+    )
+    return (
+        rows,
+        total_pairs,
+        mean_rf,
+        mean_normalized_rf,
+        maximum_rf,
+        maximum_normalized_rf,
+    )
+
+
+def _build_posterior_topology_diversity_report(
+    analysis: _TreeSetAnalysis,
+) -> PosteriorTopologyDiversityReport:
+    summary = TreeSetReport(
+        path=analysis.path,
+        source_format=analysis.source_format,
+        tree_count=len(analysis.trees),
+        processing=analysis.processing,
+        shared_taxa=analysis.shared_taxa,
+        taxa_union=analysis.taxa_union,
+        rooted_topology_count=len(analysis.rooted_topology_counts),
+        unrooted_topology_count=len(analysis.unrooted_topology_counts),
+        records=analysis.records,
+    )
+    clusters = _build_topology_cluster_report(analysis)
+    unstable_clades = _build_unstable_clade_report(analysis)
+    (
+        distribution,
+        pair_count,
+        mean_rf,
+        mean_normalized_rf,
+        maximum_rf,
+        maximum_normalized_rf,
+    ) = _rf_distribution_from_analysis(analysis)
+    dominant_topology_frequency = (
+        0.0 if not clusters.clusters else clusters.clusters[0].frequency
+    )
+    return PosteriorTopologyDiversityReport(
+        path=analysis.path,
+        tree_count=summary.tree_count,
+        processing=analysis.processing,
+        rooted_topology_count=summary.rooted_topology_count,
+        dominant_topology_frequency=dominant_topology_frequency,
+        effective_topology_count=_shannon_effective_count(
+            [cluster.frequency for cluster in clusters.clusters]
+        ),
+        pair_count=pair_count,
+        mean_robinson_foulds_distance=mean_rf,
+        mean_normalized_robinson_foulds_distance=mean_normalized_rf,
+        maximum_robinson_foulds_distance=maximum_rf,
+        maximum_normalized_robinson_foulds_distance=maximum_normalized_rf,
+        unstable_clade_count=len(unstable_clades.clades),
+        rf_distribution=distribution,
+    )
+
+
 def load_tree_set(path: Path) -> TreeSetReport:
     """Read a set of trees and summarize their topology diversity over shared taxa."""
-    source_format, _, trees = _require_tree_set(path)
-    shared_taxa = sorted(_shared_taxa(trees))
-    taxa_union = sorted(_taxa_union(trees))
-    records = [
-        TreeSetRecord(
-            index=index,
-            tip_count=tree.tip_count,
-            taxa=sorted(tree.tip_names),
-            rooted_topology_id=_rooted_topology_id(tree, set(shared_taxa)),
-            unrooted_topology_id=_unrooted_topology_id(tree, set(shared_taxa)),
-        )
-        for index, tree in enumerate(trees, start=1)
-    ]
+    analysis = _analyze_tree_set(path)
     return TreeSetReport(
         path=path,
-        source_format=source_format,
-        tree_count=len(trees),
-        shared_taxa=shared_taxa,
-        taxa_union=taxa_union,
-        rooted_topology_count=len({record.rooted_topology_id for record in records}),
-        unrooted_topology_count=len(
-            {record.unrooted_topology_id for record in records}
-        ),
-        records=records,
+        source_format=analysis.source_format,
+        tree_count=len(analysis.trees),
+        processing=analysis.processing,
+        shared_taxa=analysis.shared_taxa,
+        taxa_union=analysis.taxa_union,
+        rooted_topology_count=len(analysis.rooted_topology_counts),
+        unrooted_topology_count=len(analysis.unrooted_topology_counts),
+        records=analysis.records,
     )
 
 
 def compute_clade_frequency_table(path: Path) -> CladeFrequencyReport:
     """Compute informative clade frequencies across a tree set with a shared taxon set."""
-    _, _, trees = _require_tree_set(path)
-    shared_taxa = set(_validate_same_taxa(trees))
-    counts: dict[str, int] = {}
-    for tree in trees:
-        for clade in _informative_clades(tree, shared_taxa):
-            counts[_format_clade(clade)] = counts.get(_format_clade(clade), 0) + 1
-    total = len(trees)
-    return CladeFrequencyReport(
-        path=path,
-        tree_count=total,
-        shared_taxa=sorted(shared_taxa),
-        clade_frequencies=[
-            CladeFrequency(
-                clade=clade,
-                tree_count=count,
-                frequency=round(count / total, 15),
-            )
-            for clade, count in sorted(counts.items())
-        ],
-    )
+    return _build_clade_frequency_report(_analyze_tree_set(path))
 
 
 def write_clade_frequency_table(path: Path, report: CladeFrequencyReport) -> Path:
@@ -742,52 +1192,7 @@ def compute_consensus_tree_with_threshold(
         raise ValueError(
             f"consensus threshold must be between 0 and 1, got {threshold}"
         )
-    source_format, _, trees = _require_tree_set(path)
-    shared_taxa = _validate_same_taxa(trees)
-    universe = frozenset(shared_taxa)
-    counts: dict[frozenset[str], int] = {}
-    branch_lengths_by_clade: dict[frozenset[str], list[float]] = {}
-    terminal_lengths: dict[str, list[float]] = {}
-    for tree in trees:
-        for clade, length in _clade_branch_lengths(tree, set(shared_taxa)).items():
-            counts[clade] = counts.get(clade, 0) + 1
-            if length is not None:
-                branch_lengths_by_clade.setdefault(clade, []).append(float(length))
-        for taxon, length in _terminal_branch_lengths(tree).items():
-            if length is not None:
-                terminal_lengths.setdefault(taxon, []).append(float(length))
-    majority_clades = {
-        clade for clade, count in counts.items() if count / len(trees) >= threshold
-    }
-    clade_support = {
-        clade: round((counts[clade] / len(trees)) * 100.0, 15)
-        for clade in majority_clades
-    }
-    clade_lengths = {
-        clade: _mean(lengths)
-        for clade, lengths in branch_lengths_by_clade.items()
-        if clade in majority_clades and lengths
-    }
-    terminal_length_means = {
-        taxon: _mean(lengths) for taxon, lengths in terminal_lengths.items() if lengths
-    }
-    tree = PhyloTree(
-        root=_build_consensus_node(
-            universe,
-            majority_clades=majority_clades,
-            clade_support=clade_support,
-            clade_lengths=clade_lengths,
-            terminal_lengths=terminal_length_means,
-            is_root=True,
-        ),
-        source_format=source_format,
-    )
-    return tree, ConsensusTreeReport(
-        path=path,
-        tree_count=len(trees),
-        shared_taxa=shared_taxa,
-        consensus_newick=dumps_newick(tree),
-    )
+    return _build_consensus_tree_with_threshold(_analyze_tree_set(path), threshold=threshold)
 
 
 def write_consensus_tree(path: Path, tree: PhyloTree) -> Path:
@@ -797,26 +1202,7 @@ def write_consensus_tree(path: Path, tree: PhyloTree) -> Path:
 
 def compute_tree_distance_matrix(path: Path) -> TreeDistanceMatrixReport:
     """Compute a pairwise RF-distance matrix across a tree set."""
-    _, _, trees = _require_tree_set(path)
-    shared_taxa = set(_validate_same_taxa(trees))
-    pairs: list[TreeDistancePair] = []
-    for left_index, left in enumerate(trees, start=1):
-        for right_index, right in enumerate(trees[left_index - 1 :], start=left_index):
-            distance, normalized = _tree_distance(left, right, shared_taxa)
-            pairs.append(
-                TreeDistancePair(
-                    left_index=left_index,
-                    right_index=right_index,
-                    robinson_foulds_distance=distance,
-                    normalized_robinson_foulds=normalized,
-                )
-            )
-    return TreeDistanceMatrixReport(
-        path=path,
-        tree_count=len(trees),
-        shared_taxa=sorted(shared_taxa),
-        pairs=pairs,
-    )
+    return _build_tree_distance_matrix_report(_analyze_tree_set(path))
 
 
 def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> Path:
@@ -848,54 +1234,44 @@ def write_tree_distance_matrix(path: Path, report: TreeDistanceMatrixReport) -> 
     return path
 
 
+def write_tree_distance_distribution_table(
+    path: Path,
+    report: PosteriorTopologyDiversityReport,
+) -> Path:
+    """Write the pairwise RF-distance distribution as a TSV table."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "robinson_foulds_distance",
+                "normalized_robinson_foulds",
+                "pair_count",
+                "frequency",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.rf_distribution:
+            writer.writerow(
+                {
+                    "robinson_foulds_distance": row.robinson_foulds_distance,
+                    "normalized_robinson_foulds": format(
+                        row.normalized_robinson_foulds,
+                        ".15g",
+                    ),
+                    "pair_count": row.pair_count,
+                    "frequency": format(row.frequency, ".15g"),
+                }
+            )
+    return path
+
+
 def summarize_posterior_topology_diversity(
     path: Path,
 ) -> PosteriorTopologyDiversityReport:
     """Summarize topology dispersion and instability across one posterior tree set."""
-    summary = load_tree_set(path)
-    clusters = cluster_trees_by_topology(path)
-    distances = compute_tree_distance_matrix(path)
-    unstable_clades = detect_unstable_clades(path)
-    informative_pairs = [
-        row for row in distances.pairs if row.left_index != row.right_index
-    ]
-    pair_count = len(informative_pairs)
-    mean_rf = 0.0
-    mean_normalized_rf = 0.0
-    maximum_rf = 0
-    maximum_normalized_rf = 0.0
-    if informative_pairs:
-        mean_rf = round(
-            sum(row.robinson_foulds_distance for row in informative_pairs) / pair_count,
-            15,
-        )
-        mean_normalized_rf = round(
-            sum(row.normalized_robinson_foulds for row in informative_pairs)
-            / pair_count,
-            15,
-        )
-        maximum_rf = max(row.robinson_foulds_distance for row in informative_pairs)
-        maximum_normalized_rf = round(
-            max(row.normalized_robinson_foulds for row in informative_pairs), 15
-        )
-    dominant_topology_frequency = (
-        0.0 if not clusters.clusters else clusters.clusters[0].frequency
-    )
-    return PosteriorTopologyDiversityReport(
-        path=path,
-        tree_count=summary.tree_count,
-        rooted_topology_count=summary.rooted_topology_count,
-        dominant_topology_frequency=dominant_topology_frequency,
-        effective_topology_count=_shannon_effective_count(
-            [cluster.frequency for cluster in clusters.clusters]
-        ),
-        pair_count=pair_count,
-        mean_robinson_foulds_distance=mean_rf,
-        mean_normalized_robinson_foulds_distance=mean_normalized_rf,
-        maximum_robinson_foulds_distance=maximum_rf,
-        maximum_normalized_robinson_foulds_distance=maximum_normalized_rf,
-        unstable_clade_count=len(unstable_clades.clades),
-    )
+    return _build_posterior_topology_diversity_report(_analyze_tree_set(path))
 
 
 def write_topology_cluster_table(path: Path, report: TreeTopologyClusterReport) -> Path:
@@ -931,41 +1307,14 @@ def write_topology_cluster_table(path: Path, report: TreeTopologyClusterReport) 
 
 def cluster_trees_by_topology(path: Path) -> TreeTopologyClusterReport:
     """Cluster trees by identical rooted topology signatures."""
-    report = load_tree_set(path)
-    clusters_by_id: dict[str, list[int]] = {}
-    for record in report.records:
-        clusters_by_id.setdefault(record.rooted_topology_id, []).append(record.index)
-    _, _, trees = _require_tree_set(path)
-    clusters: list[TreeTopologyCluster] = []
-    for topology_id, indices in sorted(
-        clusters_by_id.items(),
-        key=lambda item: (-len(item[1]), item[1][0]),
-    ):
-        representative_index, representative_newick = _representative_tree_by_indices(
-            trees, indices
-        )
-        clusters.append(
-            TreeTopologyCluster(
-                rooted_topology_id=topology_id,
-                tree_indices=indices,
-                tree_count=len(indices),
-                frequency=round(len(indices) / report.tree_count, 15),
-                representative_index=representative_index,
-                representative_newick=representative_newick,
-            )
-        )
-    return TreeTopologyClusterReport(
-        path=path,
-        tree_count=report.tree_count,
-        rooted_topology_count=report.rooted_topology_count,
-        clusters=clusters,
-    )
+    return _build_topology_cluster_report(_analyze_tree_set(path))
 
 
 def detect_unstable_taxa(path: Path) -> UnstableTaxaReport:
     """Report taxa whose placement signatures vary across trees in a set."""
-    _, _, trees = _require_tree_set(path)
-    shared_taxa = set(_validate_same_taxa(trees))
+    analysis = _analyze_tree_set(path)
+    trees = analysis.trees
+    shared_taxa = set(_require_exact_taxa(analysis))
     taxa: list[UnstableTaxon] = []
     for taxon in sorted(shared_taxa):
         signature_counts: dict[str, int] = {}
@@ -997,45 +1346,17 @@ def detect_unstable_taxa(path: Path) -> UnstableTaxaReport:
     taxa.sort(
         key=lambda row: (-row.instability_score, -row.unique_placements, row.taxon)
     )
-    return UnstableTaxaReport(path=path, tree_count=len(trees), taxa=taxa)
+    return UnstableTaxaReport(
+        path=path,
+        tree_count=len(trees),
+        processing=analysis.processing,
+        taxa=taxa,
+    )
 
 
 def detect_unstable_clades(path: Path) -> UnstableCladeReport:
     """Report non-unanimous clades and their conflicting alternatives."""
-    _, _, trees = _require_tree_set(path)
-    shared_taxa = set(_validate_same_taxa(trees))
-    counts = _clade_counts(trees, shared_taxa)
-    all_clades = set(counts)
-    unstable_clades = [
-        UnstableClade(
-            clade=_format_clade(clade),
-            tree_count=count,
-            frequency=round(count / len(trees), 15),
-            conflict_count=len(
-                conflicts := sorted(
-                    _format_clade(other)
-                    for other in all_clades
-                    if _clades_conflict(clade, other)
-                )
-            ),
-            instability_score=round(
-                min(count / len(trees), 1.0 - (count / len(trees))), 15
-            ),
-            support_classification=_support_classification(
-                round(count / len(trees), 15), len(conflicts)
-            ),
-            conflicting_clades=conflicts,
-        )
-        for clade, count in sorted(
-            counts.items(),
-            key=lambda item: _format_clade(item[0]),
-        )
-        if count < len(trees)
-    ]
-    unstable_clades.sort(
-        key=lambda row: (-row.instability_score, -row.conflict_count, row.clade)
-    )
-    return UnstableCladeReport(path=path, tree_count=len(trees), clades=unstable_clades)
+    return _build_unstable_clade_report(_analyze_tree_set(path))
 
 
 def summarize_bootstrap_tree_set(
@@ -1045,6 +1366,19 @@ def summarize_bootstrap_tree_set(
     robust_support_threshold: float = 0.9,
 ) -> BootstrapTreeSetSummaryReport:
     """Summarize bootstrap replicate trees through one review-oriented report."""
+    return _build_bootstrap_tree_set_summary_report(
+        _analyze_tree_set(path),
+        consensus_threshold=consensus_threshold,
+        robust_support_threshold=robust_support_threshold,
+    )
+
+
+def _build_bootstrap_tree_set_summary_report(
+    analysis: _TreeSetAnalysis,
+    *,
+    consensus_threshold: float = 0.5,
+    robust_support_threshold: float = 0.9,
+) -> BootstrapTreeSetSummaryReport:
     if not 0.0 < consensus_threshold < 1.0:
         raise ValueError(
             f"consensus_threshold must be between 0 and 1, got {consensus_threshold}"
@@ -1054,13 +1388,25 @@ def summarize_bootstrap_tree_set(
             "robust_support_threshold must be between 0 and 1, "
             f"got {robust_support_threshold}"
         )
-    summary = load_tree_set(path)
-    clade_frequencies = compute_clade_frequency_table(path)
-    consensus_tree, consensus = compute_consensus_tree_with_threshold(
-        path, threshold=consensus_threshold
+    path = analysis.path
+    summary = TreeSetReport(
+        path=path,
+        source_format=analysis.source_format,
+        tree_count=len(analysis.trees),
+        processing=analysis.processing,
+        shared_taxa=analysis.shared_taxa,
+        taxa_union=analysis.taxa_union,
+        rooted_topology_count=len(analysis.rooted_topology_counts),
+        unrooted_topology_count=len(analysis.unrooted_topology_counts),
+        records=analysis.records,
     )
-    diversity = summarize_posterior_topology_diversity(path)
-    unstable_clades = detect_unstable_clades(path)
+    clade_frequencies = _build_clade_frequency_report(analysis)
+    consensus_tree, consensus = _build_consensus_tree_with_threshold(
+        analysis,
+        threshold=consensus_threshold,
+    )
+    diversity = _build_posterior_topology_diversity_report(analysis)
+    unstable_clades = _build_unstable_clade_report(analysis)
     shared_taxa = set(summary.shared_taxa)
     consensus_clades = _informative_clade_nodes(consensus_tree, shared_taxa)
     frequencies_by_clade = {
@@ -1115,6 +1461,7 @@ def summarize_bootstrap_tree_set(
         consensus_threshold=consensus_threshold,
         robust_support_threshold=robust_support_threshold,
         tree_count=summary.tree_count,
+        processing=analysis.processing,
         shared_taxa=summary.shared_taxa,
         summary=summary,
         clade_frequencies=clade_frequencies,
@@ -1137,6 +1484,9 @@ def write_bootstrap_tree_set_summary_table(
             handle,
             fieldnames=[
                 "tree_count",
+                "runtime_seconds",
+                "peak_memory_bytes",
+                "skipped_malformed_tree_count",
                 "shared_taxon_count",
                 "rooted_topology_count",
                 "dominant_topology_frequency",
@@ -1155,6 +1505,11 @@ def write_bootstrap_tree_set_summary_table(
         writer.writerow(
             {
                 "tree_count": report.tree_count,
+                "runtime_seconds": format(report.processing.runtime_seconds, ".15g"),
+                "peak_memory_bytes": report.processing.peak_memory_bytes,
+                "skipped_malformed_tree_count": (
+                    report.processing.skipped_malformed_tree_count
+                ),
                 "shared_taxon_count": len(report.shared_taxa),
                 "rooted_topology_count": report.diversity.rooted_topology_count,
                 "dominant_topology_frequency": format(
@@ -1229,13 +1584,15 @@ def write_bootstrap_tree_set_artifacts(
     robust_support_threshold: float = 0.9,
 ) -> BootstrapTreeSetArtifactReport:
     """Write a governed artifact set for one bootstrap replicate tree file."""
-    summary_report = summarize_bootstrap_tree_set(
-        tree_set_path,
+    analysis = _analyze_tree_set(tree_set_path)
+    summary_report = _build_bootstrap_tree_set_summary_report(
+        analysis,
         consensus_threshold=consensus_threshold,
         robust_support_threshold=robust_support_threshold,
     )
-    consensus_tree, _ = compute_consensus_tree_with_threshold(
-        tree_set_path, threshold=consensus_threshold
+    consensus_tree, _ = _build_consensus_tree_with_threshold(
+        analysis,
+        threshold=consensus_threshold,
     )
     out_dir.mkdir(parents=True, exist_ok=True)
     base_path = out_dir / prefix
@@ -1259,11 +1616,15 @@ def write_bootstrap_tree_set_artifacts(
         ),
         "distance_matrix": write_tree_distance_matrix(
             base_path.with_suffix(".distance-matrix.tsv"),
-            compute_tree_distance_matrix(tree_set_path),
+            _build_tree_distance_matrix_report(analysis),
+        ),
+        "rf_distribution": write_tree_distance_distribution_table(
+            base_path.with_suffix(".rf-distribution.tsv"),
+            summary_report.diversity,
         ),
         "topology_clusters": write_topology_cluster_table(
             base_path.with_suffix(".topology-clusters.tsv"),
-            cluster_trees_by_topology(tree_set_path),
+            _build_topology_cluster_report(analysis),
         ),
     }
     return BootstrapTreeSetArtifactReport(
@@ -1753,6 +2114,11 @@ def benchmark_tree_set_uncertainty(
                             taxon_count=taxon_count,
                             replicate=replicate,
                             elapsed_seconds=round(elapsed, 6),
+                            peak_memory_bytes=max(
+                                summary.processing.peak_memory_bytes,
+                                unstable_taxa.processing.peak_memory_bytes,
+                                unstable_clades.processing.peak_memory_bytes,
+                            ),
                             rooted_topology_count=summary.rooted_topology_count,
                             unstable_taxon_count=len(unstable_taxa.taxa),
                             unstable_clade_count=len(unstable_clades.clades),

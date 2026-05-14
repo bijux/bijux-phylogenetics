@@ -33,6 +33,7 @@ def test_benchmark_tree_set_uncertainty_reports_rows() -> None:
     assert len(report.rows) == 1
     assert report.rows[0].tree_count == 3
     assert report.rows[0].taxon_count == 4
+    assert report.rows[0].peak_memory_bytes >= 0
 
 
 def test_assess_tree_set_storage_risk_reports_low_risk_for_small_fixture() -> None:
