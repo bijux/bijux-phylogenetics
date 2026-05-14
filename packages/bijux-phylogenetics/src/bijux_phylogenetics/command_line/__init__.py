@@ -406,6 +406,9 @@ from bijux_phylogenetics.compare.topology import (
     write_support_comparison_table,
     write_tree_comparison_table,
 )
+from bijux_phylogenetics.compare.tree_distance_reference import (
+    validate_tree_distance_reference_examples,
+)
 from bijux_phylogenetics.core.concatenation import concatenate_locus_alignments
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
@@ -5171,6 +5174,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the branch-length distribution report as JSON.",
     )
     _add_manifest_argument(topology_branch_lengths)
+    topology_distance_reference = topology_subparsers.add_parser(
+        "distance-reference",
+        help="Validate governed tree-distance hard cases against checked references.",
+    )
+    topology_distance_reference.add_argument(
+        "--json", action="store_true", help="Emit the validation report as JSON."
+    )
+    _add_manifest_argument(topology_distance_reference)
     topology_outgroup = topology_subparsers.add_parser(
         "root-outgroup", help="Root a tree on explicit outgroup taxa."
     )
@@ -14113,6 +14124,30 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "negative_branch_count": report.aggregate.negative_branch_count,
                             "long_outlier_count": report.aggregate.long_outlier_count,
                             "median_branch_length": report.aggregate.median_branch_length,
+                        },
+                        data=report,
+                    ),
+                    json_output=args.json,
+                )
+                return 0
+            if args.topology_command == "distance-reference":
+                report = validate_tree_distance_reference_examples()
+                outputs = _finalize_outputs(
+                    args,
+                    command="topology",
+                    inputs=[],
+                    outputs=[],
+                )
+                _print_result(
+                    build_command_result(
+                        command="topology",
+                        inputs=[],
+                        outputs=outputs,
+                        metrics={
+                            "case_count": report.case_count,
+                            "external_case_count": report.external_case_count,
+                            "policy_case_count": report.policy_case_count,
+                            "all_passed": report.all_passed,
                         },
                         data=report,
                     ),
