@@ -21,5 +21,11 @@ and messy benchmark corpora through `bijux_phylogenetics.validation_corpus`
 so validation, warning-rich behavior, and failure signatures can be audited
 from library code as well as tests.
 
+The `metadata/beast2_strict_yule_posterior.xml`, `.log`, and `.trees` files
+are the governed real-artifact BEAST corpus used by the Bayesian validation
+matrix whenever a live `beast` executable is not present locally. They are not
+toy parser strings; they are the checked evidence surface for real BEAST output
+structure.
+
 Tests should resolve files through the local `fixture(...)` helper rather than
 assuming a flat directory layout.
