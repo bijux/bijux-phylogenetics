@@ -55,6 +55,13 @@ The core suite covers:
 - posterior clade frequencies
 - consensus tree generation
 
+The PGLS portion of the suite now covers four distinct trust questions:
+
+- fixed Brownian covariance on a simple numeric regression
+- treatment-coded categorical predictor encoding against R model-matrix behavior
+- treatment-coded interaction encoding and coefficients against R output
+- one governed estimated-lambda primate regression against R `ape` plus `nlme`
+
 The observation ledger records the expected failure classification, overlap
 policy, and shared-versus-exclusive taxa so reviewer-visible mismatches can be
 sorted quickly into topology, branch-length, missing-taxa-policy, numerical,
@@ -460,7 +467,7 @@ When the goal is to fit a phylogenetic regression rather than only measure
 signal, use `comparative pgls`. The command inspects the requested response and
 predictors, fits generalized least squares on the phylogenetic covariance, and
 reports coefficient estimates with standard errors, Student-t test statistics,
-p-values, and explicit 95% confidence intervals.
+p-values, explicit 95% confidence intervals, and AIC.
 
 ```bash
 bijux-phylogenetics comparative pgls \

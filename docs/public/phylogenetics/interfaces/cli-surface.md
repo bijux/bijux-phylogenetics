@@ -74,6 +74,14 @@ scientific review surface, not a generic failure flag. It distinguishes
 topology, branch length, missing-taxa policy, numerical tolerance, and
 model-assumption mismatches.
 
+The governed PGLS lane is not limited to one intercept-plus-slope example. The
+core suite now includes one fixed-Brownian numeric regression, one
+treatment-coded categorical regression, and one treatment-coded interaction
+regression checked against R `ape` plus `nlme` outputs for coefficients,
+standard errors, p-values, likelihood, AIC, and encoded model-matrix rows. The
+extended suite adds one governed estimated-lambda primate regression against
+the same external tool chain.
+
 `benchmark stress-suite` is the governed large-dataset resource review surface.
 It executes five owned workload families on one selected tier:
 
@@ -2559,9 +2567,10 @@ one explicitly named review artifact path.
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
-`residual_degrees_of_freedom`, and `coefficient_inference_distribution` so
-review tooling can distinguish a minimally identified model from one with
-meaningful residual support.
+`residual_degrees_of_freedom`, `coefficient_inference_distribution`, and `aic`
+so review tooling can distinguish a minimally identified model from one with
+meaningful residual support and can compare model fit without scraping the
+coefficient table.
 
 `comparative covariance-audit` is the governed pre-fit review surface for
 PGLS, Brownian trait evolution, and OU trait evolution. Its purpose is to

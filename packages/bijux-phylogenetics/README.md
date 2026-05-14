@@ -411,7 +411,11 @@ CI-sized, while `--extended` adds real primate comparative fits and the larger
 posterior-tree bundle. The observation ledger now records expected failure
 classification, overlap policy, and shared-versus-exclusive taxa so reviewers
 can see whether a mismatch comes from topology, branch lengths, missing-taxa
-handling, numerical tolerance, or model assumptions.
+handling, numerical tolerance, or model assumptions. The PGLS parity lane now
+covers fixed-Brownian regression, treatment-coded categorical predictors,
+treatment-coded interaction terms, and one governed estimated-lambda primate
+regression against checked R `ape` plus `nlme` outputs for coefficients,
+standard errors, p-values, likelihood, and AIC.
 
 ## Read this next
 
