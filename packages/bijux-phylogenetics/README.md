@@ -191,6 +191,7 @@ bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --ou
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
+bijux-phylogenetics demo gnathostome-ortholog-protein-benchmark --out artifacts/gnathostome-ortholog-protein-benchmark --json
 bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
 bijux-phylogenetics demo catarrhine-data-quality-stress-panel --out artifacts/catarrhine-data-quality-stress-panel --json
 bijux-phylogenetics demo known-answer-reference-panel --out artifacts/known-answer-reference-panel --json
@@ -219,6 +220,16 @@ output root:
 Its JSON metrics also surface the same `biological_question` and
 `short_answer` directly so reviewers do not need to open the nested HTML report
 to understand the intended scientific claim.
+
+`demo gnathostome-ortholog-protein-benchmark` is the repository's governed
+public amino-acid workflow benchmark. It packages one small real ortholog
+protein FASTA panel, reruns MAFFT, trimAl, and IQ-TREE over those amino-acid
+inputs, writes the aligned matrix, trimmed matrix, tree, model table, support
+table, log, manifest, and overview, and adds one explicit
+`workflow/molecular-assumptions.tsv` ledger so reviewers can see that this
+surface uses `-st AA`, searches protein models only, does not translate coding
+DNA, and does not rely on nucleotide-specific assumptions such as codon
+position or GC interpretation.
 
 `demo known-answer-reference-panel` is the repository's governed internal
 simulation truth suite. It exports one deterministic tree, alignment,
@@ -421,6 +432,7 @@ The checked real-dataset regression corpus for this end-to-end workflow now
 lives under `packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/`.
 It currently pins reviewer-facing output bundles for:
 
+- `gnathostome-ortholog-protein-benchmark`
 - `gnathostome-ortholog-proteins`
 - `gnathostome-ortholog-coding-sequences`
 - `strnog-enog411bqtj-proteins`

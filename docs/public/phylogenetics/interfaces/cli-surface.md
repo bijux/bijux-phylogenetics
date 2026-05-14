@@ -307,6 +307,60 @@ This command requires MAFFT, trimAl, and IQ-TREE executables. Use
 `--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
 they are not available on the default `PATH`.
 
+`demo gnathostome-ortholog-protein-benchmark` is the governed packaged protein
+sequence-to-tree surface. It materializes one shipped gnathostome ortholog
+amino-acid FASTA panel into one output directory and reruns the owned MAFFT,
+trimAl, and IQ-TREE workflow over those packaged protein inputs. Its JSON
+metrics report:
+
+- `artifact_count`
+- `sequence_count`
+- `sequence_type`
+- `selected_model`
+- `alignment_length`
+- `trimmed_alignment_length`
+- `minimum_support`
+- `maximum_support`
+- `weakly_supported_clade_count`
+- `state_space`
+- `model_selection_scope`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/sequences.fasta`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/molecular-assumptions.tsv`
+- `workflow/gnathostome-ortholog-protein-benchmark.aln`
+- `workflow/gnathostome-ortholog-protein-benchmark.trimmed.aln`
+- `workflow/gnathostome-ortholog-protein-benchmark.tree`
+- `workflow/gnathostome-ortholog-protein-benchmark.model.tsv`
+- `workflow/gnathostome-ortholog-protein-benchmark.support.tsv`
+- `workflow/gnathostome-ortholog-protein-benchmark.log`
+- `workflow/gnathostome-ortholog-protein-benchmark.manifest.json`
+- `overview.md`
+
+The packaged dataset carries raw unaligned amino-acid sequences and uses the
+following governed inference controls:
+
+- sequence type `protein`
+- IQ-TREE sequence keyword `AA`
+- IQ-TREE seed `1`
+- IQ-TREE threads `1`
+- bootstrap replicates `1000`
+
+This command writes one explicit molecular-assumption ledger because it is
+meant to distinguish amino-acid inference from the repository's DNA demos. The
+workflow starts from protein FASTA directly, searches protein models only, and
+does not apply coding-DNA translation, codon-position partitioning, or
+nucleotide-specific interpretation such as GC composition.
+
+This command requires MAFFT, trimAl, and IQ-TREE executables. Use
+`--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
+they are not available on the default `PATH`.
+
 `demo pleistocene-bear-cytb-fragments` is the governed packaged ancient-DNA
 sequence-to-tree surface. It materializes the shipped degraded bear
 cytochrome b panel into one output directory and reruns the owned MAFFT,

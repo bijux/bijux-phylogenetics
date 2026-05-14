@@ -3452,6 +3452,16 @@ They verify that the workflow emits the aligned matrix, trimmed matrix, tree,
 log, model table, and support table with stable names on real DNA and protein
 inputs.
 
+When you want one public packaged protein benchmark rather than the broader
+test-only regression corpus, use
+`demo gnathostome-ortholog-protein-benchmark`. It materializes one shipped
+amino-acid FASTA panel plus governed expected outputs, reruns MAFFT, trimAl,
+and IQ-TREE on those packaged protein inputs, and writes one explicit
+`molecular-assumptions.tsv` ledger so reviewers can see that the workflow runs
+with `-st AA`, searches protein models only, does not translate coding DNA,
+and does not depend on nucleotide-specific assumptions such as codon position
+or GC interpretation.
+
 For coding DNA, prefer the codon-aware alignment workflow above and then run
 the downstream adapter steps explicitly. The current `adapter fasta-to-tree`
 path is still a generic trimAl-based pipeline rather than the codon-preserving
