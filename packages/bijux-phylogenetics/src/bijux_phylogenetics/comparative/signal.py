@@ -14,7 +14,9 @@ from bijux_phylogenetics.comparative.common import (
     ComparativeDataset,
     lambda_transform_covariance,
     load_comparative_dataset,
+    tip_root_depths,
 )
+from bijux_phylogenetics.errors import ComparativeMethodError
 
 
 @dataclass(slots=True)
@@ -42,6 +44,24 @@ class IndependentContrastReport:
 
 
 @dataclass(slots=True)
+class PhylogeneticSignalInputAudit:
+    """Owned input-policy audit for one phylogenetic signal analysis."""
+
+    tree_path: Path
+    traits_path: Path
+    trait: str
+    taxon_count: int
+    taxa: list[str]
+    tree_is_ultrametric: bool
+    minimum_root_to_tip_depth: float
+    maximum_root_to_tip_depth: float
+    ultrametric_policy: str
+    missing_value_policy: str
+    pruned_missing_value_taxa: list[str]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class BlombergKReport:
     """Blomberg's K estimate for one numeric trait."""
 
@@ -49,6 +69,7 @@ class BlombergKReport:
     traits_path: Path
     trait: str
     taxon_count: int
+    input_audit: PhylogeneticSignalInputAudit
     k: float
     generalized_mean: float
     observed_mean_square: float
@@ -64,6 +85,7 @@ class PagelLambdaReport:
     traits_path: Path
     trait: str
     taxon_count: int
+    input_audit: PhylogeneticSignalInputAudit
     lambda_value: float
     log_likelihood: float
     null_log_likelihood: float
@@ -78,10 +100,12 @@ class PhylogeneticSignalTestReport:
     traits_path: Path
     trait: str
     taxon_count: int
+    input_audit: PhylogeneticSignalInputAudit
     observed_k: float
     estimated_lambda: float
     p_value: float
     permutations: int
+    seed: int
     permuted_k_at_or_above_observed: int
     permutation_rows: list[PhylogeneticSignalPermutation]
 
@@ -132,14 +156,13 @@ def compute_blombergs_k(
     taxon_column: str | None = None,
 ) -> BlombergKReport:
     """Compute Blomberg's K under a Brownian covariance model."""
-    dataset = load_comparative_dataset(
+    dataset = _load_signal_dataset(
         tree_path,
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
-        minimum_taxa=3,
-        require_rooted=True,
     )
+    input_audit = _build_signal_input_audit(dataset)
     inverse_covariance = invert_matrix(dataset.covariance_matrix)
     generalized_mean = _generalized_mean(dataset.trait_values, inverse_covariance)
     residuals = [value - generalized_mean for value in dataset.trait_values]
@@ -163,6 +186,7 @@ def compute_blombergs_k(
         traits_path=traits_path,
         trait=trait,
         taxon_count=len(dataset.taxa),
+        input_audit=input_audit,
         k=k,
         generalized_mean=generalized_mean,
         observed_mean_square=observed_mean_square,
@@ -181,37 +205,24 @@ def estimate_pagels_lambda(
     fine_step: float = 0.005,
 ) -> PagelLambdaReport:
     """Estimate Pagel's lambda by likelihood search over [0, 1]."""
-    dataset = load_comparative_dataset(
+    dataset = _load_signal_dataset(
         tree_path,
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
-        minimum_taxa=3,
-        require_rooted=True,
     )
-    coarse_values = _grid_values(0.0, 1.0, coarse_step)
-    coarse_best_lambda, coarse_best_log_likelihood = max(
-        (
-            (_lambda, _lambda_log_likelihood(dataset, _lambda))
-            for _lambda in coarse_values
-        ),
-        key=lambda item: item[1],
-    )
-    fine_start = max(0.0, coarse_best_lambda - coarse_step)
-    fine_stop = min(1.0, coarse_best_lambda + coarse_step)
-    fine_values = _grid_values(fine_start, fine_stop, fine_step)
-    lambda_value, log_likelihood = max(
-        (
-            (_lambda, _lambda_log_likelihood(dataset, _lambda))
-            for _lambda in fine_values
-        ),
-        key=lambda item: item[1],
+    input_audit = _build_signal_input_audit(dataset)
+    lambda_value, log_likelihood = _estimate_pagels_lambda_from_dataset(
+        dataset,
+        coarse_step=coarse_step,
+        fine_step=fine_step,
     )
     return PagelLambdaReport(
         tree_path=tree_path,
         traits_path=traits_path,
         trait=trait,
         taxon_count=len(dataset.taxa),
+        input_audit=input_audit,
         lambda_value=lambda_value,
         log_likelihood=log_likelihood,
         null_log_likelihood=_lambda_log_likelihood(dataset, 0.0),
@@ -229,21 +240,15 @@ def compute_phylogenetic_signal_test(
     seed: int = 1,
 ) -> PhylogeneticSignalTestReport:
     """Test phylogenetic signal with a permutation distribution of Blomberg's K."""
-    dataset = load_comparative_dataset(
+    dataset = _load_signal_dataset(
         tree_path,
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
-        minimum_taxa=3,
-        require_rooted=True,
     )
+    input_audit = _build_signal_input_audit(dataset)
     observed_k = _compute_blombergs_k_from_dataset(dataset)
-    estimated_lambda = estimate_pagels_lambda(
-        tree_path,
-        traits_path,
-        trait=trait,
-        taxon_column=taxon_column,
-    ).lambda_value
+    estimated_lambda, _ = _estimate_pagels_lambda_from_dataset(dataset)
     randomizer = random.Random(seed)  # nosec B311
     exceed_count = 0
     permuted_values = list(dataset.trait_values)
@@ -278,13 +283,67 @@ def compute_phylogenetic_signal_test(
         traits_path=traits_path,
         trait=trait,
         taxon_count=len(dataset.taxa),
+        input_audit=input_audit,
         observed_k=observed_k,
         estimated_lambda=estimated_lambda,
         p_value=p_value,
         permutations=permutations,
+        seed=seed,
         permuted_k_at_or_above_observed=exceed_count,
         permutation_rows=permutation_rows,
     )
+
+
+def _load_signal_dataset(
+    tree_path: Path,
+    traits_path: Path,
+    *,
+    trait: str,
+    taxon_column: str | None,
+) -> ComparativeDataset:
+    dataset = load_comparative_dataset(
+        tree_path,
+        traits_path,
+        trait=trait,
+        taxon_column=taxon_column,
+        minimum_taxa=3,
+        require_rooted=True,
+    )
+    _require_signal_variation(dataset)
+    return dataset
+
+
+def _build_signal_input_audit(
+    dataset: ComparativeDataset,
+) -> PhylogeneticSignalInputAudit:
+    root_depths = tip_root_depths(dataset.tree, dataset.taxa)
+    minimum_root_depth = min(root_depths.values())
+    maximum_root_depth = max(root_depths.values())
+    return PhylogeneticSignalInputAudit(
+        tree_path=dataset.tree_path,
+        traits_path=dataset.traits_path,
+        trait=dataset.trait,
+        taxon_count=len(dataset.taxa),
+        taxa=list(dataset.taxa),
+        tree_is_ultrametric=math.isclose(
+            minimum_root_depth, maximum_root_depth, abs_tol=1e-12
+        ),
+        minimum_root_to_tip_depth=minimum_root_depth,
+        maximum_root_to_tip_depth=maximum_root_depth,
+        ultrametric_policy="accept-rooted-trees-and-report-ultrametricity",
+        missing_value_policy="prune-overlapping-missing-values",
+        pruned_missing_value_taxa=list(dataset.readiness.pruned_missing_value_taxa),
+        warnings=list(dataset.readiness.warnings),
+    )
+
+
+def _require_signal_variation(dataset: ComparativeDataset) -> None:
+    minimum_value = min(dataset.trait_values)
+    maximum_value = max(dataset.trait_values)
+    if math.isclose(minimum_value, maximum_value, abs_tol=1e-12):
+        raise ComparativeMethodError(
+            "phylogenetic signal requires at least two distinct numeric trait values after pruning"
+        )
 
 
 def _compute_node_contrasts(
@@ -380,6 +439,32 @@ def _compute_blombergs_k_from_dataset(dataset: ComparativeDataset) -> float:
     return (
         observed_mean_square / phylogenetic_mean_square
     ) / expected_mean_square_ratio
+
+
+def _estimate_pagels_lambda_from_dataset(
+    dataset: ComparativeDataset,
+    *,
+    coarse_step: float = 0.05,
+    fine_step: float = 0.005,
+) -> tuple[float, float]:
+    coarse_values = _grid_values(0.0, 1.0, coarse_step)
+    coarse_best_lambda, _ = max(
+        (
+            (_lambda, _lambda_log_likelihood(dataset, _lambda))
+            for _lambda in coarse_values
+        ),
+        key=lambda item: item[1],
+    )
+    fine_start = max(0.0, coarse_best_lambda - coarse_step)
+    fine_stop = min(1.0, coarse_best_lambda + coarse_step)
+    fine_values = _grid_values(fine_start, fine_stop, fine_step)
+    return max(
+        (
+            (_lambda, _lambda_log_likelihood(dataset, _lambda))
+            for _lambda in fine_values
+        ),
+        key=lambda item: item[1],
+    )
 
 
 def _lambda_log_likelihood(dataset: ComparativeDataset, lambda_value: float) -> float:

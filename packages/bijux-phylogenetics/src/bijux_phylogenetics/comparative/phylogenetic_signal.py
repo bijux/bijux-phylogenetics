@@ -7,6 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.comparative.signal import (
     BlombergKReport,
     PagelLambdaReport,
+    PhylogeneticSignalInputAudit,
     PhylogeneticSignalTestReport,
     compute_blombergs_k,
     compute_phylogenetic_signal_test,
@@ -23,6 +24,7 @@ class PhylogeneticSignalSummaryReport:
     traits_path: Path
     trait: str
     taxon_count: int
+    input_audit: PhylogeneticSignalInputAudit
     blombergs_k: BlombergKReport
     pagels_lambda: PagelLambdaReport
     signal_test: PhylogeneticSignalTestReport
@@ -71,6 +73,7 @@ def summarize_phylogenetic_signal(
         traits_path=traits_path,
         trait=trait,
         taxon_count=blomberg.taxon_count,
+        input_audit=blomberg.input_audit,
         blombergs_k=blomberg,
         pagels_lambda=lambda_report,
         signal_test=signal_test,
