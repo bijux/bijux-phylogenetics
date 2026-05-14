@@ -533,6 +533,8 @@ def _unrooted_branch_score_lengths(
         visit(child, parent_is_root=suppress_binary_root)
         for child in tree.root.children
     ]
+    if tree.root.branch_length is not None:
+        split_lengths[frozenset(taxa)] = tree.root.branch_length
     if not suppress_binary_root:
         return split_lengths
 
@@ -572,8 +574,16 @@ def _build_branch_score_report(
         left_pruned = left
         right_pruned = right
     else:
-        left_pruned, _, _ = _prune_tree_against_taxa(left, shared_taxa)
-        right_pruned, _, _ = _prune_tree_against_taxa(right, shared_taxa)
+        left_pruned, _, _ = _prune_tree_against_taxa(
+            left,
+            shared_taxa,
+            clear_root_branch_length=False,
+        )
+        right_pruned, _, _ = _prune_tree_against_taxa(
+            right,
+            shared_taxa,
+            clear_root_branch_length=False,
+        )
 
     left_lengths = _unrooted_branch_score_lengths(left_pruned)
     right_lengths = _unrooted_branch_score_lengths(right_pruned)

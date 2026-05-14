@@ -243,7 +243,10 @@ def _prune_node(node: TreeNode, keep_taxa: set[str]) -> TreeNode | None:
 
 
 def _prune_tree_against_taxa(
-    tree: PhyloTree, keep_taxa: set[str]
+    tree: PhyloTree,
+    keep_taxa: set[str],
+    *,
+    clear_root_branch_length: bool = True,
 ) -> tuple[PhyloTree, list[str], list[str]]:
     retained_tips = sorted(name for name in tree.tip_names if name in keep_taxa)
     removed_tips = sorted(name for name in tree.tip_names if name not in keep_taxa)
@@ -252,7 +255,8 @@ def _prune_tree_against_taxa(
     if pruned_root is None or not retained_tips:
         raise MetadataJoinError("no overlapping taxa remain after pruning request")
 
-    pruned_root.branch_length = None
+    if clear_root_branch_length:
+        pruned_root.branch_length = None
     pruned_tree = PhyloTree(
         root=pruned_root, source_format=tree.source_format, rooted=tree.rooted
     )
