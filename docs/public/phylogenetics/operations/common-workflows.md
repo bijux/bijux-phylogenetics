@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-14
+last_reviewed: 2026-05-15
 ---
 
 # Common Workflows
@@ -506,8 +506,24 @@ inspection rather than only raw tree production:
 - one rooted preprocessing comparison table across every declared variant pair
 - one stable-clade ledger and one changed-clade ledger aggregated across variants
 - one method-conclusion ledger that states which claims remained stable and which remained engine-sensitive
+- one report manifest that records the reviewer HTML links, checksums, and byte counts for the governed workflow ledgers
 - one per-variant task log so concurrent variant runs remain inspectable without mixing batch execution output
 - one per-variant evidence package with aligned FASTA, trimmed FASTA, unrooted comparison tables, clade ledgers, support-weighted conflicts, rooted trees, and rooting review
+
+The reviewer HTML is intentionally compact. It surfaces top-level counts and
+conclusion text, then links the large TSV and JSON artifacts instead of
+embedding those tables directly. The JSON metrics expose the same report-size
+surface through `report_linked_artifact_count`, `report_html_size_bytes`,
+`report_linked_artifact_bytes`, and `report_total_output_bytes`.
+
+When the goal is to review posterior or bootstrap uncertainty at larger scale,
+`tree-set report` now uses the same summary-first rule. Large tables are
+written into one sibling `<report>.artifacts/` directory as TSV or JSON, the
+HTML report links those artifacts directly, and the CLI reports the resulting
+HTML bytes, linked-artifact bytes, and total output bytes. For inputs with
+`1,000+` trees the command switches to `scaled-summary` mode and replaces the
+highest-cost supplemental sensitivity passes with linked note artifacts so the
+report remains reviewable instead of attempting an unbounded inline expansion.
 
 This workflow is intentionally narrower than the flagship integrated rabies
 demo. It does not fit comparative models or reconstruct host and geography

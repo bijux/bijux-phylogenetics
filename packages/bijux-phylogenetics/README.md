@@ -242,6 +242,22 @@ outputs were executed together without mixing their logs. The workflow summary
 records the variant count, stable-clade count, changed-clade count, rooted
 preprocessing change count, rooted engine change count, and the number of
 variants that still show serious unrooted engine conflicts before rooting.
+Its reviewer-facing HTML report is now intentionally compact: it surfaces one
+summary card set plus explicit links to the governed TSV and JSON ledgers
+instead of embedding those tables directly, and the bundle now includes
+`workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json`
+with linked-artifact checksums and byte counts. The JSON metrics for the demo
+also report `report_linked_artifact_count`, `report_html_size_bytes`,
+`report_linked_artifact_bytes`, and `report_total_output_bytes`.
+
+`tree-set report` now follows the same scaling contract. The HTML report keeps
+top-level uncertainty summaries in the page body, writes large reviewer tables
+to one sibling `*.artifacts/` directory as TSV or JSON, links those artifacts
+explicitly, records report mode as either `full-review` or `scaled-summary`,
+and reports `html_size_bytes`, `linked_artifact_bytes`, and
+`total_output_bytes`. Tree sets with `1,000+` trees stay reviewable by
+switching the highest-cost supplemental sensitivity passes to linked note
+artifacts instead of rerunning them inline.
 
 `demo gnathostome-ortholog-protein-benchmark` is the repository's governed
 public amino-acid workflow benchmark. It packages one small real ortholog

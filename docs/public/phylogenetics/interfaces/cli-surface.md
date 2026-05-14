@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-14
+last_reviewed: 2026-05-15
 ---
 
 # CLI Surface
@@ -765,6 +765,10 @@ JSON metrics report:
 - `preprocessing_change_pair_count`
 - `rooted_engine_change_variant_count`
 - `serious_conflict_variant_count`
+- `report_linked_artifact_count`
+- `report_html_size_bytes`
+- `report_linked_artifact_bytes`
+- `report_total_output_bytes`
 - `reference_output_count`
 
 The command writes:
@@ -783,6 +787,7 @@ The command writes:
 - `workflow/method-conclusion-summary.tsv`
 - `workflow/workflow-config.resolved.json`
 - `workflow/rabies-method-sensitivity.manifest.json`
+- `workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json`
 - `workflow/rabies-method-sensitivity-report.html`
 - `workflow/parallel-logs/<variant-id>.log`
 - `workflow/variants/<variant-id>/*.aln`
@@ -819,6 +824,18 @@ rooting choice as explicit evidence rather than an implicit side effect of the
 engine comparison. This command depends on external `mafft`, `trimal`,
 `iqtree2`, and `FastTree` executables because it reruns the real
 sequence-to-alignment-to-tree path for each declared method combination.
+
+The HTML report is intentionally summary-first. Large ledgers remain in the
+linked TSV and JSON artifacts, while the report manifest records their
+relative paths, checksums, and byte counts.
+
+`tree-set report` now follows the same scaling contract. The HTML keeps
+top-level uncertainty summaries in-page, writes large tables to a sibling
+`<report>.artifacts/` directory, links those artifacts explicitly, and reports
+`linked_artifact_count`, `html_size_bytes`, `linked_artifact_bytes`, and
+`total_output_bytes` in JSON mode. Tree sets with `1,000+` trees switch to
+`scaled-summary` mode and replace the most expensive supplemental sensitivity
+passes with linked note artifacts instead of expanding them inline.
 
 `demo rabies-cross-host-geography-panel` is the governed packaged integrated
 pathogen workflow surface. It materializes the shipped rabies nucleoprotein
