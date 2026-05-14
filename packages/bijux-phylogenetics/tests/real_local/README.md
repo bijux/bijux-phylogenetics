@@ -8,6 +8,9 @@ fixture executables and parser-only contract coverage.
 Use this lane when you need evidence that Bijux still works with installed
 external engines, not only with fake runners:
 
+- `test_engine_preflight_lane.py` exercises `phylo preflight` against the local
+  MAFFT, trimAl, and IQ-TREE environment and verifies that the selected-workflow
+  gate honestly blocks `beast-posterior` when no BEAST executable is available.
 - `test_alignment_engine_validation_matrix.py` exercises MAFFT, trimAl,
   IQ-TREE, and FastTree on small real inputs and writes one matrix JSON artifact
   under the pytest temporary directory.

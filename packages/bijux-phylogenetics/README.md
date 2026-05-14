@@ -196,6 +196,7 @@ bijux-phylogenetics diagnose assumptions tree.nwk --metadata metadata.tsv --json
 bijux-phylogenetics alignment translate coding.fasta --out translated.fasta
 bijux-phylogenetics report dataset tree.nwk metadata.tsv traits.tsv --alignment alignment.fasta --tip-dates tip-dates.tsv --calibrations calibrations.tsv --out artifacts/dataset-report.html --json
 bijux-phylogenetics topology root-outgroup tree.nwk --taxa OutgroupA OutgroupB --out rooted.nwk
+bijux-phylogenetics phylo preflight --workflow fasta-to-tree --json
 ```
 
 The BEAST adapter surface now makes its evidence state explicit. `adapter
@@ -223,6 +224,20 @@ MrBayes executables plus the checked-in real BEAST XML/log/tree corpus. Those
 real-local tests write one external validation matrix JSON artifact per lane
 that records reviewer-facing engine names, validation modes, executable paths,
 version text, commands, exit codes, runtime, output paths, and output hashes.
+
+Use `phylo preflight` before any external-engine workflow when you need to know
+whether the local environment is actually runnable. The command inspects MAFFT,
+trimAl, IQ-TREE, FastTree, MrBayes, and BEAST, reports the resolved executable
+path and detected version for each engine, classifies each engine as
+`tested`, `untested`, `unsupported`, or `missing`, and then summarizes which
+governed workflows are `ready`, `caution`, or `blocked`.
+
+When you pass `--workflow`, the command becomes a real gate instead of a passive
+inventory. A blocked selected workflow exits early, while a runnable one returns
+both `selected_workflow_status` and `overall_status` in JSON output. That split
+is intentional: `selected_workflow_status` answers whether the chosen workflow
+can run now, while `overall_status` still reflects the health of the broader
+external-engine environment.
 
 The rabies demonstration bundle now publishes one governed reproducibility and
 review layer alongside the biological outputs: `workflow-config-audit.tsv`,

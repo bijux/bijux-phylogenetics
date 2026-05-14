@@ -4619,6 +4619,25 @@ the recorded workflow stages. It also honors the same
 surfaces, so stale partial FastTree outputs can be rejected or cleaned before a
 fresh rerun.
 
+Use `phylo preflight` before any external-engine workflow when you need a
+single governed compatibility scan instead of discovering missing tools halfway
+through a run. It inspects MAFFT, trimAl, IQ-TREE, FastTree, MrBayes, and
+BEAST, records the resolved executable path and native version text for each
+engine, and classifies each engine as `tested`, `untested`, `unsupported`, or
+`missing` against the package's current support policy.
+
+That same command also publishes workflow readiness for the governed
+engine-backed workflows. Each workflow row names its required engines and is
+classified as `ready`, `caution`, or `blocked`, with explicit notes when a
+missing or untested engine drives the result. When `--workflow` is supplied,
+the command fails early for blocked workflows instead of leaving the user to
+discover the missing tool inside a longer adapter run.
+
+Its JSON contract intentionally exposes both `selected_workflow_status` and
+`overall_status`. The first answers whether the chosen workflow is runnable in
+the current environment, while the second reflects the health of the broader
+external-engine inventory across all supported workflows.
+
 `adapter compare-engines` is the governed side-by-side inference mode for one
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
 support inference, and FastTree approximate inference on the same input, then

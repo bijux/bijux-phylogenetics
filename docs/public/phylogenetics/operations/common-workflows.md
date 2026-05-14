@@ -3013,6 +3013,27 @@ It then writes these user-facing outputs:
 - `mammals.taxon-influence.tsv`
 - `mammals.manifest.json`
 
+Use `phylo preflight` before any governed external-engine workflow when the
+environment itself is uncertain.
+
+```bash
+bijux-phylogenetics phylo preflight \
+  --workflow fasta-to-tree \
+  --json
+```
+
+That command inspects MAFFT, trimAl, IQ-TREE, FastTree, MrBayes, and BEAST
+before the workflow starts. The report includes the resolved executable path,
+detected version text, engine support class, and a workflow-readiness table so
+you can see exactly which workflows are runnable in the current environment.
+
+If you install an engine outside `PATH`, pass its explicit
+`--mafft-executable`, `--trimal-executable`, `--iqtree-executable`,
+`--fasttree-executable`, `--mrbayes-executable`, or `--beast-executable`
+override here first. When the selected workflow is blocked, the command exits
+early instead of letting a longer alignment or Bayesian run fail partway
+through.
+
 The shared-clade ledger preserves both engines' support values for clades that
 appear in both trees. The conflicting-clade ledger separates clades that appear
 in only one tree from shared clades whose normalized support fractions diverge
