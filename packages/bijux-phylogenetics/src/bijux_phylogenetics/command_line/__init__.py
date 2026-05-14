@@ -15836,17 +15836,42 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.dataset_export.true_tree_path,
                         result.dataset_export.alignment_path,
                         result.dataset_export.continuous_traits_path,
+                        result.dataset_export.ou_traits_path,
                         result.dataset_export.discrete_traits_path,
+                        result.dataset_export.host_traits_path,
+                        result.dataset_export.geographic_traits_path,
                         result.dataset_export.true_parameters_path,
+                        result.dataset_export.true_continuous_nodes_path,
+                        result.dataset_export.true_ou_nodes_path,
+                        result.dataset_export.true_discrete_nodes_path,
+                        result.dataset_export.true_host_nodes_path,
+                        result.dataset_export.true_geographic_nodes_path,
+                        result.dataset_export.true_host_switch_events_path,
+                        result.dataset_export.true_geographic_transition_events_path,
+                        result.dataset_export.recovery_thresholds_path,
                         result.workflow_bundle.workflow_summary_path,
                         result.workflow_bundle.distance_tree_path,
                         result.workflow_bundle.tree_recovery_path,
                         result.workflow_bundle.parameter_recovery_path,
                         result.workflow_bundle.brownian_fit_summary_path,
+                        result.workflow_bundle.ou_fit_summary_path,
                         result.workflow_bundle.continuous_ancestral_summary_path,
+                        result.workflow_bundle.continuous_ancestral_uncertainty_path,
                         result.workflow_bundle.continuous_node_recovery_path,
                         result.workflow_bundle.discrete_ancestral_summary_path,
+                        result.workflow_bundle.discrete_ancestral_probability_path,
                         result.workflow_bundle.discrete_node_recovery_path,
+                        result.workflow_bundle.host_switch_summary_path,
+                        result.workflow_bundle.host_state_nodes_path,
+                        result.workflow_bundle.host_switch_branches_path,
+                        result.workflow_bundle.host_node_recovery_path,
+                        result.workflow_bundle.host_event_recovery_path,
+                        result.workflow_bundle.geographic_ancestral_summary_path,
+                        result.workflow_bundle.geographic_state_probability_path,
+                        result.workflow_bundle.geographic_transition_summary_path,
+                        result.workflow_bundle.geographic_node_recovery_path,
+                        result.workflow_bundle.geographic_event_recovery_path,
+                        result.workflow_bundle.threshold_evaluation_path,
                         result.overview_path,
                     ],
                 )
@@ -15877,11 +15902,32 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "robinson_foulds_distance": (
                                     result.workflow_bundle.robinson_foulds_distance
                                 ),
+                                "parameter_row_count": (
+                                    result.workflow_bundle.parameter_row_count
+                                ),
+                                "threshold_pass_count": (
+                                    result.workflow_bundle.threshold_pass_count
+                                ),
+                                "threshold_row_count": (
+                                    result.workflow_bundle.threshold_row_count
+                                ),
                                 "continuous_internal_node_mean_absolute_error": (
                                     result.workflow_bundle.continuous_internal_node_mean_absolute_error
                                 ),
                                 "discrete_internal_node_accuracy": (
                                     result.workflow_bundle.discrete_internal_node_accuracy
+                                ),
+                                "host_internal_node_accuracy": (
+                                    result.workflow_bundle.host_internal_node_accuracy
+                                ),
+                                "host_event_accuracy": (
+                                    result.workflow_bundle.host_event_accuracy
+                                ),
+                                "geographic_internal_node_accuracy": (
+                                    result.workflow_bundle.geographic_internal_node_accuracy
+                                ),
+                                "geographic_event_accuracy": (
+                                    result.workflow_bundle.geographic_event_accuracy
                                 ),
                                 "reference_output_count": expected_output_count,
                             },
