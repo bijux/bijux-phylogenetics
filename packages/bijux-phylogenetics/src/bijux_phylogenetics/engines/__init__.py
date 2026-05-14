@@ -16,6 +16,7 @@ from .preflight import (
 from .evidence import InferenceEvidenceBundleResult, bundle_inference_workflow_evidence
 from .fasta_to_tree import (
     FastaToTreeModelRow,
+    FastaToTreeStageFingerprint,
     FastaToTreeSupportRow,
     FastaToTreeWorkflowReport,
     infer_unaligned_sequence_type,
@@ -133,6 +134,7 @@ __all__ = [
     "EngineRunReport",
     "EngineVersionInfo",
     "FastaToTreeModelRow",
+    "FastaToTreeStageFingerprint",
     "FastaToTreeSupportRow",
     "FastaToTreeWorkflowReport",
     "InferenceComparisonConflictRow",

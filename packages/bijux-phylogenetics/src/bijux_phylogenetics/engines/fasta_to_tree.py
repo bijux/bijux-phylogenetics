@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
+import hashlib
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.core.alignment import (
@@ -37,6 +39,7 @@ from .workflows import (
 
 __all__ = [
     "FastaToTreeModelRow",
+    "FastaToTreeStageFingerprint",
     "FastaToTreeSupportRow",
     "FastaToTreeWorkflowReport",
     "build_fasta_to_tree_model_rows",
@@ -76,6 +79,20 @@ class FastaToTreeSupportRow:
     is_backbone: bool
 
 
+@dataclass(frozen=True, slots=True)
+class FastaToTreeStageFingerprint:
+    """One deterministic fingerprint record for one workflow stage."""
+
+    stage: str
+    fingerprint: str
+    input_checksums: dict[str, str]
+    output_checksums: dict[str, str]
+    config: dict[str, object]
+    engine_versions: dict[str, str]
+    upstream_fingerprints: dict[str, str]
+    resumed: bool
+
+
 @dataclass(slots=True)
 class FastaToTreeWorkflowReport:
     """End-to-end result for one raw-FASTA-to-tree workflow run."""
@@ -104,6 +121,7 @@ class FastaToTreeWorkflowReport:
     commands: dict[str, list[str]]
     engine_versions: dict[str, str]
     step_manifests: dict[str, Path]
+    stage_fingerprints: dict[str, FastaToTreeStageFingerprint]
     input_checksums: dict[str, str]
     output_checksums: dict[str, str]
     input_validation: FastaInputValidationReport
@@ -193,6 +211,54 @@ def _copy_output(source: Path, destination: Path) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(source.read_bytes())
     return destination
+
+
+def _normalize_stage_fingerprint_payload(value: object) -> object:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {
+            str(key): _normalize_stage_fingerprint_payload(item)
+            for key, item in sorted(value.items())
+        }
+    if isinstance(value, (list, tuple)):
+        return [_normalize_stage_fingerprint_payload(item) for item in value]
+    return value
+
+
+def _build_stage_fingerprint(
+    *,
+    stage: str,
+    input_checksums: dict[str, str],
+    output_checksums: dict[str, str],
+    config: dict[str, object],
+    engine_versions: dict[str, str],
+    upstream_fingerprints: dict[str, str],
+    resumed: bool,
+) -> FastaToTreeStageFingerprint:
+    payload = _normalize_stage_fingerprint_payload(
+        {
+            "stage": stage,
+            "input_checksums": input_checksums,
+            "output_checksums": output_checksums,
+            "config": config,
+            "engine_versions": engine_versions,
+            "upstream_fingerprints": upstream_fingerprints,
+        }
+    )
+    digest = hashlib.sha256(  # nosec B324
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return FastaToTreeStageFingerprint(
+        stage=stage,
+        fingerprint=digest,
+        input_checksums=input_checksums,
+        output_checksums=output_checksums,
+        config=config,
+        engine_versions=engine_versions,
+        upstream_fingerprints=upstream_fingerprints,
+        resumed=resumed,
+    )
 
 
 def _display_path(path: Path, *, root_dir: Path | None) -> str:
@@ -680,6 +746,7 @@ def run_fasta_to_tree_workflow(
             "maximum_likelihood": maximum_likelihood_workflow.manifest_path,
             "bootstrap_support": bootstrap_workflow.manifest_path,
         },
+        stage_fingerprints={},
         input_checksums=build_file_checksums(
             [input_path]
             if prepared_input_path == input_path
@@ -710,6 +777,150 @@ def run_fasta_to_tree_workflow(
         round((ended_at - started_at).total_seconds(), 6),
     )
     write_fasta_to_tree_log(final_outputs["log"], report, root_dir=out_dir)
+    validation_output_checksums = (
+        {}
+        if prepared_input_path == input_path
+        else build_file_checksums([prepared_input_path])
+    )
+    validation_stage = _build_stage_fingerprint(
+        stage="fasta_validation",
+        input_checksums=build_file_checksums([input_path]),
+        output_checksums=validation_output_checksums,
+        config={
+            "declared_sequence_type": sequence_type,
+            "normalize_identifiers": normalize_identifiers,
+            "remove_invalid_records": remove_invalid_records,
+        },
+        engine_versions={},
+        upstream_fingerprints={},
+        resumed=False,
+    )
+    alignment_stage = _build_stage_fingerprint(
+        stage="alignment",
+        input_checksums=alignment_workflow.input_checksums,
+        output_checksums=alignment_workflow.output_checksums,
+        config={
+            "alignment_mode": alignment_mode,
+            "timeout_seconds": timeout_seconds,
+        },
+        engine_versions={"mafft": alignment_workflow.run.version.text},
+        upstream_fingerprints={"fasta_validation": validation_stage.fingerprint},
+        resumed=alignment_workflow.resumed,
+    )
+    trimming_stage = _build_stage_fingerprint(
+        stage="trimming",
+        input_checksums=trimming_workflow.input_checksums,
+        output_checksums=trimming_workflow.output_checksums,
+        config={
+            "trimming_mode": trimming_mode,
+            "trim_gap_threshold": trim_gap_threshold,
+            "timeout_seconds": timeout_seconds,
+        },
+        engine_versions={"trimal": trimming_workflow.run.version.text},
+        upstream_fingerprints={"alignment": alignment_stage.fingerprint},
+        resumed=trimming_workflow.resumed,
+    )
+    model_selection_stage = _build_stage_fingerprint(
+        stage="model_selection",
+        input_checksums=model_selection_workflow.input_checksums,
+        output_checksums=model_selection_workflow.output_checksums,
+        config={
+            "iqtree_seed": iqtree_seed,
+            "iqtree_threads": iqtree_threads,
+            "timeout_seconds": timeout_seconds,
+            "sequence_type": inferred_sequence_type,
+        },
+        engine_versions={
+            "iqtree_model_selection": model_selection_workflow.run.version.text
+        },
+        upstream_fingerprints={"trimming": trimming_stage.fingerprint},
+        resumed=model_selection_workflow.resumed,
+    )
+    inference_stage = _build_stage_fingerprint(
+        stage="inference",
+        input_checksums=maximum_likelihood_workflow.input_checksums,
+        output_checksums=maximum_likelihood_workflow.output_checksums,
+        config={
+            "selected_model": model_selection_workflow.selected_model,
+            "iqtree_seed": iqtree_seed,
+            "iqtree_threads": iqtree_threads,
+            "timeout_seconds": timeout_seconds,
+            "sequence_type": inferred_sequence_type,
+        },
+        engine_versions={
+            "iqtree_maximum_likelihood": (
+                maximum_likelihood_workflow.run.version.text
+            )
+        },
+        upstream_fingerprints={
+            "trimming": trimming_stage.fingerprint,
+            "model_selection": model_selection_stage.fingerprint,
+        },
+        resumed=maximum_likelihood_workflow.resumed,
+    )
+    support_stage = _build_stage_fingerprint(
+        stage="support",
+        input_checksums=bootstrap_workflow.input_checksums,
+        output_checksums=bootstrap_workflow.output_checksums,
+        config={
+            "selected_model": model_selection_workflow.selected_model,
+            "bootstrap_replicates": bootstrap_replicates,
+            "iqtree_seed": iqtree_seed,
+            "iqtree_threads": iqtree_threads,
+            "timeout_seconds": timeout_seconds,
+            "sequence_type": inferred_sequence_type,
+        },
+        engine_versions={
+            "iqtree_bootstrap_support": bootstrap_workflow.run.version.text
+        },
+        upstream_fingerprints={
+            "trimming": trimming_stage.fingerprint,
+            "model_selection": model_selection_stage.fingerprint,
+        },
+        resumed=bootstrap_workflow.resumed,
+    )
+    report_output_checksums = build_file_checksums(
+        [
+            final_outputs["log"],
+            final_outputs["model_table"],
+            final_outputs["support_table"],
+        ]
+    )
+    report_stage = _build_stage_fingerprint(
+        stage="report",
+        input_checksums=build_file_checksums(
+            [
+                final_outputs["alignment"],
+                final_outputs["trimmed_alignment"],
+                final_outputs["tree"],
+            ]
+        ),
+        output_checksums=report_output_checksums,
+        config={
+            "selected_model": model_selection_workflow.selected_model,
+            "warning_count": len(warnings),
+            "note_count": len(notes),
+        },
+        engine_versions={},
+        upstream_fingerprints={
+            "fasta_validation": validation_stage.fingerprint,
+            "alignment": alignment_stage.fingerprint,
+            "trimming": trimming_stage.fingerprint,
+            "model_selection": model_selection_stage.fingerprint,
+            "inference": inference_stage.fingerprint,
+            "support": support_stage.fingerprint,
+        },
+        resumed=False,
+    )
+    report.stage_fingerprints = {
+        "fasta_validation": validation_stage,
+        "alignment": alignment_stage,
+        "trimming": trimming_stage,
+        "model_selection": model_selection_stage,
+        "inference": inference_stage,
+        "support": support_stage,
+        "report": report_stage,
+    }
     report.output_checksums = build_file_checksums(
         [
             final_outputs["alignment"],
