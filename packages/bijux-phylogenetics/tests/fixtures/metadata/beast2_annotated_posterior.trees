@@ -1,0 +1,10 @@
+#NEXUS
+Begin trees;
+  Translate
+    1 A,
+    2 B,
+    3 C,
+    4 D
+  ;
+tree STATE_100 = [&R] ((1[&height=0.0]:0.125,2[&height=0.0]:0.125)[&height=0.25,height_95%_HPD={0.2,0.3},posterior=0.98]:0.125,(3[&height=0.0]:0.125,4[&height=0.0]:0.125)[&height=0.22,rate=0.7]:0.155)[&height=0.375,lnP=-123.45,rate_95%_HPD={0.5,0.9}]:0.0;
+End;

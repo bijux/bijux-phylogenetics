@@ -46,6 +46,9 @@ pytestmark = pytest.mark.engine_contract
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+EXPECTED_BEAST_REFERENCE_ROOT = (
+    FIXTURES / "expected" / "beast2_strict_yule_posterior"
+)
 
 
 def fixture(name: str) -> Path:
@@ -57,6 +60,10 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def beast_reference(name: str) -> Path:
+    return EXPECTED_BEAST_REFERENCE_ROOT / name
 
 
 def _write_executable(path: Path, body: str) -> Path:
@@ -706,6 +713,26 @@ def test_parse_beast_posterior_tree_samples_reports_metadata_annotations(
     assert sample.annotation_values["height_95%_HPD"] == "{0.2,0.4}"
 
 
+def test_parse_beast_posterior_tree_samples_reads_annotation_rich_beast_fixture() -> None:
+    report = parse_beast_posterior_tree_samples(
+        fixture("beast2_annotated_posterior.trees"),
+        burnin_fraction=0.0,
+    )
+
+    sample = report.trees[0]
+    assert sample.annotation_key_count == 6
+    assert sample.annotation_keys == [
+        "height",
+        "height_95%_HPD",
+        "lnP",
+        "posterior",
+        "rate",
+        "rate_95%_HPD",
+    ]
+    assert sample.annotation_values["posterior"] == "0.98"
+    assert sample.annotation_values["rate_95%_HPD"] == "{0.5,0.9}"
+
+
 def test_parse_beast_posterior_tree_samples_reports_structured_parse_errors(
     tmp_path: Path,
 ) -> None:
@@ -866,6 +893,87 @@ def test_summarize_beast_posterior_trees_reads_real_beast_fixture(
     assert 0.0 < report.minimum_posterior_probability <= 1.0
     assert 0.0 < report.maximum_posterior_probability <= 1.0
     assert "A" in report.consensus_newick
+
+
+def test_real_beast_reference_bundle_matches_expected_outputs(tmp_path: Path) -> None:
+    reference = json.loads(
+        beast_reference("beast2_strict_yule_posterior.reference.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    for burnin_fraction_text, counts in reference["burnin_reference"].items():
+        burnin_fraction = float(burnin_fraction_text)
+        log_summary = summarize_beast_log(
+            fixture("beast2_strict_yule_posterior.log"),
+            burnin_fraction=burnin_fraction,
+        )
+        tree_report = parse_beast_posterior_tree_samples(
+            fixture("beast2_strict_yule_posterior.trees"),
+            burnin_fraction=burnin_fraction,
+        )
+        assert log_summary.burnin_row_count == counts["burnin_row_count"]
+        assert log_summary.kept_row_count == counts["kept_row_count"]
+        assert tree_report.burnin_tree_count == counts["burnin_tree_count"]
+        assert tree_report.kept_tree_count == counts["kept_tree_count"]
+
+    parameter_reference = reference["parameter_reference_0.1"]
+    parameter_summary = summarize_beast_log(
+        fixture("beast2_strict_yule_posterior.log"),
+        burnin_fraction=0.1,
+    )
+    parameters = {
+        row.parameter: row for row in parameter_summary.parameter_summaries
+    }
+    for parameter, expected in parameter_reference.items():
+        observed = parameters[parameter]
+        assert observed.effective_sample_size == pytest.approx(
+            expected["effective_sample_size"]
+        )
+        assert observed.mean == pytest.approx(expected["mean"])
+        assert observed.median == pytest.approx(expected["median"])
+        assert observed.hpd_95_lower == pytest.approx(expected["hpd_95_lower"])
+        assert observed.hpd_95_upper == pytest.approx(expected["hpd_95_upper"])
+
+    copied_path = tmp_path / "beast2_strict_yule_posterior.trees"
+    copied_path.write_text(
+        fixture("beast2_strict_yule_posterior.trees").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    _consensus_tree, consensus = summarize_beast_posterior_trees(
+        copied_path,
+        burnin_fraction=0.1,
+    )
+    _mcc_tree, mcc = summarize_maximum_clade_credibility_tree(
+        copied_path,
+        burnin_fraction=0.1,
+    )
+    assert consensus.consensus_newick == (
+        beast_reference("beast2_strict_yule_posterior.consensus-10pct.nwk")
+        .read_text(encoding="utf-8")
+        .strip()
+    )
+    assert consensus.consensus_newick == reference["consensus_reference_0.1"]["newick"]
+    assert consensus.annotated_node_count == reference["consensus_reference_0.1"][
+        "annotated_node_count"
+    ]
+    assert consensus.minimum_posterior_probability == pytest.approx(
+        reference["consensus_reference_0.1"]["minimum_posterior_probability"]
+    )
+    assert consensus.maximum_posterior_probability == pytest.approx(
+        reference["consensus_reference_0.1"]["maximum_posterior_probability"]
+    )
+    assert mcc.mcc_newick == (
+        beast_reference("beast2_strict_yule_posterior.mcc-10pct.nwk")
+        .read_text(encoding="utf-8")
+        .strip()
+    )
+    assert mcc.mcc_newick == reference["mcc_reference_0.1"]["newick"]
+    assert mcc.selected_tree_index == reference["mcc_reference_0.1"][
+        "selected_tree_index"
+    ]
+    assert mcc.clade_credibility_score == pytest.approx(
+        reference["mcc_reference_0.1"]["clade_credibility_score"]
+    )
 
 
 def test_summarize_beast_posterior_topology_diversity_reports_topology_metrics(
