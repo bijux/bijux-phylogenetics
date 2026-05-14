@@ -26,43 +26,23 @@ pytestmark = [
 
 def _stable_generated_outputs(bundle: object) -> dict[str, Path]:
     workflow_bundle = bundle
-    return {
-        workflow_bundle.workflow_summary_path.name: workflow_bundle.workflow_summary_path,
-        workflow_bundle.alignment_path.name: workflow_bundle.alignment_path,
-        workflow_bundle.trimmed_alignment_path.name: workflow_bundle.trimmed_alignment_path,
-        workflow_bundle.tree_path.name: workflow_bundle.tree_path,
-        workflow_bundle.rooting_report_path.name: workflow_bundle.rooting_report_path,
-        workflow_bundle.model_table_path.name: workflow_bundle.model_table_path,
-        workflow_bundle.support_table_path.name: workflow_bundle.support_table_path,
-        workflow_bundle.host_switch_summary_path.name: workflow_bundle.host_switch_summary_path,
-        workflow_bundle.host_state_nodes_path.name: workflow_bundle.host_state_nodes_path,
-        workflow_bundle.host_switch_branches_path.name: workflow_bundle.host_switch_branches_path,
-        workflow_bundle.host_switch_counts_path.name: workflow_bundle.host_switch_counts_path,
-        workflow_bundle.host_switch_fits_path.name: workflow_bundle.host_switch_fits_path,
-        workflow_bundle.host_switch_unsupported_path.name: workflow_bundle.host_switch_unsupported_path,
-        workflow_bundle.host_switch_exclusions_path.name: workflow_bundle.host_switch_exclusions_path,
-        workflow_bundle.final_report_path.name: workflow_bundle.final_report_path,
-        workflow_bundle.final_manifest_path.name: workflow_bundle.final_manifest_path,
-        "biogeography/biogeography-report.html": workflow_bundle.biogeography_report_path,
-        "biogeography/ancestral-region-tree.svg": workflow_bundle.biogeography_tree_figure_path,
-        "biogeography/geographic-region-map.html": workflow_bundle.biogeography_map_path,
-        "biogeography/summary.tsv": workflow_bundle.biogeography_output_root
-        / "summary.tsv",
-        "biogeography/region-counts.tsv": workflow_bundle.biogeography_output_root
-        / "region-counts.tsv",
-        "biogeography/ancestral-regions.tsv": workflow_bundle.biogeography_output_root
-        / "ancestral-regions.tsv",
-        "biogeography/transition-matrix.tsv": workflow_bundle.biogeography_output_root
-        / "transition-matrix.tsv",
-        "biogeography/event-table.tsv": workflow_bundle.biogeography_output_root
-        / "event-table.tsv",
-        "biogeography/map-markers.tsv": workflow_bundle.biogeography_output_root
-        / "map-markers.tsv",
-        "biogeography/map-lines.tsv": workflow_bundle.biogeography_output_root
-        / "map-lines.tsv",
-        "biogeography/exclusions.tsv": workflow_bundle.biogeography_output_root
-        / "exclusions.tsv",
+    excluded = {
+        "rabies-cross-host-geography-panel.log",
+        "rabies-cross-host-geography-panel.manifest.json",
+        "biogeography/biogeography-report.manifest.json",
+        "bootstrap-review/bootstrap-review.distance-matrix.tsv",
     }
+    outputs: dict[str, Path] = {}
+    for path in workflow_bundle.output_root.rglob("*"):
+        if not path.is_file():
+            continue
+        relative_name = str(path.relative_to(workflow_bundle.output_root))
+        if relative_name.startswith("engine-artifacts/"):
+            continue
+        if relative_name in excluded:
+            continue
+        outputs[relative_name] = path
+    return outputs
 
 
 def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface() -> (
@@ -88,6 +68,16 @@ def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface
     assert dataset.metadata_path.is_file()
     assert dataset.centroids_path.is_file()
     assert dataset.reference_output_root.is_dir()
+    assert dataset.workflow_config_path.is_file()
+    assert dataset.clade_metadata_columns == (
+        "host_species",
+        "host_group",
+        "country",
+        "region_group",
+    )
+    assert dataset.comparative_formula == "region_longitude ~ host_group"
+    assert dataset.comparative_response == "region_longitude"
+    assert dataset.comparative_branch_length_floor == 1e-6
     assert "MG458305" in dataset.source_accessions
 
 
@@ -135,13 +125,19 @@ def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_wor
     assert result.dataset_export.sequences_path.is_file()
     assert result.dataset_export.metadata_path.is_file()
     assert result.dataset_export.centroids_path.is_file()
+    assert result.dataset_export.workflow_config_path.is_file()
     assert result.workflow_bundle.workflow_summary_path.is_file()
+    assert result.workflow_bundle.clade_table_path.is_file()
+    assert result.workflow_bundle.bootstrap_summary_path.is_file()
     assert result.workflow_bundle.tree_path.is_file()
     assert result.workflow_bundle.host_switch_summary_path.is_file()
     assert result.workflow_bundle.biogeography_report_path.is_file()
+    assert result.workflow_bundle.comparative_report_path.is_file()
     assert result.workflow_bundle.final_report_path.is_file()
     assert result.overview_path.is_file()
-    assert "final report" in result.overview_path.read_text(encoding="utf-8")
+    overview = result.overview_path.read_text(encoding="utf-8")
+    assert "final report" in overview
+    assert "comparative report" in overview
 
 
 def test_export_rabies_cross_host_geography_panel_dataset_copies_expected_outputs(
@@ -157,8 +153,11 @@ def test_export_rabies_cross_host_geography_panel_dataset_copies_expected_output
     assert result.sequences_path.is_file()
     assert result.metadata_path.is_file()
     assert result.centroids_path.is_file()
+    assert result.workflow_config_path.is_file()
     assert "rabies-cross-host-geography-report.html" in expected_files
     assert "biogeography/biogeography-report.html" in expected_files
+    assert "comparative/comparative-report.html" in expected_files
+    assert "bootstrap-review/bootstrap-review.summary.tsv" in expected_files
 
 
 def test_public_runtime_exports_include_rabies_cross_host_geography_panel_surface() -> (
@@ -191,12 +190,15 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
 ) -> None:
     executables = require_alignment_engine_executables()
     output = tmp_path / "rabies-integrated-demo"
+    dataset = load_rabies_cross_host_geography_panel_dataset()
     exit_code = main(
         [
             "demo",
             "rabies-cross-host-geography-panel",
             "--out",
             str(output),
+            "--config",
+            str(dataset.workflow_config_path),
             "--mafft-executable",
             executables["mafft"],
             "--trimal-executable",
@@ -209,18 +211,25 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 19
+    assert payload["metrics"]["artifact_count"] == 27
     assert payload["metrics"]["sequence_count"] == 9
+    assert payload["metrics"]["config_path"] == str(output / "dataset" / "workflow-config.json")
     assert payload["metrics"]["host_trait"] == "host_group"
     assert payload["metrics"]["geography_trait"] == "region_group"
     assert payload["metrics"]["selected_model"] == "TPM2u+F+G4"
+    assert payload["metrics"]["aligned_quality_score"] == 90.48
+    assert payload["metrics"]["trimmed_quality_score"] == 90.48
     assert payload["metrics"]["minimum_support"] == 84.0
     assert payload["metrics"]["maximum_support"] == 100.0
     assert payload["metrics"]["root_host"] == "bat"
     assert payload["metrics"]["root_region"] == "north_asia"
     assert payload["metrics"]["host_switch_count"] == 2
     assert payload["metrics"]["migration_event_count"] == 4
-    assert payload["metrics"]["reference_output_count"] == 27
+    assert payload["metrics"]["clade_row_count"] == 17
+    assert payload["metrics"]["bootstrap_tree_count"] == 1000
+    assert payload["metrics"]["comparative_formula"] == "region_longitude ~ host_group"
+    assert payload["metrics"]["comparative_selected_model"] == "brownian"
+    assert payload["metrics"]["reference_output_count"] == 53
     assert payload["data"]["dataset"]["dataset_id"] == (
         "rabies_cross_host_geography_panel"
     )
