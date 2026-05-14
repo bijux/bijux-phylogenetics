@@ -114,6 +114,68 @@ time.sleep(1.0)
     )
 
 
+def _fake_mrbayes_malformed_outputs(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+consensus_path = Path(f"{nexus_path}.con.tre")
+trace_path.write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t-110.0\\t0.40\\t0.90\\n"
+    "100\\tbad\\t0.41\\t0.95\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n",
+    encoding="utf-8",
+)
+consensus_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree con_50_majrule = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_mrbayes_killed(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import os
+import signal
+import sys
+
+if "--version" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+os.kill(os.getpid(), signal.SIGTERM)
+""",
+    )
+
+
 def test_prepare_mrbayes_analysis_writes_nexus_with_run_settings(
     tmp_path: Path,
 ) -> None:
@@ -239,6 +301,63 @@ def test_run_mrbayes_posterior_inference_times_out_and_marks_incomplete_run(
     assert len(marker_candidates) == 1
     marker_text = marker_candidates[0].read_text(encoding="utf-8")
     assert '"timed_out": true' in marker_text
+
+
+def test_run_mrbayes_posterior_inference_marks_killed_process_incomplete(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mrbayes_killed(tmp_path / "mb-killed")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+
+    with pytest.raises(EngineWorkflowError, match="failed with exit code"):
+        run_mrbayes_posterior_inference(
+            nexus_path,
+            executable=executable,
+        )
+
+    marker_candidates = sorted(tmp_path.glob("*.incomplete.json"))
+    assert len(marker_candidates) == 1
+    marker_text = marker_candidates[0].read_text(encoding="utf-8")
+    assert '"exit_code": -15' in marker_text
+
+
+def test_run_mrbayes_posterior_inference_rejects_or_cleans_malformed_outputs(
+    tmp_path: Path,
+) -> None:
+    malformed = _fake_mrbayes_malformed_outputs(tmp_path / "mb-malformed")
+    valid = _fake_mrbayes(tmp_path / "mb-valid")
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
+
+    with pytest.raises(EngineWorkflowError, match="could not convert string to float"):
+        run_mrbayes_posterior_inference(
+            nexus_path,
+            executable=malformed,
+        )
+
+    manifest_path = nexus_path.with_suffix("").with_suffix(".manifest.json")
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+    assert marker_path.exists()
+    marker_text = marker_path.read_text(encoding="utf-8")
+    assert "validation: valueerror" in marker_text
+
+    with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
+        run_mrbayes_posterior_inference(
+            nexus_path,
+            executable=valid,
+            resume=True,
+            incomplete_run_policy="reject",
+        )
+
+    report = run_mrbayes_posterior_inference(
+        nexus_path,
+        executable=valid,
+        resume=True,
+        incomplete_run_policy="clean",
+    )
+    assert report.output_paths["parameter_traces"].exists()
+    assert marker_path.exists() is False
 
 
 def test_parse_mrbayes_traces_and_compute_effective_sample_sizes(

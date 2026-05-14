@@ -33,6 +33,7 @@ from bijux_phylogenetics.engines.common import (
     execute_engine_command,
     read_engine_version,
     resolve_engine_executable,
+    update_incomplete_engine_run,
     validate_timeout_seconds,
 )
 from bijux_phylogenetics.engines.workflows import (
@@ -42,7 +43,7 @@ from bijux_phylogenetics.engines.workflows import (
     _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
+from bijux_phylogenetics.errors import EngineWorkflowError, PhylogeneticsError
 from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
@@ -600,10 +601,32 @@ def run_mrbayes_posterior_inference(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    parse_mrbayes_parameter_traces(trace_path)
-    parse_mrbayes_mcmc_diagnostics(mcmc_path)
-    parse_mrbayes_consensus_tree(consensus_path)
-    summarize_mrbayes_posterior_trees(tree_path, burnin_fraction=0.25)
+    try:
+        parse_mrbayes_parameter_traces(trace_path)
+        parse_mrbayes_mcmc_diagnostics(mcmc_path)
+        parse_mrbayes_consensus_tree(consensus_path)
+        summarize_mrbayes_posterior_trees(tree_path, burnin_fraction=0.25)
+    except (PhylogeneticsError, ValueError) as error:
+        error_kind = (
+            error.code
+            if isinstance(error, PhylogeneticsError)
+            else error.__class__.__name__.lower()
+        )
+        update_incomplete_engine_run(
+            manifest_path,
+            ended_at_utc=run.ended_at_utc,
+            timed_out=run.timed_out,
+            exit_code=run.exit_code,
+            failure_message=(
+                "MrBayes posterior-tree-inference produced outputs that failed "
+                f"validation: {error_kind}"
+            ),
+        )
+        if isinstance(error, PhylogeneticsError):
+            raise
+        raise EngineWorkflowError(
+            f"MrBayes posterior outputs failed validation: {error}"
+        ) from error
     report = EngineWorkflowReport(
         workflow="posterior-tree-inference",
         engine_name="MrBayes",
