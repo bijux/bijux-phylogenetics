@@ -14,7 +14,7 @@ from bijux_phylogenetics.reference_parity import (
 def test_validate_reference_parity_examples_passes() -> None:
     report = validate_reference_parity_examples()
     assert report.all_passed is True
-    assert report.case_count == 10
+    assert report.case_count == 12
     assert report.failed_case_count == 0
     assert report.covered_methods == [
         "blombergs-k",
@@ -45,6 +45,16 @@ def test_validate_reference_parity_examples_records_failure_modes_and_inputs() -
         for item in report.observations
         if item.method == "consensus-tree-generation"
     )
+    overlap_rf = next(
+        item
+        for item in report.observations
+        if item.case == "robinson-foulds-prune-to-shared-taxa"
+    )
+    overlap_branch_score = next(
+        item
+        for item in report.observations
+        if item.case == "branch-score-distance-prune-to-shared-taxa"
+    )
     assert pgls.input_fixtures[0].name == "example_tree.nwk"
     assert pgls.reference_tool == "ape+nlme"
     assert "floating-point linear algebra" in pgls.tolerance_reason
@@ -56,6 +66,14 @@ def test_validate_reference_parity_examples_records_failure_modes_and_inputs() -
     assert rf.shared_taxa == ["A", "B", "C", "D"]
     assert rf.left_only_taxa == []
     assert rf.right_only_taxa == []
+    assert overlap_rf.expected_failure_mode == "missing_taxa_policy"
+    assert overlap_rf.taxon_overlap_policy == "prune-to-shared"
+    assert overlap_rf.shared_taxa == ["A", "B", "C"]
+    assert overlap_rf.left_only_taxa == ["D"]
+    assert overlap_rf.right_only_taxa == ["E"]
+    assert overlap_rf.observed_output["robinson_foulds_distance"] == 0
+    assert overlap_branch_score.expected_failure_mode == "missing_taxa_policy"
+    assert overlap_branch_score.observed_output["branch_score_distance"] == 0.0
     assert consensus.observed_output["unrooted_robinson_foulds"] == 0
     assert consensus.observed_output["consensus_splits"] == [
         "C|D||A|B|E|F",

@@ -10,7 +10,7 @@ pytestmark = [pytest.mark.scientific_validation]
 def test_validate_reference_parity_examples_extended_passes() -> None:
     report = validate_reference_parity_examples(include_extended=True)
     assert report.all_passed is True
-    assert report.case_count == 12
+    assert report.case_count == 14
     assert report.failed_case_count == 0
     assert report.covered_methods == [
         "blombergs-k",

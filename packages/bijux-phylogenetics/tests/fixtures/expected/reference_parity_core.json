@@ -45,6 +45,44 @@
       }
     },
     {
+      "case": "robinson-foulds-prune-to-shared-taxa",
+      "method": "robinson-foulds-distance",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/trees/example_tree_overlap.nwk"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "DendroPy symmetric_difference after pruning both trees to the shared taxon set",
+      "tolerance": 0.0,
+      "tolerance_reason": "After pruning both fixtures to the shared taxa A, B, and C, the rooted Robinson-Foulds distance is an exact integer count with no floating-point component.",
+      "failure_mode": "missing_taxa_policy",
+      "taxon_overlap_policy": "prune-to-shared",
+      "rf_mode": "rooted",
+      "expected_output": {
+        "normalized_robinson_foulds": 0.0,
+        "robinson_foulds_distance": 0
+      }
+    },
+    {
+      "case": "branch-score-distance-prune-to-shared-taxa",
+      "method": "branch-score-distance",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree.nwk",
+        "tests/fixtures/trees/example_tree_overlap.nwk"
+      ],
+      "reference_tool": "DendroPy",
+      "reference_version": "5.0.8",
+      "reference_source": "DendroPy euclidean_distance after pruning both trees to the shared taxon set",
+      "tolerance": 1e-12,
+      "tolerance_reason": "The two fixtures have identical branch lengths once both are pruned to the shared taxa, so only floating-point serialization noise is tolerated.",
+      "failure_mode": "missing_taxa_policy",
+      "taxon_overlap_policy": "prune-to-shared",
+      "expected_output": {
+        "branch_score_distance": 0.0
+      }
+    },
+    {
       "case": "pgls-example-tree-brownian",
       "method": "pgls",
       "input_fixtures": [
