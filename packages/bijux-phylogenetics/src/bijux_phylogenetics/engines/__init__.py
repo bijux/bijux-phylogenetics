@@ -70,6 +70,12 @@ from .reports import (
     render_inference_workflow_report,
     render_model_selection_limitations_report,
 )
+from .replay import (
+    ManifestReplayComparison,
+    ManifestReplayDrift,
+    ManifestReplayReport,
+    replay_workflow_manifest,
+)
 from .validation import (
     BootstrapTreeSetValidationReport,
     InferenceFailureTaxonomyReport,
@@ -155,6 +161,9 @@ __all__ = [
     "InferenceSensitivityReport",
     "InferenceSensitivityReportBuildResult",
     "InferenceWorkflowReportBuildResult",
+    "ManifestReplayComparison",
+    "ManifestReplayDrift",
+    "ManifestReplayReport",
     "ModelSelectionLimitationsReport",
     "ModelSelectionLimitationsReportBuildResult",
     "WorkflowPreflightStatus",
@@ -185,6 +194,7 @@ __all__ = [
     "list_external_engine_workflows",
     "list_trimal_trimming_modes",
     "read_engine_version",
+    "replay_workflow_manifest",
     "render_inference_sensitivity_report",
     "render_inference_workflow_report",
     "render_model_selection_limitations_report",
