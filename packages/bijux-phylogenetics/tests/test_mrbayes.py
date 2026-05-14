@@ -330,17 +330,21 @@ def test_run_mrbayes_posterior_inference_rejects_or_cleans_malformed_outputs(
     nexus_path = tmp_path / "analysis.nex"
     prepare_mrbayes_analysis(fixture("alignments/example_alignment.fasta"), nexus_path)
 
-    with pytest.raises(EngineWorkflowError, match="could not convert string to float"):
+    with pytest.raises(
+        EngineWorkflowError,
+        match="non-numeric value for 'LnL'",
+    ) as error:
         run_mrbayes_posterior_inference(
             nexus_path,
             executable=malformed,
         )
 
+    assert error.value.code == "mrbayes_trace_invalid_parameter_value"
     manifest_path = nexus_path.with_suffix("").with_suffix(".manifest.json")
     marker_path = manifest_path.with_suffix(".incomplete.json")
     assert marker_path.exists()
     marker_text = marker_path.read_text(encoding="utf-8")
-    assert "validation: valueerror" in marker_text
+    assert "validation: mrbayes_trace_invalid_parameter_value" in marker_text
 
     with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
         run_mrbayes_posterior_inference(

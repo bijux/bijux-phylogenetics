@@ -61,6 +61,23 @@ _MRBAYES_PROBABILITY_PATTERN = re.compile(r"prob=([0-9.eE+-]+)")
 _MRBAYES_PROBABILITY_PERCENT_PATTERN = re.compile(r'prob\(percent\)="([0-9.eE+-]+)"')
 
 
+def _mrbayes_artifact_error(
+    message: str,
+    *,
+    code: str,
+    path: Path,
+    artifact_kind: str,
+    details: dict[str, object] | None = None,
+) -> EngineWorkflowError:
+    payload: dict[str, object] = {
+        "path": str(path),
+        "artifact_kind": artifact_kind,
+    }
+    if details is not None:
+        payload.update(details)
+    return EngineWorkflowError(message, code=code, details=payload)
+
+
 @dataclass(slots=True)
 class MrBayesPreparationReport:
     alignment_path: Path
@@ -606,12 +623,7 @@ def run_mrbayes_posterior_inference(
         parse_mrbayes_mcmc_diagnostics(mcmc_path)
         parse_mrbayes_consensus_tree(consensus_path)
         summarize_mrbayes_posterior_trees(tree_path, burnin_fraction=0.25)
-    except (PhylogeneticsError, ValueError) as error:
-        error_kind = (
-            error.code
-            if isinstance(error, PhylogeneticsError)
-            else error.__class__.__name__.lower()
-        )
+    except PhylogeneticsError as error:
         update_incomplete_engine_run(
             manifest_path,
             ended_at_utc=run.ended_at_utc,
@@ -619,14 +631,10 @@ def run_mrbayes_posterior_inference(
             exit_code=run.exit_code,
             failure_message=(
                 "MrBayes posterior-tree-inference produced outputs that failed "
-                f"validation: {error_kind}"
+                f"validation: {error.code}"
             ),
         )
-        if isinstance(error, PhylogeneticsError):
-            raise
-        raise EngineWorkflowError(
-            f"MrBayes posterior outputs failed validation: {error}"
-        ) from error
+        raise
     report = EngineWorkflowReport(
         workflow="posterior-tree-inference",
         engine_name="MrBayes",
@@ -651,6 +659,13 @@ def run_mrbayes_posterior_inference(
 
 def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
     """Parse a MrBayes parameter trace table into deterministic numeric rows."""
+    if not path.exists():
+        raise _mrbayes_artifact_error(
+            f"MrBayes trace file was not found: {path}",
+            code="mrbayes_trace_missing_file",
+            path=path,
+            artifact_kind="mrbayes-trace",
+        )
     rows: list[MrBayesTraceRow] = []
     with path.open(encoding="utf-8", newline="") as handle:
         filtered_lines = [
@@ -660,23 +675,56 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
         ]
     reader = csv.DictReader(filtered_lines, delimiter="\t")
     if reader.fieldnames is None:
-        raise EngineWorkflowError(f"MrBayes trace file contains no header: {path}")
+        raise _mrbayes_artifact_error(
+            f"MrBayes trace file contains no header: {path}",
+            code="mrbayes_trace_missing_header",
+            path=path,
+            artifact_kind="mrbayes-trace",
+        )
     columns = [field for field in reader.fieldnames if field and field != "Gen"]
-    for raw_row in reader:
+    for row_number, raw_row in enumerate(reader, start=2):
         generation_text = raw_row.get("Gen") or raw_row.get("gen")
         if generation_text is None:
-            raise EngineWorkflowError(f"MrBayes trace file lacks a Gen column: {path}")
-        values = {
-            column: float(raw_row[column])
-            for column in columns
-            if raw_row.get(column) not in {None, ""}
-        }
+            raise _mrbayes_artifact_error(
+                f"MrBayes trace file lacks a Gen column: {path}",
+                code="mrbayes_trace_missing_generation_column",
+                path=path,
+                artifact_kind="mrbayes-trace",
+            )
+        try:
+            generation = int(float(generation_text))
+        except ValueError as error:
+            raise _mrbayes_artifact_error(
+                f"MrBayes trace file contains a non-numeric generation value on row {row_number}: {path}",
+                code="mrbayes_trace_invalid_generation_value",
+                path=path,
+                artifact_kind="mrbayes-trace",
+                details={"row_number": row_number},
+            ) from error
+        values: dict[str, float] = {}
+        for column in columns:
+            raw_value = raw_row.get(column)
+            if raw_value in {None, ""}:
+                continue
+            try:
+                values[column] = float(raw_value)
+            except ValueError as error:
+                raise _mrbayes_artifact_error(
+                    f"MrBayes trace file contains a non-numeric value for '{column}' on row {row_number}: {path}",
+                    code="mrbayes_trace_invalid_parameter_value",
+                    path=path,
+                    artifact_kind="mrbayes-trace",
+                    details={"row_number": row_number, "column": column},
+                ) from error
         rows.append(
-            MrBayesTraceRow(generation=int(float(generation_text)), values=values)
+            MrBayesTraceRow(generation=generation, values=values)
         )
     if not rows:
-        raise EngineWorkflowError(
-            f"MrBayes trace file contains no sampled rows: {path}"
+        raise _mrbayes_artifact_error(
+            f"MrBayes trace file contains no sampled rows: {path}",
+            code="mrbayes_trace_missing_rows",
+            path=path,
+            artifact_kind="mrbayes-trace",
         )
     return MrBayesTraceReport(
         path=path, row_count=len(rows), columns=columns, rows=rows
@@ -685,6 +733,13 @@ def parse_mrbayes_parameter_traces(path: Path) -> MrBayesTraceReport:
 
 def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
     """Parse a MrBayes .mcmc diagnostics table into deterministic rows."""
+    if not path.exists():
+        raise _mrbayes_artifact_error(
+            f"MrBayes MCMC diagnostics file was not found: {path}",
+            code="mrbayes_mcmc_missing_file",
+            path=path,
+            artifact_kind="mrbayes-mcmc",
+        )
     comment_lines: list[str] = []
     table_lines: list[str] = []
     with path.open(encoding="utf-8", newline="") as handle:
@@ -698,17 +753,33 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
             table_lines.append(line)
     reader = csv.DictReader(table_lines, delimiter="\t")
     if reader.fieldnames is None:
-        raise EngineWorkflowError(
-            f"MrBayes MCMC diagnostics file contains no header: {path}"
+        raise _mrbayes_artifact_error(
+            f"MrBayes MCMC diagnostics file contains no header: {path}",
+            code="mrbayes_mcmc_missing_header",
+            path=path,
+            artifact_kind="mrbayes-mcmc",
         )
     columns = [field for field in reader.fieldnames if field and field != "Gen"]
     rows: list[MrBayesMcmcRow] = []
-    for raw_row in reader:
+    for row_number, raw_row in enumerate(reader, start=2):
         generation_text = raw_row.get("Gen") or raw_row.get("gen")
         if generation_text is None:
-            raise EngineWorkflowError(
-                f"MrBayes MCMC diagnostics file lacks a Gen column: {path}"
+            raise _mrbayes_artifact_error(
+                f"MrBayes MCMC diagnostics file lacks a Gen column: {path}",
+                code="mrbayes_mcmc_missing_generation_column",
+                path=path,
+                artifact_kind="mrbayes-mcmc",
             )
+        try:
+            generation = int(float(generation_text))
+        except ValueError as error:
+            raise _mrbayes_artifact_error(
+                f"MrBayes MCMC diagnostics file contains a non-numeric generation value on row {row_number}: {path}",
+                code="mrbayes_mcmc_invalid_generation_value",
+                path=path,
+                artifact_kind="mrbayes-mcmc",
+                details={"row_number": row_number},
+            ) from error
         values: dict[str, float | None] = {}
         for column in columns:
             raw_value = raw_row.get(column)
@@ -718,13 +789,25 @@ def parse_mrbayes_mcmc_diagnostics(path: Path) -> MrBayesMcmcReport:
             if normalized.lower() in {"na", "nan"}:
                 values[column] = None
             else:
-                values[column] = float(normalized)
+                try:
+                    values[column] = float(normalized)
+                except ValueError as error:
+                    raise _mrbayes_artifact_error(
+                        f"MrBayes MCMC diagnostics file contains a non-numeric value for '{column}' on row {row_number}: {path}",
+                        code="mrbayes_mcmc_invalid_parameter_value",
+                        path=path,
+                        artifact_kind="mrbayes-mcmc",
+                        details={"row_number": row_number, "column": column},
+                    ) from error
         rows.append(
-            MrBayesMcmcRow(generation=int(float(generation_text)), values=values)
+            MrBayesMcmcRow(generation=generation, values=values)
         )
     if not rows:
-        raise EngineWorkflowError(
-            f"MrBayes MCMC diagnostics file contains no sampled rows: {path}"
+        raise _mrbayes_artifact_error(
+            f"MrBayes MCMC diagnostics file contains no sampled rows: {path}",
+            code="mrbayes_mcmc_missing_rows",
+            path=path,
+            artifact_kind="mrbayes-mcmc",
         )
     return MrBayesMcmcReport(
         path=path,
