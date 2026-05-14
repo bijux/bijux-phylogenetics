@@ -1815,6 +1815,11 @@ def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     assert payload["metrics"]["predictor_count"] == 2
     assert payload["metrics"]["analysis_taxa"] == 6
     assert payload["metrics"]["excluded_taxa"] == 0
+    assert payload["metrics"]["residual_covariance_response_count"] == 2
+    assert payload["metrics"]["residual_covariance_matrix_rank"] == 1
+    assert math.isinf(payload["metrics"]["residual_covariance_condition_number"])
+    assert payload["metrics"]["residual_covariance_singular"] is True
+    assert payload["metrics"]["residual_covariance_near_singular"] is True
     assert payload["metrics"]["residual_covariance_row_count"] == 4
     assert payload["metrics"]["residual_correlation_row_count"] == 4
     assert payload["metrics"]["residual_association_count"] == 1
@@ -1825,6 +1830,35 @@ def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
         "shared_complete_case_across_responses_and_predictor_terms"
     )
     assert payload["data"]["numerical_tolerance"] == 1e-12
+
+
+def test_comparative_multivariate_cli_reports_full_rank_covariance_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "multivariate",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multivariate_full_rank.tsv")),
+            "--responses",
+            "response_growth",
+            "response_range",
+            "--predictors",
+            "predictor_one",
+            "predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["residual_covariance_response_count"] == 2
+    assert payload["metrics"]["residual_covariance_matrix_rank"] == 2
+    assert math.isfinite(payload["metrics"]["residual_covariance_condition_number"])
+    assert payload["metrics"]["residual_covariance_singular"] is False
+    assert payload["metrics"]["residual_covariance_near_singular"] is False
 
 
 def test_comparative_multivariate_cli_writes_review_ledgers(
