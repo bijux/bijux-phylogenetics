@@ -222,6 +222,7 @@ class PGLSResult:
     lambda_value: float
     lambda_fit: PGLSLambdaFitReport
     log_likelihood: float
+    aic: float
     residual_variance: float
     r_squared: float
     coefficients: list[PGLSCoefficient]
@@ -653,6 +654,10 @@ def run_pgls(
         inverse_covariance,
         covariance,
     )
+    parameter_count = len(coefficients) + 1
+    if lambda_fit.mode == "estimated":
+        parameter_count += 1
+    aic = -2.0 * log_likelihood + (2.0 * parameter_count)
     return PGLSResult(
         tree_path=tree_path,
         traits_path=traits_path,
@@ -665,6 +670,7 @@ def run_pgls(
         lambda_value=resolved_lambda,
         lambda_fit=lambda_fit,
         log_likelihood=log_likelihood,
+        aic=aic,
         residual_variance=residual_variance,
         r_squared=r_squared,
         coefficients=coefficient_reports,

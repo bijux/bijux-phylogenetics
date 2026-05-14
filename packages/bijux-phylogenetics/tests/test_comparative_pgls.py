@@ -84,6 +84,11 @@ def test_run_pgls_supports_one_predictor() -> None:
     slope = next(row for row in report.coefficients if row.name == "predictor_one")
     assert math.isclose(intercept.estimate, 1.0, abs_tol=1e-6)
     assert math.isclose(slope.estimate, 0.7, abs_tol=1e-6)
+    assert math.isclose(
+        report.aic,
+        -2.0 * report.log_likelihood + (2.0 * (len(report.coefficients) + 1)),
+        rel_tol=1e-12,
+    )
     assert all(row.inference_distribution == "student-t" for row in report.coefficients)
     assert all(row.degrees_of_freedom == 2 for row in report.coefficients)
     assert math.isclose(slope.test_statistic, 2.4748737341529177, rel_tol=1e-12)
@@ -272,4 +277,31 @@ def test_run_pgls_matches_primate_reference_when_lambda_is_fixed() -> None:
         reference["r_estimated_lambda"]["p_values"]["social_group_size"],
         rel_tol=5e-4,
         abs_tol=5e-6,
+    )
+
+
+def test_run_pgls_reports_aic_for_estimated_lambda() -> None:
+    repository_root = Path(__file__).resolve().parents[3]
+    report = run_pgls(
+        repository_root
+        / "evidence-book"
+        / "studies"
+        / "primate-longevity-signal"
+        / "datasets"
+        / "reference_trimmed_primatetree.nwk",
+        repository_root
+        / "evidence-book"
+        / "studies"
+        / "primate-longevity-signal"
+        / "datasets"
+        / "reference_primate.csv",
+        response="longevity",
+        predictors=["social_group_size"],
+        taxon_column="species",
+        lambda_value="estimate",
+    )
+    assert math.isclose(
+        report.aic,
+        -2.0 * report.log_likelihood + (2.0 * (len(report.coefficients) + 2)),
+        rel_tol=1e-12,
     )
