@@ -439,6 +439,12 @@ instead of silently continuing on bad raw input. Mixed raw inputs must now
 either be fixed or forced with an explicit `--sequence-type` choice before the
 workflow continues.
 
+The raw FASTA preflight surfaces now scan inputs linearly instead of
+materializing whole record lists just to count duplicate identifiers, illegal
+characters, empty records, and length outliers. That keeps
+`alignment validate-input` practical on thousand-sequence inputs before any
+external engine is invoked.
+
 The checked real-dataset regression corpus for this end-to-end workflow now
 lives under `packages/bijux-phylogenetics/tests/fixtures/expected/fasta_to_tree/`.
 It currently pins reviewer-facing output bundles for:
@@ -460,7 +466,11 @@ per-sequence gap fractions, per-column gap fractions, invariant-site counts,
 parsimony-informative-site counts, missing-data concentration, and a direct
 suspicious-alignment verdict. The reviewer-facing alignment reports reuse the
 same scoring contract so command-line JSON, HTML reports, and checked-in
-reference fixtures stay aligned.
+reference fixtures stay aligned. The quality surface now reuses one loaded
+alignment instead of re-reading the same matrix for each sub-diagnostic, and it
+skips pairwise near-duplicate scans above the governed large-matrix threshold
+with an explicit warning rather than silently doing quadratic work on
+thousand-sequence alignments.
 
 ## Alignment Filter Profiles
 

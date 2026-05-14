@@ -5122,4 +5122,8 @@ For raw input hygiene before alignment, the alignment family now includes
 duplicate-ID, illegal-character, empty-record, length-outlier, and
 identifier-normalization contract that `adapter fasta-to-tree` uses internally,
 including the rule that mixed raw inputs must be forced with an explicit
-`--sequence-type` before the workflow can continue.
+`--sequence-type` before the workflow can continue. The raw validation path now
+scans FASTA inputs linearly instead of building one full record list just to
+answer preflight questions, and the higher-level alignment-quality surface
+reuses one loaded matrix with an explicit warning when near-duplicate pairwise
+review is skipped above the governed large-alignment threshold.

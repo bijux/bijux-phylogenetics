@@ -3459,6 +3459,13 @@ Use `alignment validate-input` when you need one broader report of duplicate
 identifiers, illegal sequence characters, empty records, raw-sequence length
 outliers, and sequence-type detection before any engine is invoked.
 
+That raw validation path now streams FASTA inputs linearly, so it remains
+useful on thousand-sequence inputs before alignment. The downstream
+`alignment quality` surface also reuses one loaded alignment instead of
+re-reading the same matrix for each sub-diagnostic, and it emits an explicit
+warning if near-duplicate pairwise review is skipped above the governed
+large-alignment threshold.
+
 Use `alignment repair-input` or the matching `adapter fasta-to-tree`
 `--normalize-identifiers` and `--remove-invalid-records` controls when you want
 the runtime to prepare a repaired FASTA explicitly rather than proceeding on
