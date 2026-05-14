@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+import bijux_phylogenetics
 from bijux_phylogenetics.datasets.continuous_mode_recovery import (
     export_continuous_mode_recovery_panel_dataset,
     load_continuous_mode_recovery_panel_dataset,
@@ -81,3 +82,26 @@ def test_export_continuous_mode_recovery_panel_dataset_copies_expected_outputs(
     assert len(expected_files) == 9
     assert Path("workflow-summary.tsv") in expected_files
     assert Path("simulated-traits/brownian-sigma-recovery.tsv") in expected_files
+
+
+def test_public_runtime_exports_include_continuous_mode_recovery_panel() -> None:
+    assert (
+        bijux_phylogenetics.load_continuous_mode_recovery_panel_dataset
+        is load_continuous_mode_recovery_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.export_continuous_mode_recovery_panel_dataset
+        is export_continuous_mode_recovery_panel_dataset
+    )
+    assert (
+        bijux_phylogenetics.run_continuous_mode_recovery_panel_workflow
+        is run_continuous_mode_recovery_panel_workflow
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_mode_recovery_panel_workflow_bundle
+        is write_continuous_mode_recovery_panel_workflow_bundle
+    )
+    assert (
+        bijux_phylogenetics.run_continuous_mode_recovery_panel_demo
+        is run_continuous_mode_recovery_panel_demo
+    )

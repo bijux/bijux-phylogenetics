@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import bijux_phylogenetics
+
 from bijux_phylogenetics.comparative.continuous_mode_recovery import (
     ContinuousModeRecoveryScenario,
     run_continuous_mode_recovery,
@@ -98,6 +100,26 @@ def test_continuous_mode_recovery_writers_emit_review_ledgers(
     assert any(
         row.startswith("weak-ou-identifiability\tornstein-uhlenbeck\tflat_likelihood\t")
         for row in warning_rows[1:]
+    )
+
+
+def test_public_runtime_exports_include_continuous_mode_recovery_surface() -> None:
+    assert bijux_phylogenetics.run_continuous_mode_recovery is run_continuous_mode_recovery
+    assert (
+        bijux_phylogenetics.write_continuous_mode_recovery_summary_table
+        is write_continuous_mode_recovery_summary_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_mode_recovery_parameter_table
+        is write_continuous_mode_recovery_parameter_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_mode_recovery_model_choice_table
+        is write_continuous_mode_recovery_model_choice_table
+    )
+    assert (
+        bijux_phylogenetics.write_continuous_mode_recovery_warning_table
+        is write_continuous_mode_recovery_warning_table
     )
 
 
