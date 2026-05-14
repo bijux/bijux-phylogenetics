@@ -159,6 +159,10 @@ def test_load_package_bundle_policies_reads_repo_owned_policy() -> None:
         "bijux-phylogenetics-dev",
     }
     assert policies["bijux-phylogenetics"].wheel_module_root == "bijux_phylogenetics"
+    assert (
+        "bijux_phylogenetics_dev/quality/package_install_smoke.py"
+        in policies["bijux-phylogenetics-dev"].required_wheel_entries
+    )
 
 
 def test_runtime_publication_policy_allows_secured_xml_dependency() -> None:
