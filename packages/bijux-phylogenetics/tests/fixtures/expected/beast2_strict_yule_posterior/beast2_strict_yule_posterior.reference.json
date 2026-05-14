@@ -1,0 +1,83 @@
+{
+  "burnin_reference": {
+    "0.0": {
+      "burnin_row_count": 0,
+      "burnin_tree_count": 0,
+      "kept_row_count": 101,
+      "kept_tree_count": 101
+    },
+    "0.1": {
+      "burnin_row_count": 10,
+      "burnin_tree_count": 10,
+      "kept_row_count": 91,
+      "kept_tree_count": 91
+    },
+    "0.25": {
+      "burnin_row_count": 25,
+      "burnin_tree_count": 25,
+      "kept_row_count": 76,
+      "kept_tree_count": 76
+    },
+    "0.5": {
+      "burnin_row_count": 50,
+      "burnin_tree_count": 50,
+      "kept_row_count": 51,
+      "kept_tree_count": 51
+    }
+  },
+  "consensus_reference_0.1": {
+    "annotated_node_count": 2,
+    "maximum_posterior_probability": 0.549450549450549,
+    "minimum_posterior_probability": 0.516483516483517,
+    "newick": "((A:0.650152906977667,B:0.616982649600064)0.549450549450549:0.552871712869157,(C:0.651930087006257,D:0.629865244653794)0.516483516483517:0.588017038485484);"
+  },
+  "mcc_reference_0.1": {
+    "clade_credibility_score": -1.259548405895495,
+    "newick": "((A:1.28737862696538,B:1.28737862696538):0.143881339489478,(C:0.7308257259889,D:0.7308257259889):0.700434240465955);",
+    "selected_tree_index": 13
+  },
+  "parameter_reference_0.1": {
+    "birthRate": {
+      "effective_sample_size": 3.510788,
+      "hpd_95_lower": 1.260613,
+      "hpd_95_upper": 2.224518,
+      "mean": 1.647275,
+      "median": 1.426786
+    },
+    "clockRate": {
+      "effective_sample_size": 3.068076,
+      "hpd_95_lower": 0.000642,
+      "hpd_95_upper": 0.005594,
+      "mean": 0.002824,
+      "median": 0.002202
+    },
+    "likelihood": {
+      "effective_sample_size": 4.252582,
+      "hpd_95_lower": -38.871036,
+      "hpd_95_upper": -29.135738,
+      "mean": -33.42932,
+      "median": -33.249268
+    },
+    "posterior": {
+      "effective_sample_size": 4.54323,
+      "hpd_95_lower": -48.151951,
+      "hpd_95_upper": -40.603344,
+      "mean": -44.869895,
+      "median": -44.706451
+    },
+    "prior": {
+      "effective_sample_size": 17.978083,
+      "hpd_95_lower": -15.868842,
+      "hpd_95_upper": -7.722693,
+      "mean": -11.440575,
+      "median": -11.324013
+    },
+    "tree.height": {
+      "effective_sample_size": 19.165886,
+      "hpd_95_lower": 0.484404,
+      "hpd_95_upper": 1.945673,
+      "mean": 1.19319,
+      "median": 1.13316
+    }
+  }
+}
