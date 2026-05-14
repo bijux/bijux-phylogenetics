@@ -1,0 +1,8 @@
+variant_id: auto-gap-threshold
+label: MAFFT auto plus trimAl gap-threshold
+execution_mode: parallel
+alignment_mode: auto
+trimming_mode: gap-threshold
+trim_gap_threshold: 0.1
+status: succeeded
+output_root: variants/auto-gap-threshold

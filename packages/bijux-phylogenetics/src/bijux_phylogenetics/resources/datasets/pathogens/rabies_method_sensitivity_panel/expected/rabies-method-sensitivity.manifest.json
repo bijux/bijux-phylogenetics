@@ -1,0 +1,77 @@
+{
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "label": "Rabies method-sensitivity panel",
+  "output_checksums": {
+    "changed_clades": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+    "conclusion_summary": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+    "config": "6bf41c83ce33785660e9512bd4c18fc906ae263290d6498eb3aa458010823099",
+    "parallel_summary": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+    "preprocessing_comparison": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+    "stable_clades": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+    "variant_summary": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+    "workflow_summary": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f"
+  },
+  "output_paths": {
+    "changed_clades": "changed-clades.tsv",
+    "conclusion_summary": "method-conclusion-summary.tsv",
+    "config": "workflow-config.resolved.json",
+    "parallel_summary": "parallel-execution-summary.tsv",
+    "preprocessing_comparison": "preprocessing-rooted-comparisons.tsv",
+    "stable_clades": "stable-clades.tsv",
+    "task_logs_root": "parallel-logs",
+    "variant_summary": "variant-summary.tsv",
+    "variants_root": "variants",
+    "workflow_summary": "workflow-summary.tsv"
+  },
+  "parallel_execution": {
+    "completed_task_count": 4,
+    "execution_mode": "parallel",
+    "failed_task_count": 0,
+    "parallel_workers": 2,
+    "requested_task_count": 4
+  },
+  "report_kind": "rabies_method_sensitivity_workflow_bundle",
+  "task_records": [
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT auto plus trimAl gap-threshold",
+      "log_path": "parallel-logs/auto-gap-threshold.log",
+      "output_root": "variants/auto-gap-threshold",
+      "status": "succeeded",
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT ginsi plus trimAl gap-threshold",
+      "log_path": "parallel-logs/ginsi-gap-threshold.log",
+      "output_root": "variants/ginsi-gap-threshold",
+      "status": "succeeded",
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT auto plus trimAl gappyout",
+      "log_path": "parallel-logs/auto-gappyout.log",
+      "output_root": "variants/auto-gappyout",
+      "status": "succeeded",
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT ginsi plus trimAl gappyout",
+      "log_path": "parallel-logs/ginsi-gappyout.log",
+      "output_root": "variants/ginsi-gappyout",
+      "status": "succeeded",
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "variant_count": 4
+}

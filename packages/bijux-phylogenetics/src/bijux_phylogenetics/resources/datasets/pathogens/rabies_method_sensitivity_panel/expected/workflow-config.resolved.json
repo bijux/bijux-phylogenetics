@@ -1,6 +1,7 @@
 {
   "bootstrap_replicates": 1000,
   "dataset_id": "rabies_method_sensitivity_panel",
+  "execution_mode": "parallel",
   "input_checksums": {
     "metadata.csv": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
     "sequences.fasta": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236"
@@ -11,6 +12,7 @@
   "outgroup_taxa": [
     "bat_chile_rv108"
   ],
+  "parallel_workers": 2,
   "sequence_type": "dna",
   "variants": [
     {
