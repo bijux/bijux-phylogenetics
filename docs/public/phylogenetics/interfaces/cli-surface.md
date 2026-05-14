@@ -33,7 +33,8 @@ and should not hide important assumptions behind silent defaults.
 `parity` is the governed reference-parity validation surface. It checks the
 repository's core numerical methods against checked-in outputs from
 established external tools on small fixtures by default, with one optional
-extended suite for larger posterior-tree validation. Its JSON metrics report:
+extended suite for governed primate comparative fits and larger posterior-tree
+validation. Its JSON metrics report:
 
 - `all_passed`
 - `case_count`
@@ -56,6 +57,11 @@ contains one row per checked case with:
 - `reference_source`
 - `tolerance`
 - `tolerance_reason`
+- `expected_failure_mode`
+- `taxon_overlap_policy`
+- `shared_taxa`
+- `left_only_taxa`
+- `right_only_taxa`
 - `passed`
 - `mismatch_kind`
 - `expected_output`
@@ -65,7 +71,8 @@ The core suite covers RF distance, branch-score distance, PGLS, Pagel's
 lambda, Brownian and OU trait models, PIC, Blomberg's K, posterior clade
 frequencies, and consensus tree generation. `mismatch_kind` is intentionally a
 scientific review surface, not a generic failure flag. It distinguishes
-topology, branch length, numerical tolerance, and model-assumption mismatches.
+topology, branch length, missing-taxa policy, numerical tolerance, and
+model-assumption mismatches.
 
 `benchmark stress-suite` is the governed large-dataset resource review surface.
 It executes five owned workload families on one selected tier:

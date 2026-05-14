@@ -39,6 +39,9 @@ bijux-phylogenetics parity \
   --json
 ```
 
+Use `--extended` when the review needs the governed primate comparative cases
+and the larger posterior-tree bundle in addition to the CI-sized default suite.
+
 The core suite covers:
 
 - Robinson-Foulds distance
@@ -52,15 +55,14 @@ The core suite covers:
 - posterior clade frequencies
 - consensus tree generation
 
+The observation ledger records the expected failure classification, overlap
+policy, and shared-versus-exclusive taxa so reviewer-visible mismatches can be
+sorted quickly into topology, branch-length, missing-taxa-policy, numerical,
+or model-assumption causes.
+
 Each observation records the input fixtures, reference tool and version,
 expected output, tolerance, tolerance rationale, observed output, and the
-governed mismatch class. Parity failures are intentionally explicit about
-whether the disagreement belongs to topology, branch length, numerical
-tolerance, or model assumption.
-
-Use `--extended` to add the larger optional posterior-tree validation inputs.
-That extended suite is intended for slower scientific-validation lanes rather
-than the routine CI-sized core surface.
+governed mismatch class.
 
 When the goal is to check resource behavior across the repository's largest
 owned workload families, use `benchmark stress-suite`. This workflow does not

@@ -304,10 +304,19 @@ a dedicated maturity audit for BM, OU, PGLS, residual diagnostics, and
 leave-one-taxon-out sensitivity:
 
 ```bash
+uv run bijux-phylogenetics parity --json
+uv run bijux-phylogenetics parity --extended --json
 uv run bijux-phylogenetics comparative validate-reference --json
 uv run bijux-phylogenetics comparative maturity tree.nwk traits.tsv --formula "height_cm ~ body_mass + habitat" --lambda-value 1.0 --json
 uv run bijux-phylogenetics comparative pgls tree.nwk traits.tsv --formula "height_cm ~ log(body_mass) + habitat" --json
 ```
+
+`parity` is the governed cross-surface reference suite. The default run stays
+CI-sized, while `--extended` adds real primate comparative fits and the larger
+posterior-tree bundle. The observation ledger now records expected failure
+classification, overlap policy, and shared-versus-exclusive taxa so reviewers
+can see whether a mismatch comes from topology, branch lengths, missing-taxa
+handling, numerical tolerance, or model assumptions.
 
 ## Read this next
 
