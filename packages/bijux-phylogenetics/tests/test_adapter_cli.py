@@ -286,6 +286,51 @@ print("warning: mrbayes fixture posterior run", file=sys.stderr)
     )
 
 
+def _fake_mrbayes_malformed_outputs(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+consensus_path = Path(f"{nexus_path}.con.tre")
+trace_path.write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t-110.0\\t0.40\\t0.90\\n"
+    "100\\tbad\\t0.41\\t0.95\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n",
+    encoding="utf-8",
+)
+consensus_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree con_50_majrule = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_beast(path: Path) -> Path:
     return _write_executable(
         path,
@@ -317,6 +362,39 @@ tree_path.write_text(
     encoding="utf-8",
 )
 print("warning: beast fixture posterior run", file=sys.stderr)
+""",
+    )
+
+
+def _fake_beast_malformed_outputs(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\tbad\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
 """,
     )
 
@@ -1716,6 +1794,90 @@ def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(
     assert posterior_report_path.exists()
 
 
+def test_adapter_mrbayes_run_cli_rejects_or_cleans_incomplete_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    malformed = _fake_mrbayes_malformed_outputs(tmp_path / "mb-malformed")
+    valid = _fake_mrbayes(tmp_path / "mb-valid")
+    alignment_path = fixture("alignments/example_alignment.fasta")
+    nexus_path = tmp_path / "analysis.nex"
+
+    assert (
+        main(
+            [
+                "adapter",
+                "mrbayes-prepare",
+                str(alignment_path),
+                "--out",
+                str(nexus_path),
+                "--json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    malformed_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(malformed),
+            "--json",
+        ]
+    )
+    malformed_payload = json.loads(capsys.readouterr().out)
+    manifest_path = nexus_path.with_suffix("").with_suffix(".manifest.json")
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+
+    assert malformed_exit == 2
+    assert malformed_payload["status"] == "error"
+    assert malformed_payload["errors"][0]["code"] == "mrbayes_trace_invalid_parameter_value"
+    assert malformed_payload["errors"][0]["details"]["artifact_kind"] == "mrbayes-trace"
+    assert marker_path.exists()
+
+    rejected_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(valid),
+            "--resume",
+            "--incomplete-run-policy",
+            "reject",
+            "--json",
+        ]
+    )
+    rejected_payload = json.loads(capsys.readouterr().out)
+
+    assert rejected_exit == 2
+    assert rejected_payload["status"] == "error"
+    assert "incomplete outputs" in rejected_payload["errors"][0]["message"]
+    assert marker_path.exists()
+
+    cleaned_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(valid),
+            "--resume",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    cleaned_payload = json.loads(capsys.readouterr().out)
+
+    assert cleaned_exit == 0
+    assert cleaned_payload["metrics"]["resumed"] is False
+    assert Path(cleaned_payload["data"]["output_paths"]["parameter_traces"]).exists()
+    assert marker_path.exists() is False
+
+
 def test_adapter_mrbayes_parameters_cli_writes_burnin_aware_summary_table(
     tmp_path: Path, capsys
 ) -> None:
@@ -2111,6 +2273,84 @@ def test_adapter_beast_run_cli_supports_resume_timeout_and_overwrite_controls(
     assert resumed_payload["metrics"]["overwrite"] is False
     assert resumed_payload["metrics"]["resumed"] is True
     assert resumed_payload["metrics"]["timeout_seconds"] == 30.0
+
+
+def test_adapter_beast_run_cli_rejects_or_cleans_incomplete_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    malformed = _fake_beast_malformed_outputs(tmp_path / "beast-malformed")
+    valid = _fake_beast(tmp_path / "beast-valid")
+    analysis_path = tmp_path / "analysis.xml"
+    analysis_path.write_text(
+        '<beast version="2.7" namespace="beast.base.evolution.alignment:beast.base.evolution.tree"/>\n',
+        encoding="utf-8",
+    )
+
+    malformed_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(malformed),
+            "--seed",
+            "7",
+            "--json",
+        ]
+    )
+    malformed_payload = json.loads(capsys.readouterr().out)
+    manifest_path = analysis_path.with_suffix(".manifest.json")
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+
+    assert malformed_exit == 2
+    assert malformed_payload["status"] == "error"
+    assert malformed_payload["errors"][0]["code"] == "beast_log_invalid_parameter_value"
+    assert malformed_payload["errors"][0]["details"]["artifact_kind"] == "beast-log"
+    assert marker_path.exists()
+
+    rejected_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(valid),
+            "--seed",
+            "7",
+            "--resume",
+            "--incomplete-run-policy",
+            "reject",
+            "--json",
+        ]
+    )
+    rejected_payload = json.loads(capsys.readouterr().out)
+
+    assert rejected_exit == 2
+    assert rejected_payload["status"] == "error"
+    assert "incomplete outputs" in rejected_payload["errors"][0]["message"]
+    assert marker_path.exists()
+
+    cleaned_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(valid),
+            "--seed",
+            "7",
+            "--resume",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    cleaned_payload = json.loads(capsys.readouterr().out)
+
+    assert cleaned_exit == 0
+    assert cleaned_payload["metrics"]["resumed"] is False
+    assert Path(cleaned_payload["data"]["output_paths"]["posterior_log"]).exists()
+    assert marker_path.exists() is False
 
 
 def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
