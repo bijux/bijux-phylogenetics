@@ -247,6 +247,30 @@ def cleanup_incomplete_engine_run(
     return record
 
 
+def update_incomplete_engine_run(
+    manifest_path: Path,
+    *,
+    ended_at_utc: str | None = None,
+    timed_out: bool | None = None,
+    exit_code: int | None = None,
+    failure_message: str | None = None,
+) -> EngineIncompleteRunRecord | None:
+    """Refresh one incomplete-run marker with the latest failure details."""
+    record = load_incomplete_engine_run(manifest_path)
+    if record is None:
+        return None
+    if ended_at_utc is not None:
+        record.ended_at_utc = ended_at_utc
+    if timed_out is not None:
+        record.timed_out = timed_out
+    if exit_code is not None:
+        record.exit_code = exit_code
+    if failure_message is not None:
+        record.failure_message = failure_message
+    write_incomplete_engine_run(record)
+    return record
+
+
 def execute_engine_command(
     *,
     engine_name: str,
@@ -355,7 +379,6 @@ def execute_engine_command(
         raise EngineWorkflowError(
             f"{engine_name} {workflow} did not produce expected outputs: {', '.join(missing_outputs)}"
         )
-    clear_incomplete_engine_run(manifest_path)
     return EngineRunReport(
         engine_name=engine_name,
         workflow=workflow,

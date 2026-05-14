@@ -123,6 +123,56 @@ time.sleep(1.0)
     )
 
 
+def _fake_beast_malformed_outputs(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\tbad\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_beast_killed(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import os
+import signal
+import sys
+
+if "-version" in sys.argv[1:]:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+os.kill(os.getpid(), signal.SIGTERM)
+""",
+    )
+
+
 def test_validate_fossil_calibration_table_accepts_named_and_taxon_targets() -> None:
     report = validate_fossil_calibration_table(
         fixture("example_tree_named_clades.nwk"),
@@ -416,6 +466,81 @@ def test_run_beast_posterior_inference_times_out_and_marks_incomplete_run(
     assert len(marker_candidates) == 1
     marker_text = marker_candidates[0].read_text(encoding="utf-8")
     assert '"timed_out": true' in marker_text
+
+
+def test_run_beast_posterior_inference_marks_killed_process_incomplete(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast_killed(tmp_path / "beast-killed")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError, match="failed with exit code"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=executable,
+            seed=1,
+        )
+
+    marker_candidates = sorted(tmp_path.glob("*.incomplete.json"))
+    assert len(marker_candidates) == 1
+    marker_text = marker_candidates[0].read_text(encoding="utf-8")
+    assert '"exit_code": -15' in marker_text
+
+
+def test_run_beast_posterior_inference_rejects_or_cleans_malformed_outputs(
+    tmp_path: Path,
+) -> None:
+    malformed = _fake_beast_malformed_outputs(tmp_path / "beast-malformed")
+    valid = _fake_beast(tmp_path / "beast-valid")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError, match="non-numeric value"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=malformed,
+            seed=1,
+        )
+
+    manifest_path = xml_path.with_suffix(".manifest.json")
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+    assert marker_path.exists()
+    marker_text = marker_path.read_text(encoding="utf-8")
+    assert "beast_log_invalid_parameter_value" in marker_text
+
+    with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=valid,
+            seed=1,
+            resume=True,
+            incomplete_run_policy="reject",
+        )
+
+    report = run_beast_posterior_inference(
+        xml_path,
+        executable=valid,
+        seed=1,
+        resume=True,
+        incomplete_run_policy="clean",
+    )
+    assert report.output_paths["posterior_log"].exists()
+    assert marker_path.exists() is False
 
 
 def test_prepare_beast_time_tree_analysis_requires_tree_for_calibrations(

@@ -35,6 +35,7 @@ from bijux_phylogenetics.engines.common import (
     execute_engine_command,
     read_engine_version,
     resolve_engine_executable,
+    update_incomplete_engine_run,
     validate_timeout_seconds,
 )
 from bijux_phylogenetics.engines.workflows import (
@@ -47,6 +48,7 @@ from bijux_phylogenetics.engines.workflows import (
 from bijux_phylogenetics.errors import (
     EngineWorkflowError,
     InvalidAlignmentError,
+    PhylogeneticsError,
     TreeParseError,
 )
 from bijux_phylogenetics.io.biopython import loads_biophylo
@@ -2317,8 +2319,21 @@ def run_beast_posterior_inference(
         manifest_path=manifest_path,
         timeout_seconds=timeout_seconds,
     )
-    parse_beast_log(posterior_log_path)
-    parse_beast_posterior_tree_samples(posterior_trees_path, burnin_fraction=0.0)
+    try:
+        parse_beast_log(posterior_log_path)
+        parse_beast_posterior_tree_samples(posterior_trees_path, burnin_fraction=0.0)
+    except PhylogeneticsError as error:
+        update_incomplete_engine_run(
+            manifest_path,
+            ended_at_utc=run.ended_at_utc,
+            timed_out=run.timed_out,
+            exit_code=run.exit_code,
+            failure_message=(
+                "BEAST posterior-tree-inference produced outputs that failed "
+                f"validation: {error.code}"
+            ),
+        )
+        raise
     report = EngineWorkflowReport(
         workflow="posterior-tree-inference",
         engine_name="BEAST",
