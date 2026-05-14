@@ -104,6 +104,10 @@ _GEOGRAPHY_MODEL = "ard"
 _IQTREE_SEED = 1
 _IQTREE_THREADS = 1
 _BOOTSTRAP_REPLICATES = 1000
+_WORKFLOW_TIMEOUT_SECONDS = 300.0
+_MAX_BOOTSTRAP_TREE_COUNT = 1500
+_MAX_REPORT_TABLE_ROWS = 25
+_MEMORY_WARNING_THRESHOLD_BYTES = 67108864
 _OUTGROUP_TAXA = ("bat_chile_rv108",)
 _SOURCE_ACCESSIONS = (
     "MG458305",
@@ -152,6 +156,10 @@ class RabiesCrossHostGeographyPanelWorkflowConfig:
     iqtree_seed: int
     iqtree_threads: int
     bootstrap_replicates: int
+    timeout_seconds: float | None
+    max_bootstrap_tree_count: int | None
+    max_report_table_rows: int | None
+    memory_warning_threshold_bytes: int | None
     alignment_mode: str
     trimming_mode: str
     trim_gap_threshold: float
@@ -217,6 +225,10 @@ class RabiesCrossHostGeographyPanelDataset:
     iqtree_seed: int
     iqtree_threads: int
     bootstrap_replicates: int
+    timeout_seconds: float | None
+    max_bootstrap_tree_count: int | None
+    max_report_table_rows: int | None
+    memory_warning_threshold_bytes: int | None
     outgroup_taxa: tuple[str, ...]
     observed_host_group_count: int
     observed_region_group_count: int
@@ -304,9 +316,18 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     comparative_pgls_lambda: float
     comparative_pgls_r_squared: float
     comparative_branch_repair_count: int
+    timeout_seconds: float | None
+    max_bootstrap_tree_count: int | None
+    max_report_table_rows: int | None
+    memory_warning_threshold_bytes: int | None
+    workflow_runtime_seconds: float
+    bootstrap_review_runtime_seconds: float
+    bootstrap_review_peak_memory_bytes: int
+    budget_warning_count: int
     config_check_count: int
     scientific_finding_count: int
     workflow_summary_path: Path
+    resource_observations_path: Path
     config_audit_path: Path
     resolved_config_path: Path
     input_validation_path: Path
@@ -414,6 +435,10 @@ def load_rabies_cross_host_geography_panel_dataset(
         iqtree_seed=resolved_config.iqtree_seed,
         iqtree_threads=resolved_config.iqtree_threads,
         bootstrap_replicates=resolved_config.bootstrap_replicates,
+        timeout_seconds=resolved_config.timeout_seconds,
+        max_bootstrap_tree_count=resolved_config.max_bootstrap_tree_count,
+        max_report_table_rows=resolved_config.max_report_table_rows,
+        memory_warning_threshold_bytes=resolved_config.memory_warning_threshold_bytes,
         outgroup_taxa=resolved_config.outgroup_taxa,
         observed_host_group_count=len(observed_host_groups),
         observed_region_group_count=len(observed_region_groups),
@@ -556,6 +581,7 @@ def run_rabies_cross_host_geography_panel_workflow(
             if bootstrap_replicates is None
             else bootstrap_replicates
         ),
+        timeout_seconds=config.timeout_seconds,
     )
     rooted_tree, rooting_report = root_tree_on_outgroup(
         workflow.output_paths["tree"],
@@ -738,6 +764,12 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         prefix="bootstrap-review",
         consensus_threshold=report.config.bootstrap_consensus_threshold,
         robust_support_threshold=report.config.bootstrap_robust_support_threshold,
+        max_tree_count=report.config.max_bootstrap_tree_count,
+        memory_warning_threshold_bytes=report.config.memory_warning_threshold_bytes,
+    )
+    bootstrap_summary_path = _write_stable_bootstrap_summary_table(
+        bootstrap_output_root / "bootstrap-review.summary.tsv",
+        bootstrap_artifacts.summary_report,
     )
     bootstrap_tree_comparison_report = build_tree_comparison_report(
         tree_path,
@@ -917,6 +949,11 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_summary_row=comparative_summary_row,
         scientific_finding_count=len(scientific_finding_rows),
     )
+    resource_observations_path = _write_resource_observation_table(
+        output_root / "resource-observations.tsv",
+        report=report,
+        bootstrap_artifacts=bootstrap_artifacts,
+    )
     final_report_path = _write_integrated_report(
         output_root / "rabies-cross-host-geography-report.html",
         report=report,
@@ -928,6 +965,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_interpretation_rows=comparative_interpretation_rows,
         comparative_branch_repair_count=len(report.comparative_branch_repairs),
         scientific_finding_rows=scientific_finding_rows,
+        max_report_table_rows=report.config.max_report_table_rows,
     )
     final_manifest_path = _write_manifest(
         output_root / "rabies-cross-host-geography.manifest.json",
@@ -951,7 +989,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
             "model_table": model_table_path,
             "support_table": support_table_path,
             "clade_table": clade_table_path,
-            "bootstrap_summary": bootstrap_artifacts.output_paths["summary_table"],
+            "bootstrap_summary": bootstrap_summary_path,
             "bootstrap_consensus_tree": bootstrap_artifacts.output_paths["consensus_tree"],
             "bootstrap_clade_frequencies": bootstrap_artifacts.output_paths["clade_frequencies"],
             "bootstrap_unstable_branches": bootstrap_artifacts.output_paths["unstable_branches"],
@@ -1049,9 +1087,22 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_pgls_lambda=comparative_summary_row.pgls_lambda,
         comparative_pgls_r_squared=comparative_summary_row.pgls_r_squared,
         comparative_branch_repair_count=len(report.comparative_branch_repairs),
+        timeout_seconds=report.config.timeout_seconds,
+        max_bootstrap_tree_count=report.config.max_bootstrap_tree_count,
+        max_report_table_rows=report.config.max_report_table_rows,
+        memory_warning_threshold_bytes=report.config.memory_warning_threshold_bytes,
+        workflow_runtime_seconds=report.fasta_to_tree.runtime_seconds,
+        bootstrap_review_runtime_seconds=(
+            bootstrap_artifacts.summary_report.processing.runtime_seconds
+        ),
+        bootstrap_review_peak_memory_bytes=(
+            bootstrap_artifacts.summary_report.processing.peak_memory_bytes
+        ),
+        budget_warning_count=len(bootstrap_artifacts.budget_report.warning_messages),
         config_check_count=len(report.config_audit_rows),
         scientific_finding_count=len(scientific_finding_rows),
         workflow_summary_path=workflow_summary_path,
+        resource_observations_path=resource_observations_path,
         config_audit_path=config_audit_path,
         resolved_config_path=resolved_config_path,
         input_validation_path=input_validation_path,
@@ -1068,7 +1119,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         engine_artifact_root=engine_artifact_root,
         clade_table_path=clade_table_path,
         bootstrap_output_root=bootstrap_output_root,
-        bootstrap_summary_path=bootstrap_artifacts.output_paths["summary_table"],
+        bootstrap_summary_path=bootstrap_summary_path,
         bootstrap_consensus_tree_path=bootstrap_artifacts.output_paths["consensus_tree"],
         bootstrap_clade_frequencies_path=bootstrap_artifacts.output_paths["clade_frequencies"],
         bootstrap_unstable_branches_path=bootstrap_artifacts.output_paths["unstable_branches"],
@@ -1234,6 +1285,38 @@ def _load_workflow_config(
         iqtree_threads=int(payload.get("iqtree_threads", _IQTREE_THREADS)),
         bootstrap_replicates=int(
             payload.get("bootstrap_replicates", _BOOTSTRAP_REPLICATES)
+        ),
+        timeout_seconds=(
+            None
+            if payload.get("timeout_seconds", _WORKFLOW_TIMEOUT_SECONDS) is None
+            else float(payload.get("timeout_seconds", _WORKFLOW_TIMEOUT_SECONDS))
+        ),
+        max_bootstrap_tree_count=(
+            None
+            if payload.get("max_bootstrap_tree_count", _MAX_BOOTSTRAP_TREE_COUNT)
+            is None
+            else int(
+                payload.get("max_bootstrap_tree_count", _MAX_BOOTSTRAP_TREE_COUNT)
+            )
+        ),
+        max_report_table_rows=(
+            None
+            if payload.get("max_report_table_rows", _MAX_REPORT_TABLE_ROWS) is None
+            else int(payload.get("max_report_table_rows", _MAX_REPORT_TABLE_ROWS))
+        ),
+        memory_warning_threshold_bytes=(
+            None
+            if payload.get(
+                "memory_warning_threshold_bytes",
+                _MEMORY_WARNING_THRESHOLD_BYTES,
+            )
+            is None
+            else int(
+                payload.get(
+                    "memory_warning_threshold_bytes",
+                    _MEMORY_WARNING_THRESHOLD_BYTES,
+                )
+            )
         ),
         alignment_mode=payload.get("alignment_mode", _ALIGNMENT_MODE),
         trimming_mode=payload.get("trimming_mode", _TRIMMING_MODE),
@@ -1422,6 +1505,79 @@ def _build_workflow_config_audit_rows(
                 "comparative response is present in the derived trait table"
                 if response_supported
                 else "expected one of: " + ", ".join(sorted(comparative_columns))
+            ),
+        )
+    )
+    timeout_valid = config.timeout_seconds is None or config.timeout_seconds > 0.0
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="timeout_seconds",
+            status="pass" if timeout_valid else "fail",
+            observed_value=(
+                "" if config.timeout_seconds is None else _format_number(config.timeout_seconds)
+            ),
+            detail=(
+                "workflow timeout budget is positive"
+                if timeout_valid
+                else "timeout_seconds must be greater than zero when configured"
+            ),
+        )
+    )
+    max_tree_count_valid = (
+        config.max_bootstrap_tree_count is None or config.max_bootstrap_tree_count >= 1
+    )
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="max_bootstrap_tree_count",
+            status="pass" if max_tree_count_valid else "fail",
+            observed_value=(
+                ""
+                if config.max_bootstrap_tree_count is None
+                else str(config.max_bootstrap_tree_count)
+            ),
+            detail=(
+                "bootstrap summary tree budget is positive"
+                if max_tree_count_valid
+                else "max_bootstrap_tree_count must be at least 1 when configured"
+            ),
+        )
+    )
+    max_report_rows_valid = (
+        config.max_report_table_rows is None or config.max_report_table_rows >= 1
+    )
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="max_report_table_rows",
+            status="pass" if max_report_rows_valid else "fail",
+            observed_value=(
+                ""
+                if config.max_report_table_rows is None
+                else str(config.max_report_table_rows)
+            ),
+            detail=(
+                "review table row budget is positive"
+                if max_report_rows_valid
+                else "max_report_table_rows must be at least 1 when configured"
+            ),
+        )
+    )
+    memory_threshold_valid = (
+        config.memory_warning_threshold_bytes is None
+        or config.memory_warning_threshold_bytes >= 1
+    )
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="memory_warning_threshold_bytes",
+            status="pass" if memory_threshold_valid else "fail",
+            observed_value=(
+                ""
+                if config.memory_warning_threshold_bytes is None
+                else str(config.memory_warning_threshold_bytes)
+            ),
+            detail=(
+                "memory warning threshold is positive"
+                if memory_threshold_valid
+                else "memory_warning_threshold_bytes must be at least 1 when configured"
             ),
         )
     )
@@ -1617,6 +1773,12 @@ def _write_resolved_workflow_config(
             "iqtree_seed": config.iqtree_seed,
             "iqtree_threads": config.iqtree_threads,
             "bootstrap_replicates": config.bootstrap_replicates,
+            "timeout_seconds": config.timeout_seconds,
+            "max_bootstrap_tree_count": config.max_bootstrap_tree_count,
+            "max_report_table_rows": config.max_report_table_rows,
+            "memory_warning_threshold_bytes": (
+                config.memory_warning_threshold_bytes
+            ),
             "alignment_mode": config.alignment_mode,
             "trimming_mode": config.trimming_mode,
             "trim_gap_threshold": config.trim_gap_threshold,
@@ -1682,6 +1844,35 @@ def _write_bootstrap_tree_comparison_summary(
         "branch_score_distance": _format_number(
             comparison_report.branch_lengths.branch_score.branch_score_distance
         ),
+    }
+    return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
+
+
+def _write_stable_bootstrap_summary_table(
+    path: Path,
+    report: BootstrapTreeSetSummaryReport,
+) -> Path:
+    row = {
+        "tree_count": str(report.tree_count),
+        "shared_taxon_count": str(len(report.shared_taxa)),
+        "rooted_topology_count": str(report.diversity.rooted_topology_count),
+        "dominant_topology_frequency": _format_number(
+            report.diversity.dominant_topology_frequency
+        ),
+        "effective_topology_count": _format_number(
+            report.diversity.effective_topology_count
+        ),
+        "mean_robinson_foulds_distance": _format_number(
+            report.diversity.mean_robinson_foulds_distance
+        ),
+        "mean_normalized_robinson_foulds_distance": _format_number(
+            report.diversity.mean_normalized_robinson_foulds_distance
+        ),
+        "consensus_threshold": _format_number(report.consensus_threshold),
+        "robust_support_threshold": _format_number(report.robust_support_threshold),
+        "unstable_branch_count": str(report.unstable_branch_count),
+        "warning_count": str(len(report.warnings)),
+        "consensus_newick": report.consensus.consensus_newick,
     }
     return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
 
@@ -2048,8 +2239,55 @@ def _write_workflow_summary_table(
         "comparative_branch_repair_count": str(
             len(report.comparative_branch_repairs)
         ),
+        "timeout_seconds": _format_number(report.config.timeout_seconds),
+        "max_bootstrap_tree_count": (
+            ""
+            if report.config.max_bootstrap_tree_count is None
+            else str(report.config.max_bootstrap_tree_count)
+        ),
+        "max_report_table_rows": (
+            ""
+            if report.config.max_report_table_rows is None
+            else str(report.config.max_report_table_rows)
+        ),
+        "memory_warning_threshold_bytes": (
+            ""
+            if report.config.memory_warning_threshold_bytes is None
+            else str(report.config.memory_warning_threshold_bytes)
+        ),
+        "budget_warning_count": str(
+            len(bootstrap_artifacts.budget_report.warning_messages)
+        ),
         "config_check_count": str(len(report.config_audit_rows)),
         "scientific_finding_count": str(scientific_finding_count),
+    }
+    return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
+
+
+def _write_resource_observation_table(
+    path: Path,
+    *,
+    report: RabiesCrossHostGeographyPanelWorkflowReport,
+    bootstrap_artifacts: BootstrapTreeSetArtifactReport,
+) -> Path:
+    row = {
+        "dataset_id": report.dataset.dataset_id,
+        "timeout_seconds": _format_number(report.config.timeout_seconds),
+        "workflow_runtime_seconds": _format_number(
+            report.fasta_to_tree.runtime_seconds
+        ),
+        "bootstrap_review_runtime_seconds": _format_number(
+            bootstrap_artifacts.summary_report.processing.runtime_seconds
+        ),
+        "bootstrap_review_peak_memory_bytes": str(
+            bootstrap_artifacts.summary_report.processing.peak_memory_bytes
+        ),
+        "budget_warning_count": str(
+            len(bootstrap_artifacts.budget_report.warning_messages)
+        ),
+        "budget_warnings": " | ".join(
+            bootstrap_artifacts.budget_report.warning_messages
+        ),
     }
     return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
 
@@ -2078,6 +2316,7 @@ def _write_overview(
         "",
         "- source accession ledger: `dataset/source-accessions.tsv`",
         f"- workflow summary: `{workflow_bundle.workflow_summary_path.name}`",
+        f"- resource observations: `{workflow_bundle.resource_observations_path.name}`",
         f"- clade table: `{workflow_bundle.clade_table_path.name}`",
         f"- bootstrap review: `bootstrap-review/{workflow_bundle.bootstrap_summary_path.name}`",
         (
@@ -2205,6 +2444,10 @@ def _write_demo_package_manifest(
             "checksum": _checksum(dataset_export.workflow_config_path),
             "workflow_prefix": config.workflow_prefix,
             "comparative_formula": config.comparative_formula,
+            "timeout_seconds": config.timeout_seconds,
+            "max_bootstrap_tree_count": config.max_bootstrap_tree_count,
+            "max_report_table_rows": config.max_report_table_rows,
+            "memory_warning_threshold_bytes": config.memory_warning_threshold_bytes,
         },
         "dataset_files": {
             "readme": {
@@ -2237,6 +2480,10 @@ def _write_demo_package_manifest(
                 "path": f"workflow/{workflow_bundle.workflow_summary_path.name}",
                 "checksum": _checksum(workflow_bundle.workflow_summary_path),
             },
+            "resource_observations": {
+                "path": f"workflow/{workflow_bundle.resource_observations_path.name}",
+                "checksum": _checksum(workflow_bundle.resource_observations_path),
+            },
             "final_manifest": {
                 "path": f"workflow/{workflow_bundle.final_manifest_path.name}",
                 "checksum": _checksum(workflow_bundle.final_manifest_path),
@@ -2252,6 +2499,14 @@ def _write_demo_package_manifest(
             "root_host": workflow_bundle.root_host,
             "root_region": workflow_bundle.root_region,
             "bootstrap_tree_count": workflow_bundle.bootstrap_tree_count,
+            "workflow_runtime_seconds": workflow_bundle.workflow_runtime_seconds,
+            "bootstrap_review_runtime_seconds": (
+                workflow_bundle.bootstrap_review_runtime_seconds
+            ),
+            "bootstrap_review_peak_memory_bytes": (
+                workflow_bundle.bootstrap_review_peak_memory_bytes
+            ),
+            "budget_warning_count": workflow_bundle.budget_warning_count,
             "host_switch_count": workflow_bundle.host_switch_count,
             "migration_event_count": workflow_bundle.migration_event_count,
             "comparative_selected_model": workflow_bundle.comparative_selected_model,
@@ -2530,6 +2785,7 @@ def _write_integrated_report(
     comparative_interpretation_rows: list[ComparativeInterpretationRow],
     comparative_branch_repair_count: int,
     scientific_finding_rows: list[RabiesScientificFindingRow],
+    max_report_table_rows: int | None,
 ) -> Path:
     support_summary = report.fasta_to_tree.support_summary
     host_summary = report.host_switching.summary
@@ -2605,6 +2861,15 @@ def _write_integrated_report(
                         f"returned rooted RF distance {bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance}."
                     ),
                     f"The clade table contains {clade_row_count} node rows and the comparative tree required {comparative_branch_repair_count} explicit branch-length repair(s).",
+                    (
+                        "Bootstrap review emitted budget warnings: "
+                        + "; ".join(bootstrap_artifacts.budget_report.warning_messages)
+                    )
+                    if bootstrap_artifacts.budget_report.warning_messages
+                    else (
+                        "Configured workflow budgets covered the bootstrap review "
+                        "without tree-count failure or peak-memory warning."
+                    ),
                 ]
             ),
             "  </section>",
@@ -2621,9 +2886,13 @@ def _write_integrated_report(
                     "rooted tree: rabies-cross-host-geography-panel.rooted.tree",
                     "support table: rabies-cross-host-geography-panel.support.tsv",
                     "workflow summary: workflow-summary.tsv",
+                    "resource observations: resource-observations.tsv",
                 ]
             ),
-            _support_table(report.fasta_to_tree),
+            _support_table(
+                report.fasta_to_tree,
+                max_rows=max_report_table_rows,
+            ),
             "    </section>",
             '    <section class="panel">',
             "      <h2>Bootstrap and Clade Review</h2>",
@@ -2672,7 +2941,10 @@ def _write_integrated_report(
                     "see host-switch-summary.tsv, host-state-nodes.tsv, host-switch-branches.tsv, and host-switch-counts.tsv",
                 ]
             ),
-            _host_count_table(report.host_switching),
+            _host_count_table(
+                report.host_switching,
+                max_rows=max_report_table_rows,
+            ),
             "    </section>",
             '    <section class="panel">',
             "      <h2>Comparative Layer</h2>",
@@ -2691,6 +2963,7 @@ def _write_integrated_report(
                     [row.topic, row.claim, row.evidence]
                     for row in comparative_interpretation_rows[:5]
                 ],
+                max_rows=max_report_table_rows,
             ),
             "    </section>",
             '    <section class="panel full">',
@@ -2708,7 +2981,10 @@ def _write_integrated_report(
             '          <iframe src="biogeography/geographic-region-map.html" title="Geographic region map"></iframe>',
             "        </div>",
             "      </div>",
-            _migration_event_table(report.biogeography_report),
+            _migration_event_table(
+                report.biogeography_report,
+                max_rows=max_report_table_rows,
+            ),
             "    </section>",
             '    <section class="panel full">',
             "      <h2>Scientific Findings Ledger</h2>",
@@ -2732,6 +3008,7 @@ def _write_integrated_report(
                     ]
                     for row in scientific_finding_rows
                 ],
+                max_rows=max_report_table_rows,
             ),
             "    </section>",
             "  </section>",
@@ -2740,6 +3017,7 @@ def _write_integrated_report(
             _html_list(
                 [
                     f'<a href="{workflow_summary_path.name}">{workflow_summary_path.name}</a>',
+                    '<a href="resource-observations.tsv">resource-observations.tsv</a>',
                     '<a href="workflow-config-audit.tsv">workflow-config-audit.tsv</a>',
                     '<a href="clade-table.tsv">clade-table.tsv</a>',
                     '<a href="bootstrap-review/bootstrap-review.summary.tsv">bootstrap-review/bootstrap-review.summary.tsv</a>',
@@ -2762,7 +3040,11 @@ def _write_integrated_report(
     return path
 
 
-def _support_table(report: FastaToTreeWorkflowReport) -> str:
+def _support_table(
+    report: FastaToTreeWorkflowReport,
+    *,
+    max_rows: int | None = None,
+) -> str:
     return _table(
         headers=["node", "descendant_taxa", "support", "support_fraction"],
         rows=[
@@ -2774,10 +3056,15 @@ def _support_table(report: FastaToTreeWorkflowReport) -> str:
             ]
             for row in report.support_rows
         ],
+        max_rows=max_rows,
     )
 
 
-def _host_count_table(report: HostSwitchingReport) -> str:
+def _host_count_table(
+    report: HostSwitchingReport,
+    *,
+    max_rows: int | None = None,
+) -> str:
     return _table(
         headers=[
             "transition",
@@ -2794,10 +3081,15 @@ def _host_count_table(report: HostSwitchingReport) -> str:
             ]
             for row in report.count_rows
         ],
+        max_rows=max_rows,
     )
 
 
-def _migration_event_table(report: BiogeographyReportPackageResult) -> str:
+def _migration_event_table(
+    report: BiogeographyReportPackageResult,
+    *,
+    max_rows: int | None = None,
+) -> str:
     return _table(
         headers=[
             "branch_id",
@@ -2816,6 +3108,7 @@ def _migration_event_table(report: BiogeographyReportPackageResult) -> str:
             ]
             for row in report.event_report.event_rows
         ],
+        max_rows=max_rows,
     )
 
 
@@ -2823,13 +3116,28 @@ def _html_list(items: list[str]) -> str:
     return "<ul>" + "".join(f"<li>{item}</li>" for item in items) + "</ul>"
 
 
-def _table(headers: list[str], rows: list[list[str]]) -> str:
+def _table(
+    headers: list[str],
+    rows: list[list[str]],
+    *,
+    max_rows: int | None = None,
+) -> str:
+    rendered_rows = rows if max_rows is None else rows[:max_rows]
     head = "".join(f"<th>{escape(header)}</th>" for header in headers)
     body = "".join(
         "<tr>" + "".join(f"<td>{escape(cell)}</td>" for cell in row) + "</tr>"
-        for row in rows
+        for row in rendered_rows
     )
-    return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+    truncation_note = ""
+    if max_rows is not None and len(rows) > max_rows:
+        truncation_note = (
+            f"<p><em>Showing the first {max_rows} of {len(rows)} rows. "
+            "Use the linked TSV artifacts for the full table.</em></p>"
+        )
+    return (
+        truncation_note
+        + f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+    )
 
 
 def _support_range_text(
