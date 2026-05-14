@@ -432,6 +432,18 @@ def test_parse_mrbayes_parameter_traces_reports_truncated_fixture() -> None:
     assert error.value.details["row_number"] == 3
 
 
+def test_parse_mrbayes_parameter_traces_reports_malformed_fixture() -> None:
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_mrbayes_parameter_traces(
+            fixture("engine_outputs/mrbayes/trace-malformed.run1.p")
+        )
+
+    assert error.value.code == "mrbayes_trace_invalid_parameter_value"
+    assert error.value.details["artifact_kind"] == "mrbayes-trace"
+    assert error.value.details["column"] == "LnL"
+    assert error.value.details["row_number"] == 3
+
+
 def test_parse_mrbayes_posterior_tree_samples_and_consensus_tree(
     tmp_path: Path,
 ) -> None:

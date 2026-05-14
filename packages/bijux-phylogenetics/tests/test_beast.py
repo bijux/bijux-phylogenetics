@@ -614,14 +614,7 @@ def test_parse_beast_log_reports_structured_missing_and_malformed_errors(
     tmp_path: Path,
 ) -> None:
     missing_path = tmp_path / "missing.log"
-    invalid_path = tmp_path / "invalid.log"
-    invalid_path.write_text(
-        "# malformed BEAST log\n"
-        "state\tposterior\tlikelihood\n"
-        "0\t-100.0\t-90.0\n"
-        "10\tbad\t-89.0\n",
-        encoding="utf-8",
-    )
+    invalid_path = fixture("engine_outputs/beast/log-malformed.log")
 
     with pytest.raises(EngineWorkflowError) as missing:
         parse_beast_log(missing_path)
