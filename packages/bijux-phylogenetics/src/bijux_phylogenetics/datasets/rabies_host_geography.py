@@ -78,6 +78,7 @@ from bijux_phylogenetics.host_association import (
 from bijux_phylogenetics.io.fasta import (
     build_alignment_quality_report,
     build_sequence_quality_ranking,
+    load_permissive_fasta_records,
     validate_fasta_input,
 )
 from bijux_phylogenetics.io.newick import write_newick
@@ -164,6 +165,16 @@ class RabiesComparativeBranchRepair:
 
 
 @dataclass(slots=True)
+class RabiesWorkflowConfigAuditRow:
+    """One governed validation check for the packaged rabies workflow config."""
+
+    check_id: str
+    status: str
+    observed_value: str
+    detail: str
+
+
+@dataclass(slots=True)
 class RabiesCrossHostGeographyPanelDataset:
     """Packaged rabies panel for one complete host and geography workflow."""
 
@@ -215,6 +226,7 @@ class RabiesCrossHostGeographyPanelWorkflowReport:
 
     dataset: RabiesCrossHostGeographyPanelDataset
     config: RabiesCrossHostGeographyPanelWorkflowConfig
+    config_audit_rows: list[RabiesWorkflowConfigAuditRow]
     fasta_to_tree: FastaToTreeWorkflowReport
     rooted_tree_path: Path
     rooting_report: TreeRootingReport
@@ -267,6 +279,8 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     comparative_pgls_r_squared: float
     comparative_branch_repair_count: int
     workflow_summary_path: Path
+    config_audit_path: Path
+    resolved_config_path: Path
     input_validation_path: Path
     alignment_quality_path: Path
     alignment_sequence_ranking_path: Path
@@ -336,6 +350,7 @@ def load_rabies_cross_host_geography_panel_dataset(
 ) -> RabiesCrossHostGeographyPanelDataset:
     """Expose the packaged rabies host-and-geography panel as one owned surface."""
     resolved_config = _load_workflow_config(config_path)
+    _raise_for_failed_config_audit(_build_workflow_config_audit_rows(resolved_config))
     dataset_root = resolved_config.config_path.parent
     validation = validate_fasta_input(
         resolved_config.sequences_path,
@@ -431,6 +446,8 @@ def run_rabies_cross_host_geography_panel_workflow(
     """Run the full integrated rabies workflow from sequences and metadata."""
     dataset = load_rabies_cross_host_geography_panel_dataset(config_path)
     config = _load_workflow_config(config_path)
+    config_audit_rows = _build_workflow_config_audit_rows(config)
+    _raise_for_failed_config_audit(config_audit_rows)
     workflow = run_fasta_to_tree_workflow(
         dataset.sequences_path,
         out_dir=out_dir,
@@ -518,6 +535,7 @@ def run_rabies_cross_host_geography_panel_workflow(
     return RabiesCrossHostGeographyPanelWorkflowReport(
         dataset=dataset,
         config=config,
+        config_audit_rows=config_audit_rows,
         fasta_to_tree=workflow,
         rooted_tree_path=rooted_tree_path,
         rooting_report=rooting_report,
@@ -548,6 +566,14 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
     geography_summary = report.biogeography_report.state_report.summary
     migration_summary = report.biogeography_report.event_report.summary
 
+    config_audit_path = _write_workflow_config_audit_table(
+        output_root / "workflow-config-audit.tsv",
+        report.config_audit_rows,
+    )
+    resolved_config_path = _write_resolved_workflow_config(
+        output_root / "workflow-config.resolved.json",
+        report.config,
+    )
     input_validation_path = _write_input_validation_table(
         output_root / "input-validation.tsv",
         workflow=workflow,
@@ -877,6 +903,8 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         comparative_pgls_r_squared=comparative_summary_row.pgls_r_squared,
         comparative_branch_repair_count=len(report.comparative_branch_repairs),
         workflow_summary_path=workflow_summary_path,
+        config_audit_path=config_audit_path,
+        resolved_config_path=resolved_config_path,
         input_validation_path=input_validation_path,
         alignment_quality_path=alignment_quality_path,
         alignment_sequence_ranking_path=alignment_sequence_ranking_path,
@@ -1063,6 +1091,174 @@ def _load_workflow_config(
     )
 
 
+def _build_workflow_config_audit_rows(
+    config: RabiesCrossHostGeographyPanelWorkflowConfig,
+) -> list[RabiesWorkflowConfigAuditRow]:
+    rows: list[RabiesWorkflowConfigAuditRow] = []
+    input_files = (
+        ("sequences_path", config.sequences_path),
+        ("metadata_path", config.metadata_path),
+        ("centroids_path", config.centroids_path),
+    )
+    missing_input_paths: list[Path] = []
+    for check_id, path in input_files:
+        exists = path.is_file()
+        rows.append(
+            RabiesWorkflowConfigAuditRow(
+                check_id=check_id,
+                status="pass" if exists else "fail",
+                observed_value=path.name,
+                detail="input file is present" if exists else "configured input file is missing",
+            )
+        )
+        if not exists:
+            missing_input_paths.append(path)
+    if missing_input_paths:
+        return rows
+
+    records = load_permissive_fasta_records(config.sequences_path)
+    sequence_ids = sorted(
+        {
+            record.identifier.strip()
+            for record in records
+            if record.identifier.strip()
+        }
+    )
+    sequence_id_set = set(sequence_ids)
+    metadata_rows: list[dict[str, str]] = []
+    metadata_columns: list[str] = []
+    with config.metadata_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        metadata_columns = [] if reader.fieldnames is None else list(reader.fieldnames)
+        metadata_rows = list(reader)
+    required_metadata_columns = [
+        "taxon",
+        config.host_trait,
+        config.geography_trait,
+        *config.clade_metadata_columns,
+    ]
+    missing_metadata_columns = sorted(
+        {
+            column
+            for column in required_metadata_columns
+            if column not in set(metadata_columns)
+        }
+    )
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="metadata_required_columns",
+            status="pass" if not missing_metadata_columns else "fail",
+            observed_value=str(len(required_metadata_columns) - len(missing_metadata_columns)),
+            detail=(
+                "metadata exposes the required workflow columns"
+                if not missing_metadata_columns
+                else "missing metadata columns: "
+                + ", ".join(missing_metadata_columns)
+            ),
+        )
+    )
+    if missing_metadata_columns:
+        return rows
+
+    metadata_taxa = sorted(
+        {row["taxon"].strip() for row in metadata_rows if row["taxon"].strip()}
+    )
+    metadata_taxon_set = set(metadata_taxa)
+    missing_metadata_taxa = sorted(sequence_id_set - metadata_taxon_set)
+    missing_sequence_taxa = sorted(metadata_taxon_set - sequence_id_set)
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="taxon_crosswalk",
+            status=(
+                "pass"
+                if not missing_metadata_taxa and not missing_sequence_taxa
+                else "fail"
+            ),
+            observed_value=str(len(metadata_taxa)),
+            detail=(
+                "metadata taxa match the FASTA identifiers"
+                if not missing_metadata_taxa and not missing_sequence_taxa
+                else (
+                    "sequence-only taxa: "
+                    + (", ".join(missing_metadata_taxa) or "none")
+                    + "; metadata-only taxa: "
+                    + (", ".join(missing_sequence_taxa) or "none")
+                )
+            ),
+        )
+    )
+
+    outgroup_taxa = sorted(config.outgroup_taxa)
+    missing_outgroup_taxa = sorted(set(outgroup_taxa) - sequence_id_set)
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="outgroup_taxa",
+            status="pass" if not missing_outgroup_taxa else "fail",
+            observed_value="|".join(outgroup_taxa),
+            detail=(
+                "all outgroup taxa are present in the FASTA panel"
+                if not missing_outgroup_taxa
+                else "missing outgroup taxa: " + ", ".join(missing_outgroup_taxa)
+            ),
+        )
+    )
+
+    centroid_rows: list[dict[str, str]] = []
+    with config.centroids_path.open("r", encoding="utf-8", newline="") as handle:
+        centroid_rows = list(csv.DictReader(handle))
+    centroid_region_set = {
+        row["region"].strip() for row in centroid_rows if row["region"].strip()
+    }
+    metadata_region_set = {
+        row[config.geography_trait].strip()
+        for row in metadata_rows
+        if row[config.geography_trait].strip()
+    }
+    missing_centroid_regions = sorted(metadata_region_set - centroid_region_set)
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="centroid_region_coverage",
+            status="pass" if not missing_centroid_regions else "fail",
+            observed_value=str(len(metadata_region_set)),
+            detail=(
+                "each grouped geography state has one centroid row"
+                if not missing_centroid_regions
+                else "missing centroid rows for: " + ", ".join(missing_centroid_regions)
+            ),
+        )
+    )
+
+    comparative_columns = {
+        "taxon",
+        "host_group",
+        "region_group",
+        "region_latitude",
+        "region_longitude",
+    }
+    response_supported = config.comparative_response in comparative_columns
+    rows.append(
+        RabiesWorkflowConfigAuditRow(
+            check_id="comparative_response_column",
+            status="pass" if response_supported else "fail",
+            observed_value=config.comparative_response,
+            detail=(
+                "comparative response is present in the derived trait table"
+                if response_supported
+                else "expected one of: " + ", ".join(sorted(comparative_columns))
+            ),
+        )
+    )
+    return rows
+
+
+def _raise_for_failed_config_audit(rows: list[RabiesWorkflowConfigAuditRow]) -> None:
+    failures = [row for row in rows if row.status == "fail"]
+    if not failures:
+        return
+    details = "; ".join(f"{row.check_id}: {row.detail}" for row in failures)
+    raise ValueError(f"rabies workflow config failed validation: {details}")
+
+
 def _read_observed_groups(
     metadata_path: Path,
     *,
@@ -1189,6 +1385,80 @@ def _stabilize_clade_report(
 def _copy_output(source: Path, destination: Path) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
     return Path(shutil.copy2(source, destination))
+
+
+def _write_workflow_config_audit_table(
+    path: Path,
+    rows: list[RabiesWorkflowConfigAuditRow],
+) -> Path:
+    return write_taxon_rows(
+        path,
+        columns=["check_id", "status", "observed_value", "detail"],
+        rows=[
+            {
+                "check_id": row.check_id,
+                "status": row.status,
+                "observed_value": row.observed_value,
+                "detail": row.detail,
+            }
+            for row in rows
+        ],
+    )
+
+
+def _write_resolved_workflow_config(
+    path: Path,
+    config: RabiesCrossHostGeographyPanelWorkflowConfig,
+) -> Path:
+    payload = {
+        "report_kind": "rabies_cross_host_geography_workflow_config",
+        "dataset_id": config.dataset_id,
+        "label": config.label,
+        "source_config": config.config_path.name,
+        "input_files": {
+            "sequences_path": {
+                "path": config.sequences_path.name,
+                "sha256": _checksum(config.sequences_path),
+            },
+            "metadata_path": {
+                "path": config.metadata_path.name,
+                "sha256": _checksum(config.metadata_path),
+            },
+            "centroids_path": {
+                "path": config.centroids_path.name,
+                "sha256": _checksum(config.centroids_path),
+            },
+        },
+        "workflow": {
+            "sequence_type": config.sequence_type,
+            "workflow_prefix": config.workflow_prefix,
+            "host_trait": config.host_trait,
+            "geography_trait": config.geography_trait,
+            "host_model": config.host_model,
+            "geography_model": config.geography_model,
+            "outgroup_taxa": list(config.outgroup_taxa),
+            "iqtree_seed": config.iqtree_seed,
+            "iqtree_threads": config.iqtree_threads,
+            "bootstrap_replicates": config.bootstrap_replicates,
+            "alignment_mode": config.alignment_mode,
+            "trimming_mode": config.trimming_mode,
+            "trim_gap_threshold": config.trim_gap_threshold,
+            "bootstrap_consensus_threshold": config.bootstrap_consensus_threshold,
+            "bootstrap_robust_support_threshold": (
+                config.bootstrap_robust_support_threshold
+            ),
+            "clade_metadata_columns": list(config.clade_metadata_columns),
+            "comparative_formula": config.comparative_formula,
+            "comparative_response": config.comparative_response,
+            "comparative_branch_length_floor": (
+                config.comparative_branch_length_floor
+            ),
+        },
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return path
 
 
 def _write_input_validation_table(
