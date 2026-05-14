@@ -632,6 +632,8 @@ metadata table. Its JSON metrics report:
 - `artifact_count`
 - `sequence_count`
 - `config_path`
+- `biological_question`
+- `short_answer`
 - `host_trait`
 - `geography_trait`
 - `selected_model`
@@ -656,6 +658,7 @@ The command writes:
 - `dataset/sequences.fasta`
 - `dataset/metadata.csv`
 - `dataset/region-centroids.csv`
+- `dataset/source-accessions.tsv`
 - `dataset/expected/**`
 - `workflow/workflow-summary.tsv`
 - `workflow/input-validation.tsv`
@@ -712,6 +715,8 @@ The command writes:
 - `workflow/rabies-cross-host-geography-report.html`
 - `workflow/rabies-cross-host-geography.manifest.json`
 - `overview.md`
+- `rabies-cross-host-geography-overview.html`
+- `rabies-cross-host-geography-package.manifest.json`
 
 The packaged dataset carries grouped workflow traits for both downstream
 biological surfaces:
@@ -721,6 +726,13 @@ biological surfaces:
 - comparative formula `region_longitude ~ host_group`
 - discrete ancestral model `ard` for both state-evolution analyses
 - explicit outgroup rooting on `bat_chile_rv108`
+
+The package root is intentionally part of the public review contract.
+`dataset/source-accessions.tsv` keeps accession provenance machine-readable,
+the overview HTML states one biological question plus one short answer in
+plain language, and the package manifest records that same question and answer
+alongside config provenance, output checksums, and high-level workflow
+metrics.
 
 This command does require external `mafft`, `trimal`, and `iqtree2`
 executables because it reruns the full raw-sequence inference path instead of

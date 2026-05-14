@@ -486,6 +486,7 @@ bijux-phylogenetics demo rabies-cross-host-geography-panel \
 The packaged integrated workflow writes the same dataset/workflow split as the
 other demos, but it keeps the full scientific chain together:
 
+- one accession-provenance ledger at `dataset/source-accessions.tsv`
 - FASTA validation, sequence-type detection, and alignment-quality review ledgers
 - aligned FASTA and trimmed FASTA
 - maximum-likelihood rooted tree with bootstrap support ledger
@@ -496,6 +497,12 @@ other demos, but it keeps the full scientific chain together:
 - full biogeography package with ancestral-region tree, transition matrix, migration events, and self-contained map
 - comparative trait table, comparative-ready tree, branch-adjustment ledger, and comparative report package
 - integrated HTML report and machine-readable manifest
+
+At the package root it also writes one reviewer-facing overview HTML page and
+one package manifest. Those top-level artifacts state the biological question,
+one short answer, the exact reproduction config path and checksum, and the key
+workflow metrics without forcing a reviewer to open the deeper integrated
+report first.
 
 The packaged metadata carries both raw `host_species` and `country` provenance
 plus the grouped workflow traits `host_group` and `region_group`. Those grouped
