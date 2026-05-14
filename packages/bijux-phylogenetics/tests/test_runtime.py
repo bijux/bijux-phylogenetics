@@ -6895,8 +6895,11 @@ def test_compare_robinson_foulds_matches_reference_fixture_cases() -> None:
         assert report.left_split_count == int(row["left_split_count"])
         assert report.right_split_count == int(row["right_split_count"])
         assert report.robinson_foulds_distance == int(row["robinson_foulds_distance"])
-        assert report.normalized_robinson_foulds == float(
+        assert report.normalized_robinson_foulds == pytest.approx(
             row["normalized_robinson_foulds"]
+            if isinstance(row["normalized_robinson_foulds"], float)
+            else float(row["normalized_robinson_foulds"]),
+            abs=1e-12,
         )
 
 
@@ -7146,7 +7149,10 @@ def test_compare_branch_score_distance_matches_reference_fixture_cases() -> None
             taxon_overlap_policy=row["taxon_overlap_policy"],
         )
         assert report.same_taxon_set is (row["same_taxon_set"] == "true")
-        assert report.branch_score_distance == float(row["branch_score_distance"])
+        assert report.branch_score_distance == pytest.approx(
+            float(row["branch_score_distance"]),
+            abs=1e-12,
+        )
 
 
 def test_compare_branch_score_distance_enforces_identical_taxa_when_requested() -> None:

@@ -1,7 +1,10 @@
-reference_tool	left_tree	right_tree	taxon_overlap_policy	same_taxon_set	branch_score_distance
-dendropy.euclidean_distance	example_tree.nwk	example_tree.nwk	prune-to-shared	true	0.0
-dendropy.euclidean_distance	example_tree.nwk	example_tree_branch_lengths_right.nwk	prune-to-shared	true	0.33166247903554
-dendropy.euclidean_distance	example_tree.nwk	example_tree_rooting_diff.nwk	prune-to-shared	true	0.28284271247461906
-dendropy.euclidean_distance	example_tree.nwk	example_tree_alt.nwk	prune-to-shared	true	0.28284271247461906
-dendropy.euclidean_distance	example_tree.nwk	example_tree_topology_diff.nwk	prune-to-shared	true	0.44721359549995804
-dendropy.euclidean_distance	example_tree.nwk	example_tree_overlap.nwk	prune-to-shared	false	0.0
+case_id	reference_tool	reference_version	reference_source	left_tree	right_tree	taxon_overlap_policy	same_taxon_set	branch_score_distance
+branch-score-identical	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree.nwk	example_tree.nwk	prune-to-shared	true	0.0
+branch-score-branch-length-scale	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree.nwk	example_tree_branch_lengths_right.nwk	prune-to-shared	true	0.33166247903554
+branch-score-rooting-difference	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree.nwk	example_tree_rooting_diff.nwk	prune-to-shared	true	0.28284271247461906
+branch-score-alt-binary	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree.nwk	example_tree_alt.nwk	prune-to-shared	true	0.28284271247461906
+branch-score-topology-difference	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree.nwk	example_tree_topology_diff.nwk	prune-to-shared	true	0.44721359549995804
+branch-score-overlap-pruned	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree.nwk	example_tree_overlap.nwk	prune-to-shared	false	0.0
+branch-score-polytomy-binary	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree.nwk	example_tree_polytomy.nwk	prune-to-shared	true	0.7745966692414834
+branch-score-polytomy-star	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree_polytomy.nwk	example_tree_star.nwk	prune-to-shared	false	0.8306623862918076
+branch-score-polytomy-overlap-pruned	DendroPy	5.0.8	dendropy.calculate.treecompare.euclidean_distance	example_tree_polytomy.nwk	example_tree_overlap.nwk	prune-to-shared	false	0.45825756949558405
