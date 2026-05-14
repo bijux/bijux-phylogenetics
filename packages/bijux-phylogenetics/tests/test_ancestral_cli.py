@@ -170,6 +170,16 @@ def test_ancestral_discrete_cli_can_export_parsimony_comparison(
     )
 
 
+def test_ancestral_discrete_reference_cli_reports_passing_cases(capsys) -> None:
+    exit_code = main(["ancestral", "discrete-reference", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["case_count"] == 10
+    assert payload["metrics"]["external_case_count"] == 6
+    assert payload["metrics"]["all_passed"] is True
+
+
 def test_ancestral_confidence_cli_can_export_single_tree_review(
     tmp_path: Path, capsys
 ) -> None:
