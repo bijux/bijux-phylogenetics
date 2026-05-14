@@ -8308,6 +8308,19 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                             "blombergs_k": report.blombergs_k.k,
                             "pagels_lambda": report.pagels_lambda.lambda_value,
                             "signal_p_value": report.signal_test.p_value,
+                            "tree_is_ultrametric": (
+                                report.input_audit.tree_is_ultrametric
+                            ),
+                            "ultrametric_policy": (
+                                report.input_audit.ultrametric_policy
+                            ),
+                            "missing_value_policy": (
+                                report.input_audit.missing_value_policy
+                            ),
+                            "pruned_missing_value_taxon_count": len(
+                                report.input_audit.pruned_missing_value_taxa
+                            ),
+                            "signal_seed": report.signal_test.seed,
                             "lambda_likelihood_ratio_p_value": (
                                 report.lambda_likelihood_ratio_p_value
                             ),
