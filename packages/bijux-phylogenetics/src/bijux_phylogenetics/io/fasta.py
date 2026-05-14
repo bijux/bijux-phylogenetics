@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from dataclasses import dataclass
 from pathlib import Path
 from statistics import median
 
@@ -147,6 +148,25 @@ _ALIGNMENT_FILTER_PROFILES: dict[str, AlignmentFilterProfile] = {
 }
 
 
+@dataclass(slots=True)
+class _RawFastaScan:
+    path: Path
+    record_count: int
+    lengths_by_identifier: list[tuple[str, int]]
+    total_residue_count: int
+    duplicate_positions: dict[str, list[int]]
+    empty_sequences: list[FastaEmptySequence]
+    illegal_supported: list[FastaIllegalCharacter]
+    illegal_dna: list[FastaIllegalCharacter]
+    illegal_rna: list[FastaIllegalCharacter]
+    illegal_protein: list[FastaIllegalCharacter]
+    thymine_record_count: int
+    uracil_record_count: int
+    protein_signal_record_count: int
+    invalid_record_count: int
+    shared_compatible: set[AlignmentAlphabet] | None
+
+
 def _resolve_genetic_code_table(
     genetic_code: int | str | None,
 ) -> tuple[int, str, dict[str, str], set[str]]:
@@ -287,36 +307,183 @@ def _compatible_raw_sequence_types(record: AlignmentRecord) -> set[AlignmentAlph
     return compatible
 
 
-def detect_fasta_sequence_type(
-    path: Path,
+def _process_raw_fasta_record(
     *,
-    records: list[AlignmentRecord] | None = None,
-) -> FastaSequenceTypeReport:
-    """Classify raw FASTA records as DNA, RNA, protein, mixed, or invalid."""
-    rows = load_permissive_fasta_records(path) if records is None else records
-    shared_compatible: set[AlignmentAlphabet] | None = None
-    thymine_record_count = 0
-    uracil_record_count = 0
-    protein_signal_record_count = 0
-    invalid_record_count = 0
-
-    for record in rows:
-        observed = _observed_raw_sequence_characters(record)
-        compatible = _compatible_raw_sequence_types(record)
-        if compatible:
-            if shared_compatible is None:
-                shared_compatible = set(compatible)
-            else:
-                shared_compatible &= compatible
+    identifier: str,
+    sequence: str,
+    record_index: int,
+    lengths_by_identifier: list[tuple[str, int]],
+    duplicate_positions: dict[str, list[int]],
+    empty_sequences: list[FastaEmptySequence],
+    illegal_supported: list[FastaIllegalCharacter],
+    illegal_dna: list[FastaIllegalCharacter],
+    illegal_rna: list[FastaIllegalCharacter],
+    illegal_protein: list[FastaIllegalCharacter],
+    thymine_record_count_ref: list[int],
+    uracil_record_count_ref: list[int],
+    protein_signal_record_count_ref: list[int],
+    invalid_record_count_ref: list[int],
+    shared_compatible_ref: list[set[AlignmentAlphabet] | None],
+) -> int:
+    record = AlignmentRecord(identifier=identifier, sequence=sequence)
+    lengths_by_identifier.append((identifier, len(sequence)))
+    duplicate_positions.setdefault(identifier, []).append(record_index)
+    if not sequence:
+        empty_sequences.append(
+            FastaEmptySequence(identifier=identifier, record_index=record_index)
+        )
+    observed = _observed_raw_sequence_characters(record)
+    compatible = _compatible_raw_sequence_types(record)
+    if compatible:
+        if shared_compatible_ref[0] is None:
+            shared_compatible_ref[0] = set(compatible)
         else:
-            invalid_record_count += 1
-        if "T" in observed:
-            thymine_record_count += 1
-        if "U" in observed:
-            uracil_record_count += 1
-        if observed & _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER:
-            protein_signal_record_count += 1
+            shared_compatible_ref[0] &= compatible
+    else:
+        invalid_record_count_ref[0] += 1
+    if "T" in observed:
+        thymine_record_count_ref[0] += 1
+    if "U" in observed:
+        uracil_record_count_ref[0] += 1
+    if observed & _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER:
+        protein_signal_record_count_ref[0] += 1
+    for position, residue in enumerate(sequence, start=1):
+        row = FastaIllegalCharacter(
+            identifier=identifier,
+            record_index=record_index,
+            position=position,
+            character=residue,
+        )
+        if residue not in (
+            _DNA_CHARACTERS
+            | _RNA_CHARACTERS
+            | _PROTEIN_CHARACTERS
+            | _GAP_CHARACTERS
+            | _EXPLICIT_MISSING_CHARACTERS
+        ):
+            illegal_supported.append(row)
+        if residue not in (
+            _DNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+        ):
+            illegal_dna.append(row)
+        if residue not in (
+            _RNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+        ):
+            illegal_rna.append(row)
+        if residue not in (
+            _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
+        ):
+            illegal_protein.append(row)
+    return len(sequence)
 
+
+def _scan_raw_fasta(path: Path) -> _RawFastaScan:
+    if not path.exists():
+        raise FileNotFoundError(f"alignment file not found: {path}")
+
+    record_count = 0
+    lengths_by_identifier: list[tuple[str, int]] = []
+    total_residue_count = 0
+    duplicate_positions: dict[str, list[int]] = {}
+    empty_sequences: list[FastaEmptySequence] = []
+    illegal_supported: list[FastaIllegalCharacter] = []
+    illegal_dna: list[FastaIllegalCharacter] = []
+    illegal_rna: list[FastaIllegalCharacter] = []
+    illegal_protein: list[FastaIllegalCharacter] = []
+    thymine_record_count_ref = [0]
+    uracil_record_count_ref = [0]
+    protein_signal_record_count_ref = [0]
+    invalid_record_count_ref = [0]
+    shared_compatible_ref: list[set[AlignmentAlphabet] | None] = [None]
+    current_identifier: str | None = None
+    current_sequence: list[str] = []
+
+    with path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line:
+                continue
+            if line.startswith(">"):
+                if current_identifier is not None:
+                    record_count += 1
+                    total_residue_count += _process_raw_fasta_record(
+                        identifier=current_identifier,
+                        sequence="".join(current_sequence),
+                        record_index=record_count,
+                        lengths_by_identifier=lengths_by_identifier,
+                        duplicate_positions=duplicate_positions,
+                        empty_sequences=empty_sequences,
+                        illegal_supported=illegal_supported,
+                        illegal_dna=illegal_dna,
+                        illegal_rna=illegal_rna,
+                        illegal_protein=illegal_protein,
+                        thymine_record_count_ref=thymine_record_count_ref,
+                        uracil_record_count_ref=uracil_record_count_ref,
+                        protein_signal_record_count_ref=protein_signal_record_count_ref,
+                        invalid_record_count_ref=invalid_record_count_ref,
+                        shared_compatible_ref=shared_compatible_ref,
+                    )
+                current_identifier = line[1:].strip()
+                current_sequence = []
+                continue
+            if current_identifier is None:
+                raise InvalidAlignmentError(
+                    f"alignment sequence appears before any FASTA header in {path}"
+                )
+            current_sequence.append(line)
+
+    if current_identifier is not None:
+        record_count += 1
+        total_residue_count += _process_raw_fasta_record(
+            identifier=current_identifier,
+            sequence="".join(current_sequence),
+            record_index=record_count,
+            lengths_by_identifier=lengths_by_identifier,
+            duplicate_positions=duplicate_positions,
+            empty_sequences=empty_sequences,
+            illegal_supported=illegal_supported,
+            illegal_dna=illegal_dna,
+            illegal_rna=illegal_rna,
+            illegal_protein=illegal_protein,
+            thymine_record_count_ref=thymine_record_count_ref,
+            uracil_record_count_ref=uracil_record_count_ref,
+            protein_signal_record_count_ref=protein_signal_record_count_ref,
+            invalid_record_count_ref=invalid_record_count_ref,
+            shared_compatible_ref=shared_compatible_ref,
+        )
+
+    if record_count == 0:
+        raise InvalidAlignmentError(f"alignment contains no FASTA records: {path}")
+
+    return _RawFastaScan(
+        path=path,
+        record_count=record_count,
+        lengths_by_identifier=lengths_by_identifier,
+        total_residue_count=total_residue_count,
+        duplicate_positions=duplicate_positions,
+        empty_sequences=empty_sequences,
+        illegal_supported=illegal_supported,
+        illegal_dna=illegal_dna,
+        illegal_rna=illegal_rna,
+        illegal_protein=illegal_protein,
+        thymine_record_count=thymine_record_count_ref[0],
+        uracil_record_count=uracil_record_count_ref[0],
+        protein_signal_record_count=protein_signal_record_count_ref[0],
+        invalid_record_count=invalid_record_count_ref[0],
+        shared_compatible=shared_compatible_ref[0],
+    )
+
+
+def _build_fasta_sequence_type_report(
+    *,
+    path: Path,
+    record_count: int,
+    shared_compatible: set[AlignmentAlphabet] | None,
+    thymine_record_count: int,
+    uracil_record_count: int,
+    protein_signal_record_count: int,
+    invalid_record_count: int,
+) -> FastaSequenceTypeReport:
     warnings: list[str] = []
     compatible_types = (
         [] if shared_compatible is None else _ordered_sequence_types(shared_compatible)
@@ -325,7 +492,7 @@ def detect_fasta_sequence_type(
         warnings.append("input contains unsupported sequence characters")
         return FastaSequenceTypeReport(
             path=path,
-            record_count=len(rows),
+            record_count=record_count,
             detected_type="invalid",
             selected_type=None,
             compatible_types=[],
@@ -355,7 +522,7 @@ def detect_fasta_sequence_type(
             )
         return FastaSequenceTypeReport(
             path=path,
-            record_count=len(rows),
+            record_count=record_count,
             detected_type="mixed",
             selected_type=None,
             compatible_types=[],
@@ -371,7 +538,7 @@ def detect_fasta_sequence_type(
     if protein_signal_record_count:
         return FastaSequenceTypeReport(
             path=path,
-            record_count=len(rows),
+            record_count=record_count,
             detected_type="protein",
             selected_type="protein",
             compatible_types=compatible_types,
@@ -387,7 +554,7 @@ def detect_fasta_sequence_type(
     if uracil_record_count and not thymine_record_count:
         return FastaSequenceTypeReport(
             path=path,
-            record_count=len(rows),
+            record_count=record_count,
             detected_type="rna",
             selected_type="rna",
             compatible_types=compatible_types,
@@ -421,7 +588,7 @@ def detect_fasta_sequence_type(
             )
         return FastaSequenceTypeReport(
             path=path,
-            record_count=len(rows),
+            record_count=record_count,
             detected_type="dna",
             selected_type="dna",
             compatible_types=compatible_types,
@@ -436,7 +603,7 @@ def detect_fasta_sequence_type(
 
     return FastaSequenceTypeReport(
         path=path,
-        record_count=len(rows),
+        record_count=record_count,
         detected_type="unknown",
         selected_type=None,
         compatible_types=compatible_types,
@@ -447,6 +614,84 @@ def detect_fasta_sequence_type(
         invalid_record_count=0,
         note="the raw input could not be resolved to a supported sequence type",
         warnings=["input sequence type could not be inferred confidently"],
+    )
+
+
+def _build_fasta_input_summary_from_scan(
+    scan: _RawFastaScan,
+    *,
+    sequence_type: AlignmentAlphabet | None,
+    sequence_type_report: FastaSequenceTypeReport,
+) -> FastaInputSummary:
+    lengths = [length for _, length in scan.lengths_by_identifier]
+    inferred_alphabet = (
+        sequence_type
+        if sequence_type is not None
+        else (
+            "unknown"
+            if sequence_type_report.selected_type is None
+            else sequence_type_report.selected_type
+        )
+    )
+    return FastaInputSummary(
+        path=scan.path,
+        sequence_count=scan.record_count,
+        unique_identifier_count=len(scan.duplicate_positions),
+        empty_sequence_count=len(scan.empty_sequences),
+        min_sequence_length=min(lengths),
+        max_sequence_length=max(lengths),
+        median_sequence_length=float(median(lengths)),
+        total_residue_count=scan.total_residue_count,
+        inferred_alphabet=inferred_alphabet,
+    )
+
+
+def detect_fasta_sequence_type(
+    path: Path,
+    *,
+    records: list[AlignmentRecord] | None = None,
+) -> FastaSequenceTypeReport:
+    """Classify raw FASTA records as DNA, RNA, protein, mixed, or invalid."""
+    if records is None:
+        scan = _scan_raw_fasta(path)
+        return _build_fasta_sequence_type_report(
+            path=path,
+            record_count=scan.record_count,
+            shared_compatible=scan.shared_compatible,
+            thymine_record_count=scan.thymine_record_count,
+            uracil_record_count=scan.uracil_record_count,
+            protein_signal_record_count=scan.protein_signal_record_count,
+            invalid_record_count=scan.invalid_record_count,
+        )
+    shared_compatible: set[AlignmentAlphabet] | None = None
+    thymine_record_count = 0
+    uracil_record_count = 0
+    protein_signal_record_count = 0
+    invalid_record_count = 0
+    for record in records:
+        observed = _observed_raw_sequence_characters(record)
+        compatible = _compatible_raw_sequence_types(record)
+        if compatible:
+            if shared_compatible is None:
+                shared_compatible = set(compatible)
+            else:
+                shared_compatible &= compatible
+        else:
+            invalid_record_count += 1
+        if "T" in observed:
+            thymine_record_count += 1
+        if "U" in observed:
+            uracil_record_count += 1
+        if observed & _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER:
+            protein_signal_record_count += 1
+    return _build_fasta_sequence_type_report(
+        path=path,
+        record_count=len(records),
+        shared_compatible=shared_compatible,
+        thymine_record_count=thymine_record_count,
+        uracil_record_count=uracil_record_count,
+        protein_signal_record_count=protein_signal_record_count,
+        invalid_record_count=invalid_record_count,
     )
 
 
@@ -2732,7 +2977,15 @@ def classify_alignment_sequences(path: Path) -> AlignmentSequenceKindReport:
 def detect_sequence_length_outliers(path: Path) -> list[SequenceLengthOutlier]:
     """Detect unusually short or long raw sequences before alignment assumptions are imposed."""
     records = load_permissive_fasta_records(path)
-    lengths = [len(record.sequence) for record in records]
+    return _detect_sequence_length_outlier_rows(
+        [(record.identifier, len(record.sequence)) for record in records]
+    )
+
+
+def _detect_sequence_length_outlier_rows(
+    lengths_by_identifier: list[tuple[str, int]],
+) -> list[SequenceLengthOutlier]:
+    lengths = [length for _, length in lengths_by_identifier]
     if len(lengths) < 3:
         return []
     median_length = float(median(lengths))
@@ -2740,21 +2993,20 @@ def detect_sequence_length_outliers(path: Path) -> list[SequenceLengthOutlier]:
         return []
 
     outliers: list[SequenceLengthOutlier] = []
-    for record in records:
-        robust_z_score = _robust_z_score(
-            len(record.sequence), [float(length) for length in lengths]
-        )
-        relative_deviation = abs(len(record.sequence) - median_length) / median_length
+    length_values = [float(length) for length in lengths]
+    for identifier, raw_length in lengths_by_identifier:
+        robust_z_score = _robust_z_score(raw_length, length_values)
+        relative_deviation = abs(raw_length - median_length) / median_length
         if relative_deviation >= 0.2 or abs(robust_z_score or 0.0) >= 3.5:
             note = (
                 "longer than baseline"
-                if len(record.sequence) > median_length
+                if raw_length > median_length
                 else "shorter than baseline"
             )
             outliers.append(
                 SequenceLengthOutlier(
-                    identifier=record.identifier,
-                    raw_length=len(record.sequence),
+                    identifier=identifier,
+                    raw_length=raw_length,
                     median_length=median_length,
                     robust_z_score=robust_z_score,
                     note=note,
@@ -2782,9 +3034,24 @@ def summarize_fasta_input(
     sequence_type: AlignmentAlphabet | None = None,
 ) -> FastaInputSummary:
     """Summarize a FASTA input without assuming aligned equal-length sequences."""
-    rows = load_permissive_fasta_records(path) if records is None else records
-    lengths = [len(record.sequence) for record in rows]
-    sequence_type_report = detect_fasta_sequence_type(path, records=list(rows))
+    if records is None:
+        scan = _scan_raw_fasta(path)
+        sequence_type_report = _build_fasta_sequence_type_report(
+            path=path,
+            record_count=scan.record_count,
+            shared_compatible=scan.shared_compatible,
+            thymine_record_count=scan.thymine_record_count,
+            uracil_record_count=scan.uracil_record_count,
+            protein_signal_record_count=scan.protein_signal_record_count,
+            invalid_record_count=scan.invalid_record_count,
+        )
+        return _build_fasta_input_summary_from_scan(
+            scan,
+            sequence_type=sequence_type,
+            sequence_type_report=sequence_type_report,
+        )
+    lengths = [len(record.sequence) for record in records]
+    sequence_type_report = detect_fasta_sequence_type(path, records=list(records))
     inferred_alphabet = (
         sequence_type
         if sequence_type is not None
@@ -2796,9 +3063,9 @@ def summarize_fasta_input(
     )
     return FastaInputSummary(
         path=path,
-        sequence_count=len(rows),
-        unique_identifier_count=len({record.identifier for record in rows}),
-        empty_sequence_count=sum(1 for record in rows if not record.sequence),
+        sequence_count=len(records),
+        unique_identifier_count=len({record.identifier for record in records}),
+        empty_sequence_count=sum(1 for record in records if not record.sequence),
         min_sequence_length=min(lengths),
         max_sequence_length=max(lengths),
         median_sequence_length=float(median(lengths)),
@@ -2866,20 +3133,40 @@ def validate_fasta_input(
     sequence_type: AlignmentAlphabet | None = None,
 ) -> FastaInputValidationReport:
     """Validate a FASTA input before alignment or engine execution."""
-    records = load_permissive_fasta_records(path)
-    sequence_type_report = detect_fasta_sequence_type(path, records=records)
-    summary = summarize_fasta_input(
-        path,
-        records=records,
+    scan = _scan_raw_fasta(path)
+    sequence_type_report = _build_fasta_sequence_type_report(
+        path=path,
+        record_count=scan.record_count,
+        shared_compatible=scan.shared_compatible,
+        thymine_record_count=scan.thymine_record_count,
+        uracil_record_count=scan.uracil_record_count,
+        protein_signal_record_count=scan.protein_signal_record_count,
+        invalid_record_count=scan.invalid_record_count,
+    )
+    summary = _build_fasta_input_summary_from_scan(
+        scan,
         sequence_type=sequence_type,
+        sequence_type_report=sequence_type_report,
     )
-    duplicate_identifiers = _detect_duplicate_identifiers(records)
-    illegal_characters = _detect_illegal_sequence_characters(
-        records,
-        alphabet=summary.inferred_alphabet if sequence_type is None else sequence_type,
-    )
-    empty_sequences = _detect_empty_sequences(records)
-    length_outliers = detect_sequence_length_outliers(path)
+    duplicate_identifiers = [
+        FastaDuplicateIdentifier(
+            identifier=identifier,
+            occurrences=len(record_indices),
+            record_indices=record_indices,
+        )
+        for identifier, record_indices in sorted(scan.duplicate_positions.items())
+        if len(record_indices) > 1
+    ]
+    if summary.inferred_alphabet == "dna":
+        illegal_characters = scan.illegal_dna
+    elif summary.inferred_alphabet == "rna":
+        illegal_characters = scan.illegal_rna
+    elif summary.inferred_alphabet == "protein":
+        illegal_characters = scan.illegal_protein
+    else:
+        illegal_characters = scan.illegal_supported
+    empty_sequences = scan.empty_sequences
+    length_outliers = _detect_sequence_length_outlier_rows(scan.lengths_by_identifier)
     warnings: list[str] = []
     if duplicate_identifiers:
         warnings.append("input contains duplicate sequence identifiers")
