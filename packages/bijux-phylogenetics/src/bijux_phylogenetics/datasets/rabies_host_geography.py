@@ -49,6 +49,11 @@ from bijux_phylogenetics.comparative.reporting import (
     ComparativeMethodReport,
     build_comparative_method_report,
 )
+from bijux_phylogenetics.compare.reports import (
+    ComparisonReportBuildResult,
+    build_tree_comparison_report,
+)
+from bijux_phylogenetics.compare.topology import write_tree_comparison_table
 from bijux_phylogenetics.core.alignment import (
     AlignmentQualityReport,
     SequenceQualityRankingReport,
@@ -261,6 +266,10 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     bootstrap_tree_count: int
     bootstrap_topology_count: int
     bootstrap_unstable_branch_count: int
+    bootstrap_consensus_rooted_rf_distance: int
+    bootstrap_consensus_same_unrooted_topology: bool
+    bootstrap_consensus_high_support_conflict_count: int
+    bootstrap_consensus_branch_score_distance: float | None
     rooted_outgroup_taxa: tuple[str, ...]
     root_host: str
     root_host_confidence: float
@@ -302,6 +311,9 @@ class RabiesCrossHostGeographyPanelWorkflowBundle:
     bootstrap_unstable_clades_path: Path
     bootstrap_distance_matrix_path: Path
     bootstrap_topology_clusters_path: Path
+    bootstrap_tree_comparison_summary_path: Path
+    bootstrap_tree_comparison_table_path: Path
+    bootstrap_tree_comparison_report_path: Path
     host_switch_summary_path: Path
     host_state_nodes_path: Path
     host_switch_branches_path: Path
@@ -651,6 +663,21 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         consensus_threshold=report.config.bootstrap_consensus_threshold,
         robust_support_threshold=report.config.bootstrap_robust_support_threshold,
     )
+    bootstrap_tree_comparison_report = build_tree_comparison_report(
+        tree_path,
+        bootstrap_artifacts.output_paths["consensus_tree"],
+        out_path=bootstrap_output_root
+        / "rooted-tree-vs-bootstrap-consensus.report.html",
+    )
+    bootstrap_tree_comparison_table_path = write_tree_comparison_table(
+        bootstrap_output_root / "rooted-tree-vs-bootstrap-consensus.comparison.tsv",
+        tree_path,
+        bootstrap_artifacts.output_paths["consensus_tree"],
+    )
+    bootstrap_tree_comparison_summary_path = _write_bootstrap_tree_comparison_summary(
+        bootstrap_output_root / "rooted-tree-vs-bootstrap-consensus.summary.tsv",
+        bootstrap_tree_comparison_report,
+    )
 
     host_switch_summary_path = write_host_switch_summary_table(
         output_root / "host-switch-summary.tsv",
@@ -796,6 +823,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         report=report,
         clade_row_count=len(stable_clade_report.rows),
         bootstrap_artifacts=bootstrap_artifacts,
+        bootstrap_tree_comparison_report=bootstrap_tree_comparison_report,
         comparative_summary_row=comparative_summary_row,
     )
     final_report_path = _write_integrated_report(
@@ -813,6 +841,7 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         report=report,
         comparative_summary_row=comparative_summary_row,
         bootstrap_artifacts=bootstrap_artifacts,
+        bootstrap_tree_comparison_report=bootstrap_tree_comparison_report,
         clade_row_count=len(stable_clade_report.rows),
         bundle_paths={
             "workflow_summary": workflow_summary_path,
@@ -833,6 +862,11 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
             "bootstrap_unstable_clades": bootstrap_artifacts.output_paths["unstable_clades"],
             "bootstrap_distance_matrix": bootstrap_artifacts.output_paths["distance_matrix"],
             "bootstrap_topology_clusters": bootstrap_artifacts.output_paths["topology_clusters"],
+            "bootstrap_tree_comparison_summary": bootstrap_tree_comparison_summary_path,
+            "bootstrap_tree_comparison_table": bootstrap_tree_comparison_table_path,
+            "bootstrap_tree_comparison_report": (
+                bootstrap_tree_comparison_report.output_path
+            ),
             "host_switch_summary": host_switch_summary_path,
             "host_state_nodes": host_state_nodes_path,
             "host_switch_branches": host_switch_branches_path,
@@ -883,6 +917,22 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         bootstrap_unstable_branch_count=(
             bootstrap_artifacts.summary_report.unstable_branch_count
         ),
+        bootstrap_consensus_rooted_rf_distance=(
+            bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance
+        ),
+        bootstrap_consensus_same_unrooted_topology=(
+            bootstrap_tree_comparison_report.topology.same_unrooted_topology
+        ),
+        bootstrap_consensus_high_support_conflict_count=len(
+            [
+                row
+                for row in bootstrap_tree_comparison_report.support.conflicting_clades
+                if row.conflict_classification == "high_support_conflict"
+            ]
+        ),
+        bootstrap_consensus_branch_score_distance=(
+            bootstrap_tree_comparison_report.branch_lengths.branch_score.branch_score_distance
+        ),
         rooted_outgroup_taxa=tuple(report.rooting_report.rooted_outgroup_taxa),
         root_host=host_summary.root_host,
         root_host_confidence=host_summary.root_confidence,
@@ -926,6 +976,13 @@ def write_rabies_cross_host_geography_panel_workflow_bundle(
         bootstrap_unstable_clades_path=bootstrap_artifacts.output_paths["unstable_clades"],
         bootstrap_distance_matrix_path=bootstrap_artifacts.output_paths["distance_matrix"],
         bootstrap_topology_clusters_path=bootstrap_artifacts.output_paths["topology_clusters"],
+        bootstrap_tree_comparison_summary_path=(
+            bootstrap_tree_comparison_summary_path
+        ),
+        bootstrap_tree_comparison_table_path=bootstrap_tree_comparison_table_path,
+        bootstrap_tree_comparison_report_path=(
+            bootstrap_tree_comparison_report.output_path
+        ),
         host_switch_summary_path=host_switch_summary_path,
         host_state_nodes_path=host_state_nodes_path,
         host_switch_branches_path=host_switch_branches_path,
@@ -1461,6 +1518,54 @@ def _write_resolved_workflow_config(
     return path
 
 
+def _write_bootstrap_tree_comparison_summary(
+    path: Path,
+    comparison_report: ComparisonReportBuildResult,
+) -> Path:
+    high_support_conflict_count = len(
+        [
+            row
+            for row in comparison_report.support.conflicting_clades
+            if row.conflict_classification == "high_support_conflict"
+        ]
+    )
+    row = {
+        "left_tree": comparison_report.topology.left_path.name,
+        "right_tree": comparison_report.topology.right_path.name,
+        "shared_taxon_count": str(len(comparison_report.topology.shared_taxa)),
+        "rooted_rf_distance": str(
+            comparison_report.topology.rooted_robinson_foulds_distance
+        ),
+        "rooted_normalized_rf": _format_number(
+            comparison_report.topology.rooted_normalized_robinson_foulds
+        ),
+        "topology_equal": (
+            "true" if comparison_report.topology.topology_equal else "false"
+        ),
+        "same_unrooted_topology": (
+            "true" if comparison_report.topology.same_unrooted_topology else "false"
+        ),
+        "same_taxa_different_rooting": (
+            "true"
+            if comparison_report.topology.same_taxa_different_rooting
+            else "false"
+        ),
+        "same_topology_different_branch_lengths": (
+            "true"
+            if comparison_report.topology.same_topology_different_branch_lengths
+            else "false"
+        ),
+        "support_conflict_count": str(
+            len(comparison_report.support.conflicting_clades)
+        ),
+        "high_support_conflict_count": str(high_support_conflict_count),
+        "branch_score_distance": _format_number(
+            comparison_report.branch_lengths.branch_score.branch_score_distance
+        ),
+    }
+    return write_taxon_rows(path, columns=list(row.keys()), rows=[row])
+
+
 def _write_input_validation_table(
     path: Path,
     *,
@@ -1590,6 +1695,7 @@ def _write_workflow_summary_table(
     report: RabiesCrossHostGeographyPanelWorkflowReport,
     clade_row_count: int,
     bootstrap_artifacts: BootstrapTreeSetArtifactReport,
+    bootstrap_tree_comparison_report: ComparisonReportBuildResult,
     comparative_summary_row: ComparativeAnalysisSummaryRow,
 ) -> Path:
     support = report.fasta_to_tree.support_summary
@@ -1621,6 +1727,23 @@ def _write_workflow_summary_table(
         ),
         "bootstrap_unstable_branch_count": str(
             bootstrap_summary.unstable_branch_count
+        ),
+        "bootstrap_consensus_rooted_rf_distance": str(
+            bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance
+        ),
+        "bootstrap_consensus_same_unrooted_topology": (
+            "true"
+            if bootstrap_tree_comparison_report.topology.same_unrooted_topology
+            else "false"
+        ),
+        "bootstrap_consensus_high_support_conflict_count": str(
+            len(
+                [
+                    row
+                    for row in bootstrap_tree_comparison_report.support.conflicting_clades
+                    if row.conflict_classification == "high_support_conflict"
+                ]
+            )
         ),
         "outgroup_taxa": ",".join(report.dataset.outgroup_taxa),
         "root_host": host_summary.root_host,
@@ -1675,6 +1798,10 @@ def _write_overview(
         f"- workflow summary: `{workflow_bundle.workflow_summary_path.name}`",
         f"- clade table: `{workflow_bundle.clade_table_path.name}`",
         f"- bootstrap review: `bootstrap-review/{workflow_bundle.bootstrap_summary_path.name}`",
+        (
+            "- rooted-versus-consensus comparison: "
+            f"`bootstrap-review/{workflow_bundle.bootstrap_tree_comparison_summary_path.name}`"
+        ),
         f"- comparative report: `comparative/{workflow_bundle.comparative_report_path.name}`",
         f"- final report: `{workflow_bundle.final_report_path.name}`",
     ]
@@ -1876,6 +2003,7 @@ def _write_manifest(
     report: RabiesCrossHostGeographyPanelWorkflowReport,
     comparative_summary_row: ComparativeAnalysisSummaryRow,
     bootstrap_artifacts: BootstrapTreeSetArtifactReport,
+    bootstrap_tree_comparison_report: ComparisonReportBuildResult,
     clade_row_count: int,
     bundle_paths: dict[str, Path],
 ) -> Path:
@@ -1904,6 +2032,19 @@ def _write_manifest(
             "bootstrap_tree_count": bootstrap_artifacts.summary_report.tree_count,
             "bootstrap_unstable_branch_count": (
                 bootstrap_artifacts.summary_report.unstable_branch_count
+            ),
+            "bootstrap_consensus_rooted_rf_distance": (
+                bootstrap_tree_comparison_report.topology.rooted_robinson_foulds_distance
+            ),
+            "bootstrap_consensus_same_unrooted_topology": (
+                bootstrap_tree_comparison_report.topology.same_unrooted_topology
+            ),
+            "bootstrap_consensus_high_support_conflict_count": len(
+                [
+                    row
+                    for row in bootstrap_tree_comparison_report.support.conflicting_clades
+                    if row.conflict_classification == "high_support_conflict"
+                ]
             ),
             "comparative_selected_model": comparative_summary_row.selected_model,
             "comparative_pgls_lambda": comparative_summary_row.pgls_lambda,

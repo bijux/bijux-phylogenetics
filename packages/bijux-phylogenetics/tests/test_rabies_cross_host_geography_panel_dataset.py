@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -79,6 +80,39 @@ def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface
     assert dataset.comparative_response == "region_longitude"
     assert dataset.comparative_branch_length_floor == 1e-6
     assert "MG458305" in dataset.source_accessions
+
+
+@pytest.mark.slow
+def test_rabies_cross_host_geography_panel_workflow_bundle_writes_bootstrap_consensus_comparison(
+    tmp_path: Path,
+) -> None:
+    executables = require_alignment_engine_executables()
+    report = run_rabies_cross_host_geography_panel_workflow(
+        tmp_path / "workflow-run",
+        mafft_executable=executables["mafft"],
+        trimal_executable=executables["trimal"],
+        iqtree_executable=executables["iqtree2"],
+    )
+    bundle = write_rabies_cross_host_geography_panel_workflow_bundle(
+        tmp_path / "workflow",
+        report,
+    )
+    assert bundle.bootstrap_tree_comparison_summary_path.is_file()
+    assert bundle.bootstrap_tree_comparison_table_path.is_file()
+    assert bundle.bootstrap_tree_comparison_report_path.is_file()
+    with bundle.bootstrap_tree_comparison_summary_path.open(
+        "r", encoding="utf-8", newline=""
+    ) as handle:
+        row = next(csv.DictReader(handle, delimiter="\t"))
+    assert int(row["rooted_rf_distance"]) == (
+        bundle.bootstrap_consensus_rooted_rf_distance
+    )
+    assert row["same_unrooted_topology"] == (
+        "true" if bundle.bootstrap_consensus_same_unrooted_topology else "false"
+    )
+    assert int(row["high_support_conflict_count"]) == (
+        bundle.bootstrap_consensus_high_support_conflict_count
+    )
 
 
 @pytest.mark.slow
