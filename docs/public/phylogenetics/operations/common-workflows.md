@@ -3034,6 +3034,30 @@ override here first. When the selected workflow is blocked, the command exits
 early instead of letting a longer alignment or Bayesian run fail partway
 through.
 
+Every governed external-engine workflow in this section writes a
+`*.manifest.json` file with input checksums, structured workflow config,
+resolved engine commands, detected engine versions, seed values, runtime, and
+output checksums. Treat that manifest as the durable provenance record for
+review, reruns, and governed downstream reports.
+
+Use `phylo replay` when you need to rerun one of those manifests and verify the
+result against the original workflow output.
+
+```bash
+bijux-phylogenetics phylo replay \
+  artifacts/fasta-to-tree/mammals.manifest.json \
+  --out-dir artifacts/fasta-to-tree-replay \
+  --json
+```
+
+Replay refuses to continue when the recorded input checksums no longer match
+the current inputs. It also reports engine-version drift when the current
+executable version differs from the one captured in the manifest, while still
+checking whether the replayed outputs remained scientifically equivalent.
+Equivalence is workflow-specific rather than byte-for-byte: trees are compared
+by topology and support, alignments by aligned records, and model-selection
+workflows by the selected substitution model.
+
 The shared-clade ledger preserves both engines' support values for clades that
 appear in both trees. The conflicting-clade ledger separates clades that appear
 in only one tree from shared clades whose normalized support fractions diverge

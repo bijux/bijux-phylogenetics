@@ -4638,6 +4638,24 @@ Its JSON contract intentionally exposes both `selected_workflow_status` and
 the current environment, while the second reflects the health of the broader
 external-engine inventory across all supported workflows.
 
+`phylo replay` is the governed rerun surface for any workflow manifest emitted
+by the external-engine adapters and composite workflows above. It reads the
+recorded workflow identifier, input checksums, structured config, resolved
+commands, engine versions, seeds, runtime metadata, and output checksums from
+the manifest, reruns the same workflow into a replay directory, and reports
+whether the new outputs are scientifically equivalent under workflow-specific
+comparison rules.
+
+The replay contract is intentionally strict about provenance drift. Changed
+inputs stop the replay before any engine rerun and surface the
+`manifest_replay_input_changed` error. Engine-version drift is reported in the
+structured output rather than treated as an automatic failure, because a newer
+or older executable can still reproduce the same scientific result. Replay
+equivalence is semantic rather than byte-for-byte: tree workflows compare
+topology and support, alignment workflows compare aligned records, model
+selection compares the chosen model, and reproducibility workflows compare the
+governed classification outcome.
+
 `adapter compare-engines` is the governed side-by-side inference mode for one
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
 support inference, and FastTree approximate inference on the same input, then

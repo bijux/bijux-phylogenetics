@@ -239,6 +239,29 @@ is intentional: `selected_workflow_status` answers whether the chosen workflow
 can run now, while `overall_status` still reflects the health of the broader
 external-engine environment.
 
+Every governed external-engine workflow now writes a durable manifest that
+captures the workflow identifier, input checksums, structured config, resolved
+engine commands, detected engine versions, seeds, runtime, and output
+checksums. Use that manifest as the review anchor for provenance, reruns, and
+downstream evidence bundles instead of reconstructing those details from logs.
+
+Use `phylo replay` when you need to rerun one governed manifest and verify that
+the new outputs are still scientifically equivalent.
+
+```bash
+bijux-phylogenetics phylo replay \
+  artifacts/fasta-to-tree/example.manifest.json \
+  --out-dir artifacts/fasta-to-tree-replay \
+  --json
+```
+
+Replay refuses to run when any recorded input checksum has changed, records
+engine-version drift when the local executable no longer matches the manifest,
+and compares replayed outputs with tolerant workflow-specific checks instead of
+requiring byte-identical files. Tree workflows compare topology and support
+semantically, while alignment and model-selection workflows compare the durable
+scientific result for that workflow surface.
+
 The rabies demonstration bundle now publishes one governed reproducibility and
 review layer alongside the biological outputs: `workflow-config-audit.tsv`,
 `workflow-config.resolved.json`, one rooted-ML-versus-bootstrap-consensus
