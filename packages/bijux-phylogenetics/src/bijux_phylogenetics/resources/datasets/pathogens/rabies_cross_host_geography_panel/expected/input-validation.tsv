@@ -1,0 +1,2 @@
+sequence_count	detected_type	selected_type	confidence	repair_required	repair_applied	duplicate_identifier_count	illegal_character_count	empty_sequence_count	warning_count	warnings
+9	dna	dna	medium	false	false	0	0	0	1	automatic sequence type defaults to dna from nucleotide-like characters that remain protein-compatible by alphabet alone

@@ -1,0 +1,2 @@
+response	formula	predictor_count	analysis_taxa	excluded_taxa	selected_model	pgls_lambda	pgls_log_likelihood	pgls_r_squared	phylogenetic_signal_k	phylogenetic_signal_lambda	independent_contrast_count	better_model_aicc_delta
+region_longitude	region_longitude ~ host_group	1	9	0	brownian	1.0	-33.27032422673497	0.8339448275736359	2.4410095012581103	1.0	8	4.934486024041647

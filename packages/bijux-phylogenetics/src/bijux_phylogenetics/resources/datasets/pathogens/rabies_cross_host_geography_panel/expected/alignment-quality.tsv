@@ -1,0 +1,3 @@
+stage	sequence_count	alignment_length	missing_data_fraction	gap_fraction	ambiguity_fraction	variable_site_count	parsimony_informative_site_count	quality_score	suspicious_alignment	suspicious_reasons
+aligned	9	1353	0.000246366100025	0	0.000246366100025	332	202	90.48	false	
+trimmed	9	1353	0.000246366100025	0	0.000246366100025	332	202	90.48	false	

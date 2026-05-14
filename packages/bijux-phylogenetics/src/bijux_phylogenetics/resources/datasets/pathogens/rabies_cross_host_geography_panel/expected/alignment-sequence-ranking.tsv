@@ -1,0 +1,10 @@
+identifier	rank	score	missing_fraction	gap_fraction	ambiguity_fraction	composition_outlier	duplicate_status	note
+bat_chile_rv50	1	90	0	0	0	true	unique	quality burdens: composition outlier
+dog_pakistan_pdb011	2	90	0	0	0	true	unique	quality burdens: composition outlier
+cattle_russia_4092_13_2025	3	94.956	0.000739098300074	0	0.000739098300074	false	near_duplicate	quality burdens: missing data, ambiguity codes, near duplicate
+raccoon_dog_russia_4092_26_2025	4	94.956	0.000739098300074	0	0.000739098300074	false	near_duplicate	quality burdens: missing data, ambiguity codes, near duplicate
+red_fox_russia_4092_18_2025	5	94.956	0.000739098300074	0	0.000739098300074	false	near_duplicate	quality burdens: missing data, ambiguity codes, near duplicate
+cattle_russia_4092_15_2025	6	95	0	0	0	false	near_duplicate	quality burdens: near duplicate
+red_fox_russia_4092_20_2025	7	95	0	0	0	false	near_duplicate	quality burdens: near duplicate
+bat_chile_rv108	8	100	0	0	0	false	unique	no major quality burdens detected
+raccoon_dog_poland_2021	9	100	0	0	0	false	unique	no major quality burdens detected

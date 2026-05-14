@@ -1,0 +1,10 @@
+taxon	response_value	intercept	host_group[canid]	host_group[livestock]
+bat_chile_rv108	-58.44	1	0	0
+bat_chile_rv50	-98.58	1	0	0
+cattle_russia_4092_13_2025	82.9	1	0	1
+cattle_russia_4092_15_2025	82.9	1	0	1
+raccoon_dog_russia_4092_26_2025	82.9	1	1	0
+red_fox_russia_4092_20_2025	82.9	1	1	0
+red_fox_russia_4092_18_2025	82.9	1	1	0
+raccoon_dog_poland_2021	19.15	1	1	0
+dog_pakistan_pdb011	76	1	1	0

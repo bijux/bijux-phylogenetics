@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "analysis_taxa": 9,
+    "branch_repair_count": 1,
+    "formula": "region_longitude ~ host_group",
+    "pgls_lambda": 1.0,
+    "pgls_r_squared": 0.8339448275736359,
+    "response": "region_longitude",
+    "selected_model": "brownian"
+  },
+  "output_checksums": {
+    "audit_table": "bd72b796b12a3e3c898dedf3ca797360ad33146e254758dbb26676ae5436c6e8",
+    "categorical_contrast_table": "35affde522fc984067e9737472bd03e2b2d389f5dc9cb9cb60e90ef42638ba08",
+    "coefficient_table": "c07f018995055742dfb8f96dc4d9757daa8cc2aa3dc5aaa86a74c9ad18eb1870",
+    "comparative_report": "7d3840956ca496a672a3bfd29ee68436ae5c1349f56f23b4fa062c6355107309",
+    "contrast_table": "5e67f573097034975ce25bec40eab782ab6599ff6b98a83dfd7462f868f777b3",
+    "interpretation_table": "3a5b6ef5c71b75ed855aca052e82b8916fefb22ab5d0a22127ba67ee029b064a",
+    "lambda_profile_table": "34a959c66a385aacb6f2d025353dd6cb780a42b59ed86e79ea43c1b8e42c62b7",
+    "model_comparison_table": "bdb9a48122dd3eb080ac6a81df9de8ac813f0aa1e2300127aa80c55b631cbf7a",
+    "model_matrix_table": "3d3ff7c79e6370f4b121c273921b9510294e441a0c4dbefaa954bef6aa29510f",
+    "residual_table": "58920a74ec00940220bff3e3beb88666e71c0cb123f5f9090d1608a812e6ad74",
+    "signal_table": "15e185dabe9add926e95c850f0563870555d1a8e4e7907737c7bc3d54868bb9f",
+    "summary_table": "ad17db549fc06441da3a168fa1c310d34e91583e374f0661365e7249eb2b94ce"
+  },
+  "report_kind": "rabies_cross_host_geography_comparative_bundle"
+}

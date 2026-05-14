@@ -1,0 +1,10 @@
+taxon	host_group	region_group	region_latitude	region_longitude
+bat_chile_rv108	bat	south_america	-23.55	-58.44
+bat_chile_rv50	bat	north_america	39.83	-98.58
+dog_pakistan_pdb011	canid	south_asia	29.50	76.00
+raccoon_dog_russia_4092_26_2025	canid	north_asia	55.00	82.90
+raccoon_dog_poland_2021	canid	europe	52.20	19.15
+red_fox_russia_4092_20_2025	canid	north_asia	55.00	82.90
+red_fox_russia_4092_18_2025	canid	north_asia	55.00	82.90
+cattle_russia_4092_15_2025	livestock	north_asia	55.00	82.90
+cattle_russia_4092_13_2025	livestock	north_asia	55.00	82.90

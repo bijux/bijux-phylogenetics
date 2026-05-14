@@ -1,0 +1,4 @@
+analysis	residual_variance	max_abs_standardized_residual	phylogenetic_residual_lambda	max_leverage	outlier_taxa	high_leverage_taxa	warnings
+brownian	4977.69841111111	0.9647464165268139	1.0				residuals retain moderate phylogenetic structure
+ou	4977.698411111111	0.95251016332071	1.0				residuals retain moderate phylogenetic structure|best-supported OU alpha falls on the search boundary and may not be well identified|OU likelihood surface is shallow across alpha values, so model choice may be unstable|best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion
+pgls	13904.186608705078	4.290470068927743	1.0	0.9999887926002206	cattle_russia_4092_15_2025	bat_chile_rv108|cattle_russia_4092_15_2025	PGLS residuals retain moderate phylogenetic structure|PGLS residual diagnostics identify one or more outlier taxa|PGLS leverage diagnostics identify one or more high-leverage taxa
