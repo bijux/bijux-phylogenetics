@@ -99,6 +99,7 @@ _PROTEIN_AMBIGUITY_UPPER = {"B", "J", "X", "Z"}
 _DEFAULT_GENETIC_CODE_ID = 1
 _LOW_INFORMATION_SITE_THRESHOLD = 1
 _LOW_INFORMATION_FRACTION_THRESHOLD = 0.0
+_MAX_DEFAULT_NEAR_DUPLICATE_SEQUENCE_COUNT = 256
 _ALIGNMENT_FILTER_PROFILES: dict[str, AlignmentFilterProfile] = {
     "conservative": AlignmentFilterProfile(
         name="conservative",
@@ -997,6 +998,22 @@ def _detect_near_duplicate_sequences_records(
                     )
                 )
     return near_duplicates
+
+
+def _collect_near_duplicate_sequences_for_summary(
+    records: list[AlignmentRecord],
+    *,
+    identity_threshold: float,
+) -> tuple[list[NearDuplicateSequencePair], bool]:
+    if len(records) > _MAX_DEFAULT_NEAR_DUPLICATE_SEQUENCE_COUNT:
+        return [], False
+    return (
+        _detect_near_duplicate_sequences_records(
+            records,
+            identity_threshold=identity_threshold,
+        ),
+        True,
+    )
 
 
 def _trim_columns(
@@ -2521,6 +2538,10 @@ def build_sequence_quality_ranking(path: Path) -> SequenceQualityRankingReport:
         if rows and any(row.score < 85.0 for row in rows)
         else []
     )
+    if not summary.near_duplicate_scan_performed:
+        warnings.append(
+            "near-duplicate sequence ranking was skipped because the alignment exceeds the governed pairwise review threshold"
+        )
     return SequenceQualityRankingReport(path=path, rows=rows, warnings=warnings)
 
 
@@ -2899,6 +2920,10 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
         warnings.append("alignment contains identical duplicate sequences")
     if near_duplicate_pairs:
         warnings.append("alignment contains near-duplicate sequences")
+    if not summary.near_duplicate_scan_performed:
+        warnings.append(
+            "near-duplicate sequence scan was skipped because the alignment exceeds the governed pairwise review threshold"
+        )
     warnings.extend(reason for reason in suspicious_reasons if reason not in warnings)
     return AlignmentQualityReport(
         path=path,
@@ -2924,6 +2949,7 @@ def build_alignment_quality_report(path: Path) -> AlignmentQualityReport:
         quality_score=_alignment_quality_score(quality_components),
         quality_components=quality_components,
         warnings=warnings,
+        near_duplicate_scan_performed=summary.near_duplicate_scan_performed,
     )
 
 
@@ -3574,9 +3600,11 @@ def summarise_records_as_alignment_summary(
     )
     composition_outliers = _detect_composition_outlier_sequences_records(records)
     duplicate_sequence_groups = _detect_identical_duplicate_sequences_records(records)
-    near_duplicate_pairs = _detect_near_duplicate_sequences_records(
-        records,
-        identity_threshold=0.95,
+    near_duplicate_pairs, near_duplicate_scan_performed = (
+        _collect_near_duplicate_sequences_for_summary(
+            records,
+            identity_threshold=0.95,
+        )
     )
 
     return AlignmentSummary(
@@ -3607,6 +3635,7 @@ def summarise_records_as_alignment_summary(
         composition_outliers=composition_outliers,
         duplicate_sequence_groups=duplicate_sequence_groups,
         near_duplicate_pairs=near_duplicate_pairs,
+        near_duplicate_scan_performed=near_duplicate_scan_performed,
     )
 
 

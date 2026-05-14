@@ -421,6 +421,7 @@ class AlignmentQualityReport:
     quality_score: float
     quality_components: dict[str, float]
     warnings: list[str]
+    near_duplicate_scan_performed: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -698,6 +699,7 @@ class AlignmentSummary:
     composition_outliers: list[SequenceCompositionOutlier]
     duplicate_sequence_groups: list[DuplicateSequenceGroup]
     near_duplicate_pairs: list[NearDuplicateSequencePair]
+    near_duplicate_scan_performed: bool = True
 
 
 @dataclass(slots=True)
