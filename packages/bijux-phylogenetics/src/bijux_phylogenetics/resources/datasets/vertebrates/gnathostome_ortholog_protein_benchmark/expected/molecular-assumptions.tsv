@@ -1,0 +1,7 @@
+assumption_id	value	explanation
+sequence_type	protein	Raw FASTA residues are interpreted as amino acids rather than nucleotides.
+iqtree_sequence_type_keyword	AA	IQ-TREE runs with -st AA, so model search and inference stay in amino-acid state space.
+model_selection_scope	protein_exchangeability_models	ModelFinder searches protein substitution models instead of nucleotide models.
+translation_required	false	The benchmark starts from protein FASTA directly and does not translate coding DNA.
+dna_specific_assumptions_applied	false	GC content, codon position, and nucleotide substitution assumptions are not part of this workflow.
+branch_support_interpretation	amino_acid_bootstrap	Bootstrap support values are estimated from the trimmed amino-acid alignment.

@@ -1,0 +1,2 @@
+workflow	engine_name	sequence_type	selected_model	report_selected_model	artifact_selected_model	model_consistent	alignment_path	trimmed_alignment_path	manifest_path
+model-selection	iqtree	protein	Q.insect+I	Q.insect+I	Q.insect+I	true	gnathostome-ortholog-protein-benchmark.aln	gnathostome-ortholog-protein-benchmark.trimmed.aln	engine-artifacts/gnathostome-ortholog-protein-benchmark/model-selection/model-selection.manifest.json
