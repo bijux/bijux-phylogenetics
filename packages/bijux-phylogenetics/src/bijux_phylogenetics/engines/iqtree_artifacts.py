@@ -13,13 +13,13 @@ _BEST_MODEL_PATTERNS = (
         re.IGNORECASE,
     ),
     re.compile(
-        rf"best-fit model(?: according to (?P<criterion>[A-Z0-9]+))?\s*:\s*(?P<model>{_MODEL_TOKEN_PATTERN})",
+        rf"best-fit model(?: according to (?P<criterion>[A-Z0-9]+)(?: score)?)?\s*[:=]\s*(?P<model>{_MODEL_TOKEN_PATTERN})",
         re.IGNORECASE,
     ),
 )
 _LOG_LIKELIHOOD_PATTERNS = (
     re.compile(
-        r"(?:log-likelihood(?: of the tree)?|log likelihood)\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
+        r"(?:log-likelihood(?: of (?:the )?tree)?|log likelihood(?: of (?:the )?tree)?)\s*[:=]\s*(?P<value>-?[0-9]+(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?)",
         re.IGNORECASE,
     ),
     re.compile(
@@ -51,27 +51,27 @@ _SIDECAR_CANDIDATE_PATTERN = re.compile(
 )
 _CRITERION_REPORT_PATTERNS = {
     "AIC": re.compile(
-        rf"^\s*Akaike Information Criterion:\s+(?P<model>{_MODEL_TOKEN_PATTERN})\s*$",
+        rf"^\s*Akaike Information Criterion(?:\s*\(AIC\))?(?:\s+score)?\s*:\s*(?P<model>{_MODEL_TOKEN_PATTERN})\s*$",
         re.IGNORECASE,
     ),
     "AICc": re.compile(
-        rf"^\s*Corrected Akaike Information Criterion:\s+(?P<model>{_MODEL_TOKEN_PATTERN})\s*$",
+        rf"^\s*Corrected Akaike Information Criterion(?:\s*\(AICc\))?(?:\s+score)?\s*:\s*(?P<model>{_MODEL_TOKEN_PATTERN})\s*$",
         re.IGNORECASE,
     ),
     "BIC": re.compile(
-        rf"^\s*Bayesian Information Criterion:\s+(?P<model>{_MODEL_TOKEN_PATTERN})\s*$",
+        rf"^\s*Bayesian Information Criterion(?:\s*\(BIC\))?(?:\s+score)?\s*:\s*(?P<model>{_MODEL_TOKEN_PATTERN})\s*$",
         re.IGNORECASE,
     ),
 }
 _SIDECAR_STRING_KEYS = {
-    "best_model_AIC": "best_model_aic",
-    "best_model_AICc": "best_model_aicc",
-    "best_model_BIC": "best_model_bic",
+    "best_model_aic": "best_model_aic",
+    "best_model_aicc": "best_model_aicc",
+    "best_model_bic": "best_model_bic",
 }
 _SIDECAR_FLOAT_KEYS = {
-    "best_score_AIC": "best_score_aic",
-    "best_score_AICc": "best_score_aicc",
-    "best_score_BIC": "best_score_bic",
+    "best_score_aic": "best_score_aic",
+    "best_score_aicc": "best_score_aicc",
+    "best_score_bic": "best_score_bic",
 }
 
 
@@ -363,17 +363,18 @@ def _merge_model_sidecar(
         if not line or ":" not in line:
             continue
         key, value = line.split(":", 1)
+        normalized_key = key.strip().lower()
         parsed_value = value.strip()
-        if key in _SIDECAR_STRING_KEYS and parsed_value:
-            setattr(summary, _SIDECAR_STRING_KEYS[key], parsed_value)
+        if normalized_key in _SIDECAR_STRING_KEYS and parsed_value:
+            setattr(summary, _SIDECAR_STRING_KEYS[normalized_key], parsed_value)
             continue
-        if key in _SIDECAR_FLOAT_KEYS and parsed_value:
+        if normalized_key in _SIDECAR_FLOAT_KEYS and parsed_value:
             try:
-                setattr(summary, _SIDECAR_FLOAT_KEYS[key], float(parsed_value))
+                setattr(summary, _SIDECAR_FLOAT_KEYS[normalized_key], float(parsed_value))
             except ValueError:
                 continue
             continue
-        if key == "best_model_list_BIC":
+        if normalized_key == "best_model_list_bic":
             summary.bic_near_best_models = [
                 token for token in parsed_value.split() if token
             ]
