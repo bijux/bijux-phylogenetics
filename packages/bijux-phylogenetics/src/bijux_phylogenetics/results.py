@@ -18,7 +18,7 @@ class CommandResult:
     inputs: list[str]
     outputs: list[str]
     warnings: list[str] = field(default_factory=list)
-    errors: list[dict[str, str]] = field(default_factory=list)
+    errors: list[dict[str, Any]] = field(default_factory=list)
     metrics: dict[str, Any] = field(default_factory=dict)
     provenance: dict[str, Any] = field(default_factory=dict)
     data: Any | None = None
@@ -64,7 +64,13 @@ def build_error_result(
         inputs=[str(item) for item in inputs],
         outputs=[],
         warnings=[],
-        errors=[{"code": error.code, "message": error.message}],
+        errors=[
+            {
+                "code": error.code,
+                "message": error.message,
+                **({"details": error.details} if error.details else {}),
+            }
+        ],
         metrics={},
         provenance={
             "cli": CLI_NAME,

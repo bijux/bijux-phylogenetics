@@ -331,6 +331,19 @@ def test_validate_beast_analysis_xml_reports_missing_required_outputs(
     }
 
 
+def test_summarize_beast_analysis_xml_reports_missing_file_with_structured_error(
+    tmp_path: Path,
+) -> None:
+    missing_path = tmp_path / "missing-analysis.xml"
+
+    with pytest.raises(EngineWorkflowError) as caught:
+        summarize_beast_analysis_xml(missing_path)
+
+    assert caught.value.code == "beast_xml_missing_file"
+    assert caught.value.details["artifact_kind"] == "beast-analysis-xml"
+    assert caught.value.details["path"] == str(missing_path)
+
+
 def test_run_beast_posterior_inference_writes_outputs_and_resumes(
     tmp_path: Path,
 ) -> None:
@@ -433,6 +446,32 @@ def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> 
         "low-ess",
         "mean-drift",
     }
+
+
+def test_parse_beast_log_reports_structured_missing_and_malformed_errors(
+    tmp_path: Path,
+) -> None:
+    missing_path = tmp_path / "missing.log"
+    invalid_path = tmp_path / "invalid.log"
+    invalid_path.write_text(
+        "# malformed BEAST log\n"
+        "state\tposterior\tlikelihood\n"
+        "0\t-100.0\t-90.0\n"
+        "10\tbad\t-89.0\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(EngineWorkflowError) as missing:
+        parse_beast_log(missing_path)
+    assert missing.value.code == "beast_log_missing_file"
+    assert missing.value.details["artifact_kind"] == "beast-log"
+
+    with pytest.raises(EngineWorkflowError) as malformed:
+        parse_beast_log(invalid_path)
+    assert malformed.value.code == "beast_log_invalid_parameter_value"
+    assert malformed.value.details["artifact_kind"] == "beast-log"
+    assert malformed.value.details["column"] == "posterior"
+    assert malformed.value.details["row_number"] == 3
 
 
 def test_summarize_beast_log_classifies_parameters_and_writes_summary_table(
@@ -665,6 +704,31 @@ def test_parse_beast_posterior_tree_samples_reports_metadata_annotations(
     assert sample.annotation_values["height"] == "0.1"
     assert sample.annotation_values["lnP"] == "-10.0"
     assert sample.annotation_values["height_95%_HPD"] == "{0.2,0.4}"
+
+
+def test_parse_beast_posterior_tree_samples_reports_structured_parse_errors(
+    tmp_path: Path,
+) -> None:
+    missing_path = tmp_path / "missing.trees"
+    malformed_path = tmp_path / "malformed.trees"
+    malformed_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(EngineWorkflowError) as missing:
+        parse_beast_posterior_tree_samples(missing_path, burnin_fraction=0.0)
+    assert missing.value.code == "beast_tree_missing_file"
+    assert missing.value.details["artifact_kind"] == "beast-posterior-trees"
+
+    with pytest.raises(EngineWorkflowError) as malformed:
+        parse_beast_posterior_tree_samples(malformed_path, burnin_fraction=0.0)
+    assert malformed.value.code == "beast_tree_parse_error"
+    assert malformed.value.details["artifact_kind"] == "beast-posterior-trees"
+    assert malformed.value.details["tree_name"] == "STATE_0"
 
 
 def test_parse_beast_posterior_tree_samples_applies_burnin_fraction(

@@ -44,7 +44,11 @@ from bijux_phylogenetics.engines.workflows import (
     _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.errors import (
+    EngineWorkflowError,
+    InvalidAlignmentError,
+    TreeParseError,
+)
 from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.fasta import infer_alignment_alphabet, load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
@@ -61,6 +65,23 @@ _BEAST_TREE_PATTERN = re.compile(
 )
 _BEAST_TREE_STATE_PATTERN = re.compile(r"STATE_(\d+)$", flags=re.IGNORECASE)
 XmlElement: TypeAlias = Any
+
+
+def _beast_artifact_error(
+    message: str,
+    *,
+    code: str,
+    path: Path,
+    artifact_kind: str,
+    details: dict[str, object] | None = None,
+) -> EngineWorkflowError:
+    payload: dict[str, object] = {
+        "path": str(path),
+        "artifact_kind": artifact_kind,
+    }
+    if details is not None:
+        payload.update(details)
+    return EngineWorkflowError(message, code=code, details=payload)
 
 
 def _xml_element(
@@ -2004,6 +2025,13 @@ def prepare_beast_time_tree_analysis(
 
 def summarize_beast_analysis_xml(path: Path) -> BeastAnalysisXmlReport:
     """Summarize one prepared BEAST analysis XML into reviewer-facing assumptions."""
+    if not path.exists():
+        raise _beast_artifact_error(
+            f"BEAST analysis XML file was not found: {path}",
+            code="beast_xml_missing_file",
+            path=path,
+            artifact_kind="beast-analysis-xml",
+        )
     issues: list[BeastAnalysisXmlIssue] = []
     try:
         root = SafeXmlET.parse(path).getroot()
@@ -2229,7 +2257,12 @@ def run_beast_posterior_inference(
 ) -> EngineWorkflowReport:
     """Run a prepared BEAST XML analysis and validate the primary posterior outputs."""
     if not xml_path.exists():
-        raise FileNotFoundError(xml_path)
+        raise _beast_artifact_error(
+            f"BEAST analysis XML file was not found: {xml_path}",
+            code="beast_xml_missing_file",
+            path=xml_path,
+            artifact_kind="beast-analysis-xml",
+        )
     validate_timeout_seconds(timeout_seconds)
     if threads < 1:
         raise ValueError(f"threads must be positive, got {threads}")
@@ -2315,6 +2348,13 @@ def run_beast_posterior_inference(
 
 def parse_beast_log(path: Path) -> BeastLogReport:
     """Parse a BEAST-style log table into deterministic numeric rows."""
+    if not path.exists():
+        raise _beast_artifact_error(
+            f"BEAST log file was not found: {path}",
+            code="beast_log_missing_file",
+            path=path,
+            artifact_kind="beast-log",
+        )
     with path.open(encoding="utf-8", newline="") as handle:
         filtered_lines = [
             line
@@ -2323,21 +2363,76 @@ def parse_beast_log(path: Path) -> BeastLogReport:
         ]
     reader = csv.DictReader(filtered_lines, delimiter="\t")
     if reader.fieldnames is None:
-        raise ValueError(f"BEAST log contains no header: {path}")
+        raise _beast_artifact_error(
+            f"BEAST log contains no header row: {path}",
+            code="beast_log_missing_header",
+            path=path,
+            artifact_kind="beast-log",
+        )
     state_field = _beast_state_field(reader.fieldnames)
     if state_field is None:
-        raise ValueError(f"BEAST log lacks a state column: {path}")
+        raise _beast_artifact_error(
+            f"BEAST log lacks a state column: {path}",
+            code="beast_log_missing_state_column",
+            path=path,
+            artifact_kind="beast-log",
+            details={"columns": list(reader.fieldnames)},
+        )
     columns = [field for field in reader.fieldnames if field and field != state_field]
     rows: list[BeastLogRow] = []
-    for row in reader:
-        values = {
-            column: float(row[column])
-            for column in columns
-            if row.get(column) not in {None, ""}
-        }
-        rows.append(BeastLogRow(state=int(float(row[state_field])), values=values))
+    for row_number, row in enumerate(reader, start=2):
+        raw_state = row.get(state_field)
+        if raw_state in {None, ""}:
+            raise _beast_artifact_error(
+                f"BEAST log contains an empty state value on row {row_number}: {path}",
+                code="beast_log_missing_state_value",
+                path=path,
+                artifact_kind="beast-log",
+                details={"row_number": row_number},
+            )
+        try:
+            state = int(float(raw_state))
+        except ValueError as error:
+            raise _beast_artifact_error(
+                f"BEAST log contains a non-numeric state value on row {row_number}: {path}",
+                code="beast_log_invalid_state_value",
+                path=path,
+                artifact_kind="beast-log",
+                details={"row_number": row_number, "value": raw_state},
+            ) from error
+        values: dict[str, float] = {}
+        for column in columns:
+            raw_value = row.get(column)
+            if raw_value in {None, ""}:
+                raise _beast_artifact_error(
+                    f"BEAST log is missing a sampled value for '{column}' on row {row_number}: {path}",
+                    code="beast_log_missing_parameter_value",
+                    path=path,
+                    artifact_kind="beast-log",
+                    details={"row_number": row_number, "column": column},
+                )
+            try:
+                values[column] = float(raw_value)
+            except ValueError as error:
+                raise _beast_artifact_error(
+                    f"BEAST log contains a non-numeric value for '{column}' on row {row_number}: {path}",
+                    code="beast_log_invalid_parameter_value",
+                    path=path,
+                    artifact_kind="beast-log",
+                    details={
+                        "row_number": row_number,
+                        "column": column,
+                        "value": raw_value,
+                    },
+                ) from error
+        rows.append(BeastLogRow(state=state, values=values))
     if not rows:
-        raise ValueError(f"BEAST log contains no sampled rows: {path}")
+        raise _beast_artifact_error(
+            f"BEAST log contains no sampled rows: {path}",
+            code="beast_log_missing_rows",
+            path=path,
+            artifact_kind="beast-log",
+        )
     return BeastLogReport(path=path, row_count=len(rows), columns=columns, rows=rows)
 
 
@@ -2412,11 +2507,21 @@ def parse_beast_posterior_tree_samples(
     burnin_fraction: float = 0.0,
 ) -> BeastPosteriorTreeSetReport:
     """Parse a BEAST posterior tree set into state-tagged normalized trees."""
+    if not path.exists():
+        raise _beast_artifact_error(
+            f"BEAST posterior tree file was not found: {path}",
+            code="beast_tree_missing_file",
+            path=path,
+            artifact_kind="beast-posterior-trees",
+        )
     text = path.read_text(encoding="utf-8")
     entries = _extract_beast_tree_entries(text)
     if not entries:
-        raise EngineWorkflowError(
-            f"BEAST posterior tree file contains no trees: {path}"
+        raise _beast_artifact_error(
+            f"BEAST posterior tree file contains no tree entries: {path}",
+            code="beast_tree_missing_entries",
+            path=path,
+            artifact_kind="beast-posterior-trees",
         )
     burnin_tree_count, kept_entries = _split_beast_tree_entries(
         entries, burnin_fraction=burnin_fraction, path=path
@@ -2425,14 +2530,23 @@ def parse_beast_posterior_tree_samples(
     samples: list[BeastPosteriorTreeSample] = []
     trees: list[PhyloTree] = []
     for tree_name, tree_text in kept_entries:
-        (
-            newick,
-            tree,
-            rooted,
-            annotation_values,
-            annotation_keys,
-            annotation_record_count,
-        ) = _parse_beast_tree_text(tree_text, translation=translation)
+        try:
+            (
+                newick,
+                tree,
+                rooted,
+                annotation_values,
+                annotation_keys,
+                annotation_record_count,
+            ) = _parse_beast_tree_text(tree_text, translation=translation)
+        except TreeParseError as error:
+            raise _beast_artifact_error(
+                f"BEAST posterior tree entry '{tree_name}' could not be parsed: {path}",
+                code="beast_tree_parse_error",
+                path=path,
+                artifact_kind="beast-posterior-trees",
+                details={"tree_name": tree_name, "cause": error.message},
+            ) from error
         samples.append(
             BeastPosteriorTreeSample(
                 tree_name=tree_name,
@@ -3189,8 +3303,15 @@ def _split_beast_tree_entries(
     burnin_tree_count = int(len(entries) * burnin_fraction)
     kept_entries = entries[burnin_tree_count:]
     if not kept_entries:
-        raise EngineWorkflowError(
-            f"BEAST posterior tree file is empty after burn-in filtering: {path}"
+        raise _beast_artifact_error(
+            f"BEAST posterior tree file is empty after burn-in filtering: {path}",
+            code="beast_tree_empty_after_burnin",
+            path=path,
+            artifact_kind="beast-posterior-trees",
+            details={
+                "burnin_fraction": burnin_fraction,
+                "total_tree_count": len(entries),
+            },
         )
     return burnin_tree_count, kept_entries
 

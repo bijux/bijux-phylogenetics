@@ -2301,6 +2301,35 @@ def test_adapter_beast_log_cli_writes_summary_table_with_parameter_categories(
     assert "tree\tbirthRate\t3" in text
 
 
+def test_adapter_beast_log_cli_returns_structured_error_payload_for_malformed_log(
+    tmp_path: Path, capsys
+) -> None:
+    log_path = tmp_path / "malformed-beast.log"
+    log_path.write_text(
+        "# malformed BEAST log\n"
+        "state\tposterior\tlikelihood\n"
+        "0\t-100.0\t-90.0\n"
+        "10\tbad\t-89.0\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-log",
+            str(log_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "beast_log_invalid_parameter_value"
+    assert payload["errors"][0]["details"]["artifact_kind"] == "beast-log"
+    assert payload["errors"][0]["details"]["column"] == "posterior"
+
+
 def test_adapter_beast_parameters_cli_reports_posterior_diagnostics(
     tmp_path: Path, capsys
 ) -> None:
