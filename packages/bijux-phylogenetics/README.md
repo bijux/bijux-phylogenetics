@@ -516,6 +516,13 @@ It currently pins reviewer-facing output bundles for:
 - `gnathostome-ortholog-coding-sequences`
 - `strnog-enog411bqtj-proteins`
 
+Those governed workflow bundles are now compared by scientific equivalence
+rather than by raw text alone. Tree outputs are checked by rooted clades plus
+branch-length tolerance, support tables are checked by clade-aware numeric
+tolerance, tabular ledgers are checked by schema plus stable row identity, HTML
+reports are checked by headings and required linked artifacts, and manifest
+payloads still carry exact output hashes when byte-identity matters.
+
 For coding nucleotide phylogenetics, use `adapter align --codon-aware` first
 and then run downstream inference steps such as `adapter model-select`,
 `adapter infer-ml`, and `adapter bootstrap` on the codon alignment it writes.
