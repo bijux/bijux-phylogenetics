@@ -5679,6 +5679,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--bootstrap-replicates", type=int, default=1000
     )
     demo_rabies_method_sensitivity.add_argument(
+        "--parallel-workers",
+        type=int,
+        default=None,
+        help="Number of isolated variant workers to run in parallel. Defaults to the packaged workflow config.",
+    )
+    demo_rabies_method_sensitivity.add_argument(
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_rabies_method_sensitivity)
@@ -15972,6 +15978,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                     iqtree_seed=args.iqtree_seed,
                     iqtree_threads=args.iqtree_threads,
                     bootstrap_replicates=args.bootstrap_replicates,
+                    parallel_workers=args.parallel_workers,
                 )
                 outputs = _finalize_outputs(
                     args,
@@ -15984,11 +15991,13 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.dataset_export.metadata_path,
                         result.workflow_bundle.workflow_summary_path,
                         result.workflow_bundle.variant_summary_path,
+                        result.workflow_bundle.parallel_summary_path,
                         result.workflow_bundle.preprocessing_comparison_path,
                         result.workflow_bundle.stable_clades_path,
                         result.workflow_bundle.changed_clades_path,
                         result.workflow_bundle.conclusion_summary_path,
                         result.workflow_bundle.config_path,
+                        result.workflow_bundle.manifest_path,
                         result.workflow_bundle.report_path,
                         result.overview_path,
                     ],
@@ -16012,6 +16021,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "artifact_count": len(outputs),
                                 "taxon_count": result.dataset.taxon_count,
                                 "variant_count": result.workflow_bundle.variant_count,
+                                "parallel_workers": (
+                                    result.workflow_bundle.parallel_workers
+                                ),
+                                "execution_mode": (
+                                    result.workflow_bundle.execution_mode
+                                ),
                                 "stable_clade_count": (
                                     result.workflow_bundle.stable_clade_count
                                 ),
