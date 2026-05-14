@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import threading
+import time
 
 import pytest
 
@@ -123,6 +125,45 @@ for identifier, sequence in records:
     print(f">{{identifier}}")
     print(sequence.ljust(width, "-"))
 print("WARNING: mafft fixture inserted alignment padding", file=sys.stderr)
+""",
+    )
+
+
+def _fake_mafft_slow(path: Path, *, sleep_seconds: float = 0.3) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+import time
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print("mafft v7.999", file=sys.stderr)
+    raise SystemExit(0)
+
+time.sleep({sleep_seconds!r})
+input_path = Path(sys.argv[-1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+width = max(len(row[1]) for row in records)
+for identifier, sequence in records:
+    print(f">{{identifier}}")
+    print(sequence.ljust(width, "-"))
+print("WARNING: mafft slow fixture inserted alignment padding", file=sys.stderr)
 """,
     )
 
@@ -975,6 +1016,83 @@ def test_run_multiple_sequence_alignment_resume_invalidates_changed_engine_versi
     assert first.resumed is False
     assert second.resumed is False
     assert first.run.version.text != second.run.version.text
+
+
+def test_run_multiple_sequence_alignment_rejects_concurrent_reuse_of_same_output_path(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft_slow(tmp_path / "mafft-slow-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+    output_path = tmp_path / "shared-output.fasta"
+    errors: list[EngineWorkflowError] = []
+
+    def run_first() -> None:
+        run_multiple_sequence_alignment(
+            input_path,
+            output_path,
+            executable=executable,
+        )
+
+    thread = threading.Thread(target=run_first)
+    thread.start()
+    manifest_path = output_path.with_name(f"{output_path.name}.manifest.json")
+    marker_path = manifest_path.with_suffix(".running.json")
+    deadline = time.time() + 5.0
+    while not marker_path.exists():
+        if time.time() >= deadline:
+            raise AssertionError("expected running marker to appear for slow MAFFT fixture")
+        time.sleep(0.01)
+
+    try:
+        run_multiple_sequence_alignment(
+            input_path,
+            output_path,
+            executable=executable,
+        )
+    except EngineWorkflowError as error:
+        errors.append(error)
+    finally:
+        thread.join()
+
+    assert len(errors) == 1
+    assert errors[0].code == "engine_workflow_already_running"
+    assert output_path.exists()
+    assert marker_path.exists() is False
+
+
+def test_run_multiple_sequence_alignment_allows_parallel_distinct_output_paths(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft_slow(tmp_path / "mafft-slow-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+    output_paths = [tmp_path / "left-output.fasta", tmp_path / "right-output.fasta"]
+    reports: list[object] = []
+    errors: list[BaseException] = []
+
+    def run_one(output_path: Path) -> None:
+        try:
+            reports.append(
+                run_multiple_sequence_alignment(
+                    input_path,
+                    output_path,
+                    executable=executable,
+                )
+            )
+        except BaseException as error:  # pragma: no cover - failure is asserted below
+            errors.append(error)
+
+    threads = [threading.Thread(target=run_one, args=(path,)) for path in output_paths]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert errors == []
+    assert len(reports) == 2
+    assert all(path.exists() for path in output_paths)
+    for output_path in output_paths:
+        manifest_path = output_path.with_name(f"{output_path.name}.manifest.json")
+        assert manifest_path.with_suffix(".running.json").exists() is False
 
 
 def test_run_alignment_trimming_resume_reuses_completed_output(tmp_path: Path) -> None:
