@@ -470,6 +470,7 @@ from bijux_phylogenetics.datasets import (
     run_avian_reproductive_trait_demo,
     run_catarrhine_mitogenome_five_locus_panel_demo,
     run_central_european_seashore_flora_demo,
+    run_gnathostome_ortholog_protein_benchmark_demo,
     run_influenza_a_ha_reference_demo,
     run_pleistocene_bear_cytb_fragment_demo,
     run_primate_comparative_demo,
@@ -5540,6 +5541,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="Emit the demo result as JSON."
     )
     _add_manifest_argument(demo_viruses)
+    demo_protein_benchmark = demo_subparsers.add_parser(
+        "gnathostome-ortholog-protein-benchmark",
+        help="Materialize the packaged gnathostome protein benchmark and rerun the governed amino-acid sequence-to-tree outputs.",
+    )
+    demo_protein_benchmark.add_argument("--out", required=True, type=Path)
+    demo_protein_benchmark.add_argument("--mafft-executable", type=str)
+    demo_protein_benchmark.add_argument("--trimal-executable", type=str)
+    demo_protein_benchmark.add_argument("--iqtree-executable", type=str)
+    demo_protein_benchmark.add_argument("--iqtree-seed", type=int, default=1)
+    demo_protein_benchmark.add_argument("--iqtree-threads", type=int, default=1)
+    demo_protein_benchmark.add_argument(
+        "--bootstrap-replicates", type=int, default=1000
+    )
+    demo_protein_benchmark.add_argument(
+        "--json", action="store_true", help="Emit the demo result as JSON."
+    )
+    _add_manifest_argument(demo_protein_benchmark)
     demo_ancient_dna = demo_subparsers.add_parser(
         "pleistocene-bear-cytb-fragments",
         help="Materialize the packaged ancient-DNA-style bear dataset and rerun the sequence-to-tree workflow outputs.",
@@ -15310,6 +15328,65 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "minimum_support": result.workflow_bundle.minimum_support,
                                 "maximum_support": result.workflow_bundle.maximum_support,
                                 "weakly_supported_clade_count": result.workflow_bundle.weakly_supported_clade_count,
+                                "reference_output_count": expected_output_count,
+                            },
+                            data=result,
+                        ),
+                        json_output=True,
+                    )
+                    return 0
+                print(result.output_root)
+                return 0
+            if args.demo_command == "gnathostome-ortholog-protein-benchmark":
+                result = run_gnathostome_ortholog_protein_benchmark_demo(
+                    args.out,
+                    mafft_executable=args.mafft_executable or "mafft",
+                    trimal_executable=args.trimal_executable or "trimal",
+                    iqtree_executable=args.iqtree_executable or "iqtree2",
+                    iqtree_seed=args.iqtree_seed,
+                    iqtree_threads=args.iqtree_threads,
+                    bootstrap_replicates=args.bootstrap_replicates,
+                )
+                outputs = _finalize_outputs(
+                    args,
+                    command="demo",
+                    inputs=[],
+                    outputs=[
+                        result.dataset_export.readme_path,
+                        result.dataset_export.sequences_path,
+                        result.workflow_bundle.summary_path,
+                        result.workflow_bundle.assumptions_path,
+                        result.workflow_bundle.alignment_path,
+                        result.workflow_bundle.trimmed_alignment_path,
+                        result.workflow_bundle.tree_path,
+                        result.workflow_bundle.model_table_path,
+                        result.workflow_bundle.support_table_path,
+                        result.workflow_bundle.log_path,
+                        result.workflow_bundle.manifest_path,
+                        result.overview_path,
+                    ],
+                )
+                if args.json:
+                    expected_output_count = len(
+                        list(result.dataset_export.expected_output_root.glob("*"))
+                    )
+                    _print_result(
+                        build_command_result(
+                            command="demo",
+                            inputs=[],
+                            outputs=outputs,
+                            metrics={
+                                "artifact_count": len(outputs),
+                                "sequence_count": result.dataset.sequence_count,
+                                "sequence_type": result.dataset.sequence_type,
+                                "selected_model": result.workflow_bundle.selected_model,
+                                "alignment_length": result.workflow_bundle.alignment_length,
+                                "trimmed_alignment_length": result.workflow_bundle.trimmed_alignment_length,
+                                "minimum_support": result.workflow_bundle.minimum_support,
+                                "maximum_support": result.workflow_bundle.maximum_support,
+                                "weakly_supported_clade_count": result.workflow_bundle.weakly_supported_clade_count,
+                                "state_space": "amino-acid",
+                                "model_selection_scope": "protein-models-only",
                                 "reference_output_count": expected_output_count,
                             },
                             data=result,
