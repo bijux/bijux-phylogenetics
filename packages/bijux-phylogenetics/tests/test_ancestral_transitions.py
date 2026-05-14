@@ -160,9 +160,13 @@ def test_summarize_ancestral_transition_tree_set_reports_pair_stability() -> Non
     assert len(report.branch_rows) == 50
     assert len(report.transition_rows) >= 2
     assert summary.transition_pair_count == len(report.transition_rows)
-    assert summary.topology_sensitive_transition_pair_count >= 1
     assert (
-        "one or more inferred transition pairs are absent from some retained trees"
+        summary.topology_sensitive_transition_pair_count
+        + summary.uncertainty_sensitive_transition_pair_count
+        >= 1
+    )
+    assert (
+        "one or more inferred transition pairs depend on uncertain branchwise ancestral changes"
         in report.warnings
     )
 

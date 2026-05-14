@@ -12,8 +12,12 @@ from bijux_phylogenetics.ancestral.common import (
     load_discrete_dataset,
     node_descendant_taxa,
     node_signature,
+    stable_value,
     write_ancestral_rows,
 )
+
+_STATE_SELECTION_REL_TOL = 1e-9
+_STATE_SELECTION_ABS_TOL = 1e-12
 
 
 @dataclass(slots=True)
@@ -552,8 +556,11 @@ def _reconstruct_likelihood_estimates(
     estimates: list[DiscreteAncestralEstimate] = []
     for node in dataset.tree.iter_nodes():
         signature = node_signature(node)
-        probabilities = posterior_by_node[signature]
-        material_states = _material_state_set(probabilities)
+        probabilities = _stable_probability_mapping(posterior_by_node[signature])
+        material_states = _material_state_set(
+            probabilities,
+            preferred_order=state_order,
+        )
         estimates.append(
             _build_discrete_estimate(
                 node=signature,
@@ -561,9 +568,9 @@ def _reconstruct_likelihood_estimates(
                 is_tip=node.is_leaf(),
                 descendant_taxa=node_descendant_taxa(node),
                 state_set=material_states,
-                most_likely_state=max(
-                    sorted(probabilities),
-                    key=lambda state: probabilities[state],
+                most_likely_state=_select_most_likely_state(
+                    probabilities,
+                    preferred_order=state_order,
                 ),
                 state_probabilities=probabilities,
             )
@@ -1268,14 +1275,57 @@ def _branch_length(node) -> float:
     return max(float(node.branch_length), 0.0)
 
 
-def _material_state_set(state_probabilities: dict[str, float]) -> list[str]:
+def _material_state_set(
+    state_probabilities: dict[str, float],
+    *,
+    preferred_order: list[str] | None = None,
+) -> list[str]:
     return sorted(
         state
         for state, probability in state_probabilities.items()
         if probability >= 0.1
     ) or [
-        max(sorted(state_probabilities), key=lambda state: state_probabilities[state])
+        _select_most_likely_state(
+            state_probabilities,
+            preferred_order=preferred_order,
+        )
     ]
+
+
+def _stable_probability_mapping(
+    state_probabilities: dict[str, float],
+) -> dict[str, float]:
+    return {
+        state: stable_value(probability)
+        for state, probability in state_probabilities.items()
+    }
+
+
+def _select_most_likely_state(
+    state_probabilities: dict[str, float],
+    *,
+    preferred_order: list[str] | None = None,
+) -> str:
+    if not state_probabilities:
+        raise ValueError("state probabilities must not be empty")
+    best_probability = max(state_probabilities.values())
+    tied_states = [
+        state
+        for state, probability in state_probabilities.items()
+        if math.isclose(
+            probability,
+            best_probability,
+            rel_tol=_STATE_SELECTION_REL_TOL,
+            abs_tol=_STATE_SELECTION_ABS_TOL,
+        )
+    ]
+    if preferred_order is not None:
+        order_lookup = {state: index for index, state in enumerate(preferred_order)}
+        return min(
+            tied_states,
+            key=lambda state: (order_lookup.get(state, len(order_lookup)), state),
+        )
+    return min(tied_states)
 
 
 def _build_discrete_estimate(

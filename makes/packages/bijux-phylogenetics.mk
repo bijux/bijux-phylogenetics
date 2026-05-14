@@ -14,8 +14,8 @@ TEST_REAL_LOCAL_PATH = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests/real_
 TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"
 TEST_UNIT_DIR_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_UNIT_FALLBACK_ARGS = -k "not e2e and not integration and not functional" -m "not slow and not real_local and not evaluation" --maxfail=1 -q
-TEST_EVALUATION_ARGS = -m "evaluation and scientific_validation" -s -p no:cov
-TEST_REAL_LOCAL_ARGS = -m "real_local and engine_real and not scientific_validation" -s -p no:cov
+TEST_EVALUATION_ARGS = -m "evaluation and scientific_validation and not slow" -s -p no:cov
+TEST_REAL_LOCAL_ARGS = -m "real_local and engine_real and not scientific_validation and not slow" -s -p no:cov
 TEST_CLEAN_PATHS = "$(MONOREPO_ROOT)/.pytest_cache" "$(MONOREPO_ROOT)/.ruff_cache"
 QUALITY_PATHS = src tests
 MYPY_CONFIG = $(MONOREPO_ROOT)/configs/mypy.ini
@@ -93,42 +93,18 @@ scientific-validation-lane:
 .PHONY: scientific-validation-lane
 
 scientific-validation-slow:
-	@echo "→ Running slow scientific validation tests (manual only)"
-	@$(PYTEST) $(PYTEST_INFO_FLAGS) --version
-	@mkdir -p "$(TEST_ARTIFACTS_DIR)" "$(HYPOTHESIS_DB_DIR)" "$(TMP_DIR)"
-	@( cd "$(PYTEST_ROOTDIR_ABS)" && \
-	  PYTHONPATH="$(TEST_SOURCE_PATH_ABS)$${PYTHONPATH:+:$${PYTHONPATH}}" \
-	  PYTHONDONTWRITEBYTECODE=1 \
-	  HYPOTHESIS_DATABASE_DIRECTORY="$(HYPOTHESIS_DB_ABS)" \
-	  $(TEST_PYCACHE_ENV) \
-	  sh -c '$(PYTEST) --rootdir "$(PYTEST_ROOTDIR_ABS)" -c "$(PYTEST_INI_ABS)" "packages/bijux-phylogenetics/tests" -m "evaluation and scientific_validation and slow" -o addopts= -o timeout=600 -s -p no:cov' )
-	@echo "✔ slow scientific validation lane completed"
+	@echo "✘ slow tests are reserved for 'make test-all' or 'make test-all-plus-run-time'"
+	@exit 2
 .PHONY: scientific-validation-slow
 
 stress-small-lane:
-	@echo "→ Running governed small stress tier"
-	@$(PYTEST) $(PYTEST_INFO_FLAGS) --version
-	@mkdir -p "$(TEST_ARTIFACTS_DIR)" "$(HYPOTHESIS_DB_DIR)" "$(TMP_DIR)"
-	@( cd "$(PYTEST_ROOTDIR_ABS)" && \
-	  PYTHONPATH="$(TEST_SOURCE_PATH_ABS)$${PYTHONPATH:+:$${PYTHONPATH}}" \
-	  PYTHONDONTWRITEBYTECODE=1 \
-	  HYPOTHESIS_DATABASE_DIRECTORY="$(HYPOTHESIS_DB_ABS)" \
-	  $(TEST_PYCACHE_ENV) \
-	  sh -c '$(PYTEST) --rootdir "$(PYTEST_ROOTDIR_ABS)" -c "$(PYTEST_INI_ABS)" "packages/bijux-phylogenetics/tests/test_large_dataset_stress.py" -m "evaluation and stress_small" -o addopts= -s -p no:cov' )
-	@echo "✔ small stress tier completed"
+	@echo "✘ slow tests are reserved for 'make test-all' or 'make test-all-plus-run-time'"
+	@exit 2
 .PHONY: stress-small-lane
 
 stress-heavy-lane:
-	@echo "→ Running governed heavy stress tier"
-	@$(PYTEST) $(PYTEST_INFO_FLAGS) --version
-	@mkdir -p "$(TEST_ARTIFACTS_DIR)" "$(HYPOTHESIS_DB_DIR)" "$(TMP_DIR)"
-	@( cd "$(PYTEST_ROOTDIR_ABS)" && \
-	  PYTHONPATH="$(TEST_SOURCE_PATH_ABS)$${PYTHONPATH:+:$${PYTHONPATH}}" \
-	  PYTHONDONTWRITEBYTECODE=1 \
-	  HYPOTHESIS_DATABASE_DIRECTORY="$(HYPOTHESIS_DB_ABS)" \
-	  $(TEST_PYCACHE_ENV) \
-	  sh -c '$(PYTEST) --rootdir "$(PYTEST_ROOTDIR_ABS)" -c "$(PYTEST_INI_ABS)" "packages/bijux-phylogenetics/tests/test_large_dataset_stress.py" -m "evaluation and stress_heavy" -o addopts= -o timeout=600 -s -p no:cov' )
-	@echo "✔ heavy stress tier completed"
+	@echo "✘ slow tests are reserved for 'make test-all' or 'make test-all-plus-run-time'"
+	@exit 2
 .PHONY: stress-heavy-lane
 
 include $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../bijux-py/package.mk

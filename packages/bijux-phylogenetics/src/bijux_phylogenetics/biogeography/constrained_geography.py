@@ -37,6 +37,7 @@ _INTERNAL_MODEL_TO_ALIAS = {
 
 _TRUE_MATRIX_VALUES = {"1", "true", "yes", "allowed", "x"}
 _FALSE_MATRIX_VALUES = {"", "0", "false", "no", "forbidden"}
+_UNSUPPORTED_CLAIM_COMPETITOR_RATIO = 0.9
 
 
 @dataclass(frozen=True, slots=True)
@@ -534,30 +535,31 @@ def _build_unsupported_claim_rows(
         child_signature = node_signature(child)
         unconstrained_parent = unconstrained_by_node[parent_signature]
         unconstrained_child = unconstrained_by_node[child_signature]
-        transition_pair = (
-            unconstrained_parent.most_likely_state,
-            unconstrained_child.most_likely_state,
+        transition_pair = _select_unsupported_transition_pair(
+            unconstrained_parent,
+            unconstrained_child,
+            allowed_transition_pairs=allowed_transition_pairs,
         )
-        if (
-            unconstrained_parent.most_likely_state
-            != unconstrained_child.most_likely_state
-            and transition_pair not in allowed_transition_pairs
-        ):
+        if transition_pair is not None:
+            (
+                unconstrained_source_region,
+                unconstrained_target_region,
+                unconstrained_support,
+            ) = transition_pair
             constrained_parent = constrained_by_node[parent_signature]
             constrained_child = constrained_by_node[child_signature]
+            constrained_transition_pair = (
+                constrained_parent.most_likely_state,
+                constrained_child.most_likely_state,
+            )
             rows.append(
                 UnsupportedGeographicTransitionClaimRow(
                     parent_node=parent_signature,
                     child_node=child_signature,
                     descendant_taxa=node_descendant_taxa(child),
-                    unconstrained_source_region=unconstrained_parent.most_likely_state,
-                    unconstrained_target_region=unconstrained_child.most_likely_state,
-                    unconstrained_support=stable_value(
-                        min(
-                            unconstrained_parent.confidence,
-                            unconstrained_child.confidence,
-                        )
-                    ),
+                    unconstrained_source_region=unconstrained_source_region,
+                    unconstrained_target_region=unconstrained_target_region,
+                    unconstrained_support=unconstrained_support,
                     constrained_source_region=constrained_parent.most_likely_state,
                     constrained_target_region=constrained_child.most_likely_state,
                     constrained_support=stable_value(
@@ -566,11 +568,11 @@ def _build_unsupported_claim_rows(
                             constrained_child.confidence,
                         )
                     ),
-                    claim_resolved=(
-                        constrained_parent.most_likely_state,
-                        constrained_child.most_likely_state,
-                    )
-                    != transition_pair,
+                    claim_resolved=constrained_transition_pair
+                    != (
+                        unconstrained_source_region,
+                        unconstrained_target_region,
+                    ),
                 )
             )
         for grandchild in child.children:
@@ -579,6 +581,70 @@ def _build_unsupported_claim_rows(
     for child in root.children:
         visit(root, child)
     return rows
+
+
+def _select_unsupported_transition_pair(
+    parent_estimate,
+    child_estimate,
+    *,
+    allowed_transition_pairs: set[tuple[str, str]],
+) -> tuple[str, str, float] | None:
+    primary_transition_pair = (
+        parent_estimate.most_likely_state,
+        child_estimate.most_likely_state,
+    )
+    if primary_transition_pair[0] == primary_transition_pair[1]:
+        return None
+    primary_support = stable_value(
+        min(
+            parent_estimate.state_probabilities.get(primary_transition_pair[0], 0.0),
+            child_estimate.state_probabilities.get(primary_transition_pair[1], 0.0),
+        )
+    )
+    if primary_transition_pair not in allowed_transition_pairs:
+        return (
+            primary_transition_pair[0],
+            primary_transition_pair[1],
+            primary_support,
+        )
+    strongest_forbidden_pair: tuple[str, str] | None = None
+    strongest_forbidden_support = 0.0
+    for (
+        source_region,
+        source_probability,
+    ) in parent_estimate.state_probabilities.items():
+        if source_probability <= 0.0:
+            continue
+        for (
+            target_region,
+            target_probability,
+        ) in child_estimate.state_probabilities.items():
+            if target_probability <= 0.0 or source_region == target_region:
+                continue
+            candidate_pair = (source_region, target_region)
+            if candidate_pair in allowed_transition_pairs:
+                continue
+            candidate_support = stable_value(
+                min(source_probability, target_probability)
+            )
+            if candidate_support > strongest_forbidden_support or (
+                candidate_support == strongest_forbidden_support
+                and strongest_forbidden_pair is not None
+                and candidate_pair < strongest_forbidden_pair
+            ):
+                strongest_forbidden_pair = candidate_pair
+                strongest_forbidden_support = candidate_support
+    if strongest_forbidden_pair is None:
+        return None
+    if strongest_forbidden_support < (
+        primary_support * _UNSUPPORTED_CLAIM_COMPETITOR_RATIO
+    ):
+        return None
+    return (
+        strongest_forbidden_pair[0],
+        strongest_forbidden_pair[1],
+        strongest_forbidden_support,
+    )
 
 
 def _load_geographic_adjacency_matrix(path: Path) -> _GeographicAdjacencyMatrix:
