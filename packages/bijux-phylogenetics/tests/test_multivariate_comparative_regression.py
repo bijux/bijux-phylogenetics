@@ -59,6 +59,11 @@ def test_run_multivariate_comparative_regression_reports_covariance_and_associat
     assert association.pair_count == 6
     assert math.isclose(association.correlation, 0.0, abs_tol=1e-12)
     assert association.p_value == 1.0
+    assert report.covariance_diagnostics.response_count == 2
+    assert report.covariance_diagnostics.matrix_rank == 1
+    assert report.covariance_diagnostics.is_singular is True
+    assert report.covariance_diagnostics.is_near_singular is True
+    assert math.isinf(report.covariance_diagnostics.condition_number)
     diagonal = next(
         row
         for row in report.covariance_rows
@@ -105,6 +110,23 @@ def test_run_multivariate_comparative_regression_matches_independent_python_refe
         correlation(left_model.residuals, right_model.residuals),
         abs_tol=report.numerical_tolerance,
     )
+
+
+def test_run_multivariate_comparative_regression_reports_full_rank_covariance_diagnostics() -> (
+    None
+):
+    report = run_multivariate_comparative_regression(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_multivariate_full_rank.tsv"),
+        responses=["response_growth", "response_range"],
+        predictors=["predictor_one", "predictor_two"],
+        lambda_value=0.0,
+    )
+    assert report.covariance_diagnostics.response_count == 2
+    assert report.covariance_diagnostics.matrix_rank == 2
+    assert report.covariance_diagnostics.is_singular is False
+    assert report.covariance_diagnostics.is_near_singular is False
+    assert math.isfinite(report.covariance_diagnostics.condition_number)
 
 
 def test_run_multivariate_comparative_regression_excludes_incomplete_taxa() -> None:
@@ -162,6 +184,29 @@ def test_run_multivariate_comparative_regression_warns_on_singular_covariance() 
         math.isclose(row.covariance, 0.0, abs_tol=report.numerical_tolerance)
         for row in diagonal_rows
     )
+    assert report.covariance_diagnostics.matrix_rank == 0
+    assert report.covariance_diagnostics.is_singular is True
+    assert report.covariance_diagnostics.is_near_singular is True
+    assert math.isinf(report.covariance_diagnostics.condition_number)
+
+
+def test_run_multivariate_comparative_regression_detects_collinear_residual_covariance() -> (
+    None
+):
+    report = run_multivariate_comparative_regression(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_comparative_multivariate_collinear.tsv"),
+        responses=["response_growth", "response_range"],
+        predictors=["predictor_one"],
+        lambda_value=0.0,
+    )
+    diagonal_rows = [row for row in report.covariance_rows if row.is_diagonal]
+    assert all(row.covariance > report.numerical_tolerance for row in diagonal_rows)
+    assert any("singular or near-singular" in warning for warning in report.warnings)
+    assert report.covariance_diagnostics.matrix_rank == 1
+    assert report.covariance_diagnostics.is_singular is True
+    assert report.covariance_diagnostics.is_near_singular is True
+    assert math.isinf(report.covariance_diagnostics.condition_number)
 
 
 def test_write_multivariate_regression_tables_write_review_ledgers(
