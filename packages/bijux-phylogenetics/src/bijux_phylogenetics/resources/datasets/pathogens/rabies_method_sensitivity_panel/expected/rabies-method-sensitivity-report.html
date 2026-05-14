@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rabies Method-Sensitivity Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1f24;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --accent: #0f766e;
+      --rule: #d6dee8;
+      --mono: "SFMono-Regular", "SF Mono", Consolas, monospace;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(180deg, #eef6f4 0%, var(--bg) 100%);
+      color: var(--ink);
+      font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", serif;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 24px 80px rgba(15, 118, 110, 0.08);
+    }
+    h1, h2 {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+    section + section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      background: #f6f8fa;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Rabies Method-Sensitivity Report</h1>
+    <script id="bijux-report-manifest" type="application/json">{
+  "changed_clade_count": 8,
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "stable_clade_count": 2,
+  "variant_count": 4
+}</script>
+    <section><h2>workflow-summary</h2><pre>dataset: Rabies method-sensitivity panel
+variants: 4
+stable clades across variants: 2
+changed clades across variants: 8
+auto-gap-threshold: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0
+ginsi-gap-threshold: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0
+auto-gappyout: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0
+ginsi-gappyout: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0</pre></section>
+<section><h2>conclusions</h2><pre>preprocessing_rooted_iqtree_topology: stable
+claim: The rooted IQ-TREE topology stayed unchanged across every declared alignment and trimming variant.
+evidence: 6 rooted pairwise preprocessing comparisons returned RF distance 0 and no rooting-only disagreements.
+caution: This stability statement is limited to the compact nine-taxon rabies panel and the four declared preprocessing settings.
+
+preprocessing_selected_model: stable
+claim: The selected substitution model remained constant across the declared preprocessing matrix.
+evidence: selected models: TPM2u+F+G4
+caution: Model-selection stability here reflects one short rabies nucleoprotein panel rather than a general claim about all pathogen alignments.
+
+rooted_engine_agreement: stable
+claim: After explicit outgroup rooting, FastTree and IQ-TREE preserved the same rooted topology in every declared preprocessing variant.
+evidence: rooted engine comparisons over outgroup bat_chile_rv108 returned RF distance 0 in every variant.
+caution: Rooted agreement does not imply that every internal unrooted split or support value is interchangeable across engines.
+
+unrooted_engine_sensitivity: changed
+claim: Before rooting, the FastTree versus IQ-TREE comparison changed several internal clade conclusions on this rabies panel.
+evidence: serious unrooted engine conflicts ranged up to 8 per variant, while stable shared clades per variant ranged from 2 to 2.
+caution: The engine-sensitive clades are a warning against over-reading fine internal structure from one compact panel, especially when approximate and likelihood engines disagree before rooting.</pre></section>
+<section><h2>artifacts</h2><pre>workflow summary: workflow-summary.tsv
+variant summary: variant-summary.tsv
+preprocessing rooted comparisons: preprocessing-rooted-comparisons.tsv
+stable clades: stable-clades.tsv
+changed clades: changed-clades.tsv
+method conclusions: method-conclusion-summary.tsv
+resolved config: workflow-config.resolved.json</pre></section>
+  </main>
+</body>
+</html>

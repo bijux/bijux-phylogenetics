@@ -1,0 +1,7 @@
+left_variant_id	right_variant_id	comparison_axis	robinson_foulds_distance	normalized_robinson_foulds	same_taxa_different_rooting
+auto-gap-threshold	ginsi-gap-threshold	alignment_mode	0	0	false
+auto-gap-threshold	auto-gappyout	trimming_mode	0	0	false
+auto-gap-threshold	ginsi-gappyout	combined_preprocessing	0	0	false
+ginsi-gap-threshold	auto-gappyout	combined_preprocessing	0	0	false
+ginsi-gap-threshold	ginsi-gappyout	trimming_mode	0	0	false
+auto-gappyout	ginsi-gappyout	alignment_mode	0	0	false

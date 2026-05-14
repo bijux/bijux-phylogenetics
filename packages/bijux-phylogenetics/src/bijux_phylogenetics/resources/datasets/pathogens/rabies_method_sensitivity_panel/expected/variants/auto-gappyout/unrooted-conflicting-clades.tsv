@@ -1,0 +1,9 @@
+split_id	conflict_kind	fasttree_present	iqtree_present	fasttree_support	fasttree_support_fraction	iqtree_support	iqtree_support_fraction	detail
+bat_chile_rv108|bat_chile_rv50	fasttree_only	true	false	1	1			conflicting clade carried strong branch support in the tree where it was present
+bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011	fasttree_only	true	false	1	1			conflicting clade carried strong branch support in the tree where it was present
+raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025	iqtree_only	false	true			92	0.92	conflicting clade carried strong branch support in the tree where it was present
+bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021	fasttree_only	true	false	0.997	0.997			conflicting clade carried strong branch support in the tree where it was present
+cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025	iqtree_only	false	true			99	0.99	conflicting clade carried strong branch support in the tree where it was present
+bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021	fasttree_only	true	false	0.968	0.968			conflicting clade carried strong branch support in the tree where it was present
+cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025	iqtree_only	false	true			100	1	conflicting clade carried strong branch support in the tree where it was present
+cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025	iqtree_only	false	true			100	1	conflicting clade carried strong branch support in the tree where it was present

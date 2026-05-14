@@ -1,0 +1,2 @@
+dataset_id	variant_count	stable_clade_count	changed_clade_count	preprocessing_change_pair_count	rooted_engine_change_variant_count	serious_conflict_variant_count	maximum_serious_conflict_count
+rabies_method_sensitivity_panel	4	2	8	0	0	4	8
