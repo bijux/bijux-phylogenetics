@@ -391,7 +391,9 @@ def _compare_html_file(
                 detail="report linked-artifact contract changed relative to the governed output",
             )
         )
-    if expected_report.inline_manifest != observed_report.inline_manifest:
+    if _normalize_inline_report_manifest(
+        expected_report.inline_manifest
+    ) != _normalize_inline_report_manifest(observed_report.inline_manifest):
         issues.append(
             ScientificOutputEquivalenceIssue(
                 relative_path=relative_path,
@@ -533,6 +535,41 @@ def _parse_html_contract(path: Path) -> _HtmlContract:
         local_links=sorted(set(parser.local_links)),
         inline_manifest=parser.inline_manifest,
     )
+
+
+def _normalize_inline_report_manifest(payload: Any) -> Any:
+    if isinstance(payload, dict):
+        normalized: dict[str, Any] = {}
+        for key, value in payload.items():
+            if key == "input_checksums" and isinstance(value, dict):
+                normalized[key] = {
+                    _normalize_manifest_path(path_text): checksum
+                    for path_text, checksum in value.items()
+                }
+                continue
+            if key == "input_paths" and isinstance(value, list):
+                normalized[key] = [
+                    _normalize_manifest_path(item) if isinstance(item, str) else item
+                    for item in value
+                ]
+                continue
+            if key == "path" and isinstance(value, str):
+                normalized[key] = _normalize_manifest_path(value)
+                continue
+            normalized[key] = _normalize_inline_report_manifest(value)
+        return normalized
+    if isinstance(payload, list):
+        return [_normalize_inline_report_manifest(item) for item in payload]
+    return payload
+
+
+def _normalize_manifest_path(path_text: str) -> str:
+    normalized = path_text.replace("\\", "/")
+    marker = "/tests/fixtures/"
+    if marker in normalized:
+        suffix = normalized.split(marker, 1)[1]
+        return f"tests/fixtures/{suffix}"
+    return normalized
 
 
 def _is_local_link(value: str) -> bool:

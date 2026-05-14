@@ -663,6 +663,9 @@ def validate_report_regression_fixtures(
         render_taxon_report,
         render_tree_report,
     )
+    from bijux_phylogenetics.scientific_output_equivalence import (
+        compare_scientific_output,
+    )
 
     root = _default_fixtures_root() if fixtures_root is None else fixtures_root
     temp_root = _temp_reference_dir("bijux-report-regression-reference")
@@ -674,6 +677,7 @@ def validate_report_regression_fixtures(
     traits_path = _fixture(root, "metadata", "example_traits.tsv")
     synonym_table = _fixture(root, "metadata", "example_taxon_synonyms.tsv")
     taxonomy_tree = _fixture(root, "trees", "example_taxonomy_tree.nwk")
+    expected_tree_report_path = _fixture(root, "expected", "tree_report.html")
 
     tree_report = render_tree_report(
         tree_path=tree_path, out_path=temp_root / "tree.html"
@@ -697,31 +701,30 @@ def validate_report_regression_fixtures(
         synonym_table_path=synonym_table,
         out_path=temp_root / "taxonomy.html",
     )
+    tree_report_equivalence = compare_scientific_output(
+        expected_tree_report_path,
+        tree_report.output_path,
+    )
 
     fixtures = [
         _check(
             goal_id=96,
             suite="report-regression-reference",
-            name="tree_report_section_contract",
-            fixture_paths=[tree_path],
+            name="tree_report_semantic_contract",
+            fixture_paths=[tree_path, expected_tree_report_path],
             expected={
+                "scientific_equivalence": True,
+                "issue_count": 0,
                 "report_kind": "tree",
-                "sections": [
-                    "reviewer-summary",
-                    "tree-validation",
-                    "tree-inspection",
-                    "tree-forensic",
-                    "limitations",
-                ],
-                "reviewer_summary_count": 3,
             },
             observed={
+                "scientific_equivalence": tree_report_equivalence.equivalent,
+                "issue_count": len(tree_report_equivalence.issues),
                 "report_kind": tree_report.machine_manifest["report_kind"],
-                "sections": tree_report.machine_manifest["sections"],
-                "reviewer_summary_count": len(
-                    tree_report.machine_manifest["reviewer_summary"]
-                ),
             },
+            notes=[
+                "tree report regression now compares embedded manifest, headings, and linked artifacts instead of exact html bytes"
+            ],
         ),
         _check(
             goal_id=96,
@@ -788,11 +791,12 @@ def validate_report_regression_fixtures(
         reviewer_goal="Report regression fixtures",
         fixtures=fixtures,
         coverage_notes=[
-            "pins the checked-in tree HTML golden and the stable section contracts for newer reviewer reports",
+            "pins the checked-in tree report through semantic html equivalence and keeps stable section contracts for newer reviewer reports",
             "keeps report regressions visible without requiring broad byte-for-byte snapshots for every surface",
         ],
         limitations=[
-            "only the tree report currently has a full checked-in HTML golden; other report surfaces are guarded through section-level contracts",
+            "tree report semantics are guarded through headings, embedded manifest content, and linked artifacts rather than exact html bytes",
+            "other report surfaces are still guarded through section-level contracts rather than broader semantic html comparison",
         ],
     )
 
