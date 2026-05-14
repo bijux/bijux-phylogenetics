@@ -15524,6 +15524,7 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.dataset_export.sequences_path,
                         result.dataset_export.metadata_path,
                         result.dataset_export.centroids_path,
+                        result.dataset_export.accession_table_path,
                         result.workflow_bundle.workflow_summary_path,
                         result.workflow_bundle.config_audit_path,
                         result.workflow_bundle.resolved_config_path,
@@ -15550,6 +15551,8 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                         result.workflow_bundle.final_report_path,
                         result.workflow_bundle.final_manifest_path,
                         result.overview_path,
+                        result.overview_html_path,
+                        result.package_manifest_path,
                     ],
                 )
                 if args.json:
@@ -15572,6 +15575,12 @@ def run_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
                                 "sequence_count": result.dataset.sequence_count,
                                 "config_path": str(
                                     result.dataset_export.workflow_config_path
+                                ),
+                                "biological_question": (
+                                    "Do the host-associated rabies lineages in this compact panel occupy one distinct geographic regime while retaining one coherent phylogenetic signal?"
+                                ),
+                                "short_answer": (
+                                    "The rooted panel remains anchored in bat and north_asia, and `host_group[canid]` shows a nominally supported positive longitude association under the selected comparative model, but the inference remains cautionary because the panel is intentionally compact."
                                 ),
                                 "host_trait": result.dataset.host_trait,
                                 "geography_trait": result.dataset.geography_trait,
