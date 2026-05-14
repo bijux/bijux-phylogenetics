@@ -1,5 +1,10 @@
 """Tree comparison workflows."""
 
+from .tree_distance_reference import (
+    TreeDistanceReferenceObservation,
+    TreeDistanceReferenceValidationReport,
+    validate_tree_distance_reference_examples,
+)
 from .taxon_influence import (
     TaxonInfluenceReport,
     TaxonInfluenceRow,
@@ -35,6 +40,8 @@ __all__ = [
     "SupportConflictRow",
     "TaxonInfluenceReport",
     "TaxonInfluenceRow",
+    "TreeDistanceReferenceObservation",
+    "TreeDistanceReferenceValidationReport",
     "TreeComparisonReport",
     "analyze_taxon_influence",
     "compare_branch_score_distance",
@@ -43,6 +50,7 @@ __all__ = [
     "compare_support_values",
     "compare_tree_paths",
     "prune_trees_to_shared_taxa",
+    "validate_tree_distance_reference_examples",
     "write_clade_overlap_table",
     "write_shared_taxa_pruning_table",
     "write_shared_taxa_removed_taxa_table",
