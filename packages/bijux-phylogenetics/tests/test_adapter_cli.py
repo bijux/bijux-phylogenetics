@@ -213,6 +213,41 @@ print("warning: iqtree fixture tree inference", file=sys.stderr)
     )
 
 
+def _fake_iqtree_without_support_labels(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".treefile").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".ufboot").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSupport analysis completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture support log\\nBEST SCORE FOUND : -222.222\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_fasttree(path: Path) -> Path:
     return _write_executable(
         path,
@@ -331,6 +366,44 @@ consensus_path.write_text(
     )
 
 
+def _fake_mrbayes_missing_consensus_output(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+trace_path.write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t-110.0\\t0.40\\t0.90\\n"
+    "100\\t-108.0\\t0.41\\t0.95\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_beast(path: Path) -> Path:
     return _write_executable(
         path,
@@ -393,6 +466,31 @@ tree_path.write_text(
     "Begin trees;\\n"
     "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
     "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_beast_missing_tree_output(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
     encoding="utf-8",
 )
 """,
@@ -1172,6 +1270,38 @@ def test_adapter_bootstrap_cli_reports_support_metrics(tmp_path: Path, capsys) -
     assert Path(payload["data"]["output_paths"]["support_histogram"]).exists()
 
 
+def test_adapter_bootstrap_cli_surfaces_structured_support_validation_error(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree_without_support_labels(tmp_path / "iqtree-no-support")
+    input_path = fixture("alignments/example_alignment.fasta")
+
+    exit_code = main(
+        [
+            "adapter",
+            "bootstrap",
+            str(input_path),
+            "--out-dir",
+            str(tmp_path / "bootstrap"),
+            "--model",
+            "GTR+G",
+            "--prefix",
+            "example",
+            "--replicates",
+            "1000",
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "engine_support_values_missing"
+    assert payload["errors"][0]["details"]["workflow"] == "bootstrap-support"
+    assert payload["errors"][0]["details"]["support_kind"] == "bootstrap support"
+
+
 def test_adapter_sh_alrt_cli_reports_combined_support_metrics(
     tmp_path: Path, capsys
 ) -> None:
@@ -1878,6 +2008,53 @@ def test_adapter_mrbayes_run_cli_rejects_or_cleans_incomplete_outputs(
     assert marker_path.exists() is False
 
 
+def test_adapter_mrbayes_run_cli_surfaces_structured_missing_output_error(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mrbayes_missing_consensus_output(
+        tmp_path / "mb-missing-consensus"
+    )
+    alignment_path = fixture("alignments/example_alignment.fasta")
+    nexus_path = tmp_path / "analysis.nex"
+
+    assert (
+        main(
+            [
+                "adapter",
+                "mrbayes-prepare",
+                str(alignment_path),
+                "--out",
+                str(nexus_path),
+                "--json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    exit_code = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(executable),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "engine_required_output_missing"
+    assert payload["errors"][0]["details"]["engine_name"] == "MrBayes"
+    assert payload["errors"][0]["details"]["missing_outputs"] == [
+        {
+            "output_name": "consensus_tree",
+            "path": str(Path(f"{nexus_path}.con.tre")),
+        }
+    ]
+
+
 def test_adapter_mrbayes_parameters_cli_writes_burnin_aware_summary_table(
     tmp_path: Path, capsys
 ) -> None:
@@ -2351,6 +2528,41 @@ def test_adapter_beast_run_cli_rejects_or_cleans_incomplete_outputs(
     assert cleaned_payload["metrics"]["resumed"] is False
     assert Path(cleaned_payload["data"]["output_paths"]["posterior_log"]).exists()
     assert marker_path.exists() is False
+
+
+def test_adapter_beast_run_cli_surfaces_structured_missing_output_error(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_beast_missing_tree_output(tmp_path / "beast-missing-tree")
+    analysis_path = tmp_path / "analysis.xml"
+    analysis_path.write_text(
+        '<beast version="2.7" namespace="beast.base.evolution.alignment:beast.base.evolution.tree"/>\n',
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(executable),
+            "--seed",
+            "7",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "engine_required_output_missing"
+    assert payload["errors"][0]["details"]["engine_name"] == "BEAST"
+    assert payload["errors"][0]["details"]["missing_outputs"] == [
+        {
+            "output_name": "posterior_trees",
+            "path": str(analysis_path.with_name("analysis.7.trees")),
+        }
+    ]
 
 
 def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
