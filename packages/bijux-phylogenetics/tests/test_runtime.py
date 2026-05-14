@@ -801,6 +801,7 @@ from bijux_phylogenetics.simulation import (
     simulate_coalescent_trees,
     simulate_discrete_traits,
     simulate_dna_alignment,
+    simulate_early_burst_traits,
     simulate_ou_traits,
     simulate_protein_alignment,
     write_continuous_trait_table,
@@ -1775,6 +1776,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
     assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
     assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
+    assert bijux_phylogenetics.simulate_early_burst_traits is simulate_early_burst_traits
     assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
     assert bijux_phylogenetics.simulate_discrete_traits is simulate_discrete_traits
     assert bijux_phylogenetics.simulate_dna_alignment is simulate_dna_alignment
@@ -3134,6 +3136,24 @@ def test_simulate_ou_traits_uses_declared_parameters() -> None:
         ("B", 0.687047684603513),
         ("C", 0.544493844861481),
         ("D", 0.68666212038887),
+    ]
+
+
+def test_simulate_early_burst_traits_uses_declared_rate_change() -> None:
+    report = simulate_early_burst_traits(
+        fixture("example_tree.nwk"),
+        seed=7,
+        root_state=1.0,
+        sigma=0.5,
+        rate_change=4.0,
+    )
+    assert report.model == "early-burst"
+    assert report.rate_change == 4.0
+    assert [(row.taxon, row.value) for row in report.traits] == [
+        ("A", 1.062949925373677),
+        ("B", 0.870045899658049),
+        ("C", 0.630380931701498),
+        ("D", 0.872656745957104),
     ]
 
 

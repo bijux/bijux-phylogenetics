@@ -54,6 +54,7 @@ class ContinuousTraitSimulationReport:
     sigma: float
     alpha: float | None
     theta: float | None
+    rate_change: float | None
     traits: list[SimulatedContinuousTrait]
     node_values: list[SimulatedContinuousNode]
 
@@ -418,30 +419,17 @@ def simulate_brownian_traits(
             state + rng.gauss(0.0, sigma * sqrt(branch_length))
         ),
     )
-    values = _tip_values_from_node_map(tree, node_values)
-    return ContinuousTraitSimulationReport(
-        model="brownian-motion",
+    return _build_continuous_trait_simulation_report(
+        tree=tree,
         tree_path=tree_path,
-        tip_count=tree.tip_count,
+        model="brownian-motion",
         seed=seed,
         root_state=root_state,
         sigma=sigma,
         alpha=None,
         theta=None,
-        traits=[
-            SimulatedContinuousTrait(taxon=taxon, value=value)
-            for taxon, value in sorted(values.items())
-        ],
-        node_values=[
-            SimulatedContinuousNode(
-                node=node_signature(node),
-                node_name=node.name,
-                is_tip=node.is_leaf(),
-                descendant_taxa=node_descendant_taxa(node),
-                value=float(format(node_values[node_signature(node)], ".15g")),
-            )
-            for node in tree.iter_nodes()
-        ],
+        rate_change=None,
+        node_values=node_values,
     )
 
 
@@ -476,9 +464,81 @@ def simulate_ou_traits(
     node_values = _iter_node_trait_values(
         tree, root_state=root_state, propagate=propagate
     )
+    return _build_continuous_trait_simulation_report(
+        tree=tree,
+        tree_path=tree_path,
+        model="ornstein-uhlenbeck",
+        seed=seed,
+        root_state=root_state,
+        sigma=sigma,
+        alpha=alpha,
+        theta=theta,
+        rate_change=None,
+        node_values=node_values,
+    )
+
+
+def simulate_early_burst_traits(
+    tree_path: Path,
+    *,
+    root_state: float = 0.0,
+    sigma: float = 1.0,
+    rate_change: float = 1.0,
+    seed: int = 1,
+) -> ContinuousTraitSimulationReport:
+    """Simulate one continuous tip trait under an early-burst branch-rate process."""
+    if sigma < 0.0:
+        raise ValueError(f"sigma must be nonnegative, got {sigma}")
+    if rate_change < 0.0:
+        raise ValueError(f"rate_change must be nonnegative, got {rate_change}")
+    tree = load_tree(tree_path)
+    from bijux_phylogenetics.comparative.evolutionary_modes import (
+        transform_tree_for_evolutionary_mode,
+    )
+
+    transformed_tree = transform_tree_for_evolutionary_mode(
+        tree,
+        mode="early-burst",
+        parameter_value=rate_change,
+    )
+    rng = random.Random(seed)  # nosec B311
+    node_values = _iter_node_trait_values(
+        transformed_tree,
+        root_state=root_state,
+        propagate=lambda state, branch_length: (
+            state + rng.gauss(0.0, sigma * sqrt(branch_length))
+        ),
+    )
+    return _build_continuous_trait_simulation_report(
+        tree=transformed_tree,
+        tree_path=tree_path,
+        model="early-burst",
+        seed=seed,
+        root_state=root_state,
+        sigma=sigma,
+        alpha=None,
+        theta=None,
+        rate_change=rate_change,
+        node_values=node_values,
+    )
+
+
+def _build_continuous_trait_simulation_report(
+    *,
+    tree: PhyloTree,
+    tree_path: Path,
+    model: str,
+    seed: int,
+    root_state: float,
+    sigma: float,
+    alpha: float | None,
+    theta: float | None,
+    rate_change: float | None,
+    node_values: dict[str, float],
+) -> ContinuousTraitSimulationReport:
     values = _tip_values_from_node_map(tree, node_values)
     return ContinuousTraitSimulationReport(
-        model="ornstein-uhlenbeck",
+        model=model,
         tree_path=tree_path,
         tip_count=tree.tip_count,
         seed=seed,
@@ -486,6 +546,7 @@ def simulate_ou_traits(
         sigma=sigma,
         alpha=alpha,
         theta=theta,
+        rate_change=rate_change,
         traits=[
             SimulatedContinuousTrait(taxon=taxon, value=value)
             for taxon, value in sorted(values.items())
