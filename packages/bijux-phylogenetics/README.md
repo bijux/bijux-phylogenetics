@@ -179,6 +179,7 @@ bijux-phylogenetics adapter report artifacts/mrbayes/analysis.manifest.json --ou
 bijux-phylogenetics tree-set inspect posterior.trees --json
 bijux-phylogenetics tree-set consensus posterior.trees --out consensus.nwk
 bijux-phylogenetics tree-set report posterior.trees --out artifacts/tree-uncertainty-report.html
+bijux-phylogenetics demo rabies-cross-host-geography-panel --out artifacts/rabies-cross-host-geography-panel --config src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json --json
 bijux-phylogenetics simulate tree-birth-death --tree-count 5 --tip-count 16 --out simulated.trees
 bijux-phylogenetics simulate alignment-dna tree.nwk --sequence-length 500 --out simulated-alignment.fasta
 bijux-phylogenetics benchmark tree-comparison --replicates 3 --json
