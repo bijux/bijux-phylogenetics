@@ -36,6 +36,7 @@ def _stable_generated_outputs(bundle: object) -> dict[str, Path]:
         "rabies-cross-host-geography-panel.manifest.json",
         "biogeography/biogeography-report.manifest.json",
         "bootstrap-review/bootstrap-review.distance-matrix.tsv",
+        "resource-observations.tsv",
     }
     outputs: dict[str, Path] = {}
     for path in workflow_bundle.output_root.rglob("*"):
@@ -66,6 +67,10 @@ def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface
     assert dataset.iqtree_seed == 1
     assert dataset.iqtree_threads == 1
     assert dataset.bootstrap_replicates == 1000
+    assert dataset.timeout_seconds == 300.0
+    assert dataset.max_bootstrap_tree_count == 1500
+    assert dataset.max_report_table_rows == 25
+    assert dataset.memory_warning_threshold_bytes == 67108864
     assert dataset.outgroup_taxa == ("bat_chile_rv108",)
     assert dataset.observed_host_group_count == 3
     assert dataset.observed_region_group_count == 5
@@ -84,6 +89,21 @@ def test_load_rabies_cross_host_geography_panel_dataset_exposes_packaged_surface
     assert dataset.comparative_response == "region_longitude"
     assert dataset.comparative_branch_length_floor == 1e-6
     assert "MG458305" in dataset.source_accessions
+
+
+def test_rabies_cross_host_geography_reference_bootstrap_summary_omits_volatile_metrics() -> (
+    None
+):
+    dataset = load_rabies_cross_host_geography_panel_dataset()
+    with (
+        dataset.reference_output_root
+        / "bootstrap-review"
+        / "bootstrap-review.summary.tsv"
+    ).open("r", encoding="utf-8", newline="") as handle:
+        row = next(csv.DictReader(handle, delimiter="\t"))
+    assert "runtime_seconds" not in row
+    assert "peak_memory_bytes" not in row
+    assert "skipped_malformed_tree_count" not in row
 
 
 @pytest.mark.slow
@@ -203,6 +223,7 @@ def test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_wor
     assert result.dataset_export.accession_table_path.is_file()
     assert result.dataset_export.workflow_config_path.is_file()
     assert result.workflow_bundle.workflow_summary_path.is_file()
+    assert result.workflow_bundle.resource_observations_path.is_file()
     assert result.workflow_bundle.config_audit_path.is_file()
     assert result.workflow_bundle.resolved_config_path.is_file()
     assert result.workflow_bundle.clade_table_path.is_file()
@@ -281,6 +302,7 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
     workflow_root.mkdir(parents=True, exist_ok=True)
     final_report_path = workflow_root / "rabies-cross-host-geography-report.html"
     workflow_summary_path = workflow_root / "workflow-summary.tsv"
+    resource_observations_path = workflow_root / "resource-observations.tsv"
     final_manifest_path = workflow_root / "rabies-cross-host-geography.manifest.json"
     scientific_findings_path = workflow_root / "scientific-findings.tsv"
     bootstrap_summary_path = workflow_root / "bootstrap-review.summary.tsv"
@@ -288,6 +310,7 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
     for path, contents in (
         (final_report_path, "<html></html>\n"),
         (workflow_summary_path, "metric\tvalue\nsequence_count\t9\n"),
+        (resource_observations_path, "metric\tvalue\nworkflow_runtime_seconds\t1\n"),
         (final_manifest_path, "{}\n"),
         (
             scientific_findings_path,
@@ -302,6 +325,10 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         config_path=dataset.workflow_config_path,
         workflow_prefix=dataset.workflow_prefix,
         comparative_formula=dataset.comparative_formula,
+        timeout_seconds=dataset.timeout_seconds,
+        max_bootstrap_tree_count=dataset.max_bootstrap_tree_count,
+        max_report_table_rows=dataset.max_report_table_rows,
+        memory_warning_threshold_bytes=dataset.memory_warning_threshold_bytes,
     )
     fake_workflow_report = SimpleNamespace(config=fake_config)
     fake_workflow_bundle = SimpleNamespace(
@@ -315,6 +342,7 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         scientific_finding_count=6,
         sequence_type="dna",
         workflow_summary_path=workflow_summary_path,
+        resource_observations_path=resource_observations_path,
         clade_table_path=workflow_root / "clade-table.tsv",
         bootstrap_summary_path=bootstrap_summary_path,
         bootstrap_tree_comparison_summary_path=workflow_root
@@ -324,6 +352,10 @@ def test_run_rabies_cross_host_geography_panel_demo_writes_flagship_package_arti
         final_manifest_path=final_manifest_path,
         scientific_findings_path=scientific_findings_path,
         bootstrap_tree_count=1000,
+        workflow_runtime_seconds=12.5,
+        bootstrap_review_runtime_seconds=0.25,
+        bootstrap_review_peak_memory_bytes=2048,
+        budget_warning_count=0,
         host_switch_count=2,
         migration_event_count=4,
     )
@@ -417,9 +449,18 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         comparative_pgls_lambda=0.0,
         comparative_pgls_r_squared=0.61,
         comparative_branch_repair_count=0,
-        config_check_count=8,
+        timeout_seconds=300.0,
+        max_bootstrap_tree_count=1500,
+        max_report_table_rows=25,
+        memory_warning_threshold_bytes=67108864,
+        workflow_runtime_seconds=12.5,
+        bootstrap_review_runtime_seconds=0.25,
+        bootstrap_review_peak_memory_bytes=2048,
+        budget_warning_count=0,
+        config_check_count=12,
         scientific_finding_count=6,
         workflow_summary_path=output / "workflow" / "workflow-summary.tsv",
+        resource_observations_path=output / "workflow" / "resource-observations.tsv",
         config_audit_path=output / "workflow" / "workflow-config-audit.tsv",
         resolved_config_path=output / "workflow" / "workflow-config.resolved.json",
         input_validation_path=output / "workflow" / "input-validation.tsv",
@@ -496,6 +537,7 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
         dataset_export.centroids_path,
         dataset_export.accession_table_path,
         workflow_bundle.workflow_summary_path,
+        workflow_bundle.resource_observations_path,
         workflow_bundle.config_audit_path,
         workflow_bundle.resolved_config_path,
         workflow_bundle.input_validation_path,
@@ -544,7 +586,7 @@ def test_cli_demo_rabies_cross_host_geography_panel_reports_flagship_package_met
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
-    assert payload["metrics"]["artifact_count"] == 34
+    assert payload["metrics"]["artifact_count"] == 35
     assert payload["metrics"]["reference_output_count"] == 3
     assert payload["metrics"]["biological_question"].startswith(
         "Do the host-associated rabies lineages"
@@ -614,7 +656,7 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
-    assert payload["metrics"]["artifact_count"] == 34
+    assert payload["metrics"]["artifact_count"] == 35
     assert payload["metrics"]["sequence_count"] == 9
     assert payload["metrics"]["config_path"] == str(output / "dataset" / "workflow-config.json")
     assert payload["metrics"]["biological_question"].startswith(
@@ -639,9 +681,9 @@ def test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrat
     assert payload["metrics"]["bootstrap_consensus_rooted_rf_distance"] == 1
     assert payload["metrics"]["comparative_formula"] == "region_longitude ~ host_group"
     assert payload["metrics"]["comparative_selected_model"] == "brownian"
-    assert payload["metrics"]["config_check_count"] == 8
+    assert payload["metrics"]["config_check_count"] == 12
     assert payload["metrics"]["scientific_finding_count"] == 6
-    assert payload["metrics"]["reference_output_count"] == 59
+    assert payload["metrics"]["reference_output_count"] == 60
     assert payload["data"]["dataset"]["dataset_id"] == (
         "rabies_cross_host_geography_panel"
     )

@@ -37,10 +37,14 @@
     "host_trait": "host_group",
     "iqtree_seed": 1,
     "iqtree_threads": 1,
+    "max_bootstrap_tree_count": 1500,
+    "max_report_table_rows": 25,
+    "memory_warning_threshold_bytes": 67108864,
     "outgroup_taxa": [
       "bat_chile_rv108"
     ],
     "sequence_type": "dna",
+    "timeout_seconds": 300.0,
     "trim_gap_threshold": 0.1,
     "trimming_mode": "gap-threshold",
     "workflow_prefix": "rabies-cross-host-geography-panel"
