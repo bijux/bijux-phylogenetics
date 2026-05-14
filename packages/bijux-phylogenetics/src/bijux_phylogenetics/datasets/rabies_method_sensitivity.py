@@ -1,11 +1,31 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
 import shutil
+from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.io.fasta import validate_fasta_input
+from bijux_phylogenetics.compare.topology import (
+    TreeComparisonReport,
+    compare_tree_paths,
+    write_tree_comparison_table,
+)
+from bijux_phylogenetics.core.topology import TreeRootingReport, root_tree_on_outgroup
+from bijux_phylogenetics.engines.inference_comparison import (
+    InferenceComparisonConclusionRow,
+    InferenceComparisonWorkflowReport,
+    run_tree_inference_comparison,
+)
+from bijux_phylogenetics.engines.workflows import (
+    EngineWorkflowReport,
+    run_alignment_trimming,
+    run_multiple_sequence_alignment,
+)
+from bijux_phylogenetics.io.fasta import load_fasta_alignment, validate_fasta_input
+from bijux_phylogenetics.io.newick import write_newick
+from bijux_phylogenetics.render.html import write_html_report
 
 _DATASET_ID = "rabies_method_sensitivity_panel"
 _DATASET_LABEL = "Rabies method-sensitivity panel"
@@ -71,6 +91,107 @@ class RabiesMethodSensitivityPanelExportResult:
     expected_output_root: Path
 
 
+@dataclass(slots=True)
+class RabiesMethodSensitivityVariantRun:
+    """One executed variant in the governed method-sensitivity matrix."""
+
+    config: RabiesMethodSensitivityVariant
+    alignment_workflow: EngineWorkflowReport
+    trimming_workflow: EngineWorkflowReport
+    inference_comparison: InferenceComparisonWorkflowReport
+    rooted_fasttree_path: Path
+    rooted_iqtree_path: Path
+    fasttree_rooting: TreeRootingReport
+    iqtree_rooting: TreeRootingReport
+    rooted_engine_comparison: TreeComparisonReport
+    rooted_engine_comparison_table_path: Path
+    alignment_length: int
+    trimmed_alignment_length: int
+
+
+@dataclass(frozen=True, slots=True)
+class RabiesMethodSensitivityPreprocessingComparisonRow:
+    """One rooted IQ-TREE comparison across two preprocessing variants."""
+
+    left_variant_id: str
+    right_variant_id: str
+    comparison_axis: str
+    robinson_foulds_distance: int
+    normalized_robinson_foulds: float
+    same_taxa_different_rooting: bool
+
+
+@dataclass(frozen=True, slots=True)
+class RabiesMethodSensitivityCladeRow:
+    """One aggregated stable or changed clade-level conclusion across variants."""
+
+    split_id: str
+    conclusion_class: str
+    evidence_class: str
+    occurrence_count: int
+    variant_count: int
+    detail: str
+
+
+@dataclass(frozen=True, slots=True)
+class RabiesMethodSensitivityConclusionRow:
+    """One high-level biological or analytical conclusion from the workflow."""
+
+    conclusion_id: str
+    method_axis: str
+    stability_status: str
+    claim: str
+    evidence: str
+    caution: str
+
+
+@dataclass(slots=True)
+class RabiesMethodSensitivityPanelWorkflowReport:
+    """One governed method-sensitivity workflow run over the packaged rabies panel."""
+
+    dataset: RabiesMethodSensitivityPanelDataset
+    variant_runs: tuple[RabiesMethodSensitivityVariantRun, ...]
+    preprocessing_comparison_rows: tuple[
+        RabiesMethodSensitivityPreprocessingComparisonRow, ...
+    ]
+    stable_clade_rows: tuple[RabiesMethodSensitivityCladeRow, ...]
+    changed_clade_rows: tuple[RabiesMethodSensitivityCladeRow, ...]
+    conclusion_rows: tuple[RabiesMethodSensitivityConclusionRow, ...]
+
+
+@dataclass(slots=True)
+class RabiesMethodSensitivityPanelWorkflowBundle:
+    """Written reviewer-facing outputs for the rabies method-sensitivity workflow."""
+
+    output_root: Path
+    variant_count: int
+    stable_clade_count: int
+    changed_clade_count: int
+    preprocessing_change_pair_count: int
+    rooted_engine_change_variant_count: int
+    serious_conflict_variant_count: int
+    workflow_summary_path: Path
+    variant_summary_path: Path
+    preprocessing_comparison_path: Path
+    stable_clades_path: Path
+    changed_clades_path: Path
+    conclusion_summary_path: Path
+    config_path: Path
+    report_path: Path
+    variants_root: Path
+
+
+@dataclass(slots=True)
+class RabiesMethodSensitivityPanelDemoResult:
+    """Dataset export plus workflow outputs for the public method-sensitivity demo."""
+
+    output_root: Path
+    dataset: RabiesMethodSensitivityPanelDataset
+    dataset_export: RabiesMethodSensitivityPanelExportResult
+    workflow_bundle: RabiesMethodSensitivityPanelWorkflowBundle
+    overview_path: Path
+
+
 def load_rabies_method_sensitivity_panel_dataset() -> (
     RabiesMethodSensitivityPanelDataset
 ):
@@ -132,7 +253,9 @@ def export_rabies_method_sensitivity_panel_dataset(
     sequences_path = Path(
         shutil.copy2(dataset.sequences_path, destination / "sequences.fasta")
     )
-    metadata_path = Path(shutil.copy2(dataset.metadata_path, destination / "metadata.csv"))
+    metadata_path = Path(
+        shutil.copy2(dataset.metadata_path, destination / "metadata.csv")
+    )
     expected_output_root = destination / "expected"
     shutil.copytree(dataset.reference_output_root, expected_output_root)
     return RabiesMethodSensitivityPanelExportResult(
@@ -143,6 +266,873 @@ def export_rabies_method_sensitivity_panel_dataset(
         metadata_path=metadata_path,
         expected_output_root=expected_output_root,
     )
+
+
+def run_rabies_method_sensitivity_panel_workflow(
+    out_dir: Path,
+    *,
+    mafft_executable: str | Path = "mafft",
+    trimal_executable: str | Path = "trimal",
+    iqtree_executable: str | Path = "iqtree2",
+    fasttree_executable: str | Path = "FastTree",
+    iqtree_seed: int | None = None,
+    iqtree_threads: int | None = None,
+    bootstrap_replicates: int | None = None,
+) -> RabiesMethodSensitivityPanelWorkflowReport:
+    """Run the owned method-sensitivity workflow over the packaged rabies panel."""
+    dataset = load_rabies_method_sensitivity_panel_dataset()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    resolved_seed = dataset.iqtree_seed if iqtree_seed is None else iqtree_seed
+    resolved_threads = (
+        dataset.iqtree_threads if iqtree_threads is None else iqtree_threads
+    )
+    resolved_bootstrap_replicates = (
+        dataset.bootstrap_replicates
+        if bootstrap_replicates is None
+        else bootstrap_replicates
+    )
+
+    variant_runs: list[RabiesMethodSensitivityVariantRun] = []
+    for variant in dataset.variants:
+        variant_root = out_dir / "variants" / variant.variant_id
+        alignment_path = variant_root / f"{variant.variant_id}.aln"
+        trimmed_alignment_path = variant_root / f"{variant.variant_id}.trimmed.aln"
+        alignment_workflow = run_multiple_sequence_alignment(
+            dataset.sequences_path,
+            alignment_path,
+            executable=mafft_executable,
+            mode=variant.alignment_mode,
+        )
+        trimming_workflow = run_alignment_trimming(
+            alignment_path,
+            trimmed_alignment_path,
+            executable=trimal_executable,
+            mode=variant.trimming_mode,
+            gap_threshold=variant.trim_gap_threshold,
+        )
+        inference_comparison = run_tree_inference_comparison(
+            trimmed_alignment_path,
+            out_dir=variant_root / "engine-comparison",
+            prefix=variant.variant_id,
+            sequence_type=dataset.sequence_type,
+            iqtree_executable=iqtree_executable,
+            fasttree_executable=fasttree_executable,
+            iqtree_seed=resolved_seed,
+            iqtree_threads=resolved_threads,
+            bootstrap_replicates=resolved_bootstrap_replicates,
+        )
+        fasttree_rooted, fasttree_rooting = root_tree_on_outgroup(
+            inference_comparison.output_paths["fasttree_tree"],
+            outgroup_taxa=list(dataset.outgroup_taxa),
+        )
+        iqtree_rooted, iqtree_rooting = root_tree_on_outgroup(
+            inference_comparison.output_paths["iqtree_support_tree"],
+            outgroup_taxa=list(dataset.outgroup_taxa),
+        )
+        rooted_fasttree_path = variant_root / "rooted-fasttree.nwk"
+        rooted_iqtree_path = variant_root / "rooted-iqtree-support.nwk"
+        write_newick(rooted_fasttree_path, fasttree_rooted)
+        write_newick(rooted_iqtree_path, iqtree_rooted)
+        rooted_engine_comparison = compare_tree_paths(
+            rooted_fasttree_path, rooted_iqtree_path
+        )
+        rooted_engine_comparison_table_path = write_tree_comparison_table(
+            variant_root / "rooted-engine-comparison.tsv",
+            rooted_fasttree_path,
+            rooted_iqtree_path,
+        )
+        aligned_records = load_fasta_alignment(alignment_workflow.output_paths["alignment"])
+        trimmed_records = load_fasta_alignment(
+            trimming_workflow.output_paths["trimmed_alignment"]
+        )
+        variant_runs.append(
+            RabiesMethodSensitivityVariantRun(
+                config=variant,
+                alignment_workflow=alignment_workflow,
+                trimming_workflow=trimming_workflow,
+                inference_comparison=inference_comparison,
+                rooted_fasttree_path=rooted_fasttree_path,
+                rooted_iqtree_path=rooted_iqtree_path,
+                fasttree_rooting=fasttree_rooting,
+                iqtree_rooting=iqtree_rooting,
+                rooted_engine_comparison=rooted_engine_comparison,
+                rooted_engine_comparison_table_path=rooted_engine_comparison_table_path,
+                alignment_length=len(aligned_records[0].sequence),
+                trimmed_alignment_length=len(trimmed_records[0].sequence),
+            )
+        )
+
+    preprocessing_comparison_rows = tuple(
+        _build_preprocessing_comparison_rows(variant_runs)
+    )
+    stable_clade_rows = tuple(_aggregate_clades(variant_runs, stable_only=True))
+    changed_clade_rows = tuple(_aggregate_clades(variant_runs, stable_only=False))
+    conclusion_rows = tuple(
+        _build_conclusion_rows(
+            dataset=dataset,
+            variant_runs=variant_runs,
+            preprocessing_comparison_rows=preprocessing_comparison_rows,
+        )
+    )
+    return RabiesMethodSensitivityPanelWorkflowReport(
+        dataset=dataset,
+        variant_runs=tuple(variant_runs),
+        preprocessing_comparison_rows=preprocessing_comparison_rows,
+        stable_clade_rows=stable_clade_rows,
+        changed_clade_rows=changed_clade_rows,
+        conclusion_rows=conclusion_rows,
+    )
+
+
+def write_rabies_method_sensitivity_panel_workflow_bundle(
+    output_root: Path,
+    report: RabiesMethodSensitivityPanelWorkflowReport,
+) -> RabiesMethodSensitivityPanelWorkflowBundle:
+    """Write the governed reviewer-facing bundle for the method-sensitivity workflow."""
+    if output_root.exists():
+        shutil.rmtree(output_root)
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    workflow_summary_path = _write_workflow_summary_table(
+        output_root / "workflow-summary.tsv",
+        report,
+    )
+    variant_summary_path = _write_variant_summary_table(
+        output_root / "variant-summary.tsv",
+        report,
+    )
+    preprocessing_comparison_path = _write_preprocessing_comparison_table(
+        output_root / "preprocessing-rooted-comparisons.tsv",
+        report.preprocessing_comparison_rows,
+    )
+    stable_clades_path = _write_clade_table(
+        output_root / "stable-clades.tsv",
+        report.stable_clade_rows,
+    )
+    changed_clades_path = _write_clade_table(
+        output_root / "changed-clades.tsv",
+        report.changed_clade_rows,
+    )
+    conclusion_summary_path = _write_conclusion_summary_table(
+        output_root / "method-conclusion-summary.tsv",
+        report.conclusion_rows,
+    )
+    config_path = _write_resolved_config(
+        output_root / "workflow-config.resolved.json",
+        report,
+    )
+    variants_root = _write_variant_outputs(output_root / "variants", report.variant_runs)
+    report_path = _write_report(
+        output_root / "rabies-method-sensitivity-report.html",
+        report=report,
+        bundle_paths={
+            "workflow_summary": workflow_summary_path,
+            "variant_summary": variant_summary_path,
+            "preprocessing_comparison": preprocessing_comparison_path,
+            "stable_clades": stable_clades_path,
+            "changed_clades": changed_clades_path,
+            "conclusion_summary": conclusion_summary_path,
+            "config": config_path,
+        },
+    )
+    preprocessing_change_pair_count = sum(
+        1
+        for row in report.preprocessing_comparison_rows
+        if row.robinson_foulds_distance > 0 or row.same_taxa_different_rooting
+    )
+    rooted_engine_change_variant_count = sum(
+        1
+        for variant in report.variant_runs
+        if variant.rooted_engine_comparison.robinson_foulds_distance > 0
+        or variant.rooted_engine_comparison.same_taxa_different_rooting
+    )
+    serious_conflict_variant_count = sum(
+        1
+        for variant in report.variant_runs
+        if variant.inference_comparison.conclusion_summary.serious_conflict_count > 0
+    )
+    return RabiesMethodSensitivityPanelWorkflowBundle(
+        output_root=output_root,
+        variant_count=len(report.variant_runs),
+        stable_clade_count=len(report.stable_clade_rows),
+        changed_clade_count=len(report.changed_clade_rows),
+        preprocessing_change_pair_count=preprocessing_change_pair_count,
+        rooted_engine_change_variant_count=rooted_engine_change_variant_count,
+        serious_conflict_variant_count=serious_conflict_variant_count,
+        workflow_summary_path=workflow_summary_path,
+        variant_summary_path=variant_summary_path,
+        preprocessing_comparison_path=preprocessing_comparison_path,
+        stable_clades_path=stable_clades_path,
+        changed_clades_path=changed_clades_path,
+        conclusion_summary_path=conclusion_summary_path,
+        config_path=config_path,
+        report_path=report_path,
+        variants_root=variants_root,
+    )
+
+
+def run_rabies_method_sensitivity_panel_demo(
+    output_root: Path,
+    *,
+    mafft_executable: str | Path = "mafft",
+    trimal_executable: str | Path = "trimal",
+    iqtree_executable: str | Path = "iqtree2",
+    fasttree_executable: str | Path = "FastTree",
+    iqtree_seed: int | None = None,
+    iqtree_threads: int | None = None,
+    bootstrap_replicates: int | None = None,
+) -> RabiesMethodSensitivityPanelDemoResult:
+    """Materialize the packaged dataset and rerun the governed sensitivity workflow."""
+    if output_root.exists():
+        shutil.rmtree(output_root)
+    output_root.mkdir(parents=True, exist_ok=True)
+    dataset = load_rabies_method_sensitivity_panel_dataset()
+    dataset_export = export_rabies_method_sensitivity_panel_dataset(output_root / "dataset")
+    with TemporaryDirectory(prefix="rabies-method-sensitivity-") as temporary_root:
+        workflow_report = run_rabies_method_sensitivity_panel_workflow(
+            Path(temporary_root),
+            mafft_executable=mafft_executable,
+            trimal_executable=trimal_executable,
+            iqtree_executable=iqtree_executable,
+            fasttree_executable=fasttree_executable,
+            iqtree_seed=iqtree_seed,
+            iqtree_threads=iqtree_threads,
+            bootstrap_replicates=bootstrap_replicates,
+        )
+        workflow_bundle = write_rabies_method_sensitivity_panel_workflow_bundle(
+            output_root / "workflow",
+            workflow_report,
+        )
+    overview_path = _write_overview(output_root / "overview.md", dataset, workflow_bundle)
+    return RabiesMethodSensitivityPanelDemoResult(
+        output_root=output_root,
+        dataset=dataset,
+        dataset_export=dataset_export,
+        workflow_bundle=workflow_bundle,
+        overview_path=overview_path,
+    )
+
+
+def _build_preprocessing_comparison_rows(
+    variant_runs: list[RabiesMethodSensitivityVariantRun],
+) -> list[RabiesMethodSensitivityPreprocessingComparisonRow]:
+    rows: list[RabiesMethodSensitivityPreprocessingComparisonRow] = []
+    for index, left in enumerate(variant_runs):
+        for right in variant_runs[index + 1 :]:
+            comparison = compare_tree_paths(left.rooted_iqtree_path, right.rooted_iqtree_path)
+            rows.append(
+                RabiesMethodSensitivityPreprocessingComparisonRow(
+                    left_variant_id=left.config.variant_id,
+                    right_variant_id=right.config.variant_id,
+                    comparison_axis=_comparison_axis(left.config, right.config),
+                    robinson_foulds_distance=comparison.robinson_foulds_distance,
+                    normalized_robinson_foulds=comparison.normalized_robinson_foulds,
+                    same_taxa_different_rooting=comparison.same_taxa_different_rooting,
+                )
+            )
+    return rows
+
+
+def _comparison_axis(
+    left: RabiesMethodSensitivityVariant, right: RabiesMethodSensitivityVariant
+) -> str:
+    alignment_changed = left.alignment_mode != right.alignment_mode
+    trimming_changed = left.trimming_mode != right.trimming_mode
+    if alignment_changed and not trimming_changed:
+        return "alignment_mode"
+    if trimming_changed and not alignment_changed:
+        return "trimming_mode"
+    return "combined_preprocessing"
+
+
+def _aggregate_clades(
+    variant_runs: list[RabiesMethodSensitivityVariantRun], *, stable_only: bool
+) -> list[RabiesMethodSensitivityCladeRow]:
+    counts: dict[tuple[str, str], tuple[str, str, int]] = {}
+    for variant in variant_runs:
+        for row in variant.inference_comparison.conclusion_rows:
+            is_stable = row.conclusion_class == "stable_clade"
+            if is_stable != stable_only:
+                continue
+            key = (row.split_id, row.conclusion_class)
+            evidence_class, detail, count = counts.get(
+                key, (row.evidence_class, row.detail, 0)
+            )
+            counts[key] = (evidence_class, detail, count + 1)
+    aggregated = [
+        RabiesMethodSensitivityCladeRow(
+            split_id=split_id,
+            conclusion_class=conclusion_class,
+            evidence_class=evidence_class,
+            occurrence_count=count,
+            variant_count=len(variant_runs),
+            detail=detail,
+        )
+        for (split_id, conclusion_class), (evidence_class, detail, count) in sorted(
+            counts.items()
+        )
+    ]
+    return aggregated
+
+
+def _build_conclusion_rows(
+    *,
+    dataset: RabiesMethodSensitivityPanelDataset,
+    variant_runs: list[RabiesMethodSensitivityVariantRun],
+    preprocessing_comparison_rows: tuple[
+        RabiesMethodSensitivityPreprocessingComparisonRow, ...
+    ],
+) -> list[RabiesMethodSensitivityConclusionRow]:
+    selected_models = sorted(
+        {
+            variant.inference_comparison.selected_model
+            for variant in variant_runs
+            if variant.inference_comparison.selected_model
+        }
+    )
+    max_serious_conflicts = max(
+        variant.inference_comparison.conclusion_summary.serious_conflict_count
+        for variant in variant_runs
+    )
+    stable_clade_counts = {
+        variant.config.variant_id: variant.inference_comparison.conclusion_summary.stable_clade_count
+        for variant in variant_runs
+    }
+    rows = [
+        RabiesMethodSensitivityConclusionRow(
+            conclusion_id="preprocessing_rooted_iqtree_topology",
+            method_axis="alignment_and_trimming",
+            stability_status=(
+                "stable"
+                if all(
+                    row.robinson_foulds_distance == 0
+                    and not row.same_taxa_different_rooting
+                    for row in preprocessing_comparison_rows
+                )
+                else "changed"
+            ),
+            claim=(
+                "The rooted IQ-TREE topology stayed unchanged across every declared "
+                "alignment and trimming variant."
+            ),
+            evidence=(
+                f"{len(preprocessing_comparison_rows)} rooted pairwise preprocessing "
+                "comparisons returned RF distance 0 and no rooting-only disagreements."
+            ),
+            caution=(
+                "This stability statement is limited to the compact nine-taxon rabies "
+                "panel and the four declared preprocessing settings."
+            ),
+        ),
+        RabiesMethodSensitivityConclusionRow(
+            conclusion_id="preprocessing_selected_model",
+            method_axis="alignment_and_trimming",
+            stability_status="stable" if len(selected_models) == 1 else "changed",
+            claim=(
+                "The selected substitution model remained constant across the "
+                "declared preprocessing matrix."
+                if len(selected_models) == 1
+                else "The selected substitution model changed across the declared preprocessing matrix."
+            ),
+            evidence=(
+                f"selected models: {', '.join(selected_models)}"
+                if selected_models
+                else "no selected model was recorded"
+            ),
+            caution=(
+                "Model-selection stability here reflects one short rabies nucleoprotein "
+                "panel rather than a general claim about all pathogen alignments."
+            ),
+        ),
+        RabiesMethodSensitivityConclusionRow(
+            conclusion_id="rooted_engine_agreement",
+            method_axis="inference_engine",
+            stability_status=(
+                "stable"
+                if all(
+                    variant.rooted_engine_comparison.robinson_foulds_distance == 0
+                    and not variant.rooted_engine_comparison.same_taxa_different_rooting
+                    for variant in variant_runs
+                )
+                else "changed"
+            ),
+            claim=(
+                "After explicit outgroup rooting, FastTree and IQ-TREE preserved the "
+                "same rooted topology in every declared preprocessing variant."
+            ),
+            evidence=(
+                f"rooted engine comparisons over outgroup {', '.join(dataset.outgroup_taxa)} "
+                "returned RF distance 0 in every variant."
+            ),
+            caution=(
+                "Rooted agreement does not imply that every internal unrooted split or "
+                "support value is interchangeable across engines."
+            ),
+        ),
+        RabiesMethodSensitivityConclusionRow(
+            conclusion_id="unrooted_engine_sensitivity",
+            method_axis="inference_engine",
+            stability_status="changed" if max_serious_conflicts > 0 else "stable",
+            claim=(
+                "Before rooting, the FastTree versus IQ-TREE comparison changed several "
+                "internal clade conclusions on this rabies panel."
+            ),
+            evidence=(
+                f"serious unrooted engine conflicts ranged up to {max_serious_conflicts} "
+                f"per variant, while stable shared clades per variant ranged from "
+                f"{min(stable_clade_counts.values())} to {max(stable_clade_counts.values())}."
+            ),
+            caution=(
+                "The engine-sensitive clades are a warning against over-reading fine "
+                "internal structure from one compact panel, especially when approximate "
+                "and likelihood engines disagree before rooting."
+            ),
+        ),
+    ]
+    return rows
+
+
+def _write_workflow_summary_table(
+    path: Path, report: RabiesMethodSensitivityPanelWorkflowReport
+) -> Path:
+    serious_conflicts = [
+        variant.inference_comparison.conclusion_summary.serious_conflict_count
+        for variant in report.variant_runs
+    ]
+    rows = [
+        [
+            "dataset_id",
+            "variant_count",
+            "stable_clade_count",
+            "changed_clade_count",
+            "preprocessing_change_pair_count",
+            "rooted_engine_change_variant_count",
+            "serious_conflict_variant_count",
+            "maximum_serious_conflict_count",
+        ],
+        [
+            report.dataset.dataset_id,
+            str(len(report.variant_runs)),
+            str(len(report.stable_clade_rows)),
+            str(len(report.changed_clade_rows)),
+            str(
+                sum(
+                    1
+                    for row in report.preprocessing_comparison_rows
+                    if row.robinson_foulds_distance > 0
+                    or row.same_taxa_different_rooting
+                )
+            ),
+            str(
+                sum(
+                    1
+                    for variant in report.variant_runs
+                    if variant.rooted_engine_comparison.robinson_foulds_distance > 0
+                    or variant.rooted_engine_comparison.same_taxa_different_rooting
+                )
+            ),
+            str(sum(1 for value in serious_conflicts if value > 0)),
+            str(max(serious_conflicts)),
+        ],
+    ]
+    return _write_tsv(path, rows)
+
+
+def _write_variant_summary_table(
+    path: Path, report: RabiesMethodSensitivityPanelWorkflowReport
+) -> Path:
+    rows = [
+        [
+            "variant_id",
+            "alignment_mode",
+            "trimming_mode",
+            "trim_gap_threshold",
+            "alignment_length",
+            "trimmed_alignment_length",
+            "selected_model",
+            "minimum_support",
+            "maximum_support",
+            "stable_clade_count",
+            "engine_specific_clade_count",
+            "serious_conflict_count",
+            "rooted_engine_rf_distance",
+            "rooted_engine_same_taxa_different_rooting",
+        ]
+    ]
+    for variant in report.variant_runs:
+        summary = variant.inference_comparison.conclusion_summary
+        rows.append(
+            [
+                variant.config.variant_id,
+                variant.config.alignment_mode,
+                variant.config.trimming_mode,
+                _format_float(variant.config.trim_gap_threshold),
+                str(variant.alignment_length),
+                str(variant.trimmed_alignment_length),
+                variant.inference_comparison.selected_model,
+                _format_optional_float(
+                    variant.inference_comparison.iqtree_support_workflow.bootstrap_support_summary.minimum_support
+                    if variant.inference_comparison.iqtree_support_workflow.bootstrap_support_summary
+                    is not None
+                    else None
+                ),
+                _format_optional_float(
+                    variant.inference_comparison.iqtree_support_workflow.bootstrap_support_summary.maximum_support
+                    if variant.inference_comparison.iqtree_support_workflow.bootstrap_support_summary
+                    is not None
+                    else None
+                ),
+                str(summary.stable_clade_count),
+                str(summary.engine_specific_clade_count),
+                str(summary.serious_conflict_count),
+                str(variant.rooted_engine_comparison.robinson_foulds_distance),
+                str(
+                    variant.rooted_engine_comparison.same_taxa_different_rooting
+                ).lower(),
+            ]
+        )
+    return _write_tsv(path, rows)
+
+
+def _write_preprocessing_comparison_table(
+    path: Path,
+    rows: tuple[RabiesMethodSensitivityPreprocessingComparisonRow, ...],
+) -> Path:
+    rendered = [
+        [
+            "left_variant_id",
+            "right_variant_id",
+            "comparison_axis",
+            "robinson_foulds_distance",
+            "normalized_robinson_foulds",
+            "same_taxa_different_rooting",
+        ]
+    ]
+    for row in rows:
+        rendered.append(
+            [
+                row.left_variant_id,
+                row.right_variant_id,
+                row.comparison_axis,
+                str(row.robinson_foulds_distance),
+                _format_float(row.normalized_robinson_foulds),
+                str(row.same_taxa_different_rooting).lower(),
+            ]
+        )
+    return _write_tsv(path, rendered)
+
+
+def _write_clade_table(
+    path: Path, rows: tuple[RabiesMethodSensitivityCladeRow, ...]
+) -> Path:
+    rendered = [
+        [
+            "split_id",
+            "conclusion_class",
+            "evidence_class",
+            "occurrence_count",
+            "variant_count",
+            "detail",
+        ]
+    ]
+    for row in rows:
+        rendered.append(
+            [
+                row.split_id,
+                row.conclusion_class,
+                row.evidence_class,
+                str(row.occurrence_count),
+                str(row.variant_count),
+                row.detail,
+            ]
+        )
+    return _write_tsv(path, rendered)
+
+
+def _write_conclusion_summary_table(
+    path: Path, rows: tuple[RabiesMethodSensitivityConclusionRow, ...]
+) -> Path:
+    rendered = [
+        [
+            "conclusion_id",
+            "method_axis",
+            "stability_status",
+            "claim",
+            "evidence",
+            "caution",
+        ]
+    ]
+    for row in rows:
+        rendered.append(
+            [
+                row.conclusion_id,
+                row.method_axis,
+                row.stability_status,
+                row.claim,
+                row.evidence,
+                row.caution,
+            ]
+        )
+    return _write_tsv(path, rendered)
+
+
+def _write_resolved_config(
+    path: Path, report: RabiesMethodSensitivityPanelWorkflowReport
+) -> Path:
+    payload = {
+        "dataset_id": report.dataset.dataset_id,
+        "label": report.dataset.label,
+        "sequence_type": report.dataset.sequence_type,
+        "workflow_prefix": report.dataset.workflow_prefix,
+        "outgroup_taxa": list(report.dataset.outgroup_taxa),
+        "iqtree_seed": report.dataset.iqtree_seed,
+        "iqtree_threads": report.dataset.iqtree_threads,
+        "bootstrap_replicates": report.dataset.bootstrap_replicates,
+        "input_checksums": {
+            "sequences.fasta": _sha256(report.dataset.sequences_path),
+            "metadata.csv": _sha256(report.dataset.metadata_path),
+        },
+        "variants": [
+            {
+                "variant_id": variant.variant_id,
+                "label": variant.label,
+                "alignment_mode": variant.alignment_mode,
+                "trimming_mode": variant.trimming_mode,
+                "trim_gap_threshold": variant.trim_gap_threshold,
+            }
+            for variant in report.dataset.variants
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_variant_outputs(
+    output_root: Path, variant_runs: tuple[RabiesMethodSensitivityVariantRun, ...]
+) -> Path:
+    output_root.mkdir(parents=True, exist_ok=True)
+    for variant in variant_runs:
+        variant_root = output_root / variant.config.variant_id
+        variant_root.mkdir(parents=True, exist_ok=True)
+        _copy_output(
+            variant.alignment_workflow.output_paths["alignment"],
+            variant_root / f"{variant.config.variant_id}.aln",
+        )
+        _copy_output(
+            variant.trimming_workflow.output_paths["trimmed_alignment"],
+            variant_root / f"{variant.config.variant_id}.trimmed.aln",
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["fasttree_tree"],
+            variant_root / "fasttree.nwk",
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["iqtree_support_tree"],
+            variant_root / "iqtree-support.nwk",
+        )
+        _copy_output(
+            variant.rooted_fasttree_path,
+            variant_root / "rooted-fasttree.nwk",
+        )
+        _copy_output(
+            variant.rooted_iqtree_path,
+            variant_root / "rooted-iqtree-support.nwk",
+        )
+        _write_rooting_summary_table(
+            variant_root / "rooting-summary.tsv",
+            variant,
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["stability_summary"],
+            variant_root / "unrooted-stability-summary.tsv",
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["conclusion_table"],
+            variant_root / "unrooted-conclusions.tsv",
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["support_weighted_conflicts"],
+            variant_root / "unrooted-support-weighted-conflicts.tsv",
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["shared_clades"],
+            variant_root / "unrooted-shared-clades.tsv",
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["conflicting_clades"],
+            variant_root / "unrooted-conflicting-clades.tsv",
+        )
+        _copy_output(
+            variant.inference_comparison.output_paths["comparison_table"],
+            variant_root / "unrooted-comparison.tsv",
+        )
+        _copy_output(
+            variant.rooted_engine_comparison_table_path,
+            variant_root / "rooted-engine-comparison.tsv",
+        )
+    return output_root
+
+
+def _write_rooting_summary_table(
+    path: Path, variant: RabiesMethodSensitivityVariantRun
+) -> Path:
+    rows = [
+        [
+            "engine_name",
+            "requested_taxa",
+            "matched_taxa",
+            "outgroup_monophyletic",
+            "rooted_outgroup_taxa",
+            "warning_count",
+        ],
+        [
+            "fasttree",
+            ",".join(variant.fasttree_rooting.requested_taxa),
+            ",".join(variant.fasttree_rooting.matched_taxa),
+            _format_optional_bool(variant.fasttree_rooting.outgroup_monophyletic),
+            ",".join(variant.fasttree_rooting.rooted_outgroup_taxa),
+            str(len(variant.fasttree_rooting.warnings)),
+        ],
+        [
+            "iqtree",
+            ",".join(variant.iqtree_rooting.requested_taxa),
+            ",".join(variant.iqtree_rooting.matched_taxa),
+            _format_optional_bool(variant.iqtree_rooting.outgroup_monophyletic),
+            ",".join(variant.iqtree_rooting.rooted_outgroup_taxa),
+            str(len(variant.iqtree_rooting.warnings)),
+        ],
+    ]
+    return _write_tsv(path, rows)
+
+
+def _write_report(
+    path: Path,
+    *,
+    report: RabiesMethodSensitivityPanelWorkflowReport,
+    bundle_paths: dict[str, Path],
+) -> Path:
+    variant_lines = [
+        (
+            f"{variant.config.variant_id}: model {variant.inference_comparison.selected_model}; "
+            f"unrooted serious conflicts {variant.inference_comparison.conclusion_summary.serious_conflict_count}; "
+            f"rooted engine RF {variant.rooted_engine_comparison.robinson_foulds_distance}"
+        )
+        for variant in report.variant_runs
+    ]
+    conclusion_lines: list[str] = []
+    for row in report.conclusion_rows:
+        conclusion_lines.extend(
+            [
+                f"{row.conclusion_id}: {row.stability_status}",
+                f"claim: {row.claim}",
+                f"evidence: {row.evidence}",
+                f"caution: {row.caution}",
+                "",
+            ]
+        )
+    sections = [
+        (
+            "workflow-summary",
+            "\n".join(
+                [
+                    f"dataset: {report.dataset.label}",
+                    f"variants: {len(report.variant_runs)}",
+                    f"stable clades across variants: {len(report.stable_clade_rows)}",
+                    f"changed clades across variants: {len(report.changed_clade_rows)}",
+                    *variant_lines,
+                ]
+            ),
+        ),
+        (
+            "conclusions",
+            "\n".join(conclusion_lines).strip(),
+        ),
+        (
+            "artifacts",
+            "\n".join(
+                [
+                    f"workflow summary: {bundle_paths['workflow_summary'].name}",
+                    f"variant summary: {bundle_paths['variant_summary'].name}",
+                    f"preprocessing rooted comparisons: {bundle_paths['preprocessing_comparison'].name}",
+                    f"stable clades: {bundle_paths['stable_clades'].name}",
+                    f"changed clades: {bundle_paths['changed_clades'].name}",
+                    f"method conclusions: {bundle_paths['conclusion_summary'].name}",
+                    f"resolved config: {bundle_paths['config'].name}",
+                ]
+            ),
+        ),
+    ]
+    return write_html_report(
+        title="Rabies Method-Sensitivity Report",
+        sections=sections,
+        out_path=path,
+        embedded_json={
+            "dataset_id": report.dataset.dataset_id,
+            "variant_count": len(report.variant_runs),
+            "stable_clade_count": len(report.stable_clade_rows),
+            "changed_clade_count": len(report.changed_clade_rows),
+        },
+    )
+
+
+def _write_overview(
+    path: Path,
+    dataset: RabiesMethodSensitivityPanelDataset,
+    bundle: RabiesMethodSensitivityPanelWorkflowBundle,
+) -> Path:
+    lines = [
+        f"# {dataset.label}",
+        "",
+        dataset.source_summary,
+        "",
+        "## Bundle",
+        "",
+        f"- variants: `{bundle.variant_count}`",
+        f"- stable clades across variants: `{bundle.stable_clade_count}`",
+        f"- changed clades across variants: `{bundle.changed_clade_count}`",
+        f"- preprocessing-rooted changes: `{bundle.preprocessing_change_pair_count}`",
+        f"- rooted engine changes: `{bundle.rooted_engine_change_variant_count}`",
+        f"- variants with unrooted serious conflicts: `{bundle.serious_conflict_variant_count}`",
+        f"- report: `{bundle.report_path.name}`",
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def _copy_output(source: Path, destination: Path) -> Path:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    return Path(shutil.copy2(source, destination))
+
+
+def _write_tsv(path: Path, rows: list[list[str]]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join("\t".join(row) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def _format_float(value: float) -> str:
+    return format(value, ".12g")
+
+
+def _format_optional_float(value: float | None) -> str:
+    return "" if value is None else format(value, ".12g")
+
+
+def _format_optional_bool(value: bool | None) -> str:
+    if value is None:
+        return ""
+    return str(value).lower()
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _resource_root() -> Path:
