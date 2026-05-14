@@ -758,6 +758,8 @@ JSON metrics report:
 - `artifact_count`
 - `taxon_count`
 - `variant_count`
+- `parallel_workers`
+- `execution_mode`
 - `stable_clade_count`
 - `changed_clade_count`
 - `preprocessing_change_pair_count`
@@ -774,12 +776,15 @@ The command writes:
 - `dataset/expected/**`
 - `workflow/workflow-summary.tsv`
 - `workflow/variant-summary.tsv`
+- `workflow/parallel-execution-summary.tsv`
 - `workflow/preprocessing-rooted-comparisons.tsv`
 - `workflow/stable-clades.tsv`
 - `workflow/changed-clades.tsv`
 - `workflow/method-conclusion-summary.tsv`
 - `workflow/workflow-config.resolved.json`
+- `workflow/rabies-method-sensitivity.manifest.json`
 - `workflow/rabies-method-sensitivity-report.html`
+- `workflow/parallel-logs/<variant-id>.log`
 - `workflow/variants/<variant-id>/*.aln`
 - `workflow/variants/<variant-id>/*.trimmed.aln`
 - `workflow/variants/<variant-id>/fasttree.nwk`
@@ -788,6 +793,12 @@ The command writes:
 - `workflow/variants/<variant-id>/rooted-iqtree-support.nwk`
 - `workflow/variants/<variant-id>/rooting-summary.tsv`
 - `workflow/variants/<variant-id>/rooted-engine-comparison.tsv`
+
+Parallel execution is safe only because each declared variant uses its own
+isolated output root. Reusing the same workflow output prefix concurrently is
+rejected by the shared engine layer with a structured
+`engine_workflow_already_running` failure instead of risking log or manifest
+corruption.
 - `workflow/variants/<variant-id>/unrooted-comparison.tsv`
 - `workflow/variants/<variant-id>/unrooted-shared-clades.tsv`
 - `workflow/variants/<variant-id>/unrooted-conflicting-clades.tsv`

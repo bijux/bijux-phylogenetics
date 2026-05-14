@@ -234,11 +234,14 @@ to understand the intended scientific claim.
 workflow for method-sensitivity review on the same compact rabies panel. It
 reruns four declared alignment-and-trimming variants, compares IQ-TREE and
 FastTree on each variant, roots both engine trees on the packaged outgroup,
-and writes one reviewer-facing bundle that separates preprocessing stability
-from engine-sensitive unrooted clade changes. The workflow summary records the
-variant count, stable-clade count, changed-clade count, rooted preprocessing
-change count, rooted engine change count, and the number of variants that
-still show serious unrooted engine conflicts before rooting.
+and now executes those isolated variant roots through one declared
+`parallel_workers` budget from the packaged config unless the CLI overrides it.
+The resulting bundle keeps one workflow manifest, one parallel-execution
+summary, and one task log per variant so reviewers can see which isolated
+outputs were executed together without mixing their logs. The workflow summary
+records the variant count, stable-clade count, changed-clade count, rooted
+preprocessing change count, rooted engine change count, and the number of
+variants that still show serious unrooted engine conflicts before rooting.
 
 `demo gnathostome-ortholog-protein-benchmark` is the repository's governed
 public amino-acid workflow benchmark. It packages one small real ortholog

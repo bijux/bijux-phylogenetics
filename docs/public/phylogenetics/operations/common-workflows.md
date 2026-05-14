@@ -483,7 +483,9 @@ panel, use `demo rabies-method-sensitivity-panel`. This workflow reruns a
 declared four-variant matrix over the packaged rabies nucleoprotein FASTA,
 compares `auto` versus `ginsi` alignment, compares trimAl gap-threshold versus
 `gappyout` trimming, and then compares rooted IQ-TREE versus rooted FastTree
-topologies for each variant.
+topologies for each variant. The packaged workflow config now declares
+`parallel_workers`, so those independent variant roots can be executed in
+parallel safely without reusing the same output prefix.
 
 ```bash
 bijux-phylogenetics demo rabies-method-sensitivity-panel \
@@ -500,9 +502,11 @@ inspection rather than only raw tree production:
 
 - one workflow summary with stable-clade, changed-clade, rooted preprocessing, and rooted engine counts
 - one variant summary with alignment length, trimmed length, selected model, support range, and rooted engine RF distance
+- one parallel-execution summary plus one workflow manifest that record the worker count, execution mode, and per-variant isolated task outputs
 - one rooted preprocessing comparison table across every declared variant pair
 - one stable-clade ledger and one changed-clade ledger aggregated across variants
 - one method-conclusion ledger that states which claims remained stable and which remained engine-sensitive
+- one per-variant task log so concurrent variant runs remain inspectable without mixing batch execution output
 - one per-variant evidence package with aligned FASTA, trimmed FASTA, unrooted comparison tables, clade ledgers, support-weighted conflicts, rooted trees, and rooting review
 
 This workflow is intentionally narrower than the flagship integrated rabies

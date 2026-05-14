@@ -51,6 +51,11 @@ preprocessing matrix:
 - MAFFT `auto` plus trimAl `gappyout`
 - MAFFT `ginsi` plus trimAl `gappyout`
 
+The same config also declares `parallel_workers: 2`, which is the governed
+default for this batch workflow. Each variant still runs in its own isolated
+output root, so the workflow can execute variants in parallel without sharing
+one manifest prefix or one log file.
+
 For each declared variant, the owned workflow reruns:
 
 - MAFFT multiple-sequence alignment
@@ -74,3 +79,12 @@ where the engine choice still changes internal clade conclusions.
 - `workflow-config.json`: one durable sensitivity matrix and execution config
 - `expected/`: governed stable workflow outputs regenerated from the owned
   runtime surface
+
+The governed expected bundle now also includes:
+
+- `parallel-execution-summary.tsv`: one stable ledger of per-variant execution
+  status, execution mode, and task log path
+- `rabies-method-sensitivity.manifest.json`: one workflow manifest describing
+  the parallel batch surface and its reviewer-facing outputs
+- `parallel-logs/*.log`: one orchestration log per variant, kept separate so
+  concurrent batch execution remains inspectable
