@@ -191,6 +191,14 @@ It compares one `reference-tree-support.tsv` ledger keyed by descendant tip
 set instead of transient node number, and the owned `tree-set support-map`
 surface keeps one real `ape` edge case explicit: unsupported root-adjacent
 splits are left unscored instead of being mislabeled as zero support.
+The `ape::as.DNAbin` portion now covers clean, lowercase, gap-bearing, and
+ambiguity-bearing DNA fixtures. On the owned Bijux side there is no separate
+CLI command for that matrix, but the same DNAbin-compatible nucleotide surface
+now sits underneath DNA distance, ape-style nucleotide composition,
+ape-style segregating-site review, and aligned coding translation. It
+preserves taxon order and alignment length, normalizes case, keeps gaps,
+ambiguity codes, and explicit missing states literal, writes FASTA back
+without nucleotide-state loss, and rejects unsupported symbols explicitly.
 The `ape::dist.dna` portion now covers raw nucleotide distance, JC69, K80,
 F81, and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

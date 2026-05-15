@@ -730,9 +730,9 @@ tolerance, pass or fail state, and mismatch reason for each governed case, and
 writes reproducible failure or skip artifacts whenever the live lane disagrees
 or `ape` is unavailable. The live observation table is structured rather than
 string-based, so tree summaries, tip ledgers, normalized Newick outputs,
-DNA-state frequency tables, DNA-distance ledgers, and translated amino-acid
-rows are compared as owned artifacts rather than scraped console text. The
-governed live cases now cover `ape::read.tree`, `ape::write.tree`,
+DNAbin state ledgers, DNA-state frequency tables, DNA-distance ledgers, and
+translated amino-acid rows are compared as owned artifacts rather than scraped
+console text. The governed live cases now cover `ape::read.tree`, `ape::write.tree`,
 `ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans` over shared tree and DNA
 fixture ids. The tree and DNA inputs for that lane now come from the governed
 shared fixture catalogs in
@@ -754,6 +754,14 @@ ledger keyed by descendant tip set rather than transient node index. The
 runtime keeps the real `ape` edge case explicit too: unsupported
 root-adjacent splits are left unscored instead of being mislabeled as zero
 support.
+The `ape::as.DNAbin` lane now covers clean, lowercase, gap-bearing, and
+ambiguity-bearing DNA fixtures. On the owned Bijux side, DNA distance,
+ape-style nucleotide composition, ape-style segregating-site review, and
+aligned coding translation now all load through one DNAbin-compatible
+nucleotide matrix that preserves taxon order and alignment length, normalizes
+case, keeps gaps, ambiguity codes, and explicit missing states literal, writes
+FASTA back without nucleotide-state loss, and rejects unsupported symbols
+instead of silently degrading them to missing data.
 The `ape::dist.dna` lane now covers raw nucleotide distance, JC69, K80, F81,
 and TN93 distance over governed clean, gapped pairwise-deletion, gapped
 complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,

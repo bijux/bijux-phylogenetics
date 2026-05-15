@@ -157,9 +157,10 @@ parity cases resolve durable fixture ids from
 `shared_dna_alignment_fixture_catalog.json`. The DNA portion of the lane covers
 shared lowercase, ambiguity, gap, missing-data, identical-sequence,
 high-divergence, invariant, one-variable-site, and coding-translation
-fixtures across `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and
-`ape::trans`. The coding-translation portion now also covers ambiguous-codon,
-frame-truncation, and alternate-genetic-code fixtures. The unequal-length DNA fixture is now a
+fixtures across `ape::as.DNAbin`, `ape::base.freq`, `ape::seg.sites`,
+`ape::dist.dna`, and `ape::trans`. The coding-translation portion now also
+covers ambiguous-codon, frame-truncation, and alternate-genetic-code
+fixtures. The unequal-length DNA fixture is now a
 governed live `ape::dist.dna` failure case so Bijux and `ape` both prove the
 same DNA-distance stop condition explicitly. The owned distance surface now
 accepts the ape-compatible `raw`, `jc69`, `k80`, `f81`, and `tn93` aliases,
@@ -173,6 +174,11 @@ transition, transversion, AG-transition, CT-transition, ambiguity, and
 saturation fields alongside the distance matrix. TN93 warns explicitly when
 the resolved alignment composition omits a nucleotide instead of silently
 falling back to a simpler model.
+The same owned DNA surfaces now also share one DNAbin-compatible nucleotide
+matrix instead of reparsing FASTA differently in each workflow. That matrix
+preserves taxon order and alignment length, normalizes case, keeps gaps,
+ambiguity codes, and explicit missing states literal, writes FASTA back
+without nucleotide-state loss, and rejects unsupported symbols explicitly.
 The owned `alignment composition` surface now also exposes
 `--base-frequency-out` for one combined alignment-plus-sequence literal-state
 frequency ledger that mirrors `ape::base.freq`. Lowercase, ambiguity-bearing,

@@ -61,6 +61,11 @@ The coding portion of the same DNA catalog now also includes ambiguous-codon
 and alternate-genetic-code fixtures for `ape::trans` parity, plus the
 frame-truncation fixture where aligned translation must drop trailing partial
 codons with an explicit warning instead of silently mutating the review path.
+The catalog now also includes one invalid-symbol alignment fixture for the
+owned DNAbin-compatible nucleotide matrix boundary, so Bijux can reject
+unsupported nucleotide states explicitly while the governed live
+`ape::as.DNAbin` lane still proves basic structure parity on valid lowercase,
+gap-bearing, and ambiguity-bearing inputs.
 
 The metadata fixture corpus now also has one governed shared catalog at
 `metadata/shared_trait_table_fixture_catalog.json`. That catalog assigns
