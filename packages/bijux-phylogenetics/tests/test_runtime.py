@@ -454,6 +454,12 @@ from bijux_phylogenetics.compare.taxon_influence import (
     analyze_taxon_influence,
     write_taxon_influence_table,
 )
+from bijux_phylogenetics.compare.topology_distance import (
+    TopologyDistanceReport,
+    TopologyDistanceSplitRow,
+    compare_topology_distance,
+    write_topology_distance_split_table,
+)
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
     CladeOverlapComparisonReport,
@@ -1155,8 +1161,22 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert compare_api.write_support_comparison_table is write_support_comparison_table
     assert compare_api.write_taxon_influence_table is write_taxon_influence_table
+    assert compare_api.TopologyDistanceReport is TopologyDistanceReport
+    assert compare_api.TopologyDistanceSplitRow is TopologyDistanceSplitRow
+    assert compare_api.compare_topology_distance is compare_topology_distance
+    assert (
+        compare_api.write_topology_distance_split_table
+        is write_topology_distance_split_table
+    )
     assert compare_api.BranchScoreComparisonReport is BranchScoreComparisonReport
     assert compare_api.compare_branch_score_distance is compare_branch_score_distance
+    assert bijux_phylogenetics.TopologyDistanceReport is TopologyDistanceReport
+    assert bijux_phylogenetics.TopologyDistanceSplitRow is TopologyDistanceSplitRow
+    assert bijux_phylogenetics.compare_topology_distance is compare_topology_distance
+    assert (
+        bijux_phylogenetics.write_topology_distance_split_table
+        is write_topology_distance_split_table
+    )
     assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
     assert compare_api.RobinsonFouldsComparisonReport is RobinsonFouldsComparisonReport
     assert compare_api.compare_robinson_foulds is compare_robinson_foulds

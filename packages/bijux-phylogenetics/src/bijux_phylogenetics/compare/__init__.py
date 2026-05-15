@@ -5,6 +5,12 @@ from .support_reference import (
     SupportReferenceValidationReport,
     validate_support_reference_examples,
 )
+from .topology_distance import (
+    TopologyDistanceReport,
+    TopologyDistanceSplitRow,
+    compare_topology_distance,
+    write_topology_distance_split_table,
+)
 from .structural_parity import (
     StructuralTreeParityReport,
     StructuralTreeSetParityReport,
@@ -53,6 +59,8 @@ __all__ = [
     "SupportConflictRow",
     "SupportReferenceObservation",
     "SupportReferenceValidationReport",
+    "TopologyDistanceReport",
+    "TopologyDistanceSplitRow",
     "TaxonInfluenceReport",
     "TaxonInfluenceRow",
     "TreeDistanceReferenceObservation",
@@ -61,6 +69,7 @@ __all__ = [
     "analyze_taxon_influence",
     "compare_branch_score_distance",
     "compare_clade_overlap",
+    "compare_topology_distance",
     "compare_robinson_foulds",
     "compare_support_values",
     "compare_tree_sets_structurally",
@@ -74,4 +83,5 @@ __all__ = [
     "write_shared_taxa_removed_taxa_table",
     "write_support_comparison_table",
     "write_taxon_influence_table",
+    "write_topology_distance_split_table",
 ]

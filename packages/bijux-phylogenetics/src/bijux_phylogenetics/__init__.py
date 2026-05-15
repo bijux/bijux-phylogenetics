@@ -711,6 +711,12 @@ from .compare.taxon_influence import (
     analyze_taxon_influence,
     write_taxon_influence_table,
 )
+from .compare.topology_distance import (
+    TopologyDistanceReport,
+    TopologyDistanceSplitRow,
+    compare_topology_distance,
+    write_topology_distance_split_table,
+)
 from .compare.topology import (
     BranchScoreComparisonReport,
     CladeOverlapComparisonReport,
@@ -1945,6 +1951,8 @@ __all__ = [
     "TreeComparisonReport",
     "SupportReferenceObservation",
     "SupportReferenceValidationReport",
+    "TopologyDistanceReport",
+    "TopologyDistanceSplitRow",
     "TreeDistanceReferenceObservation",
     "TreeDistanceReferenceValidationReport",
     "RobinsonFouldsComparisonReport",
@@ -2062,6 +2070,7 @@ __all__ = [
     "compare_posterior_topological_diversity",
     "compare_branch_score_distance",
     "compare_clade_overlap",
+    "compare_topology_distance",
     "compare_robinson_foulds",
     "compare_support_values",
     "analyze_taxon_influence",
@@ -2908,6 +2917,7 @@ __all__ = [
     "write_shared_taxa_removed_taxa_table",
     "write_support_comparison_table",
     "write_taxon_influence_table",
+    "write_topology_distance_split_table",
     "write_ape_parity_observation_table",
     "write_ape_parity_summary_table",
     "write_reference_parity_observation_table",
