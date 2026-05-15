@@ -13,6 +13,7 @@ __all__ = [
     "validate_clade_table_schema",
     "validate_comparative_report_manifest_schema",
     "validate_comparative_summary_table_schema",
+    "validate_comparative_traits_table_schema",
     "validate_fasta_to_tree_manifest_schema",
     "validate_fasta_to_tree_model_table_schema",
     "validate_fasta_to_tree_support_table_schema",
@@ -103,6 +104,13 @@ _COMPARATIVE_SUMMARY_COLUMNS = (
     "phylogenetic_signal_lambda",
     "independent_contrast_count",
     "better_model_aicc_delta",
+)
+_COMPARATIVE_TRAITS_COLUMNS = (
+    "taxon",
+    "host_group",
+    "region_group",
+    "region_latitude",
+    "region_longitude",
 )
 _RUN_MANIFEST_KEYS = (
     "arguments",
@@ -276,6 +284,17 @@ def validate_comparative_summary_table_schema(
         path,
         schema_name="comparative_summary_tsv",
         expected_fields=_COMPARATIVE_SUMMARY_COLUMNS,
+    )
+
+
+def validate_comparative_traits_table_schema(
+    path: Path,
+) -> ArtifactSchemaValidationReport:
+    """Validate one derived comparative trait table."""
+    return _validate_exact_tsv_schema(
+        path,
+        schema_name="comparative_traits_tsv",
+        expected_fields=_COMPARATIVE_TRAITS_COLUMNS,
     )
 
 
@@ -454,6 +473,7 @@ _SCHEMA_VALIDATORS = {
     "clade_table_tsv": validate_clade_table_schema,
     "comparative_report_manifest_json": validate_comparative_report_manifest_schema,
     "comparative_summary_tsv": validate_comparative_summary_table_schema,
+    "comparative_traits_tsv": validate_comparative_traits_table_schema,
     "fasta_to_tree_manifest_json": validate_fasta_to_tree_manifest_schema,
     "fasta_to_tree_model_tsv": validate_fasta_to_tree_model_table_schema,
     "fasta_to_tree_support_tsv": validate_fasta_to_tree_support_table_schema,

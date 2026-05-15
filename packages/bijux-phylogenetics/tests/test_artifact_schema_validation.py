@@ -19,6 +19,7 @@ def test_artifact_schema_names_list_supported_profiles() -> None:
         "clade_table_tsv",
         "comparative_report_manifest_json",
         "comparative_summary_tsv",
+        "comparative_traits_tsv",
         "fasta_to_tree_manifest_json",
         "fasta_to_tree_model_tsv",
         "fasta_to_tree_support_tsv",
